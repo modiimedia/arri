@@ -1,12 +1,4 @@
-import {
-    App,
-    H3Event,
-    H3Response,
-    RouterMethod,
-    eventHandler,
-    send,
-    setResponseStatus,
-} from "h3";
+import { H3Event, RouterMethod, send, setResponseStatus } from "h3";
 import { AnyZodObject, ZodTypeAny } from "zod";
 import { ExtractParams } from "./utils";
 import { zh } from "h3-zod";
