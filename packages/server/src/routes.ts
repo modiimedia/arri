@@ -1,4 +1,4 @@
-import { H3Event, RouterMethod, send, setResponseStatus } from "h3";
+import { H3Event, RouterMethod, send, sendError, setResponseStatus } from "h3";
 import { AnyZodObject, ZodTypeAny } from "zod";
 import { ExtractParams } from "./utils";
 import { zh } from "h3-zod";
@@ -55,7 +55,7 @@ export interface ApiRoute<
     ) => any;
 }
 
-export const defineApiRoute = <
+export const defineRoute = <
     Path extends String,
     Method extends RouterMethod,
     Body extends undefined | ZodTypeAny,
@@ -71,10 +71,9 @@ export type ApiRouteMiddleware = (
     >
 ) => void | Promise<void>;
 
-export const defineRouteMiddleware = (middleware: ApiRouteMiddleware) =>
-    middleware;
+export const defineMiddleware = (middleware: ApiRouteMiddleware) => middleware;
 
-export async function handleApiRoute(
+export async function handleRoute(
     event: H3Event,
     route: ApiRoute,
     middlewares: ApiRouteMiddleware[]
@@ -105,11 +104,10 @@ export async function handleApiRoute(
     } catch (err) {
         if (isH3Error(err)) {
             setResponseStatus(processedEvent, err.statusCode);
-            await send(processedEvent, err, "application/json");
-            return;
+            sendError(processedEvent, err);
         }
         setResponseStatus(processedEvent, 500);
-        await send(
+        sendError(
             processedEvent,
             defineError(500, {
                 statusMessage: "an unknown error occurred",
