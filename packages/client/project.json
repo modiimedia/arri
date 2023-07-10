@@ -1,0 +1,38 @@
+{
+    "name": "client",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/client/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/packages/client",
+                "main": "packages/client/src/index.ts",
+                "tsConfig": "packages/client/tsconfig.lib.json",
+                "assets": ["packages/client/*.md"]
+            }
+        },
+        "publish": {
+            "command": "node tools/scripts/publish.mjs client {args.ver} {args.tag}",
+            "dependsOn": ["build"]
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["packages/client/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["coverage/packages/client"],
+            "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/client"
+            }
+        }
+    },
+    "tags": []
+}

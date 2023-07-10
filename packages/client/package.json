@@ -1,5 +1,5 @@
 {
-    "name": "@arri/server",
+    "name": "@arri/client",
     "version": "0.0.1",
     "type": "commonjs"
 }

@@ -7,7 +7,7 @@ export function isH3Error(input: unknown): input is H3Error {
     const keys = Object.keys(input);
     if (
         keys.includes("statusCode") &&
-        typeof input["statusCode"] === "number"
+        typeof (input as any)["statusCode"] === "number"
     ) {
         return true;
     }
