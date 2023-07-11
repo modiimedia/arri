@@ -2,7 +2,7 @@
 import { ofetch, type FetchOptions } from "ofetch";
 import { H3Event, type HTTPMethod as H3HTTPMethod } from "h3";
 import type { Serialize } from "nitropack";
-import type { ExtractParams } from "@arri/server";
+import type { ExtractParams } from "arri";
 
 export type HttpMethod = Lowercase<H3HTTPMethod>;
 

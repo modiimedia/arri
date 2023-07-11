@@ -9,7 +9,7 @@
         "skipLibCheck": true,
         "paths": {
             "@arri/client": ["packages/client/src/index.ts"],
-            "@arri/server": ["packages/server/src/index.ts"]
+            "arri": ["packages/server/src/index.ts"]
         }
     }
 }
