@@ -20,29 +20,35 @@ export interface RouteEvent<Context extends RouteEventContext> extends H3Event {
     context: Context;
 }
 
-export interface ApiRoute<
-    Path extends String = "",
+export type ArriRouteHandler<
+    Params extends Record<string, string>,
+    Body,
+    Query,
+    Response
+> = (
+    event: RouteEvent<RouteEventContext<Params, Body, Query>>
+) => Response | Promise<Response>;
+
+export interface ArriRoute<
+    Path extends string = "",
     Method extends RouterMethod = "get",
     Body extends undefined | ZodTypeAny = undefined,
     Query extends undefined | AnyZodObject = undefined,
     Response = any
 > {
+    id?: string;
     path: Path;
     method: Method;
     schema?: {
         body?: Body;
         query?: Query;
     };
-    handler: (
-        event: RouteEvent<
-            RouteEventContext<
-                ExtractParams<Path>,
-                Body extends ZodTypeAny ? Body["_type"] : undefined,
-                Query extends AnyZodObject ? Query["_type"] : undefined,
-                undefined
-            >
-        >
-    ) => Response | Promise<Response>;
+    handler: ArriRouteHandler<
+        ExtractParams<Path>,
+        Body extends ZodTypeAny ? Body["_type"] : undefined,
+        Query extends AnyZodObject ? Query["_type"] : undefined,
+        Response
+    >;
     postHandler?: (
         event: RouteEvent<
             RouteEventContext<
@@ -56,13 +62,13 @@ export interface ApiRoute<
 }
 
 export const defineRoute = <
-    Path extends String,
+    Path extends string,
     Method extends RouterMethod,
     Body extends undefined | ZodTypeAny,
     Query extends undefined | AnyZodObject,
     Response = any
 >(
-    route: ApiRoute<Path, Method, Body, Query, Response>
+    route: ArriRoute<Path, Method, Body, Query, Response>
 ) => route;
 
 export type ApiRouteMiddleware = (
@@ -75,7 +81,7 @@ export const defineMiddleware = (middleware: ApiRouteMiddleware) => middleware;
 
 export async function handleRoute(
     event: H3Event,
-    route: ApiRoute,
+    route: ArriRoute,
     middlewares: ApiRouteMiddleware[]
 ) {
     const processedEvent = event as RouteEvent<RouteEventContext>;

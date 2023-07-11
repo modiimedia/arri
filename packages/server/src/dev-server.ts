@@ -1,17 +1,18 @@
-import { Project } from "ts-morph";
+import { mkdist } from "mkdist";
 
 export interface RouteConfig {
-    prefix?: string;
     /** an array of glob patterns */
+    prefix?: string;
     filePatterns: string[];
 }
 
 export interface Config {
+    rootDir?: string;
+    srcDir?: string;
     tsConfig: string;
     routes: RouteConfig[];
 }
 
-const project = new Project({ tsConfigFilePath: "tsconfig.base.json" });
-
-const files = project.getSourceFiles();
-console.log(files);
+async function createServer() {
+    await mkdist({ distDir: ".arri", rootDir: ".", pattern: ["./**/*.ts"] });
+}

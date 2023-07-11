@@ -44,6 +44,7 @@
         "knitwork": "^1.0.0",
         "listhen": "^1.0.4",
         "magicast": "^0.2.9",
+        "mkdist": "^1.2.0",
         "ofetch": "^1.1.1",
         "pathe": "^1.1.1",
         "scule": "^1.0.0",
