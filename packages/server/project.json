@@ -5,6 +5,13 @@
     "projectType": "library",
     "targets": {
         "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx unbuild && mv ./dist/cli.mjs ./dist/cli.js",
+                "cwd": "packages/server"
+            }
+        },
+        "build-tsc": {
             "executor": "@nx/js:tsc",
             "outputs": ["{options.outputPath}"],
             "options": {

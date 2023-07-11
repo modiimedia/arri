@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { ofetch, type FetchOptions } from "ofetch";
 import { H3Event, type HTTPMethod as H3HTTPMethod } from "h3";
 import type { Serialize } from "nitropack";
@@ -28,7 +29,7 @@ interface TestApi {
 export type ApiUrl<
     TApi extends ApiDefinition,
     TMethod extends HttpMethod
-> = Exclude<keyof TApi[TMethod], Symbol | number>;
+> = Exclude<keyof TApi[TMethod], symbol | number>;
 
 type RouteSchema<
     TApi extends ApiDefinition,

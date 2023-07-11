@@ -1,5 +1,5 @@
 import { test } from "vitest";
-import { ArriRouteHandler, defineRoute } from "./routes";
+import { defineRoute } from "./routes";
 import { z } from "zod";
 
 test("routes", () => {

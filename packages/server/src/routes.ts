@@ -1,4 +1,12 @@
-import { H3Event, RouterMethod, send, sendError, setResponseStatus } from "h3";
+import {
+    App,
+    H3Event,
+    RouterMethod,
+    defineEventHandler,
+    send,
+    sendError,
+    setResponseStatus,
+} from "h3";
 import { AnyZodObject, ZodTypeAny } from "zod";
 import { ExtractParams } from "./utils";
 import { zh } from "h3-zod";
@@ -123,3 +131,81 @@ export async function handleRoute(
         );
     }
 }
+
+export function registerArriRoutes(app: App, routeMap: any) {
+    const routes: ArriRoute[] = [];
+    Object.keys(routeMap).forEach((key) => {
+        const routeGetMap = routeMap[key as RouterMethod];
+        Object.keys(routeGetMap).forEach((path) => {
+            routes.push(routeGetMap[path]);
+        });
+    });
+
+    for (const route of routes) {
+        registerArriRoute(app, route);
+    }
+}
+
+export function registerArriRoute(app: App, route: ArriRoute) {
+    app.use(
+        route.path,
+        defineEventHandler(async (event) => {
+            const parsedContext = event.context as RouteEventContext;
+            parsedContext.params = event.context.params ?? {};
+            if (route.schema?.body && methodAllowsBody(route.method)) {
+                const body = await zh.useSafeValidatedBody(
+                    event,
+                    route.schema.body as ZodTypeAny
+                );
+
+                if (!body || !body.success) {
+                    throw defineError(400, {
+                        statusMessage: "Invalid request body",
+                        data: body.error.errors,
+                    });
+                }
+                parsedContext.body = body.data;
+            }
+            if (route.schema?.query) {
+                const query = await zh.useSafeValidatedQuery(
+                    event,
+                    route.schema.query as AnyZodObject
+                );
+                if (!query || !query.success) {
+                    const params: Array<string | number> = [];
+                    for (const err of query.error.errors) {
+                        if (err.path.length) {
+                            params.push(err.path[0]);
+                        }
+                    }
+                    throw defineError(400, {
+                        statusMessage: `Missing/invalid required url query parameters: [${params.join(
+                            ", "
+                        )}]`,
+                        data: query.error.errors,
+                    });
+                }
+                parsedContext.query = query.data;
+            }
+            event.context = parsedContext;
+            const response = await route.handler(event);
+            (event.context as any).response = response;
+            if (route.postHandler) {
+                await route.postHandler(event);
+            }
+        }),
+        { lazy: true }
+    );
+}
+
+export const methodAllowsBody = (method: RouterMethod) => {
+    switch (method) {
+        case "patch":
+        case "post":
+        case "put":
+        case "delete":
+            return true;
+        default:
+            return false;
+    }
+};
