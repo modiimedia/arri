@@ -1,5 +1,4 @@
 {
-    "npmScope": "arri",
     "tasksRunnerOptions": {
         "default": {
             "runner": "nx-cloud",

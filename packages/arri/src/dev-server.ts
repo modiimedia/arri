@@ -1,7 +1,7 @@
 import path from "pathe";
 import { defineConfig } from "rollup";
 import { watch } from "chokidar";
-import type { ApiDefinition } from "@arri/client";
+import type { ApiDefinition } from "arri-client";
 
 export interface RouteConfig {
     /** an array of glob patterns */

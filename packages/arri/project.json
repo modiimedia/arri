@@ -30,7 +30,11 @@
             }
         },
         "publish": {
-            "command": "node tools/scripts/publish.mjs server {args.ver} {args.tag}",
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npm publish",
+                "cwd": "dist/packages/arri"
+            },
             "dependsOn": ["build"]
         },
         "lint": {

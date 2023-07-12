@@ -2,7 +2,9 @@
     "name": "@arri/arri-source",
     "version": "0.0.2",
     "license": "MIT",
-    "scripts": {},
+    "scripts": {
+        "publish": "nx run-many -t publish"
+    },
     "private": true,
     "devDependencies": {
         "@nx/js": "16.5.1",
