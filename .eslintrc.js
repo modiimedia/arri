@@ -4,7 +4,7 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    ignorePatterns: ["**/.eslintrc.js", "**/.eslintrc.json"],
+    ignorePatterns: ["**/.eslintrc.js", "**/.eslintrc.json", "**/dist"],
     extends: ["standard-with-typescript", "prettier"],
     overrides: [
         {
