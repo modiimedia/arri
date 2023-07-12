@@ -5,11 +5,19 @@
     "projectType": "library",
     "targets": {
         "build": {
+            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
             "outputs": ["dist/packages/client"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/client"
+            }
+        },
+        "setup-package-json": {
+            "executor": "nx:run-commands",
+            "outputs": ["dist/packages/client/package.json"],
+            "options": {
+                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/client --out-dir dist/packages/client"
             }
         },
         "publish": {

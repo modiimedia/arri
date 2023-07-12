@@ -14,8 +14,9 @@
         },
         "setup-package-json": {
             "executor": "nx:run-commands",
+            "outputs": ["dist/packages/arri/package.json"],
             "options": {
-                "command": "jiti packages/arri/scripts/setup-package-json.ts"
+                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri --out-dir dist/packages/arri"
             }
         },
         "build-tsc": {

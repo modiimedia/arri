@@ -1,19 +1,51 @@
 import { readFile, writeFile, ensureDir } from "fs-extra";
+import { defineCommand, runMain } from "citty";
+import path from "pathe";
 import depcheck from "depcheck";
 // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import prettier from "prettier";
 
-async function main() {
+const main = defineCommand({
+    args: {
+        "project-dir": {
+            type: "string",
+            required: true,
+        },
+        "root-dir": {
+            type: "string",
+            default: ".",
+        },
+        "out-dir": {
+            type: "string",
+            required: true,
+        },
+    },
+    async run({ args }) {
+        await prepPackageJson(
+            args["project-dir"],
+            args["root-dir"],
+            args["out-dir"]
+        );
+    },
+});
+
+async function prepPackageJson(
+    projectDir: string,
+    rootDir: string,
+    outDir: string
+) {
     const projectPackageJson = JSON.parse(
-        await readFile("./packages/arri/package.json", "utf8")
+        await readFile(path.resolve(projectDir, "package.json"), "utf8")
     ) as {
         version: string;
         dependencies: Record<string, string>;
         devDependencies: Record<string, string>;
     };
     projectPackageJson.dependencies = {};
-    const rootPackageJson = JSON.parse(await readFile("package.json", "utf8"));
+    const rootPackageJson = JSON.parse(
+        await readFile(path.resolve(rootDir, "package.json"), "utf8")
+    );
     const rootDeps = rootPackageJson.dependencies as Record<string, string>;
     projectPackageJson.version = rootPackageJson.version;
     const options: depcheck.Options = {
@@ -37,16 +69,16 @@ async function main() {
             ...rootPackageJson,
         },
     };
-    const deps = await depcheck("./packages/arri", options);
+    const deps = await depcheck(path.resolve(projectDir), options);
     const usedDeps = Object.keys(deps.using);
     for (const dep of usedDeps) {
         if (rootDeps[dep]) {
             projectPackageJson.dependencies[dep] = rootDeps[dep];
         }
     }
-    await ensureDir("./dist/packages/arri");
+    await ensureDir(path.resolve(outDir));
     await writeFile(
-        "./dist/packages/arri/package.json",
+        path.resolve(outDir, "package.json"),
         prettier.format(JSON.stringify(projectPackageJson), {
             parser: "json",
             tabWidth: 4,
@@ -54,4 +86,9 @@ async function main() {
     );
 }
 
-void main();
+try {
+    void runMain(main);
+} catch (err) {
+    console.log(process.argv);
+    console.log(err);
+}
