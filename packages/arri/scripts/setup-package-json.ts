@@ -1,6 +1,8 @@
 import {} from "pathe";
 import { readFile, writeFile, ensureDir } from "fs-extra";
 import depcheck from "depcheck";
+// eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import prettier from "prettier";
 
 async function main() {

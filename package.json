@@ -1,5 +1,5 @@
 {
-    "name": "arri-workspace",
+    "name": "@arri/arri-source",
     "version": "0.0.0",
     "license": "MIT",
     "scripts": {},
@@ -31,6 +31,7 @@
         "prettier": "^2.8.8",
         "typescript": "^5.1.6",
         "unbuild": "^1.2.1",
+        "verdaccio": "^5.25.0",
         "vite": "^4.4.3",
         "vite-tsconfig-paths": "^4.2.0",
         "vitest": "^0.32.4"

@@ -8,8 +8,8 @@
         "strict": true,
         "skipLibCheck": true,
         "paths": {
-            "arri": ["packages/arri/src/index.ts"],
-            "arri-client": ["./packages/arri-client/src/index.ts"]
+            "@arri/client": ["./packages/client/src/index.ts"],
+            "arri": ["packages/arri/src/index.ts"]
         }
     }
 }

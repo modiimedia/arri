@@ -1,15 +1,15 @@
 {
-    "name": "arri-client",
+    "name": "client",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri-client/src",
+    "sourceRoot": "packages/client/src",
     "projectType": "library",
     "targets": {
         "build": {
             "executor": "nx:run-commands",
-            "outputs": ["dist/packages/arri-client"],
+            "outputs": ["dist/packages/client"],
             "options": {
                 "command": "unbuild",
-                "cwd": "packages/arri-client"
+                "cwd": "packages/client"
             }
         },
         "publish": {
@@ -20,15 +20,15 @@
             "executor": "@nx/linter:eslint",
             "outputs": ["{options.outputFile}"],
             "options": {
-                "lintFilePatterns": ["packages/arri-client/**/*.ts"]
+                "lintFilePatterns": ["packages/client/**/*.ts"]
             }
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["{workspaceRoot}/coverage/packages/arri-client"],
+            "outputs": ["{workspaceRoot}/coverage/packages/client"],
             "options": {
                 "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-client"
+                "reportsDirectory": "../../coverage/packages/client"
             }
         }
     },

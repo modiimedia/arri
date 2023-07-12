@@ -12,7 +12,7 @@ export default defineBuildConfig({
     alias: {
         arri: path.resolve(__dirname, "../arri/src/index.ts"),
     },
-    outDir: "../../dist/packages/arri-client/dist",
+    outDir: "../../dist/packages/client/dist",
     clean: true,
     declaration: true,
     failOnWarn: false,
