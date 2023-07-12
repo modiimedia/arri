@@ -11,6 +11,6 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "arri": "file:../../packages/server"
+        "arri": "file:../../dist/packages/arri"
     }
 }

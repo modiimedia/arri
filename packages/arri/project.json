@@ -1,0 +1,52 @@
+{
+    "name": "arri",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "./packages/arri/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "dependsOn": ["setup-package-json"],
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "unbuild -c packages/arri/build.config.ts",
+                "cwd": "packages/arri"
+            }
+        },
+        "setup-package-json": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "jiti packages/arri/scripts/setup-package-json.ts"
+            }
+        },
+        "build-tsc": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/packages/arri",
+                "main": "packages/arri/src/index.ts",
+                "tsConfig": "packages/arri/tsconfig.lib.json",
+                "assets": ["packages/arri/*.md"]
+            }
+        },
+        "publish": {
+            "command": "node tools/scripts/publish.mjs server {args.ver} {args.tag}",
+            "dependsOn": ["build"]
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["packages/arri/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{workspaceRoot}/coverage/packages/arri"],
+            "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri"
+            }
+        }
+    },
+    "tags": []
+}
