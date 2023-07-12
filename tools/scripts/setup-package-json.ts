@@ -41,6 +41,7 @@ async function prepPackageJson(
         version: string;
         dependencies: Record<string, string>;
         devDependencies: Record<string, string>;
+        repository?: Record<string, string>;
     };
     projectPackageJson.dependencies = {};
     const rootPackageJson = JSON.parse(
@@ -48,6 +49,9 @@ async function prepPackageJson(
     );
     const rootDeps = rootPackageJson.dependencies as Record<string, string>;
     projectPackageJson.version = rootPackageJson.version;
+    if (!projectPackageJson.repository) {
+        projectPackageJson.repository = rootPackageJson.repository;
+    }
     const options: depcheck.Options = {
         skipMissing: true,
         ignorePatterns: [
