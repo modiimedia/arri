@@ -1,0 +1,24 @@
+{
+    "name": "arri-plugin-dart",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/arri-plugin-dart/src",
+    "projectType": "library",
+    "targets": {
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["packages/arri-plugin-dart/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["coverage/packages/arri-plugin-dart"],
+            "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri-plugin-dart"
+            }
+        }
+    },
+    "tags": []
+}
