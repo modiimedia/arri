@@ -63,9 +63,9 @@ export class ArriClient<TApi extends ApiDefinition> {
 
     defaultHeaders: Record<string, string>;
 
-    constructor(opts: ArriClientOpts) {
-        this.baseUrl = opts.baseUrl ?? "";
-        this.defaultHeaders = opts.defaultHeaders ?? {};
+    constructor(opts?: ArriClientOpts) {
+        this.baseUrl = opts?.baseUrl ?? "";
+        this.defaultHeaders = opts?.defaultHeaders ?? {};
     }
 
     async request<
@@ -107,9 +107,9 @@ export class ArriClient<TApi extends ApiDefinition> {
 
     get<TUrl extends ApiUrl<TApi, "get">>(
         url: TUrl,
-        options?: ApiRequestOptions<TApi, "get", TUrl>
+        options?: Omit<ApiRequestOptions<TApi, "get", TUrl>, "body">
     ) {
-        return this.request("get", url, options);
+        return this.request("get", url, options as any);
     }
 
     patch<TUrl extends ApiUrl<TApi, "patch">>(

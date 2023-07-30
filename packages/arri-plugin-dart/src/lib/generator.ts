@@ -40,7 +40,7 @@ export function isDartBasicType(input: unknown): input is DartBasicType {
     return DartBasicTypeVals.includes(input as any);
 }
 
-type JsonSchemaType =
+export type JsonSchemaType =
     | "array"
     | "boolean"
     | "integer"
