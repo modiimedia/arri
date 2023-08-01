@@ -25,5 +25,5 @@ test("routes", () => {
             return posts;
         },
     });
-    console.log(route);
+    expect(route.path).toBe("/posts");
 });

@@ -79,6 +79,25 @@ export interface ArriRoute<
     ) => any;
 }
 
+export const isArriRoute = (input: any): input is ArriRoute => {
+    if (typeof input !== "object") {
+        return false;
+    }
+    const keys = Object.keys(input);
+    if (
+        !keys.includes("path") ||
+        !keys.includes("method") ||
+        !keys.includes("handler")
+    ) {
+        return false;
+    }
+    return (
+        typeof input.path === "string" &&
+        typeof input.method === "string" &&
+        typeof input.handler === "function"
+    );
+};
+
 export const defineRoute = <
     Path extends string,
     Method extends RouterMethod,
