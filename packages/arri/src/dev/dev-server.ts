@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import path from "pathe";
-import { defineConfig } from "rollup";
-import rollupVirtualPlugin from "@rollup/plugin-virtual";
+import { mkdirSync, existsSync } from "node:fs";
+import fs from "node:fs/promises";
+import { defineConfig } from "vite";
 import { getAllRoutes } from "./routes";
 import { watch } from "chokidar";
 import type { MappedArriRoute } from "./routes";
@@ -59,7 +60,7 @@ ${routeSubMap("options")}
     trace: {
 ${routeSubMap("trace")}
     },
-} as const;
+};
 
 ${routeList.map((route) => `handleRoute(${route.importName});`).join("\n")}
 `;
@@ -67,12 +68,17 @@ ${routeList.map((route) => `handleRoute(${route.importName});`).join("\n")}
 }
 
 export async function createDevServer(config: ArriConfig) {
+    if (!existsSync(".arri")) {
+        mkdirSync(".arri");
+    }
     const watcher = watch([
         `${path.resolve(
             config.rootDir ?? "",
             config.srcDir ?? "."
         )}/**/*.{ts,js}`,
     ]);
+
+    const entryPoint = path.resolve(".arri/main.ts");
 
     let isUpdating = false;
 
@@ -82,7 +88,7 @@ export async function createDevServer(config: ArriConfig) {
         }
         isUpdating = true;
         const routeList = await getAllRoutes(config);
-        console.log(entryPointFromRoutes(routeList));
+        await fs.writeFile(entryPoint, entryPointFromRoutes(routeList));
         isUpdating = false;
     }
 
@@ -91,12 +97,4 @@ export async function createDevServer(config: ArriConfig) {
         .on("add", handleChange)
         .on("unlink", handleChange)
         .on("unlinkDir", handleChange);
-    const rollupConfig = defineConfig({
-        input: "entry",
-        watch: {
-            chokidar: {},
-        },
-        plugins: [rollupVirtualPlugin({ entry: 'console.log("hello world")' })],
-    });
-    console.log(rollupConfig);
 }
