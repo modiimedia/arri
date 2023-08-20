@@ -1,0 +1,38 @@
+{
+    "name": "arri-rpc",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/arri-rpc/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/packages/arri-rpc",
+                "main": "packages/arri-rpc/src/index.ts",
+                "tsConfig": "packages/arri-rpc/tsconfig.lib.json",
+                "assets": ["packages/arri-rpc/*.md"]
+            }
+        },
+        "publish": {
+            "command": "node tools/scripts/publish.mjs arri-rpc {args.ver} {args.tag}",
+            "dependsOn": ["build"]
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["packages/arri-rpc/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["coverage/packages/arri-rpc"],
+            "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri-rpc"
+            }
+        }
+    },
+    "tags": []
+}
