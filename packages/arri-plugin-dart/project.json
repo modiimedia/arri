@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["coverage/packages/arri-plugin-dart"],
+            "outputs": ["{workspaceRoot}/coverage/packages/arri-plugin-dart"],
             "options": {
                 "passWithNoTests": true,
                 "reportsDirectory": "../../coverage/packages/arri-plugin-dart"

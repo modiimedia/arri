@@ -11,7 +11,8 @@
                 "outputPath": "dist/packages/arri-rpc",
                 "main": "packages/arri-rpc/src/index.ts",
                 "tsConfig": "packages/arri-rpc/tsconfig.lib.json",
-                "assets": ["packages/arri-rpc/*.md"]
+                "assets": ["packages/arri-rpc/*.md"],
+                "updateBuildableProjectDepsInPackageJson": true
             }
         },
         "publish": {
@@ -27,7 +28,7 @@
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["coverage/packages/arri-rpc"],
+            "outputs": ["{workspaceRoot}/coverage/packages/arri-rpc"],
             "options": {
                 "passWithNoTests": true,
                 "reportsDirectory": "../../coverage/packages/arri-rpc"

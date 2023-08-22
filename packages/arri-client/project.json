@@ -7,7 +7,7 @@
         "build": {
             "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["dist/packages/arri-client"],
+            "outputs": ["{workspaceRoot}/dist/packages/arri-client"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-client"
@@ -15,7 +15,9 @@
         },
         "setup-package-json": {
             "executor": "nx:run-commands",
-            "outputs": ["dist/packages/arri-client/package.json"],
+            "outputs": [
+                "{workspaceRoot}/dist/packages/arri-client/package.json"
+            ],
             "options": {
                 "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-client --out-dir dist/packages/arri-client"
             }

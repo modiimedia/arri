@@ -1,13 +1,13 @@
-import { z } from "zod";
 import { defineRpc } from "../../arri-rpc";
+import { Type } from "@sinclair/typebox";
 
 export default defineRpc({
     method: "post",
-    params: z.object({
-        userId: z.string(),
-        data: z.object({
-            firstName: z.string(),
-            lastName: z.string(),
+    params: Type.Object({
+        userId: Type.String(),
+        data: Type.Object({
+            firstName: Type.String(),
+            lastName: Type.String(),
         }),
     }),
     async handler({ params }) {},

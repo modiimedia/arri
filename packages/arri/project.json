@@ -14,7 +14,7 @@
         },
         "setup-package-json": {
             "executor": "nx:run-commands",
-            "outputs": ["dist/packages/arri/package.json"],
+            "outputs": ["{workspaceRoot}/dist/packages/arri/package.json"],
             "options": {
                 "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri --out-dir dist/packages/arri"
             }
@@ -26,7 +26,8 @@
                 "outputPath": "dist/packages/arri",
                 "main": "packages/arri/src/index.ts",
                 "tsConfig": "packages/arri/tsconfig.lib.json",
-                "assets": ["packages/arri/*.md"]
+                "assets": ["packages/arri/*.md"],
+                "updateBuildableProjectDepsInPackageJson": true
             }
         },
         "publish": {

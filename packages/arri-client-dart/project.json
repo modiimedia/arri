@@ -1,4 +1,5 @@
 {
     "name": "arri-client-dart",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/arri-client-dart/lib"
 }
