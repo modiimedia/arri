@@ -61,13 +61,20 @@ export function dartServiceFromServiceDefinition(
     const serviceName = `${name}`;
     Object.keys(def).forEach((key) => {
         const rpc = def[key];
-        rpcParts.push(`Future<${rpc.response}> ${key}(${rpc.params} params) {
+        const returnType = rpc.response.length
+            ? `Future<${rpc.response}>`
+            : "Future<String>";
+        const paramsInput = rpc.params.length ? `${rpc.params} params` : "";
+        const responseParser = rpc.response.length
+            ? `${rpc.response}.fromJson(json.decode(body))`
+            : null;
+        rpcParts.push(`${returnType} ${key}(${paramsInput}) {
     return parsedRequest(
       "$baseUrl${rpc.path}",
       method: HttpMethod.${rpc.method},
       headers: headers,
-      params: params.toJson(),
-      parser: (body) => ${rpc.response}.fromJson(json.decode(body)),
+      params: ${rpc.params.length ? `params.toJson()` : "null"},
+      parser: (body) => ${responseParser ?? "body"},
     );
   }`);
     });
@@ -183,7 +190,6 @@ export function dartPropertyType(
                         finalType = isOptional ? "List<bool>?" : "List<bool>";
                         break;
                     case "object": {
-                        console.log(prop);
                         const subTypeName =
                             (item as TObject).$id ??
                             pascalCase(`${objectName}_${propertyName}_item`);
@@ -211,9 +217,7 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
     const fields: Array<{ type: string; name: string }> = [];
     const subModelParts: string[] = [];
     Object.entries(schema.properties).forEach(([key, val]) => {
-        // console.log(val.type);
         const [dartType, subTypes] = dartPropertyType(name, key, schema);
-        console.log("TYPE:", dartType, "SUB_TYPES", subTypes);
         if (subTypes?.length) {
             for (const sub of subTypes) {
                 subModelParts.push(sub);

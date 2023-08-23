@@ -50,6 +50,36 @@ describe("Dart Tests", () => {
 }`);
     });
 
+    test("Service with No Params", () => {
+        const result = dartServiceFromServiceDefinition("PostsService", {
+            getPost: {
+                path: "/posts/get-post",
+                method: "get",
+                params: "",
+                response: "",
+            },
+        });
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`class PostsService {
+        final String baseUrl;
+        final Map<String, String> headers;
+        const PostsService({
+          this.baseUrl = "",
+          this.headers = const {},
+        });
+        Future<String> getPost() {
+          return parsedRequest(
+            "$baseUrl/posts/get-post",
+            method: HttpMethod.get,
+            headers: headers,
+            params: null,
+            parser: (body) => body,
+          );
+        }
+      }`)
+        );
+    });
+
     test("Model Generation", () => {
         const schema = Type.Object({
             id: Type.String(),
