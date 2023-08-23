@@ -1,5 +1,5 @@
-import { defineRpc } from "../../arri-rpc";
 import { Type } from "@sinclair/typebox";
+import { defineRpc } from "../../arri-rpc";
 
 export default defineRpc({
     method: "post",
@@ -10,5 +10,7 @@ export default defineRpc({
             lastName: Type.String(),
         }),
     }),
-    async handler({ params }) {},
+    async handler({ params }) {
+        return "";
+    },
 });

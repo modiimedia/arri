@@ -1,6 +1,6 @@
 {
     "extends": ["../../.eslintrc.js"],
-    "ignorePatterns": ["!**/*"],
+    "ignorePatterns": ["!**/*", ".arri"],
     "overrides": [
         {
             "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],

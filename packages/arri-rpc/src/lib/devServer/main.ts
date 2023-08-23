@@ -1,14 +1,12 @@
 import path from "pathe";
 import { globby } from "globby";
-import { listen } from "listhen";
+import { loadConfig } from "c12";
+import * as prettier from "prettier";
 import chokidar from "chokidar";
-import fs, { rmdir } from "node:fs/promises";
+import fs from "node:fs/promises";
 import type { Hookable } from "hookable";
 import type { RequestListener } from "node:http";
-import type {
-    ApplicationDefinition,
-    ServiceDefinition,
-} from "../codegen/dartCodegen";
+import type { ApplicationDefinition } from "../codegen/dartCodegen";
 import type { TObject } from "@sinclair/typebox";
 import { kebabCase, pascalCase } from "scule";
 import { isRpc } from "../arri-rpc";
@@ -55,7 +53,7 @@ const getRpcMetaFromPath = (
     return {
         name: rpcName,
         serviceName,
-        httpPath: kebabCase(`${serviceName}_${rpcName}`),
+        httpPath: `/${kebabCase(serviceName)}/${kebabCase(`${rpcName}`)}`,
     };
 };
 
@@ -66,7 +64,11 @@ async function getRpcBlock(
     const rpcs = await Promise.allSettled(
         paths.map(async (filePath) => ({
             path: filePath,
-            data: await import(path.relative(__dirname, filePath)),
+            data: (
+                await loadConfig({
+                    configFile: filePath,
+                })
+            ).config,
         }))
     );
     const result: ApplicationDefinition = {
@@ -75,10 +77,11 @@ async function getRpcBlock(
     };
     rpcs.forEach((rpc) => {
         if (rpc.status === "fulfilled") {
+            if (rpc.value.path.includes("blah")) {
+                console.log(rpc.value.data, rpc.value.data?.params);
+            }
             const data =
-                typeof rpc.value.data === "object"
-                    ? rpc.value.data.default
-                    : {};
+                typeof rpc.value.data === "object" ? rpc.value.data : {};
             if (!isRpc(data)) {
                 return;
             }
@@ -142,13 +145,18 @@ async function getApplicationDefinition(
     return results;
 }
 
+let writeCount = 0;
 async function generateApplicationDefinition(config: ArriConfig) {
     const def = await getApplicationDefinition(config);
     await fs.writeFile(
         path.resolve(`${config.baseDir ?? ""}`, ".arri/definition.ts"),
-        `export default ${JSON.stringify(def)}`
+        prettier.format(`export default ${JSON.stringify(def)}`, {
+            tabWidth: 4,
+            parser: "typescript",
+        })
     );
-    console.log(def);
+    writeCount++;
+    console.log("WRITE_COUNT:", writeCount);
 }
 
 async function main(config: ArriConfig) {
@@ -198,7 +206,7 @@ async function main(config: ArriConfig) {
 }
 
 async function setupArriDir(config: ArriConfig) {
-    const arriDir = path.resolve(config.baseDir ?? ".");
+    const arriDir = path.resolve(config.baseDir ?? ".", ".arri");
     if (existsSync(arriDir)) {
         await fs.rm(arriDir, { recursive: true, force: true });
     }
