@@ -3,10 +3,9 @@ import { test } from "vitest";
 import {
     dartServiceFromServiceDefinition,
     dartModelFromJsonSchema,
-    type ApplicationDefinition,
     createDartClient,
 } from "./dartCodegen";
-import { normalizeWhitespace } from "./utils";
+import { type ApplicationDefinition, normalizeWhitespace } from "./utils";
 import { writeFileSync } from "fs";
 import path from "path";
 
@@ -25,6 +24,14 @@ describe("Dart Tests", () => {
                 params: "UserUpdateData",
                 response: "User",
             },
+            settings: {
+                getUserSettings: {
+                    path: "/users/settings/get-user-settings",
+                    method: "get",
+                    params: "UserSettingsGetUserSettingsParams",
+                    response: "UserSettingsGetUserSettingsResponse",
+                },
+            },
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class UserService {
@@ -34,6 +41,12 @@ describe("Dart Tests", () => {
     this.baseUrl = "",
     this.headers = const {},
   });
+  UserServiceSettingsService get settings {
+    return UserServiceSettingsService(
+      baseUrl: baseUrl,
+      headers: headers,
+    );
+  }
   Future<User> getUser(UsersGetUserParams params) {
     return parsedRequest(
       "$baseUrl/users/get-user",
@@ -50,6 +63,26 @@ describe("Dart Tests", () => {
       headers: headers,
       params: params.toJson(),
       parser: (body) => User.fromJson(json.decode(body)),
+    );
+  }
+}
+class UserServiceSettingsService {
+  final String baseUrl;
+  final Map<String, String> headers;
+  const UserServiceSettingsService({
+    this.baseUrl = "",
+    this.headers = const {},
+  });
+
+
+
+  Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
+    return parsedRequest(
+      "$baseUrl/users/settings/get-user-settings",
+      method: HttpMethod.get,
+      headers: headers,
+      params: params.toJson(),
+      parser: (body) => UserSettingsGetUserSettingsResponse.fromJson(json.decode(body)),
     );
   }
 }`)
@@ -73,6 +106,7 @@ describe("Dart Tests", () => {
           this.baseUrl = "",
           this.headers = const {},
         });
+        
         Future<String> getPost() {
           return parsedRequest(
             "$baseUrl/posts/get-post",
@@ -294,39 +328,52 @@ enum UserRole implements Comparable<UserRole> {
 
 test("Dart client test", () => {
     const apiDef: ApplicationDefinition = {
+        procedures: {},
         services: {
-            users: {
-                getUser: {
-                    path: "/users/get-user",
-                    method: "get",
-                    params: "UserParams",
-                    response: "User",
+            v1: {
+                users: {
+                    getUser: {
+                        path: "/v1/users/get-user",
+                        method: "get",
+                        params: "UserParams",
+                        response: "User",
+                    },
+                    getUsers: {
+                        path: "/v1/users/get-users",
+                        method: "get",
+                        params: "UserListParams",
+                        response: "UsersGetUsersResponse",
+                    },
                 },
-                getUsers: {
-                    path: "/users/get-users",
-                    method: "get",
-                    params: "UserListParams",
-                    response: "UsersGetUsersResponse",
+                posts: {
+                    getPost: {
+                        path: "/v1/posts/get-post",
+                        method: "get",
+                        params: "PostParams",
+                        response: "Post",
+                    },
+                    updatePost: {
+                        path: "/v1/posts/update-post",
+                        method: "post",
+                        params: "PostsUpdatePostParams",
+                        response: "Post",
+                    },
+                    deletePost: {
+                        path: "/v1/posts/delete-posts",
+                        method: "delete",
+                        params: "PostParams",
+                        response: "",
+                    },
                 },
             },
-            posts: {
-                getPost: {
-                    path: "/posts/get-post",
-                    method: "get",
-                    params: "PostParams",
-                    response: "Post",
-                },
-                updatePost: {
-                    path: "/posts/update-post",
-                    method: "post",
-                    params: "PostsUpdatePostParams",
-                    response: "Post",
-                },
-                deletePost: {
-                    path: "/posts/delete-posts",
-                    method: "delete",
-                    params: "PostParams",
-                    response: "",
+            v2: {
+                users: {
+                    getUser: {
+                        path: "/v2/users/get-user",
+                        method: "get",
+                        params: "UserParams",
+                        response: "UserV2",
+                    },
                 },
             },
         },
@@ -348,6 +395,18 @@ test("Dart client test", () => {
                         dark: "dark",
                     })
                 ),
+            }),
+            UserV2: Type.Object({
+                id: Type.String(),
+                email: Type.String(),
+                username: Type.String(),
+                createdAt: Type.Date(),
+                updatedAt: Type.Date(),
+                role: Type.Enum({
+                    standard: "standard",
+                    admin: "admin",
+                    moderator: "moderator",
+                }),
             }),
             UserParams: Type.Object({
                 id: Type.String(),

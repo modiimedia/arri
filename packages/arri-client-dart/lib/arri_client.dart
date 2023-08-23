@@ -1,6 +1,7 @@
 library;
 
 import 'dart:convert';
+import 'package:arri_client/example.dart';
 import 'package:http/http.dart' as http;
 
 enum HttpMethod { get, post, put, patch, head, delete }
@@ -126,4 +127,16 @@ class ArriRequestError implements Exception {
       );
     }
   }
+}
+
+main() async {
+  final client = Backend();
+  final userV1 = client.v1.users.getUser(BackendUserParams(
+    id: "id",
+    email: "johndoe@gmail.com",
+  ));
+  final userV2 = client.v2.users.getUser(BackendUserParams(
+    id: "id",
+    email: "johndoe@gmail.com",
+  ));
 }

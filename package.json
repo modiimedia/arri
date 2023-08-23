@@ -64,7 +64,7 @@
         "listhen": "^1.3.0",
         "magicast": "^0.2.10",
         "mkdist": "^1.3.0",
-        "ofetch": "^1.1.1",
+        "ofetch": "^1.2.1",
         "pathe": "^1.1.1",
         "rollup-plugin-esbuild": "^5.0.0",
         "scule": "^1.0.0",
