@@ -1,6 +1,6 @@
-import { type TObject, type TSchema } from "@sinclair/typebox";
+import { type TEnum, type TObject, type TSchema } from "@sinclair/typebox";
 import type { RpcMethod } from "../arri-rpc";
-import { pascalCase } from "scule";
+import { camelCase, pascalCase } from "scule";
 
 export interface ProcedureDefinition {
     path: string;
@@ -24,6 +24,7 @@ const dartTypeMap = {
     string: "String",
     boolean: "bool",
     null: "null",
+    Date: "DateTime",
     object: undefined,
     list: undefined,
 } as const;
@@ -55,18 +56,21 @@ export function isDartType(input: any): input is DartType {
 }
 export function dartServiceFromServiceDefinition(
     name: string,
-    def: ServiceDefinition
+    def: ServiceDefinition,
+    prefix = ""
 ) {
     const rpcParts: string[] = [];
     const serviceName = `${name}`;
     Object.keys(def).forEach((key) => {
         const rpc = def[key];
         const returnType = rpc.response.length
-            ? `Future<${rpc.response}>`
+            ? `Future<${prefix}${rpc.response}>`
             : "Future<String>";
-        const paramsInput = rpc.params.length ? `${rpc.params} params` : "";
+        const paramsInput = rpc.params.length
+            ? `${prefix}${rpc.params} params`
+            : "";
         const responseParser = rpc.response.length
-            ? `${rpc.response}.fromJson(json.decode(body))`
+            ? `${prefix}${rpc.response}.fromJson(json.decode(body))`
             : null;
         rpcParts.push(`${returnType} ${key}(${paramsInput}) {
     return parsedRequest(
@@ -102,6 +106,13 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
                 return `${fieldName}: json["${fieldName}"] is int ? json["${fieldName}"] : 0`;
             case "null":
                 return `${fieldName}: null`;
+            case "DateTime":
+            case "DateTime?": {
+                const fallback = dartType.endsWith("?")
+                    ? "null"
+                    : "DateTime(0)";
+                return `${fieldName}: json["${fieldName}"] is String ? DateTime.parse(json["${fieldName}"]) : ${fallback}`;
+            }
             case "List<String>":
             case "List<bool>":
             case "List<double>":
@@ -125,6 +136,12 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
           (json["${fieldName}"] as List<Map<String, dynamic>>)
             .map((val) => ${innerType}.fromJson(val)).toList() : ${fallback}`;
     }
+    if (dartType.endsWith("?")) {
+        return `${fieldName}: json["${fieldName}"] == null ? null : ${dartType.replace(
+            "?",
+            ""
+        )}.fromJson(json["${fieldName}"])`;
+    }
     return `${fieldName}: ${dartType}.fromJson(json["${fieldName}"])`;
 }
 
@@ -137,6 +154,62 @@ export function dartPropertyType(
     const isOptional = !schema.required?.includes(propertyName);
     let finalType = "";
     const subTypes: string[] = [];
+    if ((prop as TEnum).anyOf) {
+        const enumName: string = pascalCase(`${objectName}_${propertyName}`);
+        finalType = isOptional ? `${enumName}?` : enumName;
+        const options: Array<{
+            name: string;
+            type: DartType;
+            value: string | number;
+        }> = [];
+        for (const opt of (prop as TEnum).anyOf) {
+            if (opt.type === "string") {
+                options.push({
+                    name: opt.const.toString(),
+                    type: "String",
+                    value: opt.const,
+                });
+            }
+            if (opt.type === "number") {
+                options.push({
+                    name: camelCase(
+                        `num_${opt.const}`.split(".").join("Point")
+                    ),
+                    type: "double",
+                    value: opt.const,
+                });
+            }
+        }
+        subTypes.push(`enum ${enumName} implements Comparable<${enumName}> {
+  ${options
+      .map(
+          (opt) =>
+              `${opt.name}(${
+                  opt.type === "String" ? `"${opt.value}"` : opt.value
+              })`
+      )
+      .join(",\n  ")};
+  const ${enumName}(this.value);
+  final dynamic value;
+
+  @override
+  compareTo(${enumName} other) => name.compareTo(other.name);
+
+  factory ${enumName}.fromJson(dynamic input) {
+    for(final val in values) {
+      if(val.value == input) {
+        return val;
+      }
+    }
+    return ${options[0].name};
+  }
+
+  dynamic toJson() {
+    return value;
+  }
+}`);
+        return [finalType, subTypes];
+    }
     if (typeof prop.type === "string") {
         switch (prop.type) {
             case "string":
@@ -150,6 +223,9 @@ export function dartPropertyType(
                 break;
             case "null":
                 finalType = "null";
+                break;
+            case "Date":
+                finalType = isOptional ? "DateTime?" : "DateTime";
                 break;
             case "object": {
                 const joinedPropName = pascalCase(
@@ -189,6 +265,11 @@ export function dartPropertyType(
                     case "boolean":
                         finalType = isOptional ? "List<bool>?" : "List<bool>";
                         break;
+                    case "Date":
+                        finalType = isOptional
+                            ? "List<DateTime>?"
+                            : "List<DateTime>";
+                        break;
                     case "object": {
                         const subTypeName =
                             (item as TObject).$id ??
@@ -218,6 +299,7 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
     const subModelParts: string[] = [];
     Object.entries(schema.properties).forEach(([key, val]) => {
         const [dartType, subTypes] = dartPropertyType(name, key, schema);
+
         if (subTypes?.length) {
             for (const sub of subTypes) {
                 subModelParts.push(sub);
@@ -256,17 +338,26 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
       ${fields
           .map((field) => {
               if (isDartType(field.type)) {
-                  return `"${field.name}": ${field.name},`;
+                  if (field.type.includes("DateTime")) {
+                      const isNullable = field.type.endsWith("?");
+                      return `"${field.name}": ${field.name}${
+                          isNullable ? "?" : ""
+                      }.toIso8601String()`;
+                  }
+                  return `"${field.name}": ${field.name}`;
               }
               if (field.type.includes("List<")) {
                   const isNullable = field.type.endsWith("?");
                   return `"${field.name}": ${field.name}${
                       isNullable ? "?" : ""
-                  }.map((val) => val.toJson()).toList(),`;
+                  }.map((val) => val.toJson()).toList()`;
               }
-              return `"${field.name}": ${field.name}.toJson(),`;
+              if (field.type.endsWith("?")) {
+                  return `"${field.name}": ${field.name}?.toJson()`;
+              }
+              return `"${field.name}": ${field.name}.toJson()`;
           })
-          .join("\n      ")}
+          .join(",\n      ")},
     };
   }
   ${name} copyWith({
@@ -285,14 +376,26 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
 ${subModelParts.join("\n")}`;
 }
 
-export function createDartClient(appDef: ApplicationDefinition) {
+export function createDartClient(
+    appDef: ApplicationDefinition,
+    prefix = "Client"
+) {
     const { models, services } = appDef;
-    const serviceParts: string[] = [];
+    const serviceParts: Array<{ name: string; key: string; content: string }> =
+        [];
     Object.keys(services).forEach((k) => {
         const service = services[k];
-        serviceParts.push(
-            dartServiceFromServiceDefinition(`${pascalCase(k)}Service`, service)
-        );
+        const serviceName = `${prefix}${pascalCase(k)}Service`;
+        serviceParts.push({
+            name: serviceName,
+            key: k,
+            content: dartServiceFromServiceDefinition(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                `${prefix}${pascalCase(k)}Service`,
+                service,
+                prefix
+            ),
+        });
     });
 
     const modelParts: string[] = [];
@@ -300,14 +403,39 @@ export function createDartClient(appDef: ApplicationDefinition) {
         const model = models[key];
         if (model.type === "object") {
             const objModel = model as TObject;
-            modelParts.push(dartModelFromJsonSchema(key, objModel));
+            modelParts.push(
+                dartModelFromJsonSchema(`${prefix}${pascalCase(key)}`, objModel)
+            );
         }
     });
     return `// This code was autogenerated by arri. Do not modify directly.
 import "dart:convert";
-import "package:http/http.dart" as http;
 import "package:arri_client/arri_client.dart";
 
-${serviceParts.join("\n")}
+class ${prefix} {
+  final String baseUrl;
+  final Map<String, String> headers;
+  const ${prefix}({
+    this.baseUrl = "",
+    this.headers = const {},
+  });
+  ${prefix} withHeaders(Map<String, String> headers) {
+    return ${prefix}(
+      baseUrl: baseUrl,
+      headers: headers,
+    );
+  }
+  ${serviceParts
+      .map(
+          (service) => `${service.name} get ${service.key} {
+    return ${service.name}(
+      baseUrl: baseUrl, headers: headers,
+    );
+  }`
+      )
+      .join("\n  ")}
+}
+
+${serviceParts.map((item) => item.content).join("\n")}
 ${modelParts.join("\n")}`;
 }

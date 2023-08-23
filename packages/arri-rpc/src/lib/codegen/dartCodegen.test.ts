@@ -3,8 +3,12 @@ import { test } from "vitest";
 import {
     dartServiceFromServiceDefinition,
     dartModelFromJsonSchema,
+    type ApplicationDefinition,
+    createDartClient,
 } from "./dartCodegen";
 import { normalizeWhitespace } from "./utils";
+import { writeFileSync } from "fs";
+import path from "path";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {
@@ -22,7 +26,8 @@ describe("Dart Tests", () => {
                 response: "User",
             },
         });
-        expect(result).toBe(`class UserService {
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`class UserService {
   final String baseUrl;
   final Map<String, String> headers;
   const UserService({
@@ -47,7 +52,8 @@ describe("Dart Tests", () => {
       parser: (body) => User.fromJson(json.decode(body)),
     );
   }
-}`);
+}`)
+        );
     });
 
     test("Service with No Params", () => {
@@ -100,6 +106,13 @@ describe("Dart Tests", () => {
                 enablePushNotifications: Type.Boolean(),
                 isPrivate: Type.Boolean(),
             }),
+            role: Type.Union([
+                Type.Literal("standard"),
+                Type.Literal("admin"),
+                Type.Literal("mod"),
+                Type.Literal(0),
+                Type.Literal(0.5),
+            ]),
         });
 
         const result = dartModelFromJsonSchema("User", schema);
@@ -115,6 +128,7 @@ describe("Dart Tests", () => {
   final List<UserRecentlyFollowedUsersItem> recentlyFollowedUsers;
   final List<String>? followedHashtags;
   final UserSettings settings;
+  final UserRole role;
   const User({
     required this.id,
     this.email,
@@ -126,6 +140,7 @@ describe("Dart Tests", () => {
     required this.recentlyFollowedUsers,
     this.followedHashtags,
     required this.settings,
+    required this.role,
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -141,6 +156,7 @@ describe("Dart Tests", () => {
           .map((val) => UserRecentlyFollowedUsersItem.fromJson(val)).toList() : [],
       followedHashtags: json["followedHashtags"] is List<String> ? json["followedHashtags"] : null,
       settings: UserSettings.fromJson(json["settings"]),
+      role: UserRole.fromJson(json["role"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -155,6 +171,7 @@ describe("Dart Tests", () => {
       "recentlyFollowedUsers": recentlyFollowedUsers.map((val) => val.toJson()).toList(),
       "followedHashtags": followedHashtags,
       "settings": settings.toJson(),
+      "role": role.toJson(),
     };
   }
   User copyWith({
@@ -168,6 +185,7 @@ describe("Dart Tests", () => {
     List<UserRecentlyFollowedUsersItem>? recentlyFollowedUsers,
     List<String>? followedHashtags,
     UserSettings? settings,
+    UserRole? role,
   }) {
     return User(
       id: id ?? this.id,
@@ -180,6 +198,7 @@ describe("Dart Tests", () => {
       recentlyFollowedUsers: recentlyFollowedUsers ?? this.recentlyFollowedUsers,
       followedHashtags: followedHashtags ?? this.followedHashtags,
       settings: settings ?? this.settings,
+      role: role ?? this.role,
     );
   }
 }
@@ -242,7 +261,131 @@ class UserSettings {
       isPrivate: isPrivate ?? this.isPrivate,
     );
   }
+}
+
+enum UserRole implements Comparable<UserRole> {
+  standard("standard"),
+  admin("admin"),
+  mod("mod"),
+  num0(0),
+  num0Point5(0.5);
+  const UserRole(this.value);
+  final dynamic value;
+
+  @override
+  compareTo(UserRole other) => name.compareTo(other.name);
+
+  factory UserRole.fromJson(dynamic input) {
+    for(final val in values) {
+      if(val.value == input) {
+        return val;
+      }
+    }
+    return standard;
+  }
+
+  dynamic toJson() {
+    return value;
+  }
 }`)
         );
     });
+});
+
+test("Dart client test", () => {
+    const apiDef: ApplicationDefinition = {
+        services: {
+            users: {
+                getUser: {
+                    path: "/users/get-user",
+                    method: "get",
+                    params: "UserParams",
+                    response: "User",
+                },
+                getUsers: {
+                    path: "/users/get-users",
+                    method: "get",
+                    params: "UserListParams",
+                    response: "UsersGetUsersResponse",
+                },
+            },
+            posts: {
+                getPost: {
+                    path: "/posts/get-post",
+                    method: "get",
+                    params: "PostParams",
+                    response: "Post",
+                },
+                updatePost: {
+                    path: "/posts/update-post",
+                    method: "post",
+                    params: "PostsUpdatePostParams",
+                    response: "Post",
+                },
+                deletePost: {
+                    path: "/posts/delete-posts",
+                    method: "delete",
+                    params: "PostParams",
+                    response: "",
+                },
+            },
+        },
+        models: {
+            User: Type.Object({
+                id: Type.String(),
+                email: Type.Optional(Type.String()),
+                createdAt: Type.Integer(),
+                updatedAt: Type.Date(),
+                role: Type.Enum({
+                    standard: "standard",
+                    admin: "admin",
+                    other: 0.5,
+                    other2: 0,
+                }),
+                preferredTheme: Type.Optional(
+                    Type.Enum({
+                        light: "light",
+                        dark: "dark",
+                    })
+                ),
+            }),
+            UserParams: Type.Object({
+                id: Type.String(),
+                email: Type.String(),
+            }),
+            UserListParams: Type.Object({
+                limit: Type.Integer(),
+                skip: Type.Optional(Type.Integer()),
+            }),
+            UsersGetUsersResponse: Type.Object({
+                items: Type.Object({
+                    id: Type.String(),
+                    email: Type.String(),
+                }),
+            }),
+            Post: Type.Object({
+                id: Type.String(),
+                title: Type.String(),
+                content: Type.String(),
+            }),
+            PostParams: Type.Object({
+                postId: Type.String(),
+            }),
+            PostsUpdatePostParams: Type.Object({
+                postId: Type.String(),
+                data: Type.Object({
+                    title: Type.String(),
+                    content: Type.String(),
+                }),
+            }),
+        },
+    };
+    const result = createDartClient(apiDef, "Backend");
+    writeFileSync(
+        path.resolve(
+            __dirname,
+            "../../../../arri-client-dart/lib/example.dart"
+        ),
+        result
+    );
 });

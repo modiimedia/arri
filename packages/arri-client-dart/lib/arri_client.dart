@@ -7,17 +7,17 @@ enum HttpMethod { get, post, put, patch, head, delete }
 
 Future<T> parsedRequest<T>(
   String url, {
-  HttpMethod httpMethod = HttpMethod.get,
+  HttpMethod method = HttpMethod.get,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
   required T Function(String) parser,
 }) async {
   http.Response? result;
   String? body;
-  if (httpMethod != HttpMethod.get && params != null) {
+  if (method != HttpMethod.get && params != null) {
     body = json.encode(body);
   }
-  switch (httpMethod) {
+  switch (method) {
     case HttpMethod.get:
       if (params != null) {
         final queryParts = <String>[];
@@ -54,7 +54,7 @@ Future<T> parsedRequest<T>(
     default:
       throw ArriRequestError(
           statusCode: 500,
-          statusMessage: "Unsupported HTTP method \"$httpMethod\"");
+          statusMessage: "Unsupported HTTP method \"$method\"");
   }
   if (result?.statusCode == 200) {
     return parser(result!.body);
