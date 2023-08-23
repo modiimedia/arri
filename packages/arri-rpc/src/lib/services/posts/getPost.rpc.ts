@@ -9,7 +9,7 @@ export default defineRpc({
     async handler({ params }) {
         return {
             id: params.userId,
-            title: "Hello world",
+            title: "Hello world!!!!!",
         };
     },
 });

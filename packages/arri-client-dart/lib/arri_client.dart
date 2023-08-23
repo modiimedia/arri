@@ -3,109 +3,127 @@ library;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class ArriClient {
-  String baseUrl;
-  Map<String, String>? defaultHeaders;
+enum HttpMethod { get, post, put, patch, head, delete }
 
-  ArriClient({this.baseUrl = "", this.defaultHeaders});
-
-  Future<String> request(
-    ArriRoute route, {
-    Map<String, String>? headers,
-    Map<String, String>? query,
-    Map<String, String>? params,
-    dynamic body,
-    Encoding? encoding,
-  }) async {
-    String url = "$baseUrl${route.path}";
-    if (params != null) {
-      for (final entry in params.entries) {
-        url = url.replaceAll(":${entry.key}", entry.value);
-      }
-    }
-    if (query != null) {
-      final queryParts = <String>[];
-      for (final entry in query.entries) {
-        queryParts.add("${entry.key}=${entry.value}");
-      }
-    }
-    final mergedHeaders = defaultHeaders ?? {};
-    if (headers != null) {
-      for (final entry in headers.entries) {
-        mergedHeaders[entry.key] = entry.value;
-      }
-    }
-    http.Response? response;
-    switch (route.method) {
-      case RouteMethod.get:
-        response = await http.get(Uri.parse(url), headers: mergedHeaders);
-        break;
-      case RouteMethod.delete:
-        response = await http.delete(Uri.parse(url),
-            headers: mergedHeaders, body: body, encoding: encoding);
-        break;
-      case RouteMethod.post:
-        response = await http.post(Uri.parse(url),
-            headers: mergedHeaders, body: body, encoding: encoding);
-        break;
-      case RouteMethod.put:
-        response = await http.put(Uri.parse(url),
-            headers: mergedHeaders, body: body, encoding: encoding);
-      case RouteMethod.patch:
-        response = await http.patch(Uri.parse(url),
-            headers: mergedHeaders, body: body, encoding: encoding);
-        break;
-      default:
-        throw Exception("No implementation for method: ${route.method.name}");
-    }
-    if (response.statusCode != 200) {
-      throw RouteException.fromResponse(response);
-    }
-    return response.body;
+Future<T> parsedRequest<T>(
+  String url, {
+  HttpMethod httpMethod = HttpMethod.get,
+  Map<String, dynamic>? params,
+  Map<String, String>? headers,
+  required T Function(String) parser,
+}) async {
+  http.Response? result;
+  String? body;
+  if (httpMethod != HttpMethod.get && params != null) {
+    body = json.encode(body);
   }
+  switch (httpMethod) {
+    case HttpMethod.get:
+      if (params != null) {
+        final queryParts = <String>[];
+        for (final entry in params.entries) {
+          queryParts.add("${entry.key}=${entry.value.toString()}");
+        }
+        final uri = Uri.parse("$url?${queryParts.join("&")}");
+        result = await http.get(uri, headers: headers);
+      }
+      break;
+    case HttpMethod.patch:
+      result = await http.patch(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+      break;
+    case HttpMethod.put:
+      result = await http.put(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+      break;
+    case HttpMethod.post:
+      result = await http.post(Uri.parse(url), headers: headers, body: body);
+      break;
+    case HttpMethod.head:
+      result = await http.head(Uri.parse(url), headers: headers);
+      break;
+    case HttpMethod.delete:
+      result = await http.delete(Uri.parse(url), headers: headers);
+      break;
+    default:
+      throw ArriRequestError(
+          statusCode: 500,
+          statusMessage: "Unsupported HTTP method \"$httpMethod\"");
+  }
+  if (result?.statusCode == 200) {
+    return parser(result!.body);
+  }
+  throw ArriRequestError.fromResponse(result!);
+}
 
-  Future<T> parsedRequest<T>(
-    ArriRoute route, {
-    required T Function(String body) parser,
-    Map<String, String>? headers,
-    Map<String, String>? query,
-    Map<String, String>? params,
-    dynamic body,
-    Encoding? encoding,
-  }) async {
-    final response = await request(route,
-        headers: headers, query: query, body: body, encoding: encoding);
-    return parser(response);
+Future<ArriRequestResult<T>> parsedRequestSafe<T>(
+  String url, {
+  HttpMethod httpMethod = HttpMethod.get,
+  Map<String, dynamic>? params,
+  Map<String, String>? headers,
+  required T Function(String) parser,
+}) async {
+  try {
+    final result = await parsedRequest(url, parser: parser);
+    return ArriRequestResult(value: result);
+  } catch (err) {
+    return ArriRequestResult(
+        error: err is ArriRequestError
+            ? err
+            : ArriRequestError(
+                statusCode: 500,
+                statusMessage: err.toString(),
+                data: err,
+              ));
   }
 }
 
-enum RouteMethod { get, post, put, patch, delete }
-
-class ArriRoute {
-  final String path;
-  final RouteMethod method;
-  const ArriRoute(this.method, this.path);
+class ArriRequestResult<T> {
+  final T? value;
+  final ArriRequestError? error;
+  const ArriRequestResult({this.value, this.error});
 }
 
-class RouteException implements Exception {
+class Client {
+  final String baseUrl;
+  final Map<String, String> headers;
+  const Client({this.baseUrl = "", this.headers = const {}});
+
+  Client withHeaders(Map<String, String> headers) {
+    return Client(baseUrl: baseUrl, headers: headers);
+  }
+}
+
+class ArriRequestError implements Exception {
   final int statusCode;
   final String statusMessage;
   final dynamic data;
-  const RouteException(
-      {required this.statusCode, required this.statusMessage, this.data});
-
-  factory RouteException.fromResponse(http.Response response) {
+  const ArriRequestError({
+    required this.statusCode,
+    required this.statusMessage,
+    this.data,
+  });
+  factory ArriRequestError.fromResponse(http.Response response) {
     try {
       final body = json.decode(response.body);
-      return RouteException(
+      return ArriRequestError(
           statusCode: response.statusCode,
           statusMessage: body["statusMessage"] is String
               ? body["statusMessage"]
               : "Unknown error",
           data: body["data"]);
     } catch (err) {
-      return RouteException(
-          statusCode: response.statusCode, statusMessage: "Unknown error");
+      return ArriRequestError(
+        statusCode: response.statusCode,
+        statusMessage: "Unknown error",
+        data: null,
+      );
     }
   }
 }

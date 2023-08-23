@@ -6,7 +6,16 @@ import {
 } from "@sinclair/typebox";
 import type { H3Event, RouterMethod } from "h3";
 
-export type RpcMethod = "get" | "post" | "put" | "patch" | "delete" | "update";
+const RpcMethods = ["get", "post", "put", "patch", "delete", "head"] as const;
+
+export type RpcMethod = (typeof RpcMethods)[number];
+
+export const isRpcMethod = (input: any): input is RpcMethod => {
+    if (typeof input !== "string") {
+        return false;
+    }
+    return RpcMethods.includes(input as any);
+};
 
 export interface ArriService {
     id: string;
@@ -44,6 +53,20 @@ export interface ArriProcedure<
               | Promise<Static<TResponse extends TSchema ? TResponse : any>>
         : TFallbackResponse;
     postHandler?: () => any;
+}
+
+export function isRpc(input: any): input is ArriProcedure<any, any> {
+    if (typeof input !== "object") {
+        return false;
+    }
+    const anyInput = input as Record<string, any>;
+    if (!isRpcMethod(anyInput.method)) {
+        return false;
+    }
+    if (typeof anyInput.handler !== "function") {
+        return false;
+    }
+    return true;
 }
 
 export function defineRpc<

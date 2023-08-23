@@ -24,9 +24,14 @@ const dartTypeMap = {
     string: "String",
     boolean: "bool",
     null: "null",
+    object: undefined,
+    list: undefined,
 } as const;
 
-export type DartBaseType = (typeof dartTypeMap)[keyof typeof dartTypeMap];
+export type DartBaseType = Exclude<
+    (typeof dartTypeMap)[keyof typeof dartTypeMap],
+    undefined
+>;
 export type DartType =
     | DartBaseType
     | `${DartBaseType}?`
@@ -103,6 +108,16 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
                 )} ? json["${fieldName}"] : null`;
         }
     }
+    if (dartType.includes("List<")) {
+        const fallback = dartType.endsWith("?") ? "null" : "[]";
+        const innerType = dartType
+            .replace("List<", "")
+            .replace(">", "")
+            .replace("?", "");
+        return `${fieldName}: json["${fieldName}"] is List<Map<String, dynamic>> ? 
+          (json["${fieldName}"] as List<Map<String, dynamic>>)
+            .map((val) => ${innerType}.fromJson(val)).toList() : ${fallback}`;
+    }
     return `${fieldName}: ${dartType}.fromJson(json["${fieldName}"])`;
 }
 
@@ -110,27 +125,35 @@ export function dartPropertyType(
     objectName: string,
     propertyName: string,
     schema: TObject
-): DartType | string {
+): [DartType | string, string[] | undefined] {
     const prop = schema.properties[propertyName];
     const isOptional = !schema.required?.includes(propertyName);
+    let finalType = "";
+    const subTypes: string[] = [];
     if (typeof prop.type === "string") {
         switch (prop.type) {
             case "string":
-                return isOptional ? "String?" : "String";
+                finalType = isOptional ? "String?" : "String";
+                break;
             case "integer":
-                return isOptional ? "int?" : "int";
+                finalType = isOptional ? "int?" : "int";
+                break;
             case "number":
-                return isOptional ? "double?" : "double";
+                finalType = isOptional ? "double?" : "double";
+                break;
             case "null":
-                return "null";
+                finalType = "null";
+                break;
             case "object": {
                 const joinedPropName = pascalCase(
                     `${objectName}_${propertyName}`
                 ) as string;
-                return isOptional ? `${joinedPropName}?` : joinedPropName;
+                finalType = isOptional ? `${joinedPropName}?` : joinedPropName;
+                break;
             }
             case "boolean":
-                return isOptional ? "bool?" : "bool";
+                finalType = isOptional ? "bool?" : "bool";
+                break;
             case "array": {
                 const item = prop.items;
                 const type = item.type;
@@ -141,17 +164,39 @@ export function dartPropertyType(
                 }
                 switch (type) {
                     case "string":
-                        return isOptional ? "List<String>?" : "List<String>";
+                        finalType = isOptional
+                            ? "List<String>?"
+                            : "List<String>";
+                        break;
                     case "integer":
-                        return isOptional ? "List<int>?" : "List<int>";
+                        finalType = isOptional ? "List<int>?" : "List<int>";
+                        break;
                     case "number":
-                        return isOptional ? "List<double>?" : "List<double>";
+                        finalType = isOptional
+                            ? "List<double>?"
+                            : "List<double>";
+                        break;
                     case "null":
-                        return isOptional ? "List<null>?" : "List<null>";
+                        finalType = isOptional ? "List<null>?" : "List<null>";
+                        break;
                     case "boolean":
-                        return isOptional ? "List<bool>?" : "List<bool>";
-                    case "object":
-                        return isOptional ? "List<Object>?" : "List<Object>";
+                        finalType = isOptional ? "List<bool>?" : "List<bool>";
+                        break;
+                    case "object": {
+                        console.log(prop);
+                        const subTypeName =
+                            (item as TObject).$id ??
+                            pascalCase(`${objectName}_${propertyName}_item`);
+                        const model = dartModelFromJsonSchema(
+                            subTypeName,
+                            item
+                        );
+                        subTypes.push(model);
+                        finalType = isOptional
+                            ? `List<${subTypeName}>?`
+                            : `List<${subTypeName}>`;
+                        break;
+                    }
                 }
                 break;
             }
@@ -159,7 +204,7 @@ export function dartPropertyType(
                 break;
         }
     }
-    return "null";
+    return [finalType, subTypes.length ? subTypes : undefined];
 }
 
 export function dartModelFromJsonSchema(name: string, schema: TObject): string {
@@ -167,7 +212,13 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
     const subModelParts: string[] = [];
     Object.entries(schema.properties).forEach(([key, val]) => {
         // console.log(val.type);
-        const dartType = dartPropertyType(name, key, schema);
+        const [dartType, subTypes] = dartPropertyType(name, key, schema);
+        console.log("TYPE:", dartType, "SUB_TYPES", subTypes);
+        if (subTypes?.length) {
+            for (const sub of subTypes) {
+                subModelParts.push(sub);
+            }
+        }
         fields.push({ type: dartType, name: key });
         if (!isDartType(dartType) && val.type === "object") {
             subModelParts.push(
@@ -200,9 +251,16 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
     return {
       ${fields
           .map((field) => {
-              return `"${field.name}": ${
-                  isDartType(field.type) ? field.name : `${field.name}.toJson()`
-              },`;
+              if (isDartType(field.type)) {
+                  return `"${field.name}": ${field.name},`;
+              }
+              if (field.type.includes("List<")) {
+                  const isNullable = field.type.endsWith("?");
+                  return `"${field.name}": ${field.name}${
+                      isNullable ? "?" : ""
+                  }.map((val) => val.toJson()).toList(),`;
+              }
+              return `"${field.name}": ${field.name}.toJson(),`;
           })
           .join("\n      ")}
     };
@@ -241,11 +299,10 @@ export function createDartClient(appDef: ApplicationDefinition) {
             modelParts.push(dartModelFromJsonSchema(key, objModel));
         }
     });
-    console.log(serviceParts);
-    console.log(modelParts);
     return `// This code was autogenerated by arri. Do not modify directly.
-import 'dart:convert';
-import "package:http/http.dart as http;
+import "dart:convert";
+import "package:http/http.dart" as http;
+import "package:arri_client/arri_client.dart";
 
 ${serviceParts.join("\n")}
 ${modelParts.join("\n")}`;
