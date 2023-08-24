@@ -15,21 +15,21 @@ describe("Dart Tests", () => {
             getUser: {
                 path: "/users/get-user",
                 method: "get",
-                params: "UsersGetUserParams",
-                response: "User",
+                params: { $ref: "UsersGetUserParams" },
+                response: { $ref: "User" },
             },
             updateUser: {
                 path: "/users/update-user",
                 method: "post",
-                params: "UserUpdateData",
-                response: "User",
+                params: { $ref: "UserUpdateData" },
+                response: { $ref: "User" },
             },
             settings: {
                 getUserSettings: {
                     path: "/users/settings/get-user-settings",
                     method: "get",
-                    params: "UserSettingsGetUserSettingsParams",
-                    response: "UserSettingsGetUserSettingsResponse",
+                    params: { $ref: "UserSettingsGetUserSettingsParams" },
+                    response: { $ref: "UserSettingsGetUserSettingsResponse" },
                 },
             },
         });
@@ -48,7 +48,7 @@ describe("Dart Tests", () => {
     );
   }
   Future<User> getUser(UsersGetUserParams params) {
-    return parsedRequest(
+    return parsedArriRequest(
       "$baseUrl/users/get-user",
       method: HttpMethod.get,
       headers: headers,
@@ -57,7 +57,7 @@ describe("Dart Tests", () => {
     );
   }
   Future<User> updateUser(UserUpdateData params) {
-    return parsedRequest(
+    return parsedArriRequest(
       "$baseUrl/users/update-user",
       method: HttpMethod.post,
       headers: headers,
@@ -74,7 +74,7 @@ class UserServiceSettingsService {
     this.headers = const {},
   });
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
-    return parsedRequest(
+    return parsedArriRequest(
       "$baseUrl/users/settings/get-user-settings",
       method: HttpMethod.get,
       headers: headers,
@@ -91,8 +91,8 @@ class UserServiceSettingsService {
             getPost: {
                 path: "/posts/get-post",
                 method: "get",
-                params: "",
-                response: "",
+                params: { type: "undefined" },
+                response: { type: "undefined" },
             },
         });
         expect(normalizeWhitespace(result)).toBe(
@@ -103,14 +103,14 @@ class UserServiceSettingsService {
           this.baseUrl = "",
           this.headers = const {},
         });
-        
-        Future<String> getPost() {
-          return parsedRequest(
+
+        Future<void> getPost() {
+          return parsedArriRequest(
             "$baseUrl/posts/get-post",
             method: HttpMethod.get,
             headers: headers,
             params: null,
-            parser: (body) => body,
+            parser: (body) {},
           );
         }
       }`)
@@ -325,40 +325,48 @@ enum UserRole implements Comparable<UserRole> {
 
 test("Dart client test", () => {
     const apiDef: ApplicationDefinition = {
+        endpoints: {
+            "/v1/users/get-user": "get",
+            "/v1/users/get-users": "get",
+            "/v1/posts/get-post": "get",
+            "/v1/posts/update-post": "post",
+            "/v1/posts/delete-posts": "delete",
+            "/v2/users/get-user": "get",
+        },
         services: {
             v1: {
                 users: {
                     getUser: {
                         path: "/v1/users/get-user",
                         method: "get",
-                        params: "UserParams",
-                        response: "User",
+                        params: { $ref: "UserParams" },
+                        response: { $ref: "User" },
                     },
                     getUsers: {
                         path: "/v1/users/get-users",
                         method: "get",
-                        params: "UserListParams",
-                        response: "UsersGetUsersResponse",
+                        params: { $ref: "UserListParams" },
+                        response: { $ref: "UsersGetUsersResponse" },
                     },
                 },
                 posts: {
                     getPost: {
                         path: "/v1/posts/get-post",
                         method: "get",
-                        params: "PostParams",
-                        response: "Post",
+                        params: { $ref: "PostParams" },
+                        response: { $ref: "Post" },
                     },
                     updatePost: {
                         path: "/v1/posts/update-post",
                         method: "post",
-                        params: "PostsUpdatePostParams",
-                        response: "Post",
+                        params: { $ref: "PostsUpdatePostParams" },
+                        response: { $ref: "Post" },
                     },
                     deletePost: {
                         path: "/v1/posts/delete-posts",
                         method: "delete",
-                        params: "PostParams",
-                        response: "",
+                        params: { $ref: "PostParams" },
+                        response: { type: "undefined" },
                     },
                 },
             },
@@ -367,8 +375,8 @@ test("Dart client test", () => {
                     getUser: {
                         path: "/v2/users/get-user",
                         method: "get",
-                        params: "UserParams",
-                        response: "UserV2",
+                        params: { $ref: "UserParams" },
+                        response: { $ref: "UserV2" },
                     },
                 },
             },

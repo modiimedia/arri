@@ -1,3 +1,10 @@
 {
-    "cSpell.words": ["Arri", "autoroutes", "middlewares", "nitropack", "ofetch"]
+    "cSpell.words": [
+        "Arri",
+        "autoroutes",
+        "middlewares",
+        "nitropack",
+        "ofetch",
+        "unflatten"
+    ]
 }

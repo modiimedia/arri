@@ -6,8 +6,12 @@ import chokidar from "chokidar";
 import fs from "node:fs/promises";
 import type { Hookable } from "hookable";
 import type { RequestListener } from "node:http";
-import type { ApplicationDefinition } from "../codegen/utils";
-import { type TObject } from "@sinclair/typebox";
+import {
+    setNestedObjectProperty,
+    type ApplicationDefinition,
+    type ProcedureDefinition,
+} from "../codegen/utils";
+import { TypeGuard } from "@sinclair/typebox";
 import { camelCase, kebabCase, pascalCase } from "scule";
 import { type RpcMethod, isRpc } from "../arri-rpc";
 import { existsSync } from "node:fs";
@@ -44,49 +48,49 @@ const getRpcMetaFromPath = (
     config: ArriConfig,
     filePath: string
 ): { serviceName: string; name: string; httpPath: string } | undefined => {
-    // experimenting
-    console.log(filePath);
-    const rootPath = path.resolve(
-        config.baseDir ?? "",
-        config.servicesDir ?? ""
-    );
-    console.log(rootPath);
-    const resolvedFilepath = path.resolve(rootPath, filePath);
-    const cleanedFiledPath = resolvedFilepath.replace(rootPath, "");
-    console.log(cleanedFiledPath);
-    // end experiments
-    const parts = filePath.split("/");
-    if (parts.length < 2) {
-        return undefined;
-    }
-    const serviceName = parts[parts.length - 2];
-    const fileName = parts[parts.length - 1];
+    const resolvedFilePath = filePath
+        .split(config.servicesDir?.replace("./", "/") ?? "")
+        .join("");
+    const parts = resolvedFilePath.split("/");
+    parts.shift();
+    const fileName = parts.pop() ?? "";
+    const serviceParts = parts.filter((part) => part.trim().length > 0);
+    const serviceName = serviceParts.join(".");
     const fileNameParts = fileName.split(".");
     if (!fileNameParts.length) {
         return undefined;
     }
     const rpcName = fileNameParts[0];
+    console.log(rpcName, serviceName);
+    const httpParts = [
+        ...serviceParts.map((part) => kebabCase(part)),
+        kebabCase(rpcName),
+    ];
     return {
         name: rpcName,
         serviceName,
-        httpPath: `/${kebabCase(serviceName)}/${kebabCase(`${rpcName}`)}`,
+        httpPath: `/${httpParts.join("/")}`,
     };
 };
 
-interface RpcBlockResult extends ApplicationDefinition {
+interface RpcResult {
     procedures: Record<
         string,
         {
             method: RpcMethod;
-            path: string;
+            filepath: string;
+            httpPath: string;
+            params: ProcedureDefinition["params"];
+            response: ProcedureDefinition["response"];
         }
     >;
+    models: ApplicationDefinition["models"];
 }
 
 async function getRpcBlock(
     arriConfig: FullArriConfig,
     globPattern: string
-): Promise<RpcBlockResult> {
+): Promise<RpcResult> {
     const target = `${arriConfig.servicesDir}/${globPattern}`;
     const paths = await globby(target);
     const rpcs = await Promise.allSettled(
@@ -99,11 +103,11 @@ async function getRpcBlock(
             ).config,
         }))
     );
-    const result: RpcBlockResult = {
+    const result: RpcResult = {
         procedures: {},
-        services: {},
         models: {},
     };
+
     rpcs.forEach((rpc) => {
         if (rpc.status === "fulfilled") {
             const data =
@@ -115,29 +119,39 @@ async function getRpcBlock(
             if (!meta) {
                 return;
             }
-            if (!result.services[meta.serviceName]) {
-                result.services[meta.serviceName] = {};
-            }
-            let paramName = "";
-            let responseName = "";
+            let paramOutput: ProcedureDefinition["params"] = {
+                type: "undefined",
+            };
+            let responseOutput: ProcedureDefinition["response"] = {
+                type: "undefined",
+            };
             if (data.params) {
-                paramName =
-                    (data.params as TObject).$id ??
-                    pascalCase(`${meta.serviceName}_${meta.name}_params`);
-                result.models[paramName] = data.params;
+                if (TypeGuard.TObject(data.params)) {
+                    const paramName =
+                        data.params.$id ??
+                        pascalCase(`${meta.serviceName}_${meta.name}_params`);
+                    paramOutput = {
+                        $ref: paramName,
+                    };
+                    result.models[paramName] = data.params;
+                }
             }
             if (data.response) {
-                responseName =
-                    (data.response as TObject).$id ??
-                    pascalCase(`${meta.serviceName}_${meta.name}_response`);
-                result.models[responseName] = data.response;
+                if (TypeGuard.TObject(data.response)) {
+                    const responseName =
+                        data.response.$id ??
+                        pascalCase(`${meta.serviceName}_${meta.name}_response`);
+                    responseOutput = {
+                        $ref: responseName,
+                    };
+                    result.models[responseName] = data.response;
+                } else {
+                    responseOutput = {
+                        type: data.response.type,
+                    };
+                }
             }
-            const rpcDef = {
-                path: meta.httpPath,
-                method: data.method,
-                params: paramName,
-                response: responseName,
-            };
+
             result.procedures[
                 meta.httpPath
                     .split("/")
@@ -148,37 +162,27 @@ async function getRpcBlock(
                     .join(".")
             ] = {
                 method: data.method,
-                path: path.relative(
+                filepath: path.relative(
                     `${arriConfig.baseDir}/.arri`,
                     rpc.value.path
                 ),
+                httpPath: meta.httpPath ?? "",
+                params: paramOutput,
+                response: responseOutput,
             };
-            result.services[meta.serviceName][meta.name] = rpcDef;
         }
     });
     return result;
 }
 
-async function getApplicationDefinition(
-    config: FullArriConfig
-): Promise<RpcBlockResult> {
-    const results: RpcBlockResult = {
+async function getRpcs(config: FullArriConfig): Promise<RpcResult> {
+    const results: RpcResult = {
         procedures: {},
-        services: {},
         models: {},
     };
     await Promise.allSettled(
         config.servicesGlobPatterns.map((pattern) =>
             getRpcBlock(config, pattern).then((block) => {
-                Object.keys(block.services).forEach((service) => {
-                    Object.keys(block.services[service]).forEach((rpc) => {
-                        if (!results.services[service]) {
-                            results.services[service] = {};
-                        }
-                        results.services[service][rpc] =
-                            block.services[service][rpc];
-                    });
-                });
                 Object.keys(block.models).forEach((model) => {
                     results.models[model] = block.models[model];
                 });
@@ -218,9 +222,25 @@ export function JsonStringifyWithSymbols(object: any, clean?: boolean): string {
 
 let writeCount = 0;
 async function generateApplicationDefinition(config: FullArriConfig) {
-    const { services, procedures, models } = await getApplicationDefinition(
-        config
-    );
+    const { procedures, models } = await getRpcs(config);
+    const services: ApplicationDefinition["services"] = {};
+    const endpoints: ApplicationDefinition["endpoints"] = {};
+    Object.keys(procedures).forEach((key) => {
+        const rpc = procedures[key];
+        const value: ProcedureDefinition = {
+            path: rpc.httpPath,
+            method: rpc.method,
+            params: rpc.params,
+            response: rpc.response,
+        };
+        endpoints[rpc.httpPath] = rpc.method;
+        setNestedObjectProperty(key, value, services);
+    });
+    const output: ApplicationDefinition = {
+        endpoints,
+        services,
+        models,
+    };
     await fs.writeFile(
         path.resolve(`${config.baseDir ?? ""}`, ".arri/definition.ts"),
         prettier.format(
@@ -228,7 +248,7 @@ async function generateApplicationDefinition(config: FullArriConfig) {
             export interface ClientDefinition {
                 ${Object.keys(procedures)
                     .map((key) => {
-                        const filepath = procedures[key].path.split(".");
+                        const filepath = procedures[key].filepath.split(".");
                         filepath.pop();
                         return `"${key}": {
                             method: "${procedures[key].method}";
@@ -239,10 +259,9 @@ async function generateApplicationDefinition(config: FullArriConfig) {
                     })
                     .join("\n")}
             }
-            export const ApplicationDefinition = ${JSON.stringify({
-                services,
-                models,
-            })} as const`,
+            export const ApplicationDefinition = ${JSON.stringify(
+                output
+            )} as const`,
             {
                 tabWidth: 4,
                 parser: "typescript",

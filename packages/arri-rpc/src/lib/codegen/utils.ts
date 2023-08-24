@@ -9,14 +9,22 @@ export function normalizeWhitespace(input: string) {
     for (const line of input.split("\n")) {
         lines.push(line.trim());
     }
-    return lines.join("").trim();
+    const result = lines.join("\n").trim();
+    if (result.includes("\n\n")) {
+        return normalizeWhitespace(result.split("\n\n").join("\n"));
+    }
+    return result;
 }
 
 export interface ProcedureDefinition {
     path: string;
     method: RpcMethod;
-    params: string;
-    response: string;
+    params: { $ref: string } | { type: "undefined" };
+    response:
+        | {
+              $ref: string;
+          }
+        | { type: "number" | "integer" | "string" | "boolean" | "undefined" };
 }
 
 export function isProcedureDefinition(
@@ -35,8 +43,8 @@ export function isProcedureDefinition(
     return (
         isRpcMethod(input.method) &&
         typeof input.path === "string" &&
-        typeof input.params === "string" &&
-        typeof input.response === "string"
+        typeof input.params === "object" &&
+        typeof input.response === "object"
     );
 }
 
@@ -45,6 +53,45 @@ export interface ServiceDefinition {
 }
 
 export interface ApplicationDefinition {
+    endpoints: Record<string, RpcMethod>;
     services: Record<string, ServiceDefinition>;
     models: Record<string, TObject>;
+}
+
+export function unflattenObject(data: Record<string, any>) {
+    if (Object(data) !== data || Array.isArray(data)) return data;
+    const regex = /\.?([^.[\]]+)|\[(\d+)\]/g;
+    const result: Record<any, any> = {};
+    for (const p in data) {
+        let cur = result;
+        let prop = "";
+        let m: any;
+        while ((m = regex.exec(p))) {
+            cur = cur[prop] || (cur[prop] = m[2] ? [] : {});
+            prop = m[2] || m[1];
+        }
+        cur[prop] = data[p];
+    }
+    return result[""] || result;
+}
+
+export function setNestedObjectProperty<T>(
+    targetProp: string,
+    value: T,
+    object: Record<any, any>
+) {
+    const parts = targetProp.split(".");
+    let current = object;
+    for (let i = 0; i < parts.length; i++) {
+        const key = parts[i];
+        if (i === parts.length - 1) {
+            current[key] = value;
+        } else {
+            if (!current[key]) {
+                current[key] = {};
+            }
+            current = current[key];
+        }
+    }
+    return object;
 }

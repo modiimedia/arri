@@ -1,69 +1,114 @@
 library;
 
 import 'dart:convert';
-import 'package:arri_client/example.dart';
 import 'package:http/http.dart' as http;
 
 enum HttpMethod { get, post, put, patch, head, delete }
 
-Future<T> parsedRequest<T>(
+Future<http.Response> arriRequest(
   String url, {
   HttpMethod method = HttpMethod.get,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
-  required T Function(String) parser,
+
+  /// manually send a specific body
+  dynamic body,
+
+  /// manually specify specific url query parameters
+  Map<String, String>? query,
+
+  /// manually specify a specific encoding
+  Encoding? encoding,
 }) async {
-  http.Response? result;
-  String? body;
+  http.Response result = http.Response(
+    "Placeholder request. If you see this that means a request was never sent to the server.",
+    400,
+  );
+  String? bodyInput;
   if (method != HttpMethod.get && params != null) {
-    body = json.encode(body);
+    bodyInput = json.encode(bodyInput);
   }
   switch (method) {
     case HttpMethod.get:
-      if (params != null) {
+      final paramsInput = query ?? params;
+      if (paramsInput != null) {
         final queryParts = <String>[];
-        for (final entry in params.entries) {
+        for (final entry in paramsInput.entries) {
           queryParts.add("${entry.key}=${entry.value.toString()}");
         }
         final uri = Uri.parse("$url?${queryParts.join("&")}");
-        result = await http.get(uri, headers: headers);
+        result = await http.get(
+          uri,
+          headers: headers,
+        );
       }
       break;
     case HttpMethod.patch:
       result = await http.patch(
         Uri.parse(url),
         headers: headers,
-        body: body,
+        body: body ?? bodyInput,
+        encoding: encoding,
       );
       break;
     case HttpMethod.put:
       result = await http.put(
         Uri.parse(url),
         headers: headers,
-        body: body,
+        body: body ?? bodyInput,
+        encoding: encoding,
       );
       break;
     case HttpMethod.post:
-      result = await http.post(Uri.parse(url), headers: headers, body: body);
+      result = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body ?? bodyInput,
+        encoding: encoding,
+      );
       break;
     case HttpMethod.head:
-      result = await http.head(Uri.parse(url), headers: headers);
+      final paramsInput = query ?? params;
+      if (paramsInput != null) {
+        final queryParts = <String>[];
+        for (final entry in paramsInput.entries) {
+          queryParts.add("${entry.key}=${entry.value.toString()}");
+        }
+        final uri = Uri.parse("$url?${queryParts.join("&")}");
+        result = await http.head(
+          uri,
+          headers: headers,
+        );
+      }
       break;
     case HttpMethod.delete:
-      result = await http.delete(Uri.parse(url), headers: headers);
+      result = await http.delete(Uri.parse(url),
+          headers: headers, encoding: encoding, body: bodyInput);
       break;
     default:
       throw ArriRequestError(
           statusCode: 500,
           statusMessage: "Unsupported HTTP method \"$method\"");
   }
-  if (result?.statusCode == 200) {
-    return parser(result!.body);
-  }
-  throw ArriRequestError.fromResponse(result!);
+  return result;
 }
 
-Future<ArriRequestResult<T>> parsedRequestSafe<T>(
+Future<T> parsedArriRequest<T>(
+  String url, {
+  HttpMethod method = HttpMethod.get,
+  Map<String, dynamic>? params,
+  Map<String, String>? headers,
+  required T Function(String) parser,
+}) async {
+  final result =
+      await arriRequest(url, method: method, params: params, headers: headers);
+  if (result.statusCode == 200) {
+    return parser(result.body);
+  }
+  throw ArriRequestError.fromResponse(result);
+}
+
+Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
   String url, {
   HttpMethod httpMethod = HttpMethod.get,
   Map<String, dynamic>? params,
@@ -71,7 +116,7 @@ Future<ArriRequestResult<T>> parsedRequestSafe<T>(
   required T Function(String) parser,
 }) async {
   try {
-    final result = await parsedRequest(url, parser: parser);
+    final result = await parsedArriRequest(url, parser: parser);
     return ArriRequestResult(value: result);
   } catch (err) {
     return ArriRequestResult(
@@ -101,6 +146,12 @@ class Client {
   }
 }
 
+abstract class ArriEndpoint {
+  final String path;
+  final HttpMethod method;
+  const ArriEndpoint({required this.path, required this.method});
+}
+
 class ArriRequestError implements Exception {
   final int statusCode;
   final String statusMessage;
@@ -127,16 +178,4 @@ class ArriRequestError implements Exception {
       );
     }
   }
-}
-
-main() async {
-  final client = Backend();
-  final userV1 = client.v1.users.getUser(BackendUserParams(
-    id: "id",
-    email: "johndoe@gmail.com",
-  ));
-  final userV2 = client.v2.users.getUser(BackendUserParams(
-    id: "id",
-    email: "johndoe@gmail.com",
-  ));
 }
