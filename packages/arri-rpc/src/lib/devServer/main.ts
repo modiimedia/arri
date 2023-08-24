@@ -41,8 +41,20 @@ export interface ArriHooks {
 }
 
 const getRpcMetaFromPath = (
+    config: ArriConfig,
     filePath: string
 ): { serviceName: string; name: string; httpPath: string } | undefined => {
+    // experimenting
+    console.log(filePath);
+    const rootPath = path.resolve(
+        config.baseDir ?? "",
+        config.servicesDir ?? ""
+    );
+    console.log(rootPath);
+    const resolvedFilepath = path.resolve(rootPath, filePath);
+    const cleanedFiledPath = resolvedFilepath.replace(rootPath, "");
+    console.log(cleanedFiledPath);
+    // end experiments
     const parts = filePath.split("/");
     if (parts.length < 2) {
         return undefined;
@@ -99,7 +111,7 @@ async function getRpcBlock(
             if (!isRpc(data)) {
                 return;
             }
-            const meta = getRpcMetaFromPath(rpc.value.path);
+            const meta = getRpcMetaFromPath(arriConfig, rpc.value.path);
             if (!meta) {
                 return;
             }
