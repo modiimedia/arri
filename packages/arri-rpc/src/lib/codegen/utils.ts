@@ -1,4 +1,4 @@
-import { type TSchema } from "@sinclair/typebox";
+import { type TObject } from "@sinclair/typebox";
 import { type RpcMethod, isRpcMethod } from "../arri-rpc";
 
 export function normalizeWhitespace(input: string) {
@@ -9,7 +9,7 @@ export function normalizeWhitespace(input: string) {
     for (const line of input.split("\n")) {
         lines.push(line.trim());
     }
-    return lines.join("\n").trim();
+    return lines.join("").trim();
 }
 
 export interface ProcedureDefinition {
@@ -46,6 +46,5 @@ export interface ServiceDefinition {
 
 export interface ApplicationDefinition {
     services: Record<string, ServiceDefinition>;
-    procedures: Record<string, ProcedureDefinition>;
-    models: Record<string, TSchema>;
+    models: Record<string, TObject>;
 }

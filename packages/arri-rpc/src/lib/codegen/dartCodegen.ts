@@ -43,7 +43,7 @@ export function createDartClient(
         const model = models[key];
         if (model.type === "object") {
             const typeName = `${prefix}${pascalCase(key)}`;
-            const objModel = model as TObject;
+            const objModel = model;
             if (!generatedModels.includes(typeName)) {
                 modelParts.push(
                     dartModelFromJsonSchema(

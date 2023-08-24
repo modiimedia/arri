@@ -75,7 +75,7 @@ export function defineRpc<
 >(
     config: Omit<ArriProcedure<TParams, TResponse>, "id">
 ): ArriProcedure<TParams, TResponse> {
-    return { ...config };
+    return config;
 }
 
 export function defineService<TRpcMap extends Record<string, any>>(

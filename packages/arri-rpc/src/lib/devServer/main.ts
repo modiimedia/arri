@@ -6,10 +6,10 @@ import chokidar from "chokidar";
 import fs from "node:fs/promises";
 import type { Hookable } from "hookable";
 import type { RequestListener } from "node:http";
-import type { ApplicationDefinition } from "../codegen/dartCodegen";
-import type { TObject } from "@sinclair/typebox";
-import { kebabCase, pascalCase } from "scule";
-import { isRpc } from "../arri-rpc";
+import type { ApplicationDefinition } from "../codegen/utils";
+import { type TObject } from "@sinclair/typebox";
+import { camelCase, kebabCase, pascalCase } from "scule";
+import { type RpcMethod, isRpc } from "../arri-rpc";
 import { existsSync } from "node:fs";
 
 export interface Arri {
@@ -23,8 +23,12 @@ export interface Arri {
 export interface ArriConfig {
     baseDir?: string;
     srcDir: string;
-    services: ArriServiceConfig[];
+    servicesDir?: string;
+    /** Default is ["\*\*\/*.rpc.ts"] */
+    servicesGlobPatterns?: string[];
 }
+
+export type FullArriConfig = Required<ArriConfig>;
 
 export interface ArriServiceConfig {
     prefix?: string;
@@ -57,10 +61,22 @@ const getRpcMetaFromPath = (
     };
 };
 
+interface RpcBlockResult extends ApplicationDefinition {
+    procedures: Record<
+        string,
+        {
+            method: RpcMethod;
+            path: string;
+        }
+    >;
+}
+
 async function getRpcBlock(
-    config: ArriServiceConfig
-): Promise<ApplicationDefinition> {
-    const paths = await globby(config.globPatterns);
+    arriConfig: FullArriConfig,
+    globPattern: string
+): Promise<RpcBlockResult> {
+    const target = `${arriConfig.servicesDir}/${globPattern}`;
+    const paths = await globby(target);
     const rpcs = await Promise.allSettled(
         paths.map(async (filePath) => ({
             path: filePath,
@@ -71,15 +87,13 @@ async function getRpcBlock(
             ).config,
         }))
     );
-    const result: ApplicationDefinition = {
+    const result: RpcBlockResult = {
+        procedures: {},
         services: {},
         models: {},
     };
     rpcs.forEach((rpc) => {
         if (rpc.status === "fulfilled") {
-            if (rpc.value.path.includes("blah")) {
-                console.log(rpc.value.data, rpc.value.data?.params);
-            }
             const data =
                 typeof rpc.value.data === "object" ? rpc.value.data : {};
             if (!isRpc(data)) {
@@ -106,27 +120,44 @@ async function getRpcBlock(
                     pascalCase(`${meta.serviceName}_${meta.name}_response`);
                 result.models[responseName] = data.response;
             }
-            result.services[meta.serviceName][meta.name] = {
+            const rpcDef = {
                 path: meta.httpPath,
                 method: data.method,
                 params: paramName,
                 response: responseName,
             };
+            result.procedures[
+                meta.httpPath
+                    .split("/")
+                    .map((val) => camelCase(val))
+                    .join(" ")
+                    .trim()
+                    .split(" ")
+                    .join(".")
+            ] = {
+                method: data.method,
+                path: path.relative(
+                    `${arriConfig.baseDir}/.arri`,
+                    rpc.value.path
+                ),
+            };
+            result.services[meta.serviceName][meta.name] = rpcDef;
         }
     });
     return result;
 }
 
 async function getApplicationDefinition(
-    config: ArriConfig
-): Promise<ApplicationDefinition> {
-    const results: ApplicationDefinition = {
+    config: FullArriConfig
+): Promise<RpcBlockResult> {
+    const results: RpcBlockResult = {
+        procedures: {},
         services: {},
         models: {},
     };
     await Promise.allSettled(
-        config.services.map((serviceConfig) =>
-            getRpcBlock(serviceConfig).then((block) => {
+        config.servicesGlobPatterns.map((pattern) =>
+            getRpcBlock(config, pattern).then((block) => {
                 Object.keys(block.services).forEach((service) => {
                     Object.keys(block.services[service]).forEach((rpc) => {
                         if (!results.services[service]) {
@@ -139,27 +170,78 @@ async function getApplicationDefinition(
                 Object.keys(block.models).forEach((model) => {
                     results.models[model] = block.models[model];
                 });
+                Object.keys(block.procedures).forEach((key) => {
+                    results.procedures[key] = block.procedures[key];
+                });
             })
         )
     );
     return results;
 }
 
+export function JsonStringifyWithSymbols(object: any, clean?: boolean): string {
+    return JSON.stringify(object, (_, value) => {
+        if (
+            typeof value === "object" &&
+            !Array.isArray(value) &&
+            value !== null
+        ) {
+            const props = [
+                ...Object.getOwnPropertyNames(value),
+                ...Object.getOwnPropertySymbols(value),
+            ];
+            const replacement: Record<string, any> = {};
+            for (const k of props) {
+                if (typeof k === "symbol") {
+                    replacement[`Symbol:${Symbol.keyFor(k) ?? ""}`] = value[k];
+                } else {
+                    replacement[k] = value[k];
+                }
+            }
+            return replacement;
+        }
+        return value;
+    });
+}
+
 let writeCount = 0;
-async function generateApplicationDefinition(config: ArriConfig) {
-    const def = await getApplicationDefinition(config);
+async function generateApplicationDefinition(config: FullArriConfig) {
+    const { services, procedures, models } = await getApplicationDefinition(
+        config
+    );
     await fs.writeFile(
         path.resolve(`${config.baseDir ?? ""}`, ".arri/definition.ts"),
-        prettier.format(`export default ${JSON.stringify(def)}`, {
-            tabWidth: 4,
-            parser: "typescript",
-        })
+        prettier.format(
+            `
+            export interface ClientDefinition {
+                ${Object.keys(procedures)
+                    .map((key) => {
+                        const filepath = procedures[key].path.split(".");
+                        filepath.pop();
+                        return `"${key}": {
+                            method: "${procedures[key].method}";
+                            path: typeof import("${filepath.join(
+                                "."
+                            )}").default;
+                            }`;
+                    })
+                    .join("\n")}
+            }
+            export const ApplicationDefinition = ${JSON.stringify({
+                services,
+                models,
+            })} as const`,
+            {
+                tabWidth: 4,
+                parser: "typescript",
+            }
+        )
     );
     writeCount++;
     console.log("WRITE_COUNT:", writeCount);
 }
 
-async function main(config: ArriConfig) {
+async function main(config: FullArriConfig) {
     await setupArriDir(config);
     let currentHandler: RequestListener | undefined;
     const loadingHandler: RequestListener = (_, __) => {
@@ -216,5 +298,6 @@ async function setupArriDir(config: ArriConfig) {
 void main({
     baseDir: "packages/arri-rpc",
     srcDir: "src",
-    services: [{ globPatterns: ["./packages/**/*.rpc.ts"] }],
+    servicesDir: "./packages/arri-rpc/src/lib/services",
+    servicesGlobPatterns: ["**/*.rpc.ts"],
 });

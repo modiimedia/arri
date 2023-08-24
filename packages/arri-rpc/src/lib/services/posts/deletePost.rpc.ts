@@ -1,6 +1,6 @@
 import { defineRpc } from "../../arri-rpc";
 
 export default defineRpc({
-    method: "get",
+    method: "post",
     handler: () => ({ message: "Hello world" }),
 });

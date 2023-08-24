@@ -73,9 +73,6 @@ class UserServiceSettingsService {
     this.baseUrl = "",
     this.headers = const {},
   });
-
-
-
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
     return parsedRequest(
       "$baseUrl/users/settings/get-user-settings",
@@ -328,7 +325,6 @@ enum UserRole implements Comparable<UserRole> {
 
 test("Dart client test", () => {
     const apiDef: ApplicationDefinition = {
-        procedures: {},
         services: {
             v1: {
                 users: {

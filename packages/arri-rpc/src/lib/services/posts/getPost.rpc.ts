@@ -6,10 +6,18 @@ export default defineRpc({
     params: Type.Object({
         userId: Type.String(),
     }),
+    response: Type.Object({
+        id: Type.String(),
+        username: Type.String(),
+        email: Type.String(),
+        createdAt: Type.Date(),
+    }),
     async handler({ params }) {
         return {
             id: params.userId,
-            title: "Hello world!!!!!",
+            username: "",
+            email: "",
+            createdAt: new Date(),
         };
     },
 });

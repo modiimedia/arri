@@ -1,22 +1,22 @@
 import { Type } from "@sinclair/typebox";
-import { defineRpc } from "../../arri-rpc";
+import { defineRpc } from "../../../arri-rpc";
 
 export default defineRpc({
-    method: "post",
+    method: "get",
+    params: Type.Object({
+        postId: Type.String(),
+    }),
     response: Type.Object({
-        total: Type.Integer(),
         items: Type.Array(
             Type.Object({
                 id: Type.String(),
                 createdAt: Type.Date(),
                 content: Type.String(),
+                userId: Type.String(),
             })
         ),
     }),
-    async handler(_) {
-        return {
-            total: 10,
-            items: [],
-        };
-    },
-});
+    handler: () => ({
+        items: [],
+    }),
+} as const);
