@@ -5,6 +5,7 @@
         "middlewares",
         "nitropack",
         "ofetch",
+        "typebox",
         "unflatten"
     ]
 }

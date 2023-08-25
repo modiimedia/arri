@@ -2,6 +2,7 @@ import {
     type ProcedureDefinition,
     unflattenObject,
     setNestedObjectProperty,
+    removeDisallowedChars,
 } from "./utils";
 
 describe("unflattenObject()", () => {
@@ -105,5 +106,13 @@ describe("setNestedObjectProperty()", () => {
                 },
             },
         });
+    });
+});
+
+describe("String utils", () => {
+    test("Remove symbols", () => {
+        const disallowed = "!@#$%^&*()+|}{[];:'\"~/,=";
+        const input = "+hello_%world!";
+        expect(removeDisallowedChars(input, disallowed)).toBe("hello_world");
     });
 });

@@ -16,21 +16,16 @@ class Backend {
       headers: headers,
     );
   }
-
   $BackendV1Service get v1 {
     return $BackendV1Service(
-      baseUrl: baseUrl,
-      headers: headers,
+      baseUrl: baseUrl, headers: headers,
     );
   }
-
   $BackendV2Service get v2 {
     return $BackendV2Service(
-      baseUrl: baseUrl,
-      headers: headers,
+      baseUrl: baseUrl, headers: headers,
     );
   }
-
   Future<http.Response> rawRequest(
     BackendEndpoints endpoint, {
     Map<String, String>? query,
@@ -48,7 +43,6 @@ class Backend {
     );
   }
 }
-
 class $BackendV1Service {
   final String baseUrl;
   final Map<String, String> headers;
@@ -58,19 +52,18 @@ class $BackendV1Service {
   });
   $BackendV1ServiceUsersService get users {
     return $BackendV1ServiceUsersService(
-      baseUrl: baseUrl,
-      headers: headers,
+        baseUrl: baseUrl,
+        headers: headers,
     );
   }
-
-  $BackendV1ServicePostsService get posts {
+$BackendV1ServicePostsService get posts {
     return $BackendV1ServicePostsService(
-      baseUrl: baseUrl,
-      headers: headers,
+        baseUrl: baseUrl,
+        headers: headers,
     );
   }
+  
 }
-
 class $BackendV1ServiceUsersService {
   final String baseUrl;
   final Map<String, String> headers;
@@ -78,7 +71,7 @@ class $BackendV1ServiceUsersService {
     this.baseUrl = "",
     this.headers = const {},
   });
-
+  
   Future<BackendUser> getUser(BackendUserParams params) {
     return parsedArriRequest(
       "$baseUrl/v1/users/get-user",
@@ -88,18 +81,17 @@ class $BackendV1ServiceUsersService {
       parser: (body) => BackendUser.fromJson(json.decode(body)),
     );
   }
-
   Future<BackendUsersGetUsersResponse> getUsers(BackendUserListParams params) {
     return parsedArriRequest(
       "$baseUrl/v1/users/get-users",
       method: HttpMethod.get,
       headers: headers,
       params: params.toJson(),
-      parser: (body) =>
-          BackendUsersGetUsersResponse.fromJson(json.decode(body)),
+      parser: (body) => BackendUsersGetUsersResponse.fromJson(json.decode(body)),
     );
   }
 }
+
 
 class $BackendV1ServicePostsService {
   final String baseUrl;
@@ -108,7 +100,7 @@ class $BackendV1ServicePostsService {
     this.baseUrl = "",
     this.headers = const {},
   });
-
+  
   Future<BackendPost> getPost(BackendPostParams params) {
     return parsedArriRequest(
       "$baseUrl/v1/posts/get-post",
@@ -118,7 +110,6 @@ class $BackendV1ServicePostsService {
       parser: (body) => BackendPost.fromJson(json.decode(body)),
     );
   }
-
   Future<BackendPost> updatePost(BackendPostsUpdatePostParams params) {
     return parsedArriRequest(
       "$baseUrl/v1/posts/update-post",
@@ -128,7 +119,6 @@ class $BackendV1ServicePostsService {
       parser: (body) => BackendPost.fromJson(json.decode(body)),
     );
   }
-
   Future<void> deletePost(BackendPostParams params) {
     return parsedArriRequest(
       "$baseUrl/v1/posts/delete-posts",
@@ -140,6 +130,8 @@ class $BackendV1ServicePostsService {
   }
 }
 
+
+
 class $BackendV2Service {
   final String baseUrl;
   final Map<String, String> headers;
@@ -149,12 +141,12 @@ class $BackendV2Service {
   });
   $BackendV2ServiceUsersService get users {
     return $BackendV2ServiceUsersService(
-      baseUrl: baseUrl,
-      headers: headers,
+        baseUrl: baseUrl,
+        headers: headers,
     );
   }
+  
 }
-
 class $BackendV2ServiceUsersService {
   final String baseUrl;
   final Map<String, String> headers;
@@ -162,7 +154,7 @@ class $BackendV2ServiceUsersService {
     this.baseUrl = "",
     this.headers = const {},
   });
-
+  
   Future<BackendUserV2> getUser(BackendUserParams params) {
     return parsedArriRequest(
       "$baseUrl/v2/users/get-user",
@@ -173,6 +165,8 @@ class $BackendV2ServiceUsersService {
     );
   }
 }
+
+
 
 class BackendUser {
   final String id;
@@ -194,13 +188,10 @@ class BackendUser {
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : null,
       createdAt: json["createdAt"] is int ? json["createdAt"] : 0,
-      updatedAt: json["updatedAt"] is String
-          ? DateTime.parse(json["updatedAt"])
-          : DateTime(0),
+      updatedAt: json["updatedAt"] is String ? DateTime.parse(json["updatedAt"]) : DateTime(0),
       role: BackendUserRole.fromJson(json["role"]),
-      preferredTheme: json["preferredTheme"] is Map<String, dynamic>
-          ? BackendUserPreferredTheme.fromJson(json["preferredTheme"])
-          : null,
+      preferredTheme: json["preferredTheme"] is Map<String, dynamic> ? 
+                BackendUserPreferredTheme.fromJson(json["preferredTheme"]) : null,
     );
   }
   Map<String, dynamic> toJson() {
@@ -213,7 +204,6 @@ class BackendUser {
       "preferredTheme": preferredTheme?.toJson(),
     };
   }
-
   BackendUser copyWith({
     String? id,
     String? email,
@@ -238,7 +228,6 @@ enum BackendUserRole implements Comparable<BackendUserRole> {
   admin("admin"),
   num0Point5(0.5),
   num0(0);
-
   const BackendUserRole(this.value);
   final dynamic value;
 
@@ -246,8 +235,8 @@ enum BackendUserRole implements Comparable<BackendUserRole> {
   compareTo(BackendUserRole other) => name.compareTo(other.name);
 
   factory BackendUserRole.fromJson(dynamic input) {
-    for (final val in values) {
-      if (val.value == input) {
+    for(final val in values) {
+      if(val.value == input) {
         return val;
       }
     }
@@ -258,12 +247,9 @@ enum BackendUserRole implements Comparable<BackendUserRole> {
     return value;
   }
 }
-
-enum BackendUserPreferredTheme
-    implements Comparable<BackendUserPreferredTheme> {
+enum BackendUserPreferredTheme implements Comparable<BackendUserPreferredTheme> {
   light("light"),
   dark("dark");
-
   const BackendUserPreferredTheme(this.value);
   final dynamic value;
 
@@ -271,8 +257,8 @@ enum BackendUserPreferredTheme
   compareTo(BackendUserPreferredTheme other) => name.compareTo(other.name);
 
   factory BackendUserPreferredTheme.fromJson(dynamic input) {
-    for (final val in values) {
-      if (val.value == input) {
+    for(final val in values) {
+      if(val.value == input) {
         return val;
       }
     }
@@ -283,7 +269,6 @@ enum BackendUserPreferredTheme
     return value;
   }
 }
-
 class BackendUserV2 {
   final String id;
   final String email;
@@ -304,12 +289,8 @@ class BackendUserV2 {
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : "",
       username: json["username"] is String ? json["username"] : "",
-      createdAt: json["createdAt"] is String
-          ? DateTime.parse(json["createdAt"])
-          : DateTime(0),
-      updatedAt: json["updatedAt"] is String
-          ? DateTime.parse(json["updatedAt"])
-          : DateTime(0),
+      createdAt: json["createdAt"] is String ? DateTime.parse(json["createdAt"]) : DateTime(0),
+      updatedAt: json["updatedAt"] is String ? DateTime.parse(json["updatedAt"]) : DateTime(0),
       role: BackendUserV2Role.fromJson(json["role"]),
     );
   }
@@ -323,7 +304,6 @@ class BackendUserV2 {
       "role": role.toJson(),
     };
   }
-
   BackendUserV2 copyWith({
     String? id,
     String? email,
@@ -347,7 +327,6 @@ enum BackendUserV2Role implements Comparable<BackendUserV2Role> {
   standard("standard"),
   admin("admin"),
   moderator("moderator");
-
   const BackendUserV2Role(this.value);
   final dynamic value;
 
@@ -355,8 +334,8 @@ enum BackendUserV2Role implements Comparable<BackendUserV2Role> {
   compareTo(BackendUserV2Role other) => name.compareTo(other.name);
 
   factory BackendUserV2Role.fromJson(dynamic input) {
-    for (final val in values) {
-      if (val.value == input) {
+    for(final val in values) {
+      if(val.value == input) {
         return val;
       }
     }
@@ -367,7 +346,6 @@ enum BackendUserV2Role implements Comparable<BackendUserV2Role> {
     return value;
   }
 }
-
 class BackendUserParams {
   final String id;
   final String email;
@@ -387,7 +365,6 @@ class BackendUserParams {
       "email": email,
     };
   }
-
   BackendUserParams copyWith({
     String? id,
     String? email,
@@ -398,6 +375,7 @@ class BackendUserParams {
     );
   }
 }
+
 
 class BackendUserListParams {
   final int limit;
@@ -418,7 +396,6 @@ class BackendUserListParams {
       "skip": skip,
     };
   }
-
   BackendUserListParams copyWith({
     int? limit,
     int? skip,
@@ -429,6 +406,7 @@ class BackendUserListParams {
     );
   }
 }
+
 
 class BackendUsersGetUsersResponse {
   final BackendUsersGetUsersResponseItems items;
@@ -445,7 +423,6 @@ class BackendUsersGetUsersResponse {
       "items": items.toJson(),
     };
   }
-
   BackendUsersGetUsersResponse copyWith({
     BackendUsersGetUsersResponseItems? items,
   }) {
@@ -462,8 +439,7 @@ class BackendUsersGetUsersResponseItems {
     required this.id,
     required this.email,
   });
-  factory BackendUsersGetUsersResponseItems.fromJson(
-      Map<String, dynamic> json) {
+  factory BackendUsersGetUsersResponseItems.fromJson(Map<String, dynamic> json) {
     return BackendUsersGetUsersResponseItems(
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : "",
@@ -475,7 +451,6 @@ class BackendUsersGetUsersResponseItems {
       "email": email,
     };
   }
-
   BackendUsersGetUsersResponseItems copyWith({
     String? id,
     String? email,
@@ -486,6 +461,7 @@ class BackendUsersGetUsersResponseItems {
     );
   }
 }
+
 
 class BackendPost {
   final String id;
@@ -510,7 +486,6 @@ class BackendPost {
       "content": content,
     };
   }
-
   BackendPost copyWith({
     String? id,
     String? title,
@@ -523,6 +498,7 @@ class BackendPost {
     );
   }
 }
+
 
 class BackendPostParams {
   final String postId;
@@ -539,7 +515,6 @@ class BackendPostParams {
       "postId": postId,
     };
   }
-
   BackendPostParams copyWith({
     String? postId,
   }) {
@@ -548,6 +523,7 @@ class BackendPostParams {
     );
   }
 }
+
 
 class BackendPostsUpdatePostParams {
   final String postId;
@@ -568,7 +544,6 @@ class BackendPostsUpdatePostParams {
       "data": data.toJson(),
     };
   }
-
   BackendPostsUpdatePostParams copyWith({
     String? postId,
     BackendPostsUpdatePostParamsData? data,
@@ -599,7 +574,6 @@ class BackendPostsUpdatePostParamsData {
       "content": content,
     };
   }
-
   BackendPostsUpdatePostParamsData copyWith({
     String? title,
     String? content,
@@ -611,35 +585,36 @@ class BackendPostsUpdatePostParamsData {
   }
 }
 
+
+
 enum BackendEndpoints implements Comparable<BackendEndpoints>, ArriEndpoint {
   v1UsersGetUser(
-    path: "/v1/users/get-user",
-    method: HttpMethod.get,
-  ),
+        path: "/v1/users/get-user",
+        method: HttpMethod.get,
+      ),
   v1UsersGetUsers(
-    path: "/v1/users/get-users",
-    method: HttpMethod.get,
-  ),
+        path: "/v1/users/get-users",
+        method: HttpMethod.get,
+      ),
   v1PostsGetPost(
-    path: "/v1/posts/get-post",
-    method: HttpMethod.get,
-  ),
+        path: "/v1/posts/get-post",
+        method: HttpMethod.get,
+      ),
   v1PostsUpdatePost(
-    path: "/v1/posts/update-post",
-    method: HttpMethod.post,
-  ),
+        path: "/v1/posts/update-post",
+        method: HttpMethod.post,
+      ),
   v1PostsDeletePosts(
-    path: "/v1/posts/delete-posts",
-    method: HttpMethod.delete,
-  ),
+        path: "/v1/posts/delete-posts",
+        method: HttpMethod.delete,
+      ),
   v2UsersGetUser(
-    path: "/v2/users/get-user",
-    method: HttpMethod.get,
-  );
+        path: "/v2/users/get-user",
+        method: HttpMethod.get,
+      );
 
   const BackendEndpoints({
-    required this.path,
-    required this.method,
+    required this.path, required this.method,
   });
   @override
   final String path;

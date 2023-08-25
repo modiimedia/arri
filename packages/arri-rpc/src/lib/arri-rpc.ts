@@ -4,7 +4,7 @@ import {
     type Static,
     type TSchema,
 } from "@sinclair/typebox";
-import type { H3Event, RouterMethod } from "h3";
+import { type H3Event, type RouterMethod } from "h3";
 
 const RpcMethods = ["get", "post", "put", "patch", "delete", "head"] as const;
 
@@ -22,9 +22,14 @@ export interface ArriService {
     procedures: Record<string, any>;
 }
 
-interface RpcHandlerContext<TParams = any> {
+export interface RpcHandlerContext<TParams = any> {
     event: H3Event;
     params: TParams;
+}
+
+export interface RpcPostHandlerContext<TParams = any, TResponse = any>
+    extends RpcHandlerContext<TParams> {
+    response: TResponse;
 }
 
 export interface ArriProcedureBase {
@@ -32,7 +37,7 @@ export interface ArriProcedureBase {
     params?: any;
     response?: any;
     handler: (context: any) => any;
-    postHandler?: () => any;
+    postHandler?: (context: any) => any;
 }
 
 export interface ArriProcedure<
@@ -52,7 +57,14 @@ export interface ArriProcedure<
               | Static<TResponse extends TSchema ? TResponse : any>
               | Promise<Static<TResponse extends TSchema ? TResponse : any>>
         : TFallbackResponse;
-    postHandler?: () => any;
+    postHandler?: (
+        context: RpcPostHandlerContext<
+            Static<TParams extends TSchema ? TParams : any>,
+            TResponse extends TSchema
+                ? Static<TResponse extends TSchema ? TResponse : any>
+                : TFallbackResponse
+        >
+    ) => any;
 }
 
 export function isRpc(input: any): input is ArriProcedure<any, any> {
@@ -73,7 +85,7 @@ export function defineRpc<
     TParams extends TObject,
     TResponse extends TSchema = any
 >(
-    config: Omit<ArriProcedure<TParams, TResponse>, "id">
+    config: ArriProcedure<TParams, TResponse>
 ): ArriProcedure<TParams, TResponse> {
     return config;
 }

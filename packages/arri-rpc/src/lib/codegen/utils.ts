@@ -95,3 +95,16 @@ export function setNestedObjectProperty<T>(
     }
     return object;
 }
+
+export const removeDisallowedChars = (
+    input: string,
+    disallowedChars: string
+) => {
+    let result = input;
+    for (const char of disallowedChars) {
+        if (result.includes(char)) {
+            result = result.split(char).join("");
+        }
+    }
+    return result;
+};

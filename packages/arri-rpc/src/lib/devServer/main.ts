@@ -10,6 +10,7 @@ import {
     setNestedObjectProperty,
     type ApplicationDefinition,
     type ProcedureDefinition,
+    removeDisallowedChars,
 } from "../codegen/utils";
 import { TypeGuard } from "@sinclair/typebox";
 import { camelCase, kebabCase, pascalCase } from "scule";
@@ -25,6 +26,7 @@ export interface Arri {
 }
 
 export interface ArriConfig {
+    entry: string;
     baseDir?: string;
     srcDir: string;
     servicesDir?: string;
@@ -44,6 +46,8 @@ export interface ArriHooks {
     restart: (app: Arri) => Promise<void> | void;
 }
 
+const disallowedNameChars = "~`!@#$%^&*()-+=[]{}\\|:;\"'<>,./";
+
 const getRpcMetaFromPath = (
     config: ArriConfig,
     filePath: string
@@ -54,14 +58,18 @@ const getRpcMetaFromPath = (
     const parts = resolvedFilePath.split("/");
     parts.shift();
     const fileName = parts.pop() ?? "";
-    const serviceParts = parts.filter((part) => part.trim().length > 0);
+    const serviceParts = parts
+        .filter((part) => part.trim().length > 0)
+        .map((part) => removeDisallowedChars(part, disallowedNameChars));
     const serviceName = serviceParts.join(".");
     const fileNameParts = fileName.split(".");
     if (!fileNameParts.length) {
         return undefined;
     }
-    const rpcName = fileNameParts[0];
-    console.log(rpcName, serviceName);
+    const rpcName = removeDisallowedChars(
+        fileNameParts[0],
+        disallowedNameChars
+    );
     const httpParts = [
         ...serviceParts.map((part) => kebabCase(part)),
         kebabCase(rpcName),
@@ -241,24 +249,31 @@ async function generateApplicationDefinition(config: FullArriConfig) {
         services,
         models,
     };
+    const importParts: string[] = [];
+    const interfaceFieldParts: string[] = [];
+    const endpointParts: string[] = [];
+    Object.keys(procedures).forEach((key) => {
+        const filepath = procedures[key].filepath.split(".");
+        filepath.pop();
+        const importName = camelCase(key.split(".").join("_"));
+        importParts.push(`import ${importName} from '${filepath.join(".")}';`);
+        interfaceFieldParts.push(`"${key}": {
+            method: "${procedures[key].method}";
+            path: typeof ${importName};
+        }`);
+        endpointParts.push(`"${procedures[key].httpPath}": ${importName},`);
+    });
     await fs.writeFile(
         path.resolve(`${config.baseDir ?? ""}`, ".arri/definition.ts"),
         prettier.format(
-            `
+            `${importParts.join("\n")}
+
             export interface ClientDefinition {
-                ${Object.keys(procedures)
-                    .map((key) => {
-                        const filepath = procedures[key].filepath.split(".");
-                        filepath.pop();
-                        return `"${key}": {
-                            method: "${procedures[key].method}";
-                            path: typeof import("${filepath.join(
-                                "."
-                            )}").default;
-                            }`;
-                    })
-                    .join("\n")}
+                ${interfaceFieldParts.join("\n")}
             }
+            export const endpoints = {
+                ${endpointParts.join("\n")}
+            } as const
             export const ApplicationDefinition = ${JSON.stringify(
                 output
             )} as const`,
@@ -270,6 +285,16 @@ async function generateApplicationDefinition(config: FullArriConfig) {
     );
     writeCount++;
     console.log("WRITE_COUNT:", writeCount);
+}
+
+async function generateApplicationEntry(config: FullArriConfig) {
+    const entry = path.resolve(config.baseDir, config.srcDir, config.entry);
+    let entryContent = await fs.readFile(entry, { encoding: "utf-8" });
+    entryContent = entryContent.replace(
+        "initializeProcedures(",
+        "registerProcedures("
+    );
+    console.log(entryContent);
 }
 
 async function main(config: FullArriConfig) {
@@ -291,6 +316,7 @@ async function main(config: FullArriConfig) {
     //     name: "Arri",
     // });
     await generateApplicationDefinition(config);
+    await generateApplicationEntry(config);
     let loadingMessage = "Arri is starting...";
     async function load(isRestart: boolean, reason?: string) {
         try {
@@ -329,6 +355,7 @@ async function setupArriDir(config: ArriConfig) {
 void main({
     baseDir: "packages/arri-rpc",
     srcDir: "src",
+    entry: "lib/entry.ts",
     servicesDir: "./packages/arri-rpc/src/lib/services",
     servicesGlobPatterns: ["**/*.rpc.ts"],
 });
