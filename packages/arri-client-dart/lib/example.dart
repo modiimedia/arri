@@ -225,9 +225,7 @@ class BackendUser {
 
 enum BackendUserRole implements Comparable<BackendUserRole> {
   standard("standard"),
-  admin("admin"),
-  num0Point5(0.5),
-  num0(0);
+  admin("admin");
   const BackendUserRole(this.value);
   final dynamic value;
 

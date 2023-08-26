@@ -131,7 +131,7 @@ export class ArriApplication {
             schemaVersion: "0.0.1",
             description: this.appDescription,
             procedures: {},
-            models: this.models,
+            models: this.models as any,
             errors: RpcError,
         };
         Object.keys(this.procedures).forEach((key) => {
@@ -141,6 +141,16 @@ export class ArriApplication {
         return appDef;
     }
 }
+
+// function getFlattenedModelDefinition(schema: TObject): {
+//     def: Omit<TObject, symbol>;
+//     referencedDefs: Record<string, TObject>;
+// } {
+//     const result = { ...schema }
+//     const referenced: Record<string, TObject> = {};
+//     Object.keys(result).forEach((key) => {})
+//     return { def: {}, referencedDefs: {} };
+// }
 
 function createRpcDefinition(
     rpcName: string,

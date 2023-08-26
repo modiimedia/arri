@@ -67,7 +67,7 @@ export interface ApplicationDefinition {
     schemaVersion: "0.0.1";
     description: string;
     procedures: Record<string, ProcedureDefinition>;
-    models: Record<string, Omit<TObject, symbol>>;
+    models: Record<string, JsonSchemaObject>;
     errors: Omit<TObject, symbol>;
 }
 
@@ -130,13 +130,13 @@ export const JsonSchemaScalarTypeValues = [
     "boolean",
     "Date",
 ] as const;
-export const JsonSchemaNullTypeValues = ["null", "undefined"];
+export const JsonSchemaNullTypeValues = ["null", "undefined"] as const;
 export const JsonSchemaComplexTypeValues = [
     "object",
     "list",
     "array",
     "Uint8Array",
-];
+] as const;
 
 export type JsonSchemaType =
     | JsonSchemaScalarType
@@ -169,15 +169,23 @@ export function isJsonSchemaScalarType(
 export interface JsonSchemaNullType {
     type: (typeof JsonSchemaNullTypeValues)[number];
 }
+export function isJsonSchemaNullType(input: any): input is JsonSchemaNullType {
+    if (typeof input !== "object") {
+        return false;
+    }
+    if (!("type" in input)) {
+        return false;
+    }
+    return JsonSchemaNullTypeValues.includes(input.type);
+}
 
 export type JsonSchemaComplexType = JsonSchemaObject | JsonSchemaArray;
-
 export interface JsonSchemaObject {
     $id?: string;
     title?: string;
     description?: string;
     type: "object";
-    properties: Record<string, any>;
+    properties: Record<string, JsonSchemaType>;
     required?: string[];
 }
 export const isJsonSchemaObject = (input: any): input is JsonSchemaObject => {
@@ -191,7 +199,6 @@ export const isJsonSchemaObject = (input: any): input is JsonSchemaObject => {
         typeof input.properties === "object"
     );
 };
-
 export interface JsonSchemaArray {
     $id?: string;
     title?: string;
@@ -199,7 +206,6 @@ export interface JsonSchemaArray {
     type: "array";
     items: JsonSchemaType;
 }
-
 export function isJsonSchemaArray(input: any): input is JsonSchemaArray {
     if (typeof input !== "object") {
         return false;
@@ -209,10 +215,39 @@ export function isJsonSchemaArray(input: any): input is JsonSchemaArray {
     }
     return false;
 }
-
 export interface JsonSchemaUint8Array {
     type: "Uint8Array";
 }
 export interface JsonSchemaEnum {
-    anyOf: any[];
+    anyOf:
+        | Array<{ type: "string"; const: string }>
+        | Array<{ type: "number"; const: number }>
+        | Array<{ type: "integer"; const: number }>;
+}
+export function isJsonSchemaEnum(input: any): input is JsonSchemaEnum {
+    if (typeof input !== "object") {
+        return false;
+    }
+    if (!("anyOf" in input) || !Array.isArray(input.anyOf)) {
+        return false;
+    }
+    let prevType: "string" | "integer" | "number" | undefined;
+    for (const item of input.anyOf) {
+        if (!isJsonSchemaScalarType(item)) {
+            return false;
+        }
+        if (
+            item.type !== "string" &&
+            item.type !== "integer" &&
+            item.type !== "number"
+        ) {
+            return false;
+        }
+        if (!prevType) {
+            prevType = item.type;
+        } else if (prevType !== item.type) {
+            return false;
+        }
+    }
+    return true;
 }

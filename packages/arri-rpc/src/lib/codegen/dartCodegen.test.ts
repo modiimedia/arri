@@ -141,12 +141,10 @@ class UserServiceSettingsService {
                 Type.Literal("standard"),
                 Type.Literal("admin"),
                 Type.Literal("mod"),
-                Type.Literal(0),
-                Type.Literal(0.5),
             ]),
         });
 
-        const result = dartModelFromJsonSchema("User", schema);
+        const result = dartModelFromJsonSchema("User", schema as any);
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class User {
   final String id;
@@ -297,9 +295,7 @@ class UserSettings {
 enum UserRole implements Comparable<UserRole> {
   standard("standard"),
   admin("admin"),
-  mod("mod"),
-  num0(0),
-  num0Point5(0.5);
+  mod("mod");
   const UserRole(this.value);
   final dynamic value;
 
@@ -383,8 +379,6 @@ test("Dart client test", () => {
                 role: Type.Enum({
                     standard: "standard",
                     admin: "admin",
-                    other: 0.5,
-                    other2: 0,
                 }),
                 preferredTheme: Type.Optional(
                     Type.Enum({
@@ -392,7 +386,7 @@ test("Dart client test", () => {
                         dark: "dark",
                     })
                 ),
-            }),
+            }) as any,
             UserV2: Type.Object({
                 id: Type.String(),
                 email: Type.String(),
@@ -404,7 +398,7 @@ test("Dart client test", () => {
                     admin: "admin",
                     moderator: "moderator",
                 }),
-            }),
+            }) as any,
             UserParams: Type.Object({
                 id: Type.String(),
                 email: Type.String(),

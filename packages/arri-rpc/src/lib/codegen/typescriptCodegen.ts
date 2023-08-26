@@ -1,18 +1,27 @@
 import { pascalCase } from "scule";
+import { format } from "prettier";
 import {
     type ApplicationDefinition,
     type ServiceDefinition,
     unflattenObject,
     isProcedureDefinition,
     type ProcedureDefinition,
-    type JsonSchemaTypeValue,
+    isJsonSchemaScalarType,
+    isJsonSchemaNullType,
+    isJsonSchemaObject,
+    type JsonSchemaObject,
+    isJsonSchemaEnum,
+    isJsonSchemaArray,
+    type JsonSchemaScalarType,
 } from "./utils";
-import { type TObject } from "@sinclair/typebox";
+
+let createdModels: string[] = [];
 
 export function createTypescriptClient(
     def: ApplicationDefinition,
     prefix = "Client"
 ) {
+    createdModels = [];
     const services = unflattenObject(def.procedures) as Record<
         string,
         ServiceDefinition
@@ -29,10 +38,36 @@ export function createTypescriptClient(
         });
     });
     Object.keys(def.models).forEach((key) => {
-        modelParts.push(
-            tsModelFromDefinition(`${prefix}${key}`, def.models[key] as TObject)
-        );
+        const modelName = pascalCase(`${key}`);
+        if (!createdModels.includes(modelName)) {
+            modelParts.push(tsModelFromDefinition(modelName, def.models[key]));
+            createdModels.push(modelName);
+        }
     });
+    return format(
+        `/* eslint-disable */
+    import { arriRequest, ArriRequestError } from 'arri-client';
+    
+    export class ${prefix} {
+        ${serviceParts
+            .map((service) => `${service.key}: ${service.name}`)
+            .join("\n")}
+        constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
+            ${serviceParts
+                .map(
+                    (service) =>
+                        `this.${service.key} = new ${service.name}(opts);`
+                )
+                .join("\n")}
+        }
+    }
+
+    ${serviceParts.map((service) => service.content).join("\n")}
+    ${modelParts.join("\n")}`,
+        {
+            parser: "typescript",
+        }
+    );
 }
 
 export function tsServiceFromServiceDefinition(
@@ -104,51 +139,108 @@ export function tsRpcFromProcedureDefinition(
     }`;
 }
 
-export function tsModelFromDefinition(name: string, def: TObject) {
+export function tsModelFromDefinition(name: string, def: JsonSchemaObject) {
     const fieldParts: string[] = [];
     const subModelParts: string[] = [];
-    Object.keys(def.properties).forEach((key) => {
+    Object.keys(def.properties ?? {}).forEach((key) => {
         const isOptional = !def.required?.includes(key);
-        const prop = def.properties[key];
+        const prop = def.properties?.[key];
         const keyPart = isOptional ? `${key}?` : key;
-        if ("anyOf" in prop) {
-            // todo
+        if (isJsonSchemaScalarType(prop)) {
+            fieldParts.push(
+                tsInterfaceScalarField(key, prop, isOptional) ?? ""
+            );
+            return;
         }
-        if ("type" in prop) {
-            switch (prop.type as JsonSchemaTypeValue) {
-                case "string":
-                    fieldParts.push(`${keyPart}: string;`);
-                    break;
-                case "number":
-                    fieldParts.push(`${keyPart}: number;`);
-                    break;
-                case "integer":
-                    fieldParts.push(`/**
-                    * must be an integer
-                    */
-                    ${keyPart}: number;`);
-                    break;
+        if (isJsonSchemaNullType(prop)) {
+            switch (prop.type) {
                 case "null":
                     fieldParts.push(`${keyPart}: null;`);
                     break;
-                case "Date":
-                    fieldParts.push(`${keyPart}: Date;`);
-                    break;
-                case "boolean":
-                    fieldParts.push(`${keyPart}: boolean;`);
-                    break;
-                case "list":
-                    console.log(prop);
-                    break;
-                case "object":
-                    console.log(prop);
+                case "undefined":
+                    fieldParts.push(`${keyPart}: undefined`);
                     break;
             }
+            return;
         }
-        console.log(def.properties[key]);
+        if (isJsonSchemaObject(prop)) {
+            const subModelName =
+                prop.$id ?? (pascalCase(`${name}_${key}`) as string);
+            if (!createdModels.includes(subModelName)) {
+                const content = tsModelFromDefinition(
+                    subModelName,
+                    prop as any
+                );
+                subModelParts.push(content);
+            }
+            fieldParts.push(`${keyPart}: ${subModelName};`);
+            return;
+        }
+
+        if (isJsonSchemaEnum(prop)) {
+            const vals = prop.anyOf.map((opt) =>
+                opt.type === "string" ? `'${opt.const}'` : `${opt.const}`
+            );
+            fieldParts.push(`${keyPart}: ${vals.join(" | ")};`);
+            return;
+        }
+        if (isJsonSchemaArray(prop)) {
+            if (isJsonSchemaScalarType(prop.items)) {
+                const part = tsInterfaceScalarField(
+                    key,
+                    prop.items,
+                    isOptional
+                ).replace(";", "[];");
+                fieldParts.push(part);
+                return;
+            }
+            if (isJsonSchemaNullType(prop.items)) {
+                if (prop.items.type === "null") {
+                    fieldParts.push(`${keyPart}: null[]`);
+                    return;
+                }
+                fieldParts.push(`${keyPart}: undefined[]`);
+                return;
+            }
+            if (isJsonSchemaObject(prop.items)) {
+                const subModelName =
+                    prop.items.$id ?? pascalCase(`${name}_${key}_item`);
+                if (!createdModels.includes(subModelName)) {
+                    subModelParts.push(
+                        tsModelFromDefinition(subModelName, prop.items)
+                    );
+                }
+                fieldParts.push(`${keyPart}: ${subModelName}[];`);
+            }
+        }
     });
     return `export interface ${name} {
         ${fieldParts.join("\n")}
     }
     ${subModelParts.join("\n")}`;
+}
+
+function tsInterfaceScalarField(
+    key: string,
+    prop: JsonSchemaScalarType,
+    isOptional = false
+): string {
+    const keyPart = isOptional ? `${key}?` : key;
+    switch (prop.type) {
+        case "string":
+            return `${keyPart}: string;`;
+        case "bigint":
+            return `${keyPart}: bigint;`;
+        case "Date":
+            return `${keyPart}: Date;`;
+        case "boolean":
+            return `${keyPart}: boolean;`;
+        case "integer":
+            return `/**
+                    * must be an integer
+                    */
+                    ${keyPart}: number;`;
+        case "number":
+            return `${keyPart}: number;`;
+    }
 }

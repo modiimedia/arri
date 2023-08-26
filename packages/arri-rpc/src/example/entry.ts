@@ -52,7 +52,7 @@ const PostResponse = Type.Object({
             updatedAt: Type.Number(),
         })
     ),
-    ref: Type.Ref(UserSchema),
+    ref: UserSchema,
 });
 
 type PostResponse = Static<typeof PostResponse>;
