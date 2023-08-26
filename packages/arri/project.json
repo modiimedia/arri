@@ -27,10 +27,6 @@
                 "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri --out-dir dist/packages/arri"
             }
         },
-        "publish": {
-            "command": "node tools/scripts/publish.mjs arri {args.ver} {args.tag}",
-            "dependsOn": ["build"]
-        },
         "lint": {
             "executor": "@nx/linter:eslint",
             "outputs": ["{options.outputFile}"],
@@ -44,6 +40,14 @@
             "options": {
                 "passWithNoTests": true,
                 "reportsDirectory": "../../coverage/packages/arri"
+            }
+        },
+        "publish": {
+            "dependsOn": ["build"],
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npm publish",
+                "cwd": "dist/packages/arri-client"
             }
         }
     },
