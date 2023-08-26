@@ -46,7 +46,7 @@
             "dependsOn": ["build"],
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
+                "command": "pnpm publish",
                 "cwd": "dist/packages/arri-client"
             }
         }
