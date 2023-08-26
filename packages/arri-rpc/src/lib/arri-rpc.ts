@@ -23,7 +23,6 @@ import {
     type ProcedureDefinition,
 } from "./codegen/utils";
 import { RpcError, defineRpcError, isRpcError } from "./errors";
-
 const RpcHttpMethods = [
     "get",
     "post",
@@ -70,7 +69,7 @@ export class ArriApplication {
                         message: err.message,
                         statusMessage: err.statusMessage,
                         data: err.data,
-                    })
+                    }),
                 );
             },
             onRequest: async (event) => {
@@ -87,7 +86,7 @@ export class ArriApplication {
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this.h3Router.get(
             "/__definition",
-            eventHandler((_) => this.getAppDefinition())
+            eventHandler((_) => this.getAppDefinition()),
         );
     }
 
@@ -104,10 +103,10 @@ export class ArriApplication {
         TResponse extends TObject | undefined,
         TFinalResponse extends TResponse extends TObject
             ? Static<TResponse>
-            : Static<TVoid>
+            : Static<TVoid>,
     >(
         name: string,
-        procedure: ArriProcedure<TParams, TResponse, TFinalResponse>
+        procedure: ArriProcedure<TParams, TResponse, TFinalResponse>,
     ) {
         const path = getRpcPath(name, this.rpcRoutePrefix);
         this.procedures[name] = createRpcDefinition(name, path, procedure);
@@ -119,6 +118,7 @@ export class ArriApplication {
         }
         if (TypeGuard.TObject(procedure.response)) {
             const responseName = getRpcResponseName(name, procedure);
+
             if (responseName) {
                 this.models[responseName] = procedure.response;
             }
@@ -155,7 +155,7 @@ export class ArriApplication {
 function createRpcDefinition(
     rpcName: string,
     httpPath: string,
-    procedure: ArriProcedure<any, any, any>
+    procedure: ArriProcedure<any, any, any>,
 ): ProcedureDefinition {
     return {
         description: procedure.description,
@@ -172,8 +172,8 @@ function getRpcPath(rpcName: string, prefix = ""): string {
         .map((part) =>
             removeDisallowedChars(
                 kebabCase(part),
-                "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"
-            )
+                "!@#$%^&*()+=[]{}|\\;:'\"<>,./?",
+            ),
         )
         .join("/");
     const finalPath = prefix ? `/${prefix}/${path}` : `/${path}`;
@@ -182,7 +182,7 @@ function getRpcPath(rpcName: string, prefix = ""): string {
 
 function getRpcParamName(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>
+    procedure: ArriProcedure<any, any, any>,
 ): string | null {
     if (!procedure.params) {
         return null;
@@ -190,7 +190,7 @@ function getRpcParamName(
     const nameParts = rpcName
         .split(".")
         .map((part) =>
-            removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?")
+            removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
         );
     const paramName =
         (procedure.params as TObject).$id ??
@@ -200,7 +200,7 @@ function getRpcParamName(
 
 function getRpcParamDefinition(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>
+    procedure: ArriProcedure<any, any, any>,
 ): ProcedureDefinition["params"] {
     if (!procedure.params) {
         return undefined;
@@ -214,7 +214,7 @@ function getRpcParamDefinition(
 
 function getRpcResponseName(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>
+    procedure: ArriProcedure<any, any, any>,
 ): string | null {
     if (!procedure.response) {
         return null;
@@ -223,7 +223,7 @@ function getRpcResponseName(
         const nameParts = rpcName
             .split(".")
             .map((part) =>
-                removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?")
+                removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
             );
         const responseName =
             procedure.response.$id ??
@@ -235,7 +235,7 @@ function getRpcResponseName(
 
 function getRpcResponseDefinition(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>
+    procedure: ArriProcedure<any, any, any>,
 ): ProcedureDefinition["response"] {
     if (!procedure.response) {
         return undefined;
@@ -278,7 +278,7 @@ export interface ArriProcedureBase {
 }
 
 export type ArriProcedureHandler<TParams, TResponse> = (
-    context: RpcHandlerContext<TParams>
+    context: RpcHandlerContext<TParams>,
 ) => TResponse | Promise<TResponse>;
 
 export interface ArriProcedure<
@@ -286,7 +286,7 @@ export interface ArriProcedure<
     TResponse extends TObject | undefined,
     TFinalResponse extends TResponse extends TObject
         ? Static<TResponse>
-        : Static<TVoid>
+        : Static<TVoid>,
 > {
     description?: string;
     method?: RpcMethod;
@@ -300,7 +300,7 @@ export interface ArriProcedure<
         context: RpcPostHandlerContext<
             TParams extends TObject ? Static<TParams> : undefined,
             TResponse extends TObject ? Static<TResponse> : undefined
-        >
+        >,
     ) => any;
 }
 
@@ -323,16 +323,16 @@ export function defineRpc<
     TResponse extends TObject | undefined | never = undefined,
     TFinalResponse extends TResponse extends TObject
         ? Static<TObject>
-        : Static<TVoid> = any
+        : Static<TVoid> = any,
 >(
-    config: ArriProcedure<TParams, TResponse, TFinalResponse>
+    config: ArriProcedure<TParams, TResponse, TFinalResponse>,
 ): ArriProcedure<TParams, TResponse, TFinalResponse> {
     return config;
 }
 
 export function defineService<TRpcMap extends Record<string, any>>(
     id: string,
-    procedures: TRpcMap
+    procedures: TRpcMap,
 ) {
     return {
         id,

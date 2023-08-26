@@ -25,35 +25,38 @@ const UserSchema = Type.Object(
         updatedAt: Type.Date(),
         email: Type.String(),
     },
-    { $id: "UserSchema" }
+    { $id: "UserSchema" },
 );
 
-const PostResponse = Type.Object({
-    null: Type.Null(),
-    undefined: Type.Undefined(),
-    unint8Array: Type.Uint8Array(),
-    bigInt: Type.BigInt(),
-    union: Type.Union([Type.Literal("option1"), Type.Literal("option2")]),
-    enum: Type.Enum({
-        option1: "option1",
-        option2: "option2",
-    }),
-    array: Type.Array(
-        Type.Object({
-            id: Type.String(),
-            name: Type.String(),
-        })
-    ),
-    record: Type.Record(
-        Type.String(),
-        Type.Object({
-            id: Type.String(),
-            name: Type.String(),
-            updatedAt: Type.Number(),
-        })
-    ),
-    ref: UserSchema,
-});
+const PostResponse = Type.Object(
+    {
+        null: Type.Null(),
+        undefined: Type.Undefined(),
+        unint8Array: Type.Uint8Array(),
+        bigInt: Type.BigInt(),
+        union: Type.Union([Type.Literal("option1"), Type.Literal("option2")]),
+        enum: Type.Enum({
+            option1: "option1",
+            option2: "option2",
+        }),
+        array: Type.Array(
+            Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+            }),
+        ),
+        record: Type.Record(
+            Type.String(),
+            Type.Object({
+                id: Type.String(),
+                name: Type.String(),
+                updatedAt: Type.Number(),
+            }),
+        ),
+        ref: UserSchema,
+    },
+    { $id: "PostResponse" },
+);
 
 type PostResponse = Static<typeof PostResponse>;
 
