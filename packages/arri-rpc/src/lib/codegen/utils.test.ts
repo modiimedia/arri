@@ -30,26 +30,26 @@ describe("unflattenObject()", () => {
             "posts.getPost": {
                 method: "get",
                 path: "/posts/get-post",
-                params: { $ref: "PostsGetPostParams" },
-                response: { $ref: "PostsGetPostResponse" },
+                params: "PostsGetPostParams",
+                response: "PostsGetPostResponse",
             },
             "posts.updatePost": {
                 method: "post",
                 path: "/posts/update-post",
-                params: { $ref: "PostsUpdatePostParams" },
-                response: { $ref: "PostsUpdatePostResponse" },
+                params: "PostsUpdatePostParams",
+                response: "PostsUpdatePostResponse",
             },
             "posts.comments.getComment": {
                 method: "get",
                 path: "/posts/comments/get-comment",
-                params: { $ref: "GetCommentParams" },
-                response: { $ref: "GetCommentResponse" },
+                params: "GetCommentParams",
+                response: "GetCommentResponse",
             },
             "users.getUser": {
                 method: "get",
                 path: "/users/getUser",
-                params: { $ref: "UserParams" },
-                response: { $ref: "User" },
+                params: "UserParams",
+                response: "User",
             },
         };
         expect(JSON.stringify(unflattenObject(input))).toEqual(
@@ -58,21 +58,21 @@ describe("unflattenObject()", () => {
                     getPost: {
                         method: "get",
                         path: "/posts/get-post",
-                        params: { $ref: "PostsGetPostParams" },
-                        response: { $ref: "PostsGetPostResponse" },
+                        params: "PostsGetPostParams",
+                        response: "PostsGetPostResponse",
                     },
                     updatePost: {
                         method: "post",
                         path: "/posts/update-post",
-                        params: { $ref: "PostsUpdatePostParams" },
-                        response: { $ref: "PostsUpdatePostResponse" },
+                        params: "PostsUpdatePostParams",
+                        response: "PostsUpdatePostResponse",
                     },
                     comments: {
                         getComment: {
                             method: "get",
                             path: "/posts/comments/get-comment",
-                            params: { $ref: "GetCommentParams" },
-                            response: { $ref: "GetCommentResponse" },
+                            params: "GetCommentParams",
+                            response: "GetCommentResponse",
                         },
                     },
                 },
@@ -80,8 +80,8 @@ describe("unflattenObject()", () => {
                     getUser: {
                         method: "get",
                         path: "/users/getUser",
-                        params: { $ref: "UserParams" },
-                        response: { $ref: "User" },
+                        params: "UserParams",
+                        response: "User",
                     },
                 },
             })

@@ -7,7 +7,6 @@ import fs from "node:fs/promises";
 import type { Hookable } from "hookable";
 import type { RequestListener } from "node:http";
 import {
-    setNestedObjectProperty,
     type ApplicationDefinition,
     type ProcedureDefinition,
     removeDisallowedChars,
@@ -16,6 +15,7 @@ import { TypeGuard } from "@sinclair/typebox";
 import { camelCase, kebabCase, pascalCase } from "scule";
 import { type RpcMethod, isRpc } from "../arri-rpc";
 import { existsSync } from "node:fs";
+import { RpcError } from "../errors";
 
 export interface Arri {
     rootDir: string;
@@ -231,8 +231,7 @@ export function JsonStringifyWithSymbols(object: any, clean?: boolean): string {
 let writeCount = 0;
 async function generateApplicationDefinition(config: FullArriConfig) {
     const { procedures, models } = await getRpcs(config);
-    const services: ApplicationDefinition["services"] = {};
-    const endpoints: ApplicationDefinition["endpoints"] = {};
+    const mappedProcedures: ApplicationDefinition["procedures"] = {};
     Object.keys(procedures).forEach((key) => {
         const rpc = procedures[key];
         const value: ProcedureDefinition = {
@@ -241,13 +240,12 @@ async function generateApplicationDefinition(config: FullArriConfig) {
             params: rpc.params,
             response: rpc.response,
         };
-        endpoints[rpc.httpPath] = rpc.method;
-        setNestedObjectProperty(key, value, services);
+        mappedProcedures[key] = value;
     });
     const output: ApplicationDefinition = {
-        endpoints,
-        services,
+        procedures: mappedProcedures,
         models,
+        errors: RpcError,
     };
     const importParts: string[] = [];
     const interfaceFieldParts: string[] = [];

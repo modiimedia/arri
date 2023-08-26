@@ -6,31 +6,14 @@ import {
     readValidatedBody,
     send,
     type H3Event,
+    setResponseHeader,
 } from "h3";
 import { type RpcHandlerContext, type ArriProcedure } from "./arri-rpc";
 import { type Static, type TSchema } from "@sinclair/typebox";
 import { Value, type ValueError } from "@sinclair/typebox/value";
 import { defineRpcError } from "./errors";
 
-const typeboxSafeValidate = <T extends TSchema>(schema: T) => {
-    const fn = (
-        input: any
-    ):
-        | { success: true; value: Static<T> }
-        | { success: false; errors: ValueError[] } => {
-        if (Value.Check(schema, input)) {
-            return { success: true, value: input as Static<T> };
-        }
-        const errs = [...Value.Errors(schema, input)];
-        return {
-            success: false,
-            errors: errs,
-        };
-    };
-    return fn;
-};
-
-export function registerProcedure(
+export function registerRpc(
     router: Router,
     path: string,
     procedure: ArriProcedure<any, any, any>,
@@ -50,13 +33,21 @@ export function registerProcedure(
                 case "head": {
                     const parsedParams = await getValidatedQuery(
                         event,
-                        typeboxSafeValidate(procedure.params)
+                        typeboxSafeValidate(procedure.params, true)
                     );
                     if (!parsedParams.success) {
+                        const errorParts: string[] = [];
+                        for (const err of parsedParams.errors) {
+                            const propName = err.path.split("/");
+                            propName.shift();
+                            if (!errorParts.includes(propName.join("."))) {
+                                errorParts.push(propName.join("."));
+                            }
+                        }
                         throw defineRpcError(400, {
-                            message: `Missing or invalid url query parameters: [${parsedParams.errors
-                                .map((err) => err.path)
-                                .join(", ")}]`,
+                            statusMessage: `Missing or invalid url query parameters: [${errorParts.join(
+                                ","
+                            )}]`,
                             data: parsedParams.errors,
                         });
                     }
@@ -74,7 +65,7 @@ export function registerProcedure(
                     );
                     if (!parsedParams.success) {
                         throw defineRpcError(400, {
-                            message: "Invalid request body",
+                            statusMessage: "Invalid request body",
                             data: parsedParams.errors,
                         });
                     }
@@ -85,8 +76,14 @@ export function registerProcedure(
                     break;
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         const response = await procedure.handler({ params, event });
-        await send(event, response);
+        if (typeof response === "object") {
+            setResponseHeader(event, "Content-Type", "application/json");
+            await send(event, JSON.stringify(response));
+        } else {
+            await send(event, response);
+        }
         if (procedure.postHandler) {
             await procedure.postHandler({ params, response, event });
         }
@@ -114,23 +111,24 @@ export function registerProcedure(
     }
 }
 
-export function initializeProcedures(
-    _router: Router,
-    _middleware: RpcMiddleware[]
-) {
-    // Doesn't actually do anything we swap this out with the "registerProcedures"
-    // function at build time
-}
-
-export function registerProcedures(
-    router: Router,
-    middleware: RpcMiddleware[],
-    procedures: Record<string, ArriProcedure<any, any, any>>
-) {
-    Object.keys(procedures).forEach((key) => {
-        registerProcedure(router, key, procedures[key], middleware);
-    });
-}
-
 export type RpcMiddleware = (event: H3Event) => any | Promise<any>;
 export const defineRpcMiddleware = (middleware: RpcMiddleware) => middleware;
+
+function typeboxSafeValidate<T extends TSchema>(schema: T, coerce = false) {
+    const fn = (
+        input: any
+    ):
+        | { success: true; value: Static<T> }
+        | { success: false; errors: ValueError[] } => {
+        const finalInput = coerce ? Value.Convert(schema, input) : input;
+        if (Value.Check(schema, finalInput)) {
+            return { success: true, value: finalInput as Static<T> };
+        }
+        const errs = [...Value.Errors(schema, finalInput)];
+        return {
+            success: false,
+            errors: errs,
+        };
+    };
+    return fn;
+}

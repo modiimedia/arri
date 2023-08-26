@@ -87,8 +87,10 @@ Future<http.Response> arriRequest(
       break;
     default:
       throw ArriRequestError(
-          statusCode: 500,
-          statusMessage: "Unsupported HTTP method \"$method\"");
+          name: "UNSUPPORTED_METHOD",
+          statusCode: 400,
+          statusMessage: "Client has not implemented HTTP method \"$method\"",
+          message: "Client has not implemented HTTP method \"$method\"");
   }
   return result;
 }
@@ -120,13 +122,7 @@ Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
     return ArriRequestResult(value: result);
   } catch (err) {
     return ArriRequestResult(
-        error: err is ArriRequestError
-            ? err
-            : ArriRequestError(
-                statusCode: 500,
-                statusMessage: err.toString(),
-                data: err,
-              ));
+        error: err is ArriRequestError ? err : ArriRequestError.unknown());
   }
 }
 
@@ -153,29 +149,39 @@ abstract class ArriEndpoint {
 }
 
 class ArriRequestError implements Exception {
+  final String name;
   final int statusCode;
   final String statusMessage;
+  final String message;
   final dynamic data;
   const ArriRequestError({
+    required this.name,
     required this.statusCode,
     required this.statusMessage,
+    required this.message,
     this.data,
   });
   factory ArriRequestError.fromResponse(http.Response response) {
     try {
       final body = json.decode(response.body);
       return ArriRequestError(
+          name: body["name"] is String ? body["name"] : "UNKNOWN",
           statusCode: response.statusCode,
           statusMessage: body["statusMessage"] is String
               ? body["statusMessage"]
               : "Unknown error",
+          message:
+              body["message"] is String ? body["message"] : "Unknown error",
           data: body["data"]);
     } catch (err) {
-      return ArriRequestError(
-        statusCode: response.statusCode,
-        statusMessage: "Unknown error",
-        data: null,
-      );
+      return ArriRequestError.unknown();
     }
+  }
+  factory ArriRequestError.unknown() {
+    return ArriRequestError(
+        name: "UNKNOWN",
+        statusCode: 400,
+        statusMessage: "Unknown error",
+        message: "Unknown error");
   }
 }

@@ -15,21 +15,21 @@ describe("Dart Tests", () => {
             getUser: {
                 path: "/users/get-user",
                 method: "get",
-                params: { $ref: "UsersGetUserParams" },
-                response: { $ref: "User" },
+                params: "UsersGetUserParams",
+                response: "User",
             },
             updateUser: {
                 path: "/users/update-user",
                 method: "post",
-                params: { $ref: "UserUpdateData" },
-                response: { $ref: "User" },
+                params: "UserUpdateData",
+                response: "User",
             },
             settings: {
                 getUserSettings: {
                     path: "/users/settings/get-user-settings",
                     method: "get",
-                    params: { $ref: "UserSettingsGetUserSettingsParams" },
-                    response: { $ref: "UserSettingsGetUserSettingsResponse" },
+                    params: "UserSettingsGetUserSettingsParams",
+                    response: "UserSettingsGetUserSettingsResponse",
                 },
             },
         });
@@ -91,8 +91,8 @@ class UserServiceSettingsService {
             getPost: {
                 path: "/posts/get-post",
                 method: "get",
-                params: { type: "undefined" },
-                response: { type: "undefined" },
+                params: undefined,
+                response: undefined,
             },
         });
         expect(normalizeWhitespace(result)).toBe(
@@ -325,60 +325,53 @@ enum UserRole implements Comparable<UserRole> {
 
 test("Dart client test", () => {
     const apiDef: ApplicationDefinition = {
-        endpoints: {
-            "/v1/users/get-user": "get",
-            "/v1/users/get-users": "get",
-            "/v1/posts/get-post": "get",
-            "/v1/posts/update-post": "post",
-            "/v1/posts/delete-posts": "delete",
-            "/v2/users/get-user": "get",
-        },
-        services: {
-            v1: {
-                users: {
-                    getUser: {
-                        path: "/v1/users/get-user",
-                        method: "get",
-                        params: { $ref: "UserParams" },
-                        response: { $ref: "User" },
-                    },
-                    getUsers: {
-                        path: "/v1/users/get-users",
-                        method: "get",
-                        params: { $ref: "UserListParams" },
-                        response: { $ref: "UsersGetUsersResponse" },
-                    },
-                },
-                posts: {
-                    getPost: {
-                        path: "/v1/posts/get-post",
-                        method: "get",
-                        params: { $ref: "PostParams" },
-                        response: { $ref: "Post" },
-                    },
-                    updatePost: {
-                        path: "/v1/posts/update-post",
-                        method: "post",
-                        params: { $ref: "PostsUpdatePostParams" },
-                        response: { $ref: "Post" },
-                    },
-                    deletePost: {
-                        path: "/v1/posts/delete-posts",
-                        method: "delete",
-                        params: { $ref: "PostParams" },
-                        response: { type: "undefined" },
-                    },
-                },
+        errors: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                statusCode: { type: "integer" },
+                statusMessage: { type: "string" },
+                message: { type: "string" },
+                data: {},
             },
-            v2: {
-                users: {
-                    getUser: {
-                        path: "/v2/users/get-user",
-                        method: "get",
-                        params: { $ref: "UserParams" },
-                        response: { $ref: "UserV2" },
-                    },
-                },
+            required: ["name", "statusCode", "statusMessage", "message"],
+        },
+        procedures: {
+            "v1.users.getUser": {
+                path: "/v1/users/get-user",
+                method: "get",
+                params: "UserParams",
+                response: "User",
+            },
+            "v1.users.getUsers": {
+                path: "/v1/users/get-users",
+                method: "get",
+                params: "UserListParams",
+                response: "UsersGetUsersResponse",
+            },
+            "v1.posts.getPost": {
+                path: "/v1/posts/get-post",
+                method: "get",
+                params: "PostParams",
+                response: "Post",
+            },
+            "v1.posts.updatePost": {
+                path: "/v1/posts/update-post",
+                method: "post",
+                params: "PostsUpdatePostParams",
+                response: "Post",
+            },
+            "v1.posts.deletePost": {
+                path: "/v1/posts/delete-posts",
+                method: "delete",
+                params: "PostParams",
+                response: undefined,
+            },
+            "v2.users.getUser": {
+                path: "/v2/users/get-user",
+                method: "get",
+                params: "UserParams",
+                response: "UserV2",
             },
         },
         models: {
@@ -442,6 +435,8 @@ test("Dart client test", () => {
                 }),
             }),
         },
+        schemaVersion: "0.0.1",
+        description: "",
     };
     const result = createDartClient(apiDef, "Backend");
     writeFileSync(

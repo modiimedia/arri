@@ -1,3 +1,59 @@
+import { type Static, Type } from "@sinclair/typebox";
+
+export const RpcError = Type.Object(
+    {
+        name: Type.String(),
+        statusCode: Type.Integer(),
+        statusMessage: Type.String(),
+        message: Type.String(),
+        data: Type.Optional(Type.Object({}, { additionalProperties: true })),
+    },
+    { $id: "RpcError" }
+);
+
+export type RpcError = Static<typeof RpcError> & Error;
+
+export function defineRpcError(
+    statusCode: StatusCode,
+    input: Partial<Omit<RpcError, "statusCode">> = {}
+): RpcError {
+    const defaultVals = errorResponseDefaults[statusCode];
+    return {
+        name: input.name ?? defaultVals.name ?? "UNKNOWN",
+        statusCode,
+        statusMessage:
+            input.statusMessage ??
+            input.statusMessage ??
+            defaultVals.message ??
+            "an unknown error occurred",
+        message:
+            input.message ??
+            input.statusMessage ??
+            defaultVals.message ??
+            "an unknown occurred",
+        data: input.data,
+    };
+}
+
+export function isRpcError(input: unknown): input is RpcError {
+    if (input === null) {
+        return false;
+    }
+    if (typeof input !== "object") {
+        return false;
+    }
+    return (
+        "name" in input &&
+        typeof input.name === "string" &&
+        "statusCode" in input &&
+        typeof input.statusCode === "number" &&
+        "statusMessage" in input &&
+        typeof input.statusMessage === "string" &&
+        "message" in input &&
+        typeof input.message === "string"
+    );
+}
+
 export type StatusCode =
     | number
     | 400
@@ -191,48 +247,3 @@ const errorResponseDefaults: Record<
         message: "Network Authentication Required",
     },
 };
-
-export interface ApiRouteError extends Error {
-    name: string;
-    statusCode: StatusCode;
-    statusMessage: string;
-    message: string;
-    data?: any;
-}
-
-export function isRpcError(input: unknown): input is ApiRouteError {
-    if (input === null) {
-        return false;
-    }
-    if (typeof input !== "object") {
-        return false;
-    }
-    return (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        typeof (input as any).statusCode === "number" &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        typeof (input as any).name === "string"
-    );
-}
-
-export function defineRpcError(
-    statusCode: StatusCode,
-    input: Partial<Omit<ApiRouteError, "statusCode">> = {}
-): ApiRouteError {
-    const defaultVals = errorResponseDefaults[statusCode];
-    return {
-        name: input.name ?? defaultVals.name ?? "UNKNOWN",
-        statusCode,
-        statusMessage:
-            input.statusMessage ??
-            input.statusMessage ??
-            defaultVals.message ??
-            "an unknown error occurred",
-        message:
-            input.message ??
-            input.statusMessage ??
-            defaultVals.message ??
-            "an unknown occurred",
-        data: input.data,
-    };
-}

@@ -1,9 +1,11 @@
-import { type TEnum, type TObject } from "@sinclair/typebox";
+import { type TSchema, type TEnum, type TObject } from "@sinclair/typebox";
 import { camelCase, pascalCase } from "scule";
 import {
     type ApplicationDefinition,
     type ServiceDefinition,
     isProcedureDefinition,
+    unflattenObject,
+    jsonSchemaItemType,
 } from "./utils";
 
 /**
@@ -16,16 +18,19 @@ export function createDartClient(
     appDef: ApplicationDefinition,
     prefix = "Client"
 ) {
-    const { models, services, endpoints } = appDef;
+    const { models, procedures } = appDef;
     const serviceParts: Array<{
         name: string;
         key: string;
         content: string;
     }> = [];
+    const services = unflattenObject(procedures) as Record<
+        string,
+        ServiceDefinition
+    >;
     Object.keys(services).forEach((k) => {
         const service = services[k];
         const serviceName = pascalCase(`$_${prefix}_${k}_service`);
-
         serviceParts.push({
             name: serviceName,
             key: k,
@@ -37,18 +42,22 @@ export function createDartClient(
             ),
         });
     });
-
+    const endpoints: Record<string, string> = {};
+    Object.keys(procedures).forEach((key) => {
+        const rpc = procedures[key];
+        endpoints[rpc.path] = rpc.method;
+    });
     const modelParts: string[] = [];
     Object.keys(models).forEach((key) => {
-        const model = models[key];
-        if (model.type === "object") {
+        const model = models[key] as TSchema;
+        if ("type" in model && model.type === "object") {
             const typeName = `${prefix}${pascalCase(key)}`;
             const objModel = model;
             if (!generatedModels.includes(typeName)) {
                 modelParts.push(
                     dartModelFromJsonSchema(
                         `${prefix}${pascalCase(key)}`,
-                        objModel
+                        objModel as TObject
                     )
                 );
                 generatedModels.push(typeName);
@@ -140,7 +149,6 @@ export function dartServiceFromServiceDefinition(
     Object.keys(def).forEach((key) => {
         const item = def[key];
         if (isProcedureDefinition(item)) {
-            console.log("TRANFORMING RPC", item);
             let returnType:
                 | `Future<String>`
                 | "Future<int>"
@@ -148,31 +156,15 @@ export function dartServiceFromServiceDefinition(
                 | "Future<void>"
                 | `Future<${string}>` = `Future<String>`;
             let returnTypeName = "String";
-            if ("$ref" in item.response) {
-                returnType = `Future<${prefix}${item.response.$ref}>`;
-                returnTypeName = `${prefix}${item.response.$ref}`;
+            if (item.response) {
+                returnType = `Future<${prefix}${item.response}>`;
+                returnTypeName = `${prefix}${item.response}`;
             } else {
-                switch (item.response.type) {
-                    case "boolean":
-                        returnType = `Future<bool>`;
-                        break;
-                    case "integer":
-                        returnType = `Future<int>`;
-                        break;
-                    case "number":
-                        returnType = `Future<double>`;
-                        break;
-                    case "string":
-                        returnType = `Future<String>`;
-                        break;
-                    case "undefined":
-                        returnType = `Future<void>`;
-                        break;
-                }
+                returnType = "Future<void>";
             }
             let paramsInput = "";
-            if ("$ref" in item.params) {
-                paramsInput = `${prefix}${item.params.$ref} params`;
+            if (item.params) {
+                paramsInput = `${prefix}${item.params} params`;
             }
             let responseParser: string = "(body) => body;";
             switch (returnType) {
@@ -254,6 +246,9 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
     const fields: Array<{ type: string; name: string }> = [];
     const subModelParts: string[] = [];
     Object.entries(schema.properties).forEach(([key, val]) => {
+        if (typeof val !== "object") {
+            return;
+        }
         const [dartType, subTypes] = dartPropertyTypeFromSchema(
             name,
             key,
@@ -266,7 +261,7 @@ export function dartModelFromJsonSchema(name: string, schema: TObject): string {
             }
         }
         fields.push({ type: dartType, name: key });
-        if (!isDartType(dartType) && val.type === "object") {
+        if (!isDartType(dartType) && "type" in val && val.type === "object") {
             subModelParts.push(
                 dartModelFromJsonSchema(
                     dartType.replace("?", ""),
@@ -336,7 +331,7 @@ ${subModelParts.join("\n")}`;
 export function dartPropertyTypeFromSchema(
     objectName: string,
     propertyName: string,
-    schema: TObject
+    schema: Omit<TObject, symbol>
 ): [DartType | string, string[] | undefined] {
     const prop = schema.properties[propertyName];
     const isOptional = !schema.required?.includes(propertyName);
@@ -544,16 +539,6 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
         classType
     );
 }
-
-type jsonSchemaItemType =
-    | "integer"
-    | "number"
-    | "string"
-    | "boolean"
-    | "null"
-    | "Date"
-    | "object"
-    | "list";
 
 type TypeMap = Record<jsonSchemaItemType, string | undefined>;
 

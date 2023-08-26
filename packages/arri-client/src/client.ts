@@ -1,135 +1,105 @@
-/* eslint-disable @typescript-eslint/ban-types */
-import { ofetch, type FetchOptions } from "ofetch";
-import { type H3Event, type HTTPMethod as H3HTTPMethod } from "h3";
+import { ofetch } from "ofetch";
+import { type Static, Type } from "@sinclair/typebox";
+import { Value } from "@sinclair/typebox/value";
 import type { Serialize } from "nitropack";
-import type { ExtractParams } from "arri";
 
-export type HttpMethod = Lowercase<H3HTTPMethod>;
-
-export type ApiDefinition = Record<HttpMethod, Record<string, any>>;
-
-export interface TestApi {
-    get: {
-        "/users/:userId": {
-            path: "/users/:userId";
-            method: "get";
-            handler: (event: H3Event) => string;
-        };
-    };
-    head: {};
-    patch: {};
-    post: {};
-    put: {};
-    delete: {};
-    connect: {};
-    options: {};
-    trace: {};
+export interface ArriRequestOpts {
+    url: string;
+    method: string;
+    headers?: any;
+    params?: any;
 }
 
-export type ApiUrl<
-    TApi extends ApiDefinition,
-    TMethod extends HttpMethod
-> = Exclude<keyof TApi[TMethod], symbol | number>;
-
-type RouteSchema<
-    TApi extends ApiDefinition,
-    TMethod extends HttpMethod,
-    TPath extends string
-> = TApi[TMethod][TPath]["schema"];
-
-export type RouteReturn<
-    TApi extends ApiDefinition,
-    TMethod extends HttpMethod,
-    TPath extends string
-> = Serialize<Awaited<ReturnType<TApi[TMethod][TPath]["handler"]>>>;
-
-export interface ArriClientOpts {
-    baseUrl?: string;
-    defaultHeaders?: Record<string, string>;
-}
-
-export interface ApiRequestOptions<
-    TApi extends ApiDefinition,
-    TMethod extends HttpMethod,
-    TPath extends ApiUrl<TApi, TMethod>
-> extends Omit<FetchOptions, "method"> {
-    params: TPath extends string ? ExtractParams<TPath> : undefined;
-    query: RouteSchema<TApi, TMethod, TPath>;
-    body: RouteSchema<TApi, TMethod, TPath>;
-}
-
-export class ArriClient<TApi extends ApiDefinition> {
-    baseUrl: string;
-
-    defaultHeaders: Record<string, string>;
-
-    constructor(opts?: ArriClientOpts) {
-        this.baseUrl = opts?.baseUrl ?? "";
-        this.defaultHeaders = opts?.defaultHeaders ?? {};
+export async function arriRequest<T>(
+    opts: ArriRequestOpts
+): Promise<Serialize<T>> {
+    let url = opts.url;
+    let body: undefined | any;
+    switch (opts.method) {
+        case "get":
+        case "head":
+            if (typeof opts.params === "object") {
+                const urlParts: string[] = [];
+                Object.keys(opts.params).forEach((key) => {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    urlParts.push(`${key}=${opts.params[key]}`);
+                });
+                url = `${opts.url}?${urlParts.join("&")}`;
+            }
+            break;
+        default:
+            if (typeof opts.params === "object") {
+                body = opts.params;
+            }
+            break;
     }
+    const result = await ofetch<Serialize<T>>(url, {
+        body,
+        headers: opts.headers,
+    });
+    return result;
+}
 
-    async request<
-        TMethod extends HttpMethod,
-        TUrl extends ApiUrl<TApi, TMethod>
-    >(
-        method: TMethod,
-        url: TUrl,
-        options?: ApiRequestOptions<TApi, TMethod, TUrl>
-    ): Promise<RouteReturn<TApi, TMethod, TUrl>> {
-        const headers = {
-            ...this.defaultHeaders,
-            ...options?.headers,
+export async function arriSafeRequest<T>(
+    opts: ArriRequestOpts
+): Promise<SafeResponse<Serialize<T>>> {
+    try {
+        const result = await arriRequest<T>(opts);
+        return {
+            success: true,
+            value: result,
         };
-        let finalUrl = url as string;
-        if (options?.params) {
-            Object.keys(options.params).forEach((key) => {
-                finalUrl = finalUrl.replace(
-                    `:${key}`,
-                    (options.params as any)[key]
-                );
-            });
+    } catch (err) {
+        if (Value.Check(ArriRequestError, err)) {
+            return {
+                success: false,
+                error: err,
+            };
         }
-        const result = (await ofetch(finalUrl, {
-            ...options,
-            method,
-            params: undefined,
-            headers,
-        })) as RouteReturn<TApi, TMethod, TUrl>;
-        return result;
+        return {
+            success: false,
+            error: {
+                name: "UNKNOWN",
+                statusCode: 400,
+                statusMessage: "Unknown error",
+                data: err,
+            } satisfies ArriRequestError,
+        };
     }
+}
 
-    delete<TUrl extends ApiUrl<TApi, "delete">>(
-        url: TUrl,
-        options?: ApiRequestOptions<TApi, "delete", TUrl>
-    ) {
-        return this.request("delete", url, options);
+export const ArriRequestError = Type.Object({
+    name: Type.String(),
+    statusCode: Type.Number(),
+    statusMessage: Type.String(),
+    data: Type.Optional(Type.Any()),
+});
+
+export type ArriRequestError = Static<typeof ArriRequestError>;
+
+export type SafeResponse<T> =
+    | {
+          success: true;
+          value: T;
+      }
+    | { success: false; error: ArriRequestError };
+
+class Client {
+    private readonly baseUrl: string;
+    private readonly headers: Record<string, string>;
+    users: ClientUsersService;
+    constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
+        this.baseUrl = opts.baseUrl ?? "";
+        this.headers = opts.headers ?? {};
+        this.users = new ClientUsersService(opts);
     }
+}
 
-    get<TUrl extends ApiUrl<TApi, "get">>(
-        url: TUrl,
-        options?: Omit<ApiRequestOptions<TApi, "get", TUrl>, "body">
-    ) {
-        return this.request("get", url, options as any);
-    }
-
-    patch<TUrl extends ApiUrl<TApi, "patch">>(
-        url: TUrl,
-        options?: ApiRequestOptions<TApi, "patch", TUrl>
-    ) {
-        return this.request("patch", url, options);
-    }
-
-    post<TUrl extends ApiUrl<TApi, "post">>(
-        url: TUrl,
-        options?: ApiRequestOptions<TApi, "post", TUrl>
-    ) {
-        return this.request("post", url, options);
-    }
-
-    put<TUrl extends ApiUrl<TApi, "put">>(
-        url: TUrl,
-        options?: ApiRequestOptions<TApi, "put", TUrl>
-    ) {
-        return this.request("put", url, options);
+class ClientUsersService {
+    baseUrl: string;
+    headers: Record<string, string>;
+    constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
+        this.baseUrl = opts.baseUrl ?? "";
+        this.headers = opts.headers ?? {};
     }
 }
