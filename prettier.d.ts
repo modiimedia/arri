@@ -1,3 +1,6 @@
 declare module "prettier" {
-    export function format(input: string, opts: { parser: string }): string;
+    export async function format(
+        input: string,
+        opts: { parser: string; tabWidth?: number },
+    ): Promise<string>;
 }

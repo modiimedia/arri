@@ -1,246 +1,106 @@
-import {
-    type App,
-    type H3Event,
-    type RouterMethod,
-    defineEventHandler,
-    send,
-    sendError,
-    setResponseStatus,
-} from "h3";
-import { type AnyZodObject, type ZodTypeAny } from "zod";
-import { type ExtractParams } from "./utils";
-import { zh } from "h3-zod";
-import { defineError, isH3Error } from "./errors";
-
-export interface HandlerEventContext<
-    Params extends Record<string, string> = any,
-    Body = any,
-    Query = any
-> {
-    params: Params;
-    body: Body;
-    query: Query;
-}
-
-export interface PostHandlerEventContext<
-    Params extends Record<string, string> = any,
-    Body = any,
-    Query = any,
-    Response = any
-> extends HandlerEventContext<Params, Body, Query> {
-    response: Response;
-}
-
-export interface RouteEvent<Context extends HandlerEventContext>
-    extends H3Event {
-    context: Context;
-}
-
-export type ArriRouteHandler<
-    Params extends Record<string, string>,
-    Body,
-    Query,
-    Response
-> = (
-    event: RouteEvent<HandlerEventContext<Params, Body, Query>>
-) => Response | Promise<Response>;
+import { type HttpMethod } from "./app";
+import { type Static, type TObject, type TSchema } from "@sinclair/typebox";
+import type { HandlerContext } from "./procedures";
 
 export interface ArriRoute<
-    Path extends string = "",
-    Method extends RouterMethod = "get",
-    Body extends undefined | ZodTypeAny = undefined,
-    Query extends undefined | AnyZodObject = undefined,
-    Response = any
+    TPath extends string,
+    TMethod extends HttpMethod,
+    TQuery extends TObject | undefined = undefined,
+    TBody extends TSchema | undefined = undefined,
+    TResponse extends TSchema | undefined = undefined,
+    TFallbackResponse = any,
 > {
-    id?: undefined | string;
-    path: Path;
-    method: Method;
-    schema?:
-        | undefined
-        | {
-              body?: Body;
-              query?: Query;
-          };
+    path: TPath;
+    method: TMethod;
+    query?: TQuery;
+    body?: TBody;
+    response?: TResponse;
     handler: ArriRouteHandler<
-        ExtractParams<Path>,
-        Body extends ZodTypeAny ? Body["_type"] : undefined,
-        Query extends AnyZodObject ? Query["_type"] : undefined,
-        Response
+        TPath,
+        TQuery extends TObject ? Static<TQuery> : undefined,
+        TBody extends TObject ? Static<TObject> : undefined,
+        TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
     >;
-    postHandler?: (
-        event: RouteEvent<
-            PostHandlerEventContext<
-                ExtractParams<Path>,
-                Body extends ZodTypeAny ? Body["_type"] : undefined,
-                Query extends AnyZodObject ? Query["_type"] : undefined,
-                Response
-            >
-        >
-    ) => any;
+    postHandler?: ArriRoutePostHandler<
+        TPath,
+        TQuery extends TObject ? Static<TQuery> : undefined,
+        TBody extends TObject ? Static<TObject> : undefined,
+        TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
+    >;
 }
 
-export const isArriRoute = (input: any): input is ArriRoute => {
-    if (typeof input !== "object") {
-        return false;
-    }
-    const keys = Object.keys(input);
-    if (
-        !keys.includes("path") ||
-        !keys.includes("method") ||
-        !keys.includes("handler")
-    ) {
-        return false;
-    }
-    return (
-        typeof input.path === "string" &&
-        typeof input.method === "string" &&
-        typeof input.handler === "function"
-    );
-};
-
-export const defineRoute = <
-    Path extends string,
-    Method extends RouterMethod,
-    Body extends undefined | ZodTypeAny = any,
-    Query extends undefined | AnyZodObject = any,
-    Response = any
+export function defineRoute<
+    TPath extends string,
+    TMethod extends HttpMethod,
+    TQuery extends TObject | undefined = any,
+    TBody extends TSchema | undefined = any,
+    TResponse extends TSchema | undefined = undefined,
+    TFallbackResponse = any,
 >(
-    route: ArriRoute<Path, Method, Body, Query, Response>
-): ArriRoute<Path, Method, Body, Query, Response> => route;
-
-export type ApiRouteMiddleware = (
-    event: RouteEvent<HandlerEventContext<Record<string, string>, any, any>>
-) => void | Promise<void>;
-
-export const defineMiddleware = (
-    middleware: ApiRouteMiddleware
-): ApiRouteMiddleware => middleware;
-
-export async function handleRoute(
-    event: H3Event,
-    route: ArriRoute,
-    middlewares: ApiRouteMiddleware[]
-): Promise<void> {
-    const processedEvent = event as RouteEvent<
-        HandlerEventContext<any, unknown, unknown>
-    >;
-    try {
-        if (route.schema?.body) {
-            const body = await zh.useValidatedBody(event, route.schema.body);
-            processedEvent.context.body = body;
-        }
-        if (route.schema?.query) {
-            const query = await zh.useValidatedQuery(event, route.schema.query);
-            processedEvent.context.query = query;
-        }
-        for (const item of middlewares) {
-            await item(processedEvent);
-        }
-        if (processedEvent._handled) {
-            return;
-        }
-        const result = await route.handler(processedEvent as any);
-        await send(processedEvent, result);
-
-        if (route.postHandler) {
-            (processedEvent.context as any).response = result;
-            await route.postHandler(processedEvent as any);
-        }
-    } catch (err) {
-        if (isH3Error(err)) {
-            setResponseStatus(processedEvent, err.statusCode);
-            sendError(processedEvent, err);
-        }
-        setResponseStatus(processedEvent, 500);
-        sendError(
-            processedEvent,
-            defineError(500, {
-                statusMessage: "an unknown error occurred",
-                message: "an unknown error occurred",
-                data: err,
-            })
-        );
-    }
+    config: ArriRoute<
+        TPath,
+        TMethod,
+        TQuery,
+        TBody,
+        TResponse,
+        TFallbackResponse
+    >,
+) {
+    return config;
 }
 
-export function registerArriRoutes(app: App, routeMap: any): void {
-    const routes: ArriRoute[] = [];
-    Object.keys(routeMap).forEach((key) => {
-        const routeGetMap = routeMap[key as RouterMethod];
-        Object.keys(routeGetMap).forEach((path) => {
-            routes.push(routeGetMap[path]);
-        });
-    });
+export type Middleware = (context: HandlerContext) => void | Promise<void>;
+export const defineMiddleware = (middleware: Middleware) => middleware;
 
-    for (const route of routes) {
-        registerArriRoute(app, route);
-    }
+export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
+    ? Record<Param, string> & NextPart
+    : NextPart;
+
+export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
+    ? ExtractParam<Segment, ExtractParams<Rest>>
+    : // eslint-disable-next-line @typescript-eslint/ban-types
+      ExtractParam<Path, {}>;
+
+export type ArriRouteHandler<
+    TPath extends string,
+    TQuery = undefined,
+    TBody = undefined,
+    TResponse = any,
+> = (
+    context: RouteHandlerContext<ExtractParams<TPath>, TQuery, TBody>,
+) => TResponse extends undefined
+    ? void | Promise<void>
+    : TResponse | Promise<TResponse>;
+
+export interface RouteHandlerContext<
+    TParams extends Record<string, string>,
+    TQuery = undefined,
+    TBody = undefined,
+> extends HandlerContext {
+    params: TParams;
+    query: TQuery;
+    body: TBody;
 }
 
-export function registerArriRoute(app: App, route: ArriRoute): void {
-    app.use(
-        route.path,
-        defineEventHandler(async (event) => {
-            const parsedContext = event.context as HandlerEventContext<
-                any,
-                any,
-                any
-            >;
-            parsedContext.params = event.context.params ?? {};
-            if (route.schema?.body && methodAllowsBody(route.method)) {
-                const body = await zh.useSafeValidatedBody(
-                    event,
-                    route.schema.body as ZodTypeAny
-                );
-
-                if (!body?.success) {
-                    throw defineError(400, {
-                        statusMessage: "Invalid request body",
-                        data: body.error.errors,
-                    });
-                }
-                parsedContext.body = body.data;
-            }
-            if (route.schema?.query) {
-                const query = await zh.useSafeValidatedQuery(
-                    event,
-                    route.schema.query as AnyZodObject
-                );
-                if (!query?.success) {
-                    const params: Array<string | number> = [];
-                    for (const err of query.error.errors) {
-                        if (err.path.length) {
-                            params.push(err.path[0]);
-                        }
-                    }
-                    throw defineError(400, {
-                        statusMessage: `Missing/invalid required url query parameters: [${params.join(
-                            ", "
-                        )}]`,
-                        data: query.error.errors,
-                    });
-                }
-                parsedContext.query = query.data;
-            }
-            event.context = parsedContext;
-            const response = await route.handler(event as any);
-            (event.context as any).response = response;
-            if (route.postHandler) {
-                await route.postHandler(event as any);
-            }
-        }),
-        { lazy: true }
-    );
+export interface RoutePostHandlerContext<
+    TParams extends Record<string, string>,
+    TQuery = undefined,
+    TBody = undefined,
+    TResponse = undefined,
+> extends RouteHandlerContext<TParams, TQuery, TBody> {
+    response: TResponse;
 }
 
-export const methodAllowsBody = (method: RouterMethod): boolean => {
-    switch (method) {
-        case "patch":
-        case "post":
-        case "put":
-        case "delete":
-            return true;
-        default:
-            return false;
-    }
-};
+export type ArriRoutePostHandler<
+    TPath extends string,
+    TQuery = undefined,
+    TBody = undefined,
+    TResponse = undefined,
+> = (
+    context: RoutePostHandlerContext<
+        ExtractParams<TPath>,
+        TQuery,
+        TBody,
+        TResponse
+    >,
+) => any;

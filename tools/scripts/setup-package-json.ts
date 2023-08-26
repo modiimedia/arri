@@ -4,7 +4,7 @@ import path from "pathe";
 import depcheck from "depcheck";
 // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import prettier from "prettier";
+import * as prettier from "prettier";
 
 const main = defineCommand({
     args: {
@@ -25,7 +25,7 @@ const main = defineCommand({
         await prepPackageJson(
             args["project-dir"],
             args["root-dir"],
-            args["out-dir"]
+            args["out-dir"],
         );
     },
 });
@@ -33,11 +33,13 @@ const main = defineCommand({
 async function prepPackageJson(
     projectDir: string,
     rootDir: string,
-    outDir: string
+    outDir: string,
 ) {
-    const projectPackageJson = JSON.parse(
-        await readFile(path.resolve(projectDir, "package.json"), "utf8")
-    ) as {
+    const fileFile = await readFile(
+        path.resolve(projectDir, "package.json"),
+        "utf8",
+    );
+    const projectPackageJson = JSON.parse(fileFile) as {
         version: string;
         dependencies: Record<string, string>;
         devDependencies: Record<string, string>;
@@ -45,7 +47,7 @@ async function prepPackageJson(
     };
     projectPackageJson.dependencies = {};
     const rootPackageJson = JSON.parse(
-        await readFile(path.resolve(rootDir, "package.json"), "utf8")
+        await readFile(path.resolve(rootDir, "package.json"), "utf8"),
     );
     const rootDeps = rootPackageJson.dependencies as Record<string, string>;
     projectPackageJson.version = rootPackageJson.version;
@@ -83,10 +85,10 @@ async function prepPackageJson(
     await ensureDir(path.resolve(outDir));
     await writeFile(
         path.resolve(outDir, "package.json"),
-        prettier.format(JSON.stringify(projectPackageJson), {
+        await prettier.format(JSON.stringify(projectPackageJson), {
             parser: "json",
             tabWidth: 4,
-        })
+        }),
     );
 }
 

@@ -1,14 +1,15 @@
 {
     "name": "arri",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "./packages/arri/src",
+    "sourceRoot": "packages/arri/src",
     "projectType": "library",
     "targets": {
         "build": {
             "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
+            "outputs": ["{workspaceRoot}/dist/packages/arri"],
             "options": {
-                "command": "unbuild -c packages/arri/build.config.ts",
+                "command": "unbuild",
                 "cwd": "packages/arri"
             }
         },
@@ -19,23 +20,8 @@
                 "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri --out-dir dist/packages/arri"
             }
         },
-        "build-tsc": {
-            "executor": "@nx/js:tsc",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "dist/packages/arri",
-                "main": "packages/arri/src/index.ts",
-                "tsConfig": "packages/arri/tsconfig.lib.json",
-                "assets": ["packages/arri/*.md"],
-                "updateBuildableProjectDepsInPackageJson": true
-            }
-        },
         "publish": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/arri"
-            },
+            "command": "node tools/scripts/publish.mjs arri {args.ver} {args.tag}",
             "dependsOn": ["build"]
         },
         "lint": {
