@@ -6,7 +6,7 @@ const app = new ArriApplication();
 app.registerMiddleware(defineRpcMiddleware((event) => {}));
 
 app.registerRpc("users.getUser", {
-    method: "get",
+    method: "delete",
     params: undefined,
     response: Type.Object({
         message: Type.String(),
