@@ -47,7 +47,7 @@
             "executor": "nx:run-commands",
             "options": {
                 "command": "pnpm publish",
-                "cwd": "dist/packages/arri-client"
+                "cwd": "dist/packages/arri"
             }
         }
     },
