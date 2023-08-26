@@ -16,13 +16,13 @@ import { defineClientGeneratorPlugin } from "./plugin";
 import { writeFileSync } from "fs";
 import { execSync } from "child_process";
 
-interface DartGeneratorOptions {
+export interface DartClientGeneratorOptions {
     clientName: string;
     outputFile: string;
 }
 
 export const dartClientGenerator = defineClientGeneratorPlugin(
-    (options: DartGeneratorOptions) => {
+    (options: DartClientGeneratorOptions) => {
         return {
             generator: async (def) => {
                 if (!options.clientName) {
