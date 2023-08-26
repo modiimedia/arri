@@ -12,6 +12,37 @@ import {
     isJsonSchemaArray,
     type JsonSchemaTypeValue,
 } from "./utils";
+import { defineClientGeneratorPlugin } from "./plugin";
+import { writeFileSync } from "fs";
+import { execSync } from "child_process";
+
+interface DartGeneratorOptions {
+    clientName: string;
+    outputFile: string;
+}
+
+export const dartClientGenerator = defineClientGeneratorPlugin(
+    (options: DartGeneratorOptions) => {
+        return {
+            generator: async (def) => {
+                if (!options.clientName) {
+                    throw new Error(
+                        'Missing "clientName" cannot generate dart client',
+                    );
+                }
+                if (!options.outputFile) {
+                    throw new Error(
+                        'Missing "outputFile" cannot generate dart client',
+                    );
+                }
+                const result = createDartClient(def, options.clientName);
+                writeFileSync(options.outputFile, result);
+                execSync(`dart format ${options.outputFile}`);
+            },
+            options,
+        };
+    },
+);
 
 /**
  * Tracking which model names we've already created classes for
@@ -21,7 +52,7 @@ const generatedModels: string[] = [];
 
 export function createDartClient(
     appDef: ApplicationDefinition,
-    prefix = "Client"
+    prefix = "Client",
 ) {
     const { models, procedures } = appDef;
     const serviceParts: Array<{
@@ -43,7 +74,7 @@ export function createDartClient(
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 serviceName,
                 service,
-                prefix
+                prefix,
             ),
         });
     });
@@ -60,7 +91,10 @@ export function createDartClient(
         const objModel = model;
         if (!generatedModels.includes(typeName)) {
             modelParts.push(
-                dartModelFromJsonSchema(`${prefix}${pascalCase(key)}`, objModel)
+                dartModelFromJsonSchema(
+                    `${prefix}${pascalCase(key)}`,
+                    objModel,
+                ),
             );
             generatedModels.push(typeName);
         }
@@ -89,7 +123,7 @@ class ${prefix} {
     return ${service.name}(
       baseUrl: baseUrl, headers: headers,
     );
-  }`
+  }`,
       )
       .join("\n  ")}
   Future<http.Response> rawRequest(
@@ -118,7 +152,7 @@ enum ${prefix}Endpoints implements Comparable<${prefix}Endpoints>, ArriEndpoint 
           (key) => `${camelCase(key.split("/").join("_"))}(
         path: "${key}",
         method: HttpMethod.${endpoints[key]},
-      )`
+      )`,
       )
       .join(",\n  ")};
 
@@ -138,7 +172,7 @@ enum ${prefix}Endpoints implements Comparable<${prefix}Endpoints>, ArriEndpoint 
 export function dartServiceFromServiceDefinition(
     name: string,
     def: ServiceDefinition,
-    prefix = ""
+    prefix = "",
 ) {
     const rpcParts: string[] = [];
     const subServiceParts: Array<{
@@ -212,7 +246,7 @@ export function dartServiceFromServiceDefinition(
         const subService = dartServiceFromServiceDefinition(
             pascalCase(`${name}_${key}_Service`),
             item,
-            prefix
+            prefix,
         );
         subServiceParts.push({
             name: subServiceName,
@@ -234,7 +268,7 @@ export function dartServiceFromServiceDefinition(
         baseUrl: baseUrl,
         headers: headers,
     );
-  }`
+  }`,
       )
       .join("\n")}
   ${rpcParts.join("\n  ")}
@@ -245,7 +279,7 @@ ${subServiceParts.map((sub) => sub.content).join("\n")}
 
 export function dartModelFromJsonSchema(
     name: string,
-    schema: JsonSchemaObject
+    schema: JsonSchemaObject,
 ): string {
     const fields: Array<{ type: string; name: string }> = [];
     const subModelParts: string[] = [];
@@ -256,7 +290,7 @@ export function dartModelFromJsonSchema(
         const [dartType, subTypes] = dartPropertyTypeFromSchema(
             name,
             key,
-            schema
+            schema,
         );
 
         if (subTypes?.length) {
@@ -267,7 +301,7 @@ export function dartModelFromJsonSchema(
         fields.push({ type: dartType, name: key });
         if (!isDartType(dartType) && "type" in val && val.type === "object") {
             subModelParts.push(
-                dartModelFromJsonSchema(dartType.replace("?", ""), val)
+                dartModelFromJsonSchema(dartType.replace("?", ""), val),
             );
         }
     });
@@ -278,7 +312,7 @@ export function dartModelFromJsonSchema(
         .map((field) =>
             field.type.includes("?")
                 ? `this.${field.name},`
-                : `required this.${field.name},`
+                : `required this.${field.name},`,
         )
         .join("\n    ")}
   });
@@ -302,12 +336,12 @@ export function dartModelFromJsonSchema(
               if (field.type.includes("List<")) {
                   return classListTransformer(typeName).toJsonBody(
                       field.name,
-                      isNullable
+                      isNullable,
                   );
               }
               return classTransformer(typeName, isNullable).toJsonBody(
                   field.name,
-                  isNullable
+                  isNullable,
               );
           })
           .join(",\n      ")},
@@ -332,7 +366,7 @@ ${subModelParts.join("\n")}`;
 export function dartPropertyTypeFromSchema(
     objectName: string,
     propertyName: string,
-    schema: JsonSchemaObject
+    schema: JsonSchemaObject,
 ): [DartType | string, string[] | undefined] {
     const prop = schema.properties?.[propertyName];
     const isOptional = !schema.required?.includes(propertyName);
@@ -357,7 +391,7 @@ export function dartPropertyTypeFromSchema(
             if (opt.type === "number" || opt.type === "integer") {
                 options.push({
                     name: camelCase(
-                        `num_${opt.const}`.split(".").join("Point")
+                        `num_${opt.const}`.split(".").join("Point"),
                     ),
                     type: opt.type === "number" ? "double" : "int",
                     value: opt.const,
@@ -370,7 +404,7 @@ export function dartPropertyTypeFromSchema(
           (opt) =>
               `${opt.name}(${
                   opt.type === "String" ? `"${opt.value}"` : opt.value
-              })`
+              })`,
       )
       .join(",\n  ")};
   const ${enumName}(this.value);
@@ -422,7 +456,7 @@ export function dartPropertyTypeFromSchema(
 
     if (isJsonSchemaObject(prop)) {
         const joinedPropName = pascalCase(
-            `${objectName}_${propertyName}`
+            `${objectName}_${propertyName}`,
         ) as string;
         finalType = isOptional ? `${joinedPropName}?` : joinedPropName;
     }
@@ -431,7 +465,7 @@ export function dartPropertyTypeFromSchema(
         const type = item.type;
         if (typeof type !== "string") {
             throw new Error(
-                "Union types are not supported in arrays at this time"
+                "Union types are not supported in arrays at this time",
             );
         }
         switch (type) {
@@ -491,7 +525,7 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
             case "DateTime":
                 return transformers.DateTime.fromJsonBody(
                     fieldName,
-                    "DateTime(0)"
+                    "DateTime(0)",
                 );
             case "DateTime?":
                 return transformers.DateTime.fromJsonBody(fieldName, "null");
@@ -505,12 +539,12 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
                     dartType
                         .replace("List<", "")
                         .replace(">", "") as DartBaseType,
-                    "[]"
+                    "[]",
                 );
             default:
                 return `${fieldName}: json["${fieldName}"] is ${dartType.replace(
                     "?",
-                    ""
+                    "",
                 )} ? json["${fieldName}"] : null`;
         }
     }
@@ -522,13 +556,13 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
 
         return classListTransformer(innerType).fromJsonBody(
             fieldName,
-            dartType.endsWith("?") ? "null" : "[]"
+            dartType.endsWith("?") ? "null" : "[]",
         );
     }
     const classType = dartType.split("?").join("").trim();
     return classTransformer(classType, dartType.endsWith("?")).fromJsonBody(
         fieldName,
-        classType
+        classType,
     );
 }
 
@@ -615,7 +649,7 @@ export const transformers: Record<DartType, DartMappedType> = {
     "List<DateTime>": {
         fromJsonBody: (
             key,
-            fallback
+            fallback,
         ) => `${key}: json["${key}"] is List<String> ?
             (json["${key}"] as List<String>)
                 .map((item) => DateTime.parse(item)).toList() : ${fallback}`,
@@ -643,14 +677,14 @@ export const transformers: Record<DartType, DartMappedType> = {
 function defaultFromJsonBody(
     key: string,
     typename: DartType,
-    fallback: string
+    fallback: string,
 ) {
     return `${key}: json["${key}"] is ${typename} ? json["${key}"] : ${fallback}`;
 }
 function defaultListFromJsonBody(
     key: string,
     typename: DartBaseType,
-    fallback: string
+    fallback: string,
 ) {
     return `${key}: json["${key}"] is List<${typename}> ? json["${key}"] : ${fallback}`;
 }
@@ -660,7 +694,7 @@ function defaultToJsonBody(key: string) {
 
 export const classTransformer = (
     typename: string,
-    nullable: boolean
+    nullable: boolean,
 ): DartMappedType => {
     return {
         fromJsonBody: (key, fallback) => {
@@ -709,7 +743,7 @@ export function isDartType(input: any): input is DartType {
     return false;
 }
 export function isDartTypeWithNullables(
-    input: any
+    input: any,
 ): input is DartTypeWithNullables {
     if (typeof input !== "string") {
         return false;

@@ -1,7 +1,8 @@
 import { Type } from "@sinclair/typebox";
-import { ArriApplication, defineMiddleware } from "../";
+import { ArriServer, defineMiddleware } from "../";
 
-const app = new ArriApplication();
+const app = new ArriServer();
+
 app.registerMiddleware(defineMiddleware((event) => {}));
 
 app.registerRpc("users.getAnotherUser", {
@@ -101,5 +102,5 @@ app.registerRpc("users.updateUser", {
         };
     },
 });
-
+app.initializeRoutes();
 export default app;

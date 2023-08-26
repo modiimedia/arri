@@ -1,11 +1,11 @@
+import { defineCommand } from "citty";
 import path from "pathe";
 import { globby } from "globby";
 import { loadConfig } from "c12";
 import * as prettier from "prettier";
 import chokidar from "chokidar";
 import fs from "node:fs/promises";
-import type { Hookable } from "hookable";
-import type { RequestListener } from "node:http";
+import { listen } from "listhen";
 import {
     type ApplicationDefinition,
     type ProcedureDefinition,
@@ -13,37 +13,41 @@ import {
 } from "../codegen/utils";
 import { TypeGuard } from "@sinclair/typebox";
 import { camelCase, kebabCase, pascalCase } from "scule";
-import { type HttpMethod, isRpc } from "../app";
+import { type ArriServer, type HttpMethod } from "../app";
 import { existsSync } from "node:fs";
 import { ErrorResponse } from "../errors";
+import { isRpc } from "../procedures";
+import { type ArriConfig, type ResolvedArriConfig } from "../config";
+import { toNodeListener } from "h3";
 
-export interface Arri {
-    rootDir: string;
-    isDev: boolean;
-    isReady: boolean;
-    hooks: Hookable<ArriHooks>;
-    config: ArriConfig;
-}
-
-export interface ArriConfig {
-    entry: string;
-    baseDir?: string;
-    srcDir: string;
-    servicesDir?: string;
-    /** Default is ["\*\*\/*.rpc.ts"] */
-    servicesGlobPatterns?: string[];
-}
-
-export type FullArriConfig = Required<ArriConfig>;
+export const dev = defineCommand({
+    meta: {
+        name: "dev",
+        description: "Start the arri dev server",
+    },
+    args: {
+        config: {
+            type: "string",
+            description: "Path to the arri config file",
+            alias: "c",
+            default: "./arri.config.ts",
+        },
+    },
+    run: async ({ args }) => {
+        const config = await loadConfig({
+            configFile: path.resolve(args.config),
+        });
+        await main(config.config as ResolvedArriConfig);
+    },
+});
 
 export interface ArriServiceConfig {
-    prefix?: string;
     globPatterns: string[];
 }
 
 export interface ArriHooks {
-    close: (app: Arri) => Promise<void> | void;
-    restart: (app: Arri) => Promise<void> | void;
+    close: (app: ArriServer) => Promise<void> | void;
+    restart: (app: ArriServer) => Promise<void> | void;
 }
 
 const disallowedNameChars = "~`!@#$%^&*()-+=[]{}\\|:;\"'<>,./";
@@ -52,8 +56,11 @@ const getRpcMetaFromPath = (
     config: ArriConfig,
     filePath: string,
 ): { serviceName: string; name: string; httpPath: string } | undefined => {
+    if (!config.procedureDir) {
+        return undefined;
+    }
     const resolvedFilePath = filePath
-        .split(config.servicesDir?.replace("./", "/") ?? "")
+        .split(config.procedureDir.replace("./", "/") ?? "")
         .join("");
     const parts = resolvedFilePath.split("/");
     parts.shift();
@@ -96,10 +103,16 @@ interface RpcResult {
 }
 
 async function getRpcBlock(
-    arriConfig: FullArriConfig,
+    arriConfig: ResolvedArriConfig,
     globPattern: string,
 ): Promise<RpcResult> {
-    const target = `${arriConfig.servicesDir}/${globPattern}`;
+    if (!arriConfig.procedureDir) {
+        return {
+            models: {},
+            procedures: {},
+        };
+    }
+    const target = `${arriConfig.procedureDir}/${globPattern}`;
     const paths = await globby(target);
     const rpcs = await Promise.allSettled(
         paths.map(async (filePath) => ({
@@ -129,7 +142,7 @@ async function getRpcBlock(
             }
             let paramOutput: ProcedureDefinition["params"];
             let responseOutput: ProcedureDefinition["response"];
-            if (data.params) {
+            if (data?.params) {
                 if (TypeGuard.TObject(data.params)) {
                     const paramName =
                         data.params.$id ??
@@ -138,7 +151,7 @@ async function getRpcBlock(
                     result.models[paramName] = data.params as any;
                 }
             }
-            if (data.response) {
+            if (data?.response) {
                 if (TypeGuard.TObject(data.response)) {
                     const responseName =
                         data.response.$id ??
@@ -157,9 +170,9 @@ async function getRpcBlock(
                     .split(" ")
                     .join(".")
             ] = {
-                method: data.method ?? "post",
+                method: data?.method ?? "post",
                 filepath: path.relative(
-                    `${arriConfig.baseDir}/.arri`,
+                    `${arriConfig.rootDir}/.arri`,
                     rpc.value.path,
                 ),
                 httpPath: meta.httpPath ?? "",
@@ -171,13 +184,13 @@ async function getRpcBlock(
     return result;
 }
 
-async function getRpcs(config: FullArriConfig): Promise<RpcResult> {
+async function getRpcs(config: ResolvedArriConfig): Promise<RpcResult> {
     const results: RpcResult = {
         procedures: {},
         models: {},
     };
     await Promise.allSettled(
-        config.servicesGlobPatterns.map((pattern) =>
+        config.procedureGlobPatterns.map((pattern) =>
             getRpcBlock(config, pattern).then((block) => {
                 Object.keys(block.models).forEach((model) => {
                     results.models[model] = block.models[model];
@@ -217,7 +230,7 @@ export function JsonStringifyWithSymbols(object: any, clean?: boolean): string {
 }
 
 let writeCount = 0;
-async function generateApplicationDefinition(config: FullArriConfig) {
+async function generateApplicationDefinition(config: ResolvedArriConfig) {
     const { procedures, models } = await getRpcs(config);
     const mappedProcedures: ApplicationDefinition["procedures"] = {};
     Object.keys(procedures).forEach((key) => {
@@ -252,8 +265,8 @@ async function generateApplicationDefinition(config: FullArriConfig) {
         endpointParts.push(`"${procedures[key].httpPath}": ${importName},`);
     });
     await fs.writeFile(
-        path.resolve(`${config.baseDir ?? ""}`, ".arri/definition.ts"),
-        prettier.format(
+        path.resolve(`${config.rootDir}`, ".arri/definition.ts"),
+        await prettier.format(
             `${importParts.join("\n")}
 
             export interface ClientDefinition {
@@ -275,8 +288,8 @@ async function generateApplicationDefinition(config: FullArriConfig) {
     console.log("WRITE_COUNT:", writeCount);
 }
 
-async function generateApplicationEntry(config: FullArriConfig) {
-    const entry = path.resolve(config.baseDir, config.srcDir, config.entry);
+async function generateApplicationEntry(config: ResolvedArriConfig) {
+    const entry = path.resolve(config.rootDir, config.srcDir, config.entry);
     let entryContent = await fs.readFile(entry, { encoding: "utf-8" });
     entryContent = entryContent.replace(
         "initializeProcedures(",
@@ -285,38 +298,26 @@ async function generateApplicationEntry(config: FullArriConfig) {
     console.log(entryContent);
 }
 
-async function main(config: FullArriConfig) {
-    await setupArriDir(config);
-    let currentHandler: RequestListener | undefined;
-    const loadingHandler: RequestListener = (_, __) => {
-        // todo
-    };
+async function main(config: ResolvedArriConfig) {
+    await setupWorkingDir(config);
     let fileWatcher: chokidar.FSWatcher | undefined;
-    const serverHandler: RequestListener = (req, res) => {
-        if (currentHandler) {
-            currentHandler(req, res);
-            return;
-        }
-        loadingHandler(req, res);
-    };
-    // const listener = await listen(serverHandler, {
-    //     showURL: true,
-    //     name: "Arri",
-    // });
     await generateApplicationDefinition(config);
     await generateApplicationEntry(config);
-    let loadingMessage = "Arri is starting...";
+    const app = await loadConfig({
+        configFile: path.resolve(config.rootDir, config.srcDir, config.entry),
+    });
+    const arri = app.config as ArriServer;
+    const listener = await listen(toNodeListener(arri.app), {
+        showURL: true,
+    });
+    await listener.showURL();
     async function load(isRestart: boolean, reason?: string) {
         try {
-            loadingMessage = `${reason ? reason + ". " : ""}${
-                isRestart ? "Restarting" : "Starting"
-            } arri dev server...`;
-            currentHandler = undefined;
             if (fileWatcher) {
                 await fileWatcher.close();
             }
             const dirToWatch = path.resolve(
-                config.baseDir ?? "",
+                config.rootDir ?? "",
                 config.srcDir,
             );
             console.log("Dir to watch", dirToWatch);
@@ -332,18 +333,10 @@ async function main(config: FullArriConfig) {
     await load(false);
 }
 
-async function setupArriDir(config: ArriConfig) {
-    const arriDir = path.resolve(config.baseDir ?? ".", ".arri");
+async function setupWorkingDir(config: ArriConfig) {
+    const arriDir = path.resolve(config.rootDir ?? ".", ".arri");
     if (existsSync(arriDir)) {
         await fs.rm(arriDir, { recursive: true, force: true });
     }
     await fs.mkdir(arriDir);
 }
-
-void main({
-    baseDir: "packages/arri-rpc",
-    srcDir: "src",
-    entry: "lib/entry.ts",
-    servicesDir: "./packages/arri-rpc/src/lib/services",
-    servicesGlobPatterns: ["**/*.rpc.ts"],
-});

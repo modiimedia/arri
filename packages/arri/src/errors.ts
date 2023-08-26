@@ -1,4 +1,5 @@
 import { type Static, Type } from "@sinclair/typebox";
+import { type ValueError } from "@sinclair/typebox/errors";
 import { type H3Error, createError } from "h3";
 
 export const ErrorResponse = Type.Object(
@@ -28,6 +29,24 @@ export function defineError(
             "An unknown error occurred",
         stack: input.stack ?? "",
         data: input.data,
+    });
+}
+
+export function errorResponseFromValidationErrors(
+    errors: ValueError[],
+    prefixText = `Missing or invalid parameters`,
+): H3Error {
+    const errorParts: string[] = [];
+    for (const err of errors) {
+        const propName = err.path.split("/");
+        propName.shift();
+        if (!errorParts.includes(propName.join("."))) {
+            errorParts.push(propName.join("."));
+        }
+    }
+    throw defineError(400, {
+        statusMessage: `${prefixText}: [${errorParts.join(",")}]`,
+        data: errors,
     });
 }
 

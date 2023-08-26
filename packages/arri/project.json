@@ -4,6 +4,13 @@
     "sourceRoot": "packages/arri/src",
     "projectType": "library",
     "targets": {
+        "serve": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "jiti ./src/cli/index dev",
+                "cwd": "packages/arri"
+            }
+        },
         "build": {
             "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",

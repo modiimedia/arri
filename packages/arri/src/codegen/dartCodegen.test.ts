@@ -8,6 +8,7 @@ import {
 import { type ApplicationDefinition, normalizeWhitespace } from "./utils";
 import { writeFileSync } from "fs";
 import path from "path";
+import { execSync } from "child_process";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {
@@ -433,8 +434,10 @@ test("Dart client test", () => {
         description: "",
     };
     const result = createDartClient(apiDef, "Backend");
-    writeFileSync(
-        path.resolve(__dirname, "../../../arri-client-dart/lib/example.dart"),
-        result,
+    const outputPath = path.resolve(
+        __dirname,
+        "../../../arri-client-dart/lib/example.dart",
     );
+    writeFileSync(outputPath, result);
+    execSync(`dart format ${outputPath}`);
 });

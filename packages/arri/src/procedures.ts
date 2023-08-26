@@ -22,7 +22,7 @@ import {
 import { kebabCase, pascalCase } from "scule";
 import { type Middleware } from "./routes";
 import { defineError } from "./errors";
-import { typeboxSafeValidate } from "./typechecking";
+import { typeboxSafeValidate } from "./validation";
 
 export interface ArriProcedureBase {
     method: HttpMethod;

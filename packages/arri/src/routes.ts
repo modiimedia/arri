@@ -1,6 +1,16 @@
 import { type HttpMethod } from "./app";
 import { type Static, type TObject, type TSchema } from "@sinclair/typebox";
 import type { HandlerContext } from "./procedures";
+import {
+    type H3Event,
+    type Router,
+    getValidatedQuery,
+    readValidatedBody,
+    send,
+    setResponseHeader,
+} from "h3";
+import { typeboxSafeValidate } from "./validation";
+import { errorResponseFromValidationErrors } from "./errors";
 
 export interface ArriRoute<
     TPath extends string,
@@ -104,3 +114,82 @@ export type ArriRoutePostHandler<
         TResponse
     >,
 ) => any;
+
+export function registerRoute<TPath extends string>(
+    router: Router,
+    route: ArriRoute<TPath, HttpMethod, any, any, any>,
+    middleware: Middleware[],
+    prefix?: string,
+) {
+    const handler = async (event: H3Event) => {
+        const context: HandlerContext = {
+            event,
+        };
+        if (middleware.length) {
+            for (const m of middleware) {
+                await m(context);
+            }
+        }
+        if (route.query) {
+            const result = await getValidatedQuery(
+                event,
+                typeboxSafeValidate(route.query),
+            );
+            if (!result.success) {
+                throw errorResponseFromValidationErrors(
+                    result.errors,
+                    "Missing or invalid query parameters",
+                );
+            }
+            context.query = result.value;
+        }
+        if (route.body && route.method !== "get" && route.method !== "head") {
+            const result = await readValidatedBody(
+                event,
+                typeboxSafeValidate(route.body),
+            );
+            if (!result.success) {
+                throw errorResponseFromValidationErrors(
+                    result.errors,
+                    "Missing or invalid body parameters",
+                );
+            }
+            context.body = result.value;
+        }
+        const response = await route.handler(context as any);
+        if (typeof response === "object") {
+            setResponseHeader(event, "Content-Type", "application/json");
+            await send(event, JSON.stringify(response));
+        } else {
+            await send(event, response);
+        }
+        if (route.postHandler) {
+            context.response = response;
+            await route.postHandler(context as any);
+        }
+        return null;
+    };
+    const finalPath = (prefix ? `/${prefix}${route.path}` : route.path)
+        .split("//")
+        .join("/");
+    switch (route.method) {
+        case "get":
+            router.get(finalPath, handler);
+            break;
+        case "head":
+            router.head(finalPath, handler);
+            break;
+        case "delete":
+            router.delete(finalPath, handler);
+            break;
+        case "patch":
+            router.patch(finalPath, handler);
+            break;
+        case "post":
+            router.post(finalPath, handler);
+            break;
+        case "put":
+            router.put(finalPath, handler);
+            break;
+    }
+}

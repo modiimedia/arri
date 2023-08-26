@@ -14,8 +14,31 @@ import {
     isJsonSchemaArray,
     type JsonSchemaScalarType,
 } from "./utils";
+import { defineClientGeneratorPlugin } from "./plugin";
+import { writeFileSync } from "fs";
 
 let createdModels: string[] = [];
+
+interface TypescriptClientGeneratorOptions {
+    name: string;
+    outputFile: string;
+}
+
+export const typescriptClientGenerator = defineClientGeneratorPlugin(
+    (options: TypescriptClientGeneratorOptions) => ({
+        generator: async (def) => {
+            if (!options.name) {
+                throw new Error("Name is requires");
+            }
+            if (!options.outputFile) {
+                throw new Error("No output file specified");
+            }
+            const result = await createTypescriptClient(def, options.name);
+            writeFileSync(options.outputFile, result);
+        },
+        options,
+    }),
+);
 
 export async function createTypescriptClient(
     def: ApplicationDefinition,
