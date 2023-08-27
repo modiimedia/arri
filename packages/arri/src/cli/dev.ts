@@ -20,27 +20,6 @@ import { isRpc } from "../procedures";
 import { type ArriConfig, type ResolvedArriConfig } from "../config";
 import { toNodeListener } from "h3";
 
-export const dev = defineCommand({
-    meta: {
-        name: "dev",
-        description: "Start the arri dev server",
-    },
-    args: {
-        config: {
-            type: "string",
-            description: "Path to the arri config file",
-            alias: "c",
-            default: "./arri.config.ts",
-        },
-    },
-    run: async ({ args }) => {
-        const config = await loadConfig({
-            configFile: path.resolve(args.config),
-        });
-        await main(config.config as ResolvedArriConfig);
-    },
-});
-
 export interface ArriServiceConfig {
     globPatterns: string[];
 }
@@ -340,3 +319,24 @@ async function setupWorkingDir(config: ArriConfig) {
     }
     await fs.mkdir(arriDir);
 }
+
+export default defineCommand({
+    meta: {
+        name: "dev",
+        description: "Start the arri dev server",
+    },
+    args: {
+        config: {
+            type: "string",
+            description: "Path to the arri config file",
+            alias: "c",
+            default: "./arri.config.ts",
+        },
+    },
+    async run({ args }) {
+        const config = await loadConfig({
+            configFile: path.resolve(args.config),
+        });
+        await main(config.config as ResolvedArriConfig);
+    },
+});
