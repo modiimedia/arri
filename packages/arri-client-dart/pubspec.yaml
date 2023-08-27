@@ -1,6 +1,6 @@
 name: arri_client
 description: Client library for working with arri rpc server
-version: 0.0.1
+version: "0.0.5"
 repository: https://github.com/modiimedia/arri
 environment:
     sdk: ^3.0.5
