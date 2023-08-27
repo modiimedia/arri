@@ -36,49 +36,51 @@ describe("Dart Tests", () => {
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class UserService {
-  final String baseUrl;
-  final Map<String, String> headers;
+  final String _baseUrl;
+  final Map<String, String> _headers;
   const UserService({
-    this.baseUrl = "",
-    this.headers = const {},
-  });
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  }): _baseUrl = baseUrl,
+  _headers = headers;
   UserServiceSettingsService get settings {
     return UserServiceSettingsService(
-      baseUrl: baseUrl,
-      headers: headers,
+      baseUrl: _baseUrl,
+      headers: _headers,
     );
   }
   Future<User> getUser(UsersGetUserParams params) {
     return parsedArriRequest(
-      "$baseUrl/users/get-user",
+      "$_baseUrl/users/get-user",
       method: HttpMethod.get,
-      headers: headers,
+      headers: _headers,
       params: params.toJson(),
       parser: (body) => User.fromJson(json.decode(body)),
     );
   }
   Future<User> updateUser(UserUpdateData params) {
     return parsedArriRequest(
-      "$baseUrl/users/update-user",
+      "$_baseUrl/users/update-user",
       method: HttpMethod.post,
-      headers: headers,
+      headers: _headers,
       params: params.toJson(),
       parser: (body) => User.fromJson(json.decode(body)),
     );
   }
 }
 class UserServiceSettingsService {
-  final String baseUrl;
-  final Map<String, String> headers;
+  final String _baseUrl;
+  final Map<String, String> _headers;
   const UserServiceSettingsService({
-    this.baseUrl = "",
-    this.headers = const {},
-  });
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  }): _baseUrl = baseUrl,
+  _headers = headers;
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
     return parsedArriRequest(
-      "$baseUrl/users/settings/get-user-settings",
+      "$_baseUrl/users/settings/get-user-settings",
       method: HttpMethod.get,
-      headers: headers,
+      headers: _headers,
       params: params.toJson(),
       parser: (body) => UserSettingsGetUserSettingsResponse.fromJson(json.decode(body)),
     );
@@ -98,18 +100,19 @@ class UserServiceSettingsService {
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class PostsService {
-        final String baseUrl;
-        final Map<String, String> headers;
+        final String _baseUrl;
+        final Map<String, String> _headers;
         const PostsService({
-          this.baseUrl = "",
-          this.headers = const {},
-        });
+          String baseUrl = "",
+          Map<String, String> headers = const {},
+        }): _baseUrl = baseUrl,
+            _headers = headers;
 
         Future<void> getPost() {
           return parsedArriRequest(
-            "$baseUrl/posts/get-post",
+            "$_baseUrl/posts/get-post",
             method: HttpMethod.get,
-            headers: headers,
+            headers: _headers,
             params: null,
             parser: (body) {},
           );
@@ -433,7 +436,7 @@ test("Dart client test", () => {
         schemaVersion: "0.0.1",
         description: "",
     };
-    const result = createDartClient(apiDef, "Backend");
+    const result = createDartClient(apiDef, "Blah");
     const outputPath = path.resolve(
         __dirname,
         "../../../arri-client-dart/lib/example.dart",

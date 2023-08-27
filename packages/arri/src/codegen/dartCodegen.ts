@@ -105,15 +105,16 @@ import "package:http/http.dart" as http;
 import "package:arri_client/arri_client.dart";
 
 class ${prefix} {
-  final String baseUrl;
-  final Map<String, String> headers;
+  final String _baseUrl;
+  final Map<String, String> _headers;
   const ${prefix}({
-    this.baseUrl = "",
-    this.headers = const {},
-  });
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  }): _headers = headers,
+    _baseUrl = baseUrl;
   ${prefix} withHeaders(Map<String, String> headers) {
     return ${prefix}(
-      baseUrl: baseUrl,
+      baseUrl: _baseUrl,
       headers: headers,
     );
   }
@@ -121,7 +122,7 @@ class ${prefix} {
       .map(
           (service) => `${service.name} get ${service.key} {
     return ${service.name}(
-      baseUrl: baseUrl, headers: headers,
+      baseUrl: _baseUrl, headers: _headers,
     );
   }`,
       )
@@ -134,9 +135,9 @@ class ${prefix} {
     Encoding? encoding,
   }) async {
     return arriRequest(
-      "$baseUrl\${endpoint.path}",
+      "$_baseUrl\${endpoint.path}",
       method: endpoint.method,
-      headers: headers ?? this.headers,
+      headers: headers ?? this._headers,
       body: body,
       query: query,
       encoding: encoding,
@@ -233,9 +234,9 @@ export function dartServiceFromServiceDefinition(
             }
             rpcParts.push(`${returnType} ${key}(${paramsInput}) {
     return parsedArriRequest(
-      "$baseUrl${item.path}",
+      "$_baseUrl${item.path}",
       method: HttpMethod.${item.method},
-      headers: headers,
+      headers: _headers,
       params: ${paramsInput.length ? `params.toJson()` : "null"},
       parser: ${responseParser},
     );
@@ -255,18 +256,19 @@ export function dartServiceFromServiceDefinition(
         });
     });
     return `class ${serviceName} {
-  final String baseUrl;
-  final Map<String, String> headers;
+  final String _baseUrl;
+  final Map<String, String> _headers;
   const ${serviceName}({
-    this.baseUrl = "",
-    this.headers = const {},
-  });
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  }): _baseUrl = baseUrl,
+  _headers = headers;
   ${subServiceParts
       .map(
           (sub) => `${sub.name} get ${sub.key} {
     return ${sub.name}(
-        baseUrl: baseUrl,
-        headers: headers,
+        baseUrl: _baseUrl,
+        headers: _headers,
     );
   }`,
       )
