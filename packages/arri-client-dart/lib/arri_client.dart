@@ -1,7 +1,6 @@
 library;
 
 import 'dart:convert';
-import 'package:arri_client/example.dart';
 import 'package:http/http.dart' as http;
 
 enum HttpMethod { get, post, put, patch, head, delete }
@@ -185,12 +184,4 @@ class ArriRequestError implements Exception {
         statusMessage: "Unknown error",
         message: "Unknown error");
   }
-}
-
-main() async {
-  final client = Backend();
-  final result = await client.v1.users
-      .getUser(BackendUserParams(id: "id", email: "email"));
-  final deleteResult =
-      await client.v1.posts.deletePost(BackendPostParams(postId: "12345"));
 }
