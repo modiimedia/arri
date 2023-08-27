@@ -120,8 +120,8 @@ export function tsServiceFromServiceDefinition(
         });
     });
     return `export class ${name} {
-        baseUrl: string;
-        headers: Record<string, string>;
+        private baseUrl: string;
+        private headers: Record<string, string>;
         ${subServiceParts
             .map((service) => `${service.key}: ${service.name};`)
             .join("\n")}

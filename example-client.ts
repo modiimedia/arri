@@ -11,8 +11,8 @@ export class TypescriptClient {
 }
 
 export class TypescriptClientUsersService {
-  baseUrl: string;
-  headers: Record<string, string>;
+  private baseUrl: string;
+  private headers: Record<string, string>;
 
   constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
     this.baseUrl = opts.baseUrl ?? "";
@@ -37,8 +37,8 @@ export class TypescriptClientUsersService {
 }
 
 export class TypescriptClientPostsService {
-  baseUrl: string;
-  headers: Record<string, string>;
+  private baseUrl: string;
+  private headers: Record<string, string>;
   comments: TypescriptClientPostsCommentsService;
   constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
     this.baseUrl = opts.baseUrl ?? "";
@@ -55,8 +55,8 @@ export class TypescriptClientPostsService {
   }
 }
 export class TypescriptClientPostsCommentsService {
-  baseUrl: string;
-  headers: Record<string, string>;
+  private baseUrl: string;
+  private headers: Record<string, string>;
 
   constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
     this.baseUrl = opts.baseUrl ?? "";

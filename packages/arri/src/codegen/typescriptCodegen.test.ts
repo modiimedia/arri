@@ -41,8 +41,8 @@ describe("generateService", () => {
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`
         export class UsersService {
-            baseUrl: string;
-            headers: Record<string, string>;
+            private baseUrl: string;
+            private headers: Record<string, string>;
             comments: UsersCommentsService;
             constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
                 this.baseUrl = opts.baseUrl ?? "";
@@ -66,8 +66,8 @@ describe("generateService", () => {
             }
         }
         export class UsersCommentsService {
-            baseUrl: string;
-            headers: Record<string, string>;
+            private baseUrl: string;
+            private headers: Record<string, string>;
             constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
                 this.baseUrl = opts.baseUrl ?? "";
                 this.headers = opts.headers ?? {};
