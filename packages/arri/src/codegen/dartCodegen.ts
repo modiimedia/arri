@@ -165,7 +165,7 @@ enum ${prefix}Endpoints implements Comparable<${prefix}Endpoints>, ArriEndpoint 
   final HttpMethod method;
 
   @override
-  compareTo(BackendEndpoints other) => name.compareTo(other.name);
+  compareTo(${prefix}Endpoints other) => name.compareTo(other.name);
 }`;
 }
 
