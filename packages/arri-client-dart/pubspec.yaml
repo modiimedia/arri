@@ -5,7 +5,7 @@ repository: https://github.com/modiimedia/arri
 environment:
     sdk: ^3.0.5
 dependencies:
-    http: ^1.1.0
+    http: ">=0.13.0 <2.0.0"
 dev_dependencies:
     lints: ^2.0.0
     test: ^1.21.0
