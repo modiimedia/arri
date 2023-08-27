@@ -20,20 +20,23 @@ import { writeFileSync } from "fs";
 let createdModels: string[] = [];
 
 interface TypescriptClientGeneratorOptions {
-    name: string;
+    clientName: string;
     outputFile: string;
 }
 
 export const typescriptClientGenerator = defineClientGeneratorPlugin(
     (options: TypescriptClientGeneratorOptions) => ({
         generator: async (def) => {
-            if (!options.name) {
+            if (!options.clientName) {
                 throw new Error("Name is requires");
             }
             if (!options.outputFile) {
                 throw new Error("No output file specified");
             }
-            const result = await createTypescriptClient(def, options.name);
+            const result = await createTypescriptClient(
+                def,
+                options.clientName,
+            );
             writeFileSync(options.outputFile, result);
         },
         options,
