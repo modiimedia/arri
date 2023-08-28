@@ -39,16 +39,18 @@ async function prepPackageJson(
         path.resolve(projectDir, "package.json"),
         "utf8",
     );
+    const rootPackageJson = JSON.parse(
+        await readFile(path.resolve(rootDir, "package.json"), "utf8"),
+    );
     const projectPackageJson = JSON.parse(fileFile) as {
         version: string;
         dependencies: Record<string, string>;
         devDependencies: Record<string, string>;
         repository?: Record<string, string>;
+        license?: string;
     };
+    projectPackageJson.license = rootPackageJson.license;
     projectPackageJson.dependencies = {};
-    const rootPackageJson = JSON.parse(
-        await readFile(path.resolve(rootDir, "package.json"), "utf8"),
-    );
     const rootDeps = rootPackageJson.dependencies as Record<string, string>;
     projectPackageJson.version = rootPackageJson.version;
     if (!projectPackageJson.repository) {

@@ -7,7 +7,7 @@
     },
     "scripts": {
         "publish": "nx run-many -t publish",
-        "postversion": "jiti scripts/versionSync.ts"
+        "postversion": "jiti tools/scripts/version-sync.ts"
     },
     "private": true,
     "dependencies": {
