@@ -6,7 +6,8 @@
         "url": "https://github.com/modiimedia/arri"
     },
     "scripts": {
-        "publish": "nx run-many -t publish"
+        "publish": "nx run-many -t publish",
+        "postversion": "echo \"hi\""
     },
     "private": true,
     "dependencies": {
