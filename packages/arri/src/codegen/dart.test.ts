@@ -526,7 +526,7 @@ test("Dart client test", () => {
     });
     const outputPath = path.resolve(
         __dirname,
-        "../../../arri-client-dart/lib/examples/example.dart",
+        "../../../arri-client-dart/example/example.dart",
     );
     writeFileSync(outputPath, result);
     execSync(`dart format ${outputPath}`);
