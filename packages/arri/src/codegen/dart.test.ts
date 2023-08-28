@@ -145,6 +145,7 @@ class UserSettingsService {
                 Type.Literal("standard"),
                 Type.Literal("admin"),
                 Type.Literal("mod"),
+                Type.Literal("anonymous-user"),
             ]),
         });
 
@@ -299,7 +300,8 @@ class UserSettings {
 enum UserRole implements Comparable<UserRole> {
   standard("standard"),
   admin("admin"),
-  mod("mod");
+  mod("mod"),
+  anonymousUser("anonymous-user");
   const UserRole(this.value);
   final dynamic value;
 

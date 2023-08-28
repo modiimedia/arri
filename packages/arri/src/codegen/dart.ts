@@ -400,7 +400,7 @@ export function dartPropertyTypeFromSchema(
         for (const opt of prop.anyOf) {
             if (opt.type === "string") {
                 options.push({
-                    name: opt.const.toString(),
+                    name: camelCase(opt.const.toString()),
                     type: "String",
                     value: opt.const,
                 });
