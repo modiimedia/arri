@@ -13,9 +13,10 @@ async function main() {
         "packages/arri-client-dart/pubspec.yaml",
         { encoding: "utf-8" },
     ).split("\n");
-    for (let line of pubspecParts) {
+    for (let i = 0; i < pubspecParts.length; i++) {
+        const line = pubspecParts[i];
         if (line.startsWith("version: ")) {
-            line = `version: "${version}"`;
+            pubspecParts[i] = `version: "${version}"`;
         }
     }
     writeFileSync(
@@ -23,3 +24,5 @@ async function main() {
         pubspecParts.join("\n"),
     );
 }
+
+void main();
