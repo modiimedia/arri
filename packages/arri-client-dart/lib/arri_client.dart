@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 enum HttpMethod { get, post, put, patch, head, delete }
 
+/// Perform a raw http request
 Future<http.Response> arriRequest(
   String url, {
   HttpMethod method = HttpMethod.get,
@@ -87,14 +88,15 @@ Future<http.Response> arriRequest(
       break;
     default:
       throw ArriRequestError(
-          name: "UNSUPPORTED_METHOD",
-          statusCode: 400,
-          statusMessage: "Client has not implemented HTTP method \"$method\"",
-          message: "Client has not implemented HTTP method \"$method\"");
+        statusCode: 400,
+        statusMessage: "Client has not implemented HTTP method \"$method\"",
+      );
   }
   return result;
 }
 
+/// Helper function for performing raw HTTP request to an Arri RPC server
+/// This function will throw an ArriRequestError if it fails
 Future<T> parsedArriRequest<T>(
   String url, {
   HttpMethod method = HttpMethod.get,
@@ -110,6 +112,8 @@ Future<T> parsedArriRequest<T>(
   throw ArriRequestError.fromResponse(result);
 }
 
+/// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result
+/// in which both value and the error can be null.
 Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
   String url, {
   HttpMethod httpMethod = HttpMethod.get,
@@ -132,56 +136,46 @@ class ArriRequestResult<T> {
   const ArriRequestResult({this.value, this.error});
 }
 
-class Client {
-  final String baseUrl;
-  final Map<String, String> headers;
-  const Client({this.baseUrl = "", this.headers = const {}});
-
-  Client withHeaders(Map<String, String> headers) {
-    return Client(baseUrl: baseUrl, headers: headers);
-  }
-}
-
 abstract class ArriEndpoint {
   final String path;
   final HttpMethod method;
   const ArriEndpoint({required this.path, required this.method});
 }
 
+/// Serializable request error that can parse the error responses from an Arri RPC server.
 class ArriRequestError implements Exception {
-  final String name;
   final int statusCode;
   final String statusMessage;
-  final String message;
   final dynamic data;
-  const ArriRequestError({
-    required this.name,
-    required this.statusCode,
-    required this.statusMessage,
-    required this.message,
-    this.data,
-  });
+  final String? stackTrace;
+  const ArriRequestError(
+      {required this.statusCode,
+      required this.statusMessage,
+      this.data,
+      this.stackTrace});
   factory ArriRequestError.fromResponse(http.Response response) {
     try {
       final body = json.decode(response.body);
       return ArriRequestError(
-          name: body["name"] is String ? body["name"] : "UNKNOWN",
-          statusCode: response.statusCode,
-          statusMessage: body["statusMessage"] is String
-              ? body["statusMessage"]
-              : "Unknown error",
-          message:
-              body["message"] is String ? body["message"] : "Unknown error",
-          data: body["data"]);
+        statusCode: response.statusCode,
+        statusMessage: body["statusMessage"] is String
+            ? body["statusMessage"]
+            : "Unknown error",
+        data: body["data"],
+        stackTrace: body["stackTrack"] is String ? body["stackTrack"] : null,
+      );
     } catch (err) {
       return ArriRequestError.unknown();
     }
   }
   factory ArriRequestError.unknown() {
     return ArriRequestError(
-        name: "UNKNOWN",
-        statusCode: 400,
-        statusMessage: "Unknown error",
-        message: "Unknown error");
+      statusCode: 400,
+      statusMessage: "Unknown error",
+    );
+  }
+  @override
+  String toString() {
+    return "{ statusCode: $statusCode, statusMessage: $statusMessage, data: ${data.toString()}, stackTrack: $stackTrace }";
   }
 }

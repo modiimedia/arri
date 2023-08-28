@@ -1,3 +1,9 @@
+## 0.0.12
+
+-   Clean up some of the built in functions
+-   Remove redundant code
+-   Override `toString()` method on the `ArriRequestError` class to allow for better logging.
+
 ## 0.0.6
 
 -   update license title
