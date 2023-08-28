@@ -23,6 +23,7 @@ import { kebabCase, pascalCase } from "scule";
 import { type Middleware } from "./routes";
 import { defineError } from "./errors";
 import { typeboxSafeValidate } from "./validation";
+import { ValueErrorType } from "@sinclair/typebox/errors";
 
 export interface ArriProcedureBase {
     method: HttpMethod;
@@ -204,6 +205,7 @@ export function registerRpc(
     procedure: ArriProcedure<any, any, any>,
     middleware: Middleware[],
 ) {
+    const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event) => {
         const context: HandlerContext = {
             event,
@@ -215,7 +217,7 @@ export function registerRpc(
             await Promise.all(middleware.map((m) => m(context)));
         }
         if (procedure.params) {
-            switch (procedure.method) {
+            switch (httpMethod) {
                 case "get":
                 case "head": {
                     const parsedParams = await getValidatedQuery(
@@ -251,8 +253,27 @@ export function registerRpc(
                         typeboxSafeValidate(procedure.params),
                     );
                     if (!parsedParams.success) {
+                        let isObjectError = false;
+                        const errorParts: string[] = [];
+                        for (const err of parsedParams.errors) {
+                            if (err.type === ValueErrorType.Object) {
+                                isObjectError = true;
+                            }
+                            const propName = err.path.split("/");
+                            propName.shift();
+                            if (!errorParts.includes(propName.join("."))) {
+                                errorParts.push(propName.join("."));
+                            }
+                        }
+                        if (isObjectError) {
+                            throw defineError(400, {
+                                statusMessage: `Invalid request body. Expected object.`,
+                            });
+                        }
                         throw defineError(400, {
-                            statusMessage: "Invalid request body",
+                            statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                                ", ",
+                            )}]`,
                             data: parsedParams.errors,
                         });
                     }
@@ -276,7 +297,7 @@ export function registerRpc(
         }
         return null;
     });
-    switch (procedure.method) {
+    switch (httpMethod) {
         case "get":
             router.get(path, handler);
             break;
@@ -289,11 +310,12 @@ export function registerRpc(
         case "patch":
             router.patch(path, handler);
             break;
-        case "post":
-            router.post(path, handler);
-            break;
         case "put":
             router.put(path, handler);
+            break;
+        case "post":
+        default:
+            router.post(path, handler);
             break;
     }
 }
