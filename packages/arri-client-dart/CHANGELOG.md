@@ -1,3 +1,7 @@
+## 0.0.13
+
+-   Fix error where posts requests with a body fail
+
 ## 0.0.12
 
 -   Clean up some of the built in functions
