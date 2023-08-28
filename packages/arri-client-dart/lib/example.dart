@@ -3,40 +3,40 @@ import "dart:convert";
 import "package:http/http.dart" as http;
 import "package:arri_client/arri_client.dart";
 
-class Blah {
+class Client {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const Blah({
+  const Client({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _headers = headers,
         _baseUrl = baseUrl;
-  Future<BlahSayHelloResponse> sayHello() {
+  Future<SayHelloResponse> sayHello() {
     return parsedArriRequest(
       "$_baseUrl/say-hello",
       method: HttpMethod.get,
       headers: _headers,
       params: null,
-      parser: (body) => BlahSayHelloResponse.fromJson(json.decode(body)),
+      parser: (body) => SayHelloResponse.fromJson(json.decode(body)),
     );
   }
 
-  BlahV1Service get v1 {
-    return BlahV1Service(
+  ClientV1Service get v1 {
+    return ClientV1Service(
       baseUrl: _baseUrl,
       headers: _headers,
     );
   }
 
-  BlahV2Service get v2 {
-    return BlahV2Service(
+  ClientV2Service get v2 {
+    return ClientV2Service(
       baseUrl: _baseUrl,
       headers: _headers,
     );
   }
 
   Future<http.Response> rawRequest(
-    BlahEndpoints endpoint, {
+    ClientEndpoints endpoint, {
     Map<String, String>? query,
     dynamic body,
     Map<String, String>? headers,
@@ -53,89 +53,89 @@ class Blah {
   }
 }
 
-class BlahV1Service {
+class ClientV1Service {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const BlahV1Service({
+  const ClientV1Service({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
-  BlahV1UsersService get users {
-    return BlahV1UsersService(
+  ClientV1UsersService get users {
+    return ClientV1UsersService(
       baseUrl: _baseUrl,
       headers: _headers,
     );
   }
 
-  BlahV1PostsService get posts {
-    return BlahV1PostsService(
+  ClientV1PostsService get posts {
+    return ClientV1PostsService(
       baseUrl: _baseUrl,
       headers: _headers,
     );
   }
 }
 
-class BlahV1UsersService {
+class ClientV1UsersService {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const BlahV1UsersService({
+  const ClientV1UsersService({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  Future<BlahUser> getUser(BlahUserParams params) {
+  Future<User> getUser(UserParams params) {
     return parsedArriRequest(
       "$_baseUrl/v1/users/get-user",
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => BlahUser.fromJson(json.decode(body)),
+      parser: (body) => User.fromJson(json.decode(body)),
     );
   }
 
-  Future<BlahUsersGetUsersResponse> getUsers(BlahUserListParams params) {
+  Future<UsersGetUsersResponse> getUsers(UserListParams params) {
     return parsedArriRequest(
       "$_baseUrl/v1/users/get-users",
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => BlahUsersGetUsersResponse.fromJson(json.decode(body)),
+      parser: (body) => UsersGetUsersResponse.fromJson(json.decode(body)),
     );
   }
 }
 
-class BlahV1PostsService {
+class ClientV1PostsService {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const BlahV1PostsService({
+  const ClientV1PostsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  Future<BlahPost> getPost(BlahPostParams params) {
+  Future<Post> getPost(PostParams params) {
     return parsedArriRequest(
       "$_baseUrl/v1/posts/get-post",
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => BlahPost.fromJson(json.decode(body)),
+      parser: (body) => Post.fromJson(json.decode(body)),
     );
   }
 
-  Future<BlahPost> updatePost(BlahPostsUpdatePostParams params) {
+  Future<Post> updatePost(PostsUpdatePostParams params) {
     return parsedArriRequest(
       "$_baseUrl/v1/posts/update-post",
       method: HttpMethod.post,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => BlahPost.fromJson(json.decode(body)),
+      parser: (body) => Post.fromJson(json.decode(body)),
     );
   }
 
-  Future<void> deletePost(BlahPostParams params) {
+  Future<void> deletePost(PostParams params) {
     return parsedArriRequest(
       "$_baseUrl/v1/posts/delete-posts",
       method: HttpMethod.delete,
@@ -146,49 +146,49 @@ class BlahV1PostsService {
   }
 }
 
-class BlahV2Service {
+class ClientV2Service {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const BlahV2Service({
+  const ClientV2Service({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
-  BlahV2UsersService get users {
-    return BlahV2UsersService(
+  ClientV2UsersService get users {
+    return ClientV2UsersService(
       baseUrl: _baseUrl,
       headers: _headers,
     );
   }
 }
 
-class BlahV2UsersService {
+class ClientV2UsersService {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const BlahV2UsersService({
+  const ClientV2UsersService({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  Future<BlahUserV2> getUser(BlahUserParams params) {
+  Future<UserV2> getUser(UserParams params) {
     return parsedArriRequest(
       "$_baseUrl/v2/users/get-user",
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => BlahUserV2.fromJson(json.decode(body)),
+      parser: (body) => UserV2.fromJson(json.decode(body)),
     );
   }
 }
 
-class BlahSayHelloResponse {
+class SayHelloResponse {
   final String message;
-  const BlahSayHelloResponse({
+  const SayHelloResponse({
     required this.message,
   });
-  factory BlahSayHelloResponse.fromJson(Map<String, dynamic> json) {
-    return BlahSayHelloResponse(
+  factory SayHelloResponse.fromJson(Map<String, dynamic> json) {
+    return SayHelloResponse(
       message: json["message"] is String ? json["message"] : "",
     );
   }
@@ -198,24 +198,24 @@ class BlahSayHelloResponse {
     };
   }
 
-  BlahSayHelloResponse copyWith({
+  SayHelloResponse copyWith({
     String? message,
   }) {
-    return BlahSayHelloResponse(
+    return SayHelloResponse(
       message: message ?? this.message,
     );
   }
 }
 
-class BlahUser {
+class User {
   final String metadata;
   final String id;
   final String? email;
   final int createdAt;
   final DateTime updatedAt;
-  final BlahUserRole role;
-  final BlahUserPreferredTheme? preferredTheme;
-  const BlahUser({
+  final UserRole role;
+  final UserPreferredTheme? preferredTheme;
+  const User({
     required this.metadata,
     required this.id,
     this.email,
@@ -224,8 +224,8 @@ class BlahUser {
     required this.role,
     this.preferredTheme,
   });
-  factory BlahUser.fromJson(Map<String, dynamic> json) {
-    return BlahUser(
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
       metadata: json["_metadata"] is String ? json["_metadata"] : "",
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : null,
@@ -233,9 +233,9 @@ class BlahUser {
       updatedAt: json["updatedAt"] is String
           ? DateTime.parse(json["updatedAt"])
           : DateTime(0),
-      role: BlahUserRole.fromJson(json["role"]),
+      role: UserRole.fromJson(json["role"]),
       preferredTheme: json["preferredTheme"] is Map<String, dynamic>
-          ? BlahUserPreferredTheme.fromJson(json["preferredTheme"])
+          ? UserPreferredTheme.fromJson(json["preferredTheme"])
           : null,
     );
   }
@@ -251,16 +251,16 @@ class BlahUser {
     };
   }
 
-  BlahUser copyWith({
+  User copyWith({
     String? metadata,
     String? id,
     String? email,
     int? createdAt,
     DateTime? updatedAt,
-    BlahUserRole? role,
-    BlahUserPreferredTheme? preferredTheme,
+    UserRole? role,
+    UserPreferredTheme? preferredTheme,
   }) {
-    return BlahUser(
+    return User(
       metadata: metadata ?? this.metadata,
       id: id ?? this.id,
       email: email ?? this.email,
@@ -272,17 +272,17 @@ class BlahUser {
   }
 }
 
-enum BlahUserRole implements Comparable<BlahUserRole> {
+enum UserRole implements Comparable<UserRole> {
   standard("standard"),
   admin("admin");
 
-  const BlahUserRole(this.value);
+  const UserRole(this.value);
   final dynamic value;
 
   @override
-  compareTo(BlahUserRole other) => name.compareTo(other.name);
+  compareTo(UserRole other) => name.compareTo(other.name);
 
-  factory BlahUserRole.fromJson(dynamic input) {
+  factory UserRole.fromJson(dynamic input) {
     for (final val in values) {
       if (val.value == input) {
         return val;
@@ -296,18 +296,18 @@ enum BlahUserRole implements Comparable<BlahUserRole> {
   }
 }
 
-enum BlahUserPreferredTheme implements Comparable<BlahUserPreferredTheme> {
+enum UserPreferredTheme implements Comparable<UserPreferredTheme> {
   light("light"),
   dark("dark"),
   systemDefault("system-default");
 
-  const BlahUserPreferredTheme(this.value);
+  const UserPreferredTheme(this.value);
   final dynamic value;
 
   @override
-  compareTo(BlahUserPreferredTheme other) => name.compareTo(other.name);
+  compareTo(UserPreferredTheme other) => name.compareTo(other.name);
 
-  factory BlahUserPreferredTheme.fromJson(dynamic input) {
+  factory UserPreferredTheme.fromJson(dynamic input) {
     for (final val in values) {
       if (val.value == input) {
         return val;
@@ -321,14 +321,14 @@ enum BlahUserPreferredTheme implements Comparable<BlahUserPreferredTheme> {
   }
 }
 
-class BlahUserV2 {
+class UserV2 {
   final String id;
   final String email;
   final String username;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final BlahUserV2Role role;
-  const BlahUserV2({
+  final UserV2Role role;
+  const UserV2({
     required this.id,
     required this.email,
     required this.username,
@@ -336,8 +336,8 @@ class BlahUserV2 {
     required this.updatedAt,
     required this.role,
   });
-  factory BlahUserV2.fromJson(Map<String, dynamic> json) {
-    return BlahUserV2(
+  factory UserV2.fromJson(Map<String, dynamic> json) {
+    return UserV2(
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : "",
       username: json["username"] is String ? json["username"] : "",
@@ -347,7 +347,7 @@ class BlahUserV2 {
       updatedAt: json["updatedAt"] is String
           ? DateTime.parse(json["updatedAt"])
           : DateTime(0),
-      role: BlahUserV2Role.fromJson(json["role"]),
+      role: UserV2Role.fromJson(json["role"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -361,15 +361,15 @@ class BlahUserV2 {
     };
   }
 
-  BlahUserV2 copyWith({
+  UserV2 copyWith({
     String? id,
     String? email,
     String? username,
     DateTime? createdAt,
     DateTime? updatedAt,
-    BlahUserV2Role? role,
+    UserV2Role? role,
   }) {
-    return BlahUserV2(
+    return UserV2(
       id: id ?? this.id,
       email: email ?? this.email,
       username: username ?? this.username,
@@ -380,18 +380,18 @@ class BlahUserV2 {
   }
 }
 
-enum BlahUserV2Role implements Comparable<BlahUserV2Role> {
+enum UserV2Role implements Comparable<UserV2Role> {
   standard("standard"),
   admin("admin"),
   moderator("moderator");
 
-  const BlahUserV2Role(this.value);
+  const UserV2Role(this.value);
   final dynamic value;
 
   @override
-  compareTo(BlahUserV2Role other) => name.compareTo(other.name);
+  compareTo(UserV2Role other) => name.compareTo(other.name);
 
-  factory BlahUserV2Role.fromJson(dynamic input) {
+  factory UserV2Role.fromJson(dynamic input) {
     for (final val in values) {
       if (val.value == input) {
         return val;
@@ -405,15 +405,15 @@ enum BlahUserV2Role implements Comparable<BlahUserV2Role> {
   }
 }
 
-class BlahUserParams {
+class UserParams {
   final String id;
   final String email;
-  const BlahUserParams({
+  const UserParams({
     required this.id,
     required this.email,
   });
-  factory BlahUserParams.fromJson(Map<String, dynamic> json) {
-    return BlahUserParams(
+  factory UserParams.fromJson(Map<String, dynamic> json) {
+    return UserParams(
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : "",
     );
@@ -425,26 +425,26 @@ class BlahUserParams {
     };
   }
 
-  BlahUserParams copyWith({
+  UserParams copyWith({
     String? id,
     String? email,
   }) {
-    return BlahUserParams(
+    return UserParams(
       id: id ?? this.id,
       email: email ?? this.email,
     );
   }
 }
 
-class BlahUserListParams {
+class UserListParams {
   final int limit;
   final int? skip;
-  const BlahUserListParams({
+  const UserListParams({
     required this.limit,
     this.skip,
   });
-  factory BlahUserListParams.fromJson(Map<String, dynamic> json) {
-    return BlahUserListParams(
+  factory UserListParams.fromJson(Map<String, dynamic> json) {
+    return UserListParams(
       limit: json["limit"] is int ? json["limit"] : 0,
       skip: json["skip"] is int ? json["skip"] : null,
     );
@@ -456,25 +456,25 @@ class BlahUserListParams {
     };
   }
 
-  BlahUserListParams copyWith({
+  UserListParams copyWith({
     int? limit,
     int? skip,
   }) {
-    return BlahUserListParams(
+    return UserListParams(
       limit: limit ?? this.limit,
       skip: skip ?? this.skip,
     );
   }
 }
 
-class BlahUsersGetUsersResponse {
-  final BlahUsersGetUsersResponseItems items;
-  const BlahUsersGetUsersResponse({
+class UsersGetUsersResponse {
+  final UsersGetUsersResponseItems items;
+  const UsersGetUsersResponse({
     required this.items,
   });
-  factory BlahUsersGetUsersResponse.fromJson(Map<String, dynamic> json) {
-    return BlahUsersGetUsersResponse(
-      items: BlahUsersGetUsersResponseItems.fromJson(json["items"]),
+  factory UsersGetUsersResponse.fromJson(Map<String, dynamic> json) {
+    return UsersGetUsersResponse(
+      items: UsersGetUsersResponseItems.fromJson(json["items"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -483,24 +483,24 @@ class BlahUsersGetUsersResponse {
     };
   }
 
-  BlahUsersGetUsersResponse copyWith({
-    BlahUsersGetUsersResponseItems? items,
+  UsersGetUsersResponse copyWith({
+    UsersGetUsersResponseItems? items,
   }) {
-    return BlahUsersGetUsersResponse(
+    return UsersGetUsersResponse(
       items: items ?? this.items,
     );
   }
 }
 
-class BlahUsersGetUsersResponseItems {
+class UsersGetUsersResponseItems {
   final String id;
   final String email;
-  const BlahUsersGetUsersResponseItems({
+  const UsersGetUsersResponseItems({
     required this.id,
     required this.email,
   });
-  factory BlahUsersGetUsersResponseItems.fromJson(Map<String, dynamic> json) {
-    return BlahUsersGetUsersResponseItems(
+  factory UsersGetUsersResponseItems.fromJson(Map<String, dynamic> json) {
+    return UsersGetUsersResponseItems(
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : "",
     );
@@ -512,28 +512,28 @@ class BlahUsersGetUsersResponseItems {
     };
   }
 
-  BlahUsersGetUsersResponseItems copyWith({
+  UsersGetUsersResponseItems copyWith({
     String? id,
     String? email,
   }) {
-    return BlahUsersGetUsersResponseItems(
+    return UsersGetUsersResponseItems(
       id: id ?? this.id,
       email: email ?? this.email,
     );
   }
 }
 
-class BlahPost {
+class Post {
   final String id;
   final String title;
   final String content;
-  const BlahPost({
+  const Post({
     required this.id,
     required this.title,
     required this.content,
   });
-  factory BlahPost.fromJson(Map<String, dynamic> json) {
-    return BlahPost(
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
       id: json["id"] is String ? json["id"] : "",
       title: json["title"] is String ? json["title"] : "",
       content: json["content"] is String ? json["content"] : "",
@@ -547,12 +547,12 @@ class BlahPost {
     };
   }
 
-  BlahPost copyWith({
+  Post copyWith({
     String? id,
     String? title,
     String? content,
   }) {
-    return BlahPost(
+    return Post(
       id: id ?? this.id,
       title: title ?? this.title,
       content: content ?? this.content,
@@ -560,13 +560,13 @@ class BlahPost {
   }
 }
 
-class BlahPostParams {
+class PostParams {
   final String postId;
-  const BlahPostParams({
+  const PostParams({
     required this.postId,
   });
-  factory BlahPostParams.fromJson(Map<String, dynamic> json) {
-    return BlahPostParams(
+  factory PostParams.fromJson(Map<String, dynamic> json) {
+    return PostParams(
       postId: json["postId"] is String ? json["postId"] : "",
     );
   }
@@ -576,26 +576,26 @@ class BlahPostParams {
     };
   }
 
-  BlahPostParams copyWith({
+  PostParams copyWith({
     String? postId,
   }) {
-    return BlahPostParams(
+    return PostParams(
       postId: postId ?? this.postId,
     );
   }
 }
 
-class BlahPostsUpdatePostParams {
+class PostsUpdatePostParams {
   final String postId;
-  final BlahPostsUpdatePostParamsData data;
-  const BlahPostsUpdatePostParams({
+  final PostsUpdatePostParamsData data;
+  const PostsUpdatePostParams({
     required this.postId,
     required this.data,
   });
-  factory BlahPostsUpdatePostParams.fromJson(Map<String, dynamic> json) {
-    return BlahPostsUpdatePostParams(
+  factory PostsUpdatePostParams.fromJson(Map<String, dynamic> json) {
+    return PostsUpdatePostParams(
       postId: json["postId"] is String ? json["postId"] : "",
-      data: BlahPostsUpdatePostParamsData.fromJson(json["data"]),
+      data: PostsUpdatePostParamsData.fromJson(json["data"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -605,26 +605,26 @@ class BlahPostsUpdatePostParams {
     };
   }
 
-  BlahPostsUpdatePostParams copyWith({
+  PostsUpdatePostParams copyWith({
     String? postId,
-    BlahPostsUpdatePostParamsData? data,
+    PostsUpdatePostParamsData? data,
   }) {
-    return BlahPostsUpdatePostParams(
+    return PostsUpdatePostParams(
       postId: postId ?? this.postId,
       data: data ?? this.data,
     );
   }
 }
 
-class BlahPostsUpdatePostParamsData {
+class PostsUpdatePostParamsData {
   final String title;
   final String content;
-  const BlahPostsUpdatePostParamsData({
+  const PostsUpdatePostParamsData({
     required this.title,
     required this.content,
   });
-  factory BlahPostsUpdatePostParamsData.fromJson(Map<String, dynamic> json) {
-    return BlahPostsUpdatePostParamsData(
+  factory PostsUpdatePostParamsData.fromJson(Map<String, dynamic> json) {
+    return PostsUpdatePostParamsData(
       title: json["title"] is String ? json["title"] : "",
       content: json["content"] is String ? json["content"] : "",
     );
@@ -636,18 +636,18 @@ class BlahPostsUpdatePostParamsData {
     };
   }
 
-  BlahPostsUpdatePostParamsData copyWith({
+  PostsUpdatePostParamsData copyWith({
     String? title,
     String? content,
   }) {
-    return BlahPostsUpdatePostParamsData(
+    return PostsUpdatePostParamsData(
       title: title ?? this.title,
       content: content ?? this.content,
     );
   }
 }
 
-enum BlahEndpoints implements Comparable<BlahEndpoints>, ArriEndpoint {
+enum ClientEndpoints implements Comparable<ClientEndpoints>, ArriEndpoint {
   sayHello(
     path: "/say-hello",
     method: HttpMethod.get,
@@ -677,7 +677,7 @@ enum BlahEndpoints implements Comparable<BlahEndpoints>, ArriEndpoint {
     method: HttpMethod.get,
   );
 
-  const BlahEndpoints({
+  const ClientEndpoints({
     required this.path,
     required this.method,
   });
@@ -687,5 +687,5 @@ enum BlahEndpoints implements Comparable<BlahEndpoints>, ArriEndpoint {
   final HttpMethod method;
 
   @override
-  compareTo(BlahEndpoints other) => name.compareTo(other.name);
+  compareTo(ClientEndpoints other) => name.compareTo(other.name);
 }

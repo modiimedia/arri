@@ -37,7 +37,9 @@ export const dartClientGenerator = defineClientGeneratorPlugin(
                         'Missing "outputFile" cannot generate dart client',
                     );
                 }
-                const result = createDartClient(def, options.clientName);
+                const result = createDartClient(def, {
+                    clientName: options.clientName,
+                });
                 writeFileSync(options.outputFile, result);
                 execSync(`dart format ${options.outputFile}`);
             },
@@ -52,9 +54,13 @@ export const dartClientGenerator = defineClientGeneratorPlugin(
  */
 const generatedModels: string[] = [];
 
+interface CreateClientOptions {
+    clientName: string;
+}
+
 export function createDartClient(
     appDef: ApplicationDefinition,
-    prefix = "Client",
+    opts: CreateClientOptions = { clientName: "Client" },
 ) {
     const { models, procedures } = appDef;
     const serviceParts: {
@@ -67,7 +73,7 @@ export function createDartClient(
     Object.keys(services).forEach((k) => {
         const item = services[k];
         if (isServiceDefinition(item)) {
-            const serviceName = pascalCase(`${prefix}_${k}_service`);
+            const serviceName = pascalCase(`${opts.clientName}_${k}_service`);
             serviceParts.push({
                 name: serviceName,
                 key: k,
@@ -75,14 +81,12 @@ export function createDartClient(
                     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     serviceName,
                     item,
-                    prefix,
+                    opts,
                 ),
             });
             return;
         }
-        procedureParts.push(
-            dartProcedureFromServiceDefinition(prefix, k, item),
-        );
+        procedureParts.push(dartProcedureFromServiceDefinition(k, item, opts));
     });
     const endpoints: Record<string, string> = {};
     Object.keys(procedures).forEach((key) => {
@@ -93,14 +97,11 @@ export function createDartClient(
     Object.keys(models).forEach((key) => {
         const model = models[key];
 
-        const typeName = `${prefix}${pascalCase(key)}`;
+        const typeName = pascalCase(key);
         const objModel = model;
         if (!generatedModels.includes(typeName)) {
             modelParts.push(
-                dartModelFromJsonSchema(
-                    `${prefix}${pascalCase(key)}`,
-                    objModel,
-                ),
+                dartModelFromJsonSchema(`${pascalCase(key)}`, objModel, opts),
             );
             generatedModels.push(typeName);
         }
@@ -110,10 +111,10 @@ import "dart:convert";
 import "package:http/http.dart" as http;
 import "package:arri_client/arri_client.dart";
 
-class ${prefix} {
+class ${opts.clientName} {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const ${prefix}({
+  const ${opts.clientName}({
     String baseUrl = "",
     Map<String, String> headers = const {},
   }): _headers = headers,
@@ -129,7 +130,7 @@ class ${prefix} {
       )
       .join("\n  ")}
   Future<http.Response> rawRequest(
-    ${prefix}Endpoints endpoint, {
+    ${opts.clientName}Endpoints endpoint, {
     Map<String, String>? query,
     dynamic body,
     Map<String, String>? headers,
@@ -148,7 +149,9 @@ class ${prefix} {
 ${serviceParts.map((item) => item.content).join("\n")}
 ${modelParts.join("\n")}
 
-enum ${prefix}Endpoints implements Comparable<${prefix}Endpoints>, ArriEndpoint {
+enum ${opts.clientName}Endpoints implements Comparable<${
+        opts.clientName
+    }Endpoints>, ArriEndpoint {
   ${Object.keys(endpoints)
       .map(
           (key) => `${camelCase(key.split("/").join("_"))}(
@@ -158,7 +161,7 @@ enum ${prefix}Endpoints implements Comparable<${prefix}Endpoints>, ArriEndpoint 
       )
       .join(",\n  ")};
 
-  const ${prefix}Endpoints({
+  const ${opts.clientName}Endpoints({
     required this.path, required this.method,
   });
   @override
@@ -167,14 +170,14 @@ enum ${prefix}Endpoints implements Comparable<${prefix}Endpoints>, ArriEndpoint 
   final HttpMethod method;
 
   @override
-  compareTo(${prefix}Endpoints other) => name.compareTo(other.name);
+  compareTo(${opts.clientName}Endpoints other) => name.compareTo(other.name);
 }`;
 }
 
 export function dartServiceFromServiceDefinition(
     name: string,
     def: ServiceDefinition,
-    prefix = "",
+    opts: CreateClientOptions,
 ) {
     const rpcParts: string[] = [];
     const subServiceParts: Array<{
@@ -186,9 +189,7 @@ export function dartServiceFromServiceDefinition(
     Object.keys(def).forEach((key) => {
         const item = def[key];
         if (isProcedureDefinition(item)) {
-            rpcParts.push(
-                dartProcedureFromServiceDefinition(prefix, key, item),
-            );
+            rpcParts.push(dartProcedureFromServiceDefinition(key, item, opts));
             return;
         }
         const nameParts = name.split("Service");
@@ -199,7 +200,7 @@ export function dartServiceFromServiceDefinition(
         const subService = dartServiceFromServiceDefinition(
             subServiceName,
             item,
-            prefix,
+            opts,
         );
         subServiceParts.push({
             name: subServiceName,
@@ -232,9 +233,9 @@ ${subServiceParts.map((sub) => sub.content).join("\n")}
 }
 
 export function dartProcedureFromServiceDefinition(
-    clientName: string,
     key: string,
     def: ProcedureDefinition,
+    opts: CreateClientOptions,
 ): string {
     let returnType:
         | `Future<String>`
@@ -244,14 +245,14 @@ export function dartProcedureFromServiceDefinition(
         | `Future<${string}>` = `Future<String>`;
     let returnTypeName = "String";
     if (def.response) {
-        returnType = `Future<${clientName}${def.response}>`;
-        returnTypeName = `${clientName}${def.response}`;
+        returnType = `Future<${def.response}>`;
+        returnTypeName = `${def.response}`;
     } else {
         returnType = "Future<void>";
     }
     let paramsInput = "";
     if (def.params) {
-        paramsInput = `${clientName}${def.params} params`;
+        paramsInput = `${def.params} params`;
     }
     let responseParser: string = "(body) => body;";
     switch (returnType) {
@@ -295,9 +296,11 @@ export function dartProcedureFromServiceDefinition(
 }
 
 export function dartModelFromJsonSchema(
-    name: string,
+    modelName: string,
     schema: JsonSchemaObject,
+    opts: CreateClientOptions,
 ): string {
+    const modelDisplayName: string = pascalCase(`${modelName}`);
     const fields: Array<{ type: string; name: string; jsonKey: string }> = [];
     const subModelParts: string[] = [];
     Object.entries(schema.properties ?? {}).forEach(([key, val]) => {
@@ -305,9 +308,10 @@ export function dartModelFromJsonSchema(
             return;
         }
         const [dartType, subTypes] = dartPropertyTypeFromSchema(
-            name,
+            modelName,
             key,
             schema,
+            opts,
         );
         if (subTypes?.length) {
             for (const sub of subTypes) {
@@ -315,15 +319,22 @@ export function dartModelFromJsonSchema(
             }
         }
         fields.push({ type: dartType, name: camelCase(key), jsonKey: key });
-        if (!isDartType(dartType) && "type" in val && val.type === "object") {
+        if (!isDartType(dartType) && isJsonSchemaObject(val)) {
+            if (val.$id && generatedModels.includes(val.$id)) {
+                return;
+            }
+            const subModelName = val.$id
+                ? pascalCase(val.$id)
+                : pascalCase(dartType.replace("?", ""));
             subModelParts.push(
-                dartModelFromJsonSchema(dartType.replace("?", ""), val),
+                dartModelFromJsonSchema(subModelName, val, opts),
             );
+            generatedModels.push(subModelName);
         }
     });
-    return `class ${name} {
+    return `class ${modelDisplayName} {
   ${fields.map((field) => `final ${field.type} ${field.name};`).join("\n  ")}
-  const ${name}({
+  const ${modelDisplayName}({
     ${fields
         .map((field) =>
             field.type.includes("?")
@@ -332,8 +343,8 @@ export function dartModelFromJsonSchema(
         )
         .join("\n    ")}
   });
-  factory ${name}.fromJson(Map<String, dynamic> json) {
-    return ${name}(
+  factory ${modelDisplayName}.fromJson(Map<String, dynamic> json) {
+    return ${modelDisplayName}(
       ${fields
           .map(
               (field) =>
@@ -376,12 +387,12 @@ export function dartModelFromJsonSchema(
           .join(",\n      ")},
     };
   }
-  ${name} copyWith({
+  ${modelDisplayName} copyWith({
     ${fields
         .map((field) => `${field.type.replace("?", "")}? ${field.name},`)
         .join("\n    ")}
   }) {
-    return ${name}(
+    return ${modelDisplayName}(
       ${fields
           .map((field) => `${field.name}: ${field.name} ?? this.${field.name},`)
           .join("\n      ")}
@@ -396,6 +407,7 @@ export function dartPropertyTypeFromSchema(
     objectName: string,
     propertyName: string,
     schema: JsonSchemaObject,
+    opts: CreateClientOptions,
 ): [DartType | string, string[] | undefined] {
     const prop = schema.properties?.[propertyName];
     const isOptional = !schema.required?.includes(propertyName);
@@ -484,13 +496,14 @@ export function dartPropertyTypeFromSchema(
     }
 
     if (isJsonSchemaObject(prop)) {
-        const joinedPropName = pascalCase(
-            `${objectName}_${propertyName}`,
-        ) as string;
+        const joinedPropName = prop.$id
+            ? pascalCase(prop.$id)
+            : (pascalCase(`${objectName}_${propertyName}`) as string);
         finalType = isOptional ? `${joinedPropName}?` : joinedPropName;
     }
     if (isJsonSchemaArray(prop)) {
         const item = prop.items;
+
         const type = item.type;
         if (typeof type !== "string") {
             throw new Error(
@@ -520,9 +533,12 @@ export function dartPropertyTypeFromSchema(
                 const subTypeName =
                     item.$id ??
                     pascalCase(`${objectName}_${propertyName}_item`);
-
-                const model = dartModelFromJsonSchema(subTypeName, item);
                 if (!generatedModels.includes(subTypeName)) {
+                    const model = dartModelFromJsonSchema(
+                        subTypeName,
+                        item,
+                        opts,
+                    );
                     subTypes.push(model);
                     generatedModels.push(subTypeName);
                 }

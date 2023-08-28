@@ -12,28 +12,32 @@ import { execSync } from "child_process";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {
-        const result = dartServiceFromServiceDefinition("UserService", {
-            getUser: {
-                path: "/users/get-user",
-                method: "get",
-                params: "UsersGetUserParams",
-                response: "User",
-            },
-            updateUser: {
-                path: "/users/update-user",
-                method: "post",
-                params: "UserUpdateData",
-                response: "User",
-            },
-            settings: {
-                getUserSettings: {
-                    path: "/users/settings/get-user-settings",
+        const result = dartServiceFromServiceDefinition(
+            "UserService",
+            {
+                getUser: {
+                    path: "/users/get-user",
                     method: "get",
-                    params: "UserSettingsGetUserSettingsParams",
-                    response: "UserSettingsGetUserSettingsResponse",
+                    params: "UsersGetUserParams",
+                    response: "User",
+                },
+                updateUser: {
+                    path: "/users/update-user",
+                    method: "post",
+                    params: "UserUpdateData",
+                    response: "User",
+                },
+                settings: {
+                    getUserSettings: {
+                        path: "/users/settings/get-user-settings",
+                        method: "get",
+                        params: "UserSettingsGetUserSettingsParams",
+                        response: "UserSettingsGetUserSettingsResponse",
+                    },
                 },
             },
-        });
+            { clientName: "" },
+        );
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class UserService {
   final String _baseUrl;
@@ -90,14 +94,18 @@ class UserSettingsService {
     });
 
     test("Service with No Params", () => {
-        const result = dartServiceFromServiceDefinition("PostsService", {
-            getPost: {
-                path: "/posts/get-post",
-                method: "get",
-                params: undefined,
-                response: undefined,
+        const result = dartServiceFromServiceDefinition(
+            "PostsService",
+            {
+                getPost: {
+                    path: "/posts/get-post",
+                    method: "get",
+                    params: undefined,
+                    response: undefined,
+                },
             },
-        });
+            { clientName: "" },
+        );
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class PostsService {
         final String _baseUrl;
@@ -132,16 +140,29 @@ class UserSettingsService {
             weightedRating: Type.Optional(Type.Number()),
             followedUsers: Type.Array(Type.String()),
             recentlyFollowedUsers: Type.Array(
-                Type.Object({
-                    id: Type.String(),
-                    email: Type.String(),
-                }),
+                Type.Object(
+                    {
+                        id: Type.String(),
+                        email: Type.String(),
+                    },
+                    {
+                        $id: "FollowedUser",
+                    },
+                ),
             ),
             followedHashtags: Type.Optional(Type.Array(Type.String())),
             settings: Type.Object({
                 enablePushNotifications: Type.Boolean(),
                 isPrivate: Type.Boolean(),
             }),
+            category: Type.Object(
+                {
+                    id: Type.String(),
+                    title: Type.String(),
+                    description: Type.String(),
+                },
+                { $id: "Category" },
+            ),
             role: Type.Union([
                 Type.Literal("standard"),
                 Type.Literal("admin"),
@@ -150,7 +171,9 @@ class UserSettingsService {
             ]),
         });
 
-        const result = dartModelFromJsonSchema("User", schema as any);
+        const result = dartModelFromJsonSchema("User", schema as any, {
+            clientName: "",
+        });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class User {
   final String metadata;
@@ -161,9 +184,10 @@ class UserSettingsService {
   final double rating;
   final double? weightedRating;
   final List<String> followedUsers;
-  final List<UserRecentlyFollowedUsersItem> recentlyFollowedUsers;
+  final List<FollowedUser> recentlyFollowedUsers;
   final List<String>? followedHashtags;
   final UserSettings settings;
+  final Category category;
   final UserRole role;
   const User({
     required this.metadata,
@@ -177,6 +201,7 @@ class UserSettingsService {
     required this.recentlyFollowedUsers,
     this.followedHashtags,
     required this.settings,
+    required this.category,
     required this.role,
   });
   factory User.fromJson(Map<String, dynamic> json) {
@@ -191,9 +216,10 @@ class UserSettingsService {
       followedUsers: json["followedUsers"] is List<String> ? json["followedUsers"] : [],
       recentlyFollowedUsers: json["recentlyFollowedUsers"] is List<Map<String, dynamic>> ?
         (json["recentlyFollowedUsers"] as List<Map<String, dynamic>>)
-          .map((val) => UserRecentlyFollowedUsersItem.fromJson(val)).toList() : [],
+          .map((val) => FollowedUser.fromJson(val)).toList() : [],
       followedHashtags: json["followedHashtags"] is List<String> ? json["followedHashtags"] : null,
       settings: UserSettings.fromJson(json["settings"]),
+      category: Category.fromJson(json["category"]),
       role: UserRole.fromJson(json["role"]),
     );
   }
@@ -210,6 +236,7 @@ class UserSettingsService {
       "recentlyFollowedUsers": recentlyFollowedUsers.map((val) => val.toJson()).toList(),
       "followedHashtags": followedHashtags,
       "settings": settings.toJson(),
+      "category": category.toJson(),
       "role": role.toJson(),
     };
   }
@@ -222,9 +249,10 @@ class UserSettingsService {
     double? rating,
     double? weightedRating,
     List<String>? followedUsers,
-    List<UserRecentlyFollowedUsersItem>? recentlyFollowedUsers,
+    List<FollowedUser>? recentlyFollowedUsers,
     List<String>? followedHashtags,
     UserSettings? settings,
+    Category? category,
     UserRole? role,
   }) {
     return User(
@@ -239,20 +267,21 @@ class UserSettingsService {
       recentlyFollowedUsers: recentlyFollowedUsers ?? this.recentlyFollowedUsers,
       followedHashtags: followedHashtags ?? this.followedHashtags,
       settings: settings ?? this.settings,
+      category: category ?? this.category,
       role: role ?? this.role,
     );
   }
 }
 
-class UserRecentlyFollowedUsersItem {
+class FollowedUser {
   final String id;
   final String email;
-  const UserRecentlyFollowedUsersItem({
+  const FollowedUser({
     required this.id,
     required this.email,
   });
-  factory UserRecentlyFollowedUsersItem.fromJson(Map<String, dynamic> json) {
-    return UserRecentlyFollowedUsersItem(
+  factory FollowedUser.fromJson(Map<String, dynamic> json) {
+    return FollowedUser(
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : "",
     );
@@ -263,11 +292,11 @@ class UserRecentlyFollowedUsersItem {
       "email": email,
     };
   }
-  UserRecentlyFollowedUsersItem copyWith({
+  FollowedUser copyWith({
     String? id,
     String? email,
   }) {
-    return UserRecentlyFollowedUsersItem(
+    return FollowedUser(
       id: id ?? this.id,
       email: email ?? this.email,
     );
@@ -300,6 +329,42 @@ class UserSettings {
     return UserSettings(
       enablePushNotifications: enablePushNotifications ?? this.enablePushNotifications,
       isPrivate: isPrivate ?? this.isPrivate,
+    );
+  }
+}
+
+class Category {
+  final String id;
+  final String title;
+  final String description;
+  const Category({
+    required this.id,
+    required this.title,
+    required this.description,
+  });
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json["id"] is String ? json["id"] : "",
+      title: json["title"] is String ? json["title"] : "",
+      description: json["description"] is String ? json["description"] : "",
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "title": title,
+      "description": description,
+    };
+  }
+  Category copyWith({
+    String? id,
+    String? title,
+    String? description,
+  }) {
+    return Category(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
     );
   }
 }
@@ -456,7 +521,9 @@ test("Dart client test", () => {
         schemaVersion: "0.0.1",
         description: "",
     };
-    const result = createDartClient(apiDef, "Blah");
+    const result = createDartClient(apiDef, {
+        clientName: "Client",
+    });
     const outputPath = path.resolve(
         __dirname,
         "../../../arri-client-dart/lib/example.dart",
