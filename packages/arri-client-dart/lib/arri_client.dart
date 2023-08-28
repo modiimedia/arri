@@ -3,6 +3,7 @@ library;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+/// Enum of available HTTP methods
 enum HttpMethod { get, post, put, patch, head, delete }
 
 /// Perform a raw http request
@@ -132,12 +133,14 @@ Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
   }
 }
 
+/// Container for holding a request result or a request error
 class ArriRequestResult<T> {
   final T? value;
   final ArriRequestError? error;
   const ArriRequestResult({this.value, this.error});
 }
 
+/// Abstract endpoint to use as a base for generated client route enums
 abstract class ArriEndpoint {
   final String path;
   final HttpMethod method;
@@ -155,6 +158,8 @@ class ArriRequestError implements Exception {
       required this.statusMessage,
       this.data,
       this.stackTrace});
+
+  /// Create an ArriRequestError from an HTTP response
   factory ArriRequestError.fromResponse(http.Response response) {
     try {
       final body = json.decode(response.body);
