@@ -25,8 +25,10 @@ Future<http.Response> arriRequest(
     "Placeholder request. If you see this that means a request was never sent to the server.",
     400,
   );
+  final finalHeaders = headers ?? {};
   String? bodyInput;
-  if (method != HttpMethod.get && params != null) {
+  if (method != HttpMethod.get && method != HttpMethod.head && params != null) {
+    finalHeaders["Content-Type"] = "application/json";
     bodyInput = json.encode(bodyInput);
   }
   switch (method) {
