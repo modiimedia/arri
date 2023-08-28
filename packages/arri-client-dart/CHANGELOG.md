@@ -1,3 +1,7 @@
+## 0.0.14
+
+-   Fix headers error
+
 ## 0.0.13
 
 -   Fix error where posts requests with a body fail
