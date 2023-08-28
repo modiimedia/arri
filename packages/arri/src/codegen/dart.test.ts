@@ -123,6 +123,7 @@ class UserSettingsService {
 
     test("Model Generation", () => {
         const schema = Type.Object({
+            _metadata: Type.String(),
             id: Type.String(),
             email: Type.Optional(Type.String()),
             createdAt: Type.Integer(),
@@ -152,6 +153,7 @@ class UserSettingsService {
         const result = dartModelFromJsonSchema("User", schema as any);
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class User {
+  final String metadata;
   final String id;
   final String? email;
   final int createdAt;
@@ -164,6 +166,7 @@ class UserSettingsService {
   final UserSettings settings;
   final UserRole role;
   const User({
+    required this.metadata,
     required this.id,
     this.email,
     required this.createdAt,
@@ -178,6 +181,7 @@ class UserSettingsService {
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+      metadata: json["_metadata"] is String ? json["_metadata"] : "",
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : null,
       createdAt: json["createdAt"] is int ? json["createdAt"] : 0,
@@ -195,6 +199,7 @@ class UserSettingsService {
   }
   Map<String, dynamic> toJson() {
     return {
+      "_metadata": metadata,
       "id": id,
       "email": email,
       "createdAt": createdAt,
@@ -209,6 +214,7 @@ class UserSettingsService {
     };
   }
   User copyWith({
+    String? metadata,
     String? id,
     String? email,
     int? createdAt,
@@ -222,6 +228,7 @@ class UserSettingsService {
     UserRole? role,
   }) {
     return User(
+      metadata: metadata ?? this.metadata,
       id: id ?? this.id,
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
@@ -387,6 +394,7 @@ test("Dart client test", () => {
                 message: Type.String(),
             }),
             User: Type.Object({
+                _metadata: Type.String(),
                 id: Type.String(),
                 email: Type.Optional(Type.String()),
                 createdAt: Type.Integer(),
@@ -399,6 +407,7 @@ test("Dart client test", () => {
                     Type.Enum({
                         light: "light",
                         dark: "dark",
+                        systemDefault: "system-default",
                     }),
                 ),
             }) as any,

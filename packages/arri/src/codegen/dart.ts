@@ -138,7 +138,7 @@ class ${prefix} {
     return arriRequest(
       "$_baseUrl\${endpoint.path}",
       method: endpoint.method,
-      headers: headers ?? this._headers,
+      headers: headers ?? _headers,
       body: body,
       query: query,
       encoding: encoding,
@@ -298,7 +298,7 @@ export function dartModelFromJsonSchema(
     name: string,
     schema: JsonSchemaObject,
 ): string {
-    const fields: Array<{ type: string; name: string }> = [];
+    const fields: Array<{ type: string; name: string; jsonKey: string }> = [];
     const subModelParts: string[] = [];
     Object.entries(schema.properties ?? {}).forEach(([key, val]) => {
         if (typeof val !== "object") {
@@ -309,13 +309,12 @@ export function dartModelFromJsonSchema(
             key,
             schema,
         );
-
         if (subTypes?.length) {
             for (const sub of subTypes) {
                 subModelParts.push(sub);
             }
         }
-        fields.push({ type: dartType, name: key });
+        fields.push({ type: dartType, name: camelCase(key), jsonKey: key });
         if (!isDartType(dartType) && "type" in val && val.type === "object") {
             subModelParts.push(
                 dartModelFromJsonSchema(dartType.replace("?", ""), val),
@@ -336,7 +335,14 @@ export function dartModelFromJsonSchema(
   factory ${name}.fromJson(Map<String, dynamic> json) {
     return ${name}(
       ${fields
-          .map((field) => `${dartParsedJsonField(field.name, field.type)},`)
+          .map(
+              (field) =>
+                  `${dartParsedJsonField(
+                      field.name,
+                      field.jsonKey,
+                      field.type,
+                  )},`,
+          )
           .join("\n      ")}
     );
   }
@@ -348,16 +354,22 @@ export function dartModelFromJsonSchema(
               const typeName = field.type.replace("?", "");
               if (isDartTypeWithNullables(field.type)) {
                   const transformer = transformers[typeName as DartType];
-                  return transformer.toJsonBody(field.name, isNullable);
+                  return transformer.toJsonBody(
+                      field.name,
+                      field.jsonKey,
+                      isNullable,
+                  );
               }
               if (field.type.includes("List<")) {
                   return classListTransformer(typeName).toJsonBody(
                       field.name,
+                      field.jsonKey,
                       isNullable,
                   );
               }
               return classTransformer(typeName, isNullable).toJsonBody(
                   field.name,
+                  field.jsonKey,
                   isNullable,
               );
           })
@@ -524,28 +536,53 @@ export function dartPropertyTypeFromSchema(
     return [finalType, subTypes.length ? subTypes : undefined];
 }
 
-export function dartParsedJsonField(fieldName: string, dartType: string) {
+export function dartParsedJsonField(
+    fieldName: string,
+    jsonKey: string,
+    dartType: string,
+) {
     if (isDartTypeWithNullables(dartType)) {
         switch (dartType) {
             case "String":
-                return transformers.String.fromJsonBody(fieldName, '""');
+                return transformers.String.fromJsonBody(
+                    fieldName,
+                    jsonKey,
+                    '""',
+                );
             case "String?":
-                return transformers.String.fromJsonBody(fieldName, "null");
+                return transformers.String.fromJsonBody(
+                    fieldName,
+                    jsonKey,
+                    "null",
+                );
             case "bool":
-                return transformers.bool.fromJsonBody(fieldName, "false");
+                return transformers.bool.fromJsonBody(
+                    fieldName,
+                    jsonKey,
+                    "false",
+                );
             case "double":
-                return transformers.double.fromJsonBody(fieldName, "0.0");
+                return transformers.double.fromJsonBody(
+                    fieldName,
+                    jsonKey,
+                    "0.0",
+                );
             case "int":
-                return transformers.int.fromJsonBody(fieldName, "0");
+                return transformers.int.fromJsonBody(fieldName, jsonKey, "0");
             case "null":
-                return transformers.null.fromJsonBody(fieldName, "");
+                return transformers.null.fromJsonBody(fieldName, jsonKey, "");
             case "DateTime":
                 return transformers.DateTime.fromJsonBody(
                     fieldName,
+                    jsonKey,
                     "DateTime(0)",
                 );
             case "DateTime?":
-                return transformers.DateTime.fromJsonBody(fieldName, "null");
+                return transformers.DateTime.fromJsonBody(
+                    fieldName,
+                    jsonKey,
+                    "null",
+                );
             case "List<String>":
             case "List<bool>":
             case "List<double>":
@@ -553,16 +590,17 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
             case "List<null>":
                 return defaultListFromJsonBody(
                     fieldName,
+                    jsonKey,
                     dartType
                         .replace("List<", "")
                         .replace(">", "") as DartBaseType,
                     "[]",
                 );
             default:
-                return `${fieldName}: json["${fieldName}"] is ${dartType.replace(
+                return `${fieldName}: json["${jsonKey}"] is ${dartType.replace(
                     "?",
                     "",
-                )} ? json["${fieldName}"] : null`;
+                )} ? json["${jsonKey}"] : null`;
         }
     }
     if (dartType.includes("List<")) {
@@ -573,12 +611,14 @@ export function dartParsedJsonField(fieldName: string, dartType: string) {
 
         return classListTransformer(innerType).fromJsonBody(
             fieldName,
+            jsonKey,
             dartType.endsWith("?") ? "null" : "[]",
         );
     }
     const classType = dartType.split("?").join("").trim();
     return classTransformer(classType, dartType.endsWith("?")).fromJsonBody(
         fieldName,
+        jsonKey,
         classType,
     );
 }
@@ -603,8 +643,8 @@ const dartTypeMap = {
 
 interface DartMappedType {
     classBody?: string;
-    fromJsonBody: (jsonKey: string, fallback: string) => string;
-    toJsonBody: (key: string, isNullable?: boolean) => string;
+    fromJsonBody: (key: string, jsonKey: string, fallback: string) => string;
+    toJsonBody: (key: string, jsonKey: string, isNullable?: boolean) => string;
 }
 
 export const transformers: Record<DartType, DartMappedType> = {
@@ -613,79 +653,80 @@ export const transformers: Record<DartType, DartMappedType> = {
         toJsonBody: defaultToJsonBody,
     },
     int: {
-        fromJsonBody: (key, fallback) =>
-            defaultFromJsonBody(key, "int", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultFromJsonBody(key, jsonKey, "int", fallback),
         toJsonBody: defaultToJsonBody,
     },
     double: {
-        fromJsonBody: (key, fallback) =>
-            defaultFromJsonBody(key, "double", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultFromJsonBody(key, jsonKey, "double", fallback),
         toJsonBody: defaultToJsonBody,
     },
     String: {
-        fromJsonBody: (key, fallback) =>
-            defaultFromJsonBody(key, "String", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultFromJsonBody(key, jsonKey, "String", fallback),
         toJsonBody: defaultToJsonBody,
     },
     bool: {
-        fromJsonBody: (key, fallback) =>
-            defaultFromJsonBody(key, "bool", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultFromJsonBody(key, jsonKey, "bool", fallback),
         toJsonBody: defaultToJsonBody,
     },
     DateTime: {
-        fromJsonBody: (key, fallback) =>
-            `${key}: json["${key}"] is String ? DateTime.parse(json["${key}"]) : ${fallback}`,
-        toJsonBody: (key, isNullable) =>
-            `"${key}": ${key}${isNullable ? "?" : ""}.toIso8601String()`,
+        fromJsonBody: (key, jsonKey, fallback) =>
+            `${key}: json["${jsonKey}"] is String ? DateTime.parse(json["${jsonKey}"]) : ${fallback}`,
+        toJsonBody: (key, jsonKey, isNullable) =>
+            `"${jsonKey}": ${key}${isNullable ? "?" : ""}.toIso8601String()`,
     },
     "List<null>": {
-        fromJsonBody: (key, fallback) =>
-            defaultListFromJsonBody(key, "null", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultListFromJsonBody(key, jsonKey, "null", fallback),
         toJsonBody: defaultToJsonBody,
     },
     "List<int>": {
-        fromJsonBody: (key, fallback) =>
-            defaultListFromJsonBody(key, "int", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultListFromJsonBody(key, jsonKey, "int", fallback),
         toJsonBody: defaultToJsonBody,
     },
     "List<double>": {
-        fromJsonBody: (key, fallback) =>
-            defaultListFromJsonBody(key, "double", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultListFromJsonBody(key, jsonKey, "double", fallback),
         toJsonBody: defaultToJsonBody,
     },
     "List<String>": {
-        fromJsonBody: (key, fallback) =>
-            defaultListFromJsonBody(key, "String", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultListFromJsonBody(key, jsonKey, "String", fallback),
         toJsonBody: defaultToJsonBody,
     },
     "List<bool>": {
-        fromJsonBody: (key, fallback) =>
-            defaultListFromJsonBody(key, "bool", fallback),
+        fromJsonBody: (key, jsonKey, fallback) =>
+            defaultListFromJsonBody(key, jsonKey, "bool", fallback),
         toJsonBody: defaultToJsonBody,
     },
     "List<DateTime>": {
         fromJsonBody: (
             key,
+            jsonKey,
             fallback,
-        ) => `${key}: json["${key}"] is List<String> ?
-            (json["${key}"] as List<String>)
+        ) => `${key}: json["${jsonKey}"] is List<String> ?
+            (json["${jsonKey}"] as List<String>)
                 .map((item) => DateTime.parse(item)).toList() : ${fallback}`,
-        toJsonBody: (key, isNullable) =>
-            `"${key}": ${key}${
+        toJsonBody: (key, jsonKey, isNullable) =>
+            `"${jsonKey}": ${key}${
                 isNullable ? "?" : ""
             }.map((val) => val.toIso8601String()).toList()`,
     },
     Uint8List: {
-        fromJsonBody: (key, fallback) =>
-            `${key}: json["${key}"] is List ? Uint8List.fromList(json["${key}"]) : ${fallback}`,
-        toJsonBody: (key, isNullable) =>
-            `"${key}": ${key}${isNullable ? "?" : ""}.toList()`,
+        fromJsonBody: (key, jsonKey, fallback) =>
+            `${key}: json["${jsonKey}"] is List ? Uint8List.fromList(json["${jsonKey}"]) : ${fallback}`,
+        toJsonBody: (key, jsonKey, isNullable) =>
+            `"${jsonKey}": ${key}${isNullable ? "?" : ""}.toList()`,
     },
     "List<Uint8List>": {
-        fromJsonBody: (key, fallback) =>
-            `${key}: json["${key}"] is List && (json["${key}"] as List).isNotEmpty && (json["${key}"] as List).first is List ? json["${key}"] : ${fallback}`,
-        toJsonBody: (key, isNullable) =>
-            `"${key}": ${key}${
+        fromJsonBody: (key, jsonKey, fallback) =>
+            `${key}: json["${jsonKey}"] is List && (json["${jsonKey}"] as List).isNotEmpty && (json["${jsonKey}"] as List).first is List ? json["${jsonKey}"] : ${fallback}`,
+        toJsonBody: (key, jsonKey, isNullable) =>
+            `"${jsonKey}": ${key}${
                 isNullable ? "?" : ""
             }.map((val) => val.toList()).toList()`,
     },
@@ -693,20 +734,22 @@ export const transformers: Record<DartType, DartMappedType> = {
 
 function defaultFromJsonBody(
     key: string,
+    jsonKey: string,
     typename: DartType,
     fallback: string,
 ) {
-    return `${key}: json["${key}"] is ${typename} ? json["${key}"] : ${fallback}`;
+    return `${key}: json["${jsonKey}"] is ${typename} ? json["${jsonKey}"] : ${fallback}`;
 }
 function defaultListFromJsonBody(
     key: string,
+    jsonKey: string,
     typename: DartBaseType,
     fallback: string,
 ) {
-    return `${key}: json["${key}"] is List<${typename}> ? json["${key}"] : ${fallback}`;
+    return `${key}: json["${jsonKey}"] is List<${typename}> ? json["${jsonKey}"] : ${fallback}`;
 }
-function defaultToJsonBody(key: string) {
-    return `"${key}": ${key}`;
+function defaultToJsonBody(key: string, jsonKey: string) {
+    return `"${jsonKey}": ${key}`;
 }
 
 export const classTransformer = (
@@ -714,26 +757,27 @@ export const classTransformer = (
     nullable: boolean,
 ): DartMappedType => {
     return {
-        fromJsonBody: (key, fallback) => {
+        fromJsonBody: (key, jsonKey, fallback) => {
             if (nullable) {
-                return `${key}: json["${key}"] is Map<String, dynamic> ? 
-                ${typename}.fromJson(json["${key}"]) : null`;
+                return `${key}: json["${jsonKey}"] is Map<String, dynamic> ? 
+                ${typename}.fromJson(json["${jsonKey}"]) : null`;
             }
-            return `${key}: ${typename}.fromJson(json["${key}"])`;
+            return `${key}: ${typename}.fromJson(json["${jsonKey}"])`;
         },
-        toJsonBody: (key, isNullable) =>
-            `"${key}": ${key}${isNullable ? "?" : ""}.toJson()`,
+        toJsonBody: (key, jsonKey, isNullable) => {
+            return `"${jsonKey}": ${key}${isNullable ? "?" : ""}.toJson()`;
+        },
     };
 };
 export const classListTransformer = (typename: string): DartMappedType => {
     return {
-        fromJsonBody: (key, fallback) => {
-            return `${key}: json["${key}"] is List<Map<String, dynamic>> ? 
-                (json["${key}"] as List<Map<String, dynamic>>)
+        fromJsonBody: (key, jsonKey, fallback) => {
+            return `${key}: json["${jsonKey}"] is List<Map<String, dynamic>> ? 
+                (json["${jsonKey}"] as List<Map<String, dynamic>>)
                     .map((val) => ${typename}.fromJson(val)).toList() : ${fallback}`;
         },
-        toJsonBody: (key, isNullable) =>
-            `"${key}": ${key}${
+        toJsonBody: (key, jsonKey, isNullable) =>
+            `"${jsonKey}": ${key}${
                 isNullable ? "?" : ""
             }.map((val) => val.toJson()).toList()`,
     };

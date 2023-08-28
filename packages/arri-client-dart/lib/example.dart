@@ -45,7 +45,7 @@ class Blah {
     return arriRequest(
       "$_baseUrl${endpoint.path}",
       method: endpoint.method,
-      headers: headers ?? this._headers,
+      headers: headers ?? _headers,
       body: body,
       query: query,
       encoding: encoding,
@@ -208,6 +208,7 @@ class BlahSayHelloResponse {
 }
 
 class BlahUser {
+  final String metadata;
   final String id;
   final String? email;
   final int createdAt;
@@ -215,6 +216,7 @@ class BlahUser {
   final BlahUserRole role;
   final BlahUserPreferredTheme? preferredTheme;
   const BlahUser({
+    required this.metadata,
     required this.id,
     this.email,
     required this.createdAt,
@@ -224,6 +226,7 @@ class BlahUser {
   });
   factory BlahUser.fromJson(Map<String, dynamic> json) {
     return BlahUser(
+      metadata: json["_metadata"] is String ? json["_metadata"] : "",
       id: json["id"] is String ? json["id"] : "",
       email: json["email"] is String ? json["email"] : null,
       createdAt: json["createdAt"] is int ? json["createdAt"] : 0,
@@ -238,6 +241,7 @@ class BlahUser {
   }
   Map<String, dynamic> toJson() {
     return {
+      "_metadata": metadata,
       "id": id,
       "email": email,
       "createdAt": createdAt,
@@ -248,6 +252,7 @@ class BlahUser {
   }
 
   BlahUser copyWith({
+    String? metadata,
     String? id,
     String? email,
     int? createdAt,
@@ -256,6 +261,7 @@ class BlahUser {
     BlahUserPreferredTheme? preferredTheme,
   }) {
     return BlahUser(
+      metadata: metadata ?? this.metadata,
       id: id ?? this.id,
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
@@ -292,7 +298,8 @@ enum BlahUserRole implements Comparable<BlahUserRole> {
 
 enum BlahUserPreferredTheme implements Comparable<BlahUserPreferredTheme> {
   light("light"),
-  dark("dark");
+  dark("dark"),
+  systemDefault("system-default");
 
   const BlahUserPreferredTheme(this.value);
   final dynamic value;
