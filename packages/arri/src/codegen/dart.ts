@@ -3,7 +3,6 @@ import {
     type ApplicationDefinition,
     type ServiceDefinition,
     isProcedureDefinition,
-    unflattenObject,
     type JsonSchemaObject,
     isJsonSchemaEnum,
     isJsonSchemaScalarType,
@@ -11,6 +10,9 @@ import {
     isJsonSchemaObject,
     isJsonSchemaArray,
     type JsonSchemaTypeValue,
+    type ProcedureDefinition,
+    unflattenProcedures,
+    isServiceDefinition,
 } from "./utils";
 import { defineClientGeneratorPlugin } from "./plugin";
 import { writeFileSync } from "fs";
@@ -55,28 +57,32 @@ export function createDartClient(
     prefix = "Client",
 ) {
     const { models, procedures } = appDef;
-    const serviceParts: Array<{
+    const serviceParts: {
         name: string;
         key: string;
         content: string;
-    }> = [];
-    const services = unflattenObject(procedures) as Record<
-        string,
-        ServiceDefinition
-    >;
+    }[] = [];
+    const procedureParts: string[] = [];
+    const services = unflattenProcedures(procedures);
     Object.keys(services).forEach((k) => {
-        const service = services[k];
-        const serviceName = pascalCase(`$_${prefix}_${k}_service`);
-        serviceParts.push({
-            name: serviceName,
-            key: k,
-            content: dartServiceFromServiceDefinition(
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                serviceName,
-                service,
-                prefix,
-            ),
-        });
+        const item = services[k];
+        if (isServiceDefinition(item)) {
+            const serviceName = pascalCase(`${prefix}_${k}_service`);
+            serviceParts.push({
+                name: serviceName,
+                key: k,
+                content: dartServiceFromServiceDefinition(
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    serviceName,
+                    item,
+                    prefix,
+                ),
+            });
+            return;
+        }
+        procedureParts.push(
+            dartProcedureFromServiceDefinition(prefix, k, item),
+        );
     });
     const endpoints: Record<string, string> = {};
     Object.keys(procedures).forEach((key) => {
@@ -112,12 +118,7 @@ class ${prefix} {
     Map<String, String> headers = const {},
   }): _headers = headers,
     _baseUrl = baseUrl;
-  ${prefix} withHeaders(Map<String, String> headers) {
-    return ${prefix}(
-      baseUrl: _baseUrl,
-      headers: headers,
-    );
-  }
+  ${procedureParts.join("\n")}
   ${serviceParts
       .map(
           (service) => `${service.name} get ${service.key} {
@@ -185,67 +186,18 @@ export function dartServiceFromServiceDefinition(
     Object.keys(def).forEach((key) => {
         const item = def[key];
         if (isProcedureDefinition(item)) {
-            let returnType:
-                | `Future<String>`
-                | "Future<int>"
-                | "Future<number>"
-                | "Future<void>"
-                | `Future<${string}>` = `Future<String>`;
-            let returnTypeName = "String";
-            if (item.response) {
-                returnType = `Future<${prefix}${item.response}>`;
-                returnTypeName = `${prefix}${item.response}`;
-            } else {
-                returnType = "Future<void>";
-            }
-            let paramsInput = "";
-            if (item.params) {
-                paramsInput = `${prefix}${item.params} params`;
-            }
-            let responseParser: string = "(body) => body;";
-            switch (returnType) {
-                case "Future<String>":
-                    break;
-                case "Future<int>":
-                    responseParser = `(body) => Int.parse(body)`;
-                    break;
-                case "Future<double>":
-                    responseParser = `(body) => Double.parse(body)`;
-                    break;
-                case "Future<void>":
-                    responseParser = `(body) {}`;
-                    break;
-                case "Future<bool>":
-                    responseParser = `(body) {
-                        switch(body) {
-                            case "true":
-                            case "1":
-                                return true;
-                            case "false":
-                            case "0":
-                            default:
-                                return false;
-                        }
-                    }`;
-                    break;
-                default:
-                    responseParser = `(body) => ${returnTypeName}.fromJson(json.decode(body))`;
-                    break;
-            }
-            rpcParts.push(`${returnType} ${key}(${paramsInput}) {
-    return parsedArriRequest(
-      "$_baseUrl${item.path}",
-      method: HttpMethod.${item.method},
-      headers: _headers,
-      params: ${paramsInput.length ? `params.toJson()` : "null"},
-      parser: ${responseParser},
-    );
-  }`);
+            rpcParts.push(
+                dartProcedureFromServiceDefinition(prefix, key, item),
+            );
             return;
         }
-        const subServiceName = pascalCase(`${name}_${key}_Service`);
+        const nameParts = name.split("Service");
+        nameParts.pop();
+        const subServiceName = pascalCase(
+            `${nameParts.join("")}_${key}_Service`,
+        );
         const subService = dartServiceFromServiceDefinition(
-            pascalCase(`${name}_${key}_Service`),
+            subServiceName,
             item,
             prefix,
         );
@@ -277,6 +229,69 @@ export function dartServiceFromServiceDefinition(
 }
 ${subServiceParts.map((sub) => sub.content).join("\n")}
 `;
+}
+
+export function dartProcedureFromServiceDefinition(
+    clientName: string,
+    key: string,
+    def: ProcedureDefinition,
+): string {
+    let returnType:
+        | `Future<String>`
+        | "Future<int>"
+        | "Future<number>"
+        | "Future<void>"
+        | `Future<${string}>` = `Future<String>`;
+    let returnTypeName = "String";
+    if (def.response) {
+        returnType = `Future<${clientName}${def.response}>`;
+        returnTypeName = `${clientName}${def.response}`;
+    } else {
+        returnType = "Future<void>";
+    }
+    let paramsInput = "";
+    if (def.params) {
+        paramsInput = `${clientName}${def.params} params`;
+    }
+    let responseParser: string = "(body) => body;";
+    switch (returnType) {
+        case "Future<String>":
+            break;
+        case "Future<int>":
+            responseParser = `(body) => Int.parse(body)`;
+            break;
+        case "Future<double>":
+            responseParser = `(body) => Double.parse(body)`;
+            break;
+        case "Future<void>":
+            responseParser = `(body) {}`;
+            break;
+        case "Future<bool>":
+            responseParser = `(body) {
+                        switch(body) {
+                            case "true":
+                            case "1":
+                                return true;
+                            case "false":
+                            case "0":
+                            default:
+                                return false;
+                        }
+                    }`;
+            break;
+        default:
+            responseParser = `(body) => ${returnTypeName}.fromJson(json.decode(body))`;
+            break;
+    }
+    return `${returnType} ${key}(${paramsInput}) {
+    return parsedArriRequest(
+      "$_baseUrl${def.path}",
+      method: HttpMethod.${def.method},
+      headers: _headers,
+      params: ${paramsInput.length ? `params.toJson()` : "null"},
+      parser: ${responseParser},
+    );
+  }`;
 }
 
 export function dartModelFromJsonSchema(

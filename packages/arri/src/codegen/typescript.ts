@@ -13,6 +13,7 @@ import {
     isJsonSchemaEnum,
     isJsonSchemaArray,
     type JsonSchemaScalarType,
+    isServiceDefinition,
 } from "./utils";
 import { defineClientGeneratorPlugin } from "./plugin";
 import { writeFileSync } from "fs";
@@ -50,18 +51,25 @@ export async function createTypescriptClient(
     createdModels = [];
     const services = unflattenObject(def.procedures) as Record<
         string,
-        ServiceDefinition
+        ServiceDefinition | ProcedureDefinition
     >;
     const serviceParts: Array<{ name: string; key: string; content: string }> =
         [];
+    const procedureParts: string[] = [];
     const modelParts: string[] = [];
+
     Object.keys(services).forEach((key) => {
-        const serviceName = pascalCase(`${prefix}_${key}_service`);
-        serviceParts.push({
-            name: serviceName,
-            key,
-            content: tsServiceFromServiceDefinition(serviceName, services[key]),
-        });
+        const item = services[key];
+        if (isServiceDefinition(item)) {
+            const serviceName = pascalCase(`${prefix}_${key}_service`);
+            serviceParts.push({
+                name: serviceName,
+                key,
+                content: tsServiceFromServiceDefinition(serviceName, item),
+            });
+            return;
+        }
+        procedureParts.push(tsRpcFromProcedureDefinition(key, item));
     });
     Object.keys(def.models).forEach((key) => {
         const modelName = pascalCase(`${key}`);
@@ -75,10 +83,14 @@ export async function createTypescriptClient(
     import { arriRequest, ArriRequestError } from 'arri-client';
     
     export class ${prefix} {
+        private baseUrl: string;
+        private headers: Record<string, string>;
         ${serviceParts
             .map((service) => `${service.key}: ${service.name}`)
             .join("\n")}
         constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
+            this.baseUrl = opts.baseUrl ?? "";
+            this.headers = opts.headers ?? {};
             ${serviceParts
                 .map(
                     (service) =>
@@ -86,6 +98,8 @@ export async function createTypescriptClient(
                 )
                 .join("\n")}
         }
+
+        ${procedureParts.join("\n")}
     }
 
     ${serviceParts.map((service) => service.content).join("\n")}

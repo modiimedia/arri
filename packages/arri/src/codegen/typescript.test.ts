@@ -3,7 +3,7 @@ import {
     createTypescriptClient,
     tsModelFromDefinition,
     tsServiceFromServiceDefinition,
-} from "./typescriptCodegen";
+} from "./typescript";
 import {
     type ServiceDefinition,
     normalizeWhitespace,
@@ -156,6 +156,12 @@ test("Client generation", async () => {
         schemaVersion: "0.0.1",
         description: "",
         procedures: {
+            sayHello: {
+                path: "/say-hello",
+                method: "get",
+                params: undefined,
+                response: "SayHelloResponse",
+            },
             "users.getUser": {
                 path: "/users/get-user",
                 method: "get",
@@ -182,6 +188,9 @@ test("Client generation", async () => {
             },
         },
         models: {
+            SayHelloResponse: Type.Object({
+                message: Type.String(),
+            }),
             User: UserSchema as any,
             UserParams: Type.Object({
                 userId: Type.String(),

@@ -1,4 +1,4 @@
-import { defineRpc } from "../../../";
+import { defineRpc } from "../../../_index";
 import { Type } from "@sinclair/typebox";
 
 export default defineRpc({

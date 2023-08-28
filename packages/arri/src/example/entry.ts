@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import { ArriServer, defineMiddleware } from "../";
+import { ArriServer, defineMiddleware } from "../_index";
 
 const app = new ArriServer();
 

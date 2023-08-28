@@ -2,9 +2,9 @@ import { defineBuildConfig } from "unbuild";
 
 export default defineBuildConfig({
     entries: [
-        "./src/index.ts",
-        { input: "./src/codegen/index.ts", name: "codegen" },
-        { input: "./src/cli/index.ts", name: "cli" },
+        { input: "./src/_index.ts", name: "index" },
+        { input: "./src/codegen/_index.ts", name: "codegen" },
+        { input: "./src/cli/_index.ts", name: "cli" },
     ],
     rollup: {
         emitCJS: true,

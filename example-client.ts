@@ -2,11 +2,24 @@
 import { arriRequest, ArriRequestError } from "arri-client";
 
 export class TypescriptClient {
+  private baseUrl: string;
+  private headers: Record<string, string>;
   users: TypescriptClientUsersService;
   posts: TypescriptClientPostsService;
   constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
+    this.baseUrl = opts.baseUrl ?? "";
+    this.headers = opts.headers ?? {};
     this.users = new TypescriptClientUsersService(opts);
     this.posts = new TypescriptClientPostsService(opts);
+  }
+
+  async sayHello() {
+    return arriRequest<SayHelloResponse>({
+      url: `${this.baseUrl}/say-hello`,
+      method: "get",
+
+      headers: this.headers,
+    });
   }
 }
 
@@ -70,6 +83,10 @@ export class TypescriptClientPostsCommentsService {
       headers: this.headers,
     });
   }
+}
+
+export interface SayHelloResponse {
+  message: string;
 }
 
 export interface User {

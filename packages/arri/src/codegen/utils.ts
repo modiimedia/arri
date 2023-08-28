@@ -1,6 +1,14 @@
 import { type TObject } from "@sinclair/typebox";
 import { isHttpMethod, type HttpMethod } from "../app";
 
+export interface ApplicationDefinition {
+    schemaVersion: "0.0.1";
+    description: string;
+    procedures: Record<string, ProcedureDefinition>;
+    models: Record<string, JsonSchemaObject>;
+    errors: Omit<TObject, symbol>;
+}
+
 export function normalizeWhitespace(input: string) {
     if (input.includes("\n\n")) {
         return normalizeWhitespace(input.split("\n\n").join("\n"));
@@ -63,14 +71,6 @@ export function isServiceDefinition(input: any): input is ServiceDefinition {
     return true;
 }
 
-export interface ApplicationDefinition {
-    schemaVersion: "0.0.1";
-    description: string;
-    procedures: Record<string, ProcedureDefinition>;
-    models: Record<string, JsonSchemaObject>;
-    errors: Omit<TObject, symbol>;
-}
-
 export function unflattenObject(data: Record<string, any>) {
     if (Object(data) !== data || Array.isArray(data)) return data;
     const regex = /\.?([^.[\]]+)|\[(\d+)\]/g;
@@ -86,6 +86,12 @@ export function unflattenObject(data: Record<string, any>) {
         cur[prop] = data[p];
     }
     return result[""] || result;
+}
+
+export function unflattenProcedures(
+    procedures: ApplicationDefinition["procedures"],
+): Record<string, ProcedureDefinition | ServiceDefinition> {
+    return unflattenObject(procedures);
 }
 
 export function setNestedObjectProperty<T>(

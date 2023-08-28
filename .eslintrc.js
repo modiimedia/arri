@@ -31,5 +31,6 @@ module.exports = {
         "@typescript-eslint/explicit-function-return-type": 0,
         "@typescript-eslint/no-redeclare": 0,
         "@typescript-eslint/return-await": 0,
+        "@typescript-eslint/array-type": 0,
     },
 };

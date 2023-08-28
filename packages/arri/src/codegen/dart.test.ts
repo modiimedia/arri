@@ -4,7 +4,7 @@ import {
     dartServiceFromServiceDefinition,
     dartModelFromJsonSchema,
     createDartClient,
-} from "./dartCodegen";
+} from "./dart";
 import { type ApplicationDefinition, normalizeWhitespace } from "./utils";
 import { writeFileSync } from "fs";
 import path from "path";
@@ -43,8 +43,8 @@ describe("Dart Tests", () => {
     Map<String, String> headers = const {},
   }): _baseUrl = baseUrl,
   _headers = headers;
-  UserServiceSettingsService get settings {
-    return UserServiceSettingsService(
+  UserSettingsService get settings {
+    return UserSettingsService(
       baseUrl: _baseUrl,
       headers: _headers,
     );
@@ -68,10 +68,10 @@ describe("Dart Tests", () => {
     );
   }
 }
-class UserServiceSettingsService {
+class UserSettingsService {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const UserServiceSettingsService({
+  const UserSettingsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
   }): _baseUrl = baseUrl,
@@ -337,6 +337,12 @@ test("Dart client test", () => {
             required: ["name", "statusCode", "statusMessage", "message"],
         },
         procedures: {
+            sayHello: {
+                path: "/say-hello",
+                method: "get",
+                params: undefined,
+                response: "SayHelloResponse",
+            },
             "v1.users.getUser": {
                 path: "/v1/users/get-user",
                 method: "get",
@@ -375,6 +381,9 @@ test("Dart client test", () => {
             },
         },
         models: {
+            SayHelloResponse: Type.Object({
+                message: Type.String(),
+            }),
             User: Type.Object({
                 id: Type.String(),
                 email: Type.Optional(Type.String()),

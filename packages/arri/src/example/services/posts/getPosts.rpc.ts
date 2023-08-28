@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import { defineRpc } from "../../../";
+import { defineRpc } from "../../../_index";
 
 export default defineRpc({
     method: "post",
