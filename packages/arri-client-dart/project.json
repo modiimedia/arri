@@ -1,5 +1,14 @@
 {
     "name": "arri-client-dart",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri-client-dart/lib"
+    "sourceRoot": "packages/arri-client-dart/lib",
+    "targets": {
+        "publish": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "dart pub publish",
+                "cwd": "packages/arri-client-dart"
+            }
+        }
+    }
 }
