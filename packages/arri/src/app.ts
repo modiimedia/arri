@@ -47,7 +47,7 @@ export class Arri {
     private readonly middlewares: Middleware[] = [];
 
     constructor(opts?: ArriOptions) {
-        this.appInfo = opts.appInfo;
+        this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
             onAfterResponse: opts?.onAfterResponse,
@@ -132,6 +132,7 @@ export class Arri {
     getAppDefinition(): ApplicationDef {
         const appDef: ApplicationDef = {
             arriSchemaVersion: "0.0.1",
+            info: this.appInfo,
             procedures: {},
             models: this.models as any,
             errors: ErrorResponse,
