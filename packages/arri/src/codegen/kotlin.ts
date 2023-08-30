@@ -2,10 +2,10 @@ import { camelCase, pascalCase } from "scule";
 import { defineClientGeneratorPlugin } from "./plugin";
 import {
     unflattenProcedures,
-    type ApplicationDefinition,
-    isServiceDefinition,
-    type ServiceDefinition,
-    type ProcedureDefinition,
+    type ApplicationDef,
+    isServiceDef,
+    type ServiceDef,
+    type ProcedureDef,
     type JsonSchemaObject,
     isJsonSchemaObject,
     isJsonSchemaScalarType,
@@ -33,7 +33,7 @@ export const kotlinClientGenerator = defineClientGeneratorPlugin(function (
 });
 
 export function createKotlinClient(
-    def: ApplicationDefinition,
+    def: ApplicationDef,
     clientName: string,
     packageName: string,
 ) {
@@ -61,14 +61,14 @@ export function createKotlinClient(
 export function createKotlinServiceFromDefinition(
     clientName: string,
     serviceName: string,
-    def: ServiceDefinition,
+    def: ServiceDef,
 ) {
     const rpcParts: string[] = [];
     const subServiceParts: { name: string; key: string; content: string }[] =
         [];
     Object.keys(def).forEach((key) => {
         const node = def[key];
-        if (isServiceDefinition(node)) {
+        if (isServiceDef(node)) {
             const nameParts = serviceName.split("Service");
             nameParts.pop();
             const subServiceName = pascalCase(
@@ -106,7 +106,7 @@ export function createKotlinServiceFromDefinition(
 export function createKotlinRpcFromDefinition(
     clientName: string,
     name: string,
-    def: ProcedureDefinition,
+    def: ProcedureDef,
 ) {
     const paramStr = def.params ? `params: ${pascalCase(def.params)}` : "";
     const responseStr = def.response

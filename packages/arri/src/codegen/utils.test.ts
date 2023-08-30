@@ -1,5 +1,5 @@
 import {
-    type ProcedureDefinition,
+    type ProcedureDef,
     unflattenObject,
     setNestedObjectProperty,
     removeDisallowedChars,
@@ -26,7 +26,7 @@ describe("unflattenObject()", () => {
     });
 
     test("Complex Unflatten", () => {
-        const input: Record<string, ProcedureDefinition> = {
+        const input: Record<string, ProcedureDef> = {
             "posts.getPost": {
                 method: "get",
                 path: "/posts/get-post",

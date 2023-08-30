@@ -16,5 +16,16 @@ export default defineBuildConfig({
     clean: true,
     declaration: true,
     failOnWarn: false,
-    externals: ["esbuild"],
+    externals: [
+        "esbuild",
+        "listhen",
+        "h3",
+        "@sinclair/typebox",
+        "ofetch",
+        "citty",
+        "consola",
+        "prettier",
+        "pathe",
+        "jiti",
+    ],
 });

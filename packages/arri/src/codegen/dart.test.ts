@@ -8,7 +8,7 @@ import {
     dartModelFromJsonSchema,
     createDartClient,
 } from "./dart";
-import { type ApplicationDefinition, normalizeWhitespace } from "./utils";
+import { type ApplicationDef, normalizeWhitespace } from "./utils";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {
@@ -398,7 +398,7 @@ enum UserRole implements Comparable<UserRole> {
 });
 
 test("Dart client test", () => {
-    const apiDef: ApplicationDefinition = {
+    const apiDef: ApplicationDef = {
         errors: {
             type: "object",
             properties: {

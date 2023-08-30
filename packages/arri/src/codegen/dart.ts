@@ -3,9 +3,9 @@ import { writeFileSync } from "fs";
 import { camelCase, pascalCase } from "scule";
 import { defineClientGeneratorPlugin } from "./plugin";
 import {
-    type ApplicationDefinition,
-    type ServiceDefinition,
-    isProcedureDefinition,
+    type ApplicationDef,
+    type ServiceDef,
+    isProcedureDef,
     type JsonSchemaObject,
     isJsonSchemaEnum,
     isJsonSchemaScalarType,
@@ -13,9 +13,9 @@ import {
     isJsonSchemaObject,
     isJsonSchemaArray,
     type JsonSchemaTypeValue,
-    type ProcedureDefinition,
+    type ProcedureDef,
     unflattenProcedures,
-    isServiceDefinition,
+    isServiceDef,
 } from "./utils";
 
 export interface DartClientGeneratorOptions {
@@ -63,7 +63,7 @@ interface CreateClientOptions {
 }
 
 export function createDartClient(
-    appDef: ApplicationDefinition,
+    appDef: ApplicationDef,
     opts: CreateClientOptions = { clientName: "Client" },
 ) {
     generatedModels = [];
@@ -77,7 +77,7 @@ export function createDartClient(
     const services = unflattenProcedures(procedures);
     Object.keys(services).forEach((k) => {
         const item = services[k];
-        if (isServiceDefinition(item)) {
+        if (isServiceDef(item)) {
             const serviceName = pascalCase(`${opts.clientName}_${k}_service`);
             serviceParts.push({
                 name: serviceName,
@@ -165,7 +165,7 @@ enum ${opts.clientName}Endpoints implements Comparable<${
 
 export function dartServiceFromServiceDefinition(
     name: string,
-    def: ServiceDefinition,
+    def: ServiceDef,
     opts: CreateClientOptions,
 ) {
     const rpcParts: string[] = [];
@@ -177,7 +177,7 @@ export function dartServiceFromServiceDefinition(
     const serviceName = `${name}`;
     Object.keys(def).forEach((key) => {
         const item = def[key];
-        if (isProcedureDefinition(item)) {
+        if (isProcedureDef(item)) {
             rpcParts.push(dartProcedureFromServiceDefinition(key, item, opts));
             return;
         }
@@ -223,7 +223,7 @@ ${subServiceParts.map((sub) => sub.content).join("\n")}
 
 export function dartProcedureFromServiceDefinition(
     key: string,
-    def: ProcedureDefinition,
+    def: ProcedureDef,
     opts: CreateClientOptions,
 ): string {
     let returnType:

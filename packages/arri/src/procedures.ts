@@ -13,10 +13,7 @@ import {
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type HttpMethod, isHttpMethod } from "./app";
-import {
-    type ProcedureDefinition,
-    removeDisallowedChars,
-} from "./codegen/utils";
+import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
 import { defineError } from "./errors";
 import { type Middleware } from "./routes";
 import { typeboxSafeValidate } from "./validation";
@@ -99,7 +96,7 @@ export function createRpcDefinition(
     rpcName: string,
     httpPath: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDefinition {
+): ProcedureDef {
     return {
         description: procedure.description,
         path: httpPath,
@@ -144,7 +141,7 @@ export function getRpcParamName(
 export function getRpcParamDefinition(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDefinition["params"] {
+): ProcedureDef["params"] {
     if (!procedure.params) {
         return undefined;
     }
@@ -179,7 +176,7 @@ export function getRpcResponseName(
 function getRpcResponseDefinition(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDefinition["response"] {
+): ProcedureDef["response"] {
     if (!procedure.response) {
         return undefined;
     }

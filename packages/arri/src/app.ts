@@ -8,10 +8,7 @@ import {
     sendError,
     eventHandler,
 } from "h3";
-import {
-    type ApplicationDefinition,
-    type ProcedureDefinition,
-} from "./codegen/utils";
+import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
 import { ErrorResponse } from "./errors";
 import {
     type ArriProcedure,
@@ -24,13 +21,16 @@ import {
 import { type ArriRoute, registerRoute, type Middleware } from "./routes";
 
 interface ArriOptions extends AppOptions {
+    /**
+     * Metadata to display in the __definition.json file
+     */
+    appInfo?: ApplicationDef["info"];
     rpcRoutePrefix?: string;
     /**
      * Defaults to /__definitions
      * This parameters also takes the rpcRoutePrefix option into account
      */
     rpcDefinitionPath?: string;
-    appDescription?: string;
 }
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
@@ -41,13 +41,13 @@ export class Arri {
     private readonly h3Router: Router = createRouter();
     private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
-    private procedures: Record<string, ProcedureDefinition> = {};
+    appInfo: ApplicationDef["info"];
+    private procedures: Record<string, ProcedureDef> = {};
     private models: Record<string, TObject> = {};
     private readonly middlewares: Middleware[] = [];
-    private readonly appDescription: string;
 
     constructor(opts?: ArriOptions) {
-        this.appDescription = opts?.appDescription ?? "";
+        this.appInfo = opts.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
             onAfterResponse: opts?.onAfterResponse,
@@ -129,10 +129,9 @@ export class Arri {
         registerRoute(this.h3Router, route, this.middlewares);
     }
 
-    getAppDefinition(): ApplicationDefinition {
-        const appDef: ApplicationDefinition = {
-            schemaVersion: "0.0.1",
-            description: this.appDescription,
+    getAppDefinition(): ApplicationDef {
+        const appDef: ApplicationDef = {
+            arriSchemaVersion: "0.0.1",
             procedures: {},
             models: this.models as any,
             errors: ErrorResponse,

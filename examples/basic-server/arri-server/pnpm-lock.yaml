@@ -1,0 +1,10 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  arri:
+    specifier: link:../../../dist/packages/arri
+    version: link:../../../dist/packages/arri

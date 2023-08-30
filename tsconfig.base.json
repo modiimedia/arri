@@ -8,10 +8,8 @@
         "strict": true,
         "skipLibCheck": true,
         "paths": {
-            "arri": ["packages/arri/src/index.ts"],
-            "arri-client": ["packages/arri-client/src/index.ts"],
-            "arri-plugin-dart": ["packages/arri-plugin-dart/src/index.ts"],
-            "arri-rpc": ["packages/arri-rpc/src/index.ts"]
+            "arri": ["packages/arri/src/_index.ts"],
+            "arri-client": ["packages/arri-client/src/_index.ts"]
         }
     }
 }

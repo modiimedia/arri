@@ -1,9 +1,9 @@
-import { type ApplicationDefinition } from "./utils";
+import { type ApplicationDef } from "./utils";
 
 export interface ClientGenerator<
     TOptions extends Record<string, any> | undefined,
 > {
-    generator: (def: ApplicationDefinition) => any;
+    generator: (def: ApplicationDef) => any;
     options: TOptions;
 }
 

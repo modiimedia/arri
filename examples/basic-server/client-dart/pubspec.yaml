@@ -1,0 +1,15 @@
+name: client_dart
+description: A sample command-line application.
+version: 1.0.0
+private: true
+
+environment:
+    sdk: ^3.1.0
+
+# Add regular dependencies here.
+dependencies:
+    arri_client:
+        path: ../../../packages/arri-client-dart
+dev_dependencies:
+    lints: ^2.0.0
+    test: ^1.21.0

@@ -1,10 +1,18 @@
 import { type TObject } from "@sinclair/typebox";
 import { isHttpMethod, type HttpMethod } from "../app";
 
-export interface ApplicationDefinition {
-    schemaVersion: "0.0.1";
-    description: string;
-    procedures: Record<string, ProcedureDefinition>;
+export interface ApplicationDef {
+    arriSchemaVersion: "0.0.1";
+    info?: {
+        title?: string;
+        description?: string;
+        version?: string;
+    };
+    externalDocs?: {
+        description?: string;
+        url: string;
+    };
+    procedures: Record<string, ProcedureDef>;
     models: Record<string, JsonSchemaObject>;
     errors: Omit<TObject, symbol>;
 }
@@ -24,7 +32,7 @@ export function normalizeWhitespace(input: string) {
     return result;
 }
 
-export interface ProcedureDefinition {
+export interface ProcedureDef {
     path: string;
     description?: string;
     method: HttpMethod;
@@ -32,9 +40,7 @@ export interface ProcedureDefinition {
     response: string | undefined;
 }
 
-export function isProcedureDefinition(
-    input: any,
-): input is ProcedureDefinition {
+export function isProcedureDef(input: any): input is ProcedureDef {
     if (typeof input !== "object") {
         return false;
     }
@@ -55,11 +61,11 @@ export function isProcedureDefinition(
     );
 }
 
-export interface ServiceDefinition {
-    [key: string]: ProcedureDefinition | ServiceDefinition;
+export interface ServiceDef {
+    [key: string]: ProcedureDef | ServiceDef;
 }
 
-export function isServiceDefinition(input: any): input is ServiceDefinition {
+export function isServiceDef(input: any): input is ServiceDef {
     if (typeof input !== "object") {
         return false;
     }
@@ -71,9 +77,7 @@ export function isServiceDefinition(input: any): input is ServiceDefinition {
     return true;
 }
 
-export function isApplicationDefinition(
-    input: any,
-): input is ApplicationDefinition {
+export function isApplicationDef(input: any): input is ApplicationDef {
     if (typeof input !== "object") {
         return false;
     }
@@ -110,8 +114,8 @@ export function unflattenObject(data: Record<string, any>) {
 }
 
 export function unflattenProcedures(
-    procedures: ApplicationDefinition["procedures"],
-): Record<string, ProcedureDefinition | ServiceDefinition> {
+    procedures: ApplicationDef["procedures"],
+): Record<string, ProcedureDef | ServiceDef> {
     return unflattenObject(procedures);
 }
 

@@ -6,14 +6,14 @@ import {
     tsServiceFromServiceDefinition,
 } from "./typescript";
 import {
-    type ServiceDefinition,
+    type ServiceDef,
     normalizeWhitespace,
-    type ApplicationDefinition,
+    type ApplicationDef,
 } from "./utils";
 
 describe("generateService", () => {
     test("Basic Service", () => {
-        const input: ServiceDefinition = {
+        const input: ServiceDef = {
             getUser: {
                 description: "Fetches the user by id",
                 path: "/users/get-user",
@@ -152,9 +152,8 @@ test("Client generation", async () => {
         email: Type.String(),
         createdAt: Type.Date(),
     });
-    const input: ApplicationDefinition = {
-        schemaVersion: "0.0.1",
-        description: "",
+    const input: ApplicationDef = {
+        arriSchemaVersion: "0.0.1",
         procedures: {
             sayHello: {
                 path: "/say-hello",

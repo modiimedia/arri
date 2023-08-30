@@ -12,15 +12,12 @@ import path from "pathe";
 import * as prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
-import {
-    isApplicationDefinition,
-    removeDisallowedChars,
-} from "../codegen/utils";
+import { isApplicationDef, removeDisallowedChars } from "../codegen/utils";
 import { type ArriConfig, type ResolvedArriConfig } from "../config";
 
 const logger = createConsola({
     fancy: true,
-}).withTag("arri");
+}).withTag("[arri]");
 
 export default defineCommand({
     meta: {
@@ -81,15 +78,27 @@ async function main(config: ResolvedArriConfig) {
                 config.rootDir ?? "",
                 config.srcDir,
             );
-            fileWatcher = chokidar.watch(path.resolve(dirToWatch), {
+            const buildDir = path.resolve(config.rootDir, config.buildDir);
+            const outDir = path.resolve(config.rootDir, ".output");
+            fileWatcher = chokidar.watch([path.resolve(dirToWatch)], {
+                ignored: [buildDir, outDir],
                 ignoreInitial: true,
             });
             fileWatcher.on("all", async (_event, file) => {
                 await createRoutesModule(config);
-                await bundleFiles(config);
-                if (config.clientGenerators.length) {
+                let bundleCreated = false;
+                try {
+                    logger.log("Change detected. Bundling files....");
+                    await bundleFiles(config);
+                    bundleCreated = true;
+                } catch (err) {
+                    logger.error(err);
+                    bundleCreated = false;
+                }
+                if (bundleCreated && config.clientGenerators.length) {
                     setTimeout(async () => {
                         await generateClients(config);
+                        bundleCreated = false;
                     }, 1000);
                 }
             });
@@ -107,14 +116,18 @@ async function generateClients(config: ResolvedArriConfig) {
         const result = await ofetch(
             `http://127.0.0.1:${config.port}${DEV_DEFINITION_ENDPOINT}`,
         );
-        if (!isApplicationDefinition(result)) {
+        if (!isApplicationDef(result)) {
             return;
         }
-        logger.info("Regenerating clients");
+        logger.log(`Generating client code...`);
+        const clientCount = config.clientGenerators.length;
         await Promise.all(
             config.clientGenerators.map((generator) =>
                 generator.generator(result),
             ),
+        );
+        logger.log(
+            `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,
         );
     } catch (err) {
         console.error(err);
@@ -180,7 +193,7 @@ async function createRoutesModule(config: ResolvedArriConfig) {
                     `import ${route.importName} from '${route.importPath}';`,
             )
             .join("\n")}
-        const routes = [${routes
+        const routes: { id: string; route: any }[] = [${routes
             .map(
                 (route) =>
                     `{ id: '${route.name}', route: ${route.importName} }`,

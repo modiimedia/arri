@@ -3,11 +3,11 @@ import { format } from "prettier";
 import { pascalCase } from "scule";
 import { defineClientGeneratorPlugin } from "./plugin";
 import {
-    type ApplicationDefinition,
-    type ServiceDefinition,
+    type ApplicationDef,
+    type ServiceDef,
     unflattenObject,
-    isProcedureDefinition,
-    type ProcedureDefinition,
+    isProcedureDef,
+    type ProcedureDef,
     isJsonSchemaScalarType,
     isJsonSchemaNullType,
     isJsonSchemaObject,
@@ -15,7 +15,7 @@ import {
     isJsonSchemaEnum,
     isJsonSchemaArray,
     type JsonSchemaScalarType,
-    isServiceDefinition,
+    isServiceDef,
 } from "./utils";
 
 let generatedModels: string[] = [];
@@ -45,13 +45,13 @@ export const typescriptClientGenerator = defineClientGeneratorPlugin(
 );
 
 export async function createTypescriptClient(
-    def: ApplicationDefinition,
+    def: ApplicationDef,
     prefix = "Client",
 ): Promise<string> {
     generatedModels = [];
     const services = unflattenObject(def.procedures) as Record<
         string,
-        ServiceDefinition | ProcedureDefinition
+        ServiceDef | ProcedureDef
     >;
     const serviceParts: Array<{ name: string; key: string; content: string }> =
         [];
@@ -60,7 +60,7 @@ export async function createTypescriptClient(
 
     Object.keys(services).forEach((key) => {
         const item = services[key];
-        if (isServiceDefinition(item)) {
+        if (isServiceDef(item)) {
             const serviceName = pascalCase(`${prefix}_${key}_service`);
             serviceParts.push({
                 name: serviceName,
@@ -110,10 +110,7 @@ export async function createTypescriptClient(
     );
 }
 
-export function tsServiceFromServiceDefinition(
-    name: string,
-    def: ServiceDefinition,
-) {
+export function tsServiceFromServiceDefinition(name: string, def: ServiceDef) {
     const rpcParts: string[] = [];
     const subServiceParts: Array<{
         name: string;
@@ -122,7 +119,7 @@ export function tsServiceFromServiceDefinition(
     }> = [];
     Object.keys(def).forEach((key) => {
         const val = def[key];
-        if (isProcedureDefinition(val)) {
+        if (isProcedureDef(val)) {
             rpcParts.push(tsRpcFromProcedureDefinition(key, val));
             return;
         }
@@ -159,7 +156,7 @@ export function tsServiceFromServiceDefinition(
 
 export function tsRpcFromProcedureDefinition(
     name: string,
-    def: ProcedureDefinition,
+    def: ProcedureDef,
 ): string {
     let paramStr = "";
     let responseName = "";

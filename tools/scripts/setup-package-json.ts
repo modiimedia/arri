@@ -1,7 +1,7 @@
-import { readFile, writeFile, ensureDir } from "fs-extra";
 import { defineCommand, runMain } from "citty";
-import path from "pathe";
 import depcheck from "depcheck";
+import { readFile, writeFile, ensureDir } from "fs-extra";
+import path from "pathe";
 // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as prettier from "prettier";

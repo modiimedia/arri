@@ -1,0 +1,7 @@
+{
+    "name": "basic-arri-rpc-server",
+    "type": "module",
+    "dependencies": {
+        "arri": "link:../../../dist/packages/arri"
+    }
+}
