@@ -1,3 +1,7 @@
+## 0.0.15
+
+-   Fix serialization errors + get dev server working (arri server)
+
 ## 0.0.14
 
 -   Fix headers error
