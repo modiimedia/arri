@@ -16,4 +16,5 @@ export default defineBuildConfig({
     clean: true,
     declaration: true,
     failOnWarn: false,
+    externals: ["esbuild"],
 });
