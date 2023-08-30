@@ -1,5 +1,5 @@
 import { type ResolvedArriConfig } from "../config";
-import { getRpcMetaFromPath } from "./dev";
+import { getRpcMetaFromPath } from "./_common";
 
 describe("Naming RPCs", () => {
     test("Basic route", () => {
@@ -12,6 +12,7 @@ describe("Naming RPCs", () => {
             procedureGlobPatterns: ["**/*.rpc.ts"],
             clientGenerators: [],
             buildDir: ".arri",
+            esbuild: {},
         };
         const result = getRpcMetaFromPath(
             config,
@@ -30,6 +31,7 @@ describe("Naming RPCs", () => {
             procedureGlobPatterns: ["**/*.rpc.ts"],
             clientGenerators: [],
             buildDir: ".arri",
+            esbuild: {},
         };
         const result = getRpcMetaFromPath(
             config,

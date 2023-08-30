@@ -22,7 +22,7 @@ export interface ArriConfig {
 
 export type ResolvedArriConfig = Required<ArriConfig>;
 
-const defaultConfig: Required<ArriConfig> = {
+export const defaultConfig: Required<ArriConfig> = {
     port: 3000,
     rootDir: ".",
     srcDir: ".",

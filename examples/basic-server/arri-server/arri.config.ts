@@ -6,8 +6,10 @@ import {
 
 export default defineConfig({
     rootDir: __dirname,
-    entry: "src/app.ts",
+    srcDir: "src",
+    entry: "app.ts",
     port: 3000,
+    procedureDir: "procedures",
     clientGenerators: [
         typescriptClientGenerator({
             clientName: "ExampleClient",

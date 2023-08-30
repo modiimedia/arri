@@ -1,6 +1,9 @@
 {
     "name": "basic-arri-rpc-server",
-    "type": "module",
+    "scripts": {
+        "dev": "arri dev",
+        "build": "arri build"
+    },
     "dependencies": {
         "arri": "link:../../../dist/packages/arri"
     }
