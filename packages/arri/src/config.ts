@@ -1,4 +1,4 @@
-import { type ClientGeneratorPlugin } from "./codegen/plugin";
+import { type ClientGenerator } from "./codegen/plugin";
 
 /* eslint-disable spaced-comment */
 export interface ArriConfig {
@@ -11,7 +11,7 @@ export interface ArriConfig {
      * this defaults to ["***\/*\*.rpc.ts"]
      */
     procedureGlobPatterns?: string[];
-    clientGenerators?: Array<ClientGeneratorPlugin<any>>;
+    clientGenerators?: Array<ClientGenerator<any>>;
     buildDir?: string;
 }
 
