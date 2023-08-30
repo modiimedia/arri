@@ -1,10 +1,4 @@
-import {
-    type TObject,
-    type Static,
-    TypeGuard,
-    type TVoid,
-    type TSchema,
-} from "@sinclair/typebox";
+import { type TObject, TypeGuard, type TSchema } from "@sinclair/typebox";
 import {
     type App,
     createApp,
@@ -40,8 +34,8 @@ interface ArriServerOptions extends AppOptions {
 }
 
 export class ArriServer {
-    app: App;
-    router: Router = createRouter();
+    h3App: App;
+    h3Router: Router = createRouter();
     rpcRoutePrefix: string;
     rpcDefinitionPath: string;
     procedures: Record<string, ProcedureDefinition> = {};
@@ -51,7 +45,7 @@ export class ArriServer {
 
     constructor(opts?: ArriServerOptions) {
         this.appDescription = opts?.appDescription ?? "";
-        this.app = createApp({
+        this.h3App = createApp({
             debug: opts?.debug,
             onAfterResponse: opts?.onAfterResponse,
             onBeforeResponse: opts?.onBeforeResponse,
@@ -68,37 +62,24 @@ export class ArriServer {
             },
         });
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
-        this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definitions";
-        this.router.get(
+        this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
+        this.h3Router.get(
             this.rpcRoutePrefix
-                ? `/${this.rpcRoutePrefix}/__definitions`.split("//").join("/")
-                : "/__definitions",
+                ? `/${this.rpcRoutePrefix}/__definition`.split("//").join("/")
+                : "/__definition",
             eventHandler((_) => this.getAppDefinition()),
         );
+        this.h3App.use(this.h3Router);
     }
 
     registerMiddleware(middleware: Middleware) {
         this.middlewares.push(middleware);
     }
 
-    /**
-     * Statically register routes to the server router
-     * Routes will not be served until this is done
-     */
-    initializeRoutes() {
-        this.app.use(this.router);
-    }
-
     registerRpc<
         TParams extends TObject | undefined,
         TResponse extends TObject | undefined,
-        TFinalResponse extends TResponse extends TObject
-            ? Static<TResponse>
-            : Static<TVoid>,
-    >(
-        name: string,
-        procedure: ArriProcedure<TParams, TResponse, TFinalResponse>,
-    ) {
+    >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
         const path = getRpcPath(name, this.rpcRoutePrefix);
         this.procedures[name] = createRpcDefinition(name, path, procedure);
         if (TypeGuard.TObject(procedure.params)) {
@@ -114,7 +95,7 @@ export class ArriServer {
                 this.models[responseName] = procedure.response;
             }
         }
-        registerRpc(this.router, path, procedure, this.middlewares);
+        registerRpc(this.h3Router, path, procedure, this.middlewares);
     }
 
     registerRoute<
@@ -134,7 +115,7 @@ export class ArriServer {
             TFallbackResponse
         >,
     ) {
-        registerRoute(this.router, route, this.middlewares);
+        registerRoute(this.h3Router, route, this.middlewares);
     }
 
     getAppDefinition(): ApplicationDefinition {
@@ -151,11 +132,6 @@ export class ArriServer {
         });
         return appDef;
     }
-}
-
-export interface ArriService {
-    id: string;
-    procedures: Record<string, any>;
 }
 
 export const HttpMethodValues = [

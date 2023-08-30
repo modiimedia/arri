@@ -286,7 +286,7 @@ async function main(config: ResolvedArriConfig) {
         configFile: path.resolve(config.rootDir, config.srcDir, config.entry),
     });
     const arri = app.config as ArriServer;
-    const listener = await listen(toNodeListener(arri.app), {
+    const listener = await listen(toNodeListener(arri.h3App), {
         showURL: true,
     });
     await listener.showURL();

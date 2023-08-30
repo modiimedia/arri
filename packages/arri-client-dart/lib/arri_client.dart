@@ -13,9 +13,6 @@ Future<http.Response> arriRequest(
   Map<String, dynamic>? params,
   Map<String, String>? headers,
 
-  /// manually send a specific body
-  dynamic body,
-
   /// manually specify specific url query parameters
   Map<String, String>? query,
 
@@ -30,8 +27,9 @@ Future<http.Response> arriRequest(
   String? bodyInput;
   if (method != HttpMethod.get && method != HttpMethod.head && params != null) {
     finalHeaders["Content-Type"] = "application/json";
-    bodyInput = json.encode(bodyInput);
+    bodyInput = json.encode(params);
   }
+  print("BODY INPUT, $bodyInput");
   switch (method) {
     case HttpMethod.get:
       final paramsInput = query ?? params;
@@ -43,31 +41,31 @@ Future<http.Response> arriRequest(
         final uri = Uri.parse("$url?${queryParts.join("&")}");
         result = await http.get(
           uri,
-          headers: headers,
+          headers: finalHeaders,
         );
       }
       break;
     case HttpMethod.patch:
       result = await http.patch(
         Uri.parse(url),
-        headers: headers,
-        body: body ?? bodyInput,
+        headers: finalHeaders,
+        body: bodyInput,
         encoding: encoding,
       );
       break;
     case HttpMethod.put:
       result = await http.put(
         Uri.parse(url),
-        headers: headers,
-        body: body ?? bodyInput,
+        headers: finalHeaders,
+        body: bodyInput,
         encoding: encoding,
       );
       break;
     case HttpMethod.post:
       result = await http.post(
         Uri.parse(url),
-        headers: headers,
-        body: body ?? bodyInput,
+        headers: finalHeaders,
+        body: bodyInput,
         encoding: encoding,
       );
       break;
@@ -81,13 +79,13 @@ Future<http.Response> arriRequest(
         final uri = Uri.parse("$url?${queryParts.join("&")}");
         result = await http.head(
           uri,
-          headers: headers,
+          headers: finalHeaders,
         );
       }
       break;
     case HttpMethod.delete:
       result = await http.delete(Uri.parse(url),
-          headers: headers, encoding: encoding, body: bodyInput);
+          headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
     default:
       throw ArriRequestError(
@@ -102,7 +100,7 @@ Future<http.Response> arriRequest(
 /// This function will throw an ArriRequestError if it fails
 Future<T> parsedArriRequest<T>(
   String url, {
-  HttpMethod method = HttpMethod.get,
+  HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
   required T Function(String) parser,

@@ -1,9 +1,4 @@
-import {
-    type TObject,
-    type Static,
-    type TVoid,
-    TypeGuard,
-} from "@sinclair/typebox";
+import { type TObject, type Static, TypeGuard } from "@sinclair/typebox";
 import {
     eventHandler,
     type Router,
@@ -13,6 +8,7 @@ import {
     readValidatedBody,
     send,
     setResponseHeader,
+    getRequestHeaders,
 } from "h3";
 import { type HttpMethod, isHttpMethod } from "./app";
 import {
@@ -36,9 +32,6 @@ export interface ArriProcedureBase {
 export interface ArriProcedure<
     TParams extends TObject | undefined,
     TResponse extends TObject | undefined,
-    TFinalResponse extends TResponse extends TObject
-        ? Static<TResponse>
-        : Static<TVoid>,
 > {
     description?: string;
     method?: HttpMethod;
@@ -46,11 +39,12 @@ export interface ArriProcedure<
     response: TResponse;
     handler: ArriProcedureHandler<
         TParams extends TObject ? Static<TParams> : undefined,
-        TFinalResponse
+        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+        TResponse extends TObject ? Static<TResponse> : void
     >;
     postHandler?: ArriProcedurePostHandler<
         TParams extends TObject ? Static<TParams> : undefined,
-        TFinalResponse
+        TResponse extends TObject ? Static<TResponse> : undefined
     >;
 }
 
@@ -78,7 +72,7 @@ export type ArriProcedurePostHandler<TParams, TResponse> = (
     event: RpcPostHandlerContext<TParams, TResponse>,
 ) => any;
 
-export function isRpc(input: any): input is ArriProcedure<any, any, any> {
+export function isRpc(input: any): input is ArriProcedure<any, any> {
     if (typeof input !== "object") {
         return false;
     }
@@ -95,19 +89,16 @@ export function isRpc(input: any): input is ArriProcedure<any, any, any> {
 export function defineRpc<
     TParams extends TObject | undefined = undefined,
     TResponse extends TObject | undefined | never = undefined,
-    TFinalResponse extends TResponse extends TObject
-        ? Static<TObject>
-        : Static<TVoid> = any,
 >(
-    config: ArriProcedure<TParams, TResponse, TFinalResponse>,
-): ArriProcedure<TParams, TResponse, TFinalResponse> {
+    config: ArriProcedure<TParams, TResponse>,
+): ArriProcedure<TParams, TResponse> {
     return config;
 }
 
 export function createRpcDefinition(
     rpcName: string,
     httpPath: string,
-    procedure: ArriProcedure<any, any, any>,
+    procedure: ArriProcedure<any, any>,
 ): ProcedureDefinition {
     return {
         description: procedure.description,
@@ -134,7 +125,7 @@ export function getRpcPath(rpcName: string, prefix = ""): string {
 
 export function getRpcParamName(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>,
+    procedure: ArriProcedure<any, any>,
 ): string | null {
     if (!procedure.params) {
         return null;
@@ -152,7 +143,7 @@ export function getRpcParamName(
 
 export function getRpcParamDefinition(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>,
+    procedure: ArriProcedure<any, any>,
 ): ProcedureDefinition["params"] {
     if (!procedure.params) {
         return undefined;
@@ -166,7 +157,7 @@ export function getRpcParamDefinition(
 
 export function getRpcResponseName(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>,
+    procedure: ArriProcedure<any, any>,
 ): string | null {
     if (!procedure.response) {
         return null;
@@ -187,7 +178,7 @@ export function getRpcResponseName(
 
 function getRpcResponseDefinition(
     rpcName: string,
-    procedure: ArriProcedure<any, any, any>,
+    procedure: ArriProcedure<any, any>,
 ): ProcedureDefinition["response"] {
     if (!procedure.response) {
         return undefined;
@@ -202,11 +193,12 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    procedure: ArriProcedure<any, any, any>,
+    procedure: ArriProcedure<any, any>,
     middleware: Middleware[],
 ) {
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event) => {
+        console.log(getRequestHeaders(event));
         const context: HandlerContext = {
             event,
         };
