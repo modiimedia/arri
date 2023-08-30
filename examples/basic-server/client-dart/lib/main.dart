@@ -11,6 +11,7 @@ main() async {
     data: UserUpdateData(
       name: "Suzy Q",
       email: "suzyq@gmail.com",
+      createdAt: DateTime.now().millisecondsSinceEpoch,
     ),
   ));
   print(updateUserResult.toJson());

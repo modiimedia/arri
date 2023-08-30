@@ -11,6 +11,7 @@ async function main() {
         data: {
             name: "Suzy Q",
             email: "suzyq@gmail.com",
+            createdAt: new Date().getTime(),
         },
     });
     console.log(updateUserResult);
