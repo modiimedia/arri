@@ -23,7 +23,7 @@ import {
 } from "./procedures";
 import { type ArriRoute, registerRoute, type Middleware } from "./routes";
 
-interface ArriServerOptions extends AppOptions {
+interface ArriOptions extends AppOptions {
     rpcRoutePrefix?: string;
     /**
      * Defaults to /__definitions
@@ -32,18 +32,21 @@ interface ArriServerOptions extends AppOptions {
     rpcDefinitionPath?: string;
     appDescription?: string;
 }
+export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
+export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
 
-export class ArriServer {
+export class Arri {
     __isArri__ = true;
     private readonly h3App: App;
     private readonly h3Router: Router = createRouter();
+    private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
     private procedures: Record<string, ProcedureDefinition> = {};
     private models: Record<string, TObject> = {};
     private readonly middlewares: Middleware[] = [];
     private readonly appDescription: string;
 
-    constructor(opts?: ArriServerOptions) {
+    constructor(opts?: ArriOptions) {
         this.appDescription = opts?.appDescription ?? "";
         this.h3App = createApp({
             debug: opts?.debug,
@@ -62,16 +65,22 @@ export class ArriServer {
             },
         });
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
-        const rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
+        this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3Router.get(
             this.rpcRoutePrefix
-                ? `/${this.rpcRoutePrefix}/${rpcDefinitionPath}`
+                ? `/${this.rpcRoutePrefix}/${this.rpcDefinitionPath}`
                       .split("//")
                       .join("/")
-                : `/${rpcDefinitionPath}`,
+                : `/${this.rpcDefinitionPath}`,
             eventHandler((_) => this.getAppDefinition()),
         );
         this.h3App.use(this.h3Router);
+        if (process.env.ARRI_DEV_MODE === "true") {
+            this.h3Router.get(
+                DEV_DEFINITION_ENDPOINT,
+                eventHandler((_) => this.getAppDefinition()),
+            );
+        }
     }
 
     registerMiddleware(middleware: Middleware) {

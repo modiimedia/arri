@@ -1,5 +1,8 @@
-import { ArriServer } from "../src/_index";
+import { Arri } from "../src/_index";
 
-const app = new ArriServer();
+const app = new Arri({
+    rpcDefinitionPath: "my-def",
+    rpcRoutePrefix: "rcp",
+});
 
 export default app;

@@ -41,7 +41,11 @@ export const dartClientGenerator = defineClientGeneratorPlugin(
                     clientName: options.clientName,
                 });
                 writeFileSync(options.outputFile, result);
-                execSync(`dart format ${options.outputFile}`);
+                try {
+                    execSync(`dart format ${options.outputFile}`);
+                } catch (err) {
+                    console.error("Error formatting dart client", err);
+                }
             },
             options,
         };
@@ -52,7 +56,7 @@ export const dartClientGenerator = defineClientGeneratorPlugin(
  * Tracking which model names we've already created classes for
  * to prevent duplication
  */
-const generatedModels: string[] = [];
+let generatedModels: string[] = [];
 
 interface CreateClientOptions {
     clientName: string;
@@ -62,6 +66,7 @@ export function createDartClient(
     appDef: ApplicationDefinition,
     opts: CreateClientOptions = { clientName: "Client" },
 ) {
+    generatedModels = [];
     const { models, procedures } = appDef;
     const serviceParts: {
         name: string;

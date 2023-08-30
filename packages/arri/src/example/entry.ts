@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
-import { ArriServer, defineMiddleware } from "../_index";
+import { Arri, defineMiddleware } from "../_index";
 
-const app = new ArriServer();
+const app = new Arri();
 
 app.registerMiddleware(defineMiddleware((event) => {}));
 

@@ -4,6 +4,7 @@ import { getRpcMetaFromPath } from "./dev";
 describe("Naming RPCs", () => {
     test("Basic route", () => {
         const config: ResolvedArriConfig = {
+            port: 3000,
             rootDir: "/files/items/examples-app",
             srcDir: "src",
             entry: "",
@@ -21,6 +22,7 @@ describe("Naming RPCs", () => {
     });
     test("Route with weird chars", () => {
         const config: ResolvedArriConfig = {
+            port: 3000,
             rootDir: "",
             srcDir: "src",
             entry: "",

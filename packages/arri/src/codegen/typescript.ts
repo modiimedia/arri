@@ -18,7 +18,7 @@ import {
     isServiceDefinition,
 } from "./utils";
 
-let createdModels: string[] = [];
+let generatedModels: string[] = [];
 
 interface TypescriptClientGeneratorOptions {
     clientName: string;
@@ -48,7 +48,7 @@ export async function createTypescriptClient(
     def: ApplicationDefinition,
     prefix = "Client",
 ): Promise<string> {
-    createdModels = [];
+    generatedModels = [];
     const services = unflattenObject(def.procedures) as Record<
         string,
         ServiceDefinition | ProcedureDefinition
@@ -73,9 +73,9 @@ export async function createTypescriptClient(
     });
     Object.keys(def.models).forEach((key) => {
         const modelName = pascalCase(`${key}`);
-        if (!createdModels.includes(modelName)) {
+        if (!generatedModels.includes(modelName)) {
             modelParts.push(tsModelFromDefinition(modelName, def.models[key]));
-            createdModels.push(modelName);
+            generatedModels.push(modelName);
         }
     });
     return format(
@@ -206,7 +206,7 @@ export function tsModelFromDefinition(name: string, def: JsonSchemaObject) {
         if (isJsonSchemaObject(prop)) {
             const subModelName =
                 prop.$id ?? (pascalCase(`${name}_${key}`) as string);
-            if (!createdModels.includes(subModelName)) {
+            if (!generatedModels.includes(subModelName)) {
                 const content = tsModelFromDefinition(
                     subModelName,
                     prop as any,
@@ -245,7 +245,7 @@ export function tsModelFromDefinition(name: string, def: JsonSchemaObject) {
             if (isJsonSchemaObject(prop.items)) {
                 const subModelName =
                     prop.items.$id ?? pascalCase(`${name}_${key}_item`);
-                if (!createdModels.includes(subModelName)) {
+                if (!generatedModels.includes(subModelName)) {
                     subModelParts.push(
                         tsModelFromDefinition(subModelName, prop.items),
                     );

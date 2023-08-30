@@ -71,6 +71,27 @@ export function isServiceDefinition(input: any): input is ServiceDefinition {
     return true;
 }
 
+export function isApplicationDefinition(
+    input: any,
+): input is ApplicationDefinition {
+    if (typeof input !== "object") {
+        return false;
+    }
+    if (!("procedures" in input) || typeof input.procedures !== "object") {
+        return false;
+    }
+
+    if (!("models" in input) || typeof input.models !== "object") {
+        return false;
+    }
+
+    if (!("errors" in input) || typeof input.errors !== "object") {
+        return false;
+    }
+
+    return true;
+}
+
 export function unflattenObject(data: Record<string, any>) {
     if (Object(data) !== data || Array.isArray(data)) return data;
     const regex = /\.?([^.[\]]+)|\[(\d+)\]/g;
