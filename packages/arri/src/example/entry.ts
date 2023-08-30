@@ -102,5 +102,4 @@ app.registerRpc("users.updateUser", {
         };
     },
 });
-app.initializeRoutes();
 export default app;

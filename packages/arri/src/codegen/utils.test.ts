@@ -21,7 +21,7 @@ describe("unflattenObject()", () => {
                         message: "hello world",
                     },
                 },
-            })
+            }),
         );
     });
 
@@ -84,7 +84,7 @@ describe("unflattenObject()", () => {
                         response: "User",
                     },
                 },
-            })
+            }),
         );
     });
 });

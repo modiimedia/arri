@@ -1,5 +1,5 @@
-import { defineBuildConfig } from "unbuild";
 import path from "pathe";
+import { defineBuildConfig } from "unbuild";
 
 export default defineBuildConfig({
     entries: ["./src/index"],

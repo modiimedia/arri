@@ -1,5 +1,7 @@
-import { pascalCase } from "scule";
+import { writeFileSync } from "fs";
 import { format } from "prettier";
+import { pascalCase } from "scule";
+import { defineClientGeneratorPlugin } from "./plugin";
 import {
     type ApplicationDefinition,
     type ServiceDefinition,
@@ -15,8 +17,6 @@ import {
     type JsonSchemaScalarType,
     isServiceDefinition,
 } from "./utils";
-import { defineClientGeneratorPlugin } from "./plugin";
-import { writeFileSync } from "fs";
 
 let createdModels: string[] = [];
 

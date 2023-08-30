@@ -8,7 +8,6 @@ import {
     sendError,
     eventHandler,
 } from "h3";
-import { type ArriRoute, registerRoute, type Middleware } from "./routes";
 import {
     type ApplicationDefinition,
     type ProcedureDefinition,
@@ -22,6 +21,7 @@ import {
     getRpcResponseName,
     registerRpc,
 } from "./procedures";
+import { type ArriRoute, registerRoute, type Middleware } from "./routes";
 
 interface ArriServerOptions extends AppOptions {
     rpcRoutePrefix?: string;
@@ -34,14 +34,14 @@ interface ArriServerOptions extends AppOptions {
 }
 
 export class ArriServer {
-    h3App: App;
-    h3Router: Router = createRouter();
-    rpcRoutePrefix: string;
-    rpcDefinitionPath: string;
-    procedures: Record<string, ProcedureDefinition> = {};
-    models: Record<string, TObject> = {};
-    middlewares: Middleware[] = [];
-    appDescription: string;
+    __isArri__ = true;
+    private readonly h3App: App;
+    private readonly h3Router: Router = createRouter();
+    private readonly rpcRoutePrefix: string;
+    private procedures: Record<string, ProcedureDefinition> = {};
+    private models: Record<string, TObject> = {};
+    private readonly middlewares: Middleware[] = [];
+    private readonly appDescription: string;
 
     constructor(opts?: ArriServerOptions) {
         this.appDescription = opts?.appDescription ?? "";
@@ -62,11 +62,13 @@ export class ArriServer {
             },
         });
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
-        this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
+        const rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3Router.get(
             this.rpcRoutePrefix
-                ? `/${this.rpcRoutePrefix}/__definition`.split("//").join("/")
-                : "/__definition",
+                ? `/${this.rpcRoutePrefix}/${rpcDefinitionPath}`
+                      .split("//")
+                      .join("/")
+                : `/${rpcDefinitionPath}`,
             eventHandler((_) => this.getAppDefinition()),
         );
         this.h3App.use(this.h3Router);
@@ -131,6 +133,10 @@ export class ArriServer {
             appDef.procedures[key] = rpc;
         });
         return appDef;
+    }
+
+    getH3Instance() {
+        return this.h3App;
     }
 }
 

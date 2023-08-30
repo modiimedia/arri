@@ -1,7 +1,7 @@
-import { ofetch } from "ofetch";
 import { type Static, Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import type { Serialize } from "nitropack";
+import { ofetch } from "ofetch";
 
 export interface ArriRequestOpts {
     url: string;

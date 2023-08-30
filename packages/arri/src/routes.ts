@@ -1,6 +1,4 @@
-import { type HttpMethod } from "./app";
 import { type Static, type TObject, type TSchema } from "@sinclair/typebox";
-import type { HandlerContext } from "./procedures";
 import {
     type H3Event,
     type Router,
@@ -9,8 +7,10 @@ import {
     send,
     setResponseHeader,
 } from "h3";
-import { typeboxSafeValidate } from "./validation";
+import { type HttpMethod } from "./app";
 import { errorResponseFromValidationErrors } from "./errors";
+import type { HandlerContext } from "./procedures";
+import { typeboxSafeValidate } from "./validation";
 
 export interface ArriRoute<
     TPath extends string,

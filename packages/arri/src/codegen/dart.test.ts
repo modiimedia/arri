@@ -1,3 +1,6 @@
+import { execSync } from "child_process";
+import { writeFileSync } from "fs";
+import path from "path";
 import { Type } from "@sinclair/typebox";
 import { test } from "vitest";
 import {
@@ -6,9 +9,6 @@ import {
     createDartClient,
 } from "./dart";
 import { type ApplicationDefinition, normalizeWhitespace } from "./utils";
-import { writeFileSync } from "fs";
-import path from "path";
-import { execSync } from "child_process";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {

@@ -1,8 +1,8 @@
-import { defineCommand } from "citty";
 import { existsSync, readFileSync } from "node:fs";
+import { defineCommand } from "citty";
 import { ofetch } from "ofetch";
-import { type ApplicationDefinition } from "../codegen/utils";
 import { dartClientGenerator } from "../codegen/_index";
+import { type ApplicationDefinition } from "../codegen/utils";
 
 const codegenDart = defineCommand({
     args: {

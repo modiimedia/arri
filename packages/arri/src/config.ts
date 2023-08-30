@@ -11,6 +11,7 @@ export interface ArriConfig {
      */
     procedureGlobPatterns?: string[];
     clientGenerators?: Array<ClientGenerator<any>>;
+    buildDir?: string;
 }
 
 export type ResolvedArriConfig = Required<ArriConfig>;
@@ -22,6 +23,7 @@ const defaultArriConfig: Required<ArriConfig> = {
     procedureDir: "procedures",
     procedureGlobPatterns: ["**/*.rpc.ts"],
     clientGenerators: [],
+    buildDir: ".arri",
 };
 
 export function defineConfig(config: ArriConfig): ResolvedArriConfig {
@@ -35,5 +37,6 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
             defaultArriConfig.procedureGlobPatterns,
         clientGenerators:
             config.clientGenerators ?? defaultArriConfig.clientGenerators,
+        buildDir: config.buildDir ?? defaultArriConfig.buildDir,
     };
 }

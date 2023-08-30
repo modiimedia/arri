@@ -1,3 +1,4 @@
+import { writeFileSync } from "fs";
 import { Type } from "@sinclair/typebox";
 import {
     createTypescriptClient,
@@ -9,7 +10,6 @@ import {
     normalizeWhitespace,
     type ApplicationDefinition,
 } from "./utils";
-import { writeFileSync } from "fs";
 
 describe("generateService", () => {
     test("Basic Service", () => {

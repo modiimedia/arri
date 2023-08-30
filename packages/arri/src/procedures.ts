@@ -1,4 +1,5 @@
 import { type TObject, type Static, TypeGuard } from "@sinclair/typebox";
+import { ValueErrorType } from "@sinclair/typebox/errors";
 import {
     eventHandler,
     type Router,
@@ -10,16 +11,15 @@ import {
     setResponseHeader,
     getRequestHeaders,
 } from "h3";
+import { kebabCase, pascalCase } from "scule";
 import { type HttpMethod, isHttpMethod } from "./app";
 import {
     type ProcedureDefinition,
     removeDisallowedChars,
 } from "./codegen/utils";
-import { kebabCase, pascalCase } from "scule";
-import { type Middleware } from "./routes";
 import { defineError } from "./errors";
+import { type Middleware } from "./routes";
 import { typeboxSafeValidate } from "./validation";
-import { ValueErrorType } from "@sinclair/typebox/errors";
 
 export interface ArriProcedureBase {
     method: HttpMethod;

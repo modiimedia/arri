@@ -5,7 +5,11 @@ module.exports = {
         node: true,
     },
     ignorePatterns: ["**/.eslintrc.js", "**/.eslintrc.json", "**/dist"],
-    extends: ["standard-with-typescript", "prettier"],
+    extends: [
+        "standard-with-typescript",
+        "plugin:import/recommended",
+        "prettier",
+    ],
     overrides: [
         {
             env: {
@@ -32,5 +36,23 @@ module.exports = {
         "@typescript-eslint/no-redeclare": 0,
         "@typescript-eslint/return-await": 0,
         "@typescript-eslint/array-type": 0,
+        "import/no-unresolved": 0,
+        "import/order": [
+            "error",
+            {
+                alphabetize: {
+                    order: "asc",
+                    caseInsensitive: true,
+                },
+                groups: [
+                    "builtin",
+                    "external",
+                    "internal",
+                    "parent",
+                    "sibling",
+                    "index",
+                ],
+            },
+        ],
     },
 };

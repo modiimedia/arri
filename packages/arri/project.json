@@ -7,7 +7,7 @@
         "serve": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "jiti ./src/cli/index dev",
+                "command": "jiti src/cli/_index.ts dev --esmResolve",
                 "cwd": "packages/arri"
             }
         },
