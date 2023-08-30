@@ -44,6 +44,7 @@ export default defineCommand({
 async function bundleFiles(config: ResolvedArriConfig) {
     const outDir = path.resolve(config.rootDir, ".output");
     await build({
+        ...config.esbuild,
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, "entry.ts"),
         ],

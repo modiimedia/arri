@@ -1,3 +1,4 @@
+import { type BuildOptions } from "esbuild";
 import { type ClientGenerator } from "./codegen/plugin";
 
 /* eslint-disable spaced-comment */
@@ -13,6 +14,10 @@ export interface ArriConfig {
     procedureGlobPatterns?: string[];
     clientGenerators?: Array<ClientGenerator<any>>;
     buildDir?: string;
+    esbuild?: Omit<
+        BuildOptions,
+        "outfile" | "outdir" | "entryNames" | "entryPoints"
+    >;
 }
 
 export type ResolvedArriConfig = Required<ArriConfig>;
@@ -26,6 +31,7 @@ const defaultConfig: Required<ArriConfig> = {
     procedureGlobPatterns: ["**/*.rpc.ts"],
     clientGenerators: [],
     buildDir: ".arri",
+    esbuild: {},
 };
 
 export function defineConfig(config: ArriConfig): ResolvedArriConfig {
@@ -40,5 +46,6 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
         clientGenerators:
             config.clientGenerators ?? defaultConfig.clientGenerators,
         buildDir: config.buildDir ?? defaultConfig.buildDir,
+        esbuild: config.esbuild ?? defaultConfig.esbuild,
     };
 }
