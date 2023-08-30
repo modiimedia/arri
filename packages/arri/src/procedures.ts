@@ -9,7 +9,6 @@ import {
     readValidatedBody,
     send,
     setResponseHeader,
-    getRequestHeaders,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type HttpMethod, isHttpMethod } from "./app";
@@ -195,7 +194,6 @@ export function registerRpc(
 ) {
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event) => {
-        console.log(getRequestHeaders(event));
         const context: HandlerContext = {
             event,
         };
