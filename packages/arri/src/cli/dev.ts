@@ -96,8 +96,8 @@ async function startDevServer(config: ResolvedArriConfig) {
                     logger.log(
                         "Change detected. Bundling files and restarting server....",
                     );
-                    await bundleFiles(config);
                     await listener.close();
+                    await bundleFiles(config);
                     listener = await startListener(config);
                     bundleCreated = true;
                 } catch (err) {
