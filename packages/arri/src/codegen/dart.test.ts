@@ -399,6 +399,7 @@ enum UserRole implements Comparable<UserRole> {
 
 test("Dart client test", () => {
     const apiDef: ApplicationDef = {
+        arriSchemaVersion: "0.0.1",
         errors: {
             type: "object",
             properties: {
@@ -518,8 +519,6 @@ test("Dart client test", () => {
                 }),
             }),
         },
-        schemaVersion: "0.0.1",
-        description: "",
     };
     const result = createDartClient(apiDef, {
         clientName: "Client",

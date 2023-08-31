@@ -81,12 +81,14 @@ async function startBuild(config: ResolvedArriConfig) {
 async function bundleFiles(config: ResolvedArriConfig) {
     await build({
         ...config.esbuild,
+
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, "server.ts"),
             path.resolve(config.rootDir, config.buildDir, "codegen.ts"),
         ],
-        target: "node18",
-        platform: "node",
+        platform: config.esbuild.platform ?? "node",
+        target: config.esbuild.target ?? "node18",
+
         bundle: true,
         outdir: path.resolve(config.rootDir, ".output"),
     });
