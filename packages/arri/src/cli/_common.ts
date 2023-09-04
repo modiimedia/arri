@@ -89,6 +89,7 @@ export async function getVirtualRouteBatch(
                 .relative(path.resolve(config.rootDir, config.srcDir), file)
                 .split(".");
             importParts.pop();
+            importParts.push("js");
             routes.push({
                 name: meta.id,
                 importName: camelCase(meta.id.split(".").join("_")),
@@ -155,6 +156,7 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         ],
         outdir: outDir,
         bundle: false,
+        format: "esm",
         target: "node18",
         platform: "node",
     });

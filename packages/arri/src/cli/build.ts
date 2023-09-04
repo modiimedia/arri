@@ -92,6 +92,12 @@ async function bundleFiles(config: ResolvedArriConfig) {
         platform: config.esbuild.platform ?? "node",
         target: config.esbuild.target ?? "node18",
         bundle: true,
+        format: "esm",
+        sourcemap: true,
+        minifyWhitespace: true,
+        banner: {
+            js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
+        },
         outdir: path.resolve(config.rootDir, ".output"),
     });
 }
@@ -104,8 +110,8 @@ async function createBuildEntryModule(config: ResolvedArriConfig) {
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'h3';
 import { listen } from 'listhen';
-import routes from './routes';
-import app from './${appImportParts.join(".")}';
+import routes from './routes.js';
+import app from './${appImportParts.join(".")}.js';
 
 for (const route of routes) {
     app.registerRpc(route.id, route.route);
@@ -130,8 +136,14 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         `
     import { writeFileSync } from 'node:fs';
     import path from 'pathe';
-    import app from './${appImportParts.join(".")}';
+    import app from './${appImportParts.join(".")}.js';
+    import routes from './routes.js';
 
+    for(const route of routes) {
+        app.registerRpc(route.id, route.route);
+    }
+
+    const __dirname = new URL(".", import.meta.url).pathname;
     const def = app.getAppDefinition();
     writeFileSync(
         path.resolve(__dirname, "../.output", "__definition.json"),
