@@ -3,6 +3,7 @@ import { loadConfig } from "c12";
 import chokidar from "chokidar";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
+import { build } from "esbuild";
 import { listenAndWatch } from "listhen";
 import { ofetch } from "ofetch";
 import path from "pathe";
@@ -41,18 +42,34 @@ export default defineCommand({
 });
 
 const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(path.resolve(config.rootDir, config.buildDir, "entry.js"), {
+    listenAndWatch(path.resolve(config.rootDir, config.buildDir, "bundle.js"), {
         public: true,
         port: config.port,
         logger,
         qr: showQr,
     });
 
+async function bundleFiles(config: ResolvedArriConfig) {
+    await build({
+        entryPoints: [
+            path.resolve(config.rootDir, config.buildDir, "entry.js"),
+        ],
+        outfile: path.resolve(config.rootDir, config.buildDir, "bundle.js"),
+        bundle: true,
+        target: "node18",
+        platform: "node",
+    });
+}
+
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     let fileWatcher: chokidar.FSWatcher | undefined;
-    await Promise.all([createRoutesModule(config), createEntryModule(config)]);
-    await transpileFiles(config);
+    await Promise.all([
+        createRoutesModule(config),
+        createEntryModule(config),
+        transpileFiles(config),
+    ]);
+    await bundleFiles(config);
     await startListener(config, true);
     setTimeout(async () => {
         await generateClients(config);
@@ -74,7 +91,6 @@ async function startDevServer(config: ResolvedArriConfig) {
                 ignoreInitial: true,
             });
             fileWatcher.on("all", async (_event, file) => {
-                await transpileFiles(config);
                 await createRoutesModule(config);
                 let bundleCreated = false;
                 try {
@@ -82,9 +98,11 @@ async function startDevServer(config: ResolvedArriConfig) {
                         "Change detected. Bundling files and restarting server....",
                     );
                     await transpileFiles(config);
+                    await bundleFiles(config);
                     bundleCreated = true;
                 } catch (err) {
-                    logger.error(err);
+                    logger.error("ERROR", err);
+                    // logger.error(err);
                     bundleCreated = false;
                 }
                 if (bundleCreated && config.clientGenerators.length) {

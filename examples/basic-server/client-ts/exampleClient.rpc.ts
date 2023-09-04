@@ -4,11 +4,31 @@ import { arriRequest, ArriRequestError } from "arri-client";
 export class ExampleClient {
   private baseUrl: string;
   private headers: Record<string, string>;
+  test: ExampleClientTestService;
   users: ExampleClientUsersService;
   constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
     this.baseUrl = opts.baseUrl ?? "";
     this.headers = opts.headers ?? {};
+    this.test = new ExampleClientTestService(opts);
     this.users = new ExampleClientUsersService(opts);
+  }
+}
+
+export class ExampleClientTestService {
+  private baseUrl: string;
+  private headers: Record<string, string>;
+
+  constructor(opts: { baseUrl?: string; headers?: Record<string, string> }) {
+    this.baseUrl = opts.baseUrl ?? "";
+    this.headers = opts.headers ?? {};
+  }
+  async getTest() {
+    return arriRequest<TestGetTestResponse>({
+      url: `${this.baseUrl}/test/get-test`,
+      method: "get",
+
+      headers: this.headers,
+    });
   }
 }
 
@@ -20,11 +40,11 @@ export class ExampleClientUsersService {
     this.baseUrl = opts.baseUrl ?? "";
     this.headers = opts.headers ?? {};
   }
-  async deleteUser() {
-    return arriRequest<undefined>({
+  async deleteUser(params: UsersDeleteUserParams) {
+    return arriRequest<UsersDeleteUserResponse>({
       url: `${this.baseUrl}/users/delete-user`,
-      method: "post",
-
+      method: "get",
+      params,
       headers: this.headers,
     });
   }
@@ -52,6 +72,19 @@ export class ExampleClientUsersService {
       headers: this.headers,
     });
   }
+}
+
+export interface TestGetTestResponse {
+  message: string;
+}
+
+export interface UsersDeleteUserParams {
+  id: string;
+}
+
+export interface UsersDeleteUserResponse {
+  id: string;
+  name: string;
 }
 
 export interface UsersGetUserResponse {

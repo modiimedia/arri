@@ -12,10 +12,37 @@ class ExampleClient {
   })  : _headers = headers,
         _baseUrl = baseUrl;
 
+  ExampleClientTestService get test {
+    return ExampleClientTestService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
+
   ExampleClientUsersService get users {
     return ExampleClientUsersService(
       baseUrl: _baseUrl,
       headers: _headers,
+    );
+  }
+}
+
+class ExampleClientTestService {
+  final String _baseUrl;
+  final Map<String, String> _headers;
+  const ExampleClientTestService({
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  })  : _baseUrl = baseUrl,
+        _headers = headers;
+
+  Future<TestGetTestResponse> getTest() {
+    return parsedArriRequest(
+      "$_baseUrl/test/get-test",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => TestGetTestResponse.fromJson(json.decode(body)),
     );
   }
 }
@@ -29,13 +56,13 @@ class ExampleClientUsersService {
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  Future<void> deleteUser() {
+  Future<UsersDeleteUserResponse> deleteUser(UsersDeleteUserParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/delete-user",
-      method: HttpMethod.post,
+      method: HttpMethod.get,
       headers: _headers,
-      params: null,
-      parser: (body) {},
+      params: params.toJson(),
+      parser: (body) => UsersDeleteUserResponse.fromJson(json.decode(body)),
     );
   }
 
@@ -66,6 +93,87 @@ class ExampleClientUsersService {
       headers: _headers,
       params: params.toJson(),
       parser: (body) => UsersUpdateUserResponse.fromJson(json.decode(body)),
+    );
+  }
+}
+
+class TestGetTestResponse {
+  final String message;
+  const TestGetTestResponse({
+    required this.message,
+  });
+  factory TestGetTestResponse.fromJson(Map<String, dynamic> json) {
+    return TestGetTestResponse(
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "message": message,
+    };
+  }
+
+  TestGetTestResponse copyWith({
+    String? message,
+  }) {
+    return TestGetTestResponse(
+      message: message ?? this.message,
+    );
+  }
+}
+
+class UsersDeleteUserParams {
+  final String id;
+  const UsersDeleteUserParams({
+    required this.id,
+  });
+  factory UsersDeleteUserParams.fromJson(Map<String, dynamic> json) {
+    return UsersDeleteUserParams(
+      id: typeFromDynamic<String>(json["id"], ""),
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+    };
+  }
+
+  UsersDeleteUserParams copyWith({
+    String? id,
+  }) {
+    return UsersDeleteUserParams(
+      id: id ?? this.id,
+    );
+  }
+}
+
+class UsersDeleteUserResponse {
+  final String id;
+  final String name;
+  const UsersDeleteUserResponse({
+    required this.id,
+    required this.name,
+  });
+  factory UsersDeleteUserResponse.fromJson(Map<String, dynamic> json) {
+    return UsersDeleteUserResponse(
+      id: typeFromDynamic<String>(json["id"], ""),
+      name: typeFromDynamic<String>(json["name"], ""),
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+    };
+  }
+
+  UsersDeleteUserResponse copyWith({
+    String? id,
+    String? name,
+  }) {
+    return UsersDeleteUserResponse(
+      id: id ?? this.id,
+      name: name ?? this.name,
     );
   }
 }
@@ -274,9 +382,13 @@ class UsersUpdateUserResponse {
 
 enum ExampleClientEndpoints
     implements Comparable<ExampleClientEndpoints>, ArriEndpoint {
+  testGetTest(
+    path: "/test/get-test",
+    method: HttpMethod.get,
+  ),
   usersDeleteUser(
     path: "/users/delete-user",
-    method: HttpMethod.post,
+    method: HttpMethod.get,
   ),
   usersGetUser(
     path: "/users/get-user",
