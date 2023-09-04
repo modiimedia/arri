@@ -34,6 +34,7 @@ export async function arriRequest<T>(
             break;
     }
     const result = await ofetch<Serialize<T>>(url, {
+        method: opts.method,
         body,
         headers: opts.headers,
     });
