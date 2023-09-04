@@ -1,18 +1,8 @@
 import 'package:client_dart/example_client.rpc.dart';
 
 main() async {
-  final client = ExampleClient();
-  final getUserResult =
-      await client.users.getUser(UsersGetUserParams(userId: "1"));
-  print(getUserResult.toJson());
-
-  final updateUserResult = await client.users.updateUser(UsersUpdateUserParams(
-    userId: "1",
-    data: UserUpdateData(
-      name: "Suzy Q",
-      email: "suzyq@gmail.com",
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-    ),
-  ));
-  print(updateUserResult.toJson());
+  final client = ExampleClient(baseUrl: "http://127.0.0.1:3000");
+  final response = await client.users.getUsers(UsersGetUsersParams(limit: 99));
+  print(response.total);
+  print(response.items);
 }

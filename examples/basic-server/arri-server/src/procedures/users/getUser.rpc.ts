@@ -5,13 +5,15 @@ export default defineRpc({
     method: "get",
     params: undefined,
     response: Type.Object({
-        date: Type.Integer(),
-        message: Type.String(),
+        id: Type.String(),
+        username: Type.String(),
+        email: Type.String(),
     }),
     handler() {
         return {
-            date: new Date().getTime(),
-            message: "Hello world!!!",
+            id: "12345",
+            username: "johndoe",
+            email: "johndoe@gmail.com",
         };
     },
 });

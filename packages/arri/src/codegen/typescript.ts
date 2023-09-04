@@ -34,6 +34,11 @@ export const typescriptClientGenerator = defineClientGeneratorPlugin(
             if (!options.outputFile) {
                 throw new Error("No output file specified");
             }
+            if (Object.keys(def.procedures).length <= 0) {
+                throw new Error(
+                    "No procedures found in definition file. Typescript client will not be generated.",
+                );
+            }
             const result = await createTypescriptClient(
                 def,
                 options.clientName,

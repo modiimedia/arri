@@ -206,15 +206,15 @@ class UserSettingsService {
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      metadata: json["_metadata"] is String ? json["_metadata"] : "",
-      id: json["id"] is String ? json["id"] : "",
-      email: json["email"] is String ? json["email"] : null,
-      createdAt: json["createdAt"] is int ? json["createdAt"] : 0,
-      lastSignedIn: json["lastSignedIn"] is int ? json["lastSignedIn"] : null,
-      rating: json["rating"] is double ? json["rating"] : 0.0,
-      weightedRating: json["weightedRating"] is double ? json["weightedRating"] : null,
+      metadata: typeFromDynamic<String>(json["_metadata"], ""),
+      id: typeFromDynamic<String>(json["id"], ""),
+      email: nullableTypeFromDynamic<String>(json["email"]),
+      createdAt: intFromDynamic(json["createdAt"], 0),
+      lastSignedIn: nullableIntFromDynamic(json["lastSignedIn"]),
+      rating: doubleFromDynamic(json["rating"], 0.0),
+      weightedRating: nullableDoubleFromDynamic(json["weightedRating"]),
       followedUsers: json["followedUsers"] is List<String> ? json["followedUsers"] : [],
-      recentlyFollowedUsers: json["recentlyFollowedUsers"] is List<Map<String, dynamic>> ?
+      recentlyFollowedUsers: json["recentlyFollowedUsers"] is List ?
         (json["recentlyFollowedUsers"] as List<Map<String, dynamic>>)
           .map((val) => FollowedUser.fromJson(val)).toList() : [],
       followedHashtags: json["followedHashtags"] is List<String> ? json["followedHashtags"] : null,
@@ -282,8 +282,8 @@ class FollowedUser {
   });
   factory FollowedUser.fromJson(Map<String, dynamic> json) {
     return FollowedUser(
-      id: json["id"] is String ? json["id"] : "",
-      email: json["email"] is String ? json["email"] : "",
+      id: typeFromDynamic<String>(json["id"], ""),
+      email: typeFromDynamic<String>(json["email"], ""),
     );
   }
   Map<String, dynamic> toJson() {
@@ -312,8 +312,8 @@ class UserSettings {
   });
   factory UserSettings.fromJson(Map<String, dynamic> json) {
     return UserSettings(
-      enablePushNotifications: json["enablePushNotifications"] is bool ? json["enablePushNotifications"] : false,
-      isPrivate: json["isPrivate"] is bool ? json["isPrivate"] : false,
+      enablePushNotifications: typeFromDynamic<bool>(json["enablePushNotifications"], false),
+      isPrivate: typeFromDynamic<bool>(json["isPrivate"], false),
     );
   }
   Map<String, dynamic> toJson() {
@@ -344,9 +344,9 @@ class Category {
   });
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json["id"] is String ? json["id"] : "",
-      title: json["title"] is String ? json["title"] : "",
-      description: json["description"] is String ? json["description"] : "",
+      id: typeFromDynamic<String>(json["id"], ""),
+      title: typeFromDynamic<String>(json["title"], ""),
+      description: typeFromDynamic<String>(json["description"], ""),
     );
   }
   Map<String, dynamic> toJson() {

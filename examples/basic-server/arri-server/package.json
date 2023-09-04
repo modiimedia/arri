@@ -1,10 +1,12 @@
 {
     "name": "basic-arri-rpc-server",
+    "type": "module",
     "scripts": {
         "dev": "arri dev",
         "build": "arri build"
     },
     "dependencies": {
+        "@faker-js/faker": "^8.0.2",
         "arri": "link:../../../dist/packages/arri"
     }
 }

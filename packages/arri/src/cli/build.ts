@@ -9,7 +9,7 @@ import path from "pathe";
 import prettier from "prettier";
 import { isApplicationDef } from "../codegen/utils";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
-import { createRoutesModule, setupWorkingDir } from "./_common";
+import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
 export default defineCommand({
     args: {
@@ -44,6 +44,7 @@ async function startBuild(config: ResolvedArriConfig) {
     logger.log("Bundling server....");
     await setupWorkingDir(config);
     await Promise.all([
+        transpileFiles(config),
         createRoutesModule(config),
         createBuildEntryModule(config),
         createBuildCodegenModule(config),
@@ -51,7 +52,11 @@ async function startBuild(config: ResolvedArriConfig) {
     await bundleFiles(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
-    const codegenModule = path.resolve(config.rootDir, ".output", "codegen.js");
+    const codegenModule = path.resolve(
+        config.rootDir,
+        config.buildDir,
+        "codegen.js",
+    );
     if (clientCount > 0) {
         logger.log("Generating clients");
 
@@ -81,14 +86,11 @@ async function startBuild(config: ResolvedArriConfig) {
 async function bundleFiles(config: ResolvedArriConfig) {
     await build({
         ...config.esbuild,
-
         entryPoints: [
-            path.resolve(config.rootDir, config.buildDir, "server.ts"),
-            path.resolve(config.rootDir, config.buildDir, "codegen.ts"),
+            path.resolve(config.rootDir, config.buildDir, "server.js"),
         ],
         platform: config.esbuild.platform ?? "node",
         target: config.esbuild.target ?? "node18",
-
         bundle: true,
         outdir: path.resolve(config.rootDir, ".output"),
     });
@@ -97,7 +99,7 @@ async function bundleFiles(config: ResolvedArriConfig) {
 async function createBuildEntryModule(config: ResolvedArriConfig) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.buildDir), appModule)
+        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'h3';
@@ -113,7 +115,7 @@ void listen(toNodeListener(app.getH3Instance()), {
     port: process.env.PORT ?? ${config.port},
 });`;
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "server.ts"),
+        path.resolve(config.rootDir, config.buildDir, "server.js"),
         virtualEntry,
     );
 }
@@ -121,7 +123,7 @@ void listen(toNodeListener(app.getH3Instance()), {
 async function createBuildCodegenModule(config: ResolvedArriConfig) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.buildDir), appModule)
+        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
     const virtualModule = await prettier.format(
@@ -132,13 +134,13 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
 
     const def = app.getAppDefinition();
     writeFileSync(
-        path.resolve(__dirname, "__definition.json"),
+        path.resolve(__dirname, "../.output", "__definition.json"),
         JSON.stringify(def),
     );`,
         { tabWidth: 4, parser: "typescript" },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "codegen.ts"),
+        path.resolve(config.rootDir, config.buildDir, "codegen.js"),
         virtualModule,
     );
 }

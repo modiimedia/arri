@@ -3,14 +3,13 @@ import { loadConfig } from "c12";
 import chokidar from "chokidar";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
-import { build } from "esbuild";
 import { listenAndWatch } from "listhen";
 import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
 import { isApplicationDef } from "../codegen/utils";
-import { defaultConfig, type ResolvedArriConfig } from "../config";
-import { createRoutesModule, setupWorkingDir } from "./_common";
+import { type ResolvedArriConfig } from "../config";
+import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
 const logger = createConsola({
     fancy: true,
@@ -33,7 +32,6 @@ export default defineCommand({
         process.env.ARRI_DEV_MODE = "true";
         const config = await loadConfig({
             configFile: path.resolve(args.config),
-            defaultConfig,
         });
         if (!config) {
             throw new Error("Unable to find config");
@@ -42,22 +40,8 @@ export default defineCommand({
     },
 });
 
-async function bundleFiles(config: ResolvedArriConfig) {
-    const outDir = path.resolve(config.rootDir, ".output");
-    await build({
-        ...config.esbuild,
-        entryPoints: [
-            path.resolve(config.rootDir, config.buildDir, "entry.ts"),
-        ],
-        outdir: outDir,
-        bundle: true,
-        target: "node18",
-        platform: "node",
-    });
-}
-
 const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(path.resolve(config.rootDir, ".output", "entry.js"), {
+    listenAndWatch(path.resolve(config.rootDir, config.buildDir, "entry.js"), {
         public: true,
         port: config.port,
         logger,
@@ -68,8 +52,8 @@ async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     let fileWatcher: chokidar.FSWatcher | undefined;
     await Promise.all([createRoutesModule(config), createEntryModule(config)]);
-    await bundleFiles(config);
-    let listener = await startListener(config, true);
+    await transpileFiles(config);
+    await startListener(config, true);
     setTimeout(async () => {
         await generateClients(config);
     }, 1000);
@@ -90,15 +74,14 @@ async function startDevServer(config: ResolvedArriConfig) {
                 ignoreInitial: true,
             });
             fileWatcher.on("all", async (_event, file) => {
+                await transpileFiles(config);
                 await createRoutesModule(config);
                 let bundleCreated = false;
                 try {
                     logger.log(
                         "Change detected. Bundling files and restarting server....",
                     );
-                    await listener.close();
-                    await bundleFiles(config);
-                    listener = await startListener(config);
+                    await transpileFiles(config);
                     bundleCreated = true;
                 } catch (err) {
                     logger.error(err);
@@ -146,7 +129,7 @@ async function generateClients(config: ResolvedArriConfig) {
 async function createEntryModule(config: ResolvedArriConfig) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.buildDir), appModule)
+        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'h3';
@@ -160,7 +143,7 @@ for (const route of routes) {
 
 export default app.getH3Instance();`;
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "entry.ts"),
+        path.resolve(config.rootDir, config.buildDir, "entry.js"),
         virtualEntry,
     );
 }

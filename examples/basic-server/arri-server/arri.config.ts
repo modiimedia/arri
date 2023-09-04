@@ -2,7 +2,8 @@ import { defineConfig } from "arri";
 import {
     typescriptClientGenerator,
     dartClientGenerator,
-} from "arri/dist/codegen";
+    kotlinClientGenerator,
+} from "arri/dist/codegen.mjs";
 
 export default defineConfig({
     rootDir: __dirname,
@@ -18,6 +19,11 @@ export default defineConfig({
         dartClientGenerator({
             clientName: "ExampleClient",
             outputFile: "../client-dart/lib/example_client.rpc.dart",
+        }),
+        kotlinClientGenerator({
+            clientName: "ExampleClient",
+            outFile: "../client-kotlin/example_client.rpc.kt",
+            packageName: "com.example.client",
         }),
     ],
 });

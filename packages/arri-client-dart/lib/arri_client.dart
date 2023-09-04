@@ -184,3 +184,83 @@ class ArriRequestError implements Exception {
     return "{ statusCode: $statusCode, statusMessage: $statusMessage, data: ${data.toString()}, stackTrack: $stackTrace }";
   }
 }
+
+T typeFromDynamic<T>(dynamic input, T fallback) {
+  if (input is T) {
+    return input;
+  }
+  return fallback;
+}
+
+T? nullableTypeFromDynamic<T>(dynamic input) {
+  if (input is T) {
+    return input;
+  }
+  return null;
+}
+
+double doubleFromDynamic(dynamic input, double fallback) {
+  if (input is double) {
+    return input;
+  }
+  if (input is int) {
+    return input.toDouble();
+  }
+  return fallback;
+}
+
+double? nullableDoubleFromDynamic(dynamic input) {
+  if (input is double) {
+    return input;
+  }
+  if (input is int) {
+    return input.toDouble();
+  }
+  return null;
+}
+
+int intFromDynamic(dynamic input, int fallback) {
+  if (input is int) {
+    return input;
+  }
+  if (input is double) {
+    return input.toInt();
+  }
+  return fallback;
+}
+
+int? nullableIntFromDynamic(dynamic input) {
+  if (input is int) {
+    return input;
+  }
+  if (input is double) {
+    return input.toInt();
+  }
+  return null;
+}
+
+DateTime dateTimeFromDynamic(dynamic input, DateTime fallback) {
+  if (input is DateTime) {
+    return input;
+  }
+  if (input is String) {
+    return DateTime.parse(input);
+  }
+  if (input is int) {
+    return DateTime.fromMillisecondsSinceEpoch(input);
+  }
+  return fallback;
+}
+
+DateTime? nullableDateTimeFromDynamic(dynamic input) {
+  if (input is DateTime) {
+    return input;
+  }
+  if (input is String) {
+    return DateTime.parse(input);
+  }
+  if (input is int) {
+    return DateTime.fromMillisecondsSinceEpoch(input);
+  }
+  return null;
+}

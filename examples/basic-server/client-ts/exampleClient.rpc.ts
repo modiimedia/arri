@@ -20,47 +20,58 @@ export class ExampleClientUsersService {
     this.baseUrl = opts.baseUrl ?? "";
     this.headers = opts.headers ?? {};
   }
-  async getUser(params: UsersGetUserParams) {
-    return arriRequest<User>({
+  async getUser() {
+    return arriRequest<UsersGetUserResponse>({
       url: `${this.baseUrl}/users/get-user`,
+      method: "get",
+
+      headers: this.headers,
+    });
+  }
+  async getUsers(params: UsersGetUsersParams) {
+    return arriRequest<UsersGetUsersResponse>({
+      url: `${this.baseUrl}/users/get-users`,
       method: "get",
       params,
       headers: this.headers,
     });
   }
   async updateUser(params: UsersUpdateUserParams) {
-    return arriRequest<User>({
+    return arriRequest<UsersUpdateUserResponse>({
       url: `${this.baseUrl}/users/update-user`,
-      method: "post",
+      method: "get",
       params,
       headers: this.headers,
     });
   }
 }
 
-export interface UsersGetUserParams {
-  userId: string;
+export interface UsersGetUserResponse {
+  id: string;
+  username: string;
+  email: string;
 }
 
-export interface User {
+export interface UsersGetUsersParams {
+  limit: number;
+}
+
+export interface UsersGetUsersResponse {
+  total: number;
+  items: UserSchema[];
+}
+export interface UserSchema {
   id: string;
-  name: string;
   email: string;
-  /**
-   * must be an integer
-   */
-  createdAt: number;
+  username: string;
 }
 
 export interface UsersUpdateUserParams {
   userId: string;
-  data: UserUpdateData;
 }
-export interface UserUpdateData {
-  name: string;
+
+export interface UsersUpdateUserResponse {
+  id: string;
+  username: string;
   email: string;
-  /**
-   * must be an integer
-   */
-  createdAt: number;
 }

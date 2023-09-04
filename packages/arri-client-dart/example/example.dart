@@ -172,7 +172,7 @@ class SayHelloResponse {
   });
   factory SayHelloResponse.fromJson(Map<String, dynamic> json) {
     return SayHelloResponse(
-      message: json["message"] is String ? json["message"] : "",
+      message: typeFromDynamic<String>(json["message"], ""),
     );
   }
   Map<String, dynamic> toJson() {
@@ -209,13 +209,11 @@ class User {
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      metadata: json["_metadata"] is String ? json["_metadata"] : "",
-      id: json["id"] is String ? json["id"] : "",
-      email: json["email"] is String ? json["email"] : null,
-      createdAt: json["createdAt"] is int ? json["createdAt"] : 0,
-      updatedAt: json["updatedAt"] is String
-          ? DateTime.parse(json["updatedAt"])
-          : DateTime(0),
+      metadata: typeFromDynamic<String>(json["_metadata"], ""),
+      id: typeFromDynamic<String>(json["id"], ""),
+      email: nullableTypeFromDynamic<String>(json["email"]),
+      createdAt: intFromDynamic(json["createdAt"], 0),
+      updatedAt: dateTimeFromDynamic(json["updatedAt"], DateTime(0)),
       role: UserRole.fromJson(json["role"]),
       preferredTheme: json["preferredTheme"] is Map<String, dynamic>
           ? UserPreferredTheme.fromJson(json["preferredTheme"])
@@ -321,15 +319,11 @@ class UserV2 {
   });
   factory UserV2.fromJson(Map<String, dynamic> json) {
     return UserV2(
-      id: json["id"] is String ? json["id"] : "",
-      email: json["email"] is String ? json["email"] : "",
-      username: json["username"] is String ? json["username"] : "",
-      createdAt: json["createdAt"] is String
-          ? DateTime.parse(json["createdAt"])
-          : DateTime(0),
-      updatedAt: json["updatedAt"] is String
-          ? DateTime.parse(json["updatedAt"])
-          : DateTime(0),
+      id: typeFromDynamic<String>(json["id"], ""),
+      email: typeFromDynamic<String>(json["email"], ""),
+      username: typeFromDynamic<String>(json["username"], ""),
+      createdAt: dateTimeFromDynamic(json["createdAt"], DateTime(0)),
+      updatedAt: dateTimeFromDynamic(json["updatedAt"], DateTime(0)),
       role: UserV2Role.fromJson(json["role"]),
     );
   }
@@ -397,8 +391,8 @@ class UserParams {
   });
   factory UserParams.fromJson(Map<String, dynamic> json) {
     return UserParams(
-      id: json["id"] is String ? json["id"] : "",
-      email: json["email"] is String ? json["email"] : "",
+      id: typeFromDynamic<String>(json["id"], ""),
+      email: typeFromDynamic<String>(json["email"], ""),
     );
   }
   Map<String, dynamic> toJson() {
@@ -428,8 +422,8 @@ class UserListParams {
   });
   factory UserListParams.fromJson(Map<String, dynamic> json) {
     return UserListParams(
-      limit: json["limit"] is int ? json["limit"] : 0,
-      skip: json["skip"] is int ? json["skip"] : null,
+      limit: intFromDynamic(json["limit"], 0),
+      skip: nullableIntFromDynamic(json["skip"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -484,8 +478,8 @@ class UsersGetUsersResponseItems {
   });
   factory UsersGetUsersResponseItems.fromJson(Map<String, dynamic> json) {
     return UsersGetUsersResponseItems(
-      id: json["id"] is String ? json["id"] : "",
-      email: json["email"] is String ? json["email"] : "",
+      id: typeFromDynamic<String>(json["id"], ""),
+      email: typeFromDynamic<String>(json["email"], ""),
     );
   }
   Map<String, dynamic> toJson() {
@@ -517,9 +511,9 @@ class Post {
   });
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json["id"] is String ? json["id"] : "",
-      title: json["title"] is String ? json["title"] : "",
-      content: json["content"] is String ? json["content"] : "",
+      id: typeFromDynamic<String>(json["id"], ""),
+      title: typeFromDynamic<String>(json["title"], ""),
+      content: typeFromDynamic<String>(json["content"], ""),
     );
   }
   Map<String, dynamic> toJson() {
@@ -550,7 +544,7 @@ class PostParams {
   });
   factory PostParams.fromJson(Map<String, dynamic> json) {
     return PostParams(
-      postId: json["postId"] is String ? json["postId"] : "",
+      postId: typeFromDynamic<String>(json["postId"], ""),
     );
   }
   Map<String, dynamic> toJson() {
@@ -577,7 +571,7 @@ class PostsUpdatePostParams {
   });
   factory PostsUpdatePostParams.fromJson(Map<String, dynamic> json) {
     return PostsUpdatePostParams(
-      postId: json["postId"] is String ? json["postId"] : "",
+      postId: typeFromDynamic<String>(json["postId"], ""),
       data: PostsUpdatePostParamsData.fromJson(json["data"]),
     );
   }
@@ -608,8 +602,8 @@ class PostsUpdatePostParamsData {
   });
   factory PostsUpdatePostParamsData.fromJson(Map<String, dynamic> json) {
     return PostsUpdatePostParamsData(
-      title: json["title"] is String ? json["title"] : "",
-      content: json["content"] is String ? json["content"] : "",
+      title: typeFromDynamic<String>(json["title"], ""),
+      content: typeFromDynamic<String>(json["content"], ""),
     );
   }
   Map<String, dynamic> toJson() {

@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
+import { build } from "esbuild";
 import { globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
@@ -28,11 +29,15 @@ interface RpcRoute {
 
 export async function createRoutesModule(config: ResolvedArriConfig) {
     const routes: RpcRoute[] = [];
+    const existingRoutes: string[] = [];
     await Promise.all(
         config.procedureGlobPatterns.map(async (pattern) => {
             const results = await getVirtualRouteBatch(pattern, config);
             for (const result of results) {
-                routes.push(result);
+                if (!existingRoutes.includes(result.name)) {
+                    routes.push(result);
+                    existingRoutes.push(result.name);
+                }
             }
         }),
     );
@@ -44,7 +49,7 @@ export async function createRoutesModule(config: ResolvedArriConfig) {
                     `import ${route.importName} from '${route.importPath}';`,
             )
             .join("\n")}
-        const routes: { id: string; route: any }[] = [${routes
+        const routes = [${routes
             .map(
                 (route) =>
                     `{ id: '${route.name}', route: ${route.importName} }`,
@@ -55,7 +60,7 @@ export async function createRoutesModule(config: ResolvedArriConfig) {
         { parser: "typescript", tabWidth: 4 },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "routes.ts"),
+        path.resolve(config.rootDir, config.buildDir, "routes.js"),
         module,
     );
 }
@@ -81,7 +86,7 @@ export async function getVirtualRouteBatch(
         const meta = getRpcMetaFromPath(config, file);
         if (meta) {
             const importParts = path
-                .relative(path.resolve(config.rootDir, config.buildDir), file)
+                .relative(path.resolve(config.rootDir, config.srcDir), file)
                 .split(".");
             importParts.pop();
             routes.push({
@@ -135,3 +140,22 @@ export const getRpcMetaFromPath = (
         httpPath: `/${httpParts.join("/")}`,
     };
 };
+
+export async function transpileFiles(config: ResolvedArriConfig) {
+    const outDir = path.resolve(config.rootDir, config.buildDir);
+    const files = await globby(["**/*.ts"], {
+        cwd: path.resolve(config.rootDir, config.srcDir),
+    });
+    await build({
+        ...config.esbuild,
+        entryPoints: [
+            ...files.map((file) =>
+                path.resolve(config.rootDir, config.srcDir, file),
+            ),
+        ],
+        outdir: outDir,
+        bundle: false,
+        target: "node18",
+        platform: "node",
+    });
+}
