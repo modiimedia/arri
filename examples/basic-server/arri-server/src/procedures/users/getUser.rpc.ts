@@ -8,12 +8,14 @@ export default defineRpc({
         id: Type.String(),
         username: Type.String(),
         email: Type.String(),
+        createdAt: Type.Integer(),
     }),
     handler() {
         return {
             id: "12345",
             username: "johndoe",
             email: "johndoe@gmail.com",
+            createdAt: new Date().getTime(),
         };
     },
 });

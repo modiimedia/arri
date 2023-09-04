@@ -29,6 +29,16 @@ class ExampleClientUsersService {
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
+  Future<void> deleteUser() {
+    return parsedArriRequest(
+      "$_baseUrl/users/delete-user",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: null,
+      parser: (body) {},
+    );
+  }
+
   Future<UsersGetUserResponse> getUser() {
     return parsedArriRequest(
       "$_baseUrl/users/get-user",
@@ -64,16 +74,19 @@ class UsersGetUserResponse {
   final String id;
   final String username;
   final String email;
+  final int createdAt;
   const UsersGetUserResponse({
     required this.id,
     required this.username,
     required this.email,
+    required this.createdAt,
   });
   factory UsersGetUserResponse.fromJson(Map<String, dynamic> json) {
     return UsersGetUserResponse(
       id: typeFromDynamic<String>(json["id"], ""),
       username: typeFromDynamic<String>(json["username"], ""),
       email: typeFromDynamic<String>(json["email"], ""),
+      createdAt: intFromDynamic(json["createdAt"], 0),
     );
   }
   Map<String, dynamic> toJson() {
@@ -81,6 +94,7 @@ class UsersGetUserResponse {
       "id": id,
       "username": username,
       "email": email,
+      "createdAt": createdAt,
     };
   }
 
@@ -88,11 +102,13 @@ class UsersGetUserResponse {
     String? id,
     String? username,
     String? email,
+    int? createdAt,
   }) {
     return UsersGetUserResponse(
       id: id ?? this.id,
       username: username ?? this.username,
       email: email ?? this.email,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }
@@ -258,6 +274,10 @@ class UsersUpdateUserResponse {
 
 enum ExampleClientEndpoints
     implements Comparable<ExampleClientEndpoints>, ArriEndpoint {
+  usersDeleteUser(
+    path: "/users/delete-user",
+    method: HttpMethod.post,
+  ),
   usersGetUser(
     path: "/users/get-user",
     method: HttpMethod.get,

@@ -155,7 +155,7 @@ export async function transpileFiles(config: ResolvedArriConfig) {
             ),
         ],
         outdir: outDir,
-        bundle: false,
+        bundle: true,
         format: "esm",
         target: "node18",
         platform: "node",

@@ -20,6 +20,14 @@ export class ExampleClientUsersService {
     this.baseUrl = opts.baseUrl ?? "";
     this.headers = opts.headers ?? {};
   }
+  async deleteUser() {
+    return arriRequest<undefined>({
+      url: `${this.baseUrl}/users/delete-user`,
+      method: "post",
+
+      headers: this.headers,
+    });
+  }
   async getUser() {
     return arriRequest<UsersGetUserResponse>({
       url: `${this.baseUrl}/users/get-user`,
@@ -50,6 +58,10 @@ export interface UsersGetUserResponse {
   id: string;
   username: string;
   email: string;
+  /**
+   * must be an integer
+   */
+  createdAt: number;
 }
 
 export interface UsersGetUsersParams {
