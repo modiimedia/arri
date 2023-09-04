@@ -148,7 +148,6 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         cwd: path.resolve(config.rootDir, config.srcDir),
     });
     await build({
-        ...config.esbuild,
         entryPoints: [
             ...files.map((file) =>
                 path.resolve(config.rootDir, config.srcDir, file),

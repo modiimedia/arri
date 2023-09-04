@@ -51,10 +51,12 @@ const startListener = (config: ResolvedArriConfig, showQr = false) =>
 
 async function bundleFiles(config: ResolvedArriConfig) {
     await build({
+        ...config.esbuild,
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, "entry.js"),
         ],
         outfile: path.resolve(config.rootDir, config.buildDir, "bundle.js"),
+        format: "esm",
         bundle: true,
         target: "node18",
         platform: "node",
