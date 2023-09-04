@@ -1,3 +1,7 @@
+## 0.0.22
+
+-   Clean up parsing logic for doubles and ints
+
 ## 0.0.15
 
 -   Fix serialization errors + get dev server working (arri server)
