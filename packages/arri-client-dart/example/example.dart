@@ -198,6 +198,7 @@ class User {
   final DateTime updatedAt;
   final UserRole role;
   final UserPreferredTheme? preferredTheme;
+  final Map<dynamic, dynamic> miscData;
   const User({
     required this.metadata,
     required this.id,
@@ -206,6 +207,7 @@ class User {
     required this.updatedAt,
     required this.role,
     this.preferredTheme,
+    required this.miscData,
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -218,6 +220,7 @@ class User {
       preferredTheme: json["preferredTheme"] is Map<String, dynamic>
           ? UserPreferredTheme.fromJson(json["preferredTheme"])
           : null,
+      miscData: json["miscData"] is Map ? json["miscData"] : {},
     );
   }
   Map<String, dynamic> toJson() {
@@ -229,6 +232,7 @@ class User {
       "updatedAt": updatedAt.toIso8601String(),
       "role": role.toJson(),
       "preferredTheme": preferredTheme?.toJson(),
+      "miscData": miscData,
     };
   }
 
@@ -240,6 +244,7 @@ class User {
     DateTime? updatedAt,
     UserRole? role,
     UserPreferredTheme? preferredTheme,
+    Map<dynamic, dynamic>? miscData,
   }) {
     return User(
       metadata: metadata ?? this.metadata,
@@ -249,6 +254,7 @@ class User {
       updatedAt: updatedAt ?? this.updatedAt,
       role: role ?? this.role,
       preferredTheme: preferredTheme ?? this.preferredTheme,
+      miscData: miscData ?? this.miscData,
     );
   }
 }

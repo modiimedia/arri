@@ -169,6 +169,7 @@ class UserSettingsService {
                 Type.Literal("mod"),
                 Type.Literal("anonymous-user"),
             ]),
+            miscData: Type.Record(Type.String(), Type.Any()),
         });
 
         const result = dartModelFromJsonSchema("User", schema as any, {
@@ -189,6 +190,7 @@ class UserSettingsService {
   final UserSettings settings;
   final Category category;
   final UserRole role;
+  final Map<dynamic, dynamic> miscData;
   const User({
     required this.metadata,
     required this.id,
@@ -203,6 +205,7 @@ class UserSettingsService {
     required this.settings,
     required this.category,
     required this.role,
+    required this.miscData,
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -221,6 +224,7 @@ class UserSettingsService {
       settings: UserSettings.fromJson(json["settings"]),
       category: Category.fromJson(json["category"]),
       role: UserRole.fromJson(json["role"]),
+      miscData: json["miscData"] is Map ? json["miscData"] : {},
     );
   }
   Map<String, dynamic> toJson() {
@@ -238,6 +242,7 @@ class UserSettingsService {
       "settings": settings.toJson(),
       "category": category.toJson(),
       "role": role.toJson(),
+      "miscData": miscData,
     };
   }
   User copyWith({
@@ -254,6 +259,7 @@ class UserSettingsService {
     UserSettings? settings,
     Category? category,
     UserRole? role,
+    Map<dynamic, dynamic>? miscData,
   }) {
     return User(
       metadata: metadata ?? this.metadata,
@@ -269,6 +275,7 @@ class UserSettingsService {
       settings: settings ?? this.settings,
       category: category ?? this.category,
       role: role ?? this.role,
+      miscData: miscData ?? this.miscData,
     );
   }
 }
@@ -476,6 +483,7 @@ test("Dart client test", () => {
                         systemDefault: "system-default",
                     }),
                 ),
+                miscData: Type.Record(Type.String(), Type.Any()),
             }) as any,
             UserV2: Type.Object({
                 id: Type.String(),

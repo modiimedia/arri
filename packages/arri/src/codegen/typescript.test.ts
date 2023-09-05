@@ -113,6 +113,7 @@ describe("Generate Models", () => {
                     name: Type.String(),
                 }),
             ),
+            miscData: Type.Record(Type.String(), Type.Any()),
         });
         const result = tsModelFromDefinition("User", input as any);
         expect(normalizeWhitespace(result)).toBe(
@@ -131,6 +132,7 @@ describe("Generate Models", () => {
             recentFollows: string[];
             preferences: UserPreferences;
             favoriteFoods: UserFavoriteFoodsItem[];
+            miscData: any;
         }
         export interface UserPreferences {
             darkMode: boolean;

@@ -16,6 +16,7 @@ import {
     isJsonSchemaArray,
     type JsonSchemaScalarType,
     isServiceDef,
+    isJsonSchemaRecord,
 } from "./utils";
 
 let generatedModels: string[] = [];
@@ -217,6 +218,9 @@ export function tsModelFromDefinition(name: string, def: JsonSchemaObject) {
             }
             fieldParts.push(`${keyPart}: ${subModelName};`);
             return;
+        }
+        if (isJsonSchemaRecord(prop)) {
+            fieldParts.push(`${keyPart}: any;`);
         }
 
         if (isJsonSchemaEnum(prop)) {

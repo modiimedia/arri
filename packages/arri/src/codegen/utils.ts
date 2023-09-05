@@ -210,7 +210,10 @@ export function isJsonSchemaNullType(input: any): input is JsonSchemaNullType {
     return JsonSchemaNullTypeValues.includes(input.type);
 }
 
-export type JsonSchemaComplexType = JsonSchemaObject | JsonSchemaArray;
+export type JsonSchemaComplexType =
+    | JsonSchemaObject
+    | JsonSchemaArray
+    | JsonSchemaRecord;
 export interface JsonSchemaObject {
     $id?: string;
     title?: string;
@@ -228,6 +231,23 @@ export const isJsonSchemaObject = (input: any): input is JsonSchemaObject => {
         input.type === "object" &&
         "properties" in input &&
         typeof input.properties === "object"
+    );
+};
+export interface JsonSchemaRecord {
+    $id?: string;
+    title?: string;
+    type: "object";
+    patternProperties: Record<string, JsonSchemaType>;
+}
+export const isJsonSchemaRecord = (input: any): input is JsonSchemaRecord => {
+    if (typeof input !== "object") {
+        return false;
+    }
+    return (
+        "type" in input &&
+        input.type === "object" &&
+        "patternProperties" in input &&
+        typeof input.patternProperties === "object"
     );
 };
 export interface JsonSchemaArray {

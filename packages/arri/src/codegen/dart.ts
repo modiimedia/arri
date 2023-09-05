@@ -16,6 +16,7 @@ import {
     type ProcedureDef,
     unflattenProcedures,
     isServiceDef,
+    isJsonSchemaRecord,
 } from "./utils";
 
 export interface DartClientGeneratorOptions {
@@ -375,6 +376,9 @@ export function dartModelFromJsonSchema(
                       isNullable,
                   );
               }
+              if (field.type.includes("Map<")) {
+                  return `"${field.jsonKey}": ${field.name}`;
+              }
               return classTransformer(typeName, isNullable).toJsonBody(
                   field.name,
                   field.jsonKey,
@@ -498,6 +502,11 @@ export function dartPropertyTypeFromSchema(
             : (pascalCase(`${objectName}_${propertyName}`) as string);
         finalType = isOptional ? `${joinedPropName}?` : joinedPropName;
     }
+    if (isJsonSchemaRecord(prop)) {
+        finalType = isOptional
+            ? `Map<dynamic, dynamic>?`
+            : "Map<dynamic, dynamic>";
+    }
     if (isJsonSchemaArray(prop)) {
         const item = prop.items;
 
@@ -527,21 +536,27 @@ export function dartPropertyTypeFromSchema(
                 finalType = isOptional ? "List<DateTime>?" : "List<DateTime>";
                 break;
             case "object": {
-                const subTypeName =
-                    item.$id ??
-                    pascalCase(`${objectName}_${propertyName}_item`);
-                if (!generatedModels.includes(subTypeName)) {
-                    const model = dartModelFromJsonSchema(
-                        subTypeName,
-                        item,
-                        opts,
-                    );
-                    subTypes.push(model);
-                    generatedModels.push(subTypeName);
+                if (isJsonSchemaObject(item)) {
+                    const subTypeName =
+                        item.$id ??
+                        pascalCase(`${objectName}_${propertyName}_item`);
+                    if (!generatedModels.includes(subTypeName)) {
+                        const model = dartModelFromJsonSchema(
+                            subTypeName,
+                            item,
+                            opts,
+                        );
+                        subTypes.push(model);
+                        generatedModels.push(subTypeName);
+                    }
+                    finalType = isOptional
+                        ? `List<${subTypeName}>?`
+                        : `List<${subTypeName}>`;
+                } else {
+                    finalType = isOptional
+                        ? `Map<dynamic, dynamic>?`
+                        : `Map<dynamic, dynamic>`;
                 }
-                finalType = isOptional
-                    ? `List<${subTypeName}>?`
-                    : `List<${subTypeName}>`;
                 break;
             }
         }
@@ -645,6 +660,9 @@ export function dartParsedJsonField(
             jsonKey,
             dartType.endsWith("?") ? "null" : "[]",
         );
+    }
+    if (dartType.includes("Map<")) {
+        return `${fieldName}: json["${jsonKey}"] is Map ? json["${jsonKey}"] : {}`;
     }
     const classType = dartType.split("?").join("").trim();
     return classTransformer(classType, dartType.endsWith("?")).fromJsonBody(
