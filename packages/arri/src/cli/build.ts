@@ -97,8 +97,7 @@ async function bundleFiles(config: ResolvedArriConfig) {
         minifyWhitespace: true,
         banner: {
             js: `import { createRequire as topLevelCreateRequire } from 'module';
-            const require = topLevelCreateRequire(import.meta.url);
-            const __dirname = new URL(".", import.meta.url).pathname;`,
+            const require = topLevelCreateRequire(import.meta.url);`,
         },
         outdir: path.resolve(config.rootDir, ".output"),
     });
