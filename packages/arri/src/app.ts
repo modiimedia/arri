@@ -184,7 +184,9 @@ export class Arri {
         return appDef;
     }
 
-    getH3Instance() {}
+    getH3Instance(): App {
+        return this.h3App;
+    }
 }
 
 export interface ArriOptions {

@@ -31,13 +31,13 @@ export default defineCommand({
     },
     async run({ args }) {
         process.env.ARRI_DEV_MODE = "true";
-        const config = await loadConfig({
+        const { config } = await loadConfig({
             configFile: path.resolve(args.config),
         });
         if (!config) {
             throw new Error("Unable to find config");
         }
-        await startDevServer(config.config as ResolvedArriConfig);
+        await startDevServer(config as ResolvedArriConfig);
     },
 });
 
@@ -60,6 +60,7 @@ async function bundleFiles(config: ResolvedArriConfig) {
         bundle: true,
         target: "node18",
         platform: "node",
+        sourcemap: true,
     });
 }
 
