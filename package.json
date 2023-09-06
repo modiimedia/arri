@@ -6,7 +6,7 @@
         "url": "https://github.com/modiimedia/arri"
     },
     "scripts": {
-        "publish": "nx run-many -t publish",
+        "publish": "jiti tools/scripts/publish.ts",
         "postversion": "jiti tools/scripts/version-sync.ts"
     },
     "private": true,
