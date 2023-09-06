@@ -1,12 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import { Arri } from "arri";
 
-const app = new Arri({
-    onBeforeResponse(context) {},
-    onError(error, event) {
-        console.log("ERROR", error, event);
-    },
-});
+const app = new Arri();
 
 app.registerRpc("test.getTest", {
     method: "get",
