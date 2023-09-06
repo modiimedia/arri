@@ -32,7 +32,7 @@ export default defineCommand({
         if (!config) {
             throw new Error("Unable to find arri config");
         }
-        await startBuild(config);
+        await startBuild(config, args.skipCodegen);
     },
 });
 
@@ -40,7 +40,7 @@ const logger = createConsola({
     fancy: true,
 }).withTag("arri");
 
-async function startBuild(config: ResolvedArriConfig) {
+async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
     await setupWorkingDir(config);
     await Promise.all([
@@ -57,7 +57,7 @@ async function startBuild(config: ResolvedArriConfig) {
         config.buildDir,
         "codegen.js",
     );
-    if (clientCount > 0) {
+    if (clientCount > 0 && !skipCodeGen) {
         logger.log("Generating clients");
 
         execSync(`node ${codegenModule}`);
@@ -96,7 +96,9 @@ async function bundleFiles(config: ResolvedArriConfig) {
         sourcemap: true,
         minifyWhitespace: true,
         banner: {
-            js: "import { createRequire as topLevelCreateRequire } from 'module';\n const require = topLevelCreateRequire(import.meta.url);",
+            js: `import { createRequire as topLevelCreateRequire } from 'module';
+            const require = topLevelCreateRequire(import.meta.url);
+            const __dirname = new URL(".", import.meta.url).pathname;`,
         },
         outdir: path.resolve(config.rootDir, ".output"),
     });

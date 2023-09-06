@@ -7,6 +7,7 @@ import {
     send,
     setResponseHeader,
     eventHandler,
+    sendError,
 } from "h3";
 import { type ArriOptions, type HttpMethod } from "./app";
 import { errorResponseFromValidationErrors } from "./errors";
@@ -192,6 +193,9 @@ export function registerRoute<TPath extends string>(
         } catch (err) {
             if (opts?.onError) {
                 await opts.onError(err as any, context, event);
+            }
+            if (!event.handled) {
+                sendError(event, err as any);
             }
         }
         return "";

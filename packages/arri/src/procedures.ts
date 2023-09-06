@@ -9,6 +9,7 @@ import {
     send,
     setResponseHeader,
     type H3Event,
+    sendError,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type HttpMethod, isHttpMethod, type ArriOptions } from "./app";
@@ -294,6 +295,9 @@ export function registerRpc(
         } catch (err) {
             if (opts.onError) {
                 await opts.onError(err as any, context, event);
+            }
+            if (!event.handled) {
+                sendError(event, err as any);
             }
         }
         return "";
