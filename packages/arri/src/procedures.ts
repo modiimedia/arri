@@ -9,12 +9,11 @@ import {
     send,
     setResponseHeader,
     type H3Event,
-    sendError,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type HttpMethod, isHttpMethod, type ArriOptions } from "./app";
 import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
-import { defineError } from "./errors";
+import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./routes";
 import { typeboxSafeValidate } from "./validation";
 
@@ -293,12 +292,7 @@ export function registerRpc(
                 await procedure.postHandler(context as any, event);
             }
         } catch (err) {
-            if (opts.onError) {
-                await opts.onError(err as any, context, event);
-            }
-            if (!event.handled) {
-                sendError(event, err as any);
-            }
+            await handleH3Error(err, context, event, opts.onError);
         }
         return "";
     });

@@ -1,6 +1,16 @@
 import { type Static, Type } from "@sinclair/typebox";
 import { type ValueError } from "@sinclair/typebox/errors";
-import { type H3Error, createError } from "h3";
+import {
+    type H3Error,
+    createError,
+    type H3Event,
+    isError,
+    setResponseStatus,
+    sendError,
+} from "h3";
+import { type ArriOptions } from "./app";
+import { type RpcHandlerContext } from "./procedures";
+import { type RouteHandlerContext } from "./routes";
 
 export const ErrorResponse = Type.Object(
     {
@@ -243,3 +253,22 @@ const errorResponseDefaults: Record<
         message: "Network Authentication Required",
     },
 };
+
+export async function handleH3Error(
+    err: unknown,
+    context: RpcHandlerContext | RouteHandlerContext<any>,
+    event: H3Event,
+    onError: ArriOptions["onError"],
+) {
+    const error = isError(err)
+        ? err
+        : defineError(500, { data: err as any, stack: `${err as any}` });
+    setResponseStatus(event, error.statusCode);
+    if (onError) {
+        await onError(error, context, event);
+    }
+    if (event.handled) {
+        return;
+    }
+    sendError(event, error);
+}

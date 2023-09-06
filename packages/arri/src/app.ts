@@ -10,9 +10,10 @@ import {
     sendError,
     getQuery,
     readBody,
+    setResponseStatus,
 } from "h3";
 import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
-import { ErrorResponse, defineError } from "./errors";
+import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import {
     type ArriProcedure,
     createRpcDefinition,
@@ -81,6 +82,7 @@ export class Arri {
         this.h3Router.use(
             "/**",
             eventHandler(async (event) => {
+                setResponseStatus(event, 404);
                 const error = defineError(404);
                 const query = getQuery(event);
                 const disallowedBodyMethods = ["GET", "HEAD", "OPTION"];
@@ -100,22 +102,19 @@ export class Arri {
                             await m(context, event);
                         }
                     }
-                } catch (_) {}
+                } catch (err) {
+                    await handleH3Error(err, context, event, this.onError);
+                }
+                if (event.handled) {
+                    return;
+                }
                 if (this.onError) {
-                    await this.onError(
-                        error,
-                        {
-                            type: "route",
-                            params: undefined,
-                            query: undefined,
-                            body: undefined,
-                        },
-                        event,
-                    );
+                    await this.onError(error, context, event);
                 }
-                if (!event.handled) {
-                    sendError(event, error);
+                if (event.handled) {
+                    return;
                 }
+                sendError(event, error);
             }),
         );
     }
@@ -185,9 +184,7 @@ export class Arri {
         return appDef;
     }
 
-    getH3Instance() {
-        return this.h3App;
-    }
+    getH3Instance() {}
 }
 
 export interface ArriOptions {

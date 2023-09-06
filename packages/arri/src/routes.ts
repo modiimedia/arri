@@ -7,10 +7,9 @@ import {
     send,
     setResponseHeader,
     eventHandler,
-    sendError,
 } from "h3";
 import { type ArriOptions, type HttpMethod } from "./app";
-import { errorResponseFromValidationErrors } from "./errors";
+import { errorResponseFromValidationErrors, handleH3Error } from "./errors";
 import type { HandlerContext } from "./procedures";
 import { typeboxSafeValidate } from "./validation";
 
@@ -191,12 +190,7 @@ export function registerRoute<TPath extends string>(
                 await route.postHandler(context as any, event);
             }
         } catch (err) {
-            if (opts?.onError) {
-                await opts.onError(err as any, context, event);
-            }
-            if (!event.handled) {
-                sendError(event, err as any);
-            }
+            await handleH3Error(err, context, event, opts?.onError);
         }
         return "";
     });
