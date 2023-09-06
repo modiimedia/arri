@@ -3,15 +3,15 @@ import { ValueErrorType } from "@sinclair/typebox/errors";
 import {
     eventHandler,
     type Router,
-    type H3Event,
     getValidatedQuery,
     isPreflightRequest,
     readValidatedBody,
     send,
     setResponseHeader,
+    type H3Event,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
-import { type HttpMethod, isHttpMethod } from "./app";
+import { type HttpMethod, isHttpMethod, type ArriOptions } from "./app";
 import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
 import { defineError } from "./errors";
 import { type Middleware } from "./routes";
@@ -44,12 +44,10 @@ export interface ArriProcedure<
     >;
 }
 
-export interface HandlerContext {
-    [key: string]: any;
-    event: H3Event;
-}
+export type HandlerContext = Record<string, any>;
 
 export interface RpcHandlerContext<TParams = undefined> extends HandlerContext {
+    type: "procedure";
     params: TParams;
 }
 
@@ -62,10 +60,12 @@ export interface RpcPostHandlerContext<
 
 export type ArriProcedureHandler<TParams, TResponse> = (
     context: RpcHandlerContext<TParams>,
+    event: H3Event,
 ) => TResponse | Promise<TResponse>;
 
 export type ArriProcedurePostHandler<TParams, TResponse> = (
-    event: RpcPostHandlerContext<TParams, TResponse>,
+    context: RpcPostHandlerContext<TParams, TResponse>,
+    event: H3Event,
 ) => any;
 
 export function isRpc(input: any): input is ArriProcedure<any, any> {
@@ -191,98 +191,112 @@ export function registerRpc(
     path: string,
     procedure: ArriProcedure<any, any>,
     middleware: Middleware[],
+    opts: ArriOptions,
 ) {
     const httpMethod = procedure.method ?? "post";
-    const handler = eventHandler(async (event) => {
-        const context: HandlerContext = {
-            event,
+    const handler = eventHandler(async (event: H3Event) => {
+        const context: RpcHandlerContext = {
+            type: "procedure",
+            params: undefined,
         };
         if (isPreflightRequest(event)) {
             return "ok";
         }
-        if (middleware.length) {
-            await Promise.all(middleware.map((m) => m(context)));
-        }
-        if (procedure.params) {
-            switch (httpMethod) {
-                case "get":
-                case "head": {
-                    const parsedParams = await getValidatedQuery(
-                        event,
-                        typeboxSafeValidate(procedure.params, true),
-                    );
-                    if (!parsedParams.success) {
-                        const errorParts: string[] = [];
-                        for (const err of parsedParams.errors) {
-                            const propName = err.path.split("/");
-                            propName.shift();
-                            if (!errorParts.includes(propName.join("."))) {
-                                errorParts.push(propName.join("."));
+        try {
+            if (middleware.length) {
+                await Promise.all(middleware.map((m) => m(context, event)));
+            }
+            if (procedure.params) {
+                switch (httpMethod) {
+                    case "get":
+                    case "head": {
+                        const parsedParams = await getValidatedQuery(
+                            event,
+                            typeboxSafeValidate(procedure.params, true),
+                        );
+                        if (!parsedParams.success) {
+                            const errorParts: string[] = [];
+                            for (const err of parsedParams.errors) {
+                                const propName = err.path.split("/");
+                                propName.shift();
+                                if (!errorParts.includes(propName.join("."))) {
+                                    errorParts.push(propName.join("."));
+                                }
                             }
-                        }
-                        throw defineError(400, {
-                            statusMessage: `Missing or invalid url query parameters: [${errorParts.join(
-                                ",",
-                            )}]`,
-                            data: parsedParams.errors,
-                        });
-                    }
-                    context.params = parsedParams.value;
-                    break;
-                }
-
-                case "delete":
-                case "patch":
-                case "post":
-                case "put": {
-                    const parsedParams = await readValidatedBody(
-                        event,
-                        typeboxSafeValidate(procedure.params),
-                    );
-                    if (!parsedParams.success) {
-                        let isObjectError = false;
-                        const errorParts: string[] = [];
-                        for (const err of parsedParams.errors) {
-                            if (err.type === ValueErrorType.Object) {
-                                isObjectError = true;
-                            }
-                            const propName = err.path.split("/");
-                            propName.shift();
-                            if (!errorParts.includes(propName.join("."))) {
-                                errorParts.push(propName.join("."));
-                            }
-                        }
-                        if (isObjectError) {
                             throw defineError(400, {
-                                statusMessage: `Invalid request body. Expected object.`,
+                                statusMessage: `Missing or invalid url query parameters: [${errorParts.join(
+                                    ",",
+                                )}]`,
+                                data: parsedParams.errors,
                             });
                         }
-                        throw defineError(400, {
-                            statusMessage: `Invalid request body. Affected properties [${errorParts.join(
-                                ", ",
-                            )}]`,
-                            data: parsedParams.errors,
-                        });
+                        context.params = parsedParams.value;
+                        break;
                     }
-                    context.params = parsedParams.value;
-                    break;
+
+                    case "delete":
+                    case "patch":
+                    case "post":
+                    case "put": {
+                        const parsedParams = await readValidatedBody(
+                            event,
+                            typeboxSafeValidate(procedure.params),
+                        );
+                        if (!parsedParams.success) {
+                            let isObjectError = false;
+                            const errorParts: string[] = [];
+                            for (const err of parsedParams.errors) {
+                                if (err.type === ValueErrorType.Object) {
+                                    isObjectError = true;
+                                }
+                                const propName = err.path.split("/");
+                                propName.shift();
+                                if (!errorParts.includes(propName.join("."))) {
+                                    errorParts.push(propName.join("."));
+                                }
+                            }
+                            if (isObjectError) {
+                                throw defineError(400, {
+                                    statusMessage: `Invalid request body. Expected object.`,
+                                });
+                            }
+                            throw defineError(400, {
+                                statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                                    ", ",
+                                )}]`,
+                                data: parsedParams.errors,
+                            });
+                        }
+                        context.params = parsedParams.value;
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                default:
-                    break;
+            }
+            const response = await procedure.handler(context, event);
+            context.response = response;
+            if (opts.onBeforeResponse) {
+                await opts.onBeforeResponse(context as any, event);
+            }
+            if (typeof response === "object") {
+                setResponseHeader(event, "Content-Type", "application/json");
+                await send(event, JSON.stringify(response));
+            } else {
+                await send(event, response ?? "");
+            }
+            if (opts.onAfterResponse) {
+                await opts.onAfterResponse(context as any, event);
+            }
+            if (procedure.postHandler) {
+                await procedure.postHandler(context as any, event);
+            }
+        } catch (err) {
+            if (opts.onError) {
+                await opts.onError(err as any, context, event);
             }
         }
-        const response = await procedure.handler(context as any);
-        if (typeof response === "object") {
-            setResponseHeader(event, "Content-Type", "application/json");
-            await send(event, JSON.stringify(response));
-        } else {
-            await send(event, response);
-        }
-        if (procedure.postHandler) {
-            context.response = response;
-            await procedure.postHandler(context as any);
-        }
-        return null;
+        return "";
     });
     switch (httpMethod) {
         case "get":

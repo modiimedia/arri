@@ -6,8 +6,9 @@ import {
     readValidatedBody,
     send,
     setResponseHeader,
+    eventHandler,
 } from "h3";
-import { type HttpMethod } from "./app";
+import { type ArriOptions, type HttpMethod } from "./app";
 import { errorResponseFromValidationErrors } from "./errors";
 import type { HandlerContext } from "./procedures";
 import { typeboxSafeValidate } from "./validation";
@@ -59,7 +60,10 @@ export function defineRoute<
     return config;
 }
 
-export type Middleware = (context: HandlerContext) => void | Promise<void>;
+export type Middleware = (
+    context: HandlerContext,
+    event: H3Event,
+) => void | Promise<void>;
 export const defineMiddleware = (middleware: Middleware) => middleware;
 
 export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
@@ -78,6 +82,7 @@ export type ArriRouteHandler<
     TResponse = any,
 > = (
     context: RouteHandlerContext<ExtractParams<TPath>, TQuery, TBody>,
+    event: H3Event,
 ) => TResponse extends undefined
     ? void | Promise<void>
     : TResponse | Promise<TResponse>;
@@ -87,6 +92,7 @@ export interface RouteHandlerContext<
     TQuery = undefined,
     TBody = undefined,
 > extends HandlerContext {
+    type: "route";
     params: TParams;
     query: TQuery;
     body: TBody;
@@ -113,6 +119,7 @@ export type ArriRoutePostHandler<
         TBody,
         TResponse
     >,
+    event: H3Event,
 ) => any;
 
 export function registerRoute<TPath extends string>(
@@ -120,55 +127,75 @@ export function registerRoute<TPath extends string>(
     route: ArriRoute<TPath, HttpMethod, any, any, any>,
     middleware: Middleware[],
     prefix?: string,
+    opts?: ArriOptions,
 ) {
-    const handler = async (event: H3Event) => {
-        const context: HandlerContext = {
-            event,
+    const handler = eventHandler(async (event: H3Event) => {
+        const context: RouteHandlerContext<any> = {
+            type: "route",
+            params: event.context.params,
+            query: undefined,
+            body: undefined,
         };
-        if (middleware.length) {
-            for (const m of middleware) {
-                await m(context);
+        try {
+            if (middleware.length) {
+                for (const m of middleware) {
+                    await m(context, event);
+                }
             }
-        }
-        if (route.query) {
-            const result = await getValidatedQuery(
-                event,
-                typeboxSafeValidate(route.query),
-            );
-            if (!result.success) {
-                throw errorResponseFromValidationErrors(
-                    result.errors,
-                    "Missing or invalid query parameters",
+            if (route.query) {
+                const result = await getValidatedQuery(
+                    event,
+                    typeboxSafeValidate(route.query),
                 );
+                if (!result.success) {
+                    throw errorResponseFromValidationErrors(
+                        result.errors,
+                        "Missing or invalid query parameters",
+                    );
+                }
+                context.query = result.value;
             }
-            context.query = result.value;
-        }
-        if (route.body && route.method !== "get" && route.method !== "head") {
-            const result = await readValidatedBody(
-                event,
-                typeboxSafeValidate(route.body),
-            );
-            if (!result.success) {
-                throw errorResponseFromValidationErrors(
-                    result.errors,
-                    "Missing or invalid body parameters",
+            if (
+                route.body &&
+                route.method !== "get" &&
+                route.method !== "head"
+            ) {
+                const result = await readValidatedBody(
+                    event,
+                    typeboxSafeValidate(route.body),
                 );
+                if (!result.success) {
+                    throw errorResponseFromValidationErrors(
+                        result.errors,
+                        "Missing or invalid body parameters",
+                    );
+                }
+                context.body = result.value;
             }
-            context.body = result.value;
-        }
-        const response = await route.handler(context as any);
-        if (typeof response === "object") {
-            setResponseHeader(event, "Content-Type", "application/json");
-            await send(event, JSON.stringify(response));
-        } else {
-            await send(event, response);
-        }
-        if (route.postHandler) {
+            const response = await route.handler(context, event);
             context.response = response;
-            await route.postHandler(context as any);
+            if (opts?.onBeforeResponse) {
+                await opts.onBeforeResponse(context as any, event);
+            }
+            if (typeof response === "object") {
+                setResponseHeader(event, "Content-Type", "application/json");
+                await send(event, JSON.stringify(response));
+            } else {
+                await send(event, response ?? "");
+            }
+            if (opts?.onAfterResponse) {
+                await opts.onAfterResponse(context as any, event);
+            }
+            if (route.postHandler) {
+                await route.postHandler(context as any, event);
+            }
+        } catch (err) {
+            if (opts?.onError) {
+                await opts.onError(err as any, context, event);
+            }
         }
-        return null;
-    };
+        return "";
+    });
     const finalPath = (prefix ? `/${prefix}${route.path}` : route.path)
         .split("//")
         .join("/");

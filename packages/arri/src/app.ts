@@ -4,9 +4,9 @@ import {
     createApp,
     type Router,
     createRouter,
-    type AppOptions,
-    sendError,
     eventHandler,
+    type H3Error,
+    type H3Event,
 } from "h3";
 import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
 import { ErrorResponse } from "./errors";
@@ -17,21 +17,17 @@ import {
     getRpcPath,
     getRpcResponseName,
     registerRpc,
+    type RpcHandlerContext,
+    type RpcPostHandlerContext,
 } from "./procedures";
-import { type ArriRoute, registerRoute, type Middleware } from "./routes";
+import {
+    type ArriRoute,
+    registerRoute,
+    type Middleware,
+    type RouteHandlerContext,
+    type RoutePostHandlerContext,
+} from "./routes";
 
-interface ArriOptions extends AppOptions {
-    /**
-     * Metadata to display in the __definition.json file
-     */
-    appInfo?: ApplicationDef["info"];
-    rpcRoutePrefix?: string;
-    /**
-     * Defaults to /__definitions
-     * This parameters also takes the rpcRoutePrefix option into account
-     */
-    rpcDefinitionPath?: string;
-}
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
 
@@ -45,25 +41,19 @@ export class Arri {
     private procedures: Record<string, ProcedureDef> = {};
     private models: Record<string, TObject> = {};
     private readonly middlewares: Middleware[] = [];
+    private readonly onAfterResponse: ArriOptions["onAfterResponse"];
+    private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
+    private readonly onError: ArriOptions["onError"];
 
-    constructor(opts?: ArriOptions) {
+    constructor(opts: ArriOptions = {}) {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
-            onAfterResponse: opts?.onAfterResponse,
-            onBeforeResponse: opts?.onBeforeResponse,
-            onError: async (err, event) => {
-                if (opts?.onError) {
-                    await opts.onError(err, event);
-                }
-                sendError(event, err);
-            },
-            onRequest: async (event) => {
-                if (opts?.onRequest) {
-                    await opts.onRequest(event);
-                }
-            },
+            onRequest: opts?.onRequest,
         });
+        this.onError = opts.onError;
+        this.onAfterResponse = opts.onAfterResponse;
+        this.onBeforeResponse = opts.onBeforeResponse;
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3Router.get(
@@ -106,7 +96,11 @@ export class Arri {
                 this.models[responseName] = procedure.response;
             }
         }
-        registerRpc(this.h3Router, path, procedure, this.middlewares);
+        registerRpc(this.h3Router, path, procedure, this.middlewares, {
+            onError: this.onError,
+            onAfterResponse: this.onAfterResponse,
+            onBeforeResponse: this.onBeforeResponse,
+        });
     }
 
     registerRoute<
@@ -147,6 +141,34 @@ export class Arri {
     getH3Instance() {
         return this.h3App;
     }
+}
+
+export interface ArriOptions {
+    debug?: boolean;
+    /**
+     * Metadata to display in the __definition.json file
+     */
+    appInfo?: ApplicationDef["info"];
+    rpcRoutePrefix?: string;
+    /**
+     * Defaults to /__definitions
+     * This parameters also takes the rpcRoutePrefix option into account
+     */
+    rpcDefinitionPath?: string;
+    onRequest?: (event: H3Event) => void | Promise<void>;
+    onAfterResponse?: (
+        context: RpcPostHandlerContext | RoutePostHandlerContext<any>,
+        event: H3Event,
+    ) => void | Promise<void>;
+    onBeforeResponse?: (
+        context: RpcPostHandlerContext | RoutePostHandlerContext<any>,
+        event: H3Event,
+    ) => void | Promise<void>;
+    onError?: (
+        error: H3Error,
+        context: RpcHandlerContext | RouteHandlerContext<any>,
+        event: H3Event,
+    ) => void | Promise<void>;
 }
 
 export const HttpMethodValues = [
