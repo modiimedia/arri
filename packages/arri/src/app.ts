@@ -7,9 +7,12 @@ import {
     eventHandler,
     type H3Error,
     type H3Event,
+    sendError,
+    getQuery,
+    readBody,
 } from "h3";
 import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
-import { ErrorResponse } from "./errors";
+import { ErrorResponse, defineError } from "./errors";
 import {
     type ArriProcedure,
     createRpcDefinition,
@@ -56,21 +59,65 @@ export class Arri {
         this.onBeforeResponse = opts.onBeforeResponse;
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
-        this.h3Router.get(
-            this.rpcRoutePrefix
+        this.h3App.use(this.h3Router);
+        this.registerRoute({
+            path: this.rpcRoutePrefix
                 ? `/${this.rpcRoutePrefix}/${this.rpcDefinitionPath}`
                       .split("//")
                       .join("/")
                 : `/${this.rpcDefinitionPath}`,
-            eventHandler((_) => this.getAppDefinition()),
-        );
-        this.h3App.use(this.h3Router);
+            method: "get",
+            handler: () => this.getAppDefinition(),
+        });
+        // this route is used by the dev server when auto-generating client code
         if (process.env.ARRI_DEV_MODE === "true") {
-            this.h3Router.get(
-                DEV_DEFINITION_ENDPOINT,
-                eventHandler((_) => this.getAppDefinition()),
-            );
+            this.registerRoute({
+                path: DEV_DEFINITION_ENDPOINT,
+                method: "get",
+                handler: () => this.getAppDefinition(),
+            });
         }
+        // default fallback route
+        this.h3Router.use(
+            "/**",
+            eventHandler(async (event) => {
+                const error = defineError(404);
+                const query = getQuery(event);
+                const disallowedBodyMethods = ["GET", "HEAD", "OPTION"];
+                const canBody = !disallowedBodyMethods.includes(event.method);
+                const context: RouteHandlerContext<any> = {
+                    type: "route",
+                    params: event.context.params,
+                    query: query as any,
+                    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+                    body: canBody
+                        ? await readBody(event).catch((_) => undefined)
+                        : undefined,
+                };
+                try {
+                    if (this.middlewares.length) {
+                        for (const m of this.middlewares) {
+                            await m(context, event);
+                        }
+                    }
+                } catch (_) {}
+                if (this.onError) {
+                    await this.onError(
+                        error,
+                        {
+                            type: "route",
+                            params: undefined,
+                            query: undefined,
+                            body: undefined,
+                        },
+                        event,
+                    );
+                }
+                if (!event.handled) {
+                    sendError(event, error);
+                }
+            }),
+        );
     }
 
     registerMiddleware(middleware: Middleware) {

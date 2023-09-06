@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import { Arri } from "arri";
 
-const app = new Arri();
+const app = new Arri({});
 
 app.registerRpc("test.getTest", {
     method: "get",
