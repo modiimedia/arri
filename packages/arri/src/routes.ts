@@ -29,7 +29,7 @@ export interface ArriRoute<
     handler: ArriRouteHandler<
         TPath,
         TQuery extends TObject ? Static<TQuery> : undefined,
-        TBody extends TObject ? Static<TObject> : undefined,
+        TBody extends TSchema ? Static<TBody> : undefined,
         TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
     >;
     postHandler?: ArriRoutePostHandler<
@@ -145,7 +145,7 @@ export function registerRoute<TPath extends string>(
             if (route.query) {
                 const result = await getValidatedQuery(
                     event,
-                    typeboxSafeValidate(route.query),
+                    typeboxSafeValidate(route.query, true),
                 );
                 if (!result.success) {
                     throw errorResponseFromValidationErrors(
