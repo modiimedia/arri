@@ -92,6 +92,7 @@ async function bundleFiles(config: ResolvedArriConfig) {
         platform: config.esbuild.platform ?? "node",
         target: config.esbuild.target ?? "node18",
         bundle: true,
+        packages: "external",
         format: "esm",
         sourcemap: true,
         minifyWhitespace: true,

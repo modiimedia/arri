@@ -192,6 +192,9 @@ export function registerRoute<TPath extends string>(
         } catch (err) {
             await handleH3Error(err, context, event, opts?.onError);
         }
+        if (!event.handled) {
+            await send(event, "");
+        }
         return "";
     });
     const finalPath = (prefix ? `/${prefix}${route.path}` : route.path)

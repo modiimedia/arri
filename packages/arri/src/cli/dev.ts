@@ -58,9 +58,10 @@ async function bundleFiles(config: ResolvedArriConfig) {
         outfile: path.resolve(config.rootDir, config.buildDir, "bundle.js"),
         format: "esm",
         bundle: true,
+        sourcemap: true,
         target: "node18",
         platform: "node",
-        sourcemap: true,
+        packages: "external",
     });
 }
 
@@ -73,11 +74,18 @@ async function startDevServer(config: ResolvedArriConfig) {
         transpileFiles(config),
     ]);
     await bundleFiles(config);
-    await startListener(config, true);
+    const listener = await startListener(config, true);
     setTimeout(async () => {
         await generateClients(config);
     }, 1000);
-
+    const cleanExit = async () => {
+        process.exit();
+    };
+    process.on("exit", async () => {
+        await Promise.allSettled([listener.close(), fileWatcher?.close()]);
+    });
+    process.on("SIGINT", cleanExit);
+    process.on("SIGTERM", cleanExit);
     async function load(isRestart: boolean, reason?: string) {
         try {
             if (fileWatcher) {
