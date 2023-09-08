@@ -11,6 +11,9 @@ dependencies:
   arri:
     specifier: link:../../../dist/packages/arri
     version: link:../../../dist/packages/arri
+  arri-validate:
+    specifier: link:../../../dist/packages/arri-validate
+    version: link:../../../dist/packages/arri-validate
 
 packages:
 

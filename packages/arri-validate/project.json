@@ -1,0 +1,50 @@
+{
+    "name": "arri-validate",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/arri-validate/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "dependsOn": ["setup-package-json"],
+            "executor": "nx:run-commands",
+            "outputs": ["{workspaceRoot}/dist/packages/arri-validate"],
+            "options": {
+                "command": "unbuild",
+                "cwd": "packages/arri-validate"
+            }
+        },
+        "setup-package-json": {
+            "executor": "nx:run-commands",
+            "outputs": [
+                "{workspaceRoot}/dist/packages/arri-validate/package.json"
+            ],
+            "options": {
+                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-validate --out-dir dist/packages/arri-validate"
+            }
+        },
+        "publish": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npm publish",
+                "cwd": "dist/packages/arri-validate"
+            },
+            "dependsOn": ["build"]
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["packages/arri-validate/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{workspaceRoot}/coverage/packages/arri-validate"],
+            "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri-validate"
+            }
+        }
+    },
+    "tags": []
+}
