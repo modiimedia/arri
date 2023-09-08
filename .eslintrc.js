@@ -4,7 +4,7 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    ignorePatterns: ["**/.eslintrc.js", "**/.eslintrc.json", "**/dist"],
+    ignorePatterns: ["**/*.json", "*.json", "node_modules", "dist", "**/*.js"],
     extends: [
         "standard-with-typescript",
         "plugin:import/recommended",

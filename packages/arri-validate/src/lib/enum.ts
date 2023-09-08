@@ -5,7 +5,7 @@ import {
     type ArriSchema,
     type InputOptions,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 export interface EnumSchema<
     TValues extends string[],
@@ -38,7 +38,7 @@ export function stringEnum<
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 coerce: (input) => {
                     if (typeof input === "string") {
@@ -51,7 +51,7 @@ export function stringEnum<
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 validate: isType,
                 serialize: serializer,

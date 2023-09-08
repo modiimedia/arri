@@ -5,7 +5,7 @@ import {
     type InputOptions,
     SCHEMA_METADATA,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 const numberTypes = [
     "float32",
@@ -108,12 +108,12 @@ function numberScalarType<TType extends (typeof numberTypes)[number]>(
                         if (isType(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator?.errors ?? []);
+                        throw new ValidationError(validator?.errors ?? []);
                     }
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator?.errors ?? []);
+                    throw new ValidationError(validator?.errors ?? []);
                 },
                 serialize: (input) => {
                     if (serializer) {
@@ -131,21 +131,17 @@ function numberScalarType<TType extends (typeof numberTypes)[number]>(
                     if (typeof input === "string") {
                         const result = Number(input);
                         if (Number.isNaN(result)) {
-                            throw new ArriValidationError(
-                                validator?.errors ?? [],
-                            );
+                            throw new ValidationError(validator?.errors ?? []);
                         }
                         if (type.includes("int") && !Number.isInteger(result)) {
-                            throw new ArriValidationError(
-                                validator?.errors ?? [],
-                            );
+                            throw new ValidationError(validator?.errors ?? []);
                         }
                         return result;
                     }
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator?.errors ?? []);
+                    throw new ValidationError(validator?.errors ?? []);
                 },
             },
         },

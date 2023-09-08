@@ -3,7 +3,7 @@ import {
     type InputOptions,
     SCHEMA_METADATA,
 } from "./typedefs";
-import { ArriValidationError } from "./validation";
+import { ValidationError } from "./validation";
 
 const isString = (input: unknown): input is string => typeof input === "string";
 
@@ -21,7 +21,7 @@ export function string(
                     if (typeof input === "string") {
                         return input;
                     }
-                    throw new ArriValidationError([
+                    throw new ValidationError([
                         {
                             message: "Expected string",
                             instancePath: "/",

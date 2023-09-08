@@ -6,7 +6,7 @@ import {
     SCHEMA_METADATA,
     type InputOptions,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 export interface RecordSchema<
     TInnerSchema extends ArriSchema<any>,
@@ -52,12 +52,12 @@ export function record<
                         if (isType(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 serialize: serializer,
             },

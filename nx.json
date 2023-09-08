@@ -8,6 +8,11 @@
             }
         }
     },
+    "pluginsConfig": {
+        "@nx/js": {
+            "analyzeSourceFiles": true
+        }
+    },
     "extends": "nx/presets/npm.json",
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "affected": {
@@ -22,7 +27,7 @@
             ]
         },
         "test": {
-            "inputs": ["default", "^default"]
+            "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"]
         }
     }
 }

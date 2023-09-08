@@ -1,18 +1,21 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": true
-    },
-    "cSpell.words": [
-        "Arri",
-        "autoroutes",
-        "codegen",
-        "Consola",
-        "middlewares",
-        "nitropack",
-        "ofetch",
-        "scule",
-        "typebox",
-        "unflatten"
-    ]
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "cSpell.words": [
+    "Arri",
+    "autoroutes",
+    "codegen",
+    "Consola",
+    "middlewares",
+    "nitropack",
+    "ofetch",
+    "scule",
+    "typebox",
+    "unflatten"
+  ],
+  "eslint.validate": [
+    "json"
+  ]
 }

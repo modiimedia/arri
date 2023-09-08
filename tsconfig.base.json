@@ -9,7 +9,8 @@
         "skipLibCheck": true,
         "paths": {
             "arri": ["packages/arri/src/_index.ts"],
-            "arri-client": ["packages/arri-client/src/_index.ts"]
+            "arri-client": ["packages/arri-client/src/index.ts"],
+            "arri-validate": ["packages/arri-validate/src/index.ts"]
         }
     }
 }

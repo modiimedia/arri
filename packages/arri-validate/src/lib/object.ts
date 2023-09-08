@@ -7,7 +7,7 @@ import {
     type InferObjectOutput,
     type ScalarTypeSchema,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 export interface ObjectSchema<
     TVal = any,
@@ -61,12 +61,12 @@ export function object<
                         if (isType(parseResult)) {
                             return parseResult;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 coerce: (input: unknown) => {
                     let parsedInput = input;
@@ -74,7 +74,7 @@ export function object<
                         parsedInput = JSON.parse(input);
                     }
                     if (typeof parsedInput !== "object") {
-                        throw new ArriValidationError([
+                        throw new ValidationError([
                             {
                                 message: "Expected object",
                                 keyword: "",
@@ -170,12 +170,12 @@ export function pick<
                         if (isType(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 validate: isType,
                 serialize: serializer,
@@ -243,12 +243,12 @@ export function omit<
                         if (isType(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
                     if (isType(val)) {
                         return val;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 serialize: serializer,
                 coerce(val) {
@@ -257,7 +257,7 @@ export function omit<
                         parsedInput = JSON.parse(val);
                     }
                     if (typeof parsedInput !== "object") {
-                        throw new ArriValidationError([
+                        throw new ValidationError([
                             {
                                 message: "Expected object",
                                 keyword: "",

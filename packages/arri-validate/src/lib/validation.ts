@@ -3,7 +3,7 @@ import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
 
 export const AVJ = new Avj({ strictSchema: false });
 
-export class ArriValidationError extends Error {
+export class ValidationError extends Error {
     errors: ErrorObject[];
     constructor(errors: ErrorObject[]) {
         super();
@@ -34,7 +34,7 @@ export function safeParse<T = any>(schema: ArriSchema<T>, input: unknown) {
     } catch (err) {
         return {
             success: false as const,
-            error: err as ArriValidationError,
+            error: err as ValidationError,
         };
     }
 }

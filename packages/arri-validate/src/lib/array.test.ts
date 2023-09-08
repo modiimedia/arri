@@ -1,5 +1,5 @@
 import { array } from "./array";
-import { nullable } from "./modifier";
+import { nullable } from "./modifiers";
 import { int16 } from "./numbers";
 import { object } from "./object";
 import { string } from "./string";

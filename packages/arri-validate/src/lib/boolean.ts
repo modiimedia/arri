@@ -5,7 +5,7 @@ import {
     type MaybeNullable,
     SCHEMA_METADATA,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 const schema: SchemaFormType = {
     type: "boolean",
@@ -32,12 +32,12 @@ export function boolean<TNullable extends boolean = false>(
                         if (isBool(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
                     if (isBool(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 validate: isBool,
                 serialize: serializer,
@@ -59,7 +59,7 @@ export function boolean<TNullable extends boolean = false>(
                         default:
                             break;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
             },
         },

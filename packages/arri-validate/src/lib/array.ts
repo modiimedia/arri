@@ -5,7 +5,7 @@ import {
     type InferType,
     type InputOptions,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 export interface ArraySchema<TInnerSchema extends ArriSchema<any> = any>
     extends ArriSchema<Array<InferType<TInnerSchema>>> {
@@ -38,12 +38,12 @@ export function array<TInnerSchema extends ArriSchema<any> = any>(
                         if (isType(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 validate: isType,
                 serialize: serializer,

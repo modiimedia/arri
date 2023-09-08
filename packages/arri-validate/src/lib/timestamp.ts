@@ -4,7 +4,7 @@ import {
     type InputOptions,
     type ScalarTypeSchema,
 } from "./typedefs";
-import { ArriValidationError, AVJ } from "./validation";
+import { ValidationError, AVJ } from "./validation";
 
 const schema: SchemaFormType = {
     type: "timestamp",
@@ -32,19 +32,19 @@ export function timestamp(
                         if (isTimestamp(result)) {
                             return result;
                         }
-                        throw new ArriValidationError(validator.errors ?? []);
+                        throw new ValidationError(validator.errors ?? []);
                     }
 
                     if (isTimestamp(input)) {
                         return input;
                     }
-                    throw new ArriValidationError(validator.errors ?? []);
+                    throw new ValidationError(validator.errors ?? []);
                 },
                 coerce: (input: unknown): any => {
                     if (typeof input === "string") {
                         const result = Date.parse(input);
                         if (Number.isNaN(result)) {
-                            throw new ArriValidationError([
+                            throw new ValidationError([
                                 {
                                     message: "Expected ISO Date String",
                                     data: input,
@@ -60,7 +60,7 @@ export function timestamp(
                     if (isTimestamp(input)) {
                         return input;
                     }
-                    throw new ArriValidationError([
+                    throw new ValidationError([
                         {
                             message: "Invalid date format",
                             data: input,
