@@ -1,15 +1,18 @@
 import { array } from "./array";
+import { nullable } from "./modifier";
+import { int16 } from "./numbers";
 import { object } from "./object";
-import { int16, string, timestamp } from "./scalar";
+import { string } from "./string";
+import { timestamp } from "./timestamp";
 import { type InferType } from "./typedefs";
 import { safeParse } from "./validation";
 
-const IntArraySchema = array(int16({ nullable: true }));
+const IntArraySchema = array(int16());
 type IntArraySchema = InferType<typeof IntArraySchema>;
 const ObjectArraySchema = array(
     object({
         id: string(),
-        name: string({ nullable: true }),
+        name: nullable(string()),
         metadata: object({
             createdAt: timestamp(),
             updatedAt: timestamp(),

@@ -1,18 +1,19 @@
 import { type Schema } from "jtd";
-import { _SCHEMA, type ArriSchema } from "./typedefs";
-import { avj } from "./validation";
+import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
+import { AVJ } from "./validation";
 
 const anyRawSchema: Schema = {};
 
-const parser = avj.compileParser(anyRawSchema);
-const serializer = avj.compileSerializer(anyRawSchema);
+const parser = AVJ.compileParser(anyRawSchema);
+const serializer = AVJ.compileSerializer(anyRawSchema);
 
-const anySchema: ArriSchema<any, any> = {
+const anySchema: ArriSchema<any> = {
     metadata: {
-        [_SCHEMA]: {
+        [SCHEMA_METADATA]: {
             output: undefined as any,
             parse: (input): any =>
                 typeof input === "string" ? parser(input) : input,
+            coerce: (input) => input,
             validate: (input): input is any => true,
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             serialize: serializer,
@@ -20,6 +21,6 @@ const anySchema: ArriSchema<any, any> = {
     },
 };
 
-export function any(): ArriSchema<any, any> {
+export function any(): ArriSchema<any> {
     return anySchema;
 }

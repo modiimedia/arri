@@ -1,42 +1,99 @@
-import { object, omit, pick } from "./object";
-import { boolean, string, timestamp } from "./scalar";
-import { type InferType } from "./typedefs";
-import { safeParse } from "./validation";
+import * as a from "./_index";
 
-const UserSchema = object(
-    {
-        id: string(),
-        name: string(),
-        email: string({ nullable: true }),
-        createdAt: timestamp(),
-        isAdmin: boolean({ default: true }),
-    },
-    { additionalProperties: true, optionalProperties: ["createdAt"] },
-);
+const UserSchema = a.object({
+    id: a.string(),
+    name: a.string(),
+    email: a.nullable(a.string()),
+    createdAt: a.optional(a.timestamp()),
+    isAdmin: a.boolean(),
+});
 
-type UserSchema = InferType<typeof UserSchema>;
+type UserSchema = a.infer<typeof UserSchema>;
 
-const PostSchema = object({
-    id: string(),
-    title: string(),
-    createdAt: timestamp(),
-    userId: string(),
+const PostSchema = a.object({
+    id: a.string(),
+    title: a.string(),
+    createdAt: a.timestamp(),
+    userId: a.string(),
     user: UserSchema,
 });
 
-type PostSchema = InferType<typeof PostSchema>;
+type PostSchema = a.infer<typeof PostSchema>;
 
-test("Type Inference", () => {
-    const ObjWithOptionalProps = object(
-        {
-            id: string(),
-            email: string(),
-        },
-        { optionalProperties: ["email"] },
-    );
-    type ObjWithOptionalProps = InferType<typeof ObjWithOptionalProps>;
-    assertType<ObjWithOptionalProps>({ id: "12345", email: "12345" });
-    assertType<ObjWithOptionalProps>({ id: "12345", email: undefined });
+describe("type inference", () => {
+    it("infers types from object schema", () => {
+        const SomeObject = a.object({
+            id: a.string(),
+            email: a.string(),
+            type: a.stringEnum(["a", "b", "c"]),
+            _metadata: a.object({
+                createdAt: a.timestamp(),
+                updatedAt: a.timestamp(),
+            }),
+        });
+
+        type SomeObject = a.infer<typeof SomeObject>;
+        assertType<SomeObject>({
+            id: "12345",
+            email: "johndoe@gmail",
+            type: "b",
+            _metadata: {
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        });
+    });
+    it("accounts for optional and null properties", () => {
+        const SomeObject = a.object({
+            id: a.string(),
+            email: a.optional(a.string()),
+            type: a.stringEnum(["a", "b", "c"]),
+            _metadata: a.optional(
+                a.object({
+                    createdAt: a.timestamp(),
+                    updatedAt: a.timestamp(),
+                    lastSignedIn: a.nullable(a.timestamp()),
+                }),
+            ),
+        });
+        type SomeObject = a.infer<typeof SomeObject>;
+        assertType<SomeObject>({
+            id: "12345",
+            type: "b",
+            email: undefined,
+            _metadata: undefined,
+        });
+        assertType<SomeObject>({
+            id: "12345",
+            email: "1231351",
+            type: "a",
+            _metadata: {
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                lastSignedIn: null,
+            },
+        });
+    });
+    it("accounts for the additional properties parameter", () => {
+        const SomeObject = a.object(
+            {
+                id: a.string(),
+                email: a.string(),
+            },
+            { additionalProperties: true },
+        );
+        type SomeObject = a.infer<typeof SomeObject>;
+        assertType<SomeObject>({
+            id: "12355",
+            email: "johndoe@gmail.com",
+        });
+        assertType<SomeObject>({
+            id: "12345",
+            email: "johndoe@gmail.com",
+            isAdmin: false,
+            someOtherProp: [{ id: 1, date: new Date() }],
+        });
+    });
 });
 
 test("Parsing", () => {
@@ -45,8 +102,8 @@ test("Parsing", () => {
         name: "john doe",
     };
     const badJsonInput = JSON.stringify(badInput);
-    expect(safeParse(UserSchema, badInput).success).toBe(false);
-    expect(safeParse(UserSchema, badJsonInput).success).toBe(false);
+    expect(a.safeParse(UserSchema, badInput).success).toBe(false);
+    expect(a.safeParse(UserSchema, badJsonInput).success).toBe(false);
     const goodInput = {
         id: "12345",
         name: "john doe",
@@ -55,8 +112,8 @@ test("Parsing", () => {
         isAdmin: false,
     };
     const goodJsonInput = JSON.stringify(goodInput);
-    expect(safeParse(UserSchema, goodInput).success).toBe(true);
-    expect(safeParse(UserSchema, goodJsonInput).success).toBe(true);
+    expect(a.safeParse(UserSchema, goodInput).success).toBe(true);
+    expect(a.safeParse(UserSchema, goodJsonInput).success).toBe(true);
 });
 
 test("Nested Object", () => {
@@ -74,8 +131,8 @@ test("Nested Object", () => {
         },
     };
     const badJsonInput = JSON.stringify(badInput);
-    expect(safeParse(PostSchema, badInput).success).toBe(false);
-    expect(safeParse(PostSchema, badJsonInput).success).toBe(false);
+    expect(a.safeParse(PostSchema, badInput).success).toBe(false);
+    expect(a.safeParse(PostSchema, badJsonInput).success).toBe(false);
     const goodInput: PostSchema = {
         id: "1234456",
         title: "Hello World",
@@ -90,14 +147,14 @@ test("Nested Object", () => {
         },
     };
     const goodJsonInput = JSON.stringify(goodInput);
-    expect(safeParse(PostSchema, goodInput).success).toBe(true);
-    expect(safeParse(PostSchema, goodJsonInput).success).toBe(true);
+    expect(a.safeParse(PostSchema, goodInput).success).toBe(true);
+    expect(a.safeParse(PostSchema, goodJsonInput).success).toBe(true);
 });
 
 describe("Pick", () => {
     test("User Subset", () => {
-        const UserSubsetSchema = pick(UserSchema, ["name", "email"]);
-        type UserSubsetSchema = InferType<typeof UserSubsetSchema>;
+        const UserSubsetSchema = a.pick(UserSchema, ["name", "email"]);
+        type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
         assertType<UserSubsetSchema>({ name: "John Doe", email: null });
         const originalInput: UserSchema = {
             id: "123115",
@@ -106,23 +163,24 @@ describe("Pick", () => {
             isAdmin: false,
             createdAt: undefined,
         };
-        expect(safeParse(UserSubsetSchema, originalInput).success).toBe(false);
+        expect(a.safeParse(UserSubsetSchema, originalInput).success).toBe(
+            false,
+        );
         const subSetInput: UserSubsetSchema = {
             name: "john doe",
             email: "johndoe@gmail.com",
         };
-        expect(safeParse(UserSubsetSchema, subSetInput).success).toBe(true);
+        expect(a.safeParse(UserSubsetSchema, subSetInput).success).toBe(true);
     });
 });
 
 describe("Omit", () => {
     test("User Omission", () => {
-        const UserSubsetSchema = omit(UserSchema, ["id"]);
-        type UserSubsetSchema = InferType<typeof UserSubsetSchema>;
+        const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"]);
+        type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
         assertType<UserSubsetSchema>({
             name: "john doe",
             email: null,
-            isAdmin: false,
             createdAt: new Date(),
         });
         const originalInput: UserSchema = {
@@ -132,13 +190,19 @@ describe("Omit", () => {
             email: null,
             createdAt: new Date(),
         };
-        expect(safeParse(UserSubsetSchema, originalInput).success).toBe(false);
+        expect(a.safeParse(UserSubsetSchema, originalInput).success).toBe(
+            false,
+        );
         const subsetInput: UserSubsetSchema = {
             name: "John Doe",
             email: null,
-            isAdmin: false,
             createdAt: new Date(),
         };
-        expect(safeParse(UserSubsetSchema, subsetInput).success).toBe(true);
+        try {
+            a.parse(UserSubsetSchema, subsetInput);
+        } catch (err) {
+            console.error(err);
+        }
+        expect(a.safeParse(UserSubsetSchema, subsetInput).success).toBe(true);
     });
 });

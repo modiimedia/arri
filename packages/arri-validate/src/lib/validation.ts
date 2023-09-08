@@ -1,7 +1,7 @@
 import Avj, { type ErrorObject } from "ajv/dist/jtd";
-import { _SCHEMA, type ActualValue, type ArriSchema } from "./typedefs";
+import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
 
-export const avj = new Avj({ strictSchema: false });
+export const AVJ = new Avj({ strictSchema: false });
 
 export class ArriValidationError extends Error {
     errors: ErrorObject[];
@@ -12,27 +12,21 @@ export class ArriValidationError extends Error {
     }
 }
 
-export function validate<T = any, TNullable extends boolean = false>(
-    schema: ArriSchema<T, TNullable>,
+export function validate<T = any>(
+    schema: ArriSchema<T>,
     input: unknown,
-): input is ActualValue<T, TNullable> {
-    return schema.metadata[_SCHEMA].validate(input);
+): input is T {
+    return schema.metadata[SCHEMA_METADATA].validate(input);
 }
 
-export function parse<T = any, TNullable extends boolean = false>(
-    schema: ArriSchema<T, TNullable>,
-    input: unknown,
-) {
-    const result = schema.metadata[_SCHEMA].parse(input);
+export function parse<T = any>(schema: ArriSchema<T>, input: unknown) {
+    const result = schema.metadata[SCHEMA_METADATA].parse(input);
     return result;
 }
 
-export function safeParse<T = any, TNullable extends boolean = false>(
-    schema: ArriSchema<T, TNullable>,
-    input: unknown,
-) {
+export function safeParse<T = any>(schema: ArriSchema<T>, input: unknown) {
     try {
-        const result = schema.metadata[_SCHEMA].parse(input);
+        const result = schema.metadata[SCHEMA_METADATA].parse(input);
         return {
             success: true as const,
             value: result,
@@ -45,9 +39,6 @@ export function safeParse<T = any, TNullable extends boolean = false>(
     }
 }
 
-export function serialize<T = any, TNullable extends boolean = false>(
-    schema: ArriSchema<T, TNullable>,
-    input: unknown,
-) {
-    return schema.metadata[_SCHEMA].serialize(input);
+export function serialize<T = any>(schema: ArriSchema<T>, input: unknown) {
+    return schema.metadata[SCHEMA_METADATA].serialize(input);
 }

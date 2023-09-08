@@ -1,50 +1,50 @@
 import { type SchemaFormValues } from "jtd";
-import { type InputOptions } from "./scalar";
 import {
     type InferType,
     type ArriSchema,
-    type ActualValue,
-    _SCHEMA,
+    type MaybeNullable,
+    SCHEMA_METADATA,
+    type InputOptions,
 } from "./typedefs";
-import { ArriValidationError, avj } from "./validation";
+import { ArriValidationError, AVJ } from "./validation";
 
 export interface RecordSchema<
-    TInnerSchema extends ArriSchema<any, any>,
+    TInnerSchema extends ArriSchema<any>,
     TNullable extends boolean = false,
-> extends ArriSchema<Record<any, InferType<TInnerSchema>>, TNullable> {
+> extends ArriSchema<
+        MaybeNullable<Record<any, InferType<TInnerSchema>>, TNullable>
+    > {
     values: TInnerSchema;
 }
 
 type InferRecordType<
-    TInnerSchema extends ArriSchema<any, any>,
+    TInnerSchema extends ArriSchema<any>,
     TNullable extends boolean,
-> = ActualValue<Record<any, InferType<TInnerSchema>>, TNullable>;
+> = MaybeNullable<Record<any, InferType<TInnerSchema>>, TNullable>;
 
 export function record<
-    TInnerSchema extends ArriSchema<any, any>,
+    TInnerSchema extends ArriSchema<any>,
     TNullable extends boolean = false,
 >(
     schema: TInnerSchema,
-    opts: InputOptions<any, TNullable> = {},
+    opts: InputOptions = {},
 ): RecordSchema<TInnerSchema, TNullable> {
     const jtdSchema: SchemaFormValues = {
         values: schema,
-        nullable: opts.nullable,
     };
-    const validator = avj.compile(jtdSchema as any);
+    const validator = AVJ.compile(jtdSchema as any);
     const isType = (
         input: unknown,
     ): input is InferRecordType<TInnerSchema, TNullable> => validator(input);
-    const parser = avj.compileParser(jtdSchema);
-    const serializer = avj.compileSerializer(jtdSchema);
+    const parser = AVJ.compileParser(jtdSchema);
+    const serializer = AVJ.compileSerializer(jtdSchema);
     return {
         ...(jtdSchema as any),
         metadata: {
             id: opts.id,
             description: opts.description,
-            [_SCHEMA]: {
-                default: opts.default,
-                output: opts.default ?? {},
+            [SCHEMA_METADATA]: {
+                output: {},
                 validate: isType,
                 parse: (input: unknown) => {
                     if (typeof input === "string") {

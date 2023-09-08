@@ -1,7 +1,8 @@
 import { stringEnum } from "./enum";
+import { int32 } from "./numbers";
 import { object } from "./object";
 import { record } from "./record";
-import { int32, string } from "./scalar";
+import { string } from "./string";
 import { type InferType } from "./typedefs";
 
 const NumberRecordSchema = record(int32());
