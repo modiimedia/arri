@@ -12,6 +12,7 @@
     },
     "private": true,
     "dependencies": {
+        "@modii/jtd": "^0.1.3",
         "@nx/devkit": "16.8.1",
         "@rollup/plugin-typescript": "^11.1.3",
         "@rollup/plugin-virtual": "^3.0.1",
@@ -30,7 +31,6 @@
         "h3": "^1.8.1",
         "h3-zod": "^0.5.1",
         "hookable": "^5.5.3",
-        "jtd": "^0.1.1",
         "knitwork": "^1.0.0",
         "listhen": "^1.4.8",
         "magicast": "^0.2.10",

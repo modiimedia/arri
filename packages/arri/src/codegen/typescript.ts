@@ -8,16 +8,18 @@ import {
     unflattenObject,
     isProcedureDef,
     type ProcedureDef,
-    isJsonSchemaScalarType,
+    isServiceDef,
+} from "./utils";
+import {
+    JsonSchemaObject,
+    JsonSchemaScalarType,
+    isJsonSchemaArray,
+    isJsonSchemaEnum,
     isJsonSchemaNullType,
     isJsonSchemaObject,
-    type JsonSchemaObject,
-    isJsonSchemaEnum,
-    isJsonSchemaArray,
-    type JsonSchemaScalarType,
-    isServiceDef,
     isJsonSchemaRecord,
-} from "./utils";
+    isJsonSchemaScalarType,
+} from "json-schema-to-jtd";
 
 let generatedModels: string[] = [];
 

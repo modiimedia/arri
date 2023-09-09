@@ -12,6 +12,7 @@ import {
     readBody,
     setResponseStatus,
 } from "h3";
+import { HttpMethod } from "arri-codegen-utils";
 import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import {
@@ -216,21 +217,3 @@ export interface ArriOptions {
         event: H3Event,
     ) => void | Promise<void>;
 }
-
-export const HttpMethodValues = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-] as const;
-
-export type HttpMethod = (typeof HttpMethodValues)[number];
-
-export const isHttpMethod = (input: any): input is HttpMethod => {
-    if (typeof input !== "string") {
-        return false;
-    }
-    return HttpMethodValues.includes(input as any);
-};

@@ -1,4 +1,5 @@
 import { defineBuildConfig } from "unbuild";
+import path from "pathe";
 
 export default defineBuildConfig({
     entries: [
@@ -11,6 +12,16 @@ export default defineBuildConfig({
         dts: {
             respectExternal: false,
         },
+    },
+    alias: {
+        "arri-codegen-utils": path.resolve(
+            __dirname,
+            "../../packages/arri-codegen-utils/src/index.ts",
+        ),
+        "json-schema-to-jtd": path.resolve(
+            __dirname,
+            "../../packages/json-schema-to-jtd/src/index.ts",
+        ),
     },
     outDir: "../../dist/packages/arri/dist",
     clean: true,

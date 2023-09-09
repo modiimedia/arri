@@ -11,11 +11,12 @@ import {
     type H3Event,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
-import { type HttpMethod, isHttpMethod, type ArriOptions } from "./app";
 import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
 import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./routes";
 import { typeboxSafeValidate } from "./validation";
+import { HttpMethod, isHttpMethod } from "arri-codegen-utils";
+import { ArriOptions } from "./app";
 
 export interface ArriProcedureBase {
     method: HttpMethod;

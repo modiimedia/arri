@@ -6,14 +6,13 @@ import {
     ValidationError,
     type ErrorObject,
 } from "arri-validate";
-import { type SchemaFormProperties } from "jtd";
+import { jsonSchemaToJtdSchema } from "json-schema-to-jtd";
 
 export function typeboxAdapter<TInput extends TObject<any>>(
     input: TInput,
 ): ArriSchema<Static<TInput>> {
-    const schema: SchemaFormProperties = {
-        properties: {},
-    };
+    const schema = jsonSchemaToJtdSchema(input as any);
+    console.log("FINAL SCHEMA", schema);
     return {
         ...schema,
         metadata: {

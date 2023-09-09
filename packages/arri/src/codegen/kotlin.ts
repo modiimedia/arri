@@ -6,13 +6,15 @@ import {
     isServiceDef,
     type ServiceDef,
     type ProcedureDef,
-    type JsonSchemaObject,
-    isJsonSchemaObject,
-    isJsonSchemaScalarType,
+} from "./utils";
+import {
+    JsonSchemaObject,
+    isJsonSchemaArray,
     isJsonSchemaEnum,
     isJsonSchemaNullType,
-    isJsonSchemaArray,
-} from "./utils";
+    isJsonSchemaObject,
+    isJsonSchemaScalarType,
+} from "json-schema-to-jtd";
 
 interface KotlinClientGeneratorOptions {
     clientName: string;

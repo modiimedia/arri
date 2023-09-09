@@ -195,13 +195,13 @@ function tsConfigTemplate() {
     return `{
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "module": "ES2022",
+        "module": "commonjs",
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "noImplicitOverride": true,
-        "noPropertyAccessFromIndexSignature": true,
+        "noPropertyAccessFromIndexSignature": false,
         "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
+        "noFallthroughCasesInSwitch": false,
         "types": ["vitest"]
     },
     "files": [],

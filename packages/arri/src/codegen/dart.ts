@@ -6,18 +6,20 @@ import {
     type ApplicationDef,
     type ServiceDef,
     isProcedureDef,
-    type JsonSchemaObject,
-    isJsonSchemaEnum,
-    isJsonSchemaScalarType,
-    isJsonSchemaNullType,
-    isJsonSchemaObject,
-    isJsonSchemaArray,
-    type JsonSchemaTypeValue,
     type ProcedureDef,
     unflattenProcedures,
     isServiceDef,
-    isJsonSchemaRecord,
 } from "./utils";
+import {
+    JsonSchemaObject,
+    JsonSchemaTypeValue,
+    isJsonSchemaArray,
+    isJsonSchemaEnum,
+    isJsonSchemaNullType,
+    isJsonSchemaObject,
+    isJsonSchemaRecord,
+    isJsonSchemaScalarType,
+} from "json-schema-to-jtd";
 
 export interface DartClientGeneratorOptions {
     clientName: string;

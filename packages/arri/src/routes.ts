@@ -8,10 +8,11 @@ import {
     setResponseHeader,
     eventHandler,
 } from "h3";
-import { type ArriOptions, type HttpMethod } from "./app";
+import { type ArriOptions } from "./app";
 import { errorResponseFromValidationErrors, handleH3Error } from "./errors";
 import type { HandlerContext } from "./procedures";
 import { typeboxSafeValidate } from "./validation";
+import { HttpMethod } from "arri-codegen-utils";
 
 export interface ArriRoute<
     TPath extends string,

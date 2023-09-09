@@ -1,4 +1,4 @@
-import { type Schema, type SchemaFormProperties } from "jtd";
+import { type Schema, type SchemaFormProperties } from "@modii/jtd";
 import {
     SCHEMA_METADATA,
     type InferType,
@@ -33,10 +33,10 @@ export function object<
     };
     Object.keys(input).forEach((key) => {
         const prop = input[key];
-        if (
-            schema.optionalProperties &&
-            prop.metadata[SCHEMA_METADATA].optional
-        ) {
+        if (prop.metadata[SCHEMA_METADATA].optional) {
+            if (!schema.optionalProperties) {
+                schema.optionalProperties = {};
+            }
             schema.optionalProperties[key] = prop;
             return;
         }
