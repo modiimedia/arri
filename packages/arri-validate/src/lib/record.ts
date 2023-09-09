@@ -8,7 +8,7 @@ import {
 } from "./typedefs";
 import { ValidationError, AJV } from "./validation";
 
-interface RecordSchema<
+export interface RecordSchema<
     TInnerSchema extends ArriSchema<any>,
     TNullable extends boolean = false,
 > extends ArriSchema<

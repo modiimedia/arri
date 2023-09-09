@@ -10,17 +10,17 @@ import {
 } from "./typedefs";
 import { AJV } from "./validation";
 
+export interface DiscriminatorSchema<T> extends ArriSchema<T> {
+    discriminator: string;
+    mapping: Record<string, ObjectSchema<any>>;
+}
+
 type JoinedDiscriminator<
     TUnionKey extends string,
     TInput extends Record<string, ObjectSchema<any>>,
 > = {
     [TKey in keyof TInput]: InferType<TInput[TKey]> & Record<TUnionKey, TKey>;
 };
-
-export interface DiscriminatorSchema<T> extends ArriSchema<T> {
-    discriminator: string;
-    mapping: Record<string, ObjectSchema<any>>;
-}
 
 type InferDiscriminatorType<
     TDiscriminatorKey extends string,
