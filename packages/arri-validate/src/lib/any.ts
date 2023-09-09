@@ -1,4 +1,4 @@
-import { type Schema } from "jtd";
+import { type Schema } from "@modii/jtd";
 import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
 import { AJV } from "./validation";
 

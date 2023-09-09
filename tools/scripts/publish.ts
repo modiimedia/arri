@@ -20,7 +20,7 @@ const main = defineCommand({
                 console.log(result.stdout);
             }
         };
-        await Promise.all([
+        const results = await Promise.allSettled([
             execPromise(`nx publish arri --otp ${args.otp}`).then(handleResult),
             execPromise(
                 `nx publish arri-adapter-typebox --otp ${args.otp}`,
@@ -39,6 +39,11 @@ const main = defineCommand({
                 handleResult,
             ),
         ]);
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error(result.reason);
+            }
+        }
     },
 });
 
