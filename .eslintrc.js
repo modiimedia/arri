@@ -1,4 +1,5 @@
 module.exports = {
+    root: true,
     env: {
         browser: true,
         es2021: true,
@@ -8,6 +9,7 @@ module.exports = {
     extends: [
         "standard-with-typescript",
         "plugin:import/recommended",
+        "json",
         "prettier",
     ],
     overrides: [
