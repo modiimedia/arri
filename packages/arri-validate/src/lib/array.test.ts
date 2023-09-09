@@ -51,7 +51,9 @@ describe("Type Inference", () => {
         ]);
     });
     it("infers nested arrays", () => {
-        const ArraySchema = a.array(a.array(a.array(a.values(["YES", "NO"]))));
+        const ArraySchema = a.array(
+            a.array(a.array(a.stringEnum(["YES", "NO"]))),
+        );
         type ArraySchema = a.infer<typeof ArraySchema>;
         assertType<ArraySchema>([
             [
@@ -65,4 +67,66 @@ describe("Type Inference", () => {
     });
 });
 
-test("Validation Tests", () => {});
+test("Parsing", () => {
+    const SimpleArray = a.array(a.number());
+    const ComplexArray = a.array(
+        a.object({
+            id: a.string(),
+            date: a.timestamp(),
+        }),
+    );
+    it("accepts good input", () => {
+        const numberArr = [1, 2, 3, 4, 5];
+        expect(a.safeParse(SimpleArray, numberArr).success).toBe(true);
+        expect(
+            a.safeParse(SimpleArray, JSON.stringify(numberArr)).success,
+        ).toBe(true);
+        const objectArr = [
+            { id: "123111", date: new Date() },
+            { id: "alsdkfja", date: new Date() },
+        ];
+        expect(a.safeParse(ComplexArray, objectArr).value).toBe(true);
+        expect(a.safeParse(ComplexArray, JSON.stringify(objectArr)).value).toBe(
+            true,
+        );
+    });
+
+    it("rejects bad input", () => {
+        const numberArr = [1, "1", 4];
+        expect(a.safeParse(SimpleArray, numberArr).success).toBe(false);
+        expect(
+            a.safeParse(SimpleArray, JSON.stringify(numberArr)).success,
+        ).toBe(false);
+        const objectArr = [
+            { id: "123124", date: 0 },
+            { id: "1l3kj431lkj", date: 0 },
+        ];
+        expect(a.safeParse(ComplexArray, objectArr).success).toBe(false);
+        expect(
+            a.safeParse(ComplexArray, JSON.stringify(objectArr)).success,
+        ).toBe(false);
+    });
+});
+
+describe("Serialization", () => {
+    it("serializes to valid json", () => {
+        const SimpleSchema = a.array(a.number());
+        type SimpleSchema = a.infer<typeof SimpleSchema>;
+        const input: SimpleSchema = [1, 10, 25];
+        expect(a.serialize(SimpleSchema, input)).toBe("[1,10,25]");
+        const ComplexSchema = a.array(
+            a.object({
+                id: a.string(),
+                role: a.stringEnum(["HOST", "CUSTOMER"]),
+            }),
+        );
+        type ComplexSchema = a.infer<typeof ComplexSchema>;
+        const input2: ComplexSchema = [
+            { id: "1", role: "CUSTOMER" },
+            { id: "2", role: "HOST" },
+        ];
+        expect(a.serialize(ComplexSchema, input2)).toBe(
+            `[{"id":"1","role":"CUSTOMER"},{"id":"2","role":"HOST"}]`,
+        );
+    });
+});

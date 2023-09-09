@@ -60,3 +60,4 @@ export function record<TInnerSchema extends ArriSchema<any>>(
         },
     };
 }
+export const dictionary = record;
