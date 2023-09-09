@@ -19,7 +19,7 @@
                 "{workspaceRoot}/dist/packages/arri-adapter-typebox/package.json"
             ],
             "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-adapter-typebox--out-dir dist/packages/arri-adapter-typebox"
+                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-adapter-typebox --out-dir dist/packages/arri-adapter-typebox"
             }
         },
         "publish": {
@@ -39,7 +39,9 @@
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["{workspaceRoot}/coverage/packages/arri-adapter-typebox"],
+            "outputs": [
+                "{workspaceRoot}/coverage/packages/arri-adapter-typebox"
+            ],
             "options": {
                 "passWithNoTests": true,
                 "reportsDirectory": "../../coverage/packages/arri-adapter-typebox"
