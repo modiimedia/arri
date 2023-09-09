@@ -19,7 +19,7 @@
                 "{workspaceRoot}/dist/packages/json-schema-to-jtd/package.json"
             ],
             "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/json-schema-to-jtd--out-dir dist/packages/json-schema-to-jtd"
+                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/json-schema-to-jtd --out-dir dist/packages/json-schema-to-jtd"
             }
         },
         "publish": {

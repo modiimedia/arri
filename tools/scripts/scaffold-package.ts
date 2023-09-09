@@ -109,7 +109,7 @@ function projectJsonTemplate(packageName: string) {
                 "{workspaceRoot}/dist/packages/${packageName}/package.json"
             ],
             "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/${packageName}--out-dir dist/packages/${packageName}"
+                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/${packageName} --out-dir dist/packages/${packageName}"
             }
         },
         "publish": {
