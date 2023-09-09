@@ -212,7 +212,7 @@ test("Client generation", async () => {
                 postId: Type.String(),
                 commentId: Type.String(),
             }),
-        },
+        } as any,
         errors: Type.Object({}),
     };
     const client = await createTypescriptClient(input, `TypescriptClient`);

@@ -465,7 +465,7 @@ test("Dart client test", () => {
         models: {
             SayHelloResponse: Type.Object({
                 message: Type.String(),
-            }),
+            }) as any,
             User: Type.Object({
                 _metadata: Type.String(),
                 id: Type.String(),
@@ -500,32 +500,32 @@ test("Dart client test", () => {
             UserParams: Type.Object({
                 id: Type.String(),
                 email: Type.String(),
-            }),
+            }) as any,
             UserListParams: Type.Object({
                 limit: Type.Integer(),
                 skip: Type.Optional(Type.Integer()),
-            }),
+            }) as any,
             UsersGetUsersResponse: Type.Object({
                 items: Type.Object({
                     id: Type.String(),
                     email: Type.String(),
                 }),
-            }),
+            }) as any,
             Post: Type.Object({
                 id: Type.String(),
                 title: Type.String(),
                 content: Type.String(),
-            }),
+            }) as any,
             PostParams: Type.Object({
                 postId: Type.String(),
-            }),
+            }) as any,
             PostsUpdatePostParams: Type.Object({
                 postId: Type.String(),
                 data: Type.Object({
                     title: Type.String(),
                     content: Type.String(),
                 }),
-            }),
+            }) as any,
         },
     };
     const result = createDartClient(apiDef, {
