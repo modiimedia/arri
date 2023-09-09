@@ -1,4 +1,4 @@
-import { type SchemaFormType } from "jtd";
+import { type SchemaFormType } from "@modii/jtd";
 import {
     SCHEMA_METADATA,
     type InputOptions,

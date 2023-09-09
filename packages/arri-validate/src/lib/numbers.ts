@@ -1,5 +1,5 @@
 import { type ValidateFunction } from "ajv";
-import { type SchemaFormType } from "jtd";
+import { type SchemaFormType } from "@modii/jtd";
 import {
     type ScalarTypeSchema,
     type InputOptions,

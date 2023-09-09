@@ -1,4 +1,4 @@
-import type { Type as JtdType } from "jtd";
+import type { Type as JtdType } from "@modii/jtd";
 
 export const SCHEMA_METADATA = Symbol.for("arri.schema_metadata");
 

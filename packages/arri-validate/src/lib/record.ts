@@ -1,4 +1,4 @@
-import { type SchemaFormValues } from "jtd";
+import { type SchemaFormValues } from "@modii/jtd";
 import {
     type InferType,
     type ArriSchema,

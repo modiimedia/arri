@@ -1,4 +1,4 @@
-import { type Schema as JtdSchema } from "jtd";
+import { type Schema as JtdSchema } from "@modii/jtd";
 import {
     SCHEMA_METADATA,
     type MaybeNullable,

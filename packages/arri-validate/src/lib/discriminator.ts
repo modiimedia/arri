@@ -1,5 +1,5 @@
 import { ValidationError } from "ajv";
-import { type SchemaFormDiscriminator } from "jtd";
+import { type SchemaFormDiscriminator } from "@modii/jtd";
 import { type ObjectSchema } from "./object";
 import {
     type InputOptions,
