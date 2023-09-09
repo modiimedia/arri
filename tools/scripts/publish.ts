@@ -22,11 +22,20 @@ const main = defineCommand({
         };
         await Promise.all([
             execPromise(`nx publish arri --otp ${args.otp}`).then(handleResult),
+            execPromise(
+                `nx publish arri-adapter-typebox --otp ${args.otp}`,
+            ).then(handleResult),
             execPromise(`nx publish arri-client --otp ${args.otp}`).then(
                 handleResult,
             ),
             execPromise(`nx publish arri-client-dart`).then(handleResult),
+            execPromise(`nx publish arri-codegen-utils --otp ${args.otp}`).then(
+                handleResult,
+            ),
             execPromise(`nx publish arri-validate --otp ${args.otp}`).then(
+                handleResult,
+            ),
+            execPromise(`nx publish json-schema-to-jtd --otp ${args.otp}`).then(
                 handleResult,
             ),
         ]);
