@@ -3,11 +3,11 @@ import {
     SCHEMA_METADATA,
     type InferType,
     type ArriSchema,
-    type ObjectOptions,
     type InferObjectOutput,
     type ScalarTypeSchema,
+    type InputOptions,
 } from "./typedefs";
-import { ValidationError, AVJ } from "./validation";
+import { ValidationError, AJV } from "./validation";
 
 export interface ObjectSchema<
     TVal = any,
@@ -18,6 +18,9 @@ export interface ObjectSchema<
     additionalProperties?: TAllowAdditionalProperties;
 }
 
+/**
+ *
+ */
 export function object<
     TInput extends Record<any, ArriSchema> = any,
     TAdditionalProps extends boolean = false,
@@ -39,9 +42,9 @@ export function object<
         }
         schema.properties[key] = input[key];
     });
-    const validator = AVJ.compile(schema, true);
-    const parser = AVJ.compileParser(schema);
-    const serializer = AVJ.compileSerializer(schema);
+    const validator = AJV.compile(schema, true);
+    const parser = AJV.compileParser(schema);
+    const serializer = AJV.compileSerializer(schema);
     const isType = (
         input: unknown,
     ): input is InferObjectOutput<TInput, TAdditionalProps> => validator(input);
@@ -152,11 +155,11 @@ export function pick<
     if (typeof input.additionalProperties === "boolean") {
         schema.additionalProperties = input.additionalProperties;
     }
-    const validator = AVJ.compile(schema, true);
+    const validator = AJV.compile(schema, true);
     const isType = (input: unknown): input is Pick<InferType<TSchema>, TKeys> =>
         validator(input);
-    const parser = AVJ.compileParser(schema);
-    const serializer = AVJ.compileSerializer(schema);
+    const parser = AJV.compileParser(schema);
+    const serializer = AJV.compileSerializer(schema);
     return {
         ...(schema as any),
         metadata: {
@@ -223,12 +226,11 @@ export function omit<
     if (typeof input.additionalProperties === "boolean") {
         schema.additionalProperties = input.additionalProperties;
     }
-    const validator = AVJ.compile(schema, true);
+    const validator = AJV.compile(schema, true);
     const isType = (input: unknown): input is Omit<InferType<TSchema>, TKeys> =>
         validator(input);
-    const parser = AVJ.compileParser(schema);
-    const serializer = AVJ.compileSerializer(schema);
-    console.log("new schema", schema);
+    const parser = AJV.compileParser(schema);
+    const serializer = AJV.compileSerializer(schema);
     return {
         ...(schema as any),
         metadata: {
@@ -291,4 +293,12 @@ export function omit<
             },
         },
     };
+}
+
+interface ObjectOptions<TAdditionalProps extends boolean = false>
+    extends InputOptions {
+    /**
+     * Allow this object to include additional properties not specified here
+     */
+    additionalProperties?: TAdditionalProps;
 }

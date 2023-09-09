@@ -5,16 +5,16 @@ import {
     type MaybeNullable,
     SCHEMA_METADATA,
 } from "./typedefs";
-import { ValidationError, AVJ } from "./validation";
+import { ValidationError, AJV } from "./validation";
 
 const schema: SchemaFormType = {
     type: "boolean",
 };
 
-const validator = AVJ.compile(schema);
+const validator = AJV.compile(schema);
 const isBool = (input: unknown): input is boolean => validator(input);
-const parser = AVJ.compileParser(schema);
-const serializer = AVJ.compileSerializer(schema);
+const parser = AJV.compileParser(schema);
+const serializer = AJV.compileSerializer(schema);
 
 export function boolean<TNullable extends boolean = false>(
     opts: InputOptions = {},

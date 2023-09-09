@@ -1,16 +1,8 @@
-import Avj, { type ErrorObject } from "ajv/dist/jtd";
+import Ajv, { type ErrorObject, ValidationError } from "ajv/dist/jtd";
 import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
 
-export const AVJ = new Avj({ strictSchema: false });
-
-export class ValidationError extends Error {
-    errors: ErrorObject[];
-    constructor(errors: ErrorObject[]) {
-        super();
-        this.errors = errors;
-        this.message = errors.map((err) => err.message).join(", ");
-    }
-}
+export const AJV = new Ajv({ strictSchema: false });
+export { type ErrorObject, ValidationError };
 
 export function validate<T = any>(
     schema: ArriSchema<T>,

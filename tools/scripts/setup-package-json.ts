@@ -2,8 +2,6 @@ import { defineCommand, runMain } from "citty";
 import depcheck from "depcheck";
 import { readFile, writeFile, ensureDir } from "fs-extra";
 import path from "pathe";
-// eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import * as prettier from "prettier";
 
 const main = defineCommand({
@@ -20,12 +18,18 @@ const main = defineCommand({
             type: "string",
             required: true,
         },
+        "ignore-dependencies": {
+            type: "boolean",
+            default: false,
+            required: false,
+        },
     },
     async run({ args }) {
         await prepPackageJson(
             args["project-dir"],
             args["root-dir"],
             args["out-dir"],
+            args["ignore-dependencies"],
         );
     },
 });
@@ -34,6 +38,7 @@ async function prepPackageJson(
     projectDir: string,
     rootDir: string,
     outDir: string,
+    ignoreDependencies = false,
 ) {
     const fileFile = await readFile(
         path.resolve(projectDir, "package.json"),
@@ -56,32 +61,34 @@ async function prepPackageJson(
     if (!projectPackageJson.repository) {
         projectPackageJson.repository = rootPackageJson.repository;
     }
-    const options: depcheck.Options = {
-        skipMissing: true,
-        ignorePatterns: [
-            "**/*.js",
-            "**/*.test.ts",
-            "**/*.spec.ts",
-            "**/dist",
-            "**/scripts/*",
-            "**/node_modules",
-            "**/*.config.*",
-            "**/*.json",
-            "**/*.route.ts",
-        ],
-        detectors: [
-            depcheck.detector.importDeclaration,
-            depcheck.detector.typescriptImportType,
-        ],
-        package: {
-            ...rootPackageJson,
-        },
-    };
-    const deps = await depcheck(path.resolve(projectDir), options);
-    const usedDeps = Object.keys(deps.using);
-    for (const dep of usedDeps) {
-        if (rootDeps[dep]) {
-            projectPackageJson.dependencies[dep] = rootDeps[dep];
+    if (!ignoreDependencies) {
+        const options: depcheck.Options = {
+            skipMissing: true,
+            ignorePatterns: [
+                "**/*.js",
+                "**/*.test.ts",
+                "**/*.spec.ts",
+                "**/dist",
+                "**/scripts/*",
+                "**/node_modules",
+                "**/*.config.*",
+                "**/*.json",
+                "**/*.route.ts",
+            ],
+            detectors: [
+                depcheck.detector.importDeclaration,
+                depcheck.detector.typescriptImportType,
+            ],
+            package: {
+                ...rootPackageJson,
+            },
+        };
+        const deps = await depcheck(path.resolve(projectDir), options);
+        const usedDeps = Object.keys(deps.using);
+        for (const dep of usedDeps) {
+            if (rootDeps[dep]) {
+                projectPackageJson.dependencies[dep] = rootDeps[dep];
+            }
         }
     }
     await ensureDir(path.resolve(outDir));

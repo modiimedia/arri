@@ -1,15 +1,6 @@
 import { Type } from "@sinclair/typebox";
-import type a from "arri-validate";
+import type { a } from "arri-validate";
 import { typeboxAdapter } from "./index";
-
-test("Some TEst", () => {
-    const SomeSchema = Type.Object({
-        id: Type.String(),
-        email: Type.Optional(Type.String()),
-    });
-    console.log(SomeSchema.properties.id);
-    console.log(SomeSchema.properties.email);
-});
 
 test("Type Inference", () => {
     const Schema = typeboxAdapter(

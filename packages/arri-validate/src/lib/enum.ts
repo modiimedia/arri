@@ -5,7 +5,7 @@ import {
     type ArriSchema,
     type InputOptions,
 } from "./typedefs";
-import { ValidationError, AVJ } from "./validation";
+import { ValidationError, AJV } from "./validation";
 
 export interface EnumSchema<
     TValues extends string[],
@@ -14,6 +14,12 @@ export interface EnumSchema<
     enum: TValues;
 }
 
+/**
+ * An enumeration of string values
+ *
+ * This is an implementation of:
+ * https://jsontypedef.com/docs/jtd-in-5-minutes/#enum-schemas
+ */
 export function stringEnum<
     TKeys extends string,
     TValues extends TKeys[],
@@ -22,11 +28,11 @@ export function stringEnum<
     const schema: JtdSchema = {
         enum: values,
     };
-    const validator = AVJ.compile(schema);
+    const validator = AJV.compile(schema);
     const isType = (
         input: unknown,
     ): input is MaybeNullable<TValues, TNullable> => validator(input);
-    const serializer = AVJ.compileSerializer(schema);
+    const serializer = AJV.compileSerializer(schema);
     return {
         ...(schema as any),
         metadata: {

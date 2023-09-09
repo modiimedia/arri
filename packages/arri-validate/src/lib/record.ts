@@ -6,9 +6,9 @@ import {
     SCHEMA_METADATA,
     type InputOptions,
 } from "./typedefs";
-import { ValidationError, AVJ } from "./validation";
+import { ValidationError, AJV } from "./validation";
 
-export interface RecordSchema<
+interface RecordSchema<
     TInnerSchema extends ArriSchema<any>,
     TNullable extends boolean = false,
 > extends ArriSchema<
@@ -17,27 +17,23 @@ export interface RecordSchema<
     values: TInnerSchema;
 }
 
-type InferRecordType<
-    TInnerSchema extends ArriSchema<any>,
-    TNullable extends boolean,
-> = MaybeNullable<Record<any, InferType<TInnerSchema>>, TNullable>;
+type InferRecordType<TInnerSchema extends ArriSchema<any>> = Record<
+    any,
+    InferType<TInnerSchema>
+>;
 
-export function record<
-    TInnerSchema extends ArriSchema<any>,
-    TNullable extends boolean = false,
->(
+export function record<TInnerSchema extends ArriSchema<any>>(
     schema: TInnerSchema,
     opts: InputOptions = {},
-): RecordSchema<TInnerSchema, TNullable> {
+): RecordSchema<TInnerSchema> {
     const jtdSchema: SchemaFormValues = {
         values: schema,
     };
-    const validator = AVJ.compile(jtdSchema as any);
-    const isType = (
-        input: unknown,
-    ): input is InferRecordType<TInnerSchema, TNullable> => validator(input);
-    const parser = AVJ.compileParser(jtdSchema);
-    const serializer = AVJ.compileSerializer(jtdSchema);
+    const validator = AJV.compile(jtdSchema as any);
+    const isType = (input: unknown): input is InferRecordType<TInnerSchema> =>
+        validator(input);
+    const parser = AJV.compileParser(jtdSchema);
+    const serializer = AJV.compileSerializer(jtdSchema);
     return {
         ...(jtdSchema as any),
         metadata: {

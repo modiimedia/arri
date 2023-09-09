@@ -1,11 +1,11 @@
 import { type Schema } from "jtd";
 import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
-import { AVJ } from "./validation";
+import { AJV } from "./validation";
 
 const anyRawSchema: Schema = {};
 
-const parser = AVJ.compileParser(anyRawSchema);
-const serializer = AVJ.compileSerializer(anyRawSchema);
+const parser = AJV.compileParser(anyRawSchema);
+const serializer = AJV.compileSerializer(anyRawSchema);
 
 const anySchema: ArriSchema<any> = {
     metadata: {

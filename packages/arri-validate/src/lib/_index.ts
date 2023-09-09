@@ -1,6 +1,7 @@
 export * from "./any";
 export * from "./array";
 export * from "./boolean";
+export * from "./discriminator";
 export * from "./enum";
 export * from "./modifiers";
 export * from "./numbers";

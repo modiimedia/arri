@@ -63,11 +63,3 @@ export type InferObjectRawType<TInput> = TInput extends Record<any, any>
               : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
       }
     : never;
-
-export interface ObjectOptions<TAdditionalProps extends boolean = false>
-    extends InputOptions {
-    /**
-     * Allow this object to include additional properties not specified here
-     */
-    additionalProperties?: TAdditionalProps;
-}

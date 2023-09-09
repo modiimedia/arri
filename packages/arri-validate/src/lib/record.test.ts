@@ -1,4 +1,4 @@
-import { stringEnum } from "./enum";
+import { values } from "./enum";
 import { int32 } from "./numbers";
 import { object } from "./object";
 import { record } from "./record";
@@ -12,7 +12,7 @@ type StringRecordSchema = InferType<typeof StringRecordSchema>;
 const ObjectRecordSchema = record(
     object({
         id: string(),
-        type: stringEnum(["notification", "alert"]),
+        type: values(["notification", "alert"]),
     }),
 );
 type ObjectRecordSchema = InferType<typeof ObjectRecordSchema>;

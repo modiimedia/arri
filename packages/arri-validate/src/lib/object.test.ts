@@ -198,11 +198,7 @@ describe("Omit", () => {
             email: null,
             createdAt: new Date(),
         };
-        try {
-            a.parse(UserSubsetSchema, subsetInput);
-        } catch (err) {
-            console.error(err);
-        }
+
         expect(a.safeParse(UserSubsetSchema, subsetInput).success).toBe(true);
     });
 });

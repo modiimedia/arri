@@ -4,6 +4,18 @@ import {
     type InputOptions,
 } from "./typedefs";
 
+/**
+ * Transforms a schema into a nullable type
+ *
+ * @example
+ * const NullableString = a.nullable(a.string())
+ * const NullableObject = a.nullable(
+ *   a.object({
+ *     id: a.string(),
+ *     description: a.nullable(a.string())
+ *   })
+ * )
+ */
 export function nullable<T>(
     input: ArriSchema<T>,
     opts: InputOptions = {},
@@ -50,6 +62,18 @@ export function nullable<T>(
     };
 }
 
+/**
+ * Make an object field optional
+ *
+ * This makes use of the "optionalProperties" property in JTD. See: https://jsontypedef.com/docs/jtd-in-5-minutes/#optional-properties
+ *
+ * @example
+ * const User = a.object({
+ *   id: a.string(),
+ *   // make the email field optional
+ *   email: a.optional(a.string())
+ * })
+ */
 export function optional<T>(
     input: ArriSchema<T>,
     opts: InputOptions = {},

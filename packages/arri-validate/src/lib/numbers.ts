@@ -5,7 +5,7 @@ import {
     type InputOptions,
     SCHEMA_METADATA,
 } from "./typedefs";
-import { ValidationError, AVJ } from "./validation";
+import { ValidationError, AJV } from "./validation";
 
 const numberTypes = [
     "float32",
@@ -73,9 +73,9 @@ for (const type of numberTypes) {
     const schema: SchemaFormType = {
         type,
     };
-    const validator = AVJ.compile<number>(schema);
-    const parser = AVJ.compileParser<number>(schema);
-    const serializer = AVJ.compileSerializer(schema);
+    const validator = AJV.compile<number>(schema);
+    const parser = AJV.compileParser<number>(schema);
+    const serializer = AJV.compileSerializer(schema);
     validationMap[type] = {
         validator,
         parser: parser as any,
@@ -146,6 +146,16 @@ function numberScalarType<TType extends (typeof numberTypes)[number]>(
             },
         },
     };
+}
+
+/**
+ * Alias for float64 as that is the only number type that Javascript uses
+ *
+ * @example
+ * const SomeNum = a.number()
+ */
+export function number(opts: InputOptions = {}) {
+    return float64(opts);
 }
 
 export function float32(opts: InputOptions = {}) {

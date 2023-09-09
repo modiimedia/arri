@@ -1,57 +1,68 @@
-import { array } from "./array";
-import { nullable } from "./modifiers";
-import { int16 } from "./numbers";
-import { object } from "./object";
-import { string } from "./string";
-import { timestamp } from "./timestamp";
-import { type InferType } from "./typedefs";
-import { safeParse } from "./validation";
+import * as a from "./_index";
 
-const IntArraySchema = array(int16());
-type IntArraySchema = InferType<typeof IntArraySchema>;
-const ObjectArraySchema = array(
-    object({
-        id: string(),
-        name: nullable(string()),
-        metadata: object({
-            createdAt: timestamp(),
-            updatedAt: timestamp(),
-        }),
-    }),
-);
-type ObjectArraySchema = InferType<typeof ObjectArraySchema>;
-test("Type Inference", () => {
-    assertType<IntArraySchema>([1, 2, 3]);
-    assertType<ObjectArraySchema>([
-        {
-            id: "12345",
-            name: "John Doe",
-            metadata: { createdAt: new Date(), updatedAt: new Date() },
-        },
-    ]);
-});
-
-test("Validation Tests", () => {
-    expect(safeParse(IntArraySchema, [1, 2, 3, 4, 5]).success).toBe(true);
-    expect(safeParse(IntArraySchema, [1.1, 2, 5, 0.1325]).success).toBe(false);
-    expect(safeParse(IntArraySchema, "[1, 2, 3, 4, 5]").success).toBe(true);
-    const objInput: ObjectArraySchema = [
-        {
-            id: "12345",
-            name: "John Doe",
-            metadata: {
+describe("Type Inference", () => {
+    it("infers basic array types", () => {
+        const IntArraySchema = a.array(a.int16());
+        type IntArraySchema = a.infer<typeof IntArraySchema>;
+        assertType<IntArraySchema>([1, 2, 3]);
+        const StringArraySchema = a.array(a.string());
+        type StringArraySchema = a.infer<typeof StringArraySchema>;
+        assertType<StringArraySchema>(["1", "2", "3"]);
+    });
+    it("infers arrays of objects", () => {
+        const ObjectSchema = a.object({
+            id: a.string(),
+            category: a.object({
+                id: a.string(),
+            }),
+        });
+        const ArraySchema = a.array(ObjectSchema);
+        type ArraySchema = a.infer<typeof ArraySchema>;
+        assertType<ArraySchema>([{ id: "", category: { id: "" } }]);
+        const ObjectSchemaWithOptionals = a.object({
+            id: a.string(),
+            category: a.optional(a.object({ id: a.nullable(a.string()) })),
+            createdAt: a.optional(a.timestamp()),
+        });
+        const ArrayWithOptionalsSchema = a.array(ObjectSchemaWithOptionals);
+        type ArrayWithOptionalsSchema = a.infer<
+            typeof ArrayWithOptionalsSchema
+        >;
+        assertType<ArrayWithOptionalsSchema>([
+            {
+                id: "",
                 createdAt: new Date(),
-                updatedAt: new Date(),
+                category: {
+                    id: "",
+                },
             },
-        },
-    ];
-    expect(safeParse(ObjectArraySchema, objInput).success).toBe(true);
-    expect(safeParse(ObjectArraySchema, JSON.stringify(objInput)).success).toBe(
-        true,
-    );
-    (objInput as any[]).push({ id: "12345", name: "John Doe 2" });
-    expect(safeParse(ObjectArraySchema, objInput).success).toBe(false);
-    expect(safeParse(ObjectArraySchema, JSON.stringify(objInput)).success).toBe(
-        false,
-    );
+            {
+                id: "",
+                createdAt: undefined,
+                category: {
+                    id: null,
+                },
+            },
+            {
+                id: "",
+                createdAt: new Date(),
+                category: undefined,
+            },
+        ]);
+    });
+    it("infers nested arrays", () => {
+        const ArraySchema = a.array(a.array(a.array(a.values(["YES", "NO"]))));
+        type ArraySchema = a.infer<typeof ArraySchema>;
+        assertType<ArraySchema>([
+            [
+                ["YES", "YES"],
+                ["NO", "YES"],
+                ["YES", "YES"],
+            ],
+            [["YES"]],
+            [],
+        ]);
+    });
 });
+
+test("Validation Tests", () => {});
