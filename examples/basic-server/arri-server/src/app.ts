@@ -1,4 +1,3 @@
-import { Type } from "@sinclair/typebox";
 import { a } from "arri-validate";
 import { Arri } from "arri";
 

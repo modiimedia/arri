@@ -1,4 +1,4 @@
-import { type TObject, TypeGuard, type TSchema } from "@sinclair/typebox";
+import { type TObject, type TSchema } from "@sinclair/typebox";
 import {
     type App,
     createApp,
@@ -32,7 +32,12 @@ import {
     type RouteHandlerContext,
     type RoutePostHandlerContext,
 } from "./routes";
-import { ArriSchema, ObjectSchema, isArriSchema } from "arri-validate";
+import {
+    AObjectSchema,
+    ASchema,
+    isAObjectSchema,
+    isASchema,
+} from "arri-shared";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
@@ -45,7 +50,7 @@ export class Arri {
     private readonly rpcRoutePrefix: string;
     appInfo: ApplicationDef["info"];
     private procedures: Record<string, ProcedureDef> = {};
-    private models: Record<string, ArriSchema> = {};
+    private models: Record<string, ASchema> = {};
     private readonly middlewares: Middleware[] = [];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
     private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
@@ -126,18 +131,18 @@ export class Arri {
     }
 
     registerRpc<
-        TParams extends ObjectSchema<any, any> | undefined,
-        TResponse extends ObjectSchema<any, any> | undefined,
+        TParams extends AObjectSchema<any, any> | undefined,
+        TResponse extends AObjectSchema<any, any> | undefined,
     >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
         const path = getRpcPath(name, this.rpcRoutePrefix);
         this.procedures[name] = createRpcDefinition(name, path, procedure);
-        if (isArriSchema(procedure.params)) {
+        if (isAObjectSchema(procedure.params)) {
             const paramName = getRpcParamName(name, procedure);
             if (paramName) {
                 this.models[paramName] = procedure.params;
             }
         }
-        if (isArriSchema(procedure.response)) {
+        if (isAObjectSchema(procedure.response)) {
             const responseName = getRpcResponseName(name, procedure);
 
             if (responseName) {
@@ -154,9 +159,9 @@ export class Arri {
     registerRoute<
         TPath extends string,
         TMethod extends HttpMethod = HttpMethod,
-        TQuery extends TObject | undefined = undefined,
-        TBody extends TSchema | undefined = undefined,
-        TResponse extends TSchema | undefined = undefined,
+        TQuery extends AObjectSchema | undefined = undefined,
+        TBody extends ASchema | undefined = undefined,
+        TResponse extends ASchema | undefined = undefined,
         TFallbackResponse = any,
     >(
         route: ArriRoute<

@@ -1,21 +1,17 @@
 import { type Schema } from "@modii/jtd";
-import {
-    type ArriSchema,
-    SCHEMA_METADATA,
-    type InferType,
-    type InputOptions,
-} from "./typedefs";
 import { ValidationError, AJV } from "./validation";
+import {
+    AArraySchema,
+    ASchema,
+    InferType,
+    ASchemaOptions,
+    SCHEMA_METADATA,
+} from "arri-shared";
 
-export interface ArraySchema<TInnerSchema extends ArriSchema<any> = any>
-    extends ArriSchema<Array<InferType<TInnerSchema>>> {
-    elements: TInnerSchema;
-}
-
-export function array<TInnerSchema extends ArriSchema<any> = any>(
+export function array<TInnerSchema extends ASchema<any> = any>(
     input: TInnerSchema,
-    opts: InputOptions = {},
-): ArraySchema<TInnerSchema> {
+    opts: ASchemaOptions = {},
+): AArraySchema<TInnerSchema> {
     const schema: Schema = {
         elements: input,
     };
@@ -24,7 +20,7 @@ export function array<TInnerSchema extends ArriSchema<any> = any>(
     const parser = AJV.compileParser(schema);
     const isType = (
         input: unknown,
-    ): input is InferType<ArraySchema<TInnerSchema>> => validator(input);
+    ): input is InferType<AArraySchema<TInnerSchema>> => validator(input);
     return {
         ...(schema as any),
         metadata: {

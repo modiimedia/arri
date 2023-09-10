@@ -1,10 +1,6 @@
 import { type SchemaFormType } from "@modii/jtd";
-import {
-    SCHEMA_METADATA,
-    type InputOptions,
-    type ScalarTypeSchema,
-} from "./typedefs";
 import { ValidationError, AJV } from "./validation";
+import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "arri-shared";
 
 const schema: SchemaFormType = {
     type: "timestamp",
@@ -16,8 +12,8 @@ const parser = AJV.compileParser(schema);
 const serializer = AJV.compileSerializer(schema);
 
 export function timestamp(
-    opts: InputOptions = {},
-): ScalarTypeSchema<"timestamp", Date> {
+    opts: ASchemaOptions = {},
+): AScalarSchema<"timestamp", Date> {
     return {
         type: "timestamp",
         metadata: {

@@ -1,8 +1,4 @@
-import {
-    SCHEMA_METADATA,
-    type ArriSchema,
-    type InputOptions,
-} from "./typedefs";
+import { ASchema, ASchemaOptions, SCHEMA_METADATA } from "arri-shared";
 
 /**
  * Transforms a schema into a nullable type
@@ -17,9 +13,9 @@ import {
  * )
  */
 export function nullable<T>(
-    input: ArriSchema<T>,
-    opts: InputOptions = {},
-): ArriSchema<T | null> {
+    input: ASchema<T>,
+    opts: ASchemaOptions = {},
+): ASchema<T | null> {
     const isType = (val: unknown): val is T | null => {
         if (val === null) {
             return true;
@@ -75,9 +71,9 @@ export function nullable<T>(
  * })
  */
 export function optional<T>(
-    input: ArriSchema<T>,
-    opts: InputOptions = {},
-): ArriSchema<T | undefined> {
+    input: ASchema<T>,
+    opts: ASchemaOptions = {},
+): ASchema<T | undefined> {
     const isType = (val: unknown): val is T | undefined => {
         if (typeof val === "undefined") {
             return true;

@@ -1,7 +1,6 @@
-import { type ArriSchema } from "./lib/typedefs";
+import { ASchema } from "arri-shared";
+
 export { ValidationError } from "./lib/validation";
 export type { ErrorObject } from "ajv";
-export type ValidationAdapter = <T>(input: any) => ArriSchema<T>;
-export function createValidationAdapter(adapter: ValidationAdapter) {
-    return adapter;
-}
+
+export type ValidationAdapter = <T>(input: any) => ASchema<T>;

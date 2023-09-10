@@ -1,4 +1,3 @@
-import { type Static, type TObject, type TSchema } from "@sinclair/typebox";
 import {
     type H3Event,
     type Router,
@@ -13,13 +12,14 @@ import { errorResponseFromValidationErrors, handleH3Error } from "./errors";
 import type { HandlerContext } from "./procedures";
 import { typeboxSafeValidate } from "./validation";
 import { HttpMethod } from "arri-codegen-utils";
+import { AObjectSchema, ASchema, InferType } from "arri-shared";
 
 export interface ArriRoute<
     TPath extends string,
     TMethod extends HttpMethod,
-    TQuery extends TObject | undefined = undefined,
-    TBody extends TSchema | undefined = undefined,
-    TResponse extends TSchema | undefined = undefined,
+    TQuery extends AObjectSchema | undefined = undefined,
+    TBody extends ASchema | undefined = undefined,
+    TResponse extends ASchema | undefined = undefined,
     TFallbackResponse = any,
 > {
     path: TPath;
@@ -29,24 +29,24 @@ export interface ArriRoute<
     response?: TResponse;
     handler: ArriRouteHandler<
         TPath,
-        TQuery extends TObject ? Static<TQuery> : undefined,
-        TBody extends TSchema ? Static<TBody> : undefined,
-        TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
+        TQuery extends AObjectSchema ? InferType<TQuery> : undefined,
+        TBody extends ASchema ? InferType<TBody> : undefined,
+        TResponse extends ASchema ? InferType<TResponse> : TFallbackResponse
     >;
     postHandler?: ArriRoutePostHandler<
         TPath,
-        TQuery extends TObject ? Static<TQuery> : undefined,
-        TBody extends TObject ? Static<TObject> : undefined,
-        TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
+        TQuery extends AObjectSchema ? InferType<TQuery> : undefined,
+        TBody extends ASchema ? InferType<TBody> : undefined,
+        TResponse extends ASchema ? InferType<TResponse> : TFallbackResponse
     >;
 }
 
 export function defineRoute<
     TPath extends string,
     TMethod extends HttpMethod,
-    TQuery extends TObject | undefined = any,
-    TBody extends TSchema | undefined = any,
-    TResponse extends TSchema | undefined = undefined,
+    TQuery extends AObjectSchema | undefined = any,
+    TBody extends ASchema | undefined = any,
+    TResponse extends ASchema | undefined = undefined,
     TFallbackResponse = any,
 >(
     config: ArriRoute<

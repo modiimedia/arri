@@ -1,15 +1,11 @@
-import {
-    type ScalarTypeSchema,
-    type InputOptions,
-    SCHEMA_METADATA,
-} from "./typedefs";
+import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "arri-shared";
 import { ValidationError } from "./validation";
 
 const isString = (input: unknown): input is string => typeof input === "string";
 
 export function string(
-    opts: InputOptions = {},
-): ScalarTypeSchema<"string", string> {
+    opts: ASchemaOptions = {},
+): AScalarSchema<"string", string> {
     return {
         type: "string",
         metadata: {

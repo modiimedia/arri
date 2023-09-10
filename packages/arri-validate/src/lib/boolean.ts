@@ -1,11 +1,11 @@
 import { type SchemaFormType } from "@modii/jtd";
+import { ValidationError, AJV } from "./validation";
 import {
-    type ScalarTypeSchema,
-    type InputOptions,
+    type AScalarSchema,
+    type ASchemaOptions,
     type MaybeNullable,
     SCHEMA_METADATA,
-} from "./typedefs";
-import { ValidationError, AJV } from "./validation";
+} from "arri-shared";
 
 const schema: SchemaFormType = {
     type: "boolean",
@@ -17,8 +17,8 @@ const parser = AJV.compileParser(schema);
 const serializer = AJV.compileSerializer(schema);
 
 export function boolean<TNullable extends boolean = false>(
-    opts: InputOptions = {},
-): ScalarTypeSchema<"boolean", MaybeNullable<boolean, TNullable>> {
+    opts: ASchemaOptions = {},
+): AScalarSchema<"boolean", MaybeNullable<boolean, TNullable>> {
     return {
         type: "boolean",
         metadata: {

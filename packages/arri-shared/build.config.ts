@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import path from "pathe";
+import path from "node:path";
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
@@ -18,15 +18,9 @@ export default defineBuildConfig({
             respectExternal: false,
         },
     },
-    alias: {
-        "arri-shared": path.resolve(
-            __dirname,
-            "../../packages/arri-shared/src/index.ts",
-        ),
-    },
-    outDir: "../../dist/packages/arri-validate/dist",
+    outDir: "../../dist/packages/arri-shared/dist",
     clean: true,
     declaration: true,
     failOnWarn: false,
-    externals: [],
+    externals: deps,
 });

@@ -18,9 +18,9 @@ export default defineBuildConfig({
             __dirname,
             "../../packages/arri-codegen-utils/src/index.ts",
         ),
-        "arri-validate": path.resolve(
+        "arri-shared": path.resolve(
             __dirname,
-            "../../packages/arri-validate/src/index.ts",
+            "../../packages/arri-shared/src/index.ts",
         ),
         "json-schema-to-jtd": path.resolve(
             __dirname,

@@ -1,5 +1,5 @@
 import { type Schema } from "@modii/jtd";
-import { SCHEMA_METADATA, type ArriSchema } from "./typedefs";
+import { ASchema, SCHEMA_METADATA } from "arri-shared";
 import { AJV } from "./validation";
 
 const anyRawSchema: Schema = {};
@@ -7,7 +7,7 @@ const anyRawSchema: Schema = {};
 const parser = AJV.compileParser(anyRawSchema);
 const serializer = AJV.compileSerializer(anyRawSchema);
 
-const anySchema: ArriSchema<any> = {
+const anySchema: ASchema<any> = {
     metadata: {
         [SCHEMA_METADATA]: {
             output: undefined as any,
@@ -21,6 +21,6 @@ const anySchema: ArriSchema<any> = {
     },
 };
 
-export function any(): ArriSchema<any> {
+export function any(): ASchema<any> {
     return anySchema;
 }

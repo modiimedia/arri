@@ -1,18 +1,11 @@
 import { type Schema as JtdSchema } from "@modii/jtd";
-import {
-    SCHEMA_METADATA,
-    type MaybeNullable,
-    type ArriSchema,
-    type InputOptions,
-} from "./typedefs";
 import { ValidationError, AJV } from "./validation";
-
-export interface EnumSchema<
-    TValues extends string[],
-    TNullable extends boolean = false,
-> extends ArriSchema<MaybeNullable<TValues[number], TNullable>> {
-    enum: TValues;
-}
+import {
+    ASchemaOptions,
+    AStringEnumSchema,
+    MaybeNullable,
+    SCHEMA_METADATA,
+} from "arri-shared";
 
 /**
  * An enumeration of string values
@@ -24,7 +17,10 @@ export function stringEnum<
     TKeys extends string,
     TValues extends TKeys[],
     TNullable extends boolean = false,
->(values: TValues, opts: InputOptions = {}): EnumSchema<TValues, TNullable> {
+>(
+    values: TValues,
+    opts: ASchemaOptions = {},
+): AStringEnumSchema<TValues, TNullable> {
     const schema: JtdSchema = {
         enum: values,
     };

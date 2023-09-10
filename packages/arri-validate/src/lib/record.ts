@@ -1,31 +1,18 @@
 import { type SchemaFormValues } from "@modii/jtd";
-import {
-    type InferType,
-    type ArriSchema,
-    type MaybeNullable,
-    SCHEMA_METADATA,
-    type InputOptions,
-} from "./typedefs";
+
 import { ValidationError, AJV } from "./validation";
+import {
+    ARecordSchema,
+    ASchema,
+    ASchemaOptions,
+    InferType,
+    SCHEMA_METADATA,
+} from "arri-shared";
 
-export interface RecordSchema<
-    TInnerSchema extends ArriSchema<any>,
-    TNullable extends boolean = false,
-> extends ArriSchema<
-        MaybeNullable<Record<any, InferType<TInnerSchema>>, TNullable>
-    > {
-    values: TInnerSchema;
-}
-
-type InferRecordType<TInnerSchema extends ArriSchema<any>> = Record<
-    any,
-    InferType<TInnerSchema>
->;
-
-export function record<TInnerSchema extends ArriSchema<any>>(
+export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,
-    opts: InputOptions = {},
-): RecordSchema<TInnerSchema> {
+    opts: ASchemaOptions = {},
+): ARecordSchema<TInnerSchema> {
     const jtdSchema: SchemaFormValues = {
         values: schema,
     };
@@ -60,4 +47,13 @@ export function record<TInnerSchema extends ArriSchema<any>>(
         },
     };
 }
+
+/**
+ * An alias for `a.record()`
+ */
 export const dictionary = record;
+
+type InferRecordType<TInnerSchema extends ASchema<any>> = Record<
+    any,
+    InferType<TInnerSchema>
+>;

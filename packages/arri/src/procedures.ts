@@ -9,7 +9,6 @@ import {
     setResponseHeader,
     type H3Event,
 } from "h3";
-import { InferType, ObjectSchema, isArriSchema } from "arri-validate";
 import { kebabCase, pascalCase } from "scule";
 import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
 import { defineError, handleH3Error } from "./errors";
@@ -17,25 +16,24 @@ import { type Middleware } from "./routes";
 import { typeboxSafeValidate } from "./validation";
 import { HttpMethod, isHttpMethod } from "arri-codegen-utils";
 import { ArriOptions } from "./app";
+import { AObjectSchema, InferType, isAObjectSchema } from "arri-shared";
 
 export interface ArriProcedure<
-    TParams extends ObjectSchema<any, any> | undefined,
-    TResponse extends ObjectSchema<any, any> | undefined,
+    TParams extends AObjectSchema | undefined,
+    TResponse extends AObjectSchema | undefined,
 > {
     description?: string;
     method?: HttpMethod;
     params: TParams;
     response: TResponse;
     handler: ArriProcedureHandler<
-        TParams extends ObjectSchema<any, any> ? InferType<TParams> : undefined,
+        TParams extends AObjectSchema ? InferType<TParams> : undefined,
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        TResponse extends ObjectSchema<any, any> ? InferType<TResponse> : void
+        TResponse extends AObjectSchema ? InferType<TResponse> : void
     >;
     postHandler?: ArriProcedurePostHandler<
-        TParams extends ObjectSchema<any, any> ? InferType<TParams> : undefined,
-        TResponse extends ObjectSchema<any, any>
-            ? InferType<TResponse>
-            : undefined
+        TParams extends AObjectSchema ? InferType<TParams> : undefined,
+        TResponse extends AObjectSchema ? InferType<TResponse> : undefined
     >;
 }
 
@@ -78,8 +76,8 @@ export function isRpc(input: any): input is ArriProcedure<any, any> {
 }
 
 export function defineRpc<
-    TParams extends ObjectSchema<any> | undefined = undefined,
-    TResponse extends ObjectSchema<any> | undefined | never = undefined,
+    TParams extends AObjectSchema | undefined = undefined,
+    TResponse extends AObjectSchema | undefined | never = undefined,
 >(
     config: ArriProcedure<TParams, TResponse>,
 ): ArriProcedure<TParams, TResponse> {
@@ -127,7 +125,7 @@ export function getRpcParamName(
             removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
         );
     const paramName =
-        (procedure.params as ObjectSchema<any, any>).metadata.id ??
+        (procedure.params as AObjectSchema<any, any>).metadata.id ??
         pascalCase(`${nameParts.join(`_`)}_params`);
     return paramName;
 }
@@ -153,7 +151,7 @@ export function getRpcResponseName(
     if (!procedure.response) {
         return null;
     }
-    if (isArriSchema(procedure.response)) {
+    if (isAObjectSchema(procedure.response)) {
         const nameParts = rpcName
             .split(".")
             .map((part) =>

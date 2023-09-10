@@ -4,7 +4,7 @@ export const User = a.object(
     {
         id: a.string(),
         name: a.string(),
-        email: a.string({ nullable: true }),
+        email: a.nullable(a.string()),
         createdAt: a.timestamp(),
     },
     { id: "User" },
@@ -26,9 +26,9 @@ export const Post = a.object(
         numLikes: a.int32(),
         numComments: a.int32(),
         userId: a.string(),
-        user: User,
+        user: a.optional(User),
     },
-    { id: "Post", optionalProperties: ["user"] },
+    { id: "Post" },
 );
 export type Post = a.infer<typeof Post>;
 export const PostParams = a.object(

@@ -14,6 +14,7 @@
             ],
             "arri-client": ["packages/arri-client/src/index.ts"],
             "arri-codegen-utils": ["packages/arri-codegen-utils/src/index.ts"],
+            "arri-shared": ["packages/arri-shared/src/index.ts"],
             "arri-validate": ["packages/arri-validate/src/index.ts"],
             "json-schema-to-jtd": ["packages/json-schema-to-jtd/src/index.ts"]
         }

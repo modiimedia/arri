@@ -1,33 +1,26 @@
 import { type Schema, type SchemaFormProperties } from "@modii/jtd";
-import {
-    SCHEMA_METADATA,
-    type InferType,
-    type ArriSchema,
-    type InferObjectOutput,
-    type ScalarTypeSchema,
-    type InputOptions,
-} from "./typedefs";
+
 import { ValidationError, AJV } from "./validation";
+import {
+    ASchema,
+    InferObjectOutput,
+    InferType,
+    ASchemaOptions,
+    SCHEMA_METADATA,
+    AObjectSchema,
+    AObjectSchemaOptions,
+} from "arri-shared";
 
-export interface ObjectSchema<
-    TVal = any,
-    TAllowAdditionalProperties extends boolean = false,
-> extends ArriSchema<TVal> {
-    properties: Record<string, ArriSchema>;
-    optionalProperties?: Record<string, ScalarTypeSchema>;
-    additionalProperties?: TAllowAdditionalProperties;
-}
-
-/**
- *
- */
 export function object<
-    TInput extends Record<any, ArriSchema> = any,
+    TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     input: TInput,
-    opts: ObjectOptions<TAdditionalProps> = {},
-): ObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps> {
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<
+    InferObjectOutput<TInput, TAdditionalProps>,
+    TAdditionalProps
+> {
     const schema: SchemaFormProperties = {
         properties: {},
     };
@@ -48,7 +41,7 @@ export function object<
     const isType = (
         input: unknown,
     ): input is InferObjectOutput<TInput, TAdditionalProps> => validator(input);
-    const result: ObjectSchema<any, TAdditionalProps> = {
+    const result: AObjectSchema<any, TAdditionalProps> = {
         ...(schema as any),
         metadata: {
             id: opts.id,
@@ -89,7 +82,7 @@ export function object<
                     }
                     const result: any = {};
                     Object.keys(schema.properties).forEach((key) => {
-                        const prop = schema.properties[key] as ArriSchema;
+                        const prop = schema.properties[key] as ASchema;
                         result[key] = prop.metadata[SCHEMA_METADATA].coerce(
                             (input as any)[key],
                         );
@@ -98,7 +91,7 @@ export function object<
                         (key) => {
                             const prop = (schema.additionalProperties as any)[
                                 key
-                            ] as ArriSchema;
+                            ] as ASchema;
                             if (typeof (input as any)[key] !== "undefined") {
                                 result[key] = prop.metadata[
                                     SCHEMA_METADATA
@@ -120,14 +113,14 @@ export function object<
 }
 
 export function pick<
-    TSchema extends ObjectSchema<any, any> = any,
+    TSchema extends AObjectSchema<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     input: TSchema,
     keys: TKeys[],
-    opts: ObjectOptions<TAdditionalProps> = {},
-): ObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
     const schema: Schema = {
         properties: {},
         nullable: input.nullable,
@@ -188,14 +181,14 @@ export function pick<
 }
 
 export function omit<
-    TSchema extends ObjectSchema<any, any> = any,
+    TSchema extends AObjectSchema<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     input: TSchema,
     keys: TKeys[],
-    opts: ObjectOptions<TAdditionalProps> = {},
-): ObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
     const schema: Schema = {
         properties: {
             ...input.properties,
@@ -271,7 +264,7 @@ export function omit<
                     }
                     const result: any = {};
                     Object.keys(schema.properties).forEach((key) => {
-                        const prop = schema.properties[key] as ArriSchema;
+                        const prop = schema.properties[key] as ASchema;
                         result[key] = prop.metadata[SCHEMA_METADATA].coerce(
                             (val as any)[key],
                         );
@@ -280,7 +273,7 @@ export function omit<
                         (key) => {
                             const prop = (schema.additionalProperties as any)[
                                 key
-                            ] as ArriSchema;
+                            ] as ASchema;
                             if (typeof (val as any)[key] !== "undefined") {
                                 result[key] = prop.metadata[
                                     SCHEMA_METADATA
@@ -293,12 +286,4 @@ export function omit<
             },
         },
     };
-}
-
-interface ObjectOptions<TAdditionalProps extends boolean = false>
-    extends InputOptions {
-    /**
-     * Allow this object to include additional properties not specified here
-     */
-    additionalProperties?: TAdditionalProps;
 }

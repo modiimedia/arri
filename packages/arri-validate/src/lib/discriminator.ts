@@ -1,41 +1,23 @@
 import { ValidationError } from "ajv";
 import { type SchemaFormDiscriminator } from "@modii/jtd";
-import { type ObjectSchema } from "./object";
-import {
-    type InputOptions,
-    type ArriSchema,
-    SCHEMA_METADATA,
-    type InferType,
-    type ResolveObject,
-} from "./typedefs";
 import { AJV } from "./validation";
-
-export interface DiscriminatorSchema<T> extends ArriSchema<T> {
-    discriminator: string;
-    mapping: Record<string, ObjectSchema<any>>;
-}
-
-type JoinedDiscriminator<
-    TUnionKey extends string,
-    TInput extends Record<string, ObjectSchema<any>>,
-> = {
-    [TKey in keyof TInput]: InferType<TInput[TKey]> & Record<TUnionKey, TKey>;
-};
-
-type InferDiscriminatorType<
-    TDiscriminatorKey extends string,
-    TMapping extends Record<string, ObjectSchema<any>>,
-    TJoinedMapping extends JoinedDiscriminator<TDiscriminatorKey, TMapping>,
-> = ResolveObject<TJoinedMapping[keyof TJoinedMapping]>;
+import {
+    ADiscriminatorSchema,
+    AObjectSchema,
+    ASchemaOptions,
+    InferType,
+    ResolveObject,
+    SCHEMA_METADATA,
+} from "arri-shared";
 
 export function discriminator<
     TDiscriminatorKey extends string,
-    TMapping extends Record<string, ObjectSchema<any>>,
+    TMapping extends Record<string, AObjectSchema<any>>,
 >(
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
-    opts: InputOptions = {},
-): DiscriminatorSchema<
+    opts: ASchemaOptions = {},
+): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
         TMapping,
@@ -95,3 +77,16 @@ export function discriminator<
         },
     };
 }
+
+type JoinedDiscriminator<
+    TUnionKey extends string,
+    TInput extends Record<string, AObjectSchema<any>>,
+> = {
+    [TKey in keyof TInput]: InferType<TInput[TKey]> & Record<TUnionKey, TKey>;
+};
+
+type InferDiscriminatorType<
+    TDiscriminatorKey extends string,
+    TMapping extends Record<string, AObjectSchema<any>>,
+    TJoinedMapping extends JoinedDiscriminator<TDiscriminatorKey, TMapping>,
+> = ResolveObject<TJoinedMapping[keyof TJoinedMapping]>;

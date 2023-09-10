@@ -1,11 +1,8 @@
 import { type ValidateFunction } from "ajv";
 import { type SchemaFormType } from "@modii/jtd";
-import {
-    type ScalarTypeSchema,
-    type InputOptions,
-    SCHEMA_METADATA,
-} from "./typedefs";
+
 import { ValidationError, AJV } from "./validation";
+import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "arri-shared";
 
 const numberTypes = [
     "float32",
@@ -85,8 +82,8 @@ for (const type of numberTypes) {
 
 function numberScalarType<TType extends (typeof numberTypes)[number]>(
     type: TType,
-    opts: InputOptions,
-): ScalarTypeSchema<TType, number> {
+    opts: ASchemaOptions,
+): AScalarSchema<TType, number> {
     const { validator, parser, serializer } = validationMap[type];
     const isType = (input: unknown): input is number => {
         if (validator) {
@@ -154,31 +151,31 @@ function numberScalarType<TType extends (typeof numberTypes)[number]>(
  * @example
  * const SomeNum = a.number()
  */
-export function number(opts: InputOptions = {}) {
+export function number(opts: ASchemaOptions = {}) {
     return float64(opts);
 }
 
-export function float32(opts: InputOptions = {}) {
+export function float32(opts: ASchemaOptions = {}) {
     return numberScalarType("float32", opts);
 }
-export function float64(opts: InputOptions = {}) {
+export function float64(opts: ASchemaOptions = {}) {
     return numberScalarType("float64", opts);
 }
-export function int8(opts: InputOptions = {}) {
+export function int8(opts: ASchemaOptions = {}) {
     return numberScalarType("int8", opts);
 }
-export function uint8(opts: InputOptions = {}) {
+export function uint8(opts: ASchemaOptions = {}) {
     return numberScalarType("uint8", opts);
 }
-export function int16(opts: InputOptions = {}) {
+export function int16(opts: ASchemaOptions = {}) {
     return numberScalarType("int16", opts);
 }
-export function uint16(opts: InputOptions = {}) {
+export function uint16(opts: ASchemaOptions = {}) {
     return numberScalarType("uint16", opts);
 }
-export function int32(opts: InputOptions = {}) {
+export function int32(opts: ASchemaOptions = {}) {
     return numberScalarType("int32", opts);
 }
-export function uint32(opts: InputOptions = {}) {
+export function uint32(opts: ASchemaOptions = {}) {
     return numberScalarType("uint32", opts);
 }
