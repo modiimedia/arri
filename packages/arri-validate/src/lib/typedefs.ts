@@ -22,6 +22,27 @@ export interface ArriSchema<T = any> {
     };
     nullable?: boolean;
 }
+export function isArriSchema(input: unknown): input is ArriSchema {
+    if (typeof input !== "object") {
+        return false;
+    }
+    if (!input || !("metadata" in input)) {
+        return false;
+    }
+    if (
+        !input.metadata ||
+        typeof input.metadata !== "object" ||
+        !(SCHEMA_METADATA in input.metadata) ||
+        !input.metadata[SCHEMA_METADATA] ||
+        typeof input.metadata[SCHEMA_METADATA] !== "object"
+    ) {
+        return false;
+    }
+    return (
+        "parse" in input.metadata[SCHEMA_METADATA] &&
+        typeof input.metadata[SCHEMA_METADATA] === "object"
+    );
+}
 
 export interface ScalarTypeSchema<T extends JtdType = any, TVal = any>
     extends ArriSchema<TVal> {

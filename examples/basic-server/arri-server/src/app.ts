@@ -1,4 +1,5 @@
 import { Type } from "@sinclair/typebox";
+import { a } from "arri-validate";
 import { Arri } from "arri";
 
 const app = new Arri({});
@@ -6,8 +7,8 @@ const app = new Arri({});
 app.registerRpc("test.getTest", {
     method: "get",
     params: undefined,
-    response: Type.Object({
-        message: Type.String(),
+    response: a.object({
+        message: a.string(),
     }),
     handler({ params }, event) {
         return {
@@ -19,12 +20,12 @@ app.registerRpc("test.getTest", {
 app.registerRoute({
     path: "/routes/:id/blah",
     method: "get",
-    query: Type.Object({
-        id: Type.String(),
+    query: a.object({
+        id: a.string(),
     }),
-    body: Type.Object({
-        hello: Type.Object({
-            id: Type.String(),
+    body: a.object({
+        hello: a.object({
+            id: a.string(),
         }),
     }),
     handler({ query, params }) {

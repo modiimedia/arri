@@ -1,14 +1,15 @@
 import { Type } from "@sinclair/typebox";
 import { defineRpc } from "arri";
+import { a } from "arri-validate";
 
 export default defineRpc({
     method: "get",
-    params: Type.Object({
-        id: Type.String(),
+    params: a.object({
+        id: a.string(),
     }),
-    response: Type.Object({
-        id: Type.String(),
-        name: Type.String(),
+    response: a.object({
+        id: a.string(),
+        name: a.string(),
     }),
     handler({ params }) {
         return {

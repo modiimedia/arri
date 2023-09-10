@@ -1,4 +1,3 @@
-import { type TObject, type Static, TypeGuard } from "@sinclair/typebox";
 import { ValueErrorType } from "@sinclair/typebox/errors";
 import {
     eventHandler,
@@ -10,6 +9,7 @@ import {
     setResponseHeader,
     type H3Event,
 } from "h3";
+import { InferType, ObjectSchema, isArriSchema } from "arri-validate";
 import { kebabCase, pascalCase } from "scule";
 import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
 import { defineError, handleH3Error } from "./errors";
@@ -18,30 +18,24 @@ import { typeboxSafeValidate } from "./validation";
 import { HttpMethod, isHttpMethod } from "arri-codegen-utils";
 import { ArriOptions } from "./app";
 
-export interface ArriProcedureBase {
-    method: HttpMethod;
-    params?: any;
-    response?: any;
-    handler: (context: any) => any;
-    postHandler?: (context: any) => any;
-}
-
 export interface ArriProcedure<
-    TParams extends TObject | undefined,
-    TResponse extends TObject | undefined,
+    TParams extends ObjectSchema<any, any> | undefined,
+    TResponse extends ObjectSchema<any, any> | undefined,
 > {
     description?: string;
     method?: HttpMethod;
     params: TParams;
     response: TResponse;
     handler: ArriProcedureHandler<
-        TParams extends TObject ? Static<TParams> : undefined,
+        TParams extends ObjectSchema<any, any> ? InferType<TParams> : undefined,
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        TResponse extends TObject ? Static<TResponse> : void
+        TResponse extends ObjectSchema<any, any> ? InferType<TResponse> : void
     >;
     postHandler?: ArriProcedurePostHandler<
-        TParams extends TObject ? Static<TParams> : undefined,
-        TResponse extends TObject ? Static<TResponse> : undefined
+        TParams extends ObjectSchema<any, any> ? InferType<TParams> : undefined,
+        TResponse extends ObjectSchema<any, any>
+            ? InferType<TResponse>
+            : undefined
     >;
 }
 
@@ -84,8 +78,8 @@ export function isRpc(input: any): input is ArriProcedure<any, any> {
 }
 
 export function defineRpc<
-    TParams extends TObject | undefined = undefined,
-    TResponse extends TObject | undefined | never = undefined,
+    TParams extends ObjectSchema<any> | undefined = undefined,
+    TResponse extends ObjectSchema<any> | undefined | never = undefined,
 >(
     config: ArriProcedure<TParams, TResponse>,
 ): ArriProcedure<TParams, TResponse> {
@@ -133,7 +127,7 @@ export function getRpcParamName(
             removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
         );
     const paramName =
-        (procedure.params as TObject).$id ??
+        (procedure.params as ObjectSchema<any, any>).metadata.id ??
         pascalCase(`${nameParts.join(`_`)}_params`);
     return paramName;
 }
@@ -159,14 +153,14 @@ export function getRpcResponseName(
     if (!procedure.response) {
         return null;
     }
-    if (TypeGuard.TObject(procedure.response)) {
+    if (isArriSchema(procedure.response)) {
         const nameParts = rpcName
             .split(".")
             .map((part) =>
                 removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
             );
         const responseName =
-            procedure.response.$id ??
+            procedure.response.metadata.id ??
             pascalCase(`${nameParts.join("_")}_response`);
         return responseName;
     }

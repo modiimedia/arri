@@ -32,6 +32,7 @@ import {
     type RouteHandlerContext,
     type RoutePostHandlerContext,
 } from "./routes";
+import { ArriSchema, ObjectSchema, isArriSchema } from "arri-validate";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
@@ -44,7 +45,7 @@ export class Arri {
     private readonly rpcRoutePrefix: string;
     appInfo: ApplicationDef["info"];
     private procedures: Record<string, ProcedureDef> = {};
-    private models: Record<string, TObject> = {};
+    private models: Record<string, ArriSchema> = {};
     private readonly middlewares: Middleware[] = [];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
     private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
@@ -125,18 +126,18 @@ export class Arri {
     }
 
     registerRpc<
-        TParams extends TObject | undefined,
-        TResponse extends TObject | undefined,
+        TParams extends ObjectSchema<any, any> | undefined,
+        TResponse extends ObjectSchema<any, any> | undefined,
     >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
         const path = getRpcPath(name, this.rpcRoutePrefix);
         this.procedures[name] = createRpcDefinition(name, path, procedure);
-        if (TypeGuard.TObject(procedure.params)) {
+        if (isArriSchema(procedure.params)) {
             const paramName = getRpcParamName(name, procedure);
             if (paramName) {
                 this.models[paramName] = procedure.params;
             }
         }
-        if (TypeGuard.TObject(procedure.response)) {
+        if (isArriSchema(procedure.response)) {
             const responseName = getRpcResponseName(name, procedure);
 
             if (responseName) {
