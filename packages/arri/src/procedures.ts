@@ -20,7 +20,7 @@ import {
     InferType,
     SCHEMA_METADATA,
     isAObjectSchema,
-} from "arri-shared";
+} from "arri-validate";
 
 export interface ArriProcedure<
     TParams extends AObjectSchema | undefined,

@@ -40,7 +40,6 @@
     "jest": "^29.6.4",
     "jest-environment-jsdom": "^29.6.4",
     "jiti": "^1.20.0",
-    "nitropack": "^2.6.3",
     "nx": "16.8.1",
     "nx-cloud": "16.4.0",
     "pathe": "^1.1.1",

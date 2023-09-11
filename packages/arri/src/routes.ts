@@ -1,18 +1,15 @@
 import {
     type H3Event,
     type Router,
-    getValidatedQuery,
-    readValidatedBody,
     send,
     setResponseHeader,
     eventHandler,
 } from "h3";
 import { type ArriOptions } from "./app";
-import { errorResponseFromValidationErrors, handleH3Error } from "./errors";
+import { handleH3Error } from "./errors";
 import type { HandlerContext } from "./procedures";
-import { typeboxSafeValidate } from "./validation";
 import { HttpMethod } from "arri-codegen-utils";
-import { AObjectSchema, ASchema, InferType } from "arri-shared";
+import { AObjectSchema, ASchema, InferType } from "arri-validate";
 
 export interface ArriRoute<
     TPath extends string,

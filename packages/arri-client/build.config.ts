@@ -11,6 +11,6 @@ export default defineBuildConfig({
     outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
-    externals: ["ofetch"],
+    failOnWarn: true,
+    externals: ["ofetch", "arri-validate"],
 });

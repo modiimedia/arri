@@ -1,5 +1,4 @@
 import { validate, a } from "arri-validate";
-import type { Serialize } from "nitropack";
 import { ofetch } from "ofetch";
 
 export interface ArriRequestOpts {
@@ -9,9 +8,7 @@ export interface ArriRequestOpts {
     params?: any;
 }
 
-export async function arriRequest<T>(
-    opts: ArriRequestOpts,
-): Promise<Serialize<T>> {
+export async function arriRequest<T>(opts: ArriRequestOpts): Promise<T> {
     let url = opts.url;
     let body: undefined | any;
     switch (opts.method) {
@@ -32,7 +29,7 @@ export async function arriRequest<T>(
             }
             break;
     }
-    const result = await ofetch<Serialize<T>>(url, {
+    const result = await ofetch<T>(url, {
         method: opts.method,
         body,
         headers: opts.headers,
@@ -42,7 +39,7 @@ export async function arriRequest<T>(
 
 export async function arriSafeRequest<T>(
     opts: ArriRequestOpts,
-): Promise<SafeResponse<Serialize<T>>> {
+): Promise<SafeResponse<T>> {
     try {
         const result = await arriRequest<T>(opts);
         return {
@@ -50,7 +47,7 @@ export async function arriSafeRequest<T>(
             value: result,
         };
     } catch (err) {
-        if (validate(ArriRequestError, err)) {
+        if (validate({} as any, err)) {
             return {
                 success: false,
                 error: err,

@@ -7,7 +7,7 @@
     },
     "dependencies": {
         "@faker-js/faker": "^8.0.2",
-        "arri": "link:../../../dist/packages/arri",
-        "arri-validate": "link:../../../dist/packages/arri-validate"
+        "arri": "workspace:*",
+        "arri-validate": "workspace:*"
     }
 }
