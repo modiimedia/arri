@@ -3,7 +3,6 @@ import {
     SchemaFormProperties,
     isHttpMethod,
 } from "arri-codegen-utils";
-import { AObjectSchema } from "packages/arri-shared/dist";
 
 export interface ApplicationDef {
     arriSchemaVersion: "0.0.1";

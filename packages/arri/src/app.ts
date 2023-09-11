@@ -12,6 +12,7 @@ import {
     setResponseStatus,
 } from "h3";
 import { HttpMethod } from "arri-codegen-utils";
+import { AObjectSchema, ASchema, isAObjectSchema } from "arri-validate";
 import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import {
@@ -31,7 +32,6 @@ import {
     type RouteHandlerContext,
     type RoutePostHandlerContext,
 } from "./routes";
-import { AObjectSchema, ASchema, isAObjectSchema } from "arri-shared";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
