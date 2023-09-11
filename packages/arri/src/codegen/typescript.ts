@@ -1,25 +1,4 @@
-import { writeFileSync } from "fs";
-import { format } from "prettier";
-import { pascalCase } from "scule";
 import { defineClientGeneratorPlugin } from "./plugin";
-import {
-    type ApplicationDef,
-    type ServiceDef,
-    unflattenObject,
-    isProcedureDef,
-    type ProcedureDef,
-    isServiceDef,
-} from "./utils";
-import {
-    JsonSchemaObject,
-    JsonSchemaScalarType,
-    isJsonSchemaArray,
-    isJsonSchemaEnum,
-    isJsonSchemaNullType,
-    isJsonSchemaObject,
-    isJsonSchemaRecord,
-    isJsonSchemaScalarType,
-} from "json-schema-to-jtd";
 
 let generatedModels: string[] = [];
 

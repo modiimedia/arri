@@ -8,6 +8,11 @@
     "files": [
         "dist"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri",
+        "directory": "packages/arri"
+    },
     "bin": {
         "arri": "./dist/cli.mjs"
     },
@@ -30,5 +35,8 @@
         "pathe": "^1.1.1",
         "prettier": "^3.0.3",
         "scule": "^1.0.0"
+    },
+    "devDependencies": {
+        "bun-types": "^1.0.1"
     }
 }

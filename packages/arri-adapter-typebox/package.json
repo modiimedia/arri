@@ -8,6 +8,11 @@
     "files": [
         "dist"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri",
+        "directory": "packages/arri-adapter-typebox"
+    },
     "dependencies": {
         "@sinclair/typebox": "^0.31.14",
         "arri-validate": "workspace:*",

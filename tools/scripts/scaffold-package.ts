@@ -78,6 +78,11 @@ function packageJsonTemplate(packageName: string) {
     return `{
     "name": "${packageName}",
     "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri",
+        "directory": "packages/${packageName}"
+    },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -173,10 +178,10 @@ export default defineBuildConfig({
             respectExternal: false,
         },
     },
-    outDir: "../../dist/packages/${packageName}/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
+    failOnWarn: true,
     externals: deps,
 });`;
 }
@@ -185,7 +190,6 @@ function tsConfigTemplate() {
     return `{
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "module": "commonjs",
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "noImplicitOverride": true,
