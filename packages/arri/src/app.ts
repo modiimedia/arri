@@ -11,9 +11,8 @@ import {
     readBody,
     setResponseStatus,
 } from "h3";
-import { HttpMethod } from "arri-codegen-utils";
+import { AppDefinition, HttpMethod, RpcDefinition } from "arri-codegen-utils";
 import { AObjectSchema, ASchema, isAObjectSchema } from "arri-validate";
-import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import {
     type ArriProcedure,
@@ -42,8 +41,8 @@ export class Arri {
     private readonly h3Router: Router = createRouter();
     private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
-    appInfo: ApplicationDef["info"];
-    private procedures: Record<string, ProcedureDef> = {};
+    appInfo: AppDefinition["info"];
+    private procedures: Record<string, RpcDefinition> = {};
     private models: Record<string, ASchema> = {};
     private readonly middlewares: Middleware[] = [];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
@@ -170,9 +169,9 @@ export class Arri {
         registerRoute(this.h3Router, route, this.middlewares);
     }
 
-    getAppDefinition(): ApplicationDef {
-        const appDef: ApplicationDef = {
-            arriSchemaVersion: "0.0.1",
+    getAppDefinition(): AppDefinition {
+        const appDef: AppDefinition = {
+            arriSchemaVersion: "0.0.2",
             info: this.appInfo,
             procedures: {},
             models: this.models as any,
@@ -195,7 +194,7 @@ export interface ArriOptions {
     /**
      * Metadata to display in the __definition.json file
      */
-    appInfo?: ApplicationDef["info"];
+    appInfo?: AppDefinition["info"];
     rpcRoutePrefix?: string;
     /**
      * Defaults to /__definitions

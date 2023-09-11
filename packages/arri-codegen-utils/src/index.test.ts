@@ -1,9 +1,9 @@
 import {
-    type ProcedureDef,
+    type RpcDefinition,
     unflattenObject,
     setNestedObjectProperty,
     removeDisallowedChars,
-} from "./utils";
+} from "./index";
 
 describe("unflattenObject()", () => {
     test("Simple Unflatten", () => {
@@ -26,7 +26,7 @@ describe("unflattenObject()", () => {
     });
 
     test("Complex Unflatten", () => {
-        const input: Record<string, ProcedureDef> = {
+        const input: Record<string, RpcDefinition> = {
             "posts.getPost": {
                 method: "get",
                 path: "/posts/get-post",
