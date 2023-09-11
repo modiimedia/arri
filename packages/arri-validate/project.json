@@ -5,21 +5,11 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri-validate"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-validate"
-            }
-        },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/arri-validate/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-validate --out-dir dist/packages/arri-validate"
             }
         },
         "publish": {

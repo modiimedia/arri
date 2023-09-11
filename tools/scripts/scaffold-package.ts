@@ -95,28 +95,18 @@ function projectJsonTemplate(packageName: string) {
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/${packageName}"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/${packageName}"
-            }
-        },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/${packageName}/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/${packageName} --out-dir dist/packages/${packageName}"
             }
         },
         "publish": {
             "executor": "nx:run-commands",
             "options": {
                 "command": "npm publish",
-                "cwd": "dist/packages/${packageName}"
+                "cwd": "packages/${packageName}"
             },
             "dependsOn": ["build"]
         },

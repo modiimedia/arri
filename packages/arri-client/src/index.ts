@@ -1,5 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
-import { Value } from "@sinclair/typebox/value";
+import { validate, a } from "arri-validate";
 import type { Serialize } from "nitropack";
 import { ofetch } from "ofetch";
 
@@ -51,7 +50,7 @@ export async function arriSafeRequest<T>(
             value: result,
         };
     } catch (err) {
-        if (Value.Check(ArriRequestError, err)) {
+        if (validate(ArriRequestError, err)) {
             return {
                 success: false,
                 error: err,
@@ -69,14 +68,14 @@ export async function arriSafeRequest<T>(
     }
 }
 
-export const ArriRequestError = Type.Object({
-    name: Type.String(),
-    statusCode: Type.Number(),
-    statusMessage: Type.String(),
-    data: Type.Optional(Type.Any()),
+export const ArriRequestError = a.object({
+    name: a.string(),
+    statusCode: a.int8(),
+    statusMessage: a.string(),
+    data: a.optional(a.any()),
 });
 
-export type ArriRequestError = Static<typeof ArriRequestError>;
+export type ArriRequestError = a.infer<typeof ArriRequestError>;
 
 export type SafeResponse<T> =
     | {

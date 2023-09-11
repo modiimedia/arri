@@ -1,6 +1,9 @@
-import { type TObject } from "@sinclair/typebox";
-import { HttpMethod, isHttpMethod } from "arri-codegen-utils";
-import { JsonSchemaObject } from "json-schema-to-jtd";
+import {
+    HttpMethod,
+    SchemaFormProperties,
+    isHttpMethod,
+} from "arri-codegen-utils";
+import { AObjectSchema } from "packages/arri-shared/dist";
 
 export interface ApplicationDef {
     arriSchemaVersion: "0.0.1";
@@ -14,8 +17,8 @@ export interface ApplicationDef {
         url: string;
     };
     procedures: Record<string, ProcedureDef>;
-    models: Record<string, JsonSchemaObject>;
-    errors: Omit<TObject, symbol>;
+    models: Record<string, SchemaFormProperties>;
+    errors: SchemaFormProperties;
 }
 
 export function normalizeWhitespace(input: string) {

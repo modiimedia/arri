@@ -144,34 +144,34 @@ export function registerRoute<TPath extends string>(
                 }
             }
             if (route.query) {
-                const result = await getValidatedQuery(
-                    event,
-                    typeboxSafeValidate(route.query, true),
-                );
-                if (!result.success) {
-                    throw errorResponseFromValidationErrors(
-                        result.errors,
-                        "Missing or invalid query parameters",
-                    );
-                }
-                context.query = result.value;
+                // const result = await getValidatedQuery(
+                //     event,
+                //     typeboxSafeValidate(route.query, true),
+                // );
+                // if (!result.success) {
+                //     throw errorResponseFromValidationErrors(
+                //         result.errors,
+                //         "Missing or invalid query parameters",
+                //     );
+                // }
+                // context.query = result.value;
             }
             if (
                 route.body &&
                 route.method !== "get" &&
                 route.method !== "head"
             ) {
-                const result = await readValidatedBody(
-                    event,
-                    typeboxSafeValidate(route.body),
-                );
-                if (!result.success) {
-                    throw errorResponseFromValidationErrors(
-                        result.errors,
-                        "Missing or invalid body parameters",
-                    );
-                }
-                context.body = result.value;
+                // const result = await readValidatedBody(
+                //     event,
+                //     typeboxSafeValidate(route.body),
+                // );
+                // if (!result.success) {
+                //     throw errorResponseFromValidationErrors(
+                //         result.errors,
+                //         "Missing or invalid body parameters",
+                //     );
+                // }
+                // context.body = result.value;
             }
             const response = await route.handler(context, event);
             context.response = response;

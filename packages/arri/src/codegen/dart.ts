@@ -10,16 +10,7 @@ import {
     unflattenProcedures,
     isServiceDef,
 } from "./utils";
-import {
-    JsonSchemaObject,
-    JsonSchemaTypeValue,
-    isJsonSchemaArray,
-    isJsonSchemaEnum,
-    isJsonSchemaNullType,
-    isJsonSchemaObject,
-    isJsonSchemaRecord,
-    isJsonSchemaScalarType,
-} from "json-schema-to-jtd";
+import { SchemaFormProperties } from "packages/arri-codegen-utils/dist";
 
 export interface DartClientGeneratorOptions {
     clientName: string;
@@ -297,7 +288,7 @@ export function dartProcedureFromServiceDefinition(
 
 export function dartModelFromJsonSchema(
     modelName: string,
-    schema: JsonSchemaObject,
+    schema: SchemaFormProperties,
     opts: CreateClientOptions,
 ): string {
     const modelDisplayName: string = pascalCase(`${modelName}`);
@@ -409,7 +400,7 @@ ${subModelParts.join("\n")}`;
 export function dartPropertyTypeFromSchema(
     objectName: string,
     propertyName: string,
-    schema: JsonSchemaObject,
+    schema: SchemaFormProperties,
     opts: CreateClientOptions,
 ): [DartType | string, string[] | undefined] {
     const prop = schema.properties?.[propertyName];

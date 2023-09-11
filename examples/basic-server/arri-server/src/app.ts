@@ -1,7 +1,11 @@
 import { a } from "arri-validate";
 import { Arri } from "arri";
 
-const app = new Arri({});
+const app = new Arri({
+    onError(err, context, event) {
+        console.log(err);
+    },
+});
 
 app.registerRpc("test.getTest", {
     method: "get",

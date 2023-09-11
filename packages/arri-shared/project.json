@@ -5,21 +5,11 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri-shared"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-shared"
-            }
-        },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/arri-shared/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-shared --out-dir dist/packages/arri-shared"
             }
         },
         "publish": {

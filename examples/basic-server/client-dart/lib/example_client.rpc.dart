@@ -9,33 +9,29 @@ class ExampleClient {
   const ExampleClient({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _headers = headers,
-        _baseUrl = baseUrl;
-
+  }): _headers = headers,
+    _baseUrl = baseUrl;
+  
   ExampleClientTestService get test {
     return ExampleClientTestService(
-      baseUrl: _baseUrl,
-      headers: _headers,
+      baseUrl: _baseUrl, headers: _headers,
     );
   }
-
   ExampleClientUsersService get users {
     return ExampleClientUsersService(
-      baseUrl: _baseUrl,
-      headers: _headers,
+      baseUrl: _baseUrl, headers: _headers,
     );
   }
 }
-
 class ExampleClientTestService {
   final String _baseUrl;
   final Map<String, String> _headers;
   const ExampleClientTestService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
-
+  }): _baseUrl = baseUrl,
+  _headers = headers;
+  
   Future<TestGetTestResponse> getTest() {
     return parsedArriRequest(
       "$_baseUrl/test/get-test",
@@ -47,15 +43,16 @@ class ExampleClientTestService {
   }
 }
 
+
 class ExampleClientUsersService {
   final String _baseUrl;
   final Map<String, String> _headers;
   const ExampleClientUsersService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
-
+  }): _baseUrl = baseUrl,
+  _headers = headers;
+  
   Future<UsersDeleteUserResponse> deleteUser(UsersDeleteUserParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/delete-user",
@@ -65,17 +62,15 @@ class ExampleClientUsersService {
       parser: (body) => UsersDeleteUserResponse.fromJson(json.decode(body)),
     );
   }
-
-  Future<UsersGetUserResponse> getUser() {
+  Future<void> getUser() {
     return parsedArriRequest(
       "$_baseUrl/users/get-user",
       method: HttpMethod.get,
       headers: _headers,
       params: null,
-      parser: (body) => UsersGetUserResponse.fromJson(json.decode(body)),
+      parser: (body) {},
     );
   }
-
   Future<UsersGetUsersResponse> getUsers(UsersGetUsersParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/get-users",
@@ -85,26 +80,26 @@ class ExampleClientUsersService {
       parser: (body) => UsersGetUsersResponse.fromJson(json.decode(body)),
     );
   }
-
-  Future<UsersUpdateUserResponse> updateUser(UsersUpdateUserParams params) {
+  Future<void> updateUser() {
     return parsedArriRequest(
       "$_baseUrl/users/update-user",
       method: HttpMethod.get,
       headers: _headers,
-      params: params.toJson(),
-      parser: (body) => UsersUpdateUserResponse.fromJson(json.decode(body)),
+      params: null,
+      parser: (body) {},
     );
   }
 }
 
+
 class TestGetTestResponse {
-  final String message;
+  final String? message;
   const TestGetTestResponse({
-    required this.message,
+    this.message,
   });
   factory TestGetTestResponse.fromJson(Map<String, dynamic> json) {
     return TestGetTestResponse(
-      message: typeFromDynamic<String>(json["message"], ""),
+      message: nullableTypeFromDynamic<String>(json["message"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -112,7 +107,6 @@ class TestGetTestResponse {
       "message": message,
     };
   }
-
   TestGetTestResponse copyWith({
     String? message,
   }) {
@@ -122,14 +116,15 @@ class TestGetTestResponse {
   }
 }
 
+
 class UsersDeleteUserParams {
-  final String id;
+  final String? id;
   const UsersDeleteUserParams({
-    required this.id,
+    this.id,
   });
   factory UsersDeleteUserParams.fromJson(Map<String, dynamic> json) {
     return UsersDeleteUserParams(
-      id: typeFromDynamic<String>(json["id"], ""),
+      id: nullableTypeFromDynamic<String>(json["id"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -137,7 +132,6 @@ class UsersDeleteUserParams {
       "id": id,
     };
   }
-
   UsersDeleteUserParams copyWith({
     String? id,
   }) {
@@ -147,17 +141,18 @@ class UsersDeleteUserParams {
   }
 }
 
+
 class UsersDeleteUserResponse {
-  final String id;
-  final String name;
+  final String? id;
+  final String? name;
   const UsersDeleteUserResponse({
-    required this.id,
-    required this.name,
+    this.id,
+    this.name,
   });
   factory UsersDeleteUserResponse.fromJson(Map<String, dynamic> json) {
     return UsersDeleteUserResponse(
-      id: typeFromDynamic<String>(json["id"], ""),
-      name: typeFromDynamic<String>(json["name"], ""),
+      id: nullableTypeFromDynamic<String>(json["id"]),
+      name: nullableTypeFromDynamic<String>(json["name"]),
     );
   }
   Map<String, dynamic> toJson() {
@@ -166,7 +161,6 @@ class UsersDeleteUserResponse {
       "name": name,
     };
   }
-
   UsersDeleteUserResponse copyWith({
     String? id,
     String? name,
@@ -178,67 +172,24 @@ class UsersDeleteUserResponse {
   }
 }
 
-class UsersGetUserResponse {
-  final String id;
-  final String username;
-  final String email;
-  final int createdAt;
-  const UsersGetUserResponse({
-    required this.id,
-    required this.username,
-    required this.email,
-    required this.createdAt,
-  });
-  factory UsersGetUserResponse.fromJson(Map<String, dynamic> json) {
-    return UsersGetUserResponse(
-      id: typeFromDynamic<String>(json["id"], ""),
-      username: typeFromDynamic<String>(json["username"], ""),
-      email: typeFromDynamic<String>(json["email"], ""),
-      createdAt: intFromDynamic(json["createdAt"], 0),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "username": username,
-      "email": email,
-      "createdAt": createdAt,
-    };
-  }
-
-  UsersGetUserResponse copyWith({
-    String? id,
-    String? username,
-    String? email,
-    int? createdAt,
-  }) {
-    return UsersGetUserResponse(
-      id: id ?? this.id,
-      username: username ?? this.username,
-      email: email ?? this.email,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-}
 
 class UsersGetUsersParams {
-  final double limit;
+  final  limit;
   const UsersGetUsersParams({
     required this.limit,
   });
   factory UsersGetUsersParams.fromJson(Map<String, dynamic> json) {
     return UsersGetUsersParams(
-      limit: doubleFromDynamic(json["limit"], 0.0),
+      limit: .fromJson(json["limit"]),
     );
   }
   Map<String, dynamic> toJson() {
     return {
-      "limit": limit,
+      "limit": limit.toJson(),
     };
   }
-
   UsersGetUsersParams copyWith({
-    double? limit,
+    ? limit,
   }) {
     return UsersGetUsersParams(
       limit: limit ?? this.limit,
@@ -246,33 +197,29 @@ class UsersGetUsersParams {
   }
 }
 
+
 class UsersGetUsersResponse {
-  final double total;
-  final List<UserSchema> items;
+  final  total;
+  final  items;
   const UsersGetUsersResponse({
     required this.total,
     required this.items,
   });
   factory UsersGetUsersResponse.fromJson(Map<String, dynamic> json) {
     return UsersGetUsersResponse(
-      total: doubleFromDynamic(json["total"], 0.0),
-      items: json["items"] is List
-          ? (json["items"] as List<Map<String, dynamic>>)
-              .map((val) => UserSchema.fromJson(val))
-              .toList()
-          : [],
+      total: .fromJson(json["total"]),
+      items: .fromJson(json["items"]),
     );
   }
   Map<String, dynamic> toJson() {
     return {
-      "total": total,
-      "items": items.map((val) => val.toJson()).toList(),
+      "total": total.toJson(),
+      "items": items.toJson(),
     };
   }
-
   UsersGetUsersResponse copyWith({
-    double? total,
-    List<UserSchema>? items,
+    ? total,
+    ? items,
   }) {
     return UsersGetUsersResponse(
       total: total ?? this.total,
@@ -281,131 +228,32 @@ class UsersGetUsersResponse {
   }
 }
 
-class UserSchema {
-  final String id;
-  final String email;
-  final String username;
-  const UserSchema({
-    required this.id,
-    required this.email,
-    required this.username,
-  });
-  factory UserSchema.fromJson(Map<String, dynamic> json) {
-    return UserSchema(
-      id: typeFromDynamic<String>(json["id"], ""),
-      email: typeFromDynamic<String>(json["email"], ""),
-      username: typeFromDynamic<String>(json["username"], ""),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "email": email,
-      "username": username,
-    };
-  }
 
-  UserSchema copyWith({
-    String? id,
-    String? email,
-    String? username,
-  }) {
-    return UserSchema(
-      id: id ?? this.id,
-      email: email ?? this.email,
-      username: username ?? this.username,
-    );
-  }
-}
 
-class UsersUpdateUserParams {
-  final String userId;
-  const UsersUpdateUserParams({
-    required this.userId,
-  });
-  factory UsersUpdateUserParams.fromJson(Map<String, dynamic> json) {
-    return UsersUpdateUserParams(
-      userId: typeFromDynamic<String>(json["userId"], ""),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      "userId": userId,
-    };
-  }
-
-  UsersUpdateUserParams copyWith({
-    String? userId,
-  }) {
-    return UsersUpdateUserParams(
-      userId: userId ?? this.userId,
-    );
-  }
-}
-
-class UsersUpdateUserResponse {
-  final String id;
-  final String username;
-  final String email;
-  const UsersUpdateUserResponse({
-    required this.id,
-    required this.username,
-    required this.email,
-  });
-  factory UsersUpdateUserResponse.fromJson(Map<String, dynamic> json) {
-    return UsersUpdateUserResponse(
-      id: typeFromDynamic<String>(json["id"], ""),
-      username: typeFromDynamic<String>(json["username"], ""),
-      email: typeFromDynamic<String>(json["email"], ""),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "username": username,
-      "email": email,
-    };
-  }
-
-  UsersUpdateUserResponse copyWith({
-    String? id,
-    String? username,
-    String? email,
-  }) {
-    return UsersUpdateUserResponse(
-      id: id ?? this.id,
-      username: username ?? this.username,
-      email: email ?? this.email,
-    );
-  }
-}
-
-enum ExampleClientEndpoints
-    implements Comparable<ExampleClientEndpoints>, ArriEndpoint {
+enum ExampleClientEndpoints implements Comparable<ExampleClientEndpoints>, ArriEndpoint {
   testGetTest(
-    path: "/test/get-test",
-    method: HttpMethod.get,
-  ),
+        path: "/test/get-test",
+        method: HttpMethod.get,
+      ),
   usersDeleteUser(
-    path: "/users/delete-user",
-    method: HttpMethod.get,
-  ),
+        path: "/users/delete-user",
+        method: HttpMethod.get,
+      ),
   usersGetUser(
-    path: "/users/get-user",
-    method: HttpMethod.get,
-  ),
+        path: "/users/get-user",
+        method: HttpMethod.get,
+      ),
   usersGetUsers(
-    path: "/users/get-users",
-    method: HttpMethod.get,
-  ),
+        path: "/users/get-users",
+        method: HttpMethod.get,
+      ),
   usersUpdateUser(
-    path: "/users/update-user",
-    method: HttpMethod.get,
-  );
+        path: "/users/update-user",
+        method: HttpMethod.get,
+      );
 
   const ExampleClientEndpoints({
-    required this.path,
-    required this.method,
+    required this.path, required this.method,
   });
   @override
   final String path;

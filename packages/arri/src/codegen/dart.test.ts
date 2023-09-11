@@ -1,7 +1,6 @@
 import { execSync } from "child_process";
 import { writeFileSync } from "fs";
 import path from "path";
-import { Type } from "@sinclair/typebox";
 import { test } from "vitest";
 import {
     dartServiceFromServiceDefinition,
@@ -9,6 +8,7 @@ import {
     createDartClient,
 } from "./dart";
 import { type ApplicationDef, normalizeWhitespace } from "./utils";
+import { a } from "arri-validate";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {
@@ -130,46 +130,41 @@ class UserSettingsService {
     });
 
     test("Model Generation", () => {
-        const schema = Type.Object({
-            _metadata: Type.String(),
-            id: Type.String(),
-            email: Type.Optional(Type.String()),
-            createdAt: Type.Integer(),
-            lastSignedIn: Type.Optional(Type.Integer()),
-            rating: Type.Number(),
-            weightedRating: Type.Optional(Type.Number()),
-            followedUsers: Type.Array(Type.String()),
-            recentlyFollowedUsers: Type.Array(
-                Type.Object(
+        const schema = a.object({
+            _metadata: a.string(),
+            id: a.string(),
+            email: a.optional(a.string()),
+            createdAt: a.int32(),
+            lastSignedIn: a.optional(a.int32()),
+            rating: a.number(),
+            weightedRating: a.optional(a.number()),
+            followedUsers: a.array(a.string()),
+            recentlyFollowedUsers: a.array(
+                a.object(
                     {
-                        id: Type.String(),
-                        email: Type.String(),
+                        id: a.string(),
+                        email: a.string(),
                     },
                     {
-                        $id: "FollowedUser",
+                        id: "FollowedUser",
                     },
                 ),
             ),
-            followedHashtags: Type.Optional(Type.Array(Type.String())),
-            settings: Type.Object({
-                enablePushNotifications: Type.Boolean(),
-                isPrivate: Type.Boolean(),
+            followedHashtags: a.optional(a.array(a.string())),
+            settings: a.object({
+                enablePushNotifications: a.boolean(),
+                isPrivate: a.boolean(),
             }),
-            category: Type.Object(
+            category: a.object(
                 {
-                    id: Type.String(),
-                    title: Type.String(),
-                    description: Type.String(),
+                    id: a.string(),
+                    title: a.string(),
+                    description: a.string(),
                 },
-                { $id: "Category" },
+                { id: "Category" },
             ),
-            role: Type.Union([
-                Type.Literal("standard"),
-                Type.Literal("admin"),
-                Type.Literal("mod"),
-                Type.Literal("anonymous-user"),
-            ]),
-            miscData: Type.Record(Type.String(), Type.Any()),
+            role: a.stringEnum(["standard", "admin", "mod", "anonymous-user"]),
+            miscData: a.record(a.any()),
         });
 
         const result = dartModelFromJsonSchema("User", schema as any, {
@@ -407,17 +402,12 @@ enum UserRole implements Comparable<UserRole> {
 test("Dart client test", () => {
     const apiDef: ApplicationDef = {
         arriSchemaVersion: "0.0.1",
-        errors: {
-            type: "object",
-            properties: {
-                name: { type: "string" },
-                statusCode: { type: "integer" },
-                statusMessage: { type: "string" },
-                message: { type: "string" },
-                data: {},
-            },
-            required: ["name", "statusCode", "statusMessage", "message"],
-        },
+        errors: a.object({
+            statusCode: a.int8(),
+            statusMessage: a.string(),
+            data: a.any(),
+            stack: a.array(a.any()),
+        }),
         procedures: {
             sayHello: {
                 path: "/say-hello",
@@ -463,69 +453,58 @@ test("Dart client test", () => {
             },
         },
         models: {
-            SayHelloResponse: Type.Object({
-                message: Type.String(),
-            }) as any,
-            User: Type.Object({
-                _metadata: Type.String(),
-                id: Type.String(),
-                email: Type.Optional(Type.String()),
-                createdAt: Type.Integer(),
-                updatedAt: Type.Date(),
-                role: Type.Enum({
-                    standard: "standard",
-                    admin: "admin",
-                }),
-                preferredTheme: Type.Optional(
-                    Type.Enum({
-                        light: "light",
-                        dark: "dark",
-                        systemDefault: "system-default",
-                    }),
+            SayHelloResponse: a.object({
+                message: a.string(),
+            }),
+            User: a.object({
+                _metadata: a.string(),
+                id: a.string(),
+                email: a.optional(a.string()),
+                createdAt: a.int32(),
+                updatedAt: a.timestamp(),
+                role: a.stringEnum(["standard", "admin"]),
+                preferredTheme: a.optional(
+                    a.stringEnum(["light", "dark", "system-default"]),
                 ),
-                miscData: Type.Record(Type.String(), Type.Any()),
-            }) as any,
-            UserV2: Type.Object({
-                id: Type.String(),
-                email: Type.String(),
-                username: Type.String(),
-                createdAt: Type.Date(),
-                updatedAt: Type.Date(),
-                role: Type.Enum({
-                    standard: "standard",
-                    admin: "admin",
-                    moderator: "moderator",
+                miscData: a.record(a.any()),
+            }),
+            UserV2: a.object({
+                id: a.string(),
+                email: a.string(),
+                username: a.string(),
+                createdAt: a.timestamp(),
+                updatedAt: a.timestamp(),
+                role: a.stringEnum(["standard", "admin", "moderator"]),
+            }),
+            UserParams: a.object({
+                id: a.string(),
+                email: a.string(),
+            }),
+            UserListParams: a.object({
+                limit: a.int32(),
+                skip: a.optional(a.int32()),
+            }),
+            UsersGetUsersResponse: a.object({
+                items: a.object({
+                    id: a.string(),
+                    email: a.string(),
                 }),
-            }) as any,
-            UserParams: Type.Object({
-                id: Type.String(),
-                email: Type.String(),
-            }) as any,
-            UserListParams: Type.Object({
-                limit: Type.Integer(),
-                skip: Type.Optional(Type.Integer()),
-            }) as any,
-            UsersGetUsersResponse: Type.Object({
-                items: Type.Object({
-                    id: Type.String(),
-                    email: Type.String(),
+            }),
+            Post: a.object({
+                id: a.string(),
+                title: a.string(),
+                content: a.string(),
+            }),
+            PostParams: a.object({
+                postId: a.string(),
+            }),
+            PostsUpdatePostParams: a.object({
+                postId: a.string(),
+                data: a.object({
+                    title: a.string(),
+                    content: a.string(),
                 }),
-            }) as any,
-            Post: Type.Object({
-                id: Type.String(),
-                title: Type.String(),
-                content: Type.String(),
-            }) as any,
-            PostParams: Type.Object({
-                postId: Type.String(),
-            }) as any,
-            PostsUpdatePostParams: Type.Object({
-                postId: Type.String(),
-                data: Type.Object({
-                    title: Type.String(),
-                    content: Type.String(),
-                }),
-            }) as any,
+            }),
         },
     };
     const result = createDartClient(apiDef, {

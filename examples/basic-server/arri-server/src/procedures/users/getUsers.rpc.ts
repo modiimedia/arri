@@ -1,26 +1,27 @@
 import { faker } from "@faker-js/faker";
 import { type Static, Type } from "@sinclair/typebox";
 import { defineRpc } from "arri";
+import { a } from "arri-validate";
 
-const UserSchema = Type.Object(
+const UserSchema = a.object(
     {
-        id: Type.String(),
-        email: Type.String(),
-        username: Type.String(),
+        id: a.string(),
+        email: a.string(),
+        username: a.string(),
     },
-    { $id: "UserSchema" },
+    { id: "UserSchema" },
 );
 
-type UserSchema = Static<typeof UserSchema>;
+type UserSchema = a.infer<typeof UserSchema>;
 
 export default defineRpc({
     method: "get",
-    params: Type.Object({
-        limit: Type.Number({ minimum: 1, maximum: 100 }),
+    params: a.object({
+        limit: a.number(),
     }),
-    response: Type.Object({
-        total: Type.Literal(1513951),
-        items: Type.Array(UserSchema),
+    response: a.object({
+        total: a.int32(),
+        items: a.array(UserSchema),
     }),
     handler({ params }) {
         const users: UserSchema[] = [];

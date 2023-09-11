@@ -5,21 +5,11 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri-codegen-utils"],
+            "outputs": ["{workspaceRoot}/packages/arri-codegen-utils/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-codegen-utils"
-            }
-        },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/arri-codegen-utils/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-codegen-utils --out-dir dist/packages/arri-codegen-utils"
             }
         },
         "publish": {

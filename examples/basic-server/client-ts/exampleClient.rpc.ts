@@ -49,7 +49,7 @@ export class ExampleClientUsersService {
     });
   }
   async getUser() {
-    return arriRequest<UsersGetUserResponse>({
+    return arriRequest<undefined>({
       url: `${this.baseUrl}/users/get-user`,
       method: "get",
 
@@ -64,59 +64,29 @@ export class ExampleClientUsersService {
       headers: this.headers,
     });
   }
-  async updateUser(params: UsersUpdateUserParams) {
-    return arriRequest<UsersUpdateUserResponse>({
+  async updateUser() {
+    return arriRequest<undefined>({
       url: `${this.baseUrl}/users/update-user`,
       method: "get",
-      params,
+
       headers: this.headers,
     });
   }
 }
 
 export interface TestGetTestResponse {
-  message: string;
+  message?: string;
 }
 
 export interface UsersDeleteUserParams {
-  id: string;
+  id?: string;
 }
 
 export interface UsersDeleteUserResponse {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
 }
 
-export interface UsersGetUserResponse {
-  id: string;
-  username: string;
-  email: string;
-  /**
-   * must be an integer
-   */
-  createdAt: number;
-}
+export interface UsersGetUsersParams {}
 
-export interface UsersGetUsersParams {
-  limit: number;
-}
-
-export interface UsersGetUsersResponse {
-  total: number;
-  items: UserSchema[];
-}
-export interface UserSchema {
-  id: string;
-  email: string;
-  username: string;
-}
-
-export interface UsersUpdateUserParams {
-  userId: string;
-}
-
-export interface UsersUpdateUserResponse {
-  id: string;
-  username: string;
-  email: string;
-}
+export interface UsersGetUsersResponse {}

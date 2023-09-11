@@ -1,7 +1,7 @@
 import { Optional, type Static, type TObject } from "@sinclair/typebox";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
 import {
-    type ArriSchema,
+    type ASchema,
     SCHEMA_METADATA,
     ValidationError,
     type ErrorObject,
@@ -10,7 +10,7 @@ import { jsonSchemaToJtdSchema } from "json-schema-to-jtd";
 
 export function typeboxAdapter<TInput extends TObject<any>>(
     input: TInput,
-): ArriSchema<Static<TInput>> {
+): ASchema<Static<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as any);
     console.log("FINAL SCHEMA", schema);
     return {

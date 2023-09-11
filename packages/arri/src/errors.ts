@@ -1,5 +1,3 @@
-import { type Static, Type } from "@sinclair/typebox";
-import { type ValueError } from "@sinclair/typebox/errors";
 import {
     type H3Error,
     createError,
@@ -7,22 +5,24 @@ import {
     isError,
     setResponseStatus,
     sendError,
+    send,
 } from "h3";
 import { type ArriOptions } from "./app";
 import { type RpcHandlerContext } from "./procedures";
 import { type RouteHandlerContext } from "./routes";
+import { ValidationError, a } from "arri-validate";
 
-export const ErrorResponse = Type.Object(
+export const ErrorResponse = a.object(
     {
-        statusCode: Type.Integer(),
-        statusMessage: Type.String(),
-        stack: Type.Array(Type.Any()),
-        data: Type.Optional(Type.Object({}, { additionalProperties: true })),
+        statusCode: a.int8(),
+        statusMessage: a.string(),
+        stack: a.array(a.any()),
+        data: a.optional(a.any()),
     },
-    { $id: "ErrorResponse" },
+    { id: "ErrorResponse" },
 );
 
-export type ErrorResponse = Static<typeof ErrorResponse>;
+export type ErrorResponse = a.infer<typeof ErrorResponse>;
 
 export function defineError(
     statusCode: StatusCode,
@@ -43,13 +43,15 @@ export function defineError(
 }
 
 export function errorResponseFromValidationErrors(
-    errors: ValueError[],
+    errors: ValidationError["errors"],
     prefixText = `Missing or invalid parameters`,
 ): H3Error {
     const errorParts: string[] = [];
     for (const err of errors) {
-        const propName = err.path.split("/");
-        propName.shift();
+        const propName = err.instancePath?.split("/") ?? [];
+        if (propName.length) {
+            propName.shift();
+        }
         if (!errorParts.includes(propName.join("."))) {
             errorParts.push(propName.join("."));
         }
@@ -270,5 +272,13 @@ export async function handleH3Error(
     if (event.handled) {
         return;
     }
-    sendError(event, error);
+    await send(
+        event,
+        JSON.stringify({
+            statusCode: error.statusCode,
+            statusMessage: error.statusMessage,
+            data: error.data,
+            stack: error.stack,
+        }),
+    );
 }

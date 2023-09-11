@@ -1,5 +1,4 @@
 import { writeFileSync } from "fs";
-import { Type } from "@sinclair/typebox";
 import {
     createTypescriptClient,
     tsModelFromDefinition,
@@ -10,6 +9,7 @@ import {
     normalizeWhitespace,
     type ApplicationDef,
 } from "./utils";
+import { a } from "packages/arri-validate/dist";
 
 describe("generateService", () => {
     test("Basic Service", () => {
@@ -87,33 +87,26 @@ describe("generateService", () => {
 
 describe("Generate Models", () => {
     test("basicModel", () => {
-        const input = Type.Object({
-            id: Type.String(),
-            email: Type.Optional(Type.String()),
-            createdAt: Type.Date(),
-            updatedAt: Type.Number(),
-            avgSessionTime: Type.Integer(),
-            role: Type.Enum({
-                standard: "standard",
-                admin: "admin",
+        const input = a.object({
+            id: a.string(),
+            email: a.optional(a.string()),
+            createdAt: a.timestamp(),
+            updatedAt: a.number(),
+            avgSessionTime: a.int32(),
+            role: a.stringEnum(["standard", "admin"]),
+            isPrivate: a.boolean(),
+            recentFollows: a.array(a.string()),
+            preferences: a.object({
+                darkMode: a.boolean(),
+                colorScheme: a.stringEnum(["red", "blue", "green"]),
             }),
-            isPrivate: Type.Boolean(),
-            recentFollows: Type.Array(Type.String()),
-            preferences: Type.Object({
-                darkMode: Type.Boolean(),
-                colorScheme: Type.Enum({
-                    red: "red",
-                    blue: "blue",
-                    green: "green",
-                }),
-            }),
-            favoriteFoods: Type.Array(
-                Type.Object({
-                    id: Type.String(),
-                    name: Type.String(),
+            favoriteFoods: a.array(
+                a.object({
+                    id: a.string(),
+                    name: a.string(),
                 }),
             ),
-            miscData: Type.Record(Type.String(), Type.Any()),
+            miscData: a.record(a.any()),
         });
         const result = tsModelFromDefinition("User", input as any);
         expect(normalizeWhitespace(result)).toBe(
@@ -148,11 +141,11 @@ describe("Generate Models", () => {
 });
 
 test("Client generation", async () => {
-    const UserSchema = Type.Object({
-        id: Type.String(),
-        name: Type.String(),
-        email: Type.String(),
-        createdAt: Type.Date(),
+    const UserSchema = a.object({
+        id: a.string(),
+        name: a.string(),
+        email: a.string(),
+        createdAt: a.timestamp(),
     });
     const input: ApplicationDef = {
         arriSchemaVersion: "0.0.1",
@@ -189,31 +182,31 @@ test("Client generation", async () => {
             },
         },
         models: {
-            SayHelloResponse: Type.Object({
-                message: Type.String(),
+            SayHelloResponse: a.object({
+                message: a.string(),
             }),
             User: UserSchema as any,
-            UserParams: Type.Object({
-                userId: Type.String(),
+            UserParams: a.object({
+                userId: a.string(),
             }),
-            UsersUpdateUserParams: Type.Object({
-                userId: Type.String(),
-                data: Type.Partial(UserSchema),
-            }) as any,
-            PostParams: Type.Object({
-                postId: Type.String(),
+            UsersUpdateUserParams: a.object({
+                userId: a.string(),
+                data: UserSchema,
             }),
-            Post: Type.Object({
-                id: Type.String(),
-                title: Type.String(),
-                createdAt: Type.Integer(),
+            PostParams: a.object({
+                postId: a.string(),
             }),
-            PostCommentParams: Type.Object({
-                postId: Type.String(),
-                commentId: Type.String(),
+            Post: a.object({
+                id: a.string(),
+                title: a.string(),
+                createdAt: a.int32(),
             }),
-        } as any,
-        errors: Type.Object({}),
+            PostCommentParams: a.object({
+                postId: a.string(),
+                commentId: a.string(),
+            }),
+        },
+        errors: a.object({}),
     };
     const client = await createTypescriptClient(input, `TypescriptClient`);
     writeFileSync("./example-client.ts", client);

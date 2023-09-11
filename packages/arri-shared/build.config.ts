@@ -3,7 +3,7 @@ import path from "node:path";
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
-    readFileSync(path.resolve(__dirname, "../../package.json"), {
+    readFileSync(path.resolve(__dirname, "./package.json"), {
         encoding: "utf-8",
     }),
 );
@@ -15,10 +15,10 @@ export default defineBuildConfig({
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: false,
+            respectExternal: true,
         },
     },
-    outDir: "../../dist/packages/arri-shared/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
     failOnWarn: false,

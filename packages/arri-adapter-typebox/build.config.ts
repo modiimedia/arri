@@ -18,7 +18,7 @@ export default defineBuildConfig({
             respectExternal: false,
         },
     },
-    outDir: "../../dist/packages/arri-adapter-typebox/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
     failOnWarn: false,
