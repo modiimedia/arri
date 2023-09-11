@@ -1,13 +1,13 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
+import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
 import { build } from "esbuild";
 import path from "pathe";
 import prettier from "prettier";
-import { isApplicationDef } from "../codegen/utils";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
 import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
@@ -36,9 +36,7 @@ export default defineCommand({
     },
 });
 
-const logger = createConsola({
-    fancy: true,
-}).withTag("arri");
+const logger = createConsola().withTag("arri");
 
 async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
@@ -67,7 +65,7 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
             "__definition.json",
         );
         const def = JSON.parse(readFileSync(defJson, { encoding: "utf-8" }));
-        if (isApplicationDef(def)) {
+        if (isAppDefinition(def)) {
             await Promise.all(
                 config.clientGenerators.map((plugin) => plugin.generator(def)),
             );

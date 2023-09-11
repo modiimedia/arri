@@ -1,4 +1,11 @@
 import {
+    unflattenProcedures,
+    type AppDefinition,
+    isServiceDefinition,
+    type ServiceDefinition,
+    type RpcDefinition,
+} from "arri-codegen-utils";
+import {
     type JsonSchemaObject,
     isJsonSchemaArray,
     isJsonSchemaEnum,
@@ -8,13 +15,6 @@ import {
 } from "json-schema-to-jtd";
 import { camelCase, pascalCase } from "scule";
 import { defineClientGeneratorPlugin } from "./plugin";
-import {
-    unflattenProcedures,
-    type ApplicationDef,
-    isServiceDef,
-    type ServiceDef,
-    type ProcedureDef,
-} from "./utils";
 
 interface KotlinClientGeneratorOptions {
     clientName: string;
@@ -35,7 +35,7 @@ export const kotlinClientGenerator = defineClientGeneratorPlugin(function (
 });
 
 export function createKotlinClient(
-    def: ApplicationDef,
+    def: AppDefinition,
     clientName: string,
     packageName: string,
 ) {
@@ -63,14 +63,14 @@ export function createKotlinClient(
 export function createKotlinServiceFromDefinition(
     clientName: string,
     serviceName: string,
-    def: ServiceDef,
+    def: ServiceDefinition,
 ) {
     const rpcParts: string[] = [];
     const subServiceParts: { name: string; key: string; content: string }[] =
         [];
     Object.keys(def).forEach((key) => {
         const node = def[key];
-        if (isServiceDef(node)) {
+        if (isServiceDefinition(node)) {
             const nameParts = serviceName.split("Service");
             nameParts.pop();
             const subServiceName = pascalCase(
@@ -108,7 +108,7 @@ export function createKotlinServiceFromDefinition(
 export function createKotlinRpcFromDefinition(
     clientName: string,
     name: string,
-    def: ProcedureDef,
+    def: RpcDefinition,
 ) {
     const paramStr = def.params ? `params: ${pascalCase(def.params)}` : "";
     const responseStr = def.response

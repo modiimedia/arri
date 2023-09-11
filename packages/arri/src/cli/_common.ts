@@ -1,11 +1,11 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
+import { removeDisallowedChars } from "arri-codegen-utils";
 import { build } from "esbuild";
 import { globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
-import { removeDisallowedChars } from "../codegen/utils";
 import { type ResolvedArriConfig } from "../config";
 
 export async function setupWorkingDir(config: ResolvedArriConfig) {

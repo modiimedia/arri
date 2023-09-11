@@ -1,9 +1,9 @@
-import { type ApplicationDef } from "./utils";
+import { type AppDefinition } from "arri-codegen-utils";
 
 export interface ClientGenerator<
     TOptions extends Record<string, any> | undefined,
 > {
-    generator: (def: ApplicationDef) => any;
+    generator: (def: AppDefinition) => any;
     options: TOptions;
 }
 

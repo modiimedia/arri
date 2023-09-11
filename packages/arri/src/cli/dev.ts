@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import chokidar from "chokidar";
 import { defineCommand } from "citty";
@@ -8,13 +9,10 @@ import { listenAndWatch } from "listhen";
 import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
-import { isApplicationDef } from "../codegen/utils";
 import { type ResolvedArriConfig } from "../config";
 import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
-const logger = createConsola({
-    fancy: true,
-}).withTag("arri");
+const logger = createConsola().withTag("arri");
 
 export default defineCommand({
     meta: {
@@ -137,7 +135,7 @@ async function generateClients(config: ResolvedArriConfig) {
         const result = await ofetch(
             `http://127.0.0.1:${config.port}${DEV_DEFINITION_ENDPOINT}`,
         );
-        if (!isApplicationDef(result)) {
+        if (!isAppDefinition(result)) {
             return;
         }
         logger.log(`Generating client code...`);

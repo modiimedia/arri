@@ -1,19 +1,19 @@
 import { writeFileSync } from "fs";
+import {
+    type ServiceDefinition,
+    normalizeWhitespace,
+    type AppDefinition,
+} from "arri-codegen-utils";
 import { a } from "arri-validate";
 import {
     createTypescriptClient,
     tsModelFromDefinition,
     tsServiceFromServiceDefinition,
 } from "./typescript";
-import {
-    type ServiceDef,
-    normalizeWhitespace,
-    type ApplicationDef,
-} from "./utils";
 
 describe("generateService", () => {
     test("Basic Service", () => {
-        const input: ServiceDef = {
+        const input: ServiceDefinition = {
             getUser: {
                 description: "Fetches the user by id",
                 path: "/users/get-user",
@@ -147,8 +147,8 @@ test("Client generation", async () => {
         email: a.string(),
         createdAt: a.timestamp(),
     });
-    const input: ApplicationDef = {
-        arriSchemaVersion: "0.0.1",
+    const input: AppDefinition = {
+        arriSchemaVersion: "0.0.2",
         procedures: {
             sayHello: {
                 path: "/say-hello",

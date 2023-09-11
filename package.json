@@ -6,6 +6,7 @@
         "url": "https://github.com/modiimedia/arri"
     },
     "scripts": {
+        "build": "nx run-many -t build",
         "scaffold": "jiti tools/scripts/scaffold-package.ts",
         "publish": "jiti tools/scripts/publish.ts",
         "postversion": "jiti tools/scripts/version-sync.ts",
@@ -31,7 +32,7 @@
         "@vitest/ui": "^0.34.4",
         "bun-types": "latest",
         "citty": "^0.1.4",
-        "depcheck": "^1.4.5",
+        "depcheck": "^1.4.6",
         "eslint": "8.49.0",
         "eslint-config-prettier": "^9.0.0",
         "eslint-config-standard-with-typescript": "^39.0.0",
