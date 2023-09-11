@@ -2,7 +2,7 @@ import { type ValidateFunction } from "ajv";
 import { type SchemaFormType } from "@modii/jtd";
 
 import { ValidationError, AJV } from "./validation";
-import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "arri-shared";
+import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "../schemas";
 
 const numberTypes = [
     "float32",

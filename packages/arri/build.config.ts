@@ -1,5 +1,12 @@
 import { defineBuildConfig } from "unbuild";
+import fs from "node:fs";
 import path from "pathe";
+
+const packageJson = fs.readFileSync(
+    path.resolve(__dirname, "package.json"),
+) as any;
+
+const deps = Object.keys(packageJson.dependencies).map((key) => key);
 
 export default defineBuildConfig({
     entries: [
@@ -10,37 +17,12 @@ export default defineBuildConfig({
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: false,
+            respectExternal: true,
         },
     },
-    alias: {
-        "arri-codegen-utils": path.resolve(
-            __dirname,
-            "../../packages/arri-codegen-utils/src/index.ts",
-        ),
-        "arri-shared": path.resolve(
-            __dirname,
-            "../../packages/arri-shared/src/index.ts",
-        ),
-        "json-schema-to-jtd": path.resolve(
-            __dirname,
-            "../../packages/json-schema-to-jtd/src/index.ts",
-        ),
-    },
-    outDir: "../../dist/packages/arri/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
     failOnWarn: false,
-    externals: [
-        "esbuild",
-        "listhen",
-        "h3",
-        "@sinclair/typebox",
-        "ofetch",
-        "citty",
-        "consola",
-        "prettier",
-        "pathe",
-        "jiti",
-    ],
+    externals: deps,
 });

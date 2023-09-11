@@ -5,7 +5,7 @@ import {
     AStringEnumSchema,
     MaybeNullable,
     SCHEMA_METADATA,
-} from "arri-shared";
+} from "../schemas";
 
 /**
  * An enumeration of string values

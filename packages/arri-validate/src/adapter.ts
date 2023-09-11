@@ -1,4 +1,4 @@
-import { ASchema } from "arri-shared";
+import { ASchema } from "./schemas";
 
 export { ValidationError } from "./lib/validation";
 export type { ErrorObject } from "ajv";

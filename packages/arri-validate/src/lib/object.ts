@@ -5,11 +5,10 @@ import {
     ASchema,
     InferObjectOutput,
     InferType,
-    ASchemaOptions,
     SCHEMA_METADATA,
     AObjectSchema,
     AObjectSchemaOptions,
-} from "arri-shared";
+} from "../schemas";
 
 export function object<
     TInput extends Record<any, ASchema> = any,

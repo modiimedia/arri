@@ -1,4 +1,4 @@
-import { ASchema, ASchemaOptions, SCHEMA_METADATA } from "arri-shared";
+import { ASchema, ASchemaOptions, SCHEMA_METADATA } from "../schemas";
 
 /**
  * Transforms a schema into a nullable type

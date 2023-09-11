@@ -31,12 +31,7 @@ import {
     type RouteHandlerContext,
     type RoutePostHandlerContext,
 } from "./routes";
-import {
-    AObjectSchema,
-    ASchema,
-    isAObjectSchema,
-    isASchema,
-} from "arri-shared";
+import { AObjectSchema, ASchema, isAObjectSchema } from "arri-shared";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;

@@ -8,7 +8,7 @@ import {
     InferType,
     ResolveObject,
     SCHEMA_METADATA,
-} from "arri-shared";
+} from "../schemas";
 
 export function discriminator<
     TDiscriminatorKey extends string,

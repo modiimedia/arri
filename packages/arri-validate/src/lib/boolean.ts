@@ -5,7 +5,7 @@ import {
     type ASchemaOptions,
     type MaybeNullable,
     SCHEMA_METADATA,
-} from "arri-shared";
+} from "../schemas";
 
 const schema: SchemaFormType = {
     type: "boolean",

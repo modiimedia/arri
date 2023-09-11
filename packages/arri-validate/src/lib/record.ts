@@ -7,7 +7,7 @@ import {
     ASchemaOptions,
     InferType,
     SCHEMA_METADATA,
-} from "arri-shared";
+} from "../schemas";
 
 export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,

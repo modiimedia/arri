@@ -6,7 +6,7 @@ import {
     InferType,
     ASchemaOptions,
     SCHEMA_METADATA,
-} from "arri-shared";
+} from "../schemas";
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     input: TInnerSchema,

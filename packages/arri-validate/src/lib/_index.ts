@@ -10,4 +10,4 @@ export * from "./record";
 export * from "./string";
 export * from "./timestamp";
 export { parse, safeParse, serialize, validate } from "./validation";
-export type { InferType as infer } from "arri-shared";
+export type { InferType as infer } from "../schemas";
