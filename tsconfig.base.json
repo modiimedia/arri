@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
-        "module": "ES2022",
-        "moduleResolution": "Bundler",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,

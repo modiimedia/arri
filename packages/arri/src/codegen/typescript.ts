@@ -1,6 +1,7 @@
 import { defineClientGeneratorPlugin } from "./plugin";
 
-let generatedModels: string[] = [];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const generatedModels: string[] = [];
 
 interface TypescriptClientGeneratorOptions {
     clientName: string;

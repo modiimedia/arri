@@ -1,4 +1,5 @@
 import { writeFileSync } from "fs";
+import { a } from "arri-validate";
 import {
     createTypescriptClient,
     tsModelFromDefinition,
@@ -9,7 +10,6 @@ import {
     normalizeWhitespace,
     type ApplicationDef,
 } from "./utils";
-import { a } from "packages/arri-validate/dist";
 
 describe("generateService", () => {
     test("Basic Service", () => {

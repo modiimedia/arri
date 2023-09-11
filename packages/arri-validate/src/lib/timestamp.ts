@@ -1,6 +1,6 @@
 import { type SchemaFormType } from "@modii/jtd";
+import { type AScalarSchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
 import { ValidationError, AJV } from "./validation";
-import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "../schemas";
 
 const schema: SchemaFormType = {
     type: "timestamp",

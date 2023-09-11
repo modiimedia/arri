@@ -5,11 +5,18 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    ignorePatterns: ["**/*.json", "*.json", "node_modules", "dist", "**/*.js"],
+    ignorePatterns: [
+        "**/*.json",
+        "*.json",
+        "node_modules",
+        "dist",
+        "**/*.js",
+        "**/**/dist/*.d.ts",
+    ],
     extends: [
         "standard-with-typescript",
         "plugin:import/recommended",
-        "json",
+        // "json",
         "prettier",
     ],
     overrides: [

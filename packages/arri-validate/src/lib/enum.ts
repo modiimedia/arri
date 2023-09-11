@@ -1,11 +1,11 @@
 import { type Schema as JtdSchema } from "@modii/jtd";
-import { ValidationError, AJV } from "./validation";
 import {
-    ASchemaOptions,
-    AStringEnumSchema,
-    MaybeNullable,
+    type ASchemaOptions,
+    type AStringEnumSchema,
+    type MaybeNullable,
     SCHEMA_METADATA,
 } from "../schemas";
+import { ValidationError, AJV } from "./validation";
 
 /**
  * An enumeration of string values

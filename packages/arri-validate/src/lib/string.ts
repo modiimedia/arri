@@ -1,4 +1,4 @@
-import { AScalarSchema, ASchemaOptions, SCHEMA_METADATA } from "../schemas";
+import { type AScalarSchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
 import { ValidationError } from "./validation";
 
 const isString = (input: unknown): input is string => typeof input === "string";

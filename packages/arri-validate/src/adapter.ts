@@ -1,4 +1,4 @@
-import { ASchema } from "./schemas";
+import { type ASchema } from "./schemas";
 
 export { ValidationError } from "./lib/validation";
 export type { ErrorObject } from "ajv";

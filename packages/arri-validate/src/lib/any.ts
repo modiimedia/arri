@@ -1,5 +1,5 @@
 import { type Schema } from "@modii/jtd";
-import { ASchema, SCHEMA_METADATA } from "../schemas";
+import { type ASchema, SCHEMA_METADATA } from "../schemas";
 import { AJV } from "./validation";
 
 const anyRawSchema: Schema = {};

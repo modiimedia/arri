@@ -1,4 +1,3 @@
-import { Type } from "@sinclair/typebox";
 import { defineRpc } from "arri";
 import { a } from "arri-validate";
 

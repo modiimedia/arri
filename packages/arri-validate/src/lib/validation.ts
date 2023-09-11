@@ -1,5 +1,5 @@
 import Ajv, { type ErrorObject, ValidationError } from "ajv/dist/jtd";
-import { ASchema, SCHEMA_METADATA } from "../schemas";
+import { type ASchema, SCHEMA_METADATA } from "../schemas";
 
 export const AJV = new Ajv({ strictSchema: false });
 export { type ErrorObject, ValidationError };

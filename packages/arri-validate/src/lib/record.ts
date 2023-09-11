@@ -1,13 +1,13 @@
 import { type SchemaFormValues } from "@modii/jtd";
 
-import { ValidationError, AJV } from "./validation";
 import {
-    ARecordSchema,
-    ASchema,
-    ASchemaOptions,
-    InferType,
+    type ARecordSchema,
+    type ASchema,
+    type ASchemaOptions,
+    type InferType,
     SCHEMA_METADATA,
 } from "../schemas";
+import { ValidationError, AJV } from "./validation";
 
 export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,

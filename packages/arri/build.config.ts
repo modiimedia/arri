@@ -1,6 +1,6 @@
-import { defineBuildConfig } from "unbuild";
 import fs from "node:fs";
 import path from "pathe";
+import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, "./package.json"), {

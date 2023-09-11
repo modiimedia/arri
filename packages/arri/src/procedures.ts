@@ -1,3 +1,16 @@
+import { type ValidationError } from "ajv/dist/jtd";
+import {
+    type HttpMethod,
+    isHttpMethod,
+    type RpcDefinition,
+    removeDisallowedChars,
+} from "arri-codegen-utils";
+import {
+    type AObjectSchema,
+    type InferType,
+    SCHEMA_METADATA,
+    isAObjectSchema,
+} from "arri-validate";
 import {
     eventHandler,
     type Router,
@@ -9,18 +22,9 @@ import {
     getQuery,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
-import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
+import { type ArriOptions } from "./app";
 import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./routes";
-import { HttpMethod, isHttpMethod } from "arri-codegen-utils";
-import { ArriOptions } from "./app";
-import { ValidationError } from "ajv/dist/jtd";
-import {
-    AObjectSchema,
-    InferType,
-    SCHEMA_METADATA,
-    isAObjectSchema,
-} from "arri-validate";
 
 export interface ArriProcedure<
     TParams extends AObjectSchema | undefined,
@@ -92,7 +96,7 @@ export function createRpcDefinition(
     rpcName: string,
     httpPath: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDef {
+): RpcDefinition {
     return {
         description: procedure.description,
         path: httpPath,
@@ -155,7 +159,7 @@ export function getRpcResponseName(
 function getRpcResponseDefinition(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDef["response"] {
+): RpcDefinition["response"] {
     if (!isAObjectSchema(procedure.response)) {
         return undefined;
     }

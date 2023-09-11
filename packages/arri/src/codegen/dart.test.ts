@@ -1,14 +1,14 @@
 import { execSync } from "child_process";
 import { writeFileSync } from "fs";
 import path from "path";
+import { type AppDefinition, normalizeWhitespace } from "arri-codegen-utils";
+import { a } from "arri-validate";
 import { test } from "vitest";
 import {
     dartServiceFromServiceDefinition,
     dartModelFromJsonSchema,
     createDartClient,
 } from "./dart";
-import { type ApplicationDef, normalizeWhitespace } from "./utils";
-import { a } from "arri-validate";
 
 describe("Dart Tests", () => {
     test("Service Generation", () => {
@@ -400,8 +400,8 @@ enum UserRole implements Comparable<UserRole> {
 });
 
 test("Dart client test", () => {
-    const apiDef: ApplicationDef = {
-        arriSchemaVersion: "0.0.1",
+    const apiDef: AppDefinition = {
+        arriSchemaVersion: "0.0.2",
         errors: a.object({
             statusCode: a.int8(),
             statusMessage: a.string(),

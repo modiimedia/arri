@@ -1,5 +1,5 @@
 import {
-    Type as JtdType,
+    type Type as JtdType,
     isDiscriminatorForm,
     isElementsForm,
     isEnumForm,

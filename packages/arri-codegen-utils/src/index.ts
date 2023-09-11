@@ -1,4 +1,4 @@
-import { SchemaFormProperties, isPropertiesForm } from "@modii/jtd";
+import { type SchemaFormProperties, isPropertiesForm } from "@modii/jtd";
 export * from "@modii/jtd";
 
 export const HttpMethodValues = [

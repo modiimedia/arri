@@ -2,14 +2,15 @@
     "name": "@arri/arri-source",
     "version": "0.0.40",
     "license": "MIT",
-    "type": "module",
     "repository": {
         "url": "https://github.com/modiimedia/arri"
     },
     "scripts": {
         "scaffold": "jiti tools/scripts/scaffold-package.ts",
         "publish": "jiti tools/scripts/publish.ts",
-        "postversion": "jiti tools/scripts/version-sync.ts"
+        "postversion": "jiti tools/scripts/version-sync.ts",
+        "lint": "eslint . --ext ts",
+        "lint:fix": "eslint . --ext ts --fix"
     },
     "private": true,
     "devDependencies": {

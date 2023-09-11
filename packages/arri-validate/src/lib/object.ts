@@ -1,14 +1,14 @@
 import { type Schema, type SchemaFormProperties } from "@modii/jtd";
 
-import { ValidationError, AJV } from "./validation";
 import {
-    ASchema,
-    InferObjectOutput,
-    InferType,
+    type ASchema,
+    type InferObjectOutput,
+    type InferType,
     SCHEMA_METADATA,
-    AObjectSchema,
-    AObjectSchemaOptions,
+    type AObjectSchema,
+    type AObjectSchemaOptions,
 } from "../schemas";
+import { ValidationError, AJV } from "./validation";
 
 export function object<
     TInput extends Record<any, ASchema> = any,

@@ -1,10 +1,10 @@
-import { pascalCase } from "scule";
-import { defineClientGeneratorPlugin } from "./plugin";
 import {
     type ServiceDefinition,
     isRpcDefinition,
     type RpcDefinition,
 } from "arri-codegen-utils";
+import { pascalCase } from "scule";
+import { defineClientGeneratorPlugin } from "./plugin";
 
 export interface DartClientGeneratorOptions {
     clientName: string;
@@ -30,7 +30,6 @@ export const dartClientGenerator = defineClientGeneratorPlugin(
                     console.warn(
                         "No procedures found in definition file. Dart client will not be generated",
                     );
-                    return;
                 }
                 // const result = createDartClient(def, {
                 //     clientName: options.clientName,

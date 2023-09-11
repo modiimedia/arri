@@ -1,11 +1,11 @@
 import { type SchemaFormType } from "@modii/jtd";
-import { ValidationError, AJV } from "./validation";
 import {
     type AScalarSchema,
     type ASchemaOptions,
     type MaybeNullable,
     SCHEMA_METADATA,
 } from "../schemas";
+import { ValidationError, AJV } from "./validation";
 
 const schema: SchemaFormType = {
     type: "boolean",

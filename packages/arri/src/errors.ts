@@ -1,16 +1,15 @@
+import { type ValidationError, a } from "arri-validate";
 import {
     type H3Error,
     createError,
     type H3Event,
     isError,
     setResponseStatus,
-    sendError,
     send,
 } from "h3";
 import { type ArriOptions } from "./app";
 import { type RpcHandlerContext } from "./procedures";
 import { type RouteHandlerContext } from "./routes";
-import { ValidationError, a } from "arri-validate";
 
 export const ErrorResponse = a.object(
     {

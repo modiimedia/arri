@@ -139,7 +139,7 @@ function projectJsonTemplate(packageName: string) {
 function eslintConfigTemplate() {
     return `{
     "extends": ["../../.eslintrc.js"],
-    "ignorePatterns": ["!**/*"],
+    "ignorePatterns": [],
     "overrides": [
         {
             "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],

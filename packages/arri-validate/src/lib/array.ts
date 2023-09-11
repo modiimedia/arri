@@ -1,12 +1,12 @@
 import { type Schema } from "@modii/jtd";
-import { ValidationError, AJV } from "./validation";
 import {
-    AArraySchema,
-    ASchema,
-    InferType,
-    ASchemaOptions,
+    type AArraySchema,
+    type ASchema,
+    type InferType,
+    type ASchemaOptions,
     SCHEMA_METADATA,
 } from "../schemas";
+import { ValidationError, AJV } from "./validation";
 
 export function array<TInnerSchema extends ASchema<any> = any>(
     input: TInnerSchema,

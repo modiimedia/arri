@@ -1,14 +1,14 @@
-import { ValidationError } from "ajv";
 import { type SchemaFormDiscriminator } from "@modii/jtd";
-import { AJV } from "./validation";
+import { ValidationError } from "ajv";
 import {
-    ADiscriminatorSchema,
-    AObjectSchema,
-    ASchemaOptions,
-    InferType,
-    ResolveObject,
+    type ADiscriminatorSchema,
+    type AObjectSchema,
+    type ASchemaOptions,
+    type InferType,
+    type ResolveObject,
     SCHEMA_METADATA,
 } from "../schemas";
+import { AJV } from "./validation";
 
 export function discriminator<
     TDiscriminatorKey extends string,

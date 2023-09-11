@@ -1,5 +1,5 @@
-import { a } from "arri-validate";
 import { Arri } from "arri";
+import { a } from "arri-validate";
 
 const app = new Arri({
     onError(err, context, event) {

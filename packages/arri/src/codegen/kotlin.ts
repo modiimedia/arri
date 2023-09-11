@@ -1,3 +1,11 @@
+import {
+    type JsonSchemaObject,
+    isJsonSchemaArray,
+    isJsonSchemaEnum,
+    isJsonSchemaNullType,
+    isJsonSchemaObject,
+    isJsonSchemaScalarType,
+} from "json-schema-to-jtd";
 import { camelCase, pascalCase } from "scule";
 import { defineClientGeneratorPlugin } from "./plugin";
 import {
@@ -7,14 +15,6 @@ import {
     type ServiceDef,
     type ProcedureDef,
 } from "./utils";
-import {
-    JsonSchemaObject,
-    isJsonSchemaArray,
-    isJsonSchemaEnum,
-    isJsonSchemaNullType,
-    isJsonSchemaObject,
-    isJsonSchemaScalarType,
-} from "json-schema-to-jtd";
 
 interface KotlinClientGeneratorOptions {
     clientName: string;
