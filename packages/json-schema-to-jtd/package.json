@@ -9,6 +9,6 @@
         "dist"
     ],
     "dependencies": {
-        "@modii/jtd": "^0.2.0"
+        "@modii/jtd": "^0.2.1"
     }
 }
