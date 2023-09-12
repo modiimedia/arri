@@ -363,6 +363,9 @@ export function dartModelFromJsonSchema(
           .map((field) => {
               const isNullable = field.type.endsWith("?");
               const typeName = field.type.replace("?", "");
+              if (typeName === "dynamic") {
+                  return `"${field.jsonKey}": ${field.name}`;
+              }
               if (isDartTypeWithNullables(field.type)) {
                   const transformer = transformers[typeName as DartType];
                   return transformer.toJsonBody(
@@ -392,7 +395,12 @@ export function dartModelFromJsonSchema(
   }
   ${modelDisplayName} copyWith({
     ${fields
-        .map((field) => `${field.type.replace("?", "")}? ${field.name},`)
+        .map(
+            (field) =>
+                `${field.type.replace("?", "")}${
+                    field.type !== "dynamic" ? "?" : ""
+                } ${field.name},`,
+        )
         .join("\n    ")}
   }) {
     return ${modelDisplayName}(
@@ -414,7 +422,7 @@ export function dartPropertyTypeFromSchema(
 ): [DartType | string, string[] | undefined] {
     const prop = schema.properties?.[propertyName];
     const isOptional = !schema.required?.includes(propertyName);
-    let finalType = "";
+    let finalType = "dynamic";
     const subTypes: string[] = [];
     if (isJsonSchemaEnum(prop)) {
         const enumName: string = pascalCase(`${objectName}_${propertyName}`);
@@ -571,6 +579,9 @@ export function dartParsedJsonField(
     jsonKey: string,
     dartType: string,
 ) {
+    if (dartType === "dynamic") {
+        return `${fieldName}: json["${jsonKey}"]`;
+    }
     if (isDartTypeWithNullables(dartType)) {
         switch (dartType) {
             case "String":

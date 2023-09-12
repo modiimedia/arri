@@ -133,6 +133,7 @@ class UserSettingsService {
         const schema = Type.Object({
             _metadata: Type.String(),
             id: Type.String(),
+            name: Type.Union([Type.String(), Type.Null()]),
             email: Type.Optional(Type.String()),
             createdAt: Type.Integer(),
             lastSignedIn: Type.Optional(Type.Integer()),
@@ -179,6 +180,7 @@ class UserSettingsService {
             normalizeWhitespace(`class User {
   final String metadata;
   final String id;
+  final dynamic name;
   final String? email;
   final int createdAt;
   final int? lastSignedIn;
@@ -194,6 +196,7 @@ class UserSettingsService {
   const User({
     required this.metadata,
     required this.id,
+    required this.name,
     this.email,
     required this.createdAt,
     this.lastSignedIn,
@@ -211,6 +214,7 @@ class UserSettingsService {
     return User(
       metadata: typeFromDynamic<String>(json["_metadata"], ""),
       id: typeFromDynamic<String>(json["id"], ""),
+      name: json["name"],
       email: nullableTypeFromDynamic<String>(json["email"]),
       createdAt: intFromDynamic(json["createdAt"], 0),
       lastSignedIn: nullableIntFromDynamic(json["lastSignedIn"]),
@@ -231,6 +235,7 @@ class UserSettingsService {
     return {
       "_metadata": metadata,
       "id": id,
+      "name": name,
       "email": email,
       "createdAt": createdAt,
       "lastSignedIn": lastSignedIn,
@@ -248,6 +253,7 @@ class UserSettingsService {
   User copyWith({
     String? metadata,
     String? id,
+    dynamic name,
     String? email,
     int? createdAt,
     int? lastSignedIn,
@@ -264,6 +270,7 @@ class UserSettingsService {
     return User(
       metadata: metadata ?? this.metadata,
       id: id ?? this.id,
+      name: name ?? this.name,
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
       lastSignedIn: lastSignedIn ?? this.lastSignedIn,
