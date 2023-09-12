@@ -39,6 +39,9 @@ const User = a.object(
                 }),
             }),
         ),
+        bookmarks: a.record(
+            a.object({ postId: a.string(), userId: a.string() }),
+        ),
         bio: a.optional(a.string()),
     },
     { id: "User" },

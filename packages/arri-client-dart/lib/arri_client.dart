@@ -199,6 +199,18 @@ T? nullableTypeFromDynamic<T>(dynamic input) {
   return null;
 }
 
+List<T> typeListFromDynamic<T>(dynamic input, T fallback) {
+  return input is List
+      ? input.map((item) => typeFromDynamic<T>(input, fallback)).toList()
+      : [];
+}
+
+List<T?> nullableTypeListFromDynamic<T>(dynamic input) {
+  return input is List
+      ? input.map((item) => nullableTypeFromDynamic<T>(item)).toList()
+      : [];
+}
+
 double doubleFromDynamic(dynamic input, double fallback) {
   if (input is double) {
     return input;
@@ -217,6 +229,18 @@ double? nullableDoubleFromDynamic(dynamic input) {
     return input.toDouble();
   }
   return null;
+}
+
+List<double> doubleListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => doubleFromDynamic(input, 0)).toList()
+      : [];
+}
+
+List<double?> nullableDoubleListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => nullableDoubleFromDynamic(e)).toList()
+      : [];
 }
 
 int intFromDynamic(dynamic input, int fallback) {
@@ -239,7 +263,17 @@ int? nullableIntFromDynamic(dynamic input) {
   return null;
 }
 
-sealed class HelloWorld {}
+List<int> intListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => intFromDynamic(input, 0)).toList()
+      : [];
+}
+
+List<int?> nullableIntListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => nullableIntFromDynamic(e)).toList()
+      : [];
+}
 
 DateTime dateTimeFromDynamic(dynamic input, DateTime fallback) {
   if (input is DateTime) {
@@ -267,4 +301,19 @@ DateTime? nullableDateTimeFromDynamic(dynamic input) {
     return DateTime.fromMillisecondsSinceEpoch(input);
   }
   return null;
+}
+
+List<DateTime> dateTimeListFromDynamic(dynamic input) {
+  return input is List
+      ? input
+          .map((e) =>
+              dateTimeFromDynamic(e, DateTime.fromMillisecondsSinceEpoch(0)))
+          .toList()
+      : [];
+}
+
+List<DateTime?> nullableDateTimeListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => nullableDateTimeFromDynamic(e)).toList()
+      : [];
 }

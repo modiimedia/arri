@@ -1,4 +1,5 @@
-import { readFileSync } from "fs";
+import { execSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { normalizeWhitespace } from "arri-codegen-utils";
 import { a } from "arri-validate";
 import path from "pathe";
@@ -262,15 +263,21 @@ describe("Model Generation", () => {
 });
 
 it("Matches the dart example client", () => {
+    const tmpDir = path.resolve(__dirname, ".temp");
+    if (!existsSync(tmpDir)) {
+        mkdirSync(tmpDir);
+    }
+    const outputFilePath = path.resolve(tmpDir, "dart_client.rpc.dart");
     const result = createDartClient(TestService, {
         clientName: "Client",
         outputFile: "",
     });
+    writeFileSync(outputFilePath, result);
+    execSync(`dart format ${outputFilePath}`);
+    const targetResult = readFileSync(outputFilePath, { encoding: "utf-8" });
     const expectedResult = readFileSync(
         path.resolve(__dirname, "./dart_example_client.dart"),
         { encoding: "utf-8" },
     );
-    expect(normalizeWhitespace(result)).toBe(
-        normalizeWhitespace(expectedResult),
-    );
+    expect(targetResult).toBe(expectedResult);
 });
