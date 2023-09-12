@@ -239,10 +239,14 @@ int? nullableIntFromDynamic(dynamic input) {
   return null;
 }
 
+sealed class HelloWorld {}
+
 DateTime dateTimeFromDynamic(dynamic input, DateTime fallback) {
   if (input is DateTime) {
     return input;
   }
+  DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime.now().toUtc().toIso8601String();
   if (input is String) {
     return DateTime.parse(input);
   }

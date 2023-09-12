@@ -1,6 +1,13 @@
 import { type SchemaFormProperties, isPropertiesForm } from "@modii/jtd";
 export * from "@modii/jtd";
 
+declare module "@modii/jtd" {
+    export interface SchemaMetadata {
+        id?: string;
+        description?: string;
+    }
+}
+
 export const HttpMethodValues = [
     "get",
     "post",
