@@ -301,8 +301,14 @@ export function dartModelFromJsonSchema(
     opts: CreateClientOptions,
 ): string {
     const modelDisplayName: string = pascalCase(`${modelName}`);
-    const fields: Array<{ type: string; name: string; jsonKey: string }> = [];
+    const fields: Array<{
+        type: string;
+        name: string;
+        isOptional: boolean;
+        jsonKey: string;
+    }> = [];
     const subModelParts: string[] = [];
+    const requiredProps = schema.required ?? [];
     Object.entries(schema.properties ?? {}).forEach(([key, val]) => {
         if (typeof val !== "object") {
             return;
@@ -318,7 +324,12 @@ export function dartModelFromJsonSchema(
                 subModelParts.push(sub);
             }
         }
-        fields.push({ type: dartType, name: camelCase(key), jsonKey: key });
+        fields.push({
+            type: dartType,
+            name: camelCase(key),
+            isOptional: !requiredProps.includes(key),
+            jsonKey: key,
+        });
         if (!isDartType(dartType) && isJsonSchemaObject(val)) {
             if (val.$id && generatedModels.includes(val.$id)) {
                 return;
