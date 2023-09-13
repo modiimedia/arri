@@ -844,7 +844,7 @@ export const classListTransformer = (typename: string): DartMappedType => {
     return {
         fromJsonBody: (key, jsonKey, fallback) => {
             return `${key}: json["${jsonKey}"] is List ? 
-                (json["${jsonKey}"] as List<Map<String, dynamic>>)
+                (json["${jsonKey}"] as List<dynamic>)
                     .map((val) => ${typename}.fromJson(val)).toList() : ${fallback}`;
         },
         toJsonBody: (key, jsonKey, isNullable) =>
