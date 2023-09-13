@@ -366,6 +366,12 @@ export function dartModelFromJsonSchema(
               if (typeName === "dynamic") {
                   return `"${field.jsonKey}": ${field.name}`;
               }
+              if (
+                  typeName === "List<dynamic>" ||
+                  typeName === "List<dynamic>?"
+              ) {
+                  return `"${field.jsonKey}": ${field.name}`;
+              }
               if (isDartTypeWithNullables(field.type)) {
                   const transformer = transformers[typeName as DartType];
                   return transformer.toJsonBody(
@@ -521,11 +527,6 @@ export function dartPropertyTypeFromSchema(
         const item = prop.items;
 
         const type = item.type;
-        if (typeof type !== "string") {
-            throw new Error(
-                "Union types are not supported in arrays at this time",
-            );
-        }
         switch (type) {
             case "string":
                 finalType = isOptional ? "List<String>?" : "List<String>";
@@ -569,6 +570,9 @@ export function dartPropertyTypeFromSchema(
                 }
                 break;
             }
+            default:
+                finalType = isOptional ? "List<dynamic>?" : "List<dynamic>";
+                break;
         }
     }
     return [finalType, subTypes.length ? subTypes : undefined];
@@ -580,6 +584,9 @@ export function dartParsedJsonField(
     dartType: string,
 ) {
     if (dartType === "dynamic") {
+        return `${fieldName}: json["${jsonKey}"]`;
+    }
+    if (dartType === "List<dynamic>" || dartType === "List<dynamic>?") {
         return `${fieldName}: json["${jsonKey}"]`;
     }
     if (isDartTypeWithNullables(dartType)) {

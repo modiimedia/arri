@@ -140,6 +140,9 @@ class UserSettingsService {
             rating: Type.Number(),
             weightedRating: Type.Optional(Type.Number()),
             followedUsers: Type.Array(Type.String()),
+            followedUsersUnion: Type.Array(
+                Type.Union([Type.Literal("john"), Type.Literal("doe")]),
+            ),
             recentlyFollowedUsers: Type.Array(
                 Type.Object(
                     {
@@ -187,6 +190,7 @@ class UserSettingsService {
   final double rating;
   final double? weightedRating;
   final List<String> followedUsers;
+  final List<dynamic> followedUsersUnion;
   final List<FollowedUser> recentlyFollowedUsers;
   final List<String>? followedHashtags;
   final UserSettings settings;
@@ -203,6 +207,7 @@ class UserSettingsService {
     required this.rating,
     this.weightedRating,
     required this.followedUsers,
+    required this.followedUsersUnion,
     required this.recentlyFollowedUsers,
     this.followedHashtags,
     required this.settings,
@@ -221,8 +226,9 @@ class UserSettingsService {
       rating: doubleFromDynamic(json["rating"], 0.0),
       weightedRating: nullableDoubleFromDynamic(json["weightedRating"]),
       followedUsers: json["followedUsers"] is List<String> ? json["followedUsers"] : [],
+      followedUsersUnion: json["followedUsersUnion"],
       recentlyFollowedUsers: json["recentlyFollowedUsers"] is List ?
-        (json["recentlyFollowedUsers"] as List<Map<String, dynamic>>)
+        (json["recentlyFollowedUsers"] as List<dynamic>)
           .map((val) => FollowedUser.fromJson(val)).toList() : [],
       followedHashtags: json["followedHashtags"] is List<String> ? json["followedHashtags"] : null,
       settings: UserSettings.fromJson(json["settings"]),
@@ -242,6 +248,7 @@ class UserSettingsService {
       "rating": rating,
       "weightedRating": weightedRating,
       "followedUsers": followedUsers,
+      "followedUsersUnion": followedUsersUnion,
       "recentlyFollowedUsers": recentlyFollowedUsers.map((val) => val.toJson()).toList(),
       "followedHashtags": followedHashtags,
       "settings": settings.toJson(),
@@ -260,6 +267,7 @@ class UserSettingsService {
     double? rating,
     double? weightedRating,
     List<String>? followedUsers,
+    List<dynamic>? followedUsersUnion,
     List<FollowedUser>? recentlyFollowedUsers,
     List<String>? followedHashtags,
     UserSettings? settings,
@@ -277,6 +285,7 @@ class UserSettingsService {
       rating: rating ?? this.rating,
       weightedRating: weightedRating ?? this.weightedRating,
       followedUsers: followedUsers ?? this.followedUsers,
+      followedUsersUnion: followedUsersUnion ?? this.followedUsersUnion,
       recentlyFollowedUsers: recentlyFollowedUsers ?? this.recentlyFollowedUsers,
       followedHashtags: followedHashtags ?? this.followedHashtags,
       settings: settings ?? this.settings,
