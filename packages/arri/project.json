@@ -21,6 +21,7 @@
         },
         "test": {
             "executor": "@nx/vite:test",
+            "inputs": ["{projectRoot}/src/**/*.ts"],
             "outputs": ["{workspaceRoot}/coverage/packages/arri"],
             "options": {
                 "passWithNoTests": true,
