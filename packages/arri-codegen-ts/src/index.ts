@@ -1,4 +1,4 @@
-import { defineClientGeneratorPlugin } from "./plugin";
+import { defineClientGeneratorPlugin } from "arri-codegen-utils";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const generatedModels: string[] = [];

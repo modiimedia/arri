@@ -239,6 +239,25 @@ importers:
         specifier: workspace:*
         version: link:../arri-validate
 
+  packages/arri-codegen-ts:
+    dependencies:
+      ajv:
+        specifier: ^8.12.0
+        version: 8.12.0
+      arri-client:
+        specifier: workspace:*
+        version: link:../arri-client
+      arri-codegen-utils:
+        specifier: workspace:*
+        version: link:../arri-codegen-utils
+      arri-validate:
+        specifier: workspace:*
+        version: link:../arri-validate
+    devDependencies:
+      nitropack:
+        specifier: ^2.6.3
+        version: 2.6.3
+
   packages/arri-codegen-utils:
     dependencies:
       '@modii/jtd':

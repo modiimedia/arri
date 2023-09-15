@@ -1,3 +1,4 @@
+import { type Schema } from "@modii/jtd";
 import Ajv, { type ErrorObject, ValidationError } from "ajv/dist/jtd";
 import { type ASchema, SCHEMA_METADATA } from "../schemas";
 
@@ -33,4 +34,18 @@ export function safeParse<T = any>(schema: ASchema<T>, input: unknown) {
 
 export function serialize<T = any>(schema: ASchema<T>, input: unknown) {
     return schema.metadata[SCHEMA_METADATA].serialize(input);
+}
+
+/**
+ * Create validator for a raw JSON Type Definition Schema
+ */
+export function createRawJtdValidator<T>(schema: Schema) {
+    const parse = AJV.compileParser<T>(schema);
+    const validate = AJV.compile<T>(schema as any);
+    const serialize = AJV.compileSerializer<T>(schema);
+    return {
+        parse,
+        validate,
+        serialize,
+    };
 }
