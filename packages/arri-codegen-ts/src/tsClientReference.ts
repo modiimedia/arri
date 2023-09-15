@@ -274,10 +274,6 @@ const _$UserSettingsValidator = createRawJtdValidator<UserSettings>({
 });
 
 export type UserSettingsPreferredTheme = "dark-mode" | "light-mode" | "system";
-const _$UserSettingsPreferredThemeValidator =
-    createRawJtdValidator<UserSettingsPreferredTheme>({
-        enum: ["dark-mode", "light-mode", "system"],
-    });
 
 export type UserSettingsRecentNotificationsItem =
     | {
