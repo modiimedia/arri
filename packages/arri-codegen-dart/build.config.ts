@@ -15,12 +15,12 @@ export default defineBuildConfig({
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: true,
+            respectExternal: false,
         },
     },
     outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
+    failOnWarn: true,
     externals: deps,
 });

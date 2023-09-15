@@ -40,6 +40,13 @@ class ClientUsersService {
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
+  ClientUsersSettingsService get settings {
+    return ClientUsersSettingsService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
+
   Future<User> getUser(UserParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/get-user",
@@ -65,6 +72,26 @@ class ClientUsersService {
   }
 }
 
+class ClientUsersSettingsService {
+  final String _baseUrl;
+  final Map<String, String> _headers;
+  const ClientUsersSettingsService({
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  })  : _baseUrl = baseUrl,
+        _headers = headers;
+
+  Future<void> getUserSettings() {
+    return parsedArriRequest(
+      "$_baseUrl/users/settings/get-user-settings",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) {},
+    );
+  }
+}
+
 class GetStatusResponse {
   final String message;
   const GetStatusResponse({
@@ -73,7 +100,7 @@ class GetStatusResponse {
 
   factory GetStatusResponse.fromJson(Map<String, dynamic> json) {
     return GetStatusResponse(
-      message: json["message"],
+      message: typeFromDynamic<String>(json["message"], ""),
     );
   }
 
@@ -82,6 +109,14 @@ class GetStatusResponse {
       "message": message,
     };
     return result;
+  }
+
+  GetStatusResponse copyWith({
+    String? message,
+  }) {
+    return GetStatusResponse(
+      message: message ?? this.message,
+    );
   }
 }
 
@@ -114,8 +149,10 @@ class User {
       photo: json["photo"] is Map<String, dynamic>
           ? UserPhoto.fromJson(json["photo"])
           : null,
-      createdAt:
-          dateTimeFromDynamic(json, DateTime.fromMicrosecondsSinceEpoch(0)),
+      createdAt: dateTimeFromDynamic(
+        json["createdAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
       numFollowers: intFromDynamic(json["numFollowers"], 0),
       settings: UserSettings.fromJson(json["settings"]),
       recentNotifications: json["recentNotifications"] is List
@@ -127,7 +164,7 @@ class User {
           ? (json["bookmarks"] as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, UserBookmarksValue.fromJson(value)))
           : <String, UserBookmarksValue>{},
-      bio: nullableTypeFromDynamic(json["bio"]),
+      bio: nullableTypeFromDynamic<String>(json["bio"]),
     );
   }
 
@@ -141,12 +178,36 @@ class User {
       "settings": settings.toJson(),
       "recentNotifications":
           recentNotifications.map((item) => item.toJson()).toList(),
-      "bookmarks": bookmarks.map((key, value) => MapEntry(key, value.toJson()))
+      "bookmarks": bookmarks.map((key, value) => MapEntry(key, value.toJson())),
     };
     if (bio != null) {
       result["bio"] = bio;
     }
     return result;
+  }
+
+  User copyWith({
+    String? id,
+    UserRole? role,
+    UserPhoto? photo,
+    DateTime? createdAt,
+    int? numFollowers,
+    UserSettings? settings,
+    List<UserRecentNotificationsItem>? recentNotifications,
+    Map<String, UserBookmarksValue>? bookmarks,
+    String? bio,
+  }) {
+    return User(
+      id: id ?? this.id,
+      role: role ?? this.role,
+      photo: photo ?? this.photo,
+      createdAt: createdAt ?? this.createdAt,
+      numFollowers: numFollowers ?? this.numFollowers,
+      settings: settings ?? this.settings,
+      recentNotifications: recentNotifications ?? this.recentNotifications,
+      bookmarks: bookmarks ?? this.bookmarks,
+      bio: bio ?? this.bio,
+    );
   }
 }
 
@@ -158,18 +219,16 @@ enum UserRole implements Comparable<UserRole> {
   final String value;
 
   factory UserRole.fromJson(dynamic json) {
-    for (final item in values) {
-      if (item.value == json) {
-        return item;
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
       }
     }
-    return UserRole.standard;
+    return standard;
   }
 
   @override
-  compareTo(UserRole other) {
-    return name.compareTo(other.name);
-  }
+  compareTo(UserRole other) => name.compareTo(other.name);
 }
 
 class UserPhoto {
@@ -197,6 +256,18 @@ class UserPhoto {
     };
     return result;
   }
+
+  UserPhoto copyWith({
+    String? url,
+    double? width,
+    double? height,
+  }) {
+    return UserPhoto(
+      url: url ?? this.url,
+      width: width ?? this.width,
+      height: height ?? this.height,
+    );
+  }
 }
 
 class UserSettings {
@@ -221,6 +292,16 @@ class UserSettings {
       "preferredTheme": preferredTheme.value,
     };
     return result;
+  }
+
+  UserSettings copyWith({
+    bool? notificationsEnabled,
+    UserSettingsPreferredTheme? preferredTheme,
+  }) {
+    return UserSettings(
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      preferredTheme: preferredTheme ?? this.preferredTheme,
+    );
   }
 }
 
@@ -255,7 +336,8 @@ sealed class UserRecentNotificationsItem {
   factory UserRecentNotificationsItem.fromJson(Map<String, dynamic> json) {
     if (json["notificationType"] is! String) {
       throw Exception(
-          "Unable to decode UserRecentNotificationItem. Expected String from \"notificationType\". Received ${json["notificationType"]}}");
+        "Unable to decode UserRecentNotificationsItem. Expected String from \"notificationType\". Received ${json["notificationType"]}}",
+      );
     }
     switch (json["notificationType"]) {
       case "POST_LIKE":
@@ -264,7 +346,8 @@ sealed class UserRecentNotificationsItem {
         return UserRecentNotificationsItemPostComment.fromJson(json);
     }
     throw Exception(
-        "Unable to decode UserRecentNotificationItem. \"${json["notificationType"]}\" doesn't match any of the accepted discriminator values.");
+      "Unable to decode UserRecentNotificationsItem. \"${json["notificationType"]}\" doesn't match any of the accepted discriminator values.",
+    );
   }
 
   Map<String, dynamic> toJson();
@@ -291,7 +374,7 @@ class UserRecentNotificationsItemPostLike
 
   @override
   Map<String, dynamic> toJson() {
-    final result = {
+    final result = <String, dynamic>{
       "notificationType": notificationType,
       "postId": postId,
       "userId": userId,
@@ -299,10 +382,10 @@ class UserRecentNotificationsItemPostLike
     return result;
   }
 
-  UserRecentNotificationsItemPostLike copyWith(
+  UserRecentNotificationsItemPostLike copyWith({
     String? postId,
     String? userId,
-  ) {
+  }) {
     return UserRecentNotificationsItemPostLike(
       postId: postId ?? this.postId,
       userId: userId ?? this.userId,
@@ -317,7 +400,7 @@ class UserRecentNotificationsItemPostComment
   final String postId;
   final String userId;
   final String commentText;
-  UserRecentNotificationsItemPostComment({
+  const UserRecentNotificationsItemPostComment({
     required this.postId,
     required this.userId,
     required this.commentText,
@@ -343,11 +426,11 @@ class UserRecentNotificationsItemPostComment
     return result;
   }
 
-  UserRecentNotificationsItemPostComment copyWith(
+  UserRecentNotificationsItemPostComment copyWith({
     String? postId,
     String? userId,
     String? commentText,
-  ) {
+  }) {
     return UserRecentNotificationsItemPostComment(
       postId: postId ?? this.postId,
       userId: userId ?? this.userId,
@@ -377,10 +460,10 @@ class UserBookmarksValue {
     return result;
   }
 
-  UserBookmarksValue copyWith(
+  UserBookmarksValue copyWith({
     String? postId,
     String? userId,
-  ) {
+  }) {
     return UserBookmarksValue(
       postId: postId ?? this.postId,
       userId: userId ?? this.userId,
@@ -406,9 +489,9 @@ class UserParams {
     return result;
   }
 
-  UserParams copyWith(
+  UserParams copyWith({
     String? userId,
-  ) {
+  }) {
     return UserParams(
       userId: userId ?? this.userId,
     );
@@ -417,14 +500,19 @@ class UserParams {
 
 class UpdateUserParams {
   final String id;
+  final UserPhoto? photo;
   final String? bio;
   const UpdateUserParams({
     required this.id,
+    required this.photo,
     this.bio,
   });
   factory UpdateUserParams.fromJson(Map<String, dynamic> json) {
     return UpdateUserParams(
       id: typeFromDynamic<String>(json["id"], ""),
+      photo: json["photo"] is Map<String, dynamic>
+          ? UserPhoto.fromJson(json["photo"])
+          : null,
       bio: nullableTypeFromDynamic<String>(json["bio"]),
     );
   }
@@ -432,6 +520,7 @@ class UpdateUserParams {
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "id": id,
+      "photo": photo?.toJson(),
     };
     if (bio != null) {
       result["bio"] = bio;
@@ -439,13 +528,59 @@ class UpdateUserParams {
     return result;
   }
 
-  UpdateUserParams copyWith(
+  UpdateUserParams copyWith({
     String? id,
+    UserPhoto? photo,
     String? bio,
-  ) {
+  }) {
     return UpdateUserParams(
       id: id ?? this.id,
+      photo: photo ?? this.photo,
       bio: bio ?? this.bio,
+    );
+  }
+}
+
+class ClientError implements Exception {
+  final int statusCode;
+  final String statusMessage;
+  final dynamic data;
+  final String? stack;
+  const ClientError({
+    required this.statusCode,
+    required this.statusMessage,
+    required this.data,
+    required this.stack,
+  });
+  factory ClientError.fromJson(Map<String, dynamic> json) {
+    return ClientError(
+      statusCode: intFromDynamic(json["statusCode"], 0),
+      statusMessage: typeFromDynamic<String>(json["statusMessage"], ""),
+      data: json["data"],
+      stack: nullableTypeFromDynamic<String>(json["stack"]),
+    );
+  }
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "statusCode": statusCode,
+      "statusMessage": statusMessage,
+      "data": data,
+      "stack": stack,
+    };
+    return result;
+  }
+
+  ClientError copyWith({
+    int? statusCode,
+    String? statusMessage,
+    dynamic data,
+    String? stack,
+  }) {
+    return ClientError(
+      statusCode: statusCode ?? this.statusCode,
+      statusMessage: statusMessage ?? this.statusMessage,
+      data: data ?? this.data,
+      stack: stack ?? this.stack,
     );
   }
 }

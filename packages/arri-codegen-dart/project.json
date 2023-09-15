@@ -1,7 +1,7 @@
 {
-    "name": "arri-shared",
+    "name": "arri-codegen-dart",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri-shared/src",
+    "sourceRoot": "packages/arri-codegen-dart/src",
     "projectType": "library",
     "targets": {
         "build": {
@@ -9,14 +9,14 @@
             "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
-                "cwd": "packages/arri-shared"
+                "cwd": "packages/arri-codegen-dart"
             }
         },
         "publish": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/arri-shared"
+                "command": "pnpm publish",
+                "cwd": "packages/arri-codegen-dart"
             },
             "dependsOn": ["build"]
         },
@@ -24,15 +24,15 @@
             "executor": "@nx/linter:eslint",
             "outputs": ["{options.outputFile}"],
             "options": {
-                "lintFilePatterns": ["packages/arri-shared/**/*.ts"]
+                "lintFilePatterns": ["packages/arri-codegen-dart/**/*.ts"]
             }
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["{workspaceRoot}/coverage/packages/arri-shared"],
+            "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen-dart"],
             "options": {
                 "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-shared"
+                "reportsDirectory": "../../coverage/packages/arri-codegen-dart"
             }
         }
     },

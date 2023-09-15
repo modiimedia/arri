@@ -26,8 +26,8 @@ export function nullable<T>(
         ...input,
         nullable: true,
         metadata: {
-            id: opts.id,
-            description: opts.description,
+            id: opts.id ?? input.metadata.id,
+            description: opts.description ?? input.metadata.description,
             [SCHEMA_METADATA]: {
                 output: null as T | null,
                 optional: input.metadata[SCHEMA_METADATA].optional,
@@ -83,8 +83,8 @@ export function optional<T>(
     return {
         ...input,
         metadata: {
-            id: opts.id,
-            description: opts.description,
+            id: opts.id ?? input.metadata.id,
+            description: opts.description ?? input.metadata.description,
             [SCHEMA_METADATA]: {
                 output: undefined as T | undefined,
                 optional: true,

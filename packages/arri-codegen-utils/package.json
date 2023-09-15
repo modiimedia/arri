@@ -10,6 +10,7 @@
     ],
     "dependencies": {
         "@modii/jtd": "^0.2.1",
-        "scule": "^1.0.0"
+        "scule": "^1.0.0",
+        "arri-validate": "workspace:*"
     }
 }

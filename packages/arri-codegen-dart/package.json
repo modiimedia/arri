@@ -1,0 +1,20 @@
+{
+    "name": "arri-codegen-dart",
+    "version": "0.0.44",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri",
+        "directory": "packages/arri-codegen-dart"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "dependencies": {
+        "arri-codegen-utils": "workspace:*",
+        "arri-validate": "workspace:*"
+    }
+}

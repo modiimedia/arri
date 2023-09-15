@@ -19,7 +19,6 @@
     "dependencies": {
         "ajv": "^8.12.0",
         "arri-codegen-utils": "workspace:*",
-        "arri-shared": "workspace:*",
         "arri-validate": "workspace:*",
         "c12": "^1.4.2",
         "chokidar": "^3.5.3",

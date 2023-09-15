@@ -1,20 +1,20 @@
 import { execSync } from "child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { normalizeWhitespace } from "arri-codegen-utils";
+import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
 import { a } from "arri-validate";
 import path from "pathe";
 import { test } from "vitest";
-import { TestService } from "./_test_model";
 import {
     dartServiceFromDefinition,
     dartClassFromJtdSchema,
     createDartClient,
-} from "./dart";
+} from ".";
 
 describe("Service Generation", () => {
     test("Service Generation", () => {
         const result = dartServiceFromDefinition(
-            "UserService",
+            "User",
             {
                 getUser: {
                     path: "/users/get-user",
@@ -46,7 +46,7 @@ describe("Service Generation", () => {
   const UserService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  }): _baseUrl = baseUrl,
+  })  : _baseUrl = baseUrl,
   _headers = headers;
   UserSettingsService get settings {
     return UserSettingsService(
@@ -60,7 +60,9 @@ describe("Service Generation", () => {
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => User.fromJson(json.decode(body)),
+      parser: (body) => User.fromJson(
+        json.decode(body),
+      ),
     );
   }
   Future<User> updateUser(UserUpdateData params) {
@@ -69,7 +71,9 @@ describe("Service Generation", () => {
       method: HttpMethod.post,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => User.fromJson(json.decode(body)),
+      parser: (body) => User.fromJson(
+        json.decode(body),
+      ),
     );
   }
 }
@@ -79,7 +83,7 @@ class UserSettingsService {
   const UserSettingsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  }): _baseUrl = baseUrl,
+  })  : _baseUrl = baseUrl,
   _headers = headers;
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
     return parsedArriRequest(
@@ -87,7 +91,9 @@ class UserSettingsService {
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => UserSettingsGetUserSettingsResponse.fromJson(json.decode(body)),
+      parser: (body) => UserSettingsGetUserSettingsResponse.fromJson(
+        json.decode(body),
+      ),
     );
   }
 }`),
@@ -96,7 +102,7 @@ class UserSettingsService {
 
     test("Service with No Params", () => {
         const result = dartServiceFromDefinition(
-            "PostsService",
+            "Posts",
             {
                 getPost: {
                     path: "/posts/get-post",
@@ -114,7 +120,7 @@ class UserSettingsService {
         const PostsService({
           String baseUrl = "",
           Map<String, String> headers = const {},
-        }): _baseUrl = baseUrl,
+        })  : _baseUrl = baseUrl,
             _headers = headers;
 
         Future<void> getPost() {
@@ -141,7 +147,10 @@ describe("Model Generation", () => {
             createdAt: a.timestamp(),
             lastSignedIn: a.nullable(a.timestamp()),
         });
-        const result = dartClassFromJtdSchema("User", User, false);
+        const result = dartClassFromJtdSchema("User", User, {
+            isOptional: false,
+            existingClassNames: [],
+        });
         expect(normalizeWhitespace(result.content)).toBe(
             normalizeWhitespace(`
       class User {
@@ -161,23 +170,19 @@ describe("Model Generation", () => {
         });
         factory User.fromJson(Map<String, dynamic> json) {
           return User(
-            id: typeFromDynamic<String>(json["id"]),
-            name: typeFromDynamic<String>(json["name"]),
-            count: intFromDynamic(json["count"]),
-            createdAt: dateTimeFromDynamic(json["createdAt"]),
+            id: typeFromDynamic<String>(json["id"], ""),
+            name: typeFromDynamic<String>(json["name"], ""),
+            count: intFromDynamic(json["count"], 0),
+            createdAt: dateTimeFromDynamic(
+              json["createdAt"],
+              DateTime.fromMillisecondsSinceEpoch(0),
+            ),
             lastSignedIn: nullableDateTimeFromDynamic(json["lastSignedIn"]),
             email: nullableTypeFromDynamic<String>(json["email"]),
           );
         }
-        static List<User> fromJsonList(List<dynamic> json) {
-          final result = <User>[];
-          for (final item in json) {
-            result.add(User.fromJson(item));
-          }
-          return result;
-        }
         Map<String, dynamic> toJson() {
-          final output = {
+          final result = <String, dynamic>{
             "id": id,
             "name": name,
             "count": count,
@@ -185,16 +190,17 @@ describe("Model Generation", () => {
             "lastSignedIn": lastSignedIn?.toUtc().toIso8601String(),
           };
           if (email != null) {
-            output["email"] = email;
+            result["email"] = email;
           }
-          return output;
+          return result;
         }
         User copyWith({
           String? id,
           String? name,
           int? count,
-          DateTime?: createdAt,
-          DateTime?: lastSignedIn,
+          DateTime? createdAt,
+          DateTime? lastSignedIn,
+          String? email,
         }) {
           return User(
             id: id ?? this.id,
@@ -202,7 +208,8 @@ describe("Model Generation", () => {
             count: count ?? this.count,
             createdAt: createdAt ?? this.createdAt,
             lastSignedIn: lastSignedIn ?? this.lastSignedIn,
-          )
+            email: email ?? this.email,
+          );
         }
       }
       `),
@@ -228,7 +235,10 @@ describe("Model Generation", () => {
                 ]),
             }),
         });
-        const result = dartClassFromJtdSchema("User", User, false);
+        const result = dartClassFromJtdSchema("User", User, {
+            isOptional: false,
+            existingClassNames: [],
+        });
         expect(normalizeWhitespace(result.content)).toBe(
             normalizeWhitespace(`
         class User {
@@ -244,19 +254,117 @@ describe("Model Generation", () => {
           });
           factory User.fromJson(Map<String, dynamic> json) {
             return User(
-              id: typeFromDynamic<String>(json["id"]),
-              createdAt: dateTimeFromDynamic(json["createdAt"]),
-            )
+              id: typeFromDynamic<String>(json["id"], ""),
+              createdAt: dateTimeFromDynamic(
+                json["createdAt"],
+                DateTime.fromMillisecondsSinceEpoch(0),
+              ),
+              followers: json["followers"] is List ? (json["followers"] as List).map((item) => UserFollowersItem.fromJson(item)).toList() : [],
+              settings: UserSettings.fromJson(json["settings"]),
+            );
+          }
+          Map<String, dynamic> toJson() {
+            final result = <String, dynamic>{
+              "id": id,
+              "createdAt": createdAt.toUtc().toIso8601String(),
+              "followers": followers.map((item) => item.toJson()).toList(),
+              "settings": settings.toJson(),
+            };
+            return result;
+          }
+          User copyWith({
+            String? id,
+            DateTime? createdAt,
+            List<UserFollowersItem>? followers,
+            UserSettings? settings,
+          }) {
+            return User(
+              id: id ?? this.id,
+              createdAt: createdAt ?? this.createdAt,
+              followers: followers ?? this.followers,
+              settings: settings ?? this.settings,
+            );
           }
         }
         class UserFollowersItem {
           final String id;
-          final DateTime createdAt;
+          final DateTime followedTime;
           const UserFollowersItem({
             required this.id,
-            required this.createdAt,
+            required this.followedTime,
           });
-          
+          factory UserFollowersItem.fromJson(Map<String, dynamic> json) {
+            return UserFollowersItem(
+              id: typeFromDynamic<String>(json["id"], ""),
+              followedTime: dateTimeFromDynamic(
+                json["followedTime"],
+                DateTime.fromMillisecondsSinceEpoch(0),
+              ),
+            );
+          }
+          Map<String, dynamic> toJson() {
+            final result = <String, dynamic>{
+              "id": id,
+              "followedTime": followedTime.toUtc().toIso8601String(),
+            };
+            return result;
+          }
+          UserFollowersItem copyWith({
+            String? id,
+            DateTime? followedTime,
+          }) {
+            return UserFollowersItem(
+              id: id ?? this.id,
+              followedTime: followedTime ?? this.followedTime,
+            );
+          }
+        }
+        class UserSettings {
+          final bool notifications;
+          final UserSettingsTheme theme;
+          const UserSettings({
+            required this.notifications,
+            required this.theme,
+          });
+          factory UserSettings.fromJson(Map<String, dynamic> json) {
+            return UserSettings(
+              notifications: typeFromDynamic<bool>(json["notifications"], false),
+              theme: UserSettingsTheme.fromJson(json["theme"]),
+            );
+          }
+          Map<String, dynamic> toJson() {
+            final result = <String, dynamic>{
+              "notifications": notifications,
+              "theme": theme.value,
+            };
+            return result;
+          }
+          UserSettings copyWith({
+            bool? notifications,
+            UserSettingsTheme? theme,
+          }) {
+            return UserSettings(
+              notifications: notifications ?? this.notifications,
+              theme: theme ?? this.theme,
+            );
+          }
+        }
+        enum UserSettingsTheme implements Comparable<UserSettingsTheme> {
+          darkMode("dark-mode"),
+          lightMode("light-mode"),
+          systemDefault("system-default");
+          const UserSettingsTheme(this.value);
+          final String value;
+          factory UserSettingsTheme.fromJson(dynamic json) {
+            for(final v in values) {
+              if(v.value == json) {
+                return v;
+              }
+            }
+            return darkMode;
+          }
+          @override
+          compareTo(UserSettingsTheme other) => name.compareTo(other.name);
         }`),
         );
     });
@@ -268,7 +376,7 @@ it("Matches the dart example client", () => {
         mkdirSync(tmpDir);
     }
     const outputFilePath = path.resolve(tmpDir, "dart_client.rpc.dart");
-    const result = createDartClient(TestService, {
+    const result = createDartClient(TestAppDefinition, {
         clientName: "Client",
         outputFile: "",
     });
@@ -279,5 +387,7 @@ it("Matches the dart example client", () => {
         path.resolve(__dirname, "./dart_example_client.dart"),
         { encoding: "utf-8" },
     );
-    expect(targetResult).toBe(expectedResult);
+    expect(normalizeWhitespace(targetResult)).toBe(
+        normalizeWhitespace(expectedResult),
+    );
 });

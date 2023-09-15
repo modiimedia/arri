@@ -42,3 +42,4 @@ build
 /**/.arri
 /.arri
 **/.temp
+**/*.dart_tool

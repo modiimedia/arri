@@ -155,9 +155,6 @@ importers:
       arri-codegen-utils:
         specifier: workspace:*
         version: link:../arri-codegen-utils
-      arri-shared:
-        specifier: workspace:*
-        version: link:../arri-shared
       arri-validate:
         specifier: workspace:*
         version: link:../arri-validate
@@ -233,20 +230,26 @@ importers:
         specifier: ^2.6.3
         version: 2.6.3
 
+  packages/arri-codegen-dart:
+    dependencies:
+      arri-codegen-utils:
+        specifier: workspace:*
+        version: link:../arri-codegen-utils
+      arri-validate:
+        specifier: workspace:*
+        version: link:../arri-validate
+
   packages/arri-codegen-utils:
     dependencies:
       '@modii/jtd':
         specifier: ^0.2.1
         version: 0.2.1
+      arri-validate:
+        specifier: workspace:*
+        version: link:../arri-validate
       scule:
         specifier: ^1.0.0
         version: 1.0.0
-
-  packages/arri-shared:
-    dependencies:
-      '@modii/jtd':
-        specifier: ^0.2.1
-        version: 0.2.1
 
   packages/arri-validate:
     dependencies:

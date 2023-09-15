@@ -1,8 +1,7 @@
-import { type AppDefinition } from "packages/arri-codegen-utils/dist";
-import { a } from "packages/arri-validate/dist";
-import { ErrorResponse } from "../errors";
+import { a } from "arri-validate";
+import { type AppDefinition } from "./index";
 
-const UserSettings = a.object(
+export const TestUserSettingsSchema = a.object(
     {
         notificationsEnabled: a.boolean(),
         preferredTheme: a.stringEnum(["dark-mode", "light-mode", "system"]),
@@ -12,20 +11,23 @@ const UserSettings = a.object(
     },
 );
 
-const User = a.object(
+export const TestUserPhotoSchema = a.object(
+    {
+        url: a.string(),
+        width: a.number(),
+        height: a.number(),
+    },
+    { id: "UserPhoto" },
+);
+
+export const TestUserSchema = a.object(
     {
         id: a.string(),
         role: a.stringEnum(["standard", "admin"]),
-        photo: a.nullable(
-            a.object({
-                url: a.string(),
-                width: a.number(),
-                height: a.number(),
-            }),
-        ),
+        photo: a.nullable(TestUserPhotoSchema),
         createdAt: a.timestamp(),
         numFollowers: a.int32(),
-        settings: UserSettings,
+        settings: TestUserSettingsSchema,
         recentNotifications: a.array(
             a.discriminator("notificationType", {
                 POST_LIKE: a.object({
@@ -47,18 +49,29 @@ const User = a.object(
     { id: "User" },
 );
 
-const UserParams = a.object(
+export const TestUserParams = a.object(
     {
         userId: a.string(),
     },
     { id: "UserParams" },
 );
 
-const UpdateUserParams = a.pick(User, ["id", "bio"], {
-    id: "UpdateUserParams",
+export const TestUpdateUserParams = a.pick(
+    TestUserSchema,
+    ["id", "bio", "photo"],
+    {
+        id: "UpdateUserParams",
+    },
+);
+
+export const TestErrorResponse = a.object({
+    statusCode: a.int8(),
+    statusMessage: a.string(),
+    data: a.any(),
+    stack: a.nullable(a.string()),
 });
 
-export const TestService: AppDefinition = {
+export const TestAppDefinition: AppDefinition = {
     arriSchemaVersion: "0.0.2",
     procedures: {
         getStatus: {
@@ -79,14 +92,20 @@ export const TestService: AppDefinition = {
             params: "UpdateUserParams",
             response: "User",
         },
+        "users.settings.getUserSettings": {
+            path: "/users/settings/get-user-settings",
+            method: "get",
+            params: undefined,
+            response: undefined,
+        },
     },
     models: {
         GetStatusResponse: a.object({
             message: a.string(),
         }),
-        User,
-        UserParams,
-        UpdateUserParams,
+        User: TestUserSchema,
+        UserParams: TestUserParams,
+        UpdateUserParams: TestUpdateUserParams,
     },
-    errors: ErrorResponse,
+    errors: TestErrorResponse,
 };

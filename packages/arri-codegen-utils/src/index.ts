@@ -1,5 +1,6 @@
 import { type SchemaFormProperties, isPropertiesForm } from "@modii/jtd";
 export * from "@modii/jtd";
+export * from "scule";
 
 declare module "@modii/jtd" {
     export interface SchemaMetadata {
@@ -172,4 +173,21 @@ export function normalizeWhitespace(input: string) {
         return normalizeWhitespace(result.split("\n\n").join("\n"));
     }
     return result;
+}
+
+export interface ClientGenerator<
+    TOptions extends Record<string, any> | undefined,
+> {
+    generator: (def: AppDefinition) => any;
+    options: TOptions;
+}
+
+export type ClientGeneratorPlugin<
+    TOptions extends Record<string, any> | undefined,
+> = (options: TOptions) => ClientGenerator<TOptions>;
+
+export function defineClientGeneratorPlugin<
+    TOptions extends Record<string, any> | undefined,
+>(plugin: ClientGeneratorPlugin<TOptions>) {
+    return plugin;
 }
