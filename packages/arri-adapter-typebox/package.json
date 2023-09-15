@@ -14,7 +14,7 @@
         "directory": "packages/arri-adapter-typebox"
     },
     "dependencies": {
-        "@sinclair/typebox": "^0.31.14",
+        "@sinclair/typebox": "^0.31.15",
         "arri-validate": "workspace:*",
         "json-schema-to-jtd": "workspace:*"
     }
