@@ -1,47 +1,57 @@
 import { validate, a } from "arri-validate";
 import { ofetch } from "ofetch";
 
-export interface ArriRequestOpts {
+export interface ArriRequestOpts<
+    T,
+    P extends Record<any, any> | undefined = undefined,
+> {
     url: string;
     method: string;
     headers?: any;
-    params?: any;
+    params?: P;
+    parser: (input: string) => T;
+    serializer: (input: P) => P extends undefined ? undefined : string;
 }
 
-export async function arriRequest<T>(opts: ArriRequestOpts): Promise<T> {
+export async function arriRequest<
+    T,
+    P extends Record<any, any> | undefined = undefined,
+>(opts: ArriRequestOpts<T, P>): Promise<T> {
     let url = opts.url;
-    let body: undefined | any;
+    let body: undefined | string;
     switch (opts.method) {
         case "get":
         case "head":
-            if (typeof opts.params === "object") {
+            if (opts.params && typeof opts.params === "object") {
                 const urlParts: string[] = [];
                 Object.keys(opts.params).forEach((key) => {
                     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    urlParts.push(`${key}=${opts.params[key]}`);
+                    urlParts.push(`${key}=${(opts.params as any)[key]}`);
                 });
                 url = `${opts.url}?${urlParts.join("&")}`;
             }
             break;
         default:
-            if (typeof opts.params === "object") {
-                body = opts.params;
+            if (opts.params && typeof opts.params === "object") {
+                body = opts.serializer(opts.params);
             }
             break;
     }
     const result = await ofetch<T>(url, {
         method: opts.method,
         body,
-        headers: opts.headers,
+        headers: { ...opts.headers, "Content-Type": "application/json" },
+        parseResponse: opts.parser,
     });
     return result;
 }
 
-export async function arriSafeRequest<T>(
-    opts: ArriRequestOpts,
-): Promise<SafeResponse<T>> {
+export async function arriSafeRequest<
+    T,
+    P extends Record<any, any> | undefined = undefined,
+>(opts: ArriRequestOpts<T, P>): Promise<SafeResponse<T>> {
     try {
-        const result = await arriRequest<T>(opts);
+        const result = await arriRequest<T, P>(opts);
         return {
             success: true,
             value: result,

@@ -40,11 +40,22 @@ export function serialize<T = any>(schema: ASchema<T>, input: unknown) {
  * Create validator for a raw JSON Type Definition Schema
  */
 export function createRawJtdValidator<T>(schema: Schema) {
-    const parse = AJV.compileParser<T>(schema);
+    const parser = AJV.compileParser<T>(schema);
     const validate = AJV.compile<T>(schema as any);
     const serialize = AJV.compileSerializer<T>(schema);
     return {
-        parse,
+        parse: (input: unknown): T => {
+            if (typeof input === "string") {
+                const result = parser(input);
+                if (validate(result)) {
+                    return result;
+                }
+            }
+            if (validate(input)) {
+                return input;
+            }
+            throw new ValidationError(validate.errors ?? []);
+        },
         validate,
         serialize,
     };

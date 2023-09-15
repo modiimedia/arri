@@ -1,15 +1,9 @@
 import { arriRequest } from "arri-client";
 import { createRawJtdValidator } from "arri-validate";
-import { type Serialize } from "nitropack";
 
 interface ClientOptions {
     baseUrl?: string;
     headers?: Record<string, string>;
-}
-
-async function main() {
-    const blah = new Client();
-    const user = await blah.users.getUser(new UserParams({ userId: "" }));
 }
 
 export class Client {
@@ -24,11 +18,13 @@ export class Client {
     }
 
     getStatus() {
-        return arriRequest<Serialize<GetStatusResponse>>({
+        return arriRequest<GetStatusResponse, undefined>({
             url: `${this.baseUrl}/status`,
             method: "get",
             headers: this.headers,
             params: undefined,
+            parser: _$GetStatusResponseValidator.parse,
+            serializer: (_) => {},
         });
     }
 }
@@ -45,20 +41,24 @@ export class ClientUsersService {
     }
 
     getUser(params: UserParams) {
-        return arriRequest<User>({
+        return arriRequest<User, UserParams>({
             url: `${this.baseUrl}/users/get-user`,
             method: "get",
             headers: this.headers,
             params,
+            parser: _$UserValidator.parse,
+            serializer: _$UserParamsValidator.serialize,
         });
     }
 
     updateUser(params: UpdateUserParams) {
-        return arriRequest<Serialize<User>>({
+        return arriRequest<User, UpdateUserParams>({
             url: `${this.baseUrl}/users/update-user`,
             method: "post",
             headers: this.headers,
             params,
+            parser: _$UserValidator.parse,
+            serializer: _$UpdateUserParamsValidator.serialize,
         });
     }
 }
@@ -73,11 +73,13 @@ export class ClientUsersSettingsService {
     }
 
     getUserSettings() {
-        return arriRequest<undefined>({
+        return arriRequest<undefined, undefined>({
             url: `${this.baseUrl}/users/settings/get-user-settings`,
             method: "get",
             headers: this.headers,
             params: undefined,
+            parser: (_) => {},
+            serializer: (_) => {},
         });
     }
 }
@@ -85,8 +87,15 @@ export class ClientUsersSettingsService {
 export interface GetStatusResponse {
     message: string;
 }
+const _$GetStatusResponseValidator = createRawJtdValidator<GetStatusResponse>({
+    properties: {
+        message: {
+            type: "string",
+        },
+    },
+});
 
-class User {
+interface User {
     id: string;
     role: UserRole;
     photo: UserPhoto | null;
@@ -96,38 +105,7 @@ class User {
     recentNotifications: Array<UserSettingsRecentNotificationsItem>;
     bookmarks: Record<string, UserBookmarksValue>;
     bio?: string;
-
-    constructor(opts: {
-        id: string;
-        role: UserRole;
-        photo: UserPhoto | null;
-        createdAt: Date;
-        numFollowers: number;
-        settings: UserSettings;
-        recentNotifications: Array<UserSettingsRecentNotificationsItem>;
-        bookmarks: Record<string, UserBookmarksValue>;
-        bio?: string;
-    }) {
-        this.id = opts.id;
-        this.role = opts.role;
-        this.photo = opts.photo;
-        this.createdAt = opts.createdAt;
-        this.numFollowers = opts.numFollowers;
-        this.settings = opts.settings;
-        this.recentNotifications = opts.recentNotifications;
-        this.bookmarks = opts.bookmarks;
-        this.bio = opts.bio;
-    }
-
-    toJson() {
-        return _$UserValidator.serialize(this);
-    }
-
-    static fromJson(json: string) {
-        return _$UserValidator.parse(json);
-    }
 }
-
 const _$UserValidator = createRawJtdValidator<User>({
     properties: {
         id: {
@@ -241,37 +219,11 @@ export interface UserPhoto {
     width: number;
     height: number;
 }
-const _$UserPhotoValidator = createRawJtdValidator<UserPhoto>({
-    properties: {
-        url: {
-            type: "string",
-        },
-        width: {
-            type: "float64",
-        },
-        height: {
-            type: "float64",
-        },
-    },
-});
 
 export interface UserSettings {
     notificationsEnabled: boolean;
     preferredTheme: UserSettingsPreferredTheme;
 }
-const _$UserSettingsValidator = createRawJtdValidator<UserSettings>({
-    properties: {
-        notificationsEnabled: {
-            type: "boolean",
-        },
-        preferredTheme: {
-            enum: ["dark-mode", "light-mode", "system"],
-        },
-    },
-    metadata: {
-        id: "UserSettings",
-    },
-});
 
 export type UserSettingsPreferredTheme = "dark-mode" | "light-mode" | "system";
 
@@ -287,65 +239,14 @@ export type UserSettingsRecentNotificationsItem =
           userId: string;
           commentText: string;
       };
-const _$UserSettingsRecentNotificationsItemValidator = createRawJtdValidator({
-    discriminator: "notificationType",
-    mapping: {
-        POST_LIKE: {
-            properties: {
-                postId: {
-                    type: "string",
-                },
-                userId: {
-                    type: "string",
-                },
-            },
-        },
-        POST_COMMENT: {
-            properties: {
-                postId: {
-                    type: "string",
-                },
-                userId: {
-                    type: "string",
-                },
-                commentText: {
-                    type: "string",
-                },
-            },
-        },
-    },
-});
 
 export interface UserBookmarksValue {
     postId: string;
     userId: string;
 }
-const _$UserBookmarksValueValidator = createRawJtdValidator<UserBookmarksValue>(
-    {
-        properties: {
-            postId: {
-                type: "string",
-            },
-            userId: {
-                type: "string",
-            },
-        },
-    },
-);
 
-export class UserParams {
+export interface UserParams {
     userId: string;
-    constructor(input: { userId: string }) {
-        this.userId = input.userId;
-    }
-
-    toJson() {
-        return _$UserParamsValidator.serialize(this);
-    }
-
-    static fromJson(json: string) {
-        return _$UserParamsValidator.parse(json);
-    }
 }
 const _$UserParamsValidator = createRawJtdValidator<UserParams>({
     properties: {
@@ -360,7 +261,7 @@ export interface UpdateUserParams {
     photo: UserPhoto | null;
     bio?: string;
 }
-const _$UpdateUserParams = createRawJtdValidator<UpdateUserParams>({
+const _$UpdateUserParamsValidator = createRawJtdValidator<UpdateUserParams>({
     properties: {
         id: {
             type: "string",
@@ -393,18 +294,3 @@ export interface ClientError {
     data: any;
     stack: string | null;
 }
-const _$ClientErrorValidator = createRawJtdValidator<ClientError>({
-    properties: {
-        statusCode: {
-            type: "float64",
-        },
-        statusMessage: {
-            type: "string",
-        },
-        data: {},
-        stack: {
-            type: "string",
-            nullable: true,
-        },
-    },
-});
