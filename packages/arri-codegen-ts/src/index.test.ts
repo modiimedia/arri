@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync } from "fs";
+import { normalizeWhitespace } from "arri-codegen-utils";
 import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
-import { normalizeWhitespace } from "packages/arri-codegen-utils/dist";
 import path from "pathe";
 import prettier from "prettier";
 import { createTypescriptClient } from "./index";

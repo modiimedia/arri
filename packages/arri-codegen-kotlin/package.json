@@ -1,0 +1,15 @@
+{
+    "name": "arri-codegen-kotlin",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri",
+        "directory": "packages/arri-codegen-kotlin"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ]
+}

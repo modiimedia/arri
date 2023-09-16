@@ -1,3 +1,4 @@
+import { writeFileSync } from "fs";
 import {
     type AppDefinition,
     defineClientGeneratorPlugin,
@@ -44,11 +45,8 @@ export const typescriptClientGenerator = defineClientGeneratorPlugin(
                     "No procedures found in definition file. Typescript client will not be generated.",
                 );
             }
-            // const result = await createTypescriptClient(
-            //     def,
-            //     options.clientName,
-            // );
-            // writeFileSync(options.outputFile, result);
+            const result = await createTypescriptClient(def, options);
+            writeFileSync(options.outputFile, result);
         },
         options,
     }),
@@ -296,7 +294,7 @@ export function tsAnyFromJtdSchema(
 export function tsScalarFromJtdSchema(
     nodePath: string,
     def: SchemaFormType,
-    _options: GeneratorOptions,
+    options: GeneratorOptions,
     additionalOptions: AdditionalOptions,
 ): TsProperty {
     const key = nodePath.split(".").pop() ?? "";

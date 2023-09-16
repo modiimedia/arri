@@ -15,7 +15,7 @@
         "publish": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
+                "command": "pnpm publish",
                 "cwd": "packages/arri-adapter-typebox"
             },
             "dependsOn": ["build"]

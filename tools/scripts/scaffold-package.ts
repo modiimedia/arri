@@ -110,7 +110,7 @@ function projectJsonTemplate(packageName: string) {
         "publish": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
+                "command": "pnpm publish",
                 "cwd": "packages/${packageName}"
             },
             "dependsOn": ["build"]

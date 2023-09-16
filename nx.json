@@ -19,6 +19,10 @@
         "defaultBase": "master"
     },
     "targetDefaults": {
+        "build": {
+            "inputs": ["default", "^default"],
+            "dependsOn": ["^build", "^prepare"]
+        },
         "lint": {
             "inputs": [
                 "default",

@@ -149,6 +149,12 @@ importers:
       ajv:
         specifier: ^8.12.0
         version: 8.12.0
+      arri-codegen-dart:
+        specifier: workspace:*
+        version: link:../arri-codegen-dart
+      arri-codegen-ts:
+        specifier: workspace:*
+        version: link:../arri-codegen-ts
       arri-codegen-utils:
         specifier: workspace:*
         version: link:../arri-codegen-utils
