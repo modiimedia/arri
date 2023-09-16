@@ -80,6 +80,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.49.0)
+      globby:
+        specifier: ^13.2.2
+        version: 13.2.2
       jiti:
         specifier: ^1.20.0
         version: 1.20.0
@@ -241,6 +244,8 @@ importers:
       arri-validate:
         specifier: workspace:*
         version: link:../arri-validate
+
+  packages/arri-codegen-kotlin: {}
 
   packages/arri-codegen-ts:
     dependencies:

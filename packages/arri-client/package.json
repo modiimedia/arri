@@ -1,23 +1,16 @@
 {
     "name": "arri-client",
-    "version": "0.0.40",
+    "version": "0.0.45",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri",
         "directory": "packages/arri-client"
     },
-    "dependencies": {
-        "arri-validate": "workspace:*",
-        "ofetch": "^1.3.3"
-    },
-    "devDependencies": {
-        "nitropack": "^2.6.3"
-    }
+    "dependencies": { "arri-validate": "workspace:*", "ofetch": "^1.3.3" },
+    "devDependencies": { "nitropack": "^2.6.3" }
 }

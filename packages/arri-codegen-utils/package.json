@@ -1,13 +1,11 @@
 {
     "name": "arri-codegen-utils",
-    "version": "0.0.40",
+    "version": "0.0.45",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "dependencies": {
         "@modii/jtd": "^0.2.1",
         "scule": "^1.0.0",

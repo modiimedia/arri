@@ -1,6 +1,6 @@
 {
     "name": "arri-codegen-dart",
-    "version": "0.0.44",
+    "version": "0.0.45",
     "type": "module",
     "repository": {
         "type": "git",
@@ -10,9 +10,7 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "dependencies": {
         "arri-codegen-utils": "workspace:*",
         "arri-validate": "workspace:*"
