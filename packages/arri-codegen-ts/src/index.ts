@@ -401,7 +401,6 @@ export function tsObjectFromJtdSchema(
         }
     }
     if (def.optionalProperties) {
-        console.log(def.optionalProperties);
         for (const propKey of Object.keys(def.optionalProperties)) {
             const propSchema = def.optionalProperties[propKey];
             const type = tsTypeFromJtdSchema(
@@ -483,7 +482,6 @@ export function tsArrayFromJtdSchema(
         options,
         additionalOptions,
     );
-    console.log(subType);
     const tsType = `Array<${subType.tsType}>`;
     return {
         tsType,

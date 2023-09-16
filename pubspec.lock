@@ -25,13 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.2"
-  arri_client:
-    dependency: "direct main"
-    description:
-      path: "../arri-client-dart"
-      relative: true
-    source: path
-    version: "0.0.44"
   async:
     dependency: transitive
     description:
@@ -104,14 +97,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
-  http:
-    dependency: transitive
-    description:
-      name: http
-      sha256: "759d1a329847dd0f39226c688d3e06a6b8679668e350e2891a6474f8b4bb8525"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   http_multi_server:
     dependency: transitive
     description:

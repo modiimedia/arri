@@ -19,7 +19,6 @@ import {
     setResponseHeader,
     type H3Event,
     getValidatedQuery,
-    getQuery,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type ArriOptions } from "./app";
@@ -195,7 +194,6 @@ export function registerRpc(
                     case "get":
                     case "head": {
                         try {
-                            console.log("QUERY:", getQuery(event));
                             const parsedParams = await getValidatedQuery(
                                 event,
                                 procedure.params.metadata[SCHEMA_METADATA]

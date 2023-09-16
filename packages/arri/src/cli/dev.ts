@@ -74,7 +74,6 @@ async function startDevServer(config: ResolvedArriConfig) {
     await bundleFiles(config);
     const listener = await startListener(config, true);
     setTimeout(async () => {
-        logger.info("GENERATING CLIENTS");
         await generateClients(config);
     }, 1000);
     const cleanExit = async () => {

@@ -12,7 +12,6 @@ export function typeboxAdapter<TInput extends TObject<any>>(
     input: TInput,
 ): ASchema<Static<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as any);
-    console.log("FINAL SCHEMA", schema);
     return {
         ...schema,
         metadata: {
