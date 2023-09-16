@@ -16,9 +16,7 @@
         "ajv": "^8.12.0",
         "arri-client": "workspace:*",
         "arri-codegen-utils": "workspace:*",
-        "arri-validate": "workspace:*"
-    },
-    "devDependencies": {
-        "nitropack": "^2.6.3"
+        "arri-validate": "workspace:*",
+        "prettier": "^3.0.3"
     }
 }

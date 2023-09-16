@@ -1,7 +1,11 @@
 import { type SchemaFormType } from "@modii/jtd";
 import { type ValidateFunction } from "ajv";
 
-import { type AScalarSchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
+import {
+    type AScalarSchema,
+    type ASchemaOptions,
+    SCHEMA_METADATA,
+} from "../schemas";
 import { ValidationError, AJV } from "./validation";
 
 const numberTypes = [

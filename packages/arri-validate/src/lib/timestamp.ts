@@ -1,5 +1,9 @@
 import { type SchemaFormType } from "@modii/jtd";
-import { type AScalarSchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
+import {
+    type AScalarSchema,
+    type ASchemaOptions,
+    SCHEMA_METADATA,
+} from "../schemas";
 import { ValidationError, AJV } from "./validation";
 
 const schema: SchemaFormType = {

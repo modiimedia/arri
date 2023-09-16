@@ -52,7 +52,7 @@ importers:
         version: 0.34.4(vitest@0.34.4)
       bun-types:
         specifier: latest
-        version: 1.0.1
+        version: 1.0.2
       citty:
         specifier: ^0.1.4
         version: 0.1.4
@@ -250,10 +250,9 @@ importers:
       arri-validate:
         specifier: workspace:*
         version: link:../arri-validate
-    devDependencies:
-      nitropack:
-        specifier: ^2.6.3
-        version: 2.6.3
+      prettier:
+        specifier: ^3.0.3
+        version: 3.0.3
 
   packages/arri-codegen-utils:
     dependencies:
@@ -4576,6 +4575,10 @@ packages:
 
   /bun-types@1.0.1:
     resolution: {integrity: sha512-7NrXqhMIaNKmWn2dSWEQ50znMZqrN/5Z0NBMXvQTRu/+Y1CvoXRznFy0pnqLe024CeZgVdXoEpARNO1JZLAPGw==}
+    dev: true
+
+  /bun-types@1.0.2:
+    resolution: {integrity: sha512-yqBp2SX9cqr5/GReb56uCfM+YP+Hntx3XPjbqX1VJXqOBu+Yqw8iWRFLKFIsz9uEfykLgflhramQ8a5Jgo+Tlg==}
     dev: true
 
   /busboy@1.6.0:
