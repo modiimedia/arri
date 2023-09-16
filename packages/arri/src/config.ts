@@ -1,5 +1,5 @@
+import { type ClientGenerator } from "arri-codegen-utils";
 import { type BuildOptions } from "esbuild";
-import { type ClientGenerator } from "./codegen/plugin";
 
 /* eslint-disable spaced-comment */
 export interface ArriConfig {

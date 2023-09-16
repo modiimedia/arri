@@ -15,7 +15,7 @@ export default defineBuildConfig({
     entries: [
         { input: "./src/_index.ts", name: "index" },
         {
-            input: "./src/codegen/_index.ts",
+            input: "./src/codegen.ts",
             name: "codegen",
         },
         { input: "./src/cli/_index.ts", name: "cli" },

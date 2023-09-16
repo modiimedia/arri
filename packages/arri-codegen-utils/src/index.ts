@@ -27,7 +27,7 @@ export const isHttpMethod = (input: any): input is HttpMethod => {
     return HttpMethodValues.includes(input as any);
 };
 
-const SCHEMA_VERSION = "0.0.2" as const;
+export const SCHEMA_VERSION = "0.0.2" as const;
 
 export interface AppDefinition {
     arriSchemaVersion: typeof SCHEMA_VERSION;
@@ -50,13 +50,13 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
         return false;
     }
     const inputObj = input as Record<any, any>;
-    if (inputObj.arriSchemaVersion !== SCHEMA_VERSION) {
+    if (typeof inputObj.arriSchemaVersion !== "string") {
         return false;
     }
     if (typeof inputObj.procedures !== "object") {
         return false;
     }
-    if (typeof inputObj.modules !== "object") {
+    if (typeof inputObj.models !== "object") {
         return false;
     }
     if (!isPropertiesForm(inputObj.errors)) {

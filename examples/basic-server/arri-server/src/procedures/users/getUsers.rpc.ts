@@ -17,6 +17,7 @@ export default defineRpc({
     method: "get",
     params: a.object({
         limit: a.number(),
+        type: a.stringEnum(["admin", "standard", "moderator"]),
     }),
     response: a.object({
         total: a.int32(),

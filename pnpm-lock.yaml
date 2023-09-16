@@ -144,8 +144,8 @@ importers:
   examples/basic-server/client-ts:
     dependencies:
       arri-client:
-        specifier: link:../../../dist/packages/arri-client
-        version: link:../../../dist/packages/arri-client
+        specifier: workspace:*
+        version: link:../../../packages/arri-client
 
   packages/arri:
     dependencies:

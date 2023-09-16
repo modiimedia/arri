@@ -2,8 +2,9 @@ import { defineConfig } from "arri";
 import {
     typescriptClientGenerator,
     dartClientGenerator,
-    kotlinClientGenerator,
 } from "arri/dist/codegen.mjs";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const prettierConfig = require("../../../.prettierrc");
 
 export default defineConfig({
     rootDir: __dirname,
@@ -15,15 +16,11 @@ export default defineConfig({
         typescriptClientGenerator({
             clientName: "ExampleClient",
             outputFile: "../client-ts/exampleClient.rpc.ts",
+            prettierOptions: prettierConfig,
         }),
         dartClientGenerator({
             clientName: "ExampleClient",
             outputFile: "../client-dart/lib/example_client.rpc.dart",
-        }),
-        kotlinClientGenerator({
-            clientName: "ExampleClient",
-            outFile: "../client-kotlin/example_client.rpc.kt",
-            packageName: "com.example.client",
         }),
     ],
 });

@@ -1,18 +1,16 @@
-import { sayHello } from "@root/services/exampleService.js";
-import { Type } from "@sinclair/typebox";
 import { defineRpc } from "arri";
+import { a } from "arri-validate";
 
 export default defineRpc({
     method: "get",
     params: undefined,
-    response: Type.Object({
-        id: Type.String(),
-        username: Type.String(),
-        email: Type.String(),
-        createdAt: Type.Integer(),
+    response: a.object({
+        id: a.string(),
+        username: a.string(),
+        email: a.string(),
+        createdAt: a.int32(),
     }),
     handler() {
-        sayHello();
         return {
             id: "12345",
             username: "johndoe",
