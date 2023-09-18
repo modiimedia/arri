@@ -17,5 +17,6 @@
         "typebox",
         "unflatten"
     ],
-    "eslint.validate": ["json"]
+    "eslint.validate": ["json"],
+    "java.compile.nullAnalysis.mode": "automatic"
 }

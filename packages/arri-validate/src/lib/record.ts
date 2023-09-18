@@ -42,6 +42,19 @@ export function record<TInnerSchema extends ASchema<any>>(
                     }
                     throw new ValidationError(validator.errors ?? []);
                 },
+                coerce: (input: unknown) => {
+                    if (!input || typeof input !== "object") {
+                        throw new ValidationError([
+                            {
+                                message: `Expected type 'Object'. Got ${typeof input}.`,
+                            },
+                        ]);
+                    }
+                    if (isType(input)) {
+                        return input;
+                    }
+                    throw new ValidationError(validator.errors ?? []);
+                },
                 serialize: serializer,
             },
         },

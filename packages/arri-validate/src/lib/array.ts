@@ -41,6 +41,19 @@ export function array<TInnerSchema extends ASchema<any> = any>(
                     }
                     throw new ValidationError(validator.errors ?? []);
                 },
+                coerce: (input: unknown) => {
+                    if (typeof input === "string") {
+                        const result = parser(input);
+                        if (isType(result)) {
+                            return result;
+                        }
+                        throw new ValidationError(validator.errors ?? []);
+                    }
+                    if (isType(input)) {
+                        return input;
+                    }
+                    throw new ValidationError(validator.errors ?? []);
+                },
                 validate: isType,
                 serialize: serializer,
             },

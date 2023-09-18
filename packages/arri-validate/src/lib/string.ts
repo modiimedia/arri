@@ -35,7 +35,15 @@ export function string(
                     if (typeof input === "string") {
                         return input;
                     }
-                    return `${input as any}`;
+                    throw new ValidationError([
+                        {
+                            message: "Expected string",
+                            instancePath: "/",
+                            keyword: "",
+                            params: {},
+                            schemaPath: "/",
+                        },
+                    ]);
                 },
                 validate: isString,
                 serialize: (input) =>
