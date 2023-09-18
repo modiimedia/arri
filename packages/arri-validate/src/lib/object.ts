@@ -286,3 +286,71 @@ export function omit<
         },
     };
 }
+
+export function extend<
+    TBaseSchema extends AObjectSchema = any,
+    TSchema extends AObjectSchema = any,
+    TAdditionalProps extends boolean = false,
+>(
+    baseSchema: TBaseSchema,
+    inputSchema: AObjectSchema,
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<
+    InferType<TBaseSchema> & InferType<TSchema>,
+    TAdditionalProps
+> {
+    const schema: SchemaFormProperties = {
+        properties: {
+            ...baseSchema.properties,
+            ...inputSchema.properties,
+        },
+        optionalProperties: {
+            ...baseSchema.optionalProperties,
+            ...inputSchema.optionalProperties,
+        },
+        additionalProperties: opts.additionalProperties,
+    };
+    const validator = AJV.compile(schema);
+    const parser = AJV.compileParser(schema);
+    const serializer = AJV.compileSerializer(schema);
+    const isType = (
+        input: unknown,
+    ): input is InferType<TBaseSchema> & InferType<TSchema> => validator(input);
+    const meta: ASchema["metadata"] = {
+        id: opts.id,
+        description: opts.description,
+        [SCHEMA_METADATA]: {
+            output: {} as any as InferType<TBaseSchema> & InferType<TSchema>,
+            parse(input: unknown) {
+                if (typeof input === "string") {
+                    const result = parser(input);
+                    if (isType(result)) {
+                        return result;
+                    }
+                    throw new ValidationError(validator.errors ?? []);
+                }
+                if (isType(input)) {
+                    return input;
+                }
+                throw new ValidationError(validator.errors ?? []);
+            },
+            coerce(input: unknown) {
+                if (typeof input === "string") {
+                    const result = parser(input);
+                    if (isType(result)) {
+                        return result;
+                    }
+                    throw new ValidationError(validator.errors ?? []);
+                }
+                if (isType(input)) {
+                    return input;
+                }
+                throw new ValidationError(validator.errors ?? []);
+            },
+            validate: isType,
+            serialize: serializer,
+        },
+    };
+    schema.metadata = meta;
+    return schema as any;
+}
