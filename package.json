@@ -6,6 +6,7 @@
         "url": "https://github.com/modiimedia/arri"
     },
     "scripts": {
+        "test": "nx run-many -t test",
         "build": "nx run-many -t build",
         "scaffold": "jiti tools/scripts/scaffold-package.ts",
         "publish": "jiti tools/scripts/publish.ts",
