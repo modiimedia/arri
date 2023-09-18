@@ -386,7 +386,7 @@ it("Matches the dart example client", () => {
     const expectedResult = readFileSync(
         path.resolve(
             __dirname,
-            "../arri-codegen-dart-reference/reference_client.dart",
+            "../../arri-codegen-dart-reference/reference_client.dart",
         ),
         { encoding: "utf-8" },
     );
