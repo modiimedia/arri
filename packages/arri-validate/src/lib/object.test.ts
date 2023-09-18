@@ -94,6 +94,24 @@ describe("type inference", () => {
             someOtherProp: [{ id: 1, date: new Date() }],
         });
     });
+    it("accounts for extended objects", () => {
+        const SomeObject = a.object({
+            id: a.string(),
+            email: a.string(),
+        });
+        const SomeOtherObject = a.object({
+            name: a.string(),
+            createdAt: a.timestamp(),
+        });
+        const CombinedObject = a.extend(SomeObject, SomeOtherObject);
+        type CombinedObject = a.infer<typeof CombinedObject>;
+        assertType<CombinedObject>({
+            id: "13245",
+            email: "johndoe@gmail.com",
+            name: "John Doe",
+            createdAt: new Date(),
+        });
+    });
 });
 
 test("Parsing", () => {

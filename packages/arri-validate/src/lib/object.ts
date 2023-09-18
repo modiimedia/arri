@@ -7,6 +7,7 @@ import {
     SCHEMA_METADATA,
     type AObjectSchema,
     type AObjectSchemaOptions,
+    type ResolveObject,
 } from "../schemas";
 import { ValidationError, AJV } from "./validation";
 
@@ -288,15 +289,15 @@ export function omit<
 }
 
 export function extend<
-    TBaseSchema extends AObjectSchema = any,
-    TSchema extends AObjectSchema = any,
+    TBaseSchema extends AObjectSchema<any, any> = any,
+    TSchema extends AObjectSchema<any, any> = any,
     TAdditionalProps extends boolean = false,
 >(
     baseSchema: TBaseSchema,
-    inputSchema: AObjectSchema,
+    inputSchema: TSchema,
     opts: AObjectSchemaOptions<TAdditionalProps> = {},
 ): AObjectSchema<
-    InferType<TBaseSchema> & InferType<TSchema>,
+    ResolveObject<InferType<TBaseSchema> & InferType<TSchema>>,
     TAdditionalProps
 > {
     const schema: SchemaFormProperties = {
