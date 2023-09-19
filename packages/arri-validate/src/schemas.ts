@@ -23,7 +23,7 @@ export interface ASchema<T = any> {
             output: T;
             optional?: boolean;
             parse: (input: unknown) => T;
-            coerce: (input: unknown) => T;
+            coerce: (input: unknown, instancePath?: string) => T;
             serialize: (input: unknown) => string;
             validate: (input: unknown) => input is T;
         };

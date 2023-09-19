@@ -2,9 +2,7 @@ import { Arri } from "arri";
 import { a } from "arri-validate";
 
 const app = new Arri({
-    onError(err, context, event) {
-        console.log(err);
-    },
+    onError(err, context, event) {},
 });
 
 app.registerRpc("test.getTest", {

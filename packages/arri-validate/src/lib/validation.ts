@@ -5,6 +5,24 @@ import { type ASchema, SCHEMA_METADATA } from "../schemas";
 export const AJV = new Ajv({ strictSchema: false });
 export { type ErrorObject, ValidationError };
 
+export function isValidationError(input: unknown): input is ValidationError {
+    if (typeof input !== "object" || !input) {
+        return false;
+    }
+    return (
+        "ajv" in input &&
+        typeof input.ajv === "boolean" &&
+        "errors" in input &&
+        Array.isArray(input.errors) &&
+        "validation" in input &&
+        typeof input.validation === "boolean" &&
+        "name" in input &&
+        typeof input.name === "string" &&
+        "message" in input &&
+        typeof input.message === "string"
+    );
+}
+
 export function validate<T = any>(
     schema: ASchema<T>,
     input: unknown,

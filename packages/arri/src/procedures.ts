@@ -1,4 +1,3 @@
-import { type ValidationError } from "ajv/dist/jtd";
 import {
     type HttpMethod,
     isHttpMethod,
@@ -8,7 +7,6 @@ import {
 import {
     type AObjectSchema,
     type InferType,
-    SCHEMA_METADATA,
     isAObjectSchema,
 } from "arri-validate";
 import {
@@ -19,11 +17,13 @@ import {
     setResponseHeader,
     type H3Event,
     getValidatedQuery,
+    readValidatedBody,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type ArriOptions } from "./app";
 import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./routes";
+import { arriSafeValidate } from "./validation";
 
 export interface ArriProcedure<
     TParams extends AObjectSchema | undefined,
@@ -193,90 +193,60 @@ export function registerRpc(
                 switch (httpMethod) {
                     case "get":
                     case "head": {
-                        try {
-                            const parsedParams = await getValidatedQuery(
-                                event,
-                                procedure.params.metadata[SCHEMA_METADATA]
-                                    .coerce,
-                            );
-                            context.params = parsedParams;
-                        } catch (e) {
-                            console.error("ERROR", e);
-                            const parsedErr = e as ValidationError;
+                        const parsedParams = await getValidatedQuery(
+                            event,
+                            (input) =>
+                                arriSafeValidate(procedure.params, input, true),
+                        );
+                        if (parsedParams.success) {
+                            context.params = parsedParams.value;
+                        } else {
                             const errParts: string[] = [];
-                            for (const err of parsedErr.errors) {
-                                const propName =
-                                    err.instancePath?.split("/").join(".") ??
-                                    "";
-                                errParts.push(propName);
+                            for (const err of parsedParams.error.errors) {
+                                errParts.push(
+                                    err.propertyName ?? err.instancePath ?? "",
+                                );
                             }
                             const message = `Missing or invalid url query parameters: [${errParts.join(
                                 ", ",
                             )}]`;
                             throw defineError(400, {
                                 statusMessage: message,
-                                data: parsedErr,
-                                stack: parsedErr.stack,
+                                data: parsedParams.error,
+                                stack: parsedParams.error.stack,
                             });
                         }
-                        // const parsedParams = await getValidatedQuery(
-                        //     event,
-                        //     typeboxSafeValidate(procedure.params, true),
-                        // );
-                        // if (!parsedParams.success) {
-                        //     const errorParts: string[] = [];
-                        //     for (const err of parsedParams.errors) {
-                        //         const propName = err.path.split("/");
-                        //         propName.shift();
-                        //         if (!errorParts.includes(propName.join("."))) {
-                        //             errorParts.push(propName.join("."));
-                        //         }
-                        //     }
-                        //     throw defineError(400, {
-                        //         statusMessage: `Missing or invalid url query parameters: [${errorParts.join(
-                        //             ",",
-                        //         )}]`,
-                        //         data: parsedParams.errors,
-                        //     });
-                        // }
-                        // context.params = parsedParams.value;
                         break;
                     }
-
                     case "delete":
                     case "patch":
                     case "post":
                     case "put": {
-                        // const parsedParams = await readValidatedBody(
-                        //     event,
-                        //     typeboxSafeValidate(procedure.params),
-                        // );
-                        // if (!parsedParams.success) {
-                        //     let isObjectError = false;
-                        //     const errorParts: string[] = [];
-                        //     for (const err of parsedParams.errors) {
-                        //         if (err.type === ValueErrorType.Object) {
-                        //             isObjectError = true;
-                        //         }
-                        //         const propName = err.path.split("/");
-                        //         propName.shift();
-                        //         if (!errorParts.includes(propName.join("."))) {
-                        //             errorParts.push(propName.join("."));
-                        //         }
-                        //     }
-                        //     if (isObjectError) {
-                        //         throw defineError(400, {
-                        //             statusMessage: `Invalid request body. Expected object.`,
-                        //         });
-                        //     }
-                        //     throw defineError(400, {
-                        //         statusMessage: `Invalid request body. Affected properties [${errorParts.join(
-                        //             ", ",
-                        //         )}]`,
-                        //         data: parsedParams.errors,
-                        //     });
-                        // }
-                        // context.params = parsedParams.value;
+                        const parsedParams = await readValidatedBody(
+                            event,
+                            (input) =>
+                                arriSafeValidate(
+                                    procedure.params,
+                                    input,
+                                    false,
+                                ),
+                        );
+                        if (!parsedParams.success) {
+                            const errorParts: string[] = [];
+                            for (const err of parsedParams.error.errors) {
+                                errorParts.push(
+                                    err.propertyName ?? err.instancePath ?? "",
+                                );
+                            }
+
+                            throw defineError(400, {
+                                statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                                    ", ",
+                                )}]`,
+                                data: parsedParams.error,
+                            });
+                        }
+                        context.params = parsedParams.value;
                         break;
                     }
                     default:
