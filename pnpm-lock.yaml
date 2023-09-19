@@ -32,9 +32,6 @@ importers:
       '@types/jest':
         specifier: ^29.5.4
         version: 29.5.4
-      '@types/json-schema':
-        specifier: ^7.0.12
-        version: 7.0.12
       '@types/node':
         specifier: 20.6.0
         version: 20.6.0
