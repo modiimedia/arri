@@ -17,10 +17,10 @@ export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
         instancePath: "",
         errors,
     });
-    if (errors.length || !result) {
+    if (errors.length) {
         throw new ValidationError({ message: "Unable to parse input", errors });
     }
-    return result;
+    return result as T;
 }
 
 export function safeParse<T = any>(
@@ -31,20 +31,17 @@ export function safeParse<T = any>(
         const result = parse(schema, input);
         return {
             success: true,
-            error: undefined,
             value: result,
         };
     } catch (err) {
         if (isValidationError(err)) {
             return {
                 success: false,
-                value: undefined,
                 error: err,
             };
         }
         return {
             success: false,
-            value: undefined,
             error: new ValidationError({
                 message: "Unable to coerce input",
 
@@ -61,18 +58,18 @@ export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
         instancePath: "",
         errors,
     });
-    if (errors.length || !result) {
+    if (errors.length) {
         throw new ValidationError({
             message: "Unable to coerce input",
             errors,
         });
     }
-    return result;
+    return result as T;
 }
 
 type SafeResult<T> =
-    | { success: true; error: undefined; value: T }
-    | { success: false; error: ValidationError; value: undefined };
+    | { success: true; value: T }
+    | { success: false; error: ValidationError };
 
 export function safeCoerce<T = any>(
     schema: ASchema<T>,
@@ -83,14 +80,12 @@ export function safeCoerce<T = any>(
         return {
             success: true,
             value: result,
-            error: undefined,
         };
     } catch (err) {
         if (isValidationError(err)) {
             return {
                 success: false,
                 error: err,
-                value: undefined,
             };
         }
         return {
@@ -99,7 +94,6 @@ export function safeCoerce<T = any>(
                 message: "Unable to coerce input",
                 errors: [],
             }),
-            value: undefined,
         };
     }
 }

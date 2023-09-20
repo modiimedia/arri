@@ -27,14 +27,14 @@ export function timestamp(
 function validate(input: unknown): input is Date {
     return typeof input === "object" && input instanceof Date;
 }
-function parse(input: unknown, options?: ValidationData): Date | undefined {
-    if (typeof input === "string") {
+function parse(input: unknown, options: ValidationData): Date | undefined {
+    if ((options.instancePath.length === 0, typeof input === "string")) {
         const result = Date.parse(input);
         if (Number.isNaN(result)) {
             options?.errors.push({
                 message: "Invalid date string",
                 instancePath: options.instancePath,
-                schemaPath: options.schemaPath,
+                schemaPath: `${options.schemaPath}/type`,
             });
             return undefined;
         }
@@ -43,9 +43,14 @@ function parse(input: unknown, options?: ValidationData): Date | undefined {
     if (validate(input)) {
         return input;
     }
+    options.errors.push({
+        message: "Invalid date",
+        instancePath: options.instancePath,
+        schemaPath: `${options.schemaPath}/type`,
+    });
     return undefined;
 }
-function coerce(input: unknown, options?: ValidationData): Date | undefined {
+function coerce(input: unknown, options: ValidationData): Date | undefined {
     if (typeof input === "number") {
         return new Date(input);
     }

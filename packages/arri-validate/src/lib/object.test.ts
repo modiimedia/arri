@@ -149,7 +149,11 @@ test("Nested Object", () => {
         },
     };
     const badJsonInput = JSON.stringify(badInput);
-    expect(a.safeParse(PostSchema, badInput).success).toBe(false);
+    const badInputResult = a.safeParse(PostSchema, badInput);
+    if (badInputResult.success) {
+        console.error(badInputResult.value);
+    }
+    expect(badInputResult.success).toBe(false);
     expect(a.safeParse(PostSchema, badJsonInput).success).toBe(false);
     const goodInput: PostSchema = {
         id: "1234456",
@@ -208,6 +212,10 @@ describe("Omit", () => {
             email: null,
             createdAt: new Date(),
         };
+        const result = a.safeParse(UserSubsetSchema, originalInput);
+        if (result.success) {
+            console.error(result);
+        }
         expect(a.safeParse(UserSubsetSchema, originalInput).success).toBe(
             false,
         );

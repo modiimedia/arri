@@ -1,4 +1,4 @@
-import { type Schema, type SchemaFormProperties } from "@modii/jtd";
+import { type SchemaFormProperties } from "@modii/jtd";
 
 import {
     type ASchema,
@@ -25,17 +25,17 @@ export function object<
     const schema: SchemaFormProperties = {
         properties: {},
     };
-    Object.keys(input).forEach((key) => {
+    for (const key of Object.keys(input)) {
         const prop = input[key];
         if (prop.metadata[SCHEMA_METADATA].optional) {
             if (!schema.optionalProperties) {
                 schema.optionalProperties = {};
             }
             schema.optionalProperties[key] = prop;
-            return;
+            continue;
         }
         schema.properties[key] = input[key];
-    });
+    }
     const result: AObjectSchema<any, TAdditionalProps> = {
         ...(schema as any),
         metadata: {
@@ -89,27 +89,23 @@ function parse<T>(
         });
     }
     const result: Record<any, any> = {};
-    for (const key of Object.keys(schema.properties)) {
-        const prop = schema.properties[key];
-        result[key] = prop.metadata[SCHEMA_METADATA].parse(parsedInput[key], {
-            instancePath: `${data.instancePath}/${key}`,
-            schemaPath: `${data.schemaPath}/properties/${key}`,
-            errors: data.errors,
-        });
-    }
     const optionalProps = schema.optionalProperties ?? {};
-    for (const key of Object.keys(optionalProps)) {
-        const prop = optionalProps[key];
-        if (parsedInput[key] !== undefined) {
-            result[key] = prop.metadata[SCHEMA_METADATA].parse(
-                parsedInput[key],
-                {
-                    instancePath: `${data.instancePath}/${key}`,
-                    schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
-                    errors: data.errors,
-                },
-            );
+    for (const key of Object.keys(parsedInput)) {
+        const val = parsedInput[key];
+        const prop = schema.properties[key] ?? optionalProps[key];
+        if (prop) {
+            result[key] = prop.metadata[SCHEMA_METADATA].parse(val, data);
+            continue;
         }
+        if (!schema.additionalProperties) {
+            data.errors.push({
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}`,
+                message: `Property ${key} not found in object schema. If you want to allow additional properties, you must set additionalProperties to 'true'.`,
+            });
+            continue;
+        }
+        result[key] = parsedInput[key];
     }
     if (data.errors.length) {
         return undefined;
@@ -163,29 +159,17 @@ function validate(schema: AObjectSchema, input: unknown): boolean {
     if (!isObject(input)) {
         return false;
     }
-    const allKeys = Object.keys(schema);
-    for (const key of Object.keys(schema.properties)) {
-        const prop = schema.properties[key];
+    const optionalProps = schema.optionalProperties ?? {};
+    for (const key of Object.keys(input)) {
+        const prop: ASchema<any> | undefined =
+            schema.properties[key] ?? optionalProps[key];
+        if (!prop && !schema.additionalProperties) {
+            return false;
+        }
         const isValid = prop.metadata[SCHEMA_METADATA].validate(input[key]);
         if (!isValid) {
             return false;
         }
-        allKeys.splice(allKeys.indexOf(key), 1);
-    }
-    if (schema.optionalProperties) {
-        for (const key of Object.keys(schema.optionalProperties)) {
-            const prop = schema.properties[key];
-            const isValid =
-                input[key] === undefined ??
-                prop.metadata[SCHEMA_METADATA].validate(input[key]);
-            if (!isValid) {
-                return false;
-            }
-            allKeys.splice(allKeys.indexOf(key), 1);
-        }
-    }
-    if (allKeys.length) {
-        return false;
     }
     return true;
 }
@@ -199,7 +183,7 @@ export function pick<
     keys: TKeys[],
     opts: AObjectSchemaOptions<TAdditionalProps> = {},
 ): AObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
-    const schema: Schema = {
+    const schema: SchemaFormProperties = {
         properties: {},
         nullable: inputSchema.nullable,
     };
@@ -261,7 +245,7 @@ export function omit<
     keys: TKeys[],
     opts: AObjectSchemaOptions<TAdditionalProps> = {},
 ): AObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
-    const schema: Schema = {
+    const schema: SchemaFormProperties = {
         properties: {
             ...inputSchema.properties,
         },

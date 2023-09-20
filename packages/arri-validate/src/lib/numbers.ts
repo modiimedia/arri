@@ -184,7 +184,10 @@ function numberScalarType<TType extends (typeof numberTypes)[number]>(
                 },
                 parse(input, options) {
                     const result = parseNumber(input, options);
-                    if (!result) {
+                    if (options.errors.length) {
+                        return undefined;
+                    }
+                    if (typeof result !== "number") {
                         options?.errors.push({
                             instancePath: options.instancePath,
                             schemaPath: options.schemaPath,

@@ -2,19 +2,22 @@ import * as a from "./_index";
 
 const UserRolesSchema = a.stringEnum(["admin", "standard"]);
 type UserRolesSchema = a.infer<typeof UserRolesSchema>;
-test("Type Inference", () => {
+test("type inference", () => {
     assertType<UserRolesSchema>("admin");
+    assertType<UserRolesSchema>("standard");
 });
-describe("Parsing", () => {
+describe("parsing", () => {
+    const parse = (input: unknown) =>
+        a.safeParse(UserRolesSchema, input).success;
     it("accepts good inputs", () => {
-        expect(a.safeParse(UserRolesSchema, "admin").success).toBe(true);
-        expect(a.safeParse(UserRolesSchema, "standard").success).toBe(true);
+        expect(parse("admin"));
+        expect(parse("standard"));
     });
 
     it("rejects bad inputs", () => {
-        expect(a.safeParse(UserRolesSchema, "ADMIN").success).toBe(false);
-        expect(a.safeParse(UserRolesSchema, "STANDARD").success).toBe(false);
-        expect(a.safeParse(UserRolesSchema, 0).success).toBe(false);
-        expect(a.safeParse(UserRolesSchema, "laksjdf").success).toBe(false);
+        expect(!parse("ADMIN"));
+        expect(!parse("STANDARD"));
+        expect(!parse(0));
+        expect(!parse("aldskjfa"));
     });
 });
