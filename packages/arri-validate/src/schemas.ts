@@ -20,6 +20,8 @@ export interface ValidationData {
     instancePath: string;
     schemaPath: string;
     errors: ValueError[];
+    discriminatorKey?: string;
+    discriminatorValue?: string;
 }
 
 export interface SchemaValidator<T> {

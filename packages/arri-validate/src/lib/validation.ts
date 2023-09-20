@@ -1,7 +1,5 @@
 import Ajv from "ajv/dist/jtd";
-import { type ASchema, SCHEMA_METADATA } from "../schemas";
-
-export const AJV = new Ajv({ strictSchema: false });
+import { type ASchema, SCHEMA_METADATA, type InferType } from "../schemas";
 
 export function validate<T = any>(
     schema: ASchema<T>,
@@ -123,4 +121,84 @@ export function isValidationError(input: unknown): input is ValidationError {
         return false;
     }
     return input instanceof ValidationError;
+}
+
+/**
+ * validation compilers
+ */
+
+const AJV = new Ajv({ strictSchema: false });
+
+interface CompiledValidator<TSchema extends ASchema<any>> {
+    parse: (input: unknown) => InferType<TSchema>;
+    safeParse: (input: unknown) => SafeResult<InferType<TSchema>>;
+    validate: (input: unknown) => input is InferType<TSchema>;
+    serialize: (val: InferType<TSchema>) => string;
+}
+
+export function compile<TSchema extends ASchema<any> = any>(
+    schema: TSchema,
+): CompiledValidator<TSchema> {
+    const validator = AJV.compile<InferType<TSchema>>(schema);
+    const isType = (input: unknown): input is InferType<TSchema> =>
+        validator(input);
+    const parser = AJV.compileParser<InferType<TSchema>>(schema);
+    const parse = (input: unknown): InferType<TSchema> => {
+        if (typeof input === "string") {
+            const result = parser(input);
+            if (isType(result)) {
+                return result;
+            }
+            const errors = validator.errors;
+            throw new ValidationError({
+                message: "Error(s) parsing input",
+                errors:
+                    errors?.map((err) => ({
+                        instancePath: err.instancePath,
+                        schemaPath: err.schemaPath,
+                        message: err.message ?? "Invalid input",
+                        data: err.data,
+                    })) ?? [],
+            });
+        }
+        if (isType(input)) {
+            return input;
+        }
+        throw new ValidationError({
+            message: "Invalid input",
+            errors:
+                validator.errors?.map((err) => ({
+                    instancePath: err.instancePath,
+                    schemaPath: err.schemaPath,
+                    message: err.message ?? "Invalid input",
+                    data: err.data,
+                })) ?? [],
+        });
+    };
+    const serializer = AJV.compileSerializer<InferType<TSchema>>(schema);
+    return {
+        validate: isType,
+        parse,
+        safeParse(input) {
+            try {
+                const result = parse(input);
+                return {
+                    success: true,
+                    value: result,
+                };
+            } catch (err) {
+                if (isValidationError(err)) {
+                    return { success: false, error: err };
+                }
+                return {
+                    success: false,
+                    error: new ValidationError({
+                        message: "Error parsing input",
+                        errors: [],
+                    }),
+                };
+            }
+        },
+        serialize: serializer,
+    };
 }

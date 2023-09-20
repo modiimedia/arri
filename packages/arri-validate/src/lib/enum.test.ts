@@ -7,17 +7,31 @@ test("type inference", () => {
     assertType<UserRolesSchema>("standard");
 });
 describe("parsing", () => {
-    const parse = (input: unknown) =>
-        a.safeParse(UserRolesSchema, input).success;
+    const parse = (input: unknown) => a.safeParse(UserRolesSchema, input);
     it("accepts good inputs", () => {
         expect(parse("admin"));
         expect(parse("standard"));
     });
 
     it("rejects bad inputs", () => {
-        expect(!parse("ADMIN"));
-        expect(!parse("STANDARD"));
-        expect(!parse(0));
-        expect(!parse("aldskjfa"));
+        const badInput1 = parse("ADMIN");
+        expect(!badInput1.success && badInput1.error.errors.length > 0);
+        expect(!parse("STANDARD").success);
+        expect(!parse(0).success);
+        expect(!parse("aldskjfa").success);
+    });
+});
+
+describe("validation", () => {
+    const validate = (input: unknown) => a.validate(UserRolesSchema, input);
+    it("accepts good input", () => {
+        expect(validate("admin"));
+        expect(validate("standard"));
+    });
+    it("rejects bad input", () => {
+        expect(!validate("ADMIN"));
+        expect(!validate("STANDARD"));
+        expect(!validate(0));
+        expect(!validate({ j: 0 }));
     });
 });

@@ -8,6 +8,7 @@ import {
     type AObjectSchema,
     type InferType,
     isAObjectSchema,
+    a,
 } from "arri-validate";
 import {
     eventHandler,
@@ -23,7 +24,6 @@ import { kebabCase, pascalCase } from "scule";
 import { type ArriOptions } from "./app";
 import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./routes";
-import { arriSafeValidate } from "./validation";
 
 export interface ArriProcedure<
     TParams extends AObjectSchema | undefined,
@@ -176,6 +176,7 @@ export function registerRpc(
     middleware: Middleware[],
     opts: ArriOptions,
 ) {
+    const paramValidator = a.compile(procedure.params);
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: H3Event) => {
         const context: RpcHandlerContext = {
@@ -195,8 +196,7 @@ export function registerRpc(
                     case "head": {
                         const parsedParams = await getValidatedQuery(
                             event,
-                            (input) =>
-                                arriSafeValidate(procedure.params, input, true),
+                            (input) => a.safeCoerce(procedure.params, input),
                         );
                         if (parsedParams.success) {
                             context.params = parsedParams.value;
@@ -204,7 +204,7 @@ export function registerRpc(
                             const errParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
                                 errParts.push(
-                                    err.propertyName ?? err.instancePath ?? "",
+                                    err.instancePath.split("/").join(".") ?? "",
                                 );
                             }
                             const message = `Missing or invalid url query parameters: [${errParts.join(
@@ -224,18 +224,13 @@ export function registerRpc(
                     case "put": {
                         const parsedParams = await readValidatedBody(
                             event,
-                            (input) =>
-                                arriSafeValidate(
-                                    procedure.params,
-                                    input,
-                                    false,
-                                ),
+                            (input) => paramValidator.safeParse(input),
                         );
                         if (!parsedParams.success) {
                             const errorParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
                                 errorParts.push(
-                                    err.propertyName ?? err.instancePath ?? "",
+                                    err.instancePath.split("/").join("."),
                                 );
                             }
 

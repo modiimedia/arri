@@ -5,6 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
+            "inputs": ["default", "^default"],
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/dist"],
             "options": {

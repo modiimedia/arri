@@ -4,7 +4,7 @@ import {
     type ASchema,
     SCHEMA_METADATA,
     ValidationError,
-    type ErrorObject,
+    type ValueError,
 } from "arri-validate";
 import { jsonSchemaToJtdSchema } from "json-schema-to-jtd";
 
@@ -44,17 +44,18 @@ export function typeboxAdapter<TInput extends TObject<any>>(
 }
 
 function typeboxErrorsToArriError(errs: ValueErrorIterator): ValidationError {
-    const mappedErrs: ErrorObject[] = [];
+    const mappedErrs: ValueError[] = [];
     for (const err of errs) {
-        const obj: ErrorObject = {
+        const obj: ValueError = {
             message: err.message,
-            keyword: "",
             instancePath: err.path,
             schemaPath: "",
-            params: {},
             data: err.value,
         };
         mappedErrs.push(obj);
     }
-    return new ValidationError(mappedErrs);
+    return new ValidationError({
+        message: "Error validating input",
+        errors: mappedErrs,
+    });
 }

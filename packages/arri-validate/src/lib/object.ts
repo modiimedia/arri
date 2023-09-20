@@ -47,10 +47,10 @@ export function object<
                     TAdditionalProps
                 >,
                 parse(input, data) {
-                    return parse(schema as AObjectSchema, input, data);
+                    return parse(schema as AObjectSchema, input, data, false);
                 },
                 coerce(input: unknown, data) {
-                    return coerce(schema as AObjectSchema, input, data);
+                    return parse(schema as AObjectSchema, input, data, true);
                 },
                 validate(input) {
                     return validate(schema as AObjectSchema, input);
@@ -66,6 +66,7 @@ function parse<T>(
     schema: AObjectSchema<T>,
     input: unknown,
     data: ValidationData,
+    coerce = false,
 ): T | undefined {
     let parsedInput: any = input;
     if (data.instancePath.length === 0 && typeof input === "string") {
@@ -94,7 +95,13 @@ function parse<T>(
         const val = parsedInput[key];
         const prop = schema.properties[key] ?? optionalProps[key];
         if (prop) {
-            result[key] = prop.metadata[SCHEMA_METADATA].parse(val, data);
+            result[key] = coerce
+                ? prop.metadata[SCHEMA_METADATA].coerce(parsedInput, data)
+                : prop.metadata[SCHEMA_METADATA].parse(val, data);
+            continue;
+        }
+        if (key === data.discriminatorKey) {
+            result[key] = data.discriminatorValue;
             continue;
         }
         if (!schema.additionalProperties) {
@@ -106,48 +113,6 @@ function parse<T>(
             continue;
         }
         result[key] = parsedInput[key];
-    }
-    if (data.errors.length) {
-        return undefined;
-    }
-    return result;
-}
-
-function coerce<T>(
-    schema: AObjectSchema,
-    input: unknown,
-    data: ValidationData,
-): T | undefined {
-    let parsedInput: any = input;
-    if (data.instancePath.length === 0 && typeof input === "string") {
-        parsedInput = JSON.parse(input);
-    }
-
-    if (!isObject(input)) {
-        data.errors.push({
-            instancePath: data.instancePath,
-            schemaPath: data.schemaPath,
-            message: "Expected object",
-        });
-        return undefined;
-    }
-    const result: any = {};
-    for (const key of Object.keys(schema.properties)) {
-        const prop = schema.properties[key];
-        result[key] = prop.metadata[SCHEMA_METADATA].coerce(parsedInput[key], {
-            instancePath: `${data.instancePath}/${key}`,
-            schemaPath: `${data.schemaPath}/properties/${key}`,
-            errors: data.errors,
-        });
-    }
-    const optionalProps = schema.optionalProperties ?? {};
-    for (const key of Object.keys(optionalProps)) {
-        const prop = optionalProps[key];
-        result[key] = prop.metadata[SCHEMA_METADATA].coerce(parsedInput[key], {
-            instancePath: `${data.instancePath}/${key}`,
-            schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
-            errors: data.errors,
-        });
     }
     if (data.errors.length) {
         return undefined;
@@ -220,13 +185,13 @@ export function pick<
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
                 parse: (input, data) => {
-                    return parse(schema as any, input, data);
+                    return parse(schema as any, input, data, true);
+                },
+                coerce(input, data) {
+                    return parse(schema as any, input, data, false);
                 },
                 validate(input) {
                     return validate(schema as any, input);
-                },
-                coerce(input, data) {
-                    return coerce(schema as any, input, data);
                 },
                 serialize(input) {
                     return JSON.stringify(input);
@@ -286,13 +251,13 @@ export function omit<
                     return validate(schema as any, input);
                 },
                 parse(input: unknown, data) {
-                    return parse(schema as any, input, data);
+                    return parse(schema as any, input, data, false);
                 },
                 serialize(input) {
                     return JSON.stringify(input);
                 },
                 coerce(input, data) {
-                    return coerce(schema as any, input, data);
+                    return parse(schema as any, input, data, true);
                 },
             },
         },
@@ -333,10 +298,10 @@ export function extend<
         [SCHEMA_METADATA]: {
             output: {} as any as InferType<TBaseSchema> & InferType<TSchema>,
             parse(input: unknown, data) {
-                return parse(schema as any, input, data);
+                return parse(schema as any, input, data, false);
             },
             coerce(input: unknown, data) {
-                return coerce(schema as any, input, data);
+                return parse(schema as any, input, data, true);
             },
             validate: isType,
             serialize(input) {

@@ -1,8 +1,6 @@
 import { validate, a } from "arri-validate";
 import { ofetch } from "ofetch";
 
-export { createRawJtdValidator } from "arri-validate";
-
 export interface ArriRequestOpts<
     T,
     P extends Record<any, any> | undefined = undefined,

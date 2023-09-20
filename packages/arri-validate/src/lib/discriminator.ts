@@ -140,6 +140,8 @@ function parse(
                 instancePath: data.instancePath,
                 schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
                 errors: data.errors,
+                discriminatorKey: discriminator,
+                discriminatorValue: discriminatorVal,
             },
         );
         return result;
@@ -148,6 +150,8 @@ function parse(
         instancePath: data.instancePath,
         schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
         errors: data.errors,
+        discriminatorKey: discriminator,
+        discriminatorValue: discriminatorVal,
     });
     return result;
 }

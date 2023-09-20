@@ -185,14 +185,20 @@ describe("Pick", () => {
             isAdmin: false,
             createdAt: undefined,
         };
-        expect(a.safeParse(UserSubsetSchema, originalInput).success).toBe(
-            false,
-        );
-        const subSetInput: UserSubsetSchema = {
+        const badResult = a.safeParse(UserSubsetSchema, originalInput);
+        expect(!badResult.success);
+        const goodInput: UserSubsetSchema = {
             name: "john doe",
             email: "johndoe@gmail.com",
         };
-        expect(a.safeParse(UserSubsetSchema, subSetInput).success).toBe(true);
+        const goodResult = a.safeParse(UserSubsetSchema, goodInput);
+        expect(goodResult.success);
+        if (goodResult.success) {
+            expect(goodResult.value).toStrictEqual({
+                name: "john doe",
+                email: "johndoe@gmail.com",
+            });
+        }
     });
 });
 
