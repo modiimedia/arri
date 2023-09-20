@@ -1,11 +1,8 @@
-import { type Schema as JtdSchema } from "@modii/jtd";
 import {
     type ASchemaOptions,
     type AStringEnumSchema,
-    type MaybeNullable,
     SCHEMA_METADATA,
 } from "../schemas";
-import { ValidationError, AJV } from "./validation";
 
 /**
  * An enumeration of string values
@@ -21,42 +18,52 @@ export function stringEnum<
     values: TValues,
     opts: ASchemaOptions = {},
 ): AStringEnumSchema<TValues, TNullable> {
-    const schema: JtdSchema = {
-        enum: values,
+    const isType = (input: unknown): input is TKeys => {
+        if (typeof input !== "string") {
+            return false;
+        }
+        for (const val of values) {
+            if (val === input) {
+                return true;
+            }
+        }
+        return false;
     };
-    const validator = AJV.compile(schema);
-    const isType = (
-        input: unknown,
-    ): input is MaybeNullable<TValues, TNullable> => validator(input);
-    const serializer = AJV.compileSerializer(schema);
     return {
-        ...(schema as any),
+        enum: values,
         metadata: {
             id: opts.id,
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: values[0],
-                parse: (input) => {
+                parse(input, data) {
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ValidationError(validator.errors ?? []);
+                    data.errors.push({
+                        instancePath: data.instancePath,
+                        schemaPath: `${data.schemaPath}/enum`,
+                        message: `Invalid enum value. Expected one of the following values: [${values.join(
+                            ", ",
+                        )}]`,
+                    });
+                    return undefined;
                 },
-                coerce: (input) => {
-                    if (typeof input === "string") {
-                        for (const value of values) {
-                            if (value === input) {
-                                return input;
-                            }
-                        }
-                    }
+                coerce: (input, data) => {
                     if (isType(input)) {
                         return input;
                     }
-                    throw new ValidationError(validator.errors ?? []);
+                    data.errors.push({
+                        instancePath: data.instancePath,
+                        schemaPath: `${data.schemaPath}/enum`,
+                        message: `Invalid enum value. Expected one of the following values: [${values.join(
+                            ", ",
+                        )}]`,
+                    });
+                    return undefined;
                 },
                 validate: isType,
-                serialize: serializer,
+                serialize: (input) => input?.toString() ?? "null",
             },
         },
     };

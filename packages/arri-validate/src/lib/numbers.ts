@@ -1,12 +1,9 @@
-import { type SchemaFormType } from "@modii/jtd";
-import { type ValidateFunction } from "ajv";
-
 import {
     type AScalarSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
+    type ValidationData,
 } from "../schemas";
-import { ValidationError, AJV } from "./validation";
 
 const numberTypes = [
     "float32",
@@ -19,136 +16,6 @@ const numberTypes = [
     "uint8",
 ] as const;
 
-const validationMap: Record<
-    (typeof numberTypes)[number],
-    {
-        validator: undefined | ValidateFunction<number>;
-        parser: undefined | ((input: unknown) => number | undefined);
-        serializer: undefined | ((input: unknown) => string);
-    }
-> = {
-    float32: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    float64: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    int16: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    int32: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    int8: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    uint16: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    uint32: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-    uint8: {
-        validator: undefined,
-        parser: undefined,
-        serializer: undefined,
-    },
-};
-
-// precompile all of the ajv parsers/validators
-for (const type of numberTypes) {
-    const schema: SchemaFormType = {
-        type,
-    };
-    const validator = AJV.compile<number>(schema);
-    const parser = AJV.compileParser<number>(schema);
-    const serializer = AJV.compileSerializer(schema);
-    validationMap[type] = {
-        validator,
-        parser: parser as any,
-        serializer,
-    };
-}
-
-function numberScalarType<TType extends (typeof numberTypes)[number]>(
-    type: TType,
-    opts: ASchemaOptions,
-): AScalarSchema<TType, number> {
-    const { validator, parser, serializer } = validationMap[type];
-    const isType = (input: unknown): input is number => {
-        if (validator) {
-            return validator(input);
-        }
-        return typeof input === "number";
-    };
-    return {
-        type,
-        metadata: {
-            id: opts.id,
-            description: opts.description,
-            [SCHEMA_METADATA]: {
-                output: 0,
-                validate: isType,
-                parse: (input): number => {
-                    if (typeof input === "string" && parser) {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator?.errors ?? []);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator?.errors ?? []);
-                },
-                serialize: (input) => {
-                    if (serializer) {
-                        serializer(input);
-                    }
-                    return `${input as any}`;
-                },
-                coerce: (input) => {
-                    if (typeof input === "string" && parser) {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
-                        }
-                    }
-                    if (typeof input === "string") {
-                        const result = Number(input);
-                        if (Number.isNaN(result)) {
-                            throw new ValidationError(validator?.errors ?? []);
-                        }
-                        if (type.includes("int") && !Number.isInteger(result)) {
-                            throw new ValidationError(validator?.errors ?? []);
-                        }
-                        return result;
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator?.errors ?? []);
-                },
-            },
-        },
-    };
-}
-
 /**
  * Alias for float64 as that is the only number type that Javascript uses
  *
@@ -159,27 +26,206 @@ export function number(opts: ASchemaOptions = {}) {
     return float64(opts);
 }
 
+function coerceNumber(input: unknown, options: ValidationData) {
+    return parseNumber(input, options);
+}
+
 export function float32(opts: ASchemaOptions = {}) {
-    return numberScalarType("float32", opts);
+    return numberScalarType("float32", opts, (input) => {
+        return {
+            success: true,
+        };
+    });
 }
 export function float64(opts: ASchemaOptions = {}) {
-    return numberScalarType("float64", opts);
+    return numberScalarType("float64", opts, (input) => {
+        return {
+            success: true,
+        };
+    });
 }
 export function int8(opts: ASchemaOptions = {}) {
-    return numberScalarType("int8", opts);
+    return numberScalarType("int8", opts, (input) => {
+        const isValid = validateInt(input, -128, 127);
+        if (isValid) {
+            return {
+                success: true,
+            };
+        }
+        return {
+            success: false,
+            message: "Must be an valid integer between -128 and 127",
+        };
+    });
 }
 export function uint8(opts: ASchemaOptions = {}) {
-    return numberScalarType("uint8", opts);
+    return numberScalarType("uint8", opts, (input) => {
+        const isValid = validateInt(input, 0, 255);
+        if (isValid) {
+            return {
+                success: true,
+            };
+        }
+        return {
+            success: false,
+            message: "Must be a valid integer between 0 and 255",
+        };
+    });
 }
 export function int16(opts: ASchemaOptions = {}) {
-    return numberScalarType("int16", opts);
+    return numberScalarType("int16", opts, (input) => {
+        const isValid = validateInt(input, -32768, 32767);
+        if (isValid) {
+            return {
+                success: true,
+            };
+        }
+        return {
+            success: false,
+            message: "Must be a valid integer between -32,768 and 32,767",
+        };
+    });
 }
 export function uint16(opts: ASchemaOptions = {}) {
-    return numberScalarType("uint16", opts);
+    return numberScalarType("uint16", opts, (input) => {
+        const isValid = validateInt(input, 0, 65535);
+        if (isValid) {
+            return {
+                success: true,
+            };
+        }
+        return {
+            success: false,
+            message: "Must be a valid integer between 0 and 65,535",
+        };
+    });
 }
 export function int32(opts: ASchemaOptions = {}) {
-    return numberScalarType("int32", opts);
+    return numberScalarType("int32", opts, (input) => {
+        const isValid = validateInt(input, -2147483648, 2147483647);
+        if (isValid) {
+            return {
+                success: true,
+            };
+        }
+        return {
+            success: false,
+            message:
+                "Must be a valid integer between -2,147,483,648 and 2,147,483,647",
+        };
+    });
 }
 export function uint32(opts: ASchemaOptions = {}) {
-    return numberScalarType("uint32", opts);
+    return numberScalarType("uint32", opts, (input) => {
+        const isValid = validateInt(input, 0, 4294967295);
+        if (isValid) {
+            return { success: true };
+        }
+        return {
+            success: false,
+            message: "Must be a valid integer between 0 and 4,294,967,295",
+        };
+    });
+}
+
+function validateNumber(input: unknown): input is number {
+    return typeof input === "number" || !Number.isNaN(input);
+}
+function validateInt(input: number, minVal: number, maxValue: number) {
+    return Number.isInteger(input) && input >= minVal && input <= maxValue;
+}
+function serializeNumber(input: number): string {
+    return input.toString();
+}
+function parseNumber(input: unknown, options: ValidationData) {
+    if (options.instancePath.length === 0 && typeof input === "string") {
+        const result = Number(input);
+        if (Number.isNaN(result)) {
+            options?.errors.push({
+                instancePath: options.instancePath,
+                schemaPath: options.schemaPath,
+                message: `Invalid number`,
+            });
+            return undefined;
+        }
+        return result;
+    }
+    if (typeof input === "number" && !Number.isNaN(input)) {
+        return input;
+    }
+    options?.errors.push({
+        instancePath: options.instancePath,
+        schemaPath: options.schemaPath,
+        message: "Invalid number",
+    });
+    return undefined;
+}
+
+function numberScalarType<TType extends (typeof numberTypes)[number]>(
+    type: TType,
+    opts: ASchemaOptions,
+    numTypeMatcher: (
+        input: number,
+    ) => { success: true } | { success: false; message: string },
+): AScalarSchema<TType, number> {
+    return {
+        type,
+        metadata: {
+            id: opts.id,
+            description: opts.description,
+            [SCHEMA_METADATA]: {
+                output: 0,
+                validate(input): input is number {
+                    const isNum = validateNumber(input);
+                    if (!isNum) {
+                        return false;
+                    }
+                    return numTypeMatcher(input).success;
+                },
+                parse(input, options) {
+                    const result = parseNumber(input, options);
+                    if (!result) {
+                        options?.errors.push({
+                            instancePath: options.instancePath,
+                            schemaPath: options.schemaPath,
+                            message: "Invalid number",
+                        });
+                        return undefined;
+                    }
+                    const matchResult = numTypeMatcher(result);
+                    if (matchResult.success) {
+                        return result;
+                    }
+                    options?.errors.push({
+                        instancePath: options.instancePath,
+                        schemaPath: options.schemaPath,
+                        message: matchResult.message,
+                    });
+                    return undefined;
+                },
+                serialize: serializeNumber,
+                coerce(input, options) {
+                    const result = coerceNumber(input, options);
+                    if (!result) {
+                        options.errors.push({
+                            instancePath: options.instancePath,
+                            schemaPath: options.schemaPath,
+                            message: `Unable to coerce ${typeof input} to ${type}`,
+                        });
+                        return undefined;
+                    }
+                    const matchResult = numTypeMatcher(result);
+                    if (matchResult.success) {
+                        return result;
+                    }
+                    options.errors.push({
+                        instancePath: options.instancePath,
+                        schemaPath: options.schemaPath,
+                        message: matchResult.message,
+                    });
+                    return undefined;
+                },
+            },
+        },
+    };
 }

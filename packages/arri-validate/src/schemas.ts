@@ -7,6 +7,7 @@ import {
     isTypeForm,
     isValuesForm,
 } from "@modii/jtd";
+import { type ValueError } from "./lib/validation";
 
 export const SCHEMA_METADATA = Symbol.for("arri.schema_metadata");
 
@@ -15,18 +16,26 @@ export type MaybeNullable<
     TIsNullable extends boolean = false,
 > = TIsNullable extends true ? T | null : T;
 
+export interface ValidationData {
+    instancePath: string;
+    schemaPath: string;
+    errors: ValueError[];
+}
+
+export interface SchemaValidator<T> {
+    output: T;
+    optional?: boolean;
+    parse: (input: unknown, data: ValidationData) => T | undefined;
+    coerce: (input: unknown, data: ValidationData) => T | undefined;
+    serialize: (input: T) => string;
+    validate: (input: unknown) => input is T;
+}
+
 export interface ASchema<T = any> {
     metadata: {
         id?: string;
         description?: string;
-        [SCHEMA_METADATA]: {
-            output: T;
-            optional?: boolean;
-            parse: (input: unknown) => T;
-            coerce: (input: unknown, instancePath?: string) => T;
-            serialize: (input: unknown) => string;
-            validate: (input: unknown) => input is T;
-        };
+        [SCHEMA_METADATA]: SchemaValidator<T>;
     };
     nullable?: boolean;
 }
@@ -112,7 +121,7 @@ export interface ARecordSchema<
     TInnerSchema extends ASchema<any>,
     TNullable extends boolean = false,
 > extends ASchema<
-        MaybeNullable<Record<any, InferType<TInnerSchema>>, TNullable>
+        MaybeNullable<Record<string, InferType<TInnerSchema>>, TNullable>
     > {
     values: TInnerSchema;
 }
@@ -160,3 +169,7 @@ export type InferObjectRawType<TInput> = TInput extends Record<any, any>
               : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
       }
     : never;
+
+export function isObject(input: unknown): input is Record<any, any> {
+    return typeof input === "object" && input !== null;
+}

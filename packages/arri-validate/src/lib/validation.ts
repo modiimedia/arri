@@ -1,27 +1,7 @@
-import { type Schema } from "@modii/jtd";
-import Ajv, { type ErrorObject, ValidationError } from "ajv/dist/jtd";
+import Ajv from "ajv/dist/jtd";
 import { type ASchema, SCHEMA_METADATA } from "../schemas";
 
 export const AJV = new Ajv({ strictSchema: false });
-export { type ErrorObject, ValidationError };
-
-export function isValidationError(input: unknown): input is ValidationError {
-    if (typeof input !== "object" || !input) {
-        return false;
-    }
-    return (
-        "ajv" in input &&
-        typeof input.ajv === "boolean" &&
-        "errors" in input &&
-        Array.isArray(input.errors) &&
-        "validation" in input &&
-        typeof input.validation === "boolean" &&
-        "name" in input &&
-        typeof input.name === "string" &&
-        "message" in input &&
-        typeof input.message === "string"
-    );
-}
 
 export function validate<T = any>(
     schema: ASchema<T>,
@@ -30,51 +10,116 @@ export function validate<T = any>(
     return schema.metadata[SCHEMA_METADATA].validate(input);
 }
 
-export function parse<T = any>(schema: ASchema<T>, input: unknown) {
-    const result = schema.metadata[SCHEMA_METADATA].parse(input);
+export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
+    const errors: ValueError[] = [];
+    const result = schema.metadata[SCHEMA_METADATA].parse(input, {
+        schemaPath: "",
+        instancePath: "",
+        errors,
+    });
+    if (errors.length || !result) {
+        throw new ValidationError({ message: "Unable to parse input", errors });
+    }
     return result;
 }
 
-export function safeParse<T = any>(schema: ASchema<T>, input: unknown) {
+export function safeParse<T = any>(
+    schema: ASchema<T>,
+    input: unknown,
+): SafeResult<T> {
     try {
-        const result = schema.metadata[SCHEMA_METADATA].parse(input);
+        const result = parse(schema, input);
         return {
-            success: true as const,
+            success: true,
             value: result,
         };
     } catch (err) {
+        if (isValidationError(err)) {
+            return {
+                success: false as const,
+                error: err,
+            };
+        }
         return {
             success: false as const,
-            error: err as ValidationError,
+            error: new ValidationError({
+                message: "Unable to coerce input",
+                errors: [],
+            }),
         };
     }
 }
 
-export function serialize<T = any>(schema: ASchema<T>, input: unknown) {
+export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
+    const errors: ValueError[] = [];
+    const result = schema.metadata[SCHEMA_METADATA].coerce(input, {
+        schemaPath: "",
+        instancePath: "",
+        errors,
+    });
+    if (errors.length || !result) {
+        throw new ValidationError({
+            message: "Unable to coerce input",
+            errors,
+        });
+    }
+    return result;
+}
+
+type SafeResult<T> =
+    | { success: true; value: T }
+    | { success: false; error: ValidationError };
+
+export function safeCoerce<T = any>(
+    schema: ASchema<T>,
+    input: unknown,
+): SafeResult<T> {
+    try {
+        const result = coerce(schema, input);
+        return {
+            success: true,
+            value: result,
+        };
+    } catch (err) {
+        if (isValidationError(err)) {
+            return {
+                success: false,
+                error: err,
+            };
+        }
+        return {
+            success: false,
+            error: new ValidationError({
+                message: "Unable to coerce input",
+                errors: [],
+            }),
+        };
+    }
+}
+
+export function serialize<T = any>(schema: ASchema<T>, input: T) {
     return schema.metadata[SCHEMA_METADATA].serialize(input);
 }
 
-/**
- * Create validator for a raw JSON Type Definition Schema
- */
-export function createRawJtdValidator<T>(schema: Schema) {
-    const parser = AJV.compileParser<T>(schema);
-    const validate = AJV.compile<T>(schema as any);
-    const serialize = AJV.compileSerializer<T>(schema);
-    return {
-        parse: (input: unknown): T => {
-            if (typeof input === "string") {
-                const result = parser(input);
-                if (validate(result)) {
-                    return result;
-                }
-            }
-            if (validate(input)) {
-                return input;
-            }
-            throw new ValidationError(validate.errors ?? []);
-        },
-        validate,
-        serialize,
-    };
+export interface ValueError {
+    instancePath: string;
+    schemaPath: string;
+    message?: string;
+    data?: any;
+}
+
+export class ValidationError extends Error {
+    errors: ValueError[];
+
+    constructor(options: { message: string; errors: ValueError[] }) {
+        super(options.message);
+        this.errors = options.errors;
+    }
+}
+
+export function isValidationError(input: unknown): input is ValidationError {
+    if (typeof input !== "object" || !input) {
+        return false;
+    }
+    return input instanceof ValidationError;
 }

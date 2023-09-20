@@ -1,70 +1,89 @@
-import { type SchemaFormValues } from "@modii/jtd";
-
 import {
     type ARecordSchema,
     type ASchema,
     type ASchemaOptions,
     type InferType,
     SCHEMA_METADATA,
+    isObject,
+    type ValidationData,
 } from "../schemas";
-import { ValidationError, AJV } from "./validation";
 
 export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
 ): ARecordSchema<TInnerSchema> {
-    const jtdSchema: SchemaFormValues = {
-        values: schema,
-    };
-    const validator = AJV.compile(jtdSchema as any);
-    const isType = (input: unknown): input is InferRecordType<TInnerSchema> =>
-        validator(input);
-    const parser = AJV.compileParser(jtdSchema);
-    const serializer = AJV.compileSerializer(jtdSchema);
     return {
-        ...(jtdSchema as any),
+        values: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: {},
-                validate: isType,
-                parse: (input: unknown) => {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
+                validate(input): input is InferRecordType<TInnerSchema> {
+                    if (!isObject(input)) {
+                        return false;
+                    }
+                    for (const key of Object.keys(input)) {
+                        const val = input[key];
+                        const isValid =
+                            schema.metadata[SCHEMA_METADATA].validate(val);
+                        if (!isValid) {
+                            return false;
                         }
-                        throw new ValidationError(validator.errors ?? []);
                     }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                    return true;
                 },
-                coerce: (input: unknown, instancePath) => {
-                    if (!input || typeof input !== "object") {
-                        throw new ValidationError([
-                            {
-                                instancePath,
-                                message: `Expected type 'Object'. Got ${typeof input}.`,
-                            },
-                        ]);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(
-                        validator.errors?.map((val) => ({
-                            ...val,
-                            instancePath: instancePath ?? val.instancePath,
-                        })) ?? [],
-                    );
+                parse(input, data) {
+                    return parse(schema, input, data, false);
                 },
-                serialize: serializer,
+                coerce(input: unknown, data) {
+                    return parse(schema, input, data, true);
+                },
+                serialize: (input) => JSON.stringify(input),
             },
         },
     };
+}
+
+function parse<T>(
+    schema: ASchema<T>,
+    input: unknown,
+    data: ValidationData,
+    coerce = false,
+): Record<string, T> | undefined {
+    let parsedInput: any = input;
+    if (typeof input === "string") {
+        parsedInput = JSON.parse(input);
+    }
+    if (!isObject(parsedInput)) {
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            message: "Expected object",
+        });
+        return undefined;
+    }
+    const result: Record<any, any> = {};
+    for (const key of Object.keys(parsedInput)) {
+        const val = parsedInput[key];
+        if (coerce) {
+            result[key] = schema.metadata[SCHEMA_METADATA].coerce(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/values`,
+                errors: data.errors,
+            });
+        } else {
+            result[key] = schema.metadata[SCHEMA_METADATA].parse(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/values`,
+                errors: data.errors,
+            });
+        }
+    }
+    if (data.errors.length) {
+        return undefined;
+    }
+    return result;
 }
 
 /**
@@ -73,6 +92,6 @@ export function record<TInnerSchema extends ASchema<any>>(
 export const dictionary = record;
 
 type InferRecordType<TInnerSchema extends ASchema<any>> = Record<
-    any,
+    string,
     InferType<TInnerSchema>
 >;

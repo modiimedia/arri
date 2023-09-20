@@ -32,20 +32,20 @@ export function nullable<T>(
                 output: null as T | null,
                 optional: input.metadata[SCHEMA_METADATA].optional,
                 validate: isType,
-                parse: (val: unknown) => {
+                parse: (val, data) => {
                     if (val === null) {
                         return null;
                     }
-                    return input.metadata[SCHEMA_METADATA].parse(val);
+                    return input.metadata[SCHEMA_METADATA].parse(val, data);
                 },
-                coerce: (val: unknown) => {
+                coerce: (val, data) => {
                     if (val === null) {
                         return null;
                     }
                     if (val === "null") {
                         return null;
                     }
-                    return input.metadata[SCHEMA_METADATA].coerce(val);
+                    return input.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
                 serialize: (val) => {
                     if (val === null) {
@@ -89,20 +89,20 @@ export function optional<T>(
                 output: undefined as T | undefined,
                 optional: true,
                 validate: isType,
-                parse: (val) => {
+                parse: (val, data) => {
                     if (typeof val === "undefined") {
                         return val;
                     }
-                    return input.metadata[SCHEMA_METADATA].parse(val);
+                    return input.metadata[SCHEMA_METADATA].parse(val, data);
                 },
-                coerce: (val) => {
+                coerce: (val, data) => {
                     if (typeof val === "undefined") {
                         return val;
                     }
                     if (val === "undefined") {
                         return undefined;
                     }
-                    return input.metadata[SCHEMA_METADATA].coerce(val);
+                    return input.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
                 serialize: (val) => {
                     if (typeof val === "undefined") {

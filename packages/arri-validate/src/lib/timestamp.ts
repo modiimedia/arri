@@ -1,19 +1,9 @@
-import { type SchemaFormType } from "@modii/jtd";
 import {
     type AScalarSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
+    type ValidationData,
 } from "../schemas";
-import { ValidationError, AJV } from "./validation";
-
-const schema: SchemaFormType = {
-    type: "timestamp",
-};
-
-const validator = AJV.compile(schema);
-const isTimestamp = (input: unknown): input is Date => validator(input);
-const parser = AJV.compileParser(schema);
-const serializer = AJV.compileSerializer(schema);
 
 export function timestamp(
     opts: ASchemaOptions = {},
@@ -25,54 +15,42 @@ export function timestamp(
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: new Date(),
-                validate: isTimestamp,
-                parse: (input: unknown) => {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isTimestamp(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-
-                    if (isTimestamp(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
-                },
-                coerce: (input: unknown): any => {
-                    if (typeof input === "string") {
-                        const result = Date.parse(input);
-                        if (Number.isNaN(result)) {
-                            throw new ValidationError([
-                                {
-                                    message: "Expected ISO Date String",
-                                    data: input,
-                                    instancePath: "/",
-                                    keyword: "",
-                                    params: {},
-                                    schemaPath: "",
-                                },
-                            ]);
-                        }
-                        return new Date(result);
-                    }
-                    if (isTimestamp(input)) {
-                        return input;
-                    }
-                    throw new ValidationError([
-                        {
-                            message: "Invalid date format",
-                            data: input,
-                            instancePath: "/",
-                            schemaPath: "/",
-                            keyword: "",
-                            params: {},
-                        },
-                    ]);
-                },
-                serialize: serializer,
+                validate,
+                parse,
+                coerce,
+                serialize,
             },
         },
     };
+}
+
+function validate(input: unknown): input is Date {
+    return typeof input === "object" && input instanceof Date;
+}
+function parse(input: unknown, options?: ValidationData): Date | undefined {
+    if (typeof input === "string") {
+        const result = Date.parse(input);
+        if (Number.isNaN(result)) {
+            options?.errors.push({
+                message: "Invalid date string",
+                instancePath: options.instancePath,
+                schemaPath: options.schemaPath,
+            });
+            return undefined;
+        }
+        return new Date(result);
+    }
+    if (validate(input)) {
+        return input;
+    }
+    return undefined;
+}
+function coerce(input: unknown, options?: ValidationData): Date | undefined {
+    if (typeof input === "number") {
+        return new Date(input);
+    }
+    return parse(input, options);
+}
+function serialize(input: Date): string {
+    return input.toISOString();
 }
