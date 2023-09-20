@@ -69,6 +69,7 @@ describe("Parsing", () => {
                 id: "134561",
             },
         ];
+        console.log(a.parse(DiscriminatorSchema, inputs[0]));
         for (const input of inputs) {
             expect(a.safeParse(DiscriminatorSchema, input).success).toBe(false);
             expect(a.safeParse(DiscriminatorSchema, input).success).toBe(false);

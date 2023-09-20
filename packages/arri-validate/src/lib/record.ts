@@ -52,7 +52,7 @@ function parse<T>(
     coerce = false,
 ): Record<string, T> | undefined {
     let parsedInput: any = input;
-    if (typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === "string") {
         parsedInput = JSON.parse(input);
     }
     if (!isObject(parsedInput)) {

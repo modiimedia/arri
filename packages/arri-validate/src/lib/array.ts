@@ -57,7 +57,7 @@ function parse<T>(
     coerce = false,
 ): T[] | undefined {
     let parsedInput: any = input;
-    if (typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === "string") {
         try {
             parsedInput = JSON.parse(input);
         } catch (err) {

@@ -68,7 +68,7 @@ function parse<T>(
     data: ValidationData,
 ): T | undefined {
     let parsedInput: any = input;
-    if (typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === "string") {
         try {
             const result = JSON.parse(input);
             parsedInput = result;
@@ -123,7 +123,7 @@ function coerce<T>(
     data: ValidationData,
 ): T | undefined {
     let parsedInput: any = input;
-    if (typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === "string") {
         parsedInput = JSON.parse(input);
     }
 
@@ -288,8 +288,6 @@ export function omit<
             }
         });
     }
-    console.log("OLD SCHEMA", inputSchema);
-    console.log("NEW SCHEMA", schema);
     if (typeof inputSchema.additionalProperties === "boolean") {
         schema.additionalProperties = inputSchema.additionalProperties;
     }

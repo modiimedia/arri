@@ -85,10 +85,10 @@ test("Parsing", () => {
             { id: "123111", date: new Date() },
             { id: "alsdkfja", date: new Date() },
         ];
-        expect(a.safeParse(ComplexArray, objectArr).value).toBe(true);
-        expect(a.safeParse(ComplexArray, JSON.stringify(objectArr)).value).toBe(
-            true,
-        );
+        expect(a.safeParse(ComplexArray, objectArr).success).toBe(true);
+        expect(
+            a.safeParse(ComplexArray, JSON.stringify(objectArr)).success,
+        ).toBe(true);
     });
 
     it("rejects bad input", () => {

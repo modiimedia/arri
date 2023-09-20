@@ -29,11 +29,11 @@ function validate(input: unknown): input is string {
     return typeof input === "string";
 }
 
-function parse(input: unknown, options?: ValidationData) {
+function parse(input: unknown, options: ValidationData) {
     if (validate(input)) {
         return input;
     }
-    options?.errors.push({
+    options.errors.push({
         instancePath: options.instancePath,
         schemaPath: options.schemaPath,
         message: `Expected 'string' got ${typeof input}`,
@@ -41,6 +41,6 @@ function parse(input: unknown, options?: ValidationData) {
     return undefined;
 }
 
-function coerce(input: unknown, options?: ValidationData) {
+function coerce(input: unknown, options: ValidationData) {
     return parse(input, options);
 }

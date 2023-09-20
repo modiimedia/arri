@@ -53,7 +53,7 @@ function validate(input: unknown): input is boolean {
     return typeof input === "boolean";
 }
 function parse(input: unknown, data: ValidationData): boolean | undefined {
-    if (typeof input === "string") {
+    if (data.instancePath.length === 0 && typeof input === "string") {
         if (input === "true") {
             return true;
         }

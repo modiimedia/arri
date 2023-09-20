@@ -31,19 +31,23 @@ export function safeParse<T = any>(
         const result = parse(schema, input);
         return {
             success: true,
+            error: undefined,
             value: result,
         };
     } catch (err) {
         if (isValidationError(err)) {
             return {
-                success: false as const,
+                success: false,
+                value: undefined,
                 error: err,
             };
         }
         return {
-            success: false as const,
+            success: false,
+            value: undefined,
             error: new ValidationError({
                 message: "Unable to coerce input",
+
                 errors: [],
             }),
         };
@@ -67,8 +71,8 @@ export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
 }
 
 type SafeResult<T> =
-    | { success: true; value: T }
-    | { success: false; error: ValidationError };
+    | { success: true; error: undefined; value: T }
+    | { success: false; error: ValidationError; value: undefined };
 
 export function safeCoerce<T = any>(
     schema: ASchema<T>,
@@ -79,12 +83,14 @@ export function safeCoerce<T = any>(
         return {
             success: true,
             value: result,
+            error: undefined,
         };
     } catch (err) {
         if (isValidationError(err)) {
             return {
                 success: false,
                 error: err,
+                value: undefined,
             };
         }
         return {
@@ -93,6 +99,7 @@ export function safeCoerce<T = any>(
                 message: "Unable to coerce input",
                 errors: [],
             }),
+            value: undefined,
         };
     }
 }
