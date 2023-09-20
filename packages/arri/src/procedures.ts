@@ -176,7 +176,12 @@ export function registerRpc(
     middleware: Middleware[],
     opts: ArriOptions,
 ) {
-    const paramValidator = a.compile(procedure.params);
+    const paramValidator = procedure.params
+        ? a.compile(procedure.params)
+        : undefined;
+    const responseValidator = procedure.response
+        ? a.compile(procedure.response)
+        : undefined;
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: H3Event) => {
         const context: RpcHandlerContext = {
@@ -190,7 +195,7 @@ export function registerRpc(
             if (middleware.length) {
                 await Promise.all(middleware.map((m) => m(context, event)));
             }
-            if (isAObjectSchema(procedure.params)) {
+            if (isAObjectSchema(procedure.params) && paramValidator) {
                 switch (httpMethod) {
                     case "get":
                     case "head": {
@@ -203,9 +208,12 @@ export function registerRpc(
                         } else {
                             const errParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
-                                errParts.push(
-                                    err.instancePath.split("/").join(".") ?? "",
-                                );
+                                const errPath = err.instancePath.split("/");
+                                errPath.shift();
+                                const propName = errPath.join(".");
+                                if (!errParts.includes(propName)) {
+                                    errParts.push(propName);
+                                }
                             }
                             const message = `Missing or invalid url query parameters: [${errParts.join(
                                 ", ",
@@ -213,7 +221,6 @@ export function registerRpc(
                             throw defineError(400, {
                                 statusMessage: message,
                                 data: parsedParams.error,
-                                stack: parsedParams.error.stack,
                             });
                         }
                         break;
@@ -229,11 +236,12 @@ export function registerRpc(
                         if (!parsedParams.success) {
                             const errorParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
-                                errorParts.push(
-                                    err.instancePath.split("/").join("."),
-                                );
+                                const errPath = err.instancePath.split("/");
+                                errPath.shift();
+                                if (!errorParts.includes(errPath.join("."))) {
+                                    errorParts.push(errPath.join("."));
+                                }
                             }
-
                             throw defineError(400, {
                                 statusMessage: `Invalid request body. Affected properties [${errorParts.join(
                                     ", ",
@@ -255,9 +263,28 @@ export function registerRpc(
             }
             if (typeof response === "object") {
                 setResponseHeader(event, "Content-Type", "application/json");
-                await send(event, JSON.stringify(response));
+                await send(
+                    event,
+                    responseValidator?.serialize(response) ??
+                        JSON.stringify(response),
+                );
             } else {
-                await send(event, response ?? "");
+                await send(
+                    event,
+                    response ??
+                        `<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Empty Response</title>
+    </head>
+    <body>
+        nothing to see here
+    </body>
+</html>
+`,
+                );
             }
             if (opts.onAfterResponse) {
                 await opts.onAfterResponse(context as any, event);

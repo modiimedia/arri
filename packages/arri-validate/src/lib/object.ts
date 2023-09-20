@@ -91,28 +91,63 @@ function parse<T>(
     }
     const result: Record<any, any> = {};
     const optionalProps = schema.optionalProperties ?? {};
-    for (const key of Object.keys(parsedInput)) {
+    const inputKeys = Object.keys(parsedInput);
+    const requiredKeys = Object.keys(schema.properties);
+    const optionalKeys = Object.keys(optionalProps);
+    if (!schema.additionalProperties) {
+        for (const key of inputKeys) {
+            if (
+                !requiredKeys.includes(key) &&
+                !optionalKeys.includes(key) &&
+                key !== data.discriminatorKey
+            ) {
+                data.errors.push({
+                    instancePath: `${data.instancePath}/${key}`,
+                    schemaPath: `${data.schemaPath}/additionalKeys`,
+                    message: `Key '${key}' is not included in the schema. To allow additional input properties set additionalProperties to 'true'.`,
+                });
+            }
+        }
+    }
+    if (data.discriminatorKey) {
+        result[data.discriminatorKey] = data.discriminatorValue;
+    }
+    for (const key of requiredKeys) {
         const val = parsedInput[key];
-        const prop = schema.properties[key] ?? optionalProps[key];
-        if (prop) {
-            result[key] = coerce
-                ? prop.metadata[SCHEMA_METADATA].coerce(parsedInput, data)
-                : prop.metadata[SCHEMA_METADATA].parse(val, data);
-            continue;
-        }
-        if (key === data.discriminatorKey) {
-            result[key] = data.discriminatorValue;
-            continue;
-        }
-        if (!schema.additionalProperties) {
-            data.errors.push({
+        const prop = schema.properties[key];
+        if (coerce) {
+            result[key] = prop.metadata[SCHEMA_METADATA].coerce(val, {
                 instancePath: `${data.instancePath}/${key}`,
-                schemaPath: `${data.schemaPath}`,
-                message: `Property ${key} not found in object schema. If you want to allow additional properties, you must set additionalProperties to 'true'.`,
+                schemaPath: `${data.schemaPath}/properties/${key}`,
+                errors: data.errors,
             });
             continue;
         }
-        result[key] = parsedInput[key];
+        result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
+            instancePath: `${data.instancePath}`,
+            schemaPath: `${data.schemaPath}`,
+            errors: data.errors,
+        });
+    }
+    for (const key of optionalKeys) {
+        const val = parsedInput[key];
+        const prop = schema.properties[key];
+        if (val === undefined) {
+            continue;
+        }
+        if (coerce) {
+            result[key] = prop.metadata[SCHEMA_METADATA].coerce(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
+                errors: data.errors,
+            });
+            continue;
+        }
+        result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
+            instancePath: `${data.instancePath}/${key}`,
+            schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
+            errors: data.errors,
+        });
     }
     if (data.errors.length) {
         return undefined;

@@ -27,6 +27,18 @@ export function number(opts: ASchemaOptions = {}) {
 }
 
 function coerceNumber(input: unknown, options: ValidationData) {
+    if (typeof input === "string") {
+        const parsedInput = Number(input);
+        if (Number.isNaN(parsedInput)) {
+            options.errors.push({
+                instancePath: `${options.instancePath}`,
+                schemaPath: `${options.schemaPath}/type`,
+                message: `Unable to coerce ${typeof input} into a number`,
+            });
+            return undefined;
+        }
+        return parseNumber(parsedInput, options);
+    }
     return parseNumber(input, options);
 }
 

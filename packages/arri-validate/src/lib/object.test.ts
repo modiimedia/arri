@@ -134,6 +134,76 @@ test("Parsing", () => {
     expect(a.safeParse(UserSchema, goodJsonInput).success).toBe(true);
 });
 
+describe("Coersion", () => {
+    const SimpleObject = a.object({
+        limit: a.number(),
+        isActive: a.boolean(),
+        createdAt: a.timestamp(),
+    });
+    const ComplexObject = a.extend(
+        SimpleObject,
+        a.object({
+            data: a.object({
+                id: a.optional(a.number()),
+                type: a.stringEnum(["event", "notification"]),
+                date: a.timestamp(),
+                items: a.array(a.int32()),
+            }),
+        }),
+    );
+    const coerceSimple = (input: unknown) => a.safeCoerce(SimpleObject, input);
+    const coerceComplex = (input: unknown) =>
+        a.safeCoerce(ComplexObject, input);
+    it("coerces good input", () => {
+        const simpleInput = {
+            limit: "100.5",
+            isActive: 0,
+            createdAt: "01/01/2001",
+        };
+        const simpleResult = coerceSimple(simpleInput);
+        if (!simpleResult.success) {
+            console.error(simpleResult.error);
+        }
+        expect(simpleResult.success);
+        if (simpleResult.success) {
+            expect(simpleResult.value).toStrictEqual({
+                limit: 100.5,
+                isActive: false,
+                createdAt: new Date("01/01/2001"),
+            });
+        }
+        const complexInput = {
+            limit: "100.5",
+            isActive: 0,
+            createdAt: "01/01/2001",
+            data: {
+                id: "1",
+                type: "event",
+                date: 0,
+                items: ["1", "2", "3"],
+            },
+        };
+        const complexResult = coerceComplex(complexInput);
+        if (!complexResult.success) {
+            console.error(complexResult.error);
+        }
+        expect(complexResult.success);
+        if (complexResult.success) {
+            expect(complexResult.value).toStrictEqual({
+                limit: 100.5,
+                isActive: false,
+                createdAt: new Date("01/01/2001"),
+                data: {
+                    id: 1,
+                    type: "event",
+                    date: new Date(0),
+                    items: [1, 2, 3],
+                },
+            });
+        }
+    });
+});
+
 test("Nested Object", () => {
     const badInput = {
         id: "12345",
