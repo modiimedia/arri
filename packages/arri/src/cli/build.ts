@@ -117,7 +117,7 @@ for (const route of routes) {
     app.registerRpc(route.id, route.route);
 }
 
-void listen(toNodeListener(app.getH3Instance()), {
+void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
 });`;
     await fs.writeFile(

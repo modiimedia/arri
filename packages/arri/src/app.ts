@@ -20,6 +20,7 @@ import {
     getQuery,
     readBody,
     setResponseStatus,
+    type EventHandler,
 } from "h3";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import {
@@ -43,10 +44,10 @@ import {
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
 
-export class Arri {
+export class ArriApp {
     __isArri__ = true;
-    private readonly h3App: App;
-    private readonly h3Router: Router = createRouter();
+    readonly h3App: App;
+    readonly h3Router: Router = createRouter();
     private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
     appInfo: AppDefinition["info"];
@@ -185,15 +186,15 @@ export class Arri {
             models: this.models as any,
             errors: ErrorResponse,
         };
-        Object.keys(this.procedures).forEach((key) => {
+        for (const key of Object.keys(this.procedures)) {
             const rpc = this.procedures[key];
             appDef.procedures[key] = rpc;
-        });
+        }
         return appDef;
     }
 
-    getH3Instance(): App {
-        return this.h3App;
+    use(route: string | string[], handler: EventHandler) {
+        this.h3App.use(route, handler);
     }
 }
 

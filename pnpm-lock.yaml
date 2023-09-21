@@ -289,6 +289,18 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1
 
+  tests/arri-server:
+    dependencies:
+      '@faker-js/faker':
+        specifier: ^8.0.2
+        version: 8.0.2
+      arri:
+        specifier: workspace:*
+        version: link:../../packages/arri
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../packages/arri-validate
+
 packages:
 
   /@aashutoshrathi/word-wrap@1.2.6:

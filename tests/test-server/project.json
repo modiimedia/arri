@@ -1,0 +1,14 @@
+{
+    "name": "test-server",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "tests/test-server",
+    "targets": {
+        "dev": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "arri dev",
+                "cwd": "tests/test-server"
+            }
+        }
+    }
+}

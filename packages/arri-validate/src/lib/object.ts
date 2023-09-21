@@ -131,7 +131,7 @@ function parse<T>(
     }
     for (const key of optionalKeys) {
         const val = parsedInput[key];
-        const prop = schema.properties[key];
+        const prop = optionalProps[key];
         if (val === undefined) {
             continue;
         }
@@ -346,4 +346,50 @@ export function extend<
     };
     schema.metadata = meta;
     return schema as any;
+}
+
+export function partial<
+    TSchema extends AObjectSchema<any, any> = any,
+    TAdditionalProps extends boolean = false,
+>(
+    schema: TSchema,
+    options: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<Partial<InferType<TSchema>>, TAdditionalProps> {
+    const newSchema: SchemaFormProperties = {
+        properties: {},
+        optionalProperties: {},
+        additionalProperties: schema.additionalProperties,
+        nullable: schema.nullable,
+    };
+    for (const key of Object.keys(schema.properties)) {
+        (newSchema.optionalProperties as any)[key] = schema.properties[key];
+    }
+    if (schema.optionalProperties) {
+        for (const key of Object.keys(schema.optionalProperties)) {
+            (newSchema.optionalProperties as any)[key] =
+                schema.optionalProperties[key];
+        }
+    }
+    const meta: ASchema["metadata"] = {
+        id: options.id,
+        description: options.description,
+        [SCHEMA_METADATA]: {
+            output: {} as any,
+            optional: schema.metadata[SCHEMA_METADATA].optional,
+            validate(input): input is Partial<InferType<TSchema>> {
+                return validate(newSchema as any, input);
+            },
+            parse(input, data) {
+                return parse(newSchema as any, input, data, false);
+            },
+            coerce(input, data) {
+                return parse(newSchema as any, input, data, true);
+            },
+            serialize(input) {
+                return JSON.stringify(input);
+            },
+        },
+    };
+    schema.metadata = meta;
+    return schema;
 }

@@ -273,8 +273,9 @@ describe("Pick", () => {
 });
 
 describe("Omit", () => {
+    const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"]);
+    const parse = (input: unknown) => a.safeParse(UserSubsetSchema, input);
     test("User Omission", () => {
-        const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"]);
         type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
         assertType<UserSubsetSchema>({
             name: "john doe",
@@ -288,19 +289,40 @@ describe("Omit", () => {
             email: null,
             createdAt: new Date(),
         };
-        const result = a.safeParse(UserSubsetSchema, originalInput);
-        if (result.success) {
-            console.error(result);
+        const badResult = parse(originalInput);
+        if (badResult.success) {
+            console.error(badResult);
         }
-        expect(a.safeParse(UserSubsetSchema, originalInput).success).toBe(
-            false,
-        );
+        expect(parse(originalInput).success).toBe(false);
         const subsetInput: UserSubsetSchema = {
             name: "John Doe",
             email: null,
             createdAt: new Date(),
         };
+        const goodResult = parse(subsetInput);
+        if (!goodResult.success) {
+            console.error(goodResult.error);
+        }
+        expect(goodResult.success);
+    });
+});
 
-        expect(a.safeParse(UserSubsetSchema, subsetInput).success).toBe(true);
+describe("partial", () => {
+    describe("type inference", () => {
+        it("infers partial types", () => {
+            const ObjectSchema = a.object({
+                id: a.string(),
+                type: a.stringEnum(["event", "notification"]),
+            });
+            const PartialObjectSchema = a.partial(ObjectSchema);
+            type PartialObjectSchema = a.infer<typeof PartialObjectSchema>;
+            assertType<PartialObjectSchema>({});
+            assertType<PartialObjectSchema>({
+                id: "12341",
+            });
+            assertType<PartialObjectSchema>({
+                type: "event",
+            });
+        });
     });
 });

@@ -38,11 +38,11 @@ export function safeParse<T = any>(
                 error: err,
             };
         }
+        console.error(err);
         return {
             success: false,
             error: new ValidationError({
-                message: "Unable to coerce input",
-
+                message: "Unable to parse input",
                 errors: [],
             }),
         };

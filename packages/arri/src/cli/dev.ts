@@ -168,7 +168,7 @@ for (const route of routes) {
     app.registerRpc(route.id, route.route);
 }
 
-export default app.getH3Instance();`;
+export default app.h3App;`;
     await fs.writeFile(
         path.resolve(config.rootDir, config.buildDir, "entry.js"),
         virtualEntry,
