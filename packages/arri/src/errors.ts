@@ -8,8 +8,6 @@ import {
     send,
 } from "h3";
 import { type ArriOptions } from "./app";
-import { type RpcHandlerContext } from "./procedures";
-import { type RouteHandlerContext } from "./routes";
 
 export const ErrorResponse = a.object(
     {
@@ -257,7 +255,6 @@ const errorResponseDefaults: Record<
 
 export async function handleH3Error(
     err: unknown,
-    context: RpcHandlerContext | RouteHandlerContext<any>,
     event: H3Event,
     onError: ArriOptions["onError"],
 ) {
@@ -266,7 +263,7 @@ export async function handleH3Error(
         : defineError(500, { data: err as any, stack: `${err as any}` });
     setResponseStatus(event, error.statusCode);
     if (onError) {
-        await onError(error, context, event);
+        await onError(error, event);
     }
     if (event.handled) {
         return;

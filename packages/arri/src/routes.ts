@@ -1,225 +1,160 @@
-import { type HttpMethod } from "arri-codegen-utils";
 import {
-    type AObjectSchema,
-    type ASchema,
-    type InferType,
-} from "arri-validate";
-import {
-    type H3Event,
-    type Router,
+    type InputLayer,
+    type EventHandler,
+    type App,
+    setHeader,
     send,
-    setResponseHeader,
-    eventHandler,
+    type Router as H3Router,
+    type RouterMethod,
+    isPreflightRequest,
+    defineEventHandler,
+    createRouter,
 } from "h3";
+import { type AObjectSchema } from "packages/arri-validate/dist";
 import { type ArriOptions } from "./app";
 import { handleH3Error } from "./errors";
-import type { HandlerContext } from "./procedures";
+import { type Middleware } from "./middleware";
+import { type ArriProcedure } from "./procedures";
 
-export interface ArriRoute<
-    TPath extends string,
-    TMethod extends HttpMethod,
-    TQuery extends AObjectSchema | undefined = undefined,
-    TBody extends ASchema | undefined = undefined,
-    TResponse extends ASchema | undefined = undefined,
-    TFallbackResponse = any,
-> {
-    path: TPath;
-    method: TMethod;
-    query?: TQuery;
-    body?: TBody;
-    response?: TResponse;
-    handler: ArriRouteHandler<
-        TPath,
-        TQuery extends AObjectSchema ? InferType<TQuery> : undefined,
-        TBody extends ASchema ? InferType<TBody> : undefined,
-        TResponse extends ASchema ? InferType<TResponse> : TFallbackResponse
-    >;
-    postHandler?: ArriRoutePostHandler<
-        TPath,
-        TQuery extends AObjectSchema ? InferType<TQuery> : undefined,
-        TBody extends ASchema ? InferType<TBody> : undefined,
-        TResponse extends ASchema ? InferType<TResponse> : TFallbackResponse
-    >;
+interface RouteOptions {
+    middleware: Middleware[];
+    onBeforeResponse?: ArriOptions["onBeforeResponse"];
+    onAfterResponse?: ArriOptions["onAfterResponse"];
+    onError?: ArriOptions["onError"];
 }
 
-export function defineRoute<
-    TPath extends string,
-    TMethod extends HttpMethod,
-    TQuery extends AObjectSchema | undefined = any,
-    TBody extends ASchema | undefined = any,
-    TResponse extends ASchema | undefined = undefined,
-    TFallbackResponse = any,
->(
-    config: ArriRoute<
-        TPath,
-        TMethod,
-        TQuery,
-        TBody,
-        TResponse,
-        TFallbackResponse
-    >,
+export function handleUse(
+    app: App,
+    path: string,
+    handler: EventHandler,
+    options: RouteOptions,
+    h3Options?: Partial<InputLayer>,
 ) {
-    return config;
-}
-
-export type Middleware = (
-    context: HandlerContext,
-    event: H3Event,
-) => void | Promise<void>;
-export const defineMiddleware = (middleware: Middleware) => middleware;
-
-export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
-    ? Record<Param, string> & NextPart
-    : NextPart;
-
-export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
-    ? ExtractParam<Segment, ExtractParams<Rest>>
-    : // eslint-disable-next-line @typescript-eslint/ban-types
-      ExtractParam<Path, {}>;
-
-export type ArriRouteHandler<
-    TPath extends string,
-    TQuery = undefined,
-    TBody = undefined,
-    TResponse = any,
-> = (
-    context: RouteHandlerContext<ExtractParams<TPath>, TQuery, TBody>,
-    event: H3Event,
-) => TResponse extends undefined
-    ? void | Promise<void>
-    : TResponse | Promise<TResponse>;
-
-export interface RouteHandlerContext<
-    TParams extends Record<string, string>,
-    TQuery = undefined,
-    TBody = undefined,
-> extends HandlerContext {
-    type: "route";
-    params: TParams;
-    query: TQuery;
-    body: TBody;
-}
-
-export interface RoutePostHandlerContext<
-    TParams extends Record<string, string>,
-    TQuery = undefined,
-    TBody = undefined,
-    TResponse = undefined,
-> extends RouteHandlerContext<TParams, TQuery, TBody> {
-    response: TResponse;
-}
-
-export type ArriRoutePostHandler<
-    TPath extends string,
-    TQuery = undefined,
-    TBody = undefined,
-    TResponse = undefined,
-> = (
-    context: RoutePostHandlerContext<
-        ExtractParams<TPath>,
-        TQuery,
-        TBody,
-        TResponse
-    >,
-    event: H3Event,
-) => any;
-
-export function registerRoute<TPath extends string>(
-    router: Router,
-    route: ArriRoute<TPath, HttpMethod, any, any, any>,
-    middleware: Middleware[],
-    prefix?: string,
-    opts?: ArriOptions,
-) {
-    const handler = eventHandler(async (event: H3Event) => {
-        const context: RouteHandlerContext<any> = {
-            type: "route",
-            params: event.context.params,
-            query: undefined,
-            body: undefined,
-        };
-        try {
-            if (middleware.length) {
-                for (const m of middleware) {
-                    await m(context, event);
+    app.use(
+        path,
+        defineEventHandler(async (event) => {
+            try {
+                if (isPreflightRequest(event)) {
+                    return "ok";
                 }
+                for (const m of options.middleware) {
+                    await m(event);
+                }
+                const response = await handler(event);
+                event.context.response = response;
+                if (event.handled) {
+                    return "";
+                }
+                if (options.onBeforeResponse) {
+                    await options.onBeforeResponse(event as any);
+                }
+                if (typeof response === "object") {
+                    setHeader(event, "Content-Type", "application/json");
+                    await send(event, JSON.stringify(response));
+                } else {
+                    await send(event, response);
+                }
+                if (options.onAfterResponse) {
+                    await options.onAfterResponse(event);
+                }
+            } catch (err) {
+                await handleH3Error(err, event, options.onError);
             }
-            if (route.query) {
-                // const result = await getValidatedQuery(
-                //     event,
-                //     typeboxSafeValidate(route.query, true),
-                // );
-                // if (!result.success) {
-                //     throw errorResponseFromValidationErrors(
-                //         result.errors,
-                //         "Missing or invalid query parameters",
-                //     );
-                // }
-                // context.query = result.value;
+            return "";
+        }),
+        h3Options,
+    );
+}
+
+export function handleRoute(
+    router: H3Router,
+    path: string,
+    method: RouterMethod,
+    handler: EventHandler,
+    options: RouteOptions,
+) {
+    switch (method) {
+        case "connect":
+            router.connect(path, handleRouteHandler(handler, options));
+            break;
+        case "delete":
+            router.delete(path, handleRouteHandler(handler, options));
+            break;
+        case "get":
+            router.get(path, handleRouteHandler(handler, options));
+            break;
+        case "head":
+            router.head(path, handleRouteHandler(handler, options));
+            break;
+        case "options":
+            router.options(path, handleRouteHandler(handler, options));
+            break;
+        case "patch":
+            router.patch(path, handleRouteHandler(handler, options));
+            break;
+        case "post":
+            router.post(path, handleRouteHandler(handler, options));
+            break;
+        case "put":
+            router.put(path, handleRouteHandler(handler, options));
+            break;
+        case "trace":
+            router.trace(path, handleRouteHandler(handler, options));
+            break;
+    }
+}
+
+export function handleRouteHandler(
+    handler: EventHandler,
+    options: RouteOptions,
+) {
+    return defineEventHandler(async (event) => {
+        try {
+            if (isPreflightRequest(event)) {
+                return "ok";
             }
-            if (
-                route.body &&
-                route.method !== "get" &&
-                route.method !== "head"
-            ) {
-                // const result = await readValidatedBody(
-                //     event,
-                //     typeboxSafeValidate(route.body),
-                // );
-                // if (!result.success) {
-                //     throw errorResponseFromValidationErrors(
-                //         result.errors,
-                //         "Missing or invalid body parameters",
-                //     );
-                // }
-                // context.body = result.value;
+            for (const m of options.middleware) {
+                await m(event);
             }
-            const response = await route.handler(context, event);
-            context.response = response;
-            if (opts?.onBeforeResponse) {
-                await opts.onBeforeResponse(context as any, event);
+            const result = await handler(event);
+            if (event.handled) {
+                return "";
             }
-            if (typeof response === "object") {
-                setResponseHeader(event, "Content-Type", "application/json");
-                await send(event, JSON.stringify(response));
+            event.context.response = result;
+            if (options.onBeforeResponse) {
+                await options.onBeforeResponse(event);
+            }
+            if (typeof result === "object") {
+                setHeader(event, "Content-Type", "application/json");
+                await send(event, JSON.stringify(result));
             } else {
-                await send(event, response ?? "");
+                await send(event, result);
             }
-            if (opts?.onAfterResponse) {
-                await opts.onAfterResponse(context as any, event);
-            }
-            if (route.postHandler) {
-                await route.postHandler(context as any, event);
+            if (options.onAfterResponse) {
+                await options.onAfterResponse(event);
             }
         } catch (err) {
-            await handleH3Error(err, context, event, opts?.onError);
-        }
-        if (!event.handled) {
-            await send(event, "");
+            await handleH3Error(err, event, options.onError);
         }
         return "";
     });
-    const finalPath = (prefix ? `/${prefix}${route.path}` : route.path)
-        .split("//")
-        .join("/");
-    switch (route.method) {
-        case "get":
-            router.get(finalPath, handler);
-            break;
-        case "head":
-            router.head(finalPath, handler);
-            break;
-        case "delete":
-            router.delete(finalPath, handler);
-            break;
-        case "patch":
-            router.patch(finalPath, handler);
-            break;
-        case "post":
-            router.post(finalPath, handler);
-            break;
-        case "put":
-            router.put(finalPath, handler);
-            break;
+}
+
+export class Router {
+    private readonly procedures: Array<{
+        name: string;
+        procedure: ArriProcedure<any, any>;
+    }> = [];
+
+    private readonly router = createRouter();
+
+    rpc = this.procedure;
+    procedure<
+        TParams extends AObjectSchema<any, any> | undefined,
+        TResponse extends AObjectSchema<any, any> | undefined,
+    >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
+        this.procedures.push({ name, procedure });
     }
+
+    use(path: string, handler: EventHandler) {}
 }

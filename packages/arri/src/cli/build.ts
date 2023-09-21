@@ -114,7 +114,7 @@ import routes from './routes.js';
 import app from './${appImportParts.join(".")}.js';
 
 for (const route of routes) {
-    app.registerRpc(route.id, route.route);
+    app.procedure(route.id, route.route);
 }
 
 void listen(toNodeListener(app.h3App), {
@@ -140,7 +140,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
     import routes from './routes.js';
 
     for(const route of routes) {
-        app.registerRpc(route.id, route.route);
+        app.procedure(route.id, route.route);
     }
 
     const __dirname = new URL(".", import.meta.url).pathname;

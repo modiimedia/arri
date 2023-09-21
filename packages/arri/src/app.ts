@@ -1,8 +1,4 @@
-import {
-    type AppDefinition,
-    type HttpMethod,
-    type RpcDefinition,
-} from "arri-codegen-utils";
+import { type AppDefinition, type RpcDefinition } from "arri-codegen-utils";
 import {
     type AObjectSchema,
     type ASchema,
@@ -17,12 +13,11 @@ import {
     type H3Error,
     type H3Event,
     sendError,
-    getQuery,
-    readBody,
     setResponseStatus,
-    type EventHandler,
 } from "h3";
+import { ArriCompat } from "./compat";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
+import { type Middleware } from "./middleware";
 import {
     type ArriProcedure,
     createRpcDefinition,
@@ -30,24 +25,16 @@ import {
     getRpcPath,
     getRpcResponseName,
     registerRpc,
-    type RpcHandlerContext,
-    type RpcPostHandlerContext,
 } from "./procedures";
-import {
-    type ArriRoute,
-    registerRoute,
-    type Middleware,
-    type RouteHandlerContext,
-    type RoutePostHandlerContext,
-} from "./routes";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
-export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
+export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/__definition`;
 
 export class ArriApp {
     __isArri__ = true;
     readonly h3App: App;
     readonly h3Router: Router = createRouter();
+    readonly compat: ArriCompat;
     private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
     appInfo: AppDefinition["info"];
@@ -64,28 +51,30 @@ export class ArriApp {
             debug: opts?.debug,
             onRequest: opts?.onRequest,
         });
+        this.compat = new ArriCompat({
+            h3App: this.h3App,
+            h3Router: this.h3Router,
+        });
         this.onError = opts.onError;
         this.onAfterResponse = opts.onAfterResponse;
         this.onBeforeResponse = opts.onBeforeResponse;
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3App.use(this.h3Router);
-        this.registerRoute({
-            path: this.rpcRoutePrefix
+        this.h3Router.get(
+            this.rpcRoutePrefix
                 ? `/${this.rpcRoutePrefix}/${this.rpcDefinitionPath}`
                       .split("//")
                       .join("/")
                 : `/${this.rpcDefinitionPath}`,
-            method: "get",
-            handler: () => this.getAppDefinition(),
-        });
+            eventHandler(() => this.getAppDefinition()),
+        );
         // this route is used by the dev server when auto-generating client code
         if (process.env.ARRI_DEV_MODE === "true") {
-            this.registerRoute({
-                path: DEV_DEFINITION_ENDPOINT,
-                method: "get",
-                handler: () => this.getAppDefinition(),
-            });
+            this.h3Router.get(
+                DEV_DEFINITION_ENDPOINT,
+                eventHandler(() => this.getAppDefinition()),
+            );
         }
         // default fallback route
         this.h3Router.use(
@@ -93,32 +82,20 @@ export class ArriApp {
             eventHandler(async (event) => {
                 setResponseStatus(event, 404);
                 const error = defineError(404);
-                const query = getQuery(event);
-                const disallowedBodyMethods = ["GET", "HEAD", "OPTION"];
-                const canBody = !disallowedBodyMethods.includes(event.method);
-                const context: RouteHandlerContext<any> = {
-                    type: "route",
-                    params: event.context.params,
-                    query: query as any,
-                    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-                    body: canBody
-                        ? await readBody(event).catch((_) => undefined)
-                        : undefined,
-                };
                 try {
                     if (this.middlewares.length) {
                         for (const m of this.middlewares) {
-                            await m(context, event);
+                            await m(event);
                         }
                     }
                 } catch (err) {
-                    await handleH3Error(err, context, event, this.onError);
+                    await handleH3Error(err, event, this.onError);
                 }
                 if (event.handled) {
                     return;
                 }
                 if (this.onError) {
-                    await this.onError(error, context, event);
+                    await this.onError(error, event);
                 }
                 if (event.handled) {
                     return;
@@ -129,10 +106,10 @@ export class ArriApp {
     }
 
     registerMiddleware(middleware: Middleware) {
-        this.middlewares.push(middleware);
+        this.h3App.use(middleware);
     }
 
-    registerRpc<
+    rpc<
         TParams extends AObjectSchema<any, any> | undefined,
         TResponse extends AObjectSchema<any, any> | undefined,
     >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
@@ -158,25 +135,7 @@ export class ArriApp {
         });
     }
 
-    registerRoute<
-        TPath extends string,
-        TMethod extends HttpMethod = HttpMethod,
-        TQuery extends AObjectSchema | undefined = undefined,
-        TBody extends ASchema | undefined = undefined,
-        TResponse extends ASchema | undefined = undefined,
-        TFallbackResponse = any,
-    >(
-        route: ArriRoute<
-            TPath,
-            TMethod,
-            TQuery,
-            TBody,
-            TResponse,
-            TFallbackResponse
-        >,
-    ) {
-        registerRoute(this.h3Router, route, this.middlewares);
-    }
+    procedure = this.rpc;
 
     getAppDefinition(): AppDefinition {
         const appDef: AppDefinition = {
@@ -191,10 +150,6 @@ export class ArriApp {
             appDef.procedures[key] = rpc;
         }
         return appDef;
-    }
-
-    use(route: string | string[], handler: EventHandler) {
-        this.h3App.use(route, handler);
     }
 }
 
@@ -211,17 +166,7 @@ export interface ArriOptions {
      */
     rpcDefinitionPath?: string;
     onRequest?: (event: H3Event) => void | Promise<void>;
-    onAfterResponse?: (
-        context: RpcPostHandlerContext | RoutePostHandlerContext<any>,
-        event: H3Event,
-    ) => void | Promise<void>;
-    onBeforeResponse?: (
-        context: RpcPostHandlerContext | RoutePostHandlerContext<any>,
-        event: H3Event,
-    ) => void | Promise<void>;
-    onError?: (
-        error: H3Error,
-        context: RpcHandlerContext | RouteHandlerContext<any>,
-        event: H3Event,
-    ) => void | Promise<void>;
+    onAfterResponse?: (event: H3Event) => void | Promise<void>;
+    onBeforeResponse?: (event: H3Event) => void | Promise<void>;
+    onError?: (error: H3Error, event: H3Event) => void | Promise<void>;
 }

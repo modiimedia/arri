@@ -18,12 +18,13 @@ import {
     setResponseHeader,
     type H3Event,
     getValidatedQuery,
-    readValidatedBody,
+    readRawBody,
+    type H3EventContext,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { type ArriOptions } from "./app";
 import { defineError, handleH3Error } from "./errors";
-import { type Middleware } from "./routes";
+import { type Middleware } from "./middleware";
 
 export interface ArriProcedure<
     TParams extends AObjectSchema | undefined,
@@ -46,8 +47,9 @@ export interface ArriProcedure<
 
 export type HandlerContext = Record<string, any>;
 
-export interface RpcHandlerContext<TParams = undefined> extends HandlerContext {
-    type: "procedure";
+export interface RpcHandlerContext<TParams = undefined>
+    extends HandlerContext,
+        Omit<H3EventContext, "params"> {
     params: TParams;
 }
 
@@ -184,16 +186,12 @@ export function registerRpc(
         : undefined;
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: H3Event) => {
-        const context: RpcHandlerContext = {
-            type: "procedure",
-            params: undefined,
-        };
         if (isPreflightRequest(event)) {
             return "ok";
         }
         try {
             if (middleware.length) {
-                await Promise.all(middleware.map((m) => m(context, event)));
+                await Promise.all(middleware.map((m) => m(event)));
             }
             if (isAObjectSchema(procedure.params) && paramValidator) {
                 switch (httpMethod) {
@@ -204,7 +202,7 @@ export function registerRpc(
                             (input) => a.safeCoerce(procedure.params, input),
                         );
                         if (parsedParams.success) {
-                            context.params = parsedParams.value;
+                            event.context.params = parsedParams.value;
                         } else {
                             const errParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
@@ -229,10 +227,13 @@ export function registerRpc(
                     case "patch":
                     case "post":
                     case "put": {
-                        const parsedParams = await readValidatedBody(
-                            event,
-                            (input) => paramValidator.safeParse(input),
-                        );
+                        const body = await readRawBody(event);
+                        if (!body) {
+                            throw defineError(400, {
+                                statusMessage: `Invalid request body. Expected object. Got undefined.`,
+                            });
+                        }
+                        const parsedParams = paramValidator.safeParse(body);
                         if (!parsedParams.success) {
                             const errorParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
@@ -249,17 +250,20 @@ export function registerRpc(
                                 data: parsedParams.error,
                             });
                         }
-                        context.params = parsedParams.value;
+                        event.context.params = parsedParams.value;
                         break;
                     }
                     default:
                         break;
                 }
             }
-            const response = await procedure.handler(context, event);
-            context.response = response;
+            const response = await procedure.handler(
+                event.context as any,
+                event,
+            );
+            event.context.response = response;
             if (opts.onBeforeResponse) {
-                await opts.onBeforeResponse(context as any, event);
+                await opts.onBeforeResponse(event);
             }
             if (typeof response === "object") {
                 setResponseHeader(event, "Content-Type", "application/json");
@@ -287,13 +291,13 @@ export function registerRpc(
                 );
             }
             if (opts.onAfterResponse) {
-                await opts.onAfterResponse(context as any, event);
+                await opts.onAfterResponse(event);
             }
             if (procedure.postHandler) {
-                await procedure.postHandler(context as any, event);
+                await procedure.postHandler(event.context as any, event);
             }
         } catch (err) {
-            await handleH3Error(err, context, event, opts.onError);
+            await handleH3Error(err, event, opts.onError);
         }
         return "";
     });

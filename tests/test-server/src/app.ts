@@ -4,4 +4,8 @@ const app = new ArriApp({
     rpcRoutePrefix: "rpcs",
 });
 
-export default app;
+app.rpc("users.getUser", {
+    params: undefined,
+    response: undefined,
+    handler({ params }) {},
+});
