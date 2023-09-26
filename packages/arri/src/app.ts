@@ -15,7 +15,6 @@ import {
     sendError,
     setResponseStatus,
 } from "h3";
-import { ArriCompat } from "./compat";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./middleware";
 import {
@@ -36,7 +35,6 @@ export class ArriApp implements ArriRouterBase {
     __isArri__ = true;
     readonly h3App: App;
     readonly h3Router: Router = createRouter();
-    readonly compat: ArriCompat;
     private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
     appInfo: AppDefinition["info"];
@@ -52,10 +50,6 @@ export class ArriApp implements ArriRouterBase {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
-        });
-        this.compat = new ArriCompat({
-            h3App: this.h3App,
-            h3Router: this.h3Router,
         });
         this.onError = opts.onError;
         this.onAfterResponse = opts.onAfterResponse;
