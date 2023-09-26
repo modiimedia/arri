@@ -22,9 +22,8 @@ import {
     type H3EventContext,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
-import { type ArriOptions } from "./app";
 import { defineError, handleH3Error } from "./errors";
-import { type Middleware } from "./middleware";
+import { type RouteOptions } from "./routes";
 
 export interface ArriProcedure<
     TParams extends AObjectSchema | undefined,
@@ -43,6 +42,13 @@ export interface ArriProcedure<
         TParams extends AObjectSchema ? InferType<TParams> : undefined,
         TResponse extends AObjectSchema ? InferType<TResponse> : undefined
     >;
+}
+
+export interface ArriNamedProcedure<
+    TParams extends AObjectSchema | undefined,
+    TResponse extends AObjectSchema | undefined,
+> extends ArriProcedure<TParams, TResponse> {
+    name: string;
 }
 
 export type HandlerContext = Record<string, any>;
@@ -175,8 +181,7 @@ export function registerRpc(
     router: Router,
     path: string,
     procedure: ArriProcedure<any, any>,
-    middleware: Middleware[],
-    opts: ArriOptions,
+    opts: RouteOptions,
 ) {
     const paramValidator = procedure.params
         ? a.compile(procedure.params)
@@ -190,8 +195,13 @@ export function registerRpc(
             return "ok";
         }
         try {
-            if (middleware.length) {
-                await Promise.all(middleware.map((m) => m(event)));
+            if (opts.onRequest) {
+                await opts.onRequest(event);
+            }
+            if (opts.middleware.length) {
+                for (const m of opts.middleware) {
+                    await m(event);
+                }
             }
             if (isAObjectSchema(procedure.params) && paramValidator) {
                 switch (httpMethod) {

@@ -49,7 +49,7 @@ importers:
         version: 0.34.4(vitest@0.34.4)
       bun-types:
         specifier: latest
-        version: 1.0.2
+        version: 1.0.3
       citty:
         specifier: ^0.1.4
         version: 0.1.4
@@ -185,9 +185,6 @@ importers:
       jiti:
         specifier: ^1.20.0
         version: 1.20.0
-      json-schema-to-jtd:
-        specifier: workspace:*
-        version: link:../json-schema-to-jtd
       listhen:
         specifier: ^1.5.3
         version: 1.5.3
@@ -4669,6 +4666,10 @@ packages:
 
   /bun-types@1.0.2:
     resolution: {integrity: sha512-yqBp2SX9cqr5/GReb56uCfM+YP+Hntx3XPjbqX1VJXqOBu+Yqw8iWRFLKFIsz9uEfykLgflhramQ8a5Jgo+Tlg==}
+    dev: true
+
+  /bun-types@1.0.3:
+    resolution: {integrity: sha512-XlyKVdYCHa7K5PHYGcwOVOrGE/bMnLS51y7zFA3ZAAXyiQ6dTaNXNCWTTufgII/6ruN770uhAXphQmzvU/r2fQ==}
     dev: true
 
   /busboy@1.6.0:

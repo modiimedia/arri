@@ -19,18 +19,20 @@ import { ArriCompat } from "./compat";
 import { ErrorResponse, defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./middleware";
 import {
-    type ArriProcedure,
     createRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
     registerRpc,
+    type ArriNamedProcedure,
 } from "./procedures";
+import { ArriRouter, type ArriRouterBase } from "./router";
+import { type ArriRoute, registerRoute } from "./routes";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/__definition`;
 
-export class ArriApp {
+export class ArriApp implements ArriRouterBase {
     __isArri__ = true;
     readonly h3App: App;
     readonly h3Router: Router = createRouter();
@@ -41,6 +43,7 @@ export class ArriApp {
     private procedures: Record<string, RpcDefinition> = {};
     private models: Record<string, ASchema> = {};
     private readonly middlewares: Middleware[] = [];
+    private readonly onRequest: ArriOptions["onRequest"];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
     private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
     private readonly onError: ArriOptions["onError"];
@@ -49,7 +52,6 @@ export class ArriApp {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
-            onRequest: opts?.onRequest,
         });
         this.compat = new ArriCompat({
             h3App: this.h3App,
@@ -105,37 +107,58 @@ export class ArriApp {
         );
     }
 
-    registerMiddleware(middleware: Middleware) {
-        this.h3App.use(middleware);
+    use(input: Middleware | ArriRouter): void {
+        if (typeof input === "object" && input instanceof ArriRouter) {
+            for (const route of input.getRoutes()) {
+                this.route(route);
+            }
+            for (const rpc of input.getProcedures()) {
+                this.rpc(rpc);
+            }
+            return;
+        }
+        this.middlewares.push(input);
     }
 
     rpc<
         TParams extends AObjectSchema<any, any> | undefined,
         TResponse extends AObjectSchema<any, any> | undefined,
-    >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
-        const path = getRpcPath(name, this.rpcRoutePrefix);
-        this.procedures[name] = createRpcDefinition(name, path, procedure);
+    >(procedure: ArriNamedProcedure<TParams, TResponse>) {
+        const path = getRpcPath(procedure.name, this.rpcRoutePrefix);
+        this.procedures[procedure.name] = createRpcDefinition(
+            procedure.name,
+            path,
+            procedure,
+        );
         if (isAObjectSchema(procedure.params)) {
-            const paramName = getRpcParamName(name, procedure);
+            const paramName = getRpcParamName(procedure.name, procedure);
             if (paramName) {
                 this.models[paramName] = procedure.params;
             }
         }
         if (isAObjectSchema(procedure.response)) {
-            const responseName = getRpcResponseName(name, procedure);
+            const responseName = getRpcResponseName(procedure.name, procedure);
 
             if (responseName) {
                 this.models[responseName] = procedure.response;
             }
         }
-        registerRpc(this.h3Router, path, procedure, this.middlewares, {
+        registerRpc(this.h3Router, path, procedure, {
+            middleware: this.middlewares,
             onError: this.onError,
             onAfterResponse: this.onAfterResponse,
             onBeforeResponse: this.onBeforeResponse,
         });
     }
 
-    procedure = this.rpc;
+    route<TPath extends string>(route: ArriRoute<TPath>) {
+        registerRoute(this.h3Router, route, {
+            middleware: this.middlewares,
+            onError: this.onError,
+            onAfterResponse: this.onAfterResponse,
+            onBeforeResponse: this.onBeforeResponse,
+        });
+    }
 
     getAppDefinition(): AppDefinition {
         const appDef: AppDefinition = {

@@ -24,12 +24,12 @@
             "{projectRoot}/project.json",
             "{projectRoot}/tsconfig.json",
             "{projectRoot}/build.config.ts",
-            "{projectRoot}/src/**/*"
+            "{projectRoot}/src"
         ]
     },
     "targetDefaults": {
         "build": {
-            "inputs": ["default", "^default"],
+            "inputs": ["default"],
             "outputs": ["{projectRoot}/dist"],
             "dependsOn": ["^build", "^prepare"]
         },

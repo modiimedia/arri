@@ -165,7 +165,13 @@ import routes from './routes';
 import app from './${appImportParts.join(".")}';
 
 for (const route of routes) {
-    app.procedure(route.id, route.route);
+    app.rpc({
+        name: route.id,
+        params: route.route.params,
+        response: route.route.response,
+        handler: route.route.handler,
+        postHandler: route.route.postHandler,
+    });
 }
 
 export default app.h3App;`;

@@ -114,7 +114,13 @@ import routes from './routes.js';
 import app from './${appImportParts.join(".")}.js';
 
 for (const route of routes) {
-    app.procedure(route.id, route.route);
+    app.rpc({
+        name: route.id,
+        params: route.route.params,
+        response: route.route.response,
+        handler: route.route.handler,
+        postHandler: route.route.postHandler,
+    });
 }
 
 void listen(toNodeListener(app.h3App), {
