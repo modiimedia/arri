@@ -1,6 +1,0 @@
-{
-    "name": "basic-arri-ts-client",
-    "dependencies": {
-        "arri-client": "workspace:*"
-    }
-}
