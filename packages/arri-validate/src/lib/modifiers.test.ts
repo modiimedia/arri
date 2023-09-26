@@ -135,3 +135,26 @@ describe("nullable", () => {
         });
     });
 });
+
+describe("optional()", () => {
+    describe("type inference", () => {
+        it("infers optional properties", () => {
+            const Schema1 = a.object({
+                id: a.string(),
+                name: a.string(),
+                tags: a.optional(a.array(a.string())),
+            });
+            type Schema1 = a.infer<typeof Schema1>;
+            assertType<Schema1>({
+                id: "1",
+                name: "john",
+                tags: ["1", "2"],
+            });
+            assertType<Schema1>({
+                id: "",
+                name: "john",
+                tags: undefined,
+            });
+        });
+    });
+});
