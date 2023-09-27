@@ -75,36 +75,6 @@ const ZodCoercedUser = z.object({
         .optional(),
 });
 
-// function userFactory(): User {
-//     return {
-//         id: faker.string.uuid(),
-//         role: faker.helpers.arrayElement(["standard", "admin", "moderator"]),
-//         name: faker.person.fullName(),
-//         email: faker.helpers.arrayElement([null, faker.internet.email()]),
-//         createdAt: faker.date.past(),
-//         updatedAt: faker.date.recent(),
-//         settings: faker.helpers.arrayElement([
-//             undefined,
-//             {
-//                 preferredTheme: faker.helpers.arrayElement([
-//                     "light",
-//                     "dark",
-//                     "system",
-//                 ]),
-//                 allowNotifications: faker.datatype.boolean(),
-//             },
-//         ]),
-//     };
-// }
-
-// function userListFactory(count: number) {
-//     const result: User[] = [];
-//     for (let i = 0; i < count; i++) {
-//         result.push(userFactory());
-//     }
-//     return result;
-// }
-
 void b.suite(
     "Object Validation",
     b.add("Arri Validate", () => {
