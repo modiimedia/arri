@@ -3,18 +3,9 @@ import {
     type ASchemaOptions,
     SCHEMA_METADATA,
     type ValidationData,
+    type NumberType,
+    NumberValidationMap,
 } from "../schemas";
-
-const numberTypes = [
-    "float32",
-    "float64",
-    "int16",
-    "int32",
-    "int8",
-    "uint16",
-    "uint32",
-    "uint8",
-] as const;
 
 /**
  * Alias for float64 as that is the only number type that Javascript uses
@@ -72,7 +63,8 @@ export function int8(opts: ASchemaOptions = {}) {
 }
 export function uint8(opts: ASchemaOptions = {}) {
     return numberScalarType("uint8", opts, (input) => {
-        const isValid = validateInt(input, 0, 255);
+        const { min, max } = NumberValidationMap.uint8;
+        const isValid = validateInt(input, min ?? 0, max ?? 0);
         if (isValid) {
             return {
                 success: true,
@@ -173,7 +165,7 @@ function parseNumber(input: unknown, options: ValidationData) {
     return undefined;
 }
 
-function numberScalarType<TType extends (typeof numberTypes)[number]>(
+function numberScalarType<TType extends NumberType>(
     type: TType,
     opts: ASchemaOptions,
     numTypeMatcher: (

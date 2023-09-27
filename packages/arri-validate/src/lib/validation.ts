@@ -57,7 +57,7 @@ export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
     });
     if (errors.length) {
         throw new ValidationError({
-            message: "Unable to coerce input",
+            message: `Unable to coerce input. ${errors[0]?.message}`,
             errors,
         });
     }
@@ -141,62 +141,14 @@ export function compile<TSchema extends ASchema<any> = any>(
     const validator = AJV.compile<InferType<TSchema>>(schema);
     const isType = (input: unknown): input is InferType<TSchema> =>
         validator(input);
-    const parser = AJV.compileParser<InferType<TSchema>>(schema);
-    const parse = (input: unknown): InferType<TSchema> => {
-        if (typeof input === "string") {
-            const result = parser(input);
-            if (typeof result !== "undefined") {
-                return result;
-            }
-            const errors = validator.errors;
-            throw new ValidationError({
-                message: "Error(s) parsing input",
-                errors:
-                    errors?.map((err) => ({
-                        instancePath: err.instancePath,
-                        schemaPath: err.schemaPath,
-                        message: err.message ?? "Invalid input",
-                        data: err.data,
-                    })) ?? [],
-            });
-        }
-        if (isType(input)) {
-            return input;
-        }
-        throw new ValidationError({
-            message: "Invalid input",
-            errors:
-                validator.errors?.map((err) => ({
-                    instancePath: err.instancePath,
-                    schemaPath: err.schemaPath,
-                    message: err.message ?? "Invalid input",
-                    data: err.data,
-                })) ?? [],
-        });
-    };
     const serializer = AJV.compileSerializer<InferType<TSchema>>(schema);
     return {
         validate: isType,
-        parse,
+        parse(input) {
+            return parse(schema, input);
+        },
         safeParse(input) {
-            try {
-                const result = parse(input);
-                return {
-                    success: true,
-                    value: result,
-                };
-            } catch (err) {
-                if (isValidationError(err)) {
-                    return { success: false, error: err };
-                }
-                return {
-                    success: false,
-                    error: new ValidationError({
-                        message: "Error parsing input",
-                        errors: [],
-                    }),
-                };
-            }
+            return safeParse(schema, input);
         },
         serialize: serializer,
     };

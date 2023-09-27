@@ -85,6 +85,55 @@ export function isAScalarSchema(input: unknown): input is AScalarSchema {
     return isASchema(input) && isTypeForm(input);
 }
 
+export const NumberTypeValues = [
+    "float32",
+    "float64",
+    "int16",
+    "int32",
+    "int8",
+    "uint16",
+    "uint32",
+    "uint8",
+] as const;
+export type NumberType = (typeof NumberTypeValues)[number];
+export const NumberValidationMap: Record<
+    NumberType,
+    { min?: number; max?: number }
+> = {
+    float32: {
+        min: undefined,
+        max: undefined,
+    },
+    float64: {
+        min: undefined,
+        max: undefined,
+    },
+    int8: {
+        min: undefined,
+        max: undefined,
+    },
+    uint8: {
+        min: undefined,
+        max: undefined,
+    },
+    int16: {
+        min: undefined,
+        max: undefined,
+    },
+    uint16: {
+        min: undefined,
+        max: undefined,
+    },
+    int32: {
+        min: undefined,
+        max: undefined,
+    },
+    uint32: {
+        min: undefined,
+        max: undefined,
+    },
+};
+
 // arrays
 export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
     extends ASchema<Array<InferType<TInnerSchema>>> {

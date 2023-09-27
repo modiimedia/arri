@@ -1,4 +1,7 @@
-import b from "benny";
+import { Type } from "@sinclair/typebox";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { Value } from "@sinclair/typebox/value";
+import benny from "benny";
 import { z } from "zod";
 import { a } from "../../src/_index";
 
@@ -13,6 +16,19 @@ const ArriUser = a.object({
         a.object({
             preferredTheme: a.stringEnum(["light", "dark", "system"]),
             allowNotifications: a.boolean(),
+        }),
+    ),
+    recentNotifications: a.array(
+        a.discriminator("type", {
+            POST_LIKE: a.object({
+                userId: a.string(),
+                postId: a.string(),
+            }),
+            POST_COMMENT: a.object({
+                userId: a.string(),
+                postId: a.string(),
+                commentText: a.string(),
+            }),
         }),
     ),
 });
@@ -30,6 +46,19 @@ const arriInput: ArriUser = {
         preferredTheme: "system",
         allowNotifications: true,
     },
+    recentNotifications: [
+        {
+            type: "POST_LIKE",
+            postId: "1",
+            userId: "2",
+        },
+        {
+            type: "POST_COMMENT",
+            postId: "1",
+            userId: "1",
+            commentText: "",
+        },
+    ],
 };
 const arriInputJson = JSON.stringify(arriInput);
 const arriInputStringKeys = {
@@ -37,12 +66,25 @@ const arriInputStringKeys = {
     role: "moderator",
     name: "John Doe",
     email: "null",
-    createdAt: "121351514134131",
-    updatedAt: "131413431413431",
+    createdAt: "12135151",
+    updatedAt: "13141343",
     settings: {
         preferredTheme: "system",
         allowNotifications: "true",
     },
+    recentNotifications: [
+        {
+            type: "POST_LIKE",
+            postId: "1",
+            userId: "2",
+        },
+        {
+            type: "POST_COMMENT",
+            postId: "1",
+            userId: "1",
+            commentText: "",
+        },
+    ],
 };
 
 const ZodUser = z.object({
@@ -58,8 +100,21 @@ const ZodUser = z.object({
             allowNotifications: z.boolean(),
         })
         .optional(),
+    recentNotifications: z.array(
+        z.discriminatedUnion("type", [
+            z.object({
+                type: z.literal("POST_LIKE"),
+                userId: z.string(),
+                postId: z.string(),
+            }),
+            z.object({
+                type: z.literal("POST_COMMENT"),
+                userId: z.string(),
+                postId: z.string(),
+            }),
+        ]),
+    ),
 });
-type ZodUser = z.infer<typeof ZodUser>;
 const ZodCoercedUser = z.object({
     id: z.coerce.number(),
     role: z.enum(["standard", "admin", "moderator"]),
@@ -73,79 +128,150 @@ const ZodCoercedUser = z.object({
             allowNotifications: z.coerce.boolean(),
         })
         .optional(),
+    recentNotifications: z.array(
+        z.discriminatedUnion("type", [
+            z.object({
+                type: z.literal("POST_LIKE"),
+                userId: z.coerce.string(),
+                postId: z.coerce.string(),
+            }),
+            z.object({
+                type: z.literal("POST_COMMENT"),
+                userId: z.coerce.string(),
+                postId: z.coerce.string(),
+                commentText: z.coerce.string(),
+            }),
+        ]),
+    ),
 });
 
-void b.suite(
+const TypeBoxUser = Type.Object({
+    id: Type.Integer(),
+    role: Type.Union([
+        Type.Literal("standard"),
+        Type.Literal("admin"),
+        Type.Literal("moderator"),
+    ]),
+    name: Type.String(),
+    email: Type.Union([Type.Null(), Type.String()]),
+    createdAt: Type.Integer(),
+    updatedAt: Type.Integer(),
+    settings: Type.Optional(
+        Type.Object({
+            preferredTheme: Type.Optional(
+                Type.Union([
+                    Type.Literal("light"),
+                    Type.Literal("dark"),
+                    Type.Literal("system"),
+                ]),
+            ),
+            allowNotifications: Type.Boolean(),
+        }),
+    ),
+    recentNotifications: Type.Array(
+        Type.Union([
+            Type.Object({
+                type: Type.Literal("POST_LIKE"),
+                userId: Type.String(),
+                postId: Type.String(),
+            }),
+            Type.Object({
+                type: Type.Literal("POST_COMMENT"),
+                userId: Type.String(),
+                postId: Type.String(),
+                commentText: Type.String(),
+            }),
+        ]),
+    ),
+});
+const TypeBoxValidator = TypeCompiler.Compile(TypeBoxUser);
+
+void benny.suite(
     "Object Validation",
-    b.add("Arri Validate", () => {
+    benny.add("Arri", () => {
         a.validate(ArriUser, arriInput);
     }),
-    b.add("Arri Validate (Compiled)", () => {
+    benny.add("Arri (Compiled)", () => {
         ArriUserValidator.validate(arriInput);
     }),
-    b.add("Zod Validate", () => {
+    benny.add("TypeBox", () => {
+        Value.Check(TypeBoxUser, arriInput);
+    }),
+    benny.add("TypeBox (Compiled)", () => {
+        TypeBoxValidator.Check(arriInput);
+    }),
+    benny.add("Zod", () => {
         ZodUser.parse(arriInput);
     }),
-    b.cycle(),
-    b.complete(),
-    b.save({
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
         file: "objects-validation",
         format: "chart.html",
         folder: "benchmark/dist",
     }),
 );
 
-void b.suite(
+void benny.suite(
     "Object Parsing",
-    b.add("Arri Parse", () => {
+    benny.add("Arri", () => {
         a.parse(ArriUser, arriInputJson);
     }),
-    b.add("Arri Parse (compiled)", () => {
+    benny.add("Arri (Compiled)", () => {
         ArriUserValidator.parse(arriInputJson);
     }),
-    b.add("Zod Parse", () => {
+    benny.add("TypeBox", () => {
+        Value.Decode(TypeBoxUser, JSON.parse(arriInputJson));
+    }),
+    benny.add("TypeBox (Compiled)", () => {
+        TypeBoxValidator.Decode(JSON.parse(arriInputJson));
+    }),
+    benny.add("Zod", () => {
         ZodUser.parse(JSON.parse(arriInputJson));
     }),
-    b.cycle(),
-    b.complete(),
-    b.save({
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
         file: "objects-parsing",
         format: "chart.html",
         folder: "benchmark/dist",
     }),
 );
 
-void b.suite(
+void benny.suite(
     "Object Coercion",
-    b.add("Arri Coerce", () => {
-        a.safeCoerce(ArriUser, arriInputStringKeys);
+    benny.add("Arri", () => {
+        a.coerce(ArriUser, arriInputStringKeys);
     }),
-    b.add("Zod Coerce", () => {
-        ZodCoercedUser.safeParse(arriInputStringKeys);
+    benny.add("TypeBox", () => {
+        Value.Convert(TypeBoxUser, arriInputStringKeys);
     }),
-    b.cycle(),
-    b.complete(),
-    b.save({
+    benny.add("Zod", () => {
+        ZodCoercedUser.parse(arriInputStringKeys);
+    }),
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
         file: "objects-coercion",
         format: "chart.html",
         folder: "benchmark/dist",
     }),
 );
 
-void b.suite(
+void benny.suite(
     "Object Serialization",
-    b.add("Arri Serialize", () => {
+    benny.add("Arri", () => {
         a.serialize(ArriUser, arriInput);
     }),
-    b.add("Arri Serialize (Compiled)", () => {
+    benny.add("Arri (Compiled)", () => {
         ArriUserValidator.serialize(arriInput);
     }),
-    b.add("JSON.stringify", () => {
+    benny.add("JSON.stringify", () => {
         JSON.stringify(arriInput);
     }),
-    b.cycle(),
-    b.complete(),
-    b.save({
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
         file: "objects-serialization",
         format: "chart.html",
         folder: "benchmark/dist",
