@@ -38,7 +38,6 @@ export function safeParse<T = any>(
                 error: err,
             };
         }
-        console.error(err);
         return {
             success: false,
             error: new ValidationError({
@@ -146,7 +145,7 @@ export function compile<TSchema extends ASchema<any> = any>(
     const parse = (input: unknown): InferType<TSchema> => {
         if (typeof input === "string") {
             const result = parser(input);
-            if (isType(result)) {
+            if (typeof result !== "undefined") {
                 return result;
             }
             const errors = validator.errors;

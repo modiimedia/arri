@@ -4,6 +4,15 @@
     "sourceRoot": "packages/arri-validate/src",
     "projectType": "library",
     "targets": {
+        "benchmark": {
+            "inputs": ["default", "{projectRoot}/benchmark/src"],
+            "outputs": ["{projectRoot}/benchmark/dist"],
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "jiti buildBenchmarks.ts && jiti benchmark/dist/_index.js",
+                "cwd": "packages/arri-validate"
+            }
+        },
         "build": {
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/dist"],

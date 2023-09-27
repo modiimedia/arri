@@ -11,7 +11,7 @@ const packageJson = JSON.parse(
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
-    entries: ["./src/index"],
+    entries: [{ input: "./src/_index", name: "index" }],
     rollup: {
         emitCJS: true,
         dts: {
