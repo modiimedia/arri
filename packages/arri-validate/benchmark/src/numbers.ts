@@ -12,8 +12,11 @@ const TypeBoxIntValidator = TypeCompiler.Compile(TypeBoxIntSchema);
 const ZodIntSchema = z
     .number()
     .refine((val) => Number.isInteger(val), { message: "Must be an integer" });
-
+const ZodIntSchemaCoerced = z.coerce
+    .number()
+    .refine((val) => Number.isInteger(val), { message: "Must be an integer" });
 const intInput = 1245;
+const intStringInput = `${intInput}`;
 
 void benny.suite(
     "Validation",
@@ -42,6 +45,26 @@ void benny.suite(
 );
 
 void benny.suite(
+    "Coercion",
+    benny.add("Arri", () => {
+        a.coerce(IntSchema, intStringInput);
+    }),
+    benny.add("TypeBox", () => {
+        Value.Convert(TypeBoxIntSchema, intStringInput);
+    }),
+    benny.add("Zod", () => {
+        ZodIntSchemaCoerced.parse(intStringInput);
+    }),
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
+        file: "int-coercion",
+        folder: "benchmark/dist",
+        format: "chart.html",
+    }),
+);
+
+void benny.suite(
     "Serialization",
     benny.add("Arri", () => {
         a.serialize(IntSchema, intInput);
@@ -60,5 +83,3 @@ void benny.suite(
         format: "chart.html",
     }),
 );
-
-console.log(TypeBoxIntValidator.Code());
