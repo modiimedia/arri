@@ -4,7 +4,6 @@ import {
     SCHEMA_METADATA,
     type ValidationData,
     type NumberType,
-    NumberValidationMap,
 } from "../schemas";
 
 /**
@@ -63,8 +62,7 @@ export function int8(opts: ASchemaOptions = {}) {
 }
 export function uint8(opts: ASchemaOptions = {}) {
     return numberScalarType("uint8", opts, (input) => {
-        const { min, max } = NumberValidationMap.uint8;
-        const isValid = validateInt(input, min ?? 0, max ?? 0);
+        const isValid = validateInt(input, 0, 255);
         if (isValid) {
             return {
                 success: true,

@@ -1,6 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
+import AJV from "ajv";
 import benny from "benny";
 import { z } from "zod";
 import { a } from "../../src/_index";
@@ -35,7 +36,7 @@ const ArriUser = a.object({
 const ArriUserValidator = a.compile(ArriUser);
 type ArriUser = a.infer<typeof ArriUser>;
 
-const arriInput: ArriUser = {
+const input: ArriUser = {
     id: 12345,
     role: "moderator",
     name: "John Doe",
@@ -60,8 +61,8 @@ const arriInput: ArriUser = {
         },
     ],
 };
-const arriInputJson = JSON.stringify(arriInput);
-const arriInputStringKeys = {
+const inputJson = JSON.stringify(input);
+const inputWithStringKeys = {
     id: "12345",
     role: "moderator",
     name: "John Doe",
@@ -184,24 +185,32 @@ const TypeBoxUser = Type.Object({
         ]),
     ),
 });
-const TypeBoxValidator = TypeCompiler.Compile(TypeBoxUser);
+const TypeBoxUserValidator = TypeCompiler.Compile(TypeBoxUser);
 
+const ajv = new AJV({ strict: false });
+const AjvUserValidator = ajv.compile<ArriUser>(TypeBoxUser);
 void benny.suite(
     "Object Validation",
     benny.add("Arri", () => {
-        a.validate(ArriUser, arriInput);
+        a.validate(ArriUser, input);
     }),
     benny.add("Arri (Compiled)", () => {
-        ArriUserValidator.validate(arriInput);
+        ArriUserValidator.validate(input);
+    }),
+    benny.add("Ajv (JSON Schema)", () => {
+        ajv.validate(TypeBoxUser, input);
+    }),
+    benny.add("Ajv (JSON Schema - Compiled)", () => {
+        AjvUserValidator(input);
     }),
     benny.add("TypeBox", () => {
-        Value.Check(TypeBoxUser, arriInput);
+        Value.Check(TypeBoxUser, input);
     }),
     benny.add("TypeBox (Compiled)", () => {
-        TypeBoxValidator.Check(arriInput);
+        TypeBoxUserValidator.Check(input);
     }),
     benny.add("Zod", () => {
-        ZodUser.parse(arriInput);
+        ZodUser.parse(input);
     }),
     benny.cycle(),
     benny.complete(),
@@ -215,19 +224,19 @@ void benny.suite(
 void benny.suite(
     "Object Parsing",
     benny.add("Arri", () => {
-        a.parse(ArriUser, arriInputJson);
+        a.parse(ArriUser, inputJson);
     }),
     benny.add("Arri (Compiled)", () => {
-        ArriUserValidator.parse(arriInputJson);
+        ArriUserValidator.parse(inputJson);
     }),
     benny.add("TypeBox", () => {
-        Value.Decode(TypeBoxUser, JSON.parse(arriInputJson));
+        Value.Decode(TypeBoxUser, JSON.parse(inputJson));
     }),
     benny.add("TypeBox (Compiled)", () => {
-        TypeBoxValidator.Decode(JSON.parse(arriInputJson));
+        TypeBoxUserValidator.Decode(JSON.parse(inputJson));
     }),
     benny.add("Zod", () => {
-        ZodUser.parse(JSON.parse(arriInputJson));
+        ZodUser.parse(JSON.parse(inputJson));
     }),
     benny.cycle(),
     benny.complete(),
@@ -241,13 +250,13 @@ void benny.suite(
 void benny.suite(
     "Object Coercion",
     benny.add("Arri", () => {
-        a.coerce(ArriUser, arriInputStringKeys);
+        a.coerce(ArriUser, inputWithStringKeys);
     }),
     benny.add("TypeBox", () => {
-        Value.Convert(TypeBoxUser, arriInputStringKeys);
+        Value.Convert(TypeBoxUser, inputWithStringKeys);
     }),
     benny.add("Zod", () => {
-        ZodCoercedUser.parse(arriInputStringKeys);
+        ZodCoercedUser.parse(inputWithStringKeys);
     }),
     benny.cycle(),
     benny.complete(),
@@ -261,13 +270,13 @@ void benny.suite(
 void benny.suite(
     "Object Serialization",
     benny.add("Arri", () => {
-        a.serialize(ArriUser, arriInput);
+        a.serialize(ArriUser, input);
     }),
     benny.add("Arri (Compiled)", () => {
-        ArriUserValidator.serialize(arriInput);
+        ArriUserValidator.serialize(input);
     }),
     benny.add("JSON.stringify", () => {
-        JSON.stringify(arriInput);
+        JSON.stringify(input);
     }),
     benny.cycle(),
     benny.complete(),

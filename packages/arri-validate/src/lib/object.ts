@@ -385,9 +385,7 @@ export function partial<
             coerce(input, data) {
                 return parse(newSchema as any, input, data, true);
             },
-            serialize(input) {
-                return JSON.stringify(input);
-            },
+            serialize: JSON.stringify,
         },
     };
     schema.metadata = meta;

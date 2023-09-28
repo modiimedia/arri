@@ -13,45 +13,45 @@ import { type ASchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
  * )
  */
 export function nullable<T>(
-    input: ASchema<T>,
+    schema: ASchema<T>,
     opts: ASchemaOptions = {},
 ): ASchema<T | null> {
     const isType = (val: unknown): val is T | null => {
         if (val === null) {
             return true;
         }
-        return input.metadata[SCHEMA_METADATA].validate(val);
+        return schema.metadata[SCHEMA_METADATA].validate(val);
     };
     return {
-        ...input,
+        ...schema,
         nullable: true,
         metadata: {
-            id: opts.id ?? input.metadata.id,
-            description: opts.description ?? input.metadata.description,
+            id: opts.id ?? schema.metadata.id,
+            description: opts.description ?? schema.metadata.description,
             [SCHEMA_METADATA]: {
                 output: null as T | null,
-                optional: input.metadata[SCHEMA_METADATA].optional,
+                optional: schema.metadata[SCHEMA_METADATA].optional,
                 validate: isType,
-                parse: (val, data) => {
+                parse(val, data) {
                     if (val === null) {
                         return null;
                     }
-                    return input.metadata[SCHEMA_METADATA].parse(val, data);
+                    return schema.metadata[SCHEMA_METADATA].parse(val, data);
                 },
-                coerce: (val, data) => {
+                coerce(val, data) {
                     if (val === null) {
                         return null;
                     }
                     if (val === "null") {
                         return null;
                     }
-                    return input.metadata[SCHEMA_METADATA].coerce(val, data);
+                    return schema.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
-                serialize: (val) => {
+                serialize(val) {
                     if (val === null) {
                         return "null";
                     }
-                    return input.metadata[SCHEMA_METADATA].serialize(val);
+                    return schema.metadata[SCHEMA_METADATA].serialize(val);
                 },
             },
         },

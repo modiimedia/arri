@@ -53,6 +53,9 @@ function validate(input: unknown): input is boolean {
     return typeof input === "boolean";
 }
 function parse(input: unknown, data: ValidationData): boolean | undefined {
+    if (validate(input)) {
+        return input;
+    }
     if (data.instancePath.length === 0 && typeof input === "string") {
         if (input === "true") {
             return true;
@@ -67,9 +70,7 @@ function parse(input: unknown, data: ValidationData): boolean | undefined {
         });
         return undefined;
     }
-    if (validate(input)) {
-        return input;
-    }
+
     data.errors.push({
         instancePath: data.instancePath,
         schemaPath: `${data.schemaPath}/type`,

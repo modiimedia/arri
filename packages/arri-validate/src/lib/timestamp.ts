@@ -28,7 +28,10 @@ function validate(input: unknown): input is Date {
     return typeof input === "object" && input instanceof Date;
 }
 function parse(input: unknown, data: ValidationData): Date | undefined {
-    if ((data.instancePath.length === 0, typeof input === "string")) {
+    if (validate(input)) {
+        return input;
+    }
+    if (typeof input === "string") {
         const result = Date.parse(input);
         if (Number.isNaN(result)) {
             data?.errors.push({
@@ -40,9 +43,7 @@ function parse(input: unknown, data: ValidationData): Date | undefined {
         }
         return new Date(result);
     }
-    if (validate(input)) {
-        return input;
-    }
+
     data.errors.push({
         message: "Invalid date",
         instancePath: data.instancePath,
