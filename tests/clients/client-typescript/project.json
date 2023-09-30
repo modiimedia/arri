@@ -1,0 +1,15 @@
+{
+    "name": "test-client-typescript",
+    "targets": {
+        "integration-test": {
+            "executor": "@nx/vite:test",
+            "outputs": [
+                "{workspaceRoot}/coverage/packages/test-client-typescript"
+            ],
+            "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "../../../coverage/packages/test-client-typescript"
+            }
+        }
+    }
+}

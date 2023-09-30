@@ -9,7 +9,7 @@ import { listenAndWatch } from "listhen";
 import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
-import { type ResolvedArriConfig } from "../config";
+import { isResolvedArriConfig, type ResolvedArriConfig } from "../config";
 import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
 const logger = createConsola().withTag("arri");
@@ -32,10 +32,10 @@ export default defineCommand({
         const { config } = await loadConfig({
             configFile: path.resolve(args.config),
         });
-        if (!config) {
+        if (!isResolvedArriConfig(config)) {
             throw new Error("Unable to find config");
         }
-        await startDevServer(config as ResolvedArriConfig);
+        await startDevServer(config);
     },
 });
 

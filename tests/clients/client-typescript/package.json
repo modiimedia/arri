@@ -1,0 +1,8 @@
+{
+    "name": "test-client-typescript",
+    "type": "module",
+    "dependencies": {
+        "arri-client": "workspace:*",
+        "arri-validate": "workspace:*"
+    }
+}

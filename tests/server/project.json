@@ -7,7 +7,14 @@
             "executor": "nx:run-commands",
             "options": {
                 "command": "arri dev",
-                "cwd": "tests/test-server"
+                "cwd": "tests/server"
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "arri build --skipCodegen",
+                "cwd": "tests/server"
             }
         }
     }

@@ -290,7 +290,16 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1
 
-  tests/test-server:
+  tests/clients/client-typescript:
+    dependencies:
+      arri-client:
+        specifier: workspace:*
+        version: link:../../../packages/arri-client
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../../packages/arri-validate
+
+  tests/server:
     dependencies:
       '@faker-js/faker':
         specifier: ^8.1.0

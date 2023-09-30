@@ -4,6 +4,7 @@
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "firsttris.vscode-jest-runner",
-        "mathiasfrohlich.kotlin"
+        "mathiasfrohlich.kotlin",
+        "dart-code.dart-code"
     ]
 }
