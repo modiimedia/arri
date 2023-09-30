@@ -392,7 +392,13 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
                 `json["${prop.key}"]`,
             )}`,
         );
-        copyWithParamParts.push(`${prop.templates.typeName} ${prop.key}`);
+        if (prop.templates.typeName === "dynamic") {
+            copyWithParamParts.push(`dynamic ${prop.key}`);
+        } else {
+            copyWithParamParts.push(
+                `${prop.templates.typeName.replace("?", "")}? ${prop.key}`,
+            );
+        }
         copyWithInitParts.push(`${prop.key}: ${prop.key} ?? this.${prop.key}`);
     }
     let classNamePart = `class ${className}`;
@@ -701,7 +707,7 @@ function dartEnumFromJtdSchema(
         valNames.push(`${camelCase(val)}`);
         fieldParts.push(`${camelCase(val)}("${val}")`);
     }
-    const content = `enum ${className} implements Comparable<${className}> {
+    let content = `enum ${className} implements Comparable<${className}> {
   ${fieldParts.join(",\n  ")};
   const ${className}(this.value);
   final String value;
@@ -718,6 +724,11 @@ function dartEnumFromJtdSchema(
   @override
   compareTo(${className} other) => name.compareTo(other.name);
 }`;
+    if (additionalOptions.existingClassNames.includes(className)) {
+        content = "";
+    } else {
+        additionalOptions.existingClassNames.push(className);
+    }
     return {
         typeName: className,
         fieldTemplate: isNullable

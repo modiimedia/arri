@@ -385,34 +385,13 @@ class PostsGetPostsParams {
 
   PostsGetPostsParams copyWith({
     int? limit,
-    PostType type,
+    PostType? type,
   }) {
     return PostsGetPostsParams(
       limit: limit ?? this.limit,
       type: type ?? this.type,
     );
   }
-}
-
-enum PostType implements Comparable<PostType> {
-  text("text"),
-  image("image"),
-  video("video");
-
-  const PostType(this.value);
-  final String value;
-
-  factory PostType.fromJson(dynamic json) {
-    for (final v in values) {
-      if (v.value == json) {
-        return v;
-      }
-    }
-    return text;
-  }
-
-  @override
-  compareTo(PostType other) => name.compareTo(other.name);
 }
 
 class PostsGetPostsResponse {
