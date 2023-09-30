@@ -185,7 +185,7 @@ const _$PostsGetPostsParamsValidator =
     },
     metadata: {},
   });
-export type PostType = "text" | "image" | "video";
+
 export interface PostsGetPostsResponse {
   total: number;
   items: Array<Post>;

@@ -455,9 +455,14 @@ export function tsEnumFromJtdSchema(
 ): TsProperty {
     const keyName = nodePath.split(".").pop() ?? "";
     const typeName = getTypeName(nodePath, def);
-    const content = `export type ${typeName} = ${def.enum
+    let content = `export type ${typeName} = ${def.enum
         .map((val) => `"${val}"`)
         .join(" | ")}`;
+    if (additionalOptions.existingTypeNames.includes(typeName)) {
+        content = "";
+    } else {
+        additionalOptions.existingTypeNames.push(typeName);
+    }
     return {
         tsType: typeName,
         schema: def,
