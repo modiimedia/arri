@@ -15,7 +15,8 @@
         "pathe",
         "scule",
         "typebox",
-        "unflatten"
+        "unflatten",
+        "vals"
     ],
     "eslint.validate": ["json"],
     "java.compile.nullAnalysis.mode": "automatic"
