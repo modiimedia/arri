@@ -16,7 +16,10 @@ export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
         errors,
     });
     if (errors.length) {
-        throw new ValidationError({ message: "Unable to parse input", errors });
+        throw new ValidationError({
+            message: `Unable to parse input. ${errors[0].message}`,
+            errors,
+        });
     }
     return result as T;
 }
