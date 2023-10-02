@@ -12,6 +12,15 @@ import {
     isObject,
 } from "../schemas";
 
+/**
+ * Create an object schema
+ *
+ * @example
+ * const MySchema = a.object({
+ *   foo: a.string(),
+ *   bar: a.number()
+ * });
+ */
 export function object<
     TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
@@ -174,6 +183,18 @@ function validate(schema: AObjectSchema, input: unknown): boolean {
     return true;
 }
 
+/**
+ * Create an object schema using a subset of keys from another object schema
+ *
+ * @example
+ * const BaseObject = a.object({
+ *   foo: a.string(),
+ *   bar: a.string(),
+ *   baz: a.string(),
+ * }) // { foo: string; bar: string; baz: string; }
+ *
+ * const SubObject = a.pick(User, ['foo']) // { foo: string; }
+ */
 export function pick<
     TSchema extends AObjectSchema<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
@@ -236,6 +257,18 @@ export function pick<
     };
 }
 
+/**
+ * Create an object schema by omitting keys from another object schema
+ *
+ * @example
+ * const BaseObject = a.object({
+ *   foo: a.string(),
+ *   bar: a.string(),
+ *   baz: a.string(),
+ * }); // { foo: string; bar: string; baz: string; }
+ *
+ * const SubObject = a.omit(BaseObject, ['foo']) // { bar: string; baz: string; }
+ */
 export function omit<
     TSchema extends AObjectSchema<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
@@ -388,6 +421,6 @@ export function partial<
             serialize: JSON.stringify,
         },
     };
-    schema.metadata = meta;
-    return schema;
+    newSchema.metadata = meta;
+    return newSchema as any;
 }

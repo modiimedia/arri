@@ -505,13 +505,12 @@ export function tsObjectFromJtdSchema(
 
     if (!additionalOptions.existingTypeNames.includes(typeName)) {
         content = `export interface ${typeName} {
-        ${fieldParts.join(";\n    ")}
+        ${fieldParts.join(";\n    ")};
     }
     ${validatorPart}
     ${subContentParts.join("\n")}`;
         additionalOptions.existingTypeNames.push(typeName);
     }
-
     return {
         tsType: typeName,
         schema: def,

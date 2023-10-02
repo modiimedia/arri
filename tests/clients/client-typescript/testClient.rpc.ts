@@ -49,48 +49,48 @@ export class TestClientPostsService {
     this.baseUrl = options.baseUrl ?? "";
     this.headers = options.headers ?? {};
   }
-  getPost(params: PostsGetPostParams) {
-    return arriRequest<Post, PostsGetPostParams>({
+  getPost(params: PostParams) {
+    return arriRequest<Post, PostParams>({
       url: `${this.baseUrl}/rpcs/posts/get-post`,
       method: "get",
       headers: this.headers,
       params,
       parser: (input) => $$Post.parse(JSON.parse(input)),
-      serializer: $$PostsGetPostParams.serialize,
+      serializer: $$PostParams.serialize,
     });
   }
-  getPosts(params: PostsGetPostsParams) {
-    return arriRequest<PostsGetPostsResponse, PostsGetPostsParams>({
+  getPosts(params: PostListParams) {
+    return arriRequest<PostListResponse, PostListParams>({
       url: `${this.baseUrl}/rpcs/posts/get-posts`,
       method: "get",
       headers: this.headers,
       params,
-      parser: (input) => $$PostsGetPostsResponse.parse(JSON.parse(input)),
-      serializer: $$PostsGetPostsParams.serialize,
+      parser: (input) => $$PostListResponse.parse(JSON.parse(input)),
+      serializer: $$PostListParams.serialize,
     });
   }
-  updatePost(params: PostsUpdatePostParams) {
-    return arriRequest<Post, PostsUpdatePostParams>({
+  updatePost(params: UpdatePostParams) {
+    return arriRequest<Post, UpdatePostParams>({
       url: `${this.baseUrl}/rpcs/posts/update-post`,
       method: "post",
       headers: this.headers,
       params,
       parser: (input) => $$Post.parse(JSON.parse(input)),
-      serializer: $$PostsUpdatePostParams.serialize,
+      serializer: $$UpdatePostParams.serialize,
     });
   }
 }
 
-export interface PostsGetPostParams {
+export interface PostParams {
   postId: string;
 }
-export const $$PostsGetPostParams = {
-  parse(input: Record<any, any>): PostsGetPostParams {
+export const $$PostParams = {
+  parse(input: Record<any, any>): PostParams {
     return {
       postId: typeof input.postId === "string" ? input.postId : "",
     };
   },
-  serialize(input: PostsGetPostParams): string {
+  serialize(input: PostParams): string {
     return JSON.stringify(input);
   },
 };
@@ -178,12 +178,12 @@ export const $$Author = {
   },
 };
 
-export interface PostsGetPostsParams {
+export interface PostListParams {
   limit: number;
   type?: PostType;
 }
-export const $$PostsGetPostsParams = {
-  parse(input: Record<any, any>): PostsGetPostsParams {
+export const $$PostListParams = {
+  parse(input: Record<any, any>): PostListParams {
     return {
       limit: typeof input.limit === "number" ? input.limit : 0,
       type:
@@ -192,17 +192,17 @@ export const $$PostsGetPostsParams = {
           : undefined,
     };
   },
-  serialize(input: PostsGetPostsParams): string {
+  serialize(input: PostListParams): string {
     return JSON.stringify(input);
   },
 };
 
-export interface PostsGetPostsResponse {
+export interface PostListResponse {
   total: number;
   items: Array<Post>;
 }
-export const $$PostsGetPostsResponse = {
-  parse(input: Record<any, any>): PostsGetPostsResponse {
+export const $$PostListResponse = {
+  parse(input: Record<any, any>): PostListResponse {
     return {
       total: typeof input.total === "number" ? input.total : 0,
       items: Array.isArray(input.items)
@@ -210,34 +210,34 @@ export const $$PostsGetPostsResponse = {
         : [],
     };
   },
-  serialize(input: PostsGetPostsResponse): string {
+  serialize(input: PostListResponse): string {
     return JSON.stringify(input);
   },
 };
 
-export interface PostsUpdatePostParams {
+export interface UpdatePostParams {
   postId: string;
-  data: PostsUpdatePostParamsData;
+  data: UpdatePostParamsData;
 }
-export const $$PostsUpdatePostParams = {
-  parse(input: Record<any, any>): PostsUpdatePostParams {
+export const $$UpdatePostParams = {
+  parse(input: Record<any, any>): UpdatePostParams {
     return {
       postId: typeof input.postId === "string" ? input.postId : "",
-      data: $$PostsUpdatePostParamsData.parse(input.data),
+      data: $$UpdatePostParamsData.parse(input.data),
     };
   },
-  serialize(input: PostsUpdatePostParams): string {
+  serialize(input: UpdatePostParams): string {
     return JSON.stringify(input);
   },
 };
-export interface PostsUpdatePostParamsData {
+export interface UpdatePostParamsData {
   title: string;
   description: string | null;
   content: string;
   tags: Array<string>;
 }
-export const $$PostsUpdatePostParamsData = {
-  parse(input: Record<any, any>): PostsUpdatePostParamsData {
+export const $$UpdatePostParamsData = {
+  parse(input: Record<any, any>): UpdatePostParamsData {
     return {
       title: typeof input.title === "string" ? input.title : "",
       description:
@@ -248,7 +248,7 @@ export const $$PostsUpdatePostParamsData = {
         : [],
     };
   },
-  serialize(input: PostsUpdatePostParamsData): string {
+  serialize(input: UpdatePostParamsData): string {
     return JSON.stringify(input);
   },
 };

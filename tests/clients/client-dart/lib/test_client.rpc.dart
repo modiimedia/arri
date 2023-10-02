@@ -55,7 +55,7 @@ class TestClientPostsService {
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  Future<Post> getPost(PostsGetPostParams params) {
+  Future<Post> getPost(PostParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/get-post",
       method: HttpMethod.get,
@@ -67,19 +67,19 @@ class TestClientPostsService {
     );
   }
 
-  Future<PostsGetPostsResponse> getPosts(PostsGetPostsParams params) {
+  Future<PostListResponse> getPosts(PostListParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/get-posts",
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => PostsGetPostsResponse.fromJson(
+      parser: (body) => PostListResponse.fromJson(
         json.decode(body),
       ),
     );
   }
 
-  Future<Post> updatePost(PostsUpdatePostParams params) {
+  Future<Post> updatePost(UpdatePostParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/update-post",
       method: HttpMethod.post,
@@ -92,13 +92,13 @@ class TestClientPostsService {
   }
 }
 
-class PostsGetPostParams {
+class PostParams {
   final String postId;
-  const PostsGetPostParams({
+  const PostParams({
     required this.postId,
   });
-  factory PostsGetPostParams.fromJson(Map<String, dynamic> json) {
-    return PostsGetPostParams(
+  factory PostParams.fromJson(Map<String, dynamic> json) {
+    return PostParams(
       postId: typeFromDynamic<String>(json["postId"], ""),
     );
   }
@@ -111,10 +111,10 @@ class PostsGetPostParams {
     return result;
   }
 
-  PostsGetPostParams copyWith({
+  PostParams copyWith({
     String? postId,
   }) {
-    return PostsGetPostParams(
+    return PostParams(
       postId: postId ?? this.postId,
     );
   }
@@ -291,15 +291,15 @@ class Author {
   }
 }
 
-class PostsGetPostsParams {
+class PostListParams {
   final int limit;
   final PostType? type;
-  const PostsGetPostsParams({
+  const PostListParams({
     required this.limit,
     this.type,
   });
-  factory PostsGetPostsParams.fromJson(Map<String, dynamic> json) {
-    return PostsGetPostsParams(
+  factory PostListParams.fromJson(Map<String, dynamic> json) {
+    return PostListParams(
       limit: intFromDynamic(json["limit"], 0),
       type: json["type"] is Map<String, dynamic>
           ? PostType.fromJson(json["type"])
@@ -317,26 +317,26 @@ class PostsGetPostsParams {
     return result;
   }
 
-  PostsGetPostsParams copyWith({
+  PostListParams copyWith({
     int? limit,
     PostType? type,
   }) {
-    return PostsGetPostsParams(
+    return PostListParams(
       limit: limit ?? this.limit,
       type: type ?? this.type,
     );
   }
 }
 
-class PostsGetPostsResponse {
+class PostListResponse {
   final int total;
   final List<Post> items;
-  const PostsGetPostsResponse({
+  const PostListResponse({
     required this.total,
     required this.items,
   });
-  factory PostsGetPostsResponse.fromJson(Map<String, dynamic> json) {
-    return PostsGetPostsResponse(
+  factory PostListResponse.fromJson(Map<String, dynamic> json) {
+    return PostListResponse(
       total: intFromDynamic(json["total"], 0),
       items: json["items"] is List
           ? (json["items"] as List).map((item) => Post.fromJson(item)).toList()
@@ -353,28 +353,28 @@ class PostsGetPostsResponse {
     return result;
   }
 
-  PostsGetPostsResponse copyWith({
+  PostListResponse copyWith({
     int? total,
     List<Post>? items,
   }) {
-    return PostsGetPostsResponse(
+    return PostListResponse(
       total: total ?? this.total,
       items: items ?? this.items,
     );
   }
 }
 
-class PostsUpdatePostParams {
+class UpdatePostParams {
   final String postId;
-  final PostsUpdatePostParamsData data;
-  const PostsUpdatePostParams({
+  final UpdatePostParamsData data;
+  const UpdatePostParams({
     required this.postId,
     required this.data,
   });
-  factory PostsUpdatePostParams.fromJson(Map<String, dynamic> json) {
-    return PostsUpdatePostParams(
+  factory UpdatePostParams.fromJson(Map<String, dynamic> json) {
+    return UpdatePostParams(
       postId: typeFromDynamic<String>(json["postId"], ""),
-      data: PostsUpdatePostParamsData.fromJson(json["data"]),
+      data: UpdatePostParamsData.fromJson(json["data"]),
     );
   }
 
@@ -387,30 +387,30 @@ class PostsUpdatePostParams {
     return result;
   }
 
-  PostsUpdatePostParams copyWith({
+  UpdatePostParams copyWith({
     String? postId,
-    PostsUpdatePostParamsData? data,
+    UpdatePostParamsData? data,
   }) {
-    return PostsUpdatePostParams(
+    return UpdatePostParams(
       postId: postId ?? this.postId,
       data: data ?? this.data,
     );
   }
 }
 
-class PostsUpdatePostParamsData {
+class UpdatePostParamsData {
   final String title;
   final String? description;
   final String content;
   final List<String> tags;
-  const PostsUpdatePostParamsData({
+  const UpdatePostParamsData({
     required this.title,
     required this.description,
     required this.content,
     required this.tags,
   });
-  factory PostsUpdatePostParamsData.fromJson(Map<String, dynamic> json) {
-    return PostsUpdatePostParamsData(
+  factory UpdatePostParamsData.fromJson(Map<String, dynamic> json) {
+    return UpdatePostParamsData(
       title: typeFromDynamic<String>(json["title"], ""),
       description: nullableTypeFromDynamic<String>(json["description"]),
       content: typeFromDynamic<String>(json["content"], ""),
@@ -433,13 +433,13 @@ class PostsUpdatePostParamsData {
     return result;
   }
 
-  PostsUpdatePostParamsData copyWith({
+  UpdatePostParamsData copyWith({
     String? title,
     String? description,
     String? content,
     List<String>? tags,
   }) {
-    return PostsUpdatePostParamsData(
+    return UpdatePostParamsData(
       title: title ?? this.title,
       description: description ?? this.description,
       content: content ?? this.content,

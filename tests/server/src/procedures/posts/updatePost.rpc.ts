@@ -4,13 +4,22 @@ import { Post, getRandomPost } from "../../models";
 
 const UpdatePostData = a.partial(
     a.pick(Post, ["title", "description", "tags", "content"]),
+    {
+        id: "UpdatePostParamsData",
+    },
 );
+type UpdatePostData = a.infer<typeof UpdatePostData>;
 
 export default defineRpc({
-    params: a.object({
-        postId: a.string(),
-        data: UpdatePostData,
-    }),
+    params: a.object(
+        {
+            postId: a.string(),
+            data: UpdatePostData,
+        },
+        {
+            id: "UpdatePostParams",
+        },
+    ),
     response: Post,
     handler({ params }) {
         return getRandomPost({

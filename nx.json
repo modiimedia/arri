@@ -24,14 +24,14 @@
             "{projectRoot}/project.json",
             "{projectRoot}/tsconfig.json",
             "{projectRoot}/build.config.ts",
-            "{projectRoot}/src/**/*.ts"
+            "{projectRoot}/src/**/*"
         ]
     },
     "targetDefaults": {
         "build": {
             "inputs": ["default"],
             "outputs": ["{projectRoot}/dist"],
-            "dependsOn": ["^build", "^prepare"]
+            "dependsOn": ["^build", "prepare", "^prepare"]
         },
         "lint": {
             "inputs": [

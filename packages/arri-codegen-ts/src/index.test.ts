@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { normalizeWhitespace } from "arri-codegen-utils";
 import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
+import { a } from "packages/arri-validate/dist";
 import path from "pathe";
 import prettier from "prettier";
-import { createTypescriptClient } from "./index";
+import { createTypescriptClient, tsTypeFromJtdSchema } from "./index";
 
 const tempDir = path.resolve(__dirname, "../.temp");
 
@@ -11,6 +12,98 @@ beforeAll(() => {
     if (!existsSync(tempDir)) {
         mkdirSync(tempDir);
     }
+});
+
+describe("Model Creation", () => {
+    test("Basic Object", () => {
+        const User = a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+                createdAt: a.timestamp(),
+                bio: a.optional(a.string()),
+                numFollowers: a.uint32(),
+                followedUsers: a.array(a.string()),
+            },
+            { id: "User" },
+        );
+        const result = tsTypeFromJtdSchema(
+            "user",
+            User,
+            {
+                clientName: "TestClient",
+                outputFile: "",
+            },
+            { existingTypeNames: [], isOptional: false },
+        );
+        expect(normalizeWhitespace(result.content)).toBe(
+            normalizeWhitespace(`export interface User {
+            id: string;
+            name: string;
+            createdAt: Date;
+            numFollowers: number;
+            followedUsers: Array<string>;
+            bio?: string;
+        }
+        export const $$User = {
+            parse(input: Record<any, any>): User {
+                return {
+                    id: typeof input.id === 'string' ? input.id : '',
+                    name: typeof input.name === 'string' ? input.name : '',
+                    createdAt: typeof input.createdAt === 'string' ? new Date(input.createdAt) : new Date(0),
+                    numFollowers: typeof input.numFollowers === 'number' ? input.numFollowers : 0,
+                    followedUsers: Array.isArray(input.followedUsers) ? input.followedUsers.map((item) => typeof item === 'string' ? item : '') : [],
+                    bio: typeof input.bio === 'string' ? input.bio : undefined,
+                };
+            },
+            serialize(input: User): string {
+                return JSON.stringify(input);
+            }
+        }`),
+        );
+    });
+    test("Partial Object", () => {
+        const User = a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+                createdAt: a.timestamp(),
+            },
+            { id: "User" },
+        );
+        const PartialUser = a.partial(User, { id: "PartialUser" });
+        const result = tsTypeFromJtdSchema(
+            "user",
+            PartialUser,
+            {
+                clientName: "TestClient",
+                outputFile: "",
+            },
+            {
+                existingTypeNames: [],
+                isOptional: false,
+            },
+        );
+        expect(normalizeWhitespace(result.content)).toBe(
+            normalizeWhitespace(`export interface PartialUser {
+            id?: string;
+            name?: string;
+            createdAt?: Date;
+        }
+        export const $$PartialUser = {
+            parse(input: Record<any, any>): PartialUser {
+                return {
+                    id: typeof input.id === 'string' ? input.id : undefined;
+                    name: typeof input.name === 'string' ? input.name : undefined;
+                    createdAt: typeof input.createdAt === 'string' ? new Date(input.createdAt) : undefined;
+                };
+            },
+            serialize(input: PartialUser): string {
+                return JSON.stringify(input);
+            }
+        }`),
+        );
+    });
 });
 
 test("Client Creation", async () => {
