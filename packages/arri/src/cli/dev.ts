@@ -167,6 +167,7 @@ import app from './${appImportParts.join(".")}';
 for (const route of routes) {
     app.rpc({
         name: route.id,
+        method: route.route.method,
         params: route.route.params,
         response: route.route.response,
         handler: route.route.handler,

@@ -24,7 +24,7 @@
             "{projectRoot}/project.json",
             "{projectRoot}/tsconfig.json",
             "{projectRoot}/build.config.ts",
-            "{projectRoot}/src"
+            "{projectRoot}/src/**/*.ts"
         ]
     },
     "targetDefaults": {
@@ -43,7 +43,6 @@
         "test": {
             "inputs": [
                 "default",
-                "^default",
                 "{workspaceRoot}/jest.preset.js",
                 "{projectRoot}/vite.config.ts"
             ]

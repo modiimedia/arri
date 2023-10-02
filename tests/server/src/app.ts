@@ -6,11 +6,12 @@ const app = new ArriApp({
     onRequest(event) {},
 });
 
-app.rpc({
-    name: "example.helloWorld",
-    params: undefined,
-    response: undefined,
-    handler({ params }) {},
+app.route({
+    path: "/status",
+    method: "get",
+    handler() {
+        return "ok";
+    },
 });
 
 app.use(usersRouter);

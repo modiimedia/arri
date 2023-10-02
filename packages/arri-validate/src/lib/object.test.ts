@@ -16,6 +16,7 @@ const PostSchema = a.object({
     createdAt: a.timestamp(),
     userId: a.string(),
     user: UserSchema,
+    tags: a.array(a.string()),
 });
 
 type PostSchema = a.infer<typeof PostSchema>;
@@ -230,6 +231,7 @@ test("Nested Object", () => {
         title: "Hello World",
         createdAt: new Date(),
         userId: "123456",
+        tags: ["A", "B", "C"],
         user: {
             id: "123456",
             name: "John Doe",
@@ -239,8 +241,16 @@ test("Nested Object", () => {
         },
     };
     const goodJsonInput = JSON.stringify(goodInput);
-    expect(a.safeParse(PostSchema, goodInput).success).toBe(true);
-    expect(a.safeParse(PostSchema, goodJsonInput).success).toBe(true);
+    const result = a.safeParse(PostSchema, goodInput);
+    expect(result.success);
+    if (result.success) {
+        expect(result.value).toStrictEqual(goodInput);
+    }
+    const jsonResult = a.safeParse(PostSchema, goodJsonInput);
+    expect(jsonResult.success);
+    if (jsonResult.success) {
+        expect(jsonResult.value).toStrictEqual(goodInput);
+    }
 });
 
 describe("Pick", () => {

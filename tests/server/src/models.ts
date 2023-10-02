@@ -58,14 +58,13 @@ export function getRandomPost(input?: Partial<Post>): Post {
             input?.type ??
             faker.helpers.arrayElement(["text", "image", "video"]),
         description:
-            input?.description ??
-            faker.helpers.arrayElement([null, faker.lorem.paragraph()]),
+            input?.description !== undefined
+                ? input.description
+                : faker.helpers.arrayElement([null, faker.lorem.paragraph()]),
         content: input?.content ?? faker.lorem.paragraphs(),
-        tags: input?.tags ?? [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-        ],
+        tags: input?.tags?.length
+            ? input.tags
+            : [faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
         authorId,
         author: input?.author ?? getRandomAuthor({ id: authorId }),
         createdAt: input?.createdAt ?? faker.date.past(),

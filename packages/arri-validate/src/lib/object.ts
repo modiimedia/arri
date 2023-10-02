@@ -124,8 +124,8 @@ function parse<T>(
             continue;
         }
         result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
-            instancePath: `${data.instancePath}`,
-            schemaPath: `${data.schemaPath}`,
+            instancePath: `${data.instancePath}/${key}`,
+            schemaPath: `${data.schemaPath}/properties/${key}`,
             errors: data.errors,
         });
     }

@@ -69,7 +69,7 @@ function parse<T>(
             return undefined;
         }
     }
-    if (!Array.isArray(input)) {
+    if (!Array.isArray(parsedInput)) {
         data.errors.push({
             instancePath: data.instancePath,
             schemaPath: data.schemaPath,
@@ -78,8 +78,8 @@ function parse<T>(
         return undefined;
     }
     const result: T[] = [];
-    for (let i = 0; i < input.length; i++) {
-        const item = input[i];
+    for (let i = 0; i < parsedInput.length; i++) {
+        const item = parsedInput[i];
         if (coerce) {
             const parsedItem = innerSchema.metadata[SCHEMA_METADATA].coerce(
                 item,
@@ -105,7 +105,7 @@ function parse<T>(
             if (!parsedItem) {
                 return undefined;
             }
-            result.push(parsedInput);
+            result.push(parsedItem);
         }
     }
     if (data.errors.length) {

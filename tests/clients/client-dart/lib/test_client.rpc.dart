@@ -10,24 +10,6 @@ class TestClient {
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
-  Future<GetStatusResponse> getStatus() {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/get-status",
-      method: HttpMethod.post,
-      headers: _headers,
-      params: null,
-      parser: (body) => GetStatusResponse.fromJson(
-        json.decode(body),
-      ),
-    );
-  }
-
-  TestClientExampleService get example {
-    return TestClientExampleService(
-      baseUrl: _baseUrl,
-      headers: _headers,
-    );
-  }
 
   TestClientUsersService get users {
     return TestClientUsersService(
@@ -40,26 +22,6 @@ class TestClient {
     return TestClientPostsService(
       baseUrl: _baseUrl,
       headers: _headers,
-    );
-  }
-}
-
-class TestClientExampleService {
-  final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClientExampleService({
-    String baseUrl = "",
-    Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
-
-  Future<void> helloWorld() {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/example/hello-world",
-      method: HttpMethod.post,
-      headers: _headers,
-      params: null,
-      parser: (body) {},
     );
   }
 }
@@ -96,7 +58,7 @@ class TestClientPostsService {
   Future<Post> getPost(PostsGetPostParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/get-post",
-      method: HttpMethod.post,
+      method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
       parser: (body) => Post.fromJson(
@@ -108,7 +70,7 @@ class TestClientPostsService {
   Future<PostsGetPostsResponse> getPosts(PostsGetPostsParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/get-posts",
-      method: HttpMethod.post,
+      method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
       parser: (body) => PostsGetPostsResponse.fromJson(
@@ -126,34 +88,6 @@ class TestClientPostsService {
       parser: (body) => Post.fromJson(
         json.decode(body),
       ),
-    );
-  }
-}
-
-class GetStatusResponse {
-  final String message;
-  const GetStatusResponse({
-    required this.message,
-  });
-  factory GetStatusResponse.fromJson(Map<String, dynamic> json) {
-    return GetStatusResponse(
-      message: typeFromDynamic<String>(json["message"], ""),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
-      "message": message,
-    };
-
-    return result;
-  }
-
-  GetStatusResponse copyWith({
-    String? message,
-  }) {
-    return GetStatusResponse(
-      message: message ?? this.message,
     );
   }
 }

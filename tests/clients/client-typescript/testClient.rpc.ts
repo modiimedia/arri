@@ -10,46 +10,14 @@ interface TestClientOptions {
 export class TestClient {
   private readonly baseUrl: string;
   private readonly headers: Record<string, string>;
-  example: TestClientExampleService;
   users: TestClientUsersService;
   posts: TestClientPostsService;
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
     this.headers = options.headers ?? {};
-    this.example = new TestClientExampleService(options);
     this.users = new TestClientUsersService(options);
     this.posts = new TestClientPostsService(options);
-  }
-  getStatus() {
-    return arriRequest<GetStatusResponse, undefined>({
-      url: `${this.baseUrl}/rpcs/get-status`,
-      method: "post",
-      headers: this.headers,
-      params: undefined,
-      parser: (input) => $$GetStatusResponse.parse(JSON.parse(input)),
-      serializer: (_) => {},
-    });
-  }
-}
-
-export class TestClientExampleService {
-  private readonly baseUrl: string;
-  private readonly headers: Record<string, string>;
-
-  constructor(options: TestClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? "";
-    this.headers = options.headers ?? {};
-  }
-  helloWorld() {
-    return arriRequest<undefined, undefined>({
-      url: `${this.baseUrl}/rpcs/example/hello-world`,
-      method: "post",
-      headers: this.headers,
-      params: undefined,
-      parser: (_) => {},
-      serializer: (_) => {},
-    });
   }
 }
 
@@ -84,7 +52,7 @@ export class TestClientPostsService {
   getPost(params: PostsGetPostParams) {
     return arriRequest<Post, PostsGetPostParams>({
       url: `${this.baseUrl}/rpcs/posts/get-post`,
-      method: "post",
+      method: "get",
       headers: this.headers,
       params,
       parser: (input) => $$Post.parse(JSON.parse(input)),
@@ -94,7 +62,7 @@ export class TestClientPostsService {
   getPosts(params: PostsGetPostsParams) {
     return arriRequest<PostsGetPostsResponse, PostsGetPostsParams>({
       url: `${this.baseUrl}/rpcs/posts/get-posts`,
-      method: "post",
+      method: "get",
       headers: this.headers,
       params,
       parser: (input) => $$PostsGetPostsResponse.parse(JSON.parse(input)),
@@ -112,20 +80,6 @@ export class TestClientPostsService {
     });
   }
 }
-
-export interface GetStatusResponse {
-  message: string;
-}
-export const $$GetStatusResponse = {
-  parse(input: Record<any, any>): GetStatusResponse {
-    return {
-      message: typeof input.message === "string" ? input.message : "",
-    };
-  },
-  serialize(input: GetStatusResponse): string {
-    return JSON.stringify(input);
-  },
-};
 
 export interface PostsGetPostParams {
   postId: string;

@@ -45,6 +45,8 @@ const Post = a.object({
     numLikes: a.int32(),
     unknownField: a.any(),
     comments: a.array(PostComment),
+    numArray: a.array(a.number()),
+    stringArray: a.array(a.string()),
     metadata: a.record(
         a.object({
             key: a.string(),
@@ -104,6 +106,8 @@ it("should output valid json", () => {
                 imageUrl: "",
             },
         ],
+        numArray: [1, 2, 3],
+        stringArray: ["a", "b", "c"],
         metadata: {
             hello: {
                 key: "name",

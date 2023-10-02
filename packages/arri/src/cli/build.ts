@@ -108,7 +108,7 @@ async function createBuildEntryModule(config: ResolvedArriConfig) {
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
-    const virtualEntry = `import { toNodeListener } from 'h3';
+    const virtualEntry = `import { toNodeListener } from 'arri';
 import { listen } from 'listhen';
 import routes from './routes.js';
 import app from './${appImportParts.join(".")}.js';
@@ -116,6 +116,7 @@ import app from './${appImportParts.join(".")}.js';
 for (const route of routes) {
     app.rpc({
         name: route.id,
+        method: route.route.method,
         params: route.route.params,
         response: route.route.response,
         handler: route.route.handler,

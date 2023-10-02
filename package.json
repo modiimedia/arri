@@ -15,8 +15,13 @@
         "lint:fix": "eslint . --ext ts --fix"
     },
     "private": true,
+    "overrides": {
+        "tslib": "2.6.2"
+    },
     "devDependencies": {
         "@faker-js/faker": "^8.1.0",
+        "@nx-extend/core": "^4.4.1",
+        "@nx-extend/e2e-runner": "^7.0.0",
         "@nx/js": "16.9.1",
         "@nx/linter": "16.9.1",
         "@nx/vite": "16.9.1",
@@ -45,20 +50,25 @@
         "eslint-plugin-promise": "^6.1.1",
         "globby": "^13.2.2",
         "jiti": "^1.20.0",
+        "kill-port": "^2.0.1",
+        "listhen": "^1.5.5",
         "nx": "16.9.1",
         "nx-cloud": "16.4.0",
         "pathe": "^1.1.1",
         "prettier": "^3.0.3",
         "scule": "^1.0.0",
+        "start-server-and-test": "^2.0.1",
         "syncpack": "^11.2.1",
         "ts-jest": "^29.1.1",
         "ts-node": "10.9.1",
+        "tslib": "2.6.2",
         "typescript": "^5.2.2",
         "unbuild": "^2.0.0",
         "verdaccio": "^5.26.3",
         "vite": "^4.4.9",
         "vite-tsconfig-paths": "^4.2.1",
         "vitest": "^0.34.5",
+        "wait-port": "^1.1.0",
         "zod": "^3.22.2"
     },
     "nx": {

@@ -1,8 +1,13 @@
 {
     "name": "test-server",
+    "type": "module",
     "dependencies": {
         "@faker-js/faker": "^8.1.0",
         "arri": "workspace:*",
         "arri-validate": "workspace:*"
+    },
+    "scripts": {
+        "start-server": "nx serve test-server",
+        "integration-tests": "nx run-many -t integration-test"
     }
 }
