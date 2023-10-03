@@ -5,6 +5,20 @@ import {
     type ValidationData,
     type NumberType,
 } from "../schemas";
+import {
+    int16Max,
+    int16Min,
+    int32Max,
+    int32Min,
+    int8Max,
+    int8Min,
+    uint16Max,
+    uint16Min,
+    uint32Max,
+    uint32Min,
+    uint8Max,
+    uint8Min,
+} from "./numberConstants";
 
 /**
  * Alias for float64 as that is the only number type that Javascript uses
@@ -48,7 +62,7 @@ export function float64(opts: ASchemaOptions = {}) {
 }
 export function int8(opts: ASchemaOptions = {}) {
     return numberScalarType("int8", opts, (input) => {
-        const isValid = validateInt(input, -128, 127);
+        const isValid = validateInt(input, int8Min, int8Max);
         if (isValid) {
             return {
                 success: true,
@@ -56,13 +70,13 @@ export function int8(opts: ASchemaOptions = {}) {
         }
         return {
             success: false,
-            message: "Must be an valid integer between -128 and 127",
+            message: `Must be an valid integer between ${int8Min} and ${int8Max}`,
         };
     });
 }
 export function uint8(opts: ASchemaOptions = {}) {
     return numberScalarType("uint8", opts, (input) => {
-        const isValid = validateInt(input, 0, 255);
+        const isValid = validateInt(input, uint8Min, uint8Max);
         if (isValid) {
             return {
                 success: true,
@@ -70,13 +84,13 @@ export function uint8(opts: ASchemaOptions = {}) {
         }
         return {
             success: false,
-            message: "Must be a valid integer between 0 and 255",
+            message: `Must be a valid integer between ${uint8Min} and ${uint8Max}`,
         };
     });
 }
 export function int16(opts: ASchemaOptions = {}) {
     return numberScalarType("int16", opts, (input) => {
-        const isValid = validateInt(input, -32768, 32767);
+        const isValid = validateInt(input, int16Min, int16Max);
         if (isValid) {
             return {
                 success: true,
@@ -84,13 +98,13 @@ export function int16(opts: ASchemaOptions = {}) {
         }
         return {
             success: false,
-            message: "Must be a valid integer between -32,768 and 32,767",
+            message: `Must be a valid integer between ${int16Min} and ${int16Max}`,
         };
     });
 }
 export function uint16(opts: ASchemaOptions = {}) {
     return numberScalarType("uint16", opts, (input) => {
-        const isValid = validateInt(input, 0, 65535);
+        const isValid = validateInt(input, uint16Min, uint16Max);
         if (isValid) {
             return {
                 success: true,
@@ -98,13 +112,13 @@ export function uint16(opts: ASchemaOptions = {}) {
         }
         return {
             success: false,
-            message: "Must be a valid integer between 0 and 65,535",
+            message: `Must be a valid integer between ${uint16Min} and ${uint16Max}`,
         };
     });
 }
 export function int32(opts: ASchemaOptions = {}) {
     return numberScalarType("int32", opts, (input) => {
-        const isValid = validateInt(input, -2147483648, 2147483647);
+        const isValid = validateInt(input, int32Min, int32Max);
         if (isValid) {
             return {
                 success: true,
@@ -112,20 +126,19 @@ export function int32(opts: ASchemaOptions = {}) {
         }
         return {
             success: false,
-            message:
-                "Must be a valid integer between -2,147,483,648 and 2,147,483,647",
+            message: `Must be a valid integer between ${int32Min} and ${int32Max}`,
         };
     });
 }
 export function uint32(opts: ASchemaOptions = {}) {
     return numberScalarType("uint32", opts, (input) => {
-        const isValid = validateInt(input, 0, 4294967295);
+        const isValid = validateInt(input, uint32Min, uint32Max);
         if (isValid) {
             return { success: true };
         }
         return {
             success: false,
-            message: "Must be a valid integer between 0 and 4,294,967,295",
+            message: `Must be a valid integer between ${uint32Min} and ${uint32Max}`,
         };
     });
 }
