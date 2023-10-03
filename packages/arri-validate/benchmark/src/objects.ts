@@ -280,6 +280,9 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.serialize(input);
     }),
+    benny.add("Arri (Compiled V2)", () => {
+        ArriUserValidatorV2.serialize(input);
+    }),
     benny.add("JSON.stringify", () => {
         JSON.stringify(input);
     }),

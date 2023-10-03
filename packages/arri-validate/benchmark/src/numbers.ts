@@ -4,9 +4,11 @@ import { Value } from "@sinclair/typebox/value";
 import benny from "benny";
 import { z } from "zod";
 import { a } from "../../src/_index";
+import { compileV2 } from "../../src/compile";
 
 const IntSchema = a.int32();
 const IntSchemaValidator = a.compile(IntSchema);
+const IntSchemaValidatorV2 = compileV2(IntSchema);
 const TypeBoxIntSchema = Type.Integer();
 const TypeBoxIntValidator = TypeCompiler.Compile(TypeBoxIntSchema);
 const ZodIntSchema = z
@@ -25,6 +27,9 @@ void benny.suite(
     }),
     benny.add("Arri (Compiled)", () => {
         IntSchemaValidator.validate(intInput);
+    }),
+    benny.add("Arri (Compiled V2)", () => {
+        IntSchemaValidatorV2.validate(intInput);
     }),
     benny.add("TypeBox", () => {
         Value.Check(TypeBoxIntSchema, intInput);
@@ -71,6 +76,9 @@ void benny.suite(
     }),
     benny.add("Arri (Compiled)", () => {
         IntSchemaValidator.serialize(intInput);
+    }),
+    benny.add("Arri (Compiled V2)", () => {
+        IntSchemaValidatorV2.serialize(intInput);
     }),
     benny.add("JSON.stringify", () => {
         JSON.stringify(intInput);
