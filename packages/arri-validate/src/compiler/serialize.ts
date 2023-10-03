@@ -199,9 +199,12 @@ function discriminatorTemplate(
 }
 
 function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
-    const subFunctionName = `${camelCase(
+    let subFunctionName = `${camelCase(
         input.schema.metadata.id ?? input.instancePath.split("/").join("_"),
     )}`;
+    if (!subFunctionName.length) {
+        subFunctionName = "serializeVal";
+    }
 
     const subTemplate = schemaTemplate({
         val: "v",

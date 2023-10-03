@@ -19,6 +19,14 @@ import {
     type AScalarSchema,
     isAObjectSchema,
     type AObjectSchema,
+    isAStringEnumSchema,
+    type AStringEnumSchema,
+    isAAraySchema,
+    type AArraySchema,
+    isARecordSchema,
+    type ARecordSchema,
+    isADiscriminatorSchema,
+    type ADiscriminatorSchema,
 } from "../schemas";
 import { type TemplateInput } from "./common";
 
@@ -69,7 +77,21 @@ function schemaTemplate(input: TemplateInput): string {
     if (isAObjectSchema(input.schema)) {
         return objectTemplate(input);
     }
-    return "";
+    if (isAStringEnumSchema(input.schema)) {
+        return enumTemplate(input);
+    }
+    if (isAAraySchema(input.schema)) {
+        return arrayTemplate(input);
+    }
+    if (isARecordSchema(input.schema)) {
+        return recordTemplate(input);
+    }
+    if (isADiscriminatorSchema(input.schema)) {
+        return discriminatorTemplate(input);
+    }
+
+    // any types always return true
+    return "true";
 }
 
 function booleanTemplate(
@@ -121,8 +143,13 @@ function timestampTemplate(
     return `typeof ${input.val} === 'object' && ${input.val}  instanceof Date`;
 }
 
-function objectTemplate(input: TemplateInput<AObjectSchema<any>>) {
+function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
     const parts: string[] = [];
+    if (input.discriminatorKey && input.discriminatorValue) {
+        parts.push(
+            `${input.val}.${input.discriminatorKey} === "${input.discriminatorValue}"`,
+        );
+    }
     for (const key of Object.keys(input.schema.properties)) {
         const prop = input.schema.properties[key];
         parts.push(
@@ -155,4 +182,73 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>) {
         } === 'object' && ${parts.join(" && ")}))`;
     }
     return `typeof ${input.val} === 'object' && ${parts.join(" && ")}`;
+}
+
+function enumTemplate(
+    input: TemplateInput<AStringEnumSchema<string[]>>,
+): string {
+    const enumPart = input.schema.enum
+        .map((val) => `${input.val} === "${val}"`)
+        .join(" || ");
+    if (input.schema.nullable) {
+        return `((typeof ${input.val} === 'string' && (${enumPart})) || ${input.val} === null)`;
+    }
+    return `(typeof ${input.val} === 'string' && (${enumPart}))`;
+}
+
+function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
+    const innerTemplate = schemaTemplate({
+        val: "item",
+        instancePath: `${input.instancePath}/item`,
+        schema: input.schema.elements,
+        subFunctionBodies: input.subFunctionBodies,
+        subFunctionNames: input.subFunctionNames,
+    });
+
+    if (input.schema.nullable) {
+        return `((Array.isArray(${input.val}) && ${input.val}.every((item) => ${innerTemplate})) || ${input.val} === null)`;
+    }
+    return `(Array.isArray(${input.val}) && ${input.val}.every((item) => ${innerTemplate}))`;
+}
+
+function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
+    const subTemplate = schemaTemplate({
+        schema: input.schema.values,
+        instancePath: `${input.instancePath}/value`,
+        val: `${input.val}[key]`,
+        subFunctionBodies: input.subFunctionBodies,
+        subFunctionNames: input.subFunctionNames,
+    });
+    const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
+    if (input.schema.nullable) {
+        return `((${mainTemplate}) || ${input.val} === null)`;
+    }
+    return mainTemplate;
+}
+
+function discriminatorTemplate(
+    input: TemplateInput<ADiscriminatorSchema<any>>,
+): string {
+    const parts: string[] = [];
+    for (const discriminatorVal of Object.keys(input.schema.mapping)) {
+        const subSchema = input.schema.mapping[discriminatorVal];
+        parts.push(
+            objectTemplate({
+                val: input.val,
+                schema: subSchema,
+                instancePath: input.instancePath,
+                discriminatorKey: input.discriminatorKey,
+                discriminatorValue: discriminatorVal,
+                subFunctionBodies: input.subFunctionBodies,
+                subFunctionNames: input.subFunctionNames,
+            }),
+        );
+    }
+    const mainTemplate = `typeof ${input.val} === 'object' && ${
+        input.val
+    } !== null && (${parts.join(" || ")})`;
+    if (input.schema.nullable) {
+        return `((${mainTemplate}) || ${input.val} === null)`;
+    }
+    return mainTemplate;
 }
