@@ -15,15 +15,7 @@ import {
     isARecordSchema,
     type ARecordSchema,
 } from "../schemas";
-
-interface TemplateInput<TSchema extends ASchema<any> = any> {
-    val: string;
-    schema: TSchema;
-    instancePath: string;
-    discriminatorKey?: string;
-    subFunctionNames: string[];
-    subFunctionBodies: string[];
-}
+import { type TemplateInput } from "./common";
 
 export function createSerializationTemplate(
     inputName: string,
