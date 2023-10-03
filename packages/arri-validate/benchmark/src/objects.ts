@@ -35,6 +35,7 @@ const ArriUser = a.object({
     ),
 });
 const ArriUserValidator = a.compile(ArriUser);
+const ArriUserValidatorV2 = compileV2(ArriUser);
 type ArriUser = a.infer<typeof ArriUser>;
 
 const input: ArriUser = {
@@ -197,6 +198,9 @@ void benny.suite(
     }),
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.validate(input);
+    }),
+    benny.add("Arri (Compiled V2)", () => {
+        ArriUserValidatorV2.validate(input);
     }),
     benny.add("Ajv (JSON Schema)", () => {
         ajv.validate(TypeBoxUser, input);
