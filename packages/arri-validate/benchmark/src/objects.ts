@@ -234,6 +234,9 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.parse(inputJson);
     }),
+    benny.add("Arri (Compiled V2)", () => {
+        ArriUserValidatorV2.parse(inputJson);
+    }),
     benny.add("TypeBox", () => {
         Value.Decode(TypeBoxUser, JSON.parse(inputJson));
     }),

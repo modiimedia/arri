@@ -192,7 +192,7 @@ function discriminatorTemplate(
 ) {
     const subFunctionName = `${snakeCase(
         input.schema.metadata.id ?? input.val,
-    )}_from_json`;
+    )}_to_json`;
     const subFunctionParts: string[] = [];
     const types = Object.keys(input.schema.mapping);
     for (const type of types) {

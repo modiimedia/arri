@@ -50,6 +50,29 @@ void benny.suite(
 );
 
 void benny.suite(
+    "Parsing",
+    benny.add("Arri", () => {
+        a.parse(IntSchema, intStringInput);
+    }),
+    benny.add("Arri (Compiled)", () => {
+        IntSchemaValidator.parse(intStringInput);
+    }),
+    benny.add("Arri (Compiled V2)", () => {
+        IntSchemaValidatorV2.parse(intStringInput);
+    }),
+    benny.add("JSON.parse()", () => {
+        JSON.parse(intStringInput);
+    }),
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
+        file: "int-parsing",
+        folder: "benchmarks/dist",
+        format: "chart.html",
+    }),
+);
+
+void benny.suite(
     "Coercion",
     benny.add("Arri", () => {
         a.coerce(IntSchema, intStringInput);
