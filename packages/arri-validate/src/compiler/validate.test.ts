@@ -144,12 +144,26 @@ it("validates strings", () => {
     expect(!Compiled.validate({ hello: "world" }));
 });
 
+it("validates nullable strings", () => {
+    const Compiled = compileV2(a.nullable(a.string()));
+    expect(Compiled.validate("hello world"));
+    expect(Compiled.validate(null));
+    expect(!Compiled.validate(0));
+});
+
 it("validates floats", () => {
     const Compiled = compileV2(a.float32());
     expect(Compiled.validate(0.1));
     expect(Compiled.validate(100));
     expect(Compiled.validate(-100.5));
     expect(!Compiled.validate("0.5"));
+});
+
+it("validates nullable floats", () => {
+    const Compiled = compileV2(a.nullable(a.float32()));
+    expect(Compiled.validate(0.1));
+    expect(Compiled.validate(null));
+    expect(!Compiled.validate("0.1"));
 });
 
 it("validates ints", () => {
@@ -181,11 +195,27 @@ it("validates ints", () => {
     expect(!CompiledUint32.validate(-1000));
 });
 
+it("validates nullable ints", () => {
+    const Compiled = compileV2(a.nullable(a.int8()));
+    expect(Compiled.validate(1));
+    expect(Compiled.validate(null));
+    expect(!Compiled.validate("1"));
+});
+
 it("validates enums", () => {
     const Compiled = compileV2(a.stringEnum(["TEXT", "VIDEO", "IMAGE"]));
     expect(Compiled.validate("TEXT"));
     expect(Compiled.validate("VIDEO"));
     expect(!Compiled.validate("text"));
+});
+
+it("validates nullable enums", () => {
+    const Compiled = compileV2(
+        a.nullable(a.stringEnum(["TEXT", "VIDEO", "IMAGE"])),
+    );
+    expect(Compiled.validate("TEXT"));
+    expect(Compiled.validate(null));
+    expect(!Compiled.validate("BAR"));
 });
 
 it("validates objects", () => {
@@ -248,10 +278,38 @@ it("validates objects", () => {
     );
 });
 
+it("validates nullable objects", () => {
+    const Compiled = compileV2(
+        a.nullable(
+            a.object({
+                foo: a.string(),
+                bar: a.string(),
+                baz: a.timestamp(),
+            }),
+        ),
+    );
+    expect(Compiled.validate({ foo: "FOO", bar: "BAR", baz: new Date() }));
+    expect(Compiled.validate(null));
+    expect(
+        !Compiled.validate({
+            foo: 1,
+            bar: "",
+            baz: false,
+        }),
+    );
+});
+
 it("validates booleans", () => {
     const Compiled = compileV2(a.boolean());
     expect(Compiled.validate(true));
     expect(Compiled.validate(false));
+    expect(!Compiled.validate("Hello world"));
+});
+
+it("validates nullable booleans", () => {
+    const Compiled = compileV2(a.nullable(a.boolean()));
+    expect(Compiled.validate(true));
+    expect(Compiled.validate(null));
     expect(!Compiled.validate("Hello world"));
 });
 
@@ -279,6 +337,13 @@ it("validates arrays", () => {
     );
 });
 
+it("validates nullable arrays", () => {
+    const Compiled = compileV2(a.array(a.string()));
+    expect(Compiled.validate(["1", "2"]));
+    expect(Compiled.validate(null));
+    expect(!Compiled.validate([1, 2]));
+});
+
 it("validates records", () => {
     const Compiled = compileV2(a.record(a.number()));
     expect(
@@ -295,6 +360,13 @@ it("validates records", () => {
             baz: "3",
         }),
     );
+});
+
+it("validates nullable records", () => {
+    const Compiled = compileV2(a.record(a.string()));
+    expect(Compiled.validate({ foo: "foo" }));
+    expect(Compiled.validate(null));
+    expect(!Compiled.validate({ foo: true }));
 });
 
 it("validates discriminators", () => {
@@ -326,6 +398,39 @@ it("validates discriminators", () => {
         !Compiled.validate({
             eventType: "POST_DELETE",
             postId: "",
+        }),
+    );
+});
+
+it("validates nullable discriminators", () => {
+    const Compiled = compileV2(
+        a.discriminator("eventType", {
+            A: a.object({
+                foo: a.string(),
+            }),
+            B: a.object({
+                foo: a.string(),
+                bar: a.number(),
+            }),
+        }),
+    );
+    expect(
+        Compiled.validate({
+            eventType: "A",
+            foo: "foo",
+        }),
+    );
+    expect(
+        Compiled.validate({
+            eventType: "B",
+            foo: "foo",
+            bar: 0,
+        }),
+    );
+    expect(Compiled.validate(null));
+    expect(
+        !Compiled.validate({
+            eventType: "A",
         }),
     );
 });
