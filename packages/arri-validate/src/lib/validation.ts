@@ -67,7 +67,7 @@ export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
     return result as T;
 }
 
-type SafeResult<T> =
+export type SafeResult<T> =
     | { success: true; value: T }
     | { success: false; error: ValidationError };
 

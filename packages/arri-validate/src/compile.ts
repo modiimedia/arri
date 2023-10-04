@@ -1,13 +1,14 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
-import { type ASchema, type InferType } from "./_index";
+import { type SafeResult, type ASchema, type InferType } from "./_index";
 import { createSerializationTemplate } from "./compiler/serialize";
 import { createValidationTemplate } from "./compiler/validate";
 
 export interface CompiledValidator<TSchema extends ASchema<any>> {
     validate: (input: unknown) => input is InferType<TSchema>;
     parse: (input: unknown) => InferType<TSchema>;
+    safeParse: (input: unknown) => SafeResult<InferType<TSchema>>;
     serialize: (input: InferType<TSchema>) => string;
     compiledCode: {
         serialize: string;
@@ -34,6 +35,9 @@ export function compileV2<TSchema extends ASchema<any>>(
     return {
         validate,
         parse(input) {
+            throw new Error("Not implemented");
+        },
+        safeParse(input) {
             throw new Error("Not implemented");
         },
         // eslint-disable-next-line no-eval
