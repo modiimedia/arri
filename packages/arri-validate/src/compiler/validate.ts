@@ -138,7 +138,7 @@ function timestampTemplate(
     input: TemplateInput<AScalarSchema<"timestamp">>,
 ): string {
     if (input.schema.nullable) {
-        return `((typeof ${input.val} === 'object && ${input.val} instanceof Date) || ${input.val} === null)`;
+        return `((typeof ${input.val} === 'object' && ${input.val} instanceof Date) || ${input.val} === null)`;
     }
     return `typeof ${input.val} === 'object' && ${input.val}  instanceof Date`;
 }

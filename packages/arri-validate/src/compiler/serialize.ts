@@ -76,10 +76,13 @@ function schemaTemplate(input: TemplateInput): string {
 }
 
 function stringTemplate(input: TemplateInput<AScalarSchema<"string">>) {
+    const mainTemplate = input.instancePath.length
+        ? `"\${${input.val}}"`
+        : `\${${input.val}}`;
     if (input.schema.nullable) {
-        return `\${typeof ${input.val} === 'string' ? "${input.val}" : null}`;
+        return `\${typeof ${input.val} === 'string' ? \`${mainTemplate}\` : null}`;
     }
-    return `"\${${input.val}}"`;
+    return mainTemplate;
 }
 
 function booleanTemplate(input: TemplateInput<AScalarSchema<"boolean">>) {
@@ -90,10 +93,13 @@ function booleanTemplate(input: TemplateInput<AScalarSchema<"boolean">>) {
 }
 
 function timestampTemplate(input: TemplateInput<AScalarSchema<"timestamp">>) {
+    const mainTemplate = input.instancePath.length
+        ? `"\${${input.val}.toISOString()}"`
+        : `\${${input.val}.toISOString()}`;
     if (input.schema.nullable) {
-        return `\${typeof ${input.val} === 'object' && ${input.val} instanceof Date ? "${input.val}.toISOString()" : null}`;
+        return `\${typeof ${input.val} === 'object' && ${input.val} !== null && ${input.val} instanceof Date ? \`${mainTemplate}\` : null}`;
     }
-    return `"\${${input.val}.toISOString()}"`;
+    return mainTemplate;
 }
 
 function numberTemplate(input: TemplateInput<AScalarSchema>) {
@@ -139,10 +145,13 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
 }
 
 function stringEnumTemplate(input: TemplateInput<AStringEnumSchema<any>>) {
+    const mainTemplate = input.instancePath.length
+        ? `"\${${input.val}}"`
+        : `\${${input.val}}`;
     if (input.schema.nullable) {
-        return `\${typeof ${input.val} === 'string' ? "${input.val}" : null}`;
+        return `\${typeof ${input.val} === 'string' ? \`${mainTemplate}\` : null}`;
     }
-    return `"\${${input.val}}"`;
+    return mainTemplate;
 }
 
 function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {

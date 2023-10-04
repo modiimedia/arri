@@ -21,10 +21,12 @@ export function compileV2<TSchema extends ASchema<any>>(
 ): CompiledValidator<TSchema> {
     const serializeCode = createSerializationTemplate("input", schema);
     const validateCode = createValidationTemplate("input", schema);
+
     const serialize = new Function(
         "input",
         serializeCode,
     ) as CompiledValidator<TSchema>["serialize"];
+
     const validate = new Function(
         "input",
         validateCode,

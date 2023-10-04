@@ -210,6 +210,42 @@ it("validates objects", () => {
             createdAt: new Date(),
         }),
     );
+    const CompiledNested = compileV2(
+        a.object({
+            foo: a.string(),
+            bar: a.object({
+                foo: a.array(a.boolean()),
+                bar: a.timestamp(),
+                baz: a.nullable(a.record(a.boolean())),
+            }),
+        }),
+    );
+    expect(
+        CompiledNested.validate({
+            foo: "1",
+            bar: { foo: [true, false], bar: new Date(), baz: null },
+        }),
+    );
+    expect(
+        CompiledNested.validate({
+            foo: "1",
+            bar: {
+                foo: [true, false],
+                bar: new Date(),
+                baz: { a: true, _b: false },
+            },
+        }),
+    );
+    expect(
+        !CompiledNested.validate({
+            foo: "1",
+            bar: {
+                foo: [true, false],
+                bar: new Date(),
+                baz: { a: null, _b: "Hello world" },
+            },
+        }),
+    );
 });
 
 it("validates booleans", () => {
