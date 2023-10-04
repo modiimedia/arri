@@ -39,7 +39,8 @@ export function createValidationTemplate(
     const template = schemaTemplate({
         val: inputName,
         schema,
-        instancePath: `/${inputName}`,
+        schemaPath: ``,
+        instancePath: "",
         subFunctionBodies,
         subFunctionNames,
     });
@@ -155,6 +156,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         parts.push(
             schemaTemplate({
                 schema: prop,
+                schemaPath: `${input.schemaPath}/properties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
                 subFunctionBodies: input.subFunctionBodies,
@@ -168,6 +170,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
             parts.push(
                 schemaTemplate({
                     schema: prop,
+                    schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                     instancePath: `${input.instancePath}/${key}`,
                     val: `${input.val}.${key}`,
                     subFunctionBodies: input.subFunctionBodies,
@@ -200,6 +203,7 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     const innerTemplate = schemaTemplate({
         val: "item",
         instancePath: `${input.instancePath}/item`,
+        schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
@@ -214,7 +218,8 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
 function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
     const subTemplate = schemaTemplate({
         schema: input.schema.values,
-        instancePath: `${input.instancePath}/value`,
+        instancePath: `${input.instancePath}`,
+        schemaPath: `${input.schemaPath}/values`,
         val: `${input.val}[key]`,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
@@ -236,6 +241,7 @@ function discriminatorTemplate(
             objectTemplate({
                 val: input.val,
                 schema: subSchema,
+                schemaPath: `${input.schemaPath}/mapping/${discriminatorVal}`,
                 instancePath: input.instancePath,
                 discriminatorKey: input.discriminatorKey,
                 discriminatorValue: discriminatorVal,

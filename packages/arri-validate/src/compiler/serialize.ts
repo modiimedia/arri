@@ -27,6 +27,7 @@ export function createSerializationTemplate(
         val: inputName,
         schema,
         instancePath: "",
+        schemaPath: "",
         subFunctionNames,
         subFunctionBodies,
     });
@@ -118,6 +119,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
             const template = schemaTemplate({
                 val,
                 schema: propSchema,
+                schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
@@ -132,6 +134,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
         const template = schemaTemplate({
             val: `${input.val}.${key}`,
             schema: propSchema,
+            schemaPath: `${input.schemaPath}/properties/${key}`,
             instancePath: `${input.instancePath}/${key}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
@@ -158,7 +161,8 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     const subTemplate = schemaTemplate({
         val: "item",
         schema: input.schema.elements,
-        instancePath: `${input.instancePath}/item`,
+        schemaPath: `${input.schemaPath}/elements`,
+        instancePath: `${input.instancePath}`,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
@@ -181,7 +185,8 @@ function discriminatorTemplate(
         const template = schemaTemplate({
             val: "val",
             schema: prop,
-            instancePath: `${input.instancePath}/option`,
+            schemaPath: `${input.schemaPath}/mapping`,
+            instancePath: `${input.instancePath}`,
             discriminatorKey: input.schema.discriminator,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
@@ -218,7 +223,8 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
     const subTemplate = schemaTemplate({
         val: "v",
         schema: input.schema.values,
-        instancePath: "",
+        schemaPath: `${input.schemaPath}/values`,
+        instancePath: `${input.instancePath}`,
         subFunctionNames: [],
         subFunctionBodies: [],
     });
