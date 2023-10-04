@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-loss-of-precision */
 import { a } from "../_index";
 import { type ASchema } from "../schemas";
 
@@ -57,12 +58,97 @@ const Post = a.object({
 
 type Post = a.infer<typeof Post>;
 
-export const testSuites: Array<{
-    schema: ASchema;
-    goodInputs: any[];
-    badInputs: any[];
-}> = [
+export const testSuites: Record<
+    string,
     {
+        schema: ASchema;
+        goodInputs: any[];
+        badInputs: any[];
+    }
+> = {
+    string: {
+        schema: a.string(),
+        goodInputs: ["hello world"],
+        badInputs: [1, false, null, {}],
+    },
+    "nullable string": {
+        schema: a.nullable(a.string()),
+        goodInputs: ["hello world", null],
+        badInputs: [1, false, ["foo", "bar"], { foo: "foo" }],
+    },
+    boolean: {
+        schema: a.boolean(),
+        goodInputs: [true, false],
+        badInputs: [null, "hello world", {}, [true, false]],
+    },
+    "nullable boolean": {
+        schema: a.nullable(a.boolean()),
+        goodInputs: [true, false, null],
+        badInputs: ["hello world", {}, [true, false, null]],
+    },
+    float64: {
+        schema: a.float64(),
+        goodInputs: [131431.4134, -141341.1341],
+        badInputs: ["hello world", true, null],
+    },
+    float32: {
+        schema: a.float64(),
+        goodInputs: [1491.13941, -134918.134],
+        badInputs: ["hello world", true, null],
+    },
+    int32: {
+        schema: a.int32(),
+        goodInputs: [491451, -13411],
+        badInputs: [
+            999999999999999999,
+            -9999999999999999999,
+            199.5,
+            "hello world",
+        ],
+    },
+    uint32: {
+        schema: a.uint32(),
+        goodInputs: [4815141, 100],
+        badInputs: [-1, 100.5, 13999999999999999999999, "hello world"],
+    },
+    enum: {
+        schema: a.stringEnum(["A", "B", "C"]),
+        goodInputs: ["A", "B", "C"],
+        badInputs: ["a", "b", "c", "hello world", null, false, true, {}, []],
+    },
+    "nullable enum": {
+        schema: a.nullable(a.stringEnum(["A", "B", "C"])),
+        goodInputs: ["A", "B", "C", null],
+        badInputs: ["a", false, true, ["A", null]],
+    },
+    "simple object": {
+        schema: a.object({
+            id: a.string(),
+            createdAt: a.timestamp(),
+            count: a.int32(),
+            isActive: a.boolean(),
+        }),
+        goodInputs: [
+            { id: "", createdAt: new Date(), count: 1, isActive: false },
+        ],
+        badInputs: [
+            { id: "", createdAt: null, count: 1, isActive: true },
+            "hello world",
+            null,
+            [],
+        ],
+    },
+    "nullable object": {
+        schema: a.nullable(
+            a.object({
+                id: a.string(),
+                createdAt: a.timestamp(),
+            }),
+        ),
+        goodInputs: [{ id: "", createdAt: new Date() }, null],
+        badInputs: [true, false, { id: null, createdAt: null }],
+    },
+    "complex object": {
         schema: Post,
         goodInputs: [
             {
@@ -187,4 +273,63 @@ export const testSuites: Array<{
             },
         ],
     },
-];
+    "object with nullable fields": {
+        schema: a.object({
+            id: a.nullable(a.string()),
+            createdAt: a.nullable(a.timestamp()),
+            count: a.nullable(a.number()),
+            isActive: a.nullable(a.boolean()),
+            tags: a.nullable(a.array(a.string())),
+            metadata: a.nullable(a.record(a.string())),
+        }),
+        goodInputs: [
+            {
+                id: null,
+                createdAt: null,
+                count: null,
+                isActive: null,
+                tags: null,
+                metadata: null,
+            },
+            {
+                id: "",
+                createdAt: new Date(),
+                count: 0,
+                isActive: true,
+                metadata: {
+                    a: "a",
+                    b: "b",
+                },
+            },
+        ],
+        badInputs: [
+            "hello world",
+            {
+                id: null,
+                createdAt: "hello world",
+                count: null,
+                isActive: null,
+                metadata: { a: false },
+            },
+        ],
+    },
+    "object with optional fields": {
+        schema: a.partial(
+            a.object({
+                id: a.string(),
+                createdAt: a.timestamp(),
+                type: a.stringEnum(["a", "b"]),
+            }),
+        ),
+        goodInputs: [
+            {
+                id: "",
+                createdAt: new Date(),
+                type: "",
+            },
+            { id: "" },
+            {},
+        ],
+        badInputs: [{ id: 1, createdAt: null }, null, "hello world"],
+    },
+};

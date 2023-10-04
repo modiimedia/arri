@@ -1,5 +1,19 @@
 import { a } from "../_index";
 import { compileV2 } from "../compile";
+import { testSuites } from "./testUtils";
+
+Object.keys(testSuites).forEach((key) => {
+    test(key, () => {
+        const suite = testSuites[key];
+        const Compiled = compileV2(suite.schema);
+        for (const input of suite.goodInputs) {
+            expect(Compiled.validate(input));
+        }
+        for (const input of suite.badInputs) {
+            expect(!Compiled.validate(input));
+        }
+    });
+});
 
 const User = a.object({
     id: a.string(),

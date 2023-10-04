@@ -141,9 +141,24 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
         });
         fieldParts.push(`"${key}":${template},`);
     }
+    const allFieldsAreOptional =
+        Object.keys(input.schema.properties).length === 0;
     let result = `{${fieldParts.join("")}}`;
     const position = result.lastIndexOf(",");
-    result = result.substring(0, position) + result.substring(position + 1);
+    if (allFieldsAreOptional) {
+        result = `\${\`{${fieldParts.join("")}}\`.split(",}").join("}")}`;
+    } else {
+        result = result.substring(0, position) + result.substring(position + 1);
+    }
+
+    if (input.schema.nullable) {
+        const fallback = input.instancePath.length ? "null" : '"null"';
+        const actualResult =
+            input.instancePath.length === 0 || allFieldsAreOptional
+                ? `\`${result}\``
+                : result;
+        return `\${typeof ${input.val} === 'object' && ${input.val} !== null ? ${actualResult} : ${fallback}}`;
+    }
     return result;
 }
 

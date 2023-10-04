@@ -179,12 +179,13 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
             );
         }
     }
+    const mainTemplate = `typeof ${input.val} === 'object' && ${
+        input.val
+    } !== null && ${parts.join(" && ")}`;
     if (input.schema.nullable) {
-        return `(${input.val} === null || (typeof ${
-            input.val
-        } === 'object' && ${parts.join(" && ")}))`;
+        return `((${mainTemplate}) || ${input.val} === null)`;
     }
-    return `typeof ${input.val} === 'object' && ${parts.join(" && ")}`;
+    return mainTemplate;
 }
 
 function enumTemplate(

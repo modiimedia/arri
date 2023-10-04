@@ -150,6 +150,4 @@ it("Compiler Test", () => {
             ]),
         }),
     });
-    console.log("COMPILE()", TypeCompiler.Compile(User));
-    console.log(TypeCompiler.Code(User));
 });

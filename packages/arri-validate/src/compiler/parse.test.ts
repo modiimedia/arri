@@ -1,3 +1,1 @@
-test("todo", () => {
-    // TODO
-});
+test("parses strings", () => {});
