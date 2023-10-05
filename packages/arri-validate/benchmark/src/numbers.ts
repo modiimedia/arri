@@ -92,8 +92,6 @@ void benny.suite(
     }),
 );
 
-console.log(IntSchemaValidatorV2.compiledCode.parse);
-
 void benny.suite(
     "Serialization",
     benny.add("Arri", () => {
