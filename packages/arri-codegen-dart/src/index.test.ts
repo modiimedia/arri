@@ -9,6 +9,7 @@ import {
     dartServiceFromDefinition,
     dartClassFromJtdSchema,
     createDartClient,
+    dartTypeFromJtdSchema,
 } from ".";
 
 describe("Service Generation", () => {
@@ -366,6 +367,83 @@ describe("Model Generation", () => {
           @override
           compareTo(UserSettingsTheme other) => name.compareTo(other.name);
         }`),
+        );
+    });
+    it("handles lists", () => {
+        const Model = a.object({
+            items: a.array(a.number()),
+            nullableItems: a.nullable(a.array(a.string())),
+            objectItems: a.optional(a.array(a.object({ id: a.string() }))),
+        });
+        const existingClassNames: string[] = [];
+        const result = dartTypeFromJtdSchema("Model", Model, {
+            isOptional: false,
+            existingClassNames,
+        });
+        expect(normalizeWhitespace(result.content)).toBe(
+            normalizeWhitespace(`class Model {
+          final List<double> items;
+          final List<String>? nullableItems;
+          final List<ModelObjectItemsItem>? objectItems;
+          const Model({
+            required this.items,
+            required this.nullableItems,
+            this.objectItems,
+          });
+          factory Model.fromJson(Map<String, dynamic> json) {
+            return Model(
+              items: json["items"] is List ? (json["items"] as List).map((item) => doubleFromDynamic(item, 0)).toList() : [],
+              nullableItems: json["nullableItems"] is List ? (json["nullableItems"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() : null,
+              objectItems: json["objectItems"] is List ? (json["objectItems"] as List).map((item) => item is Map<String, dynamic> ? ModelObjectItemsItem.fromJson(item) : null).toList() : null,
+            );
+          }
+          Map<String, dynamic> toJson() {
+            final result = <String, dynamic>{
+              "items": items.map((item) => item).toList(),
+              "nullableItems": nullableItems?.map((item) => item).toList(),
+            };
+            if (objectItems != null) {
+              result["objectItems"] = objectItems?.map((item) => item?.toJson()).toList();
+            }
+            return result;
+          }
+          Model copyWith({
+            List<double>? items,
+            List<String>? nullableItems,
+            List<ModelObjectItemsItem>? objectItems,
+          }) {
+            return Model(
+              items: items ?? this.items,
+              nullableItems: nullableItems ?? this.nullableItems,
+              objectItems: objectItems ?? this.objectItems,
+            );
+          }
+        }
+        class ModelObjectItemsItem {
+          final String id;
+          const ModelObjectItemsItem({
+            required this.id,
+          });
+          factory ModelObjectItemsItem.fromJson(Map<String, dynamic> json) {
+            return ModelObjectItemsItem(
+              id: typeFromDynamic<String>(json["id"], ""),
+            );
+          }
+          Map<String, dynamic> toJson() {
+            final result = <String, dynamic>{
+              "id": id,
+            };
+            return result;
+          }
+          ModelObjectItemsItem copyWith({
+            String? id,
+          }) {
+            return ModelObjectItemsItem(
+              id: id ?? this.id,
+            );
+          }
+        }
+        `),
         );
     });
 });

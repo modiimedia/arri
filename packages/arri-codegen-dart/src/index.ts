@@ -530,7 +530,7 @@ function dartArrayFromJtdSchema(
         fromJsonTemplate: (input) => {
             if (isNullable) {
                 return `${input} is List ? (${input} as List).map((item) => ${subtype.fromJsonTemplate(
-                    `"item"`,
+                    `item`,
                 )}).toList() : null`;
             }
             return `${input} is List ? (${input} as List).map((item) => ${subtype.fromJsonTemplate(
