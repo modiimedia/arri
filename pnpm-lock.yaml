@@ -297,6 +297,9 @@ importers:
       ajv:
         specifier: ^8.12.0
         version: 8.12.0
+      scule:
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       '@faker-js/faker':
         specifier: ^8.1.0

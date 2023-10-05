@@ -93,9 +93,9 @@ describe("Model Creation", () => {
         export const $$PartialUser = {
             parse(input: Record<any, any>): PartialUser {
                 return {
-                    id: typeof input.id === 'string' ? input.id : undefined;
-                    name: typeof input.name === 'string' ? input.name : undefined;
-                    createdAt: typeof input.createdAt === 'string' ? new Date(input.createdAt) : undefined;
+                    id: typeof input.id === 'string' ? input.id : undefined,
+                    name: typeof input.name === 'string' ? input.name : undefined,
+                    createdAt: typeof input.createdAt === 'string' ? new Date(input.createdAt) : undefined,
                 };
             },
             serialize(input: PartialUser): string {
