@@ -9,4 +9,5 @@ export interface TemplateInput<TSchema extends ASchema<any> = any> {
     discriminatorValue?: string;
     subFunctionNames: string[];
     subFunctionBodies: string[];
+    finalFunctionBody?: string;
 }

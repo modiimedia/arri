@@ -4,11 +4,11 @@ import { Value } from "@sinclair/typebox/value";
 import benny from "benny";
 import { z } from "zod";
 import { a } from "../../src/_index";
-import { compileV2 } from "../../src/compile";
+import { compile } from "../../src/compile";
 
 const IntSchema = a.int32();
 const IntSchemaValidator = a.compile(IntSchema);
-const IntSchemaValidatorV2 = compileV2(IntSchema);
+const IntSchemaValidatorV2 = compile(IntSchema);
 const TypeBoxIntSchema = Type.Integer();
 const TypeBoxIntValidator = TypeCompiler.Compile(TypeBoxIntSchema);
 const ZodIntSchema = z
@@ -67,7 +67,7 @@ void benny.suite(
     benny.complete(),
     benny.save({
         file: "int-parsing",
-        folder: "benchmarks/dist",
+        folder: "benchmark/dist",
         format: "chart.html",
     }),
 );
@@ -91,6 +91,8 @@ void benny.suite(
         format: "chart.html",
     }),
 );
+
+console.log(IntSchemaValidatorV2.compiledCode.parse);
 
 void benny.suite(
     "Serialization",

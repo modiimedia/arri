@@ -82,6 +82,7 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
         subFunctionBodies: functionBodyParts,
         subFunctionNames: functionNameParts,
     });
+
     if (
         isAObjectSchema(schema) ||
         isARecordSchema(schema) ||
@@ -92,6 +93,9 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
             const json = JSON.parse(${input});
             return ${jsonTemplate}
         }`;
+    }
+    if (template.includes("// @final-template")) {
+        return template;
     }
     return `${fallbackTemplate}
     ${functionBodyParts.join("\n")}
@@ -203,11 +207,51 @@ export function intTemplate(
     min: number,
     max: number,
 ) {
-    const mainTemplate = `typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max} ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected integer between ${min} and ${max} at ${input.val}")`;
-    if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+    function mainTemplate(inputName: string) {
+        return `typeof ${inputName} === 'number' && Number.isInteger(${inputName}) && ${inputName} >= ${min} && ${inputName} <= ${max} ? ${inputName} : $fallback("${input.instancePath}", "${input.schemaPath}", \`Expected integer between ${min} and ${max} at ${input.instancePath}. Got \${${inputName}}\`)`;
     }
-    return mainTemplate;
+    if (input.instancePath.length === 0) {
+        if (input.schema.nullable) {
+            const functionBody = `
+// @final-template
+if(typeof ${input.val} === 'string') {
+    if(${input.val} === 'null') {
+        return null;
+    }
+    const parsedVal = Number(${input.val});
+    if(Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
+        return parsedVal;
+    }
+    throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val}}.\`);
+}
+if(typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && val <= ${max}) {
+    return ${input.val}
+}
+throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val}}.\`);
+`;
+            return functionBody;
+        }
+        const functionBody = `
+// @final-template
+if(typeof ${input.val} === 'string') {
+    const parsedVal = Number(${input.val});
+    if(Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
+        return parsedVal;
+    }
+    throw new Error(\`Expected integer between ${min} and ${max}. Got \${parsedVal}.\`);
+}
+if(typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max}) {
+    return ${input.val};
+}
+throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val}}.\`);`;
+        input.finalFunctionBody = functionBody;
+        return functionBody;
+    }
+
+    if (input.schema.nullable) {
+        return `${input.val} === null ? null : ${mainTemplate(input.val)}`;
+    }
+    return mainTemplate(input.val);
 }
 
 export function timestampTemplate(

@@ -1,5 +1,4 @@
-import Ajv from "ajv/dist/jtd";
-import { type ASchema, SCHEMA_METADATA, type InferType } from "../schemas";
+import { type ASchema, SCHEMA_METADATA } from "../schemas";
 
 export function validate<T = any>(
     schema: ASchema<T>,
@@ -123,36 +122,4 @@ export function isValidationError(input: unknown): input is ValidationError {
         return false;
     }
     return input instanceof ValidationError;
-}
-
-/**
- * validation compilers
- */
-
-const AJV = new Ajv({ strictSchema: false });
-
-interface CompiledValidator<TSchema extends ASchema<any>> {
-    parse: (input: unknown) => InferType<TSchema>;
-    safeParse: (input: unknown) => SafeResult<InferType<TSchema>>;
-    validate: (input: unknown) => input is InferType<TSchema>;
-    serialize: (val: InferType<TSchema>) => string;
-}
-
-export function compile<TSchema extends ASchema<any> = any>(
-    schema: TSchema,
-): CompiledValidator<TSchema> {
-    const validator = AJV.compile<InferType<TSchema>>(schema);
-    const isType = (input: unknown): input is InferType<TSchema> =>
-        validator(input);
-    const serializer = AJV.compileSerializer<InferType<TSchema>>(schema);
-    return {
-        validate: isType,
-        parse(input) {
-            return parse(schema, input);
-        },
-        safeParse(input) {
-            return safeParse(schema, input);
-        },
-        serialize: serializer,
-    };
 }

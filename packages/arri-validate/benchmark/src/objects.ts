@@ -1,11 +1,12 @@
 import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
-import AJV from "ajv";
+import Ajv from "ajv";
+import AjvJtd from "ajv/dist/jtd";
 import benny from "benny";
 import { z } from "zod";
 import { a } from "../../src/_index";
-import { compileV2 } from "../../src/compile";
+import { compile } from "../../src/compile";
 
 const ArriUser = a.object({
     id: a.int32(),
@@ -35,7 +36,6 @@ const ArriUser = a.object({
     ),
 });
 const ArriUserValidator = a.compile(ArriUser);
-const ArriUserValidatorV2 = compileV2(ArriUser);
 type ArriUser = a.infer<typeof ArriUser>;
 
 const input: ArriUser = {
@@ -189,8 +189,14 @@ const TypeBoxUser = Type.Object({
 });
 const TypeBoxUserValidator = TypeCompiler.Compile(TypeBoxUser);
 
-const ajv = new AJV({ strict: false });
+const ajv = new Ajv({ strict: false });
 const AjvUserValidator = ajv.compile<ArriUser>(TypeBoxUser);
+
+const ajvJtd = new AjvJtd({ strictSchema: false });
+const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(ArriUser);
+const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(ArriUser);
+const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(ArriUser);
+
 void benny.suite(
     "Object Validation",
     benny.add("Arri", () => {
@@ -199,13 +205,16 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.validate(input);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        ArriUserValidatorV2.validate(input);
+    benny.add("Ajv - JTD", () => {
+        ajvJtd.validate(ArriUser, input);
     }),
-    benny.add("Ajv (JSON Schema)", () => {
+    benny.add("Ajv - JTD (Compiled)", () => {
+        AjvJtdUserValidator(input);
+    }),
+    benny.add("Ajv - JSON Schema", () => {
         ajv.validate(TypeBoxUser, input);
     }),
-    benny.add("Ajv (JSON Schema - Compiled)", () => {
+    benny.add("Ajv - JSON Schema (Compiled)", () => {
         AjvUserValidator(input);
     }),
     benny.add("TypeBox", () => {
@@ -234,8 +243,8 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.parse(inputJson);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        ArriUserValidatorV2.parse(inputJson);
+    benny.add("Ajv - JTD (Compiled)", () => {
+        AjvJtdUserParser(inputJson);
     }),
     benny.add("TypeBox", () => {
         Value.Decode(TypeBoxUser, JSON.parse(inputJson));
@@ -283,8 +292,8 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.serialize(input);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        ArriUserValidatorV2.serialize(input);
+    benny.add("Ajv - JTD (Compiled)", () => {
+        AjvJtdUserSerializer(input);
     }),
     benny.add("JSON.stringify", () => {
         JSON.stringify(input);
@@ -307,7 +316,7 @@ const SimpleObject = a.object({
 });
 type SimpleObject = a.infer<typeof SimpleObject>;
 const SimpleObjectValidator = a.compile(SimpleObject);
-const SimpleObjectValidatorV2 = compileV2(SimpleObject);
+const SimpleObjectValidatorV2 = compile(SimpleObject);
 const SimpleObjectInput: SimpleObject = {
     id: "1",
     isAdmin: false,
@@ -374,7 +383,7 @@ const ComplexObject = a.object({
 
 type ComplexObject = a.infer<typeof ComplexObject>;
 const ComplexObjectValidator = a.compile(ComplexObject);
-const ComplexObjectValidatorV2 = compileV2(ComplexObject);
+const ComplexObjectValidatorV2 = compile(ComplexObject);
 
 const ComplexObjectInput: ComplexObject = {
     id: "1234",

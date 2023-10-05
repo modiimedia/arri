@@ -23,7 +23,7 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
     };
 }
 
-export function compileV2<TSchema extends ASchema<any>>(
+export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
     const serializeCode = createSerializationTemplate("input", schema);

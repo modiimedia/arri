@@ -1,11 +1,11 @@
 import { a } from "../_index";
-import { compileV2 } from "../compile";
+import { compile } from "../compile";
 import { testSuites } from "./testUtils";
 
 for (const key of Object.keys(testSuites)) {
     const suite = testSuites[key];
     test(() => {
-        const Compiled = compileV2(suite.schema);
+        const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
             const result = Compiled.safeParse(input);
             expect(result.success);

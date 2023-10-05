@@ -1,12 +1,12 @@
 import { a, isAScalarSchema, isAStringEnumSchema } from "../_index";
-import { compileV2 } from "../compile";
+import { compile } from "../compile";
 import { testSuites } from "./testUtils";
 
 for (const key of Object.keys(testSuites)) {
     const suite = testSuites[key];
     for (const input of suite.goodInputs) {
         test(key, () => {
-            const Compiled = compileV2(suite.schema);
+            const Compiled = compile(suite.schema);
             const result = Compiled.serialize(input);
 
             if (
@@ -21,26 +21,24 @@ for (const key of Object.keys(testSuites)) {
 }
 
 it("serializes strings", () => {
-    const Compiled = compileV2(a.string());
+    const Compiled = compile(a.string());
     expect(Compiled.serialize("Hello World")).toBe("Hello World");
 });
 it("serializes timestamp", () => {
-    const Compiled = compileV2(a.timestamp());
+    const Compiled = compile(a.timestamp());
     const input = new Date();
     expect(Compiled.serialize(input)).toBe(input.toISOString());
 });
 it("serializes boolean", () => {
-    const Compiled = compileV2(a.boolean());
+    const Compiled = compile(a.boolean());
     expect(Compiled.serialize(true)).toBe("true");
 });
 it("serializes enum", () => {
-    const Compiled = compileV2(
-        a.stringEnum(["ADMIN", "STANDARD", "MODERATOR"]),
-    );
+    const Compiled = compile(a.stringEnum(["ADMIN", "STANDARD", "MODERATOR"]));
     expect(Compiled.serialize("ADMIN")).toBe("ADMIN");
 });
 it("serializes objects", () => {
-    const Compiled = compileV2(
+    const Compiled = compile(
         a.object({
             a: a.string(),
             b: a.stringEnum(["A", "B", "C"]),
@@ -64,7 +62,7 @@ it("serializes objects", () => {
 });
 
 it("serializes objects will nullable fields", () => {
-    const Compiled = compileV2(
+    const Compiled = compile(
         a.object(
             {
                 a: a.nullable(a.string()),
