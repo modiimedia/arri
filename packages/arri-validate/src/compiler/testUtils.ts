@@ -422,4 +422,11 @@ export const testSuites: Record<
             [true],
         ],
     },
+    "object with multiline strings": {
+        schema: a.object({
+            description: a.string(),
+        }),
+        goodInputs: [{ description: "hello\nworld\nhow are you" }],
+        badInputs: [null, false],
+    },
 };

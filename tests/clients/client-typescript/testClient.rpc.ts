@@ -231,21 +231,23 @@ export const $$UpdatePostParams = {
   },
 };
 export interface UpdatePostParamsData {
-  title: string;
-  description: string | null;
-  content: string;
-  tags: Array<string>;
+  title?: string;
+  description?: string | null;
+  content?: string;
+  tags?: Array<string>;
 }
 export const $$UpdatePostParamsData = {
   parse(input: Record<any, any>): UpdatePostParamsData {
     return {
-      title: typeof input.title === "string" ? input.title : "",
+      title: typeof input.title === "string" ? input.title : undefined,
       description:
-        typeof input.description === "string" ? input.description : null,
-      content: typeof input.content === "string" ? input.content : "",
+        typeof input.description === "string" ? input.description : undefined,
+      content: typeof input.content === "string" ? input.content : undefined,
       tags: Array.isArray(input.tags)
-        ? input.tags.map((item) => (typeof item === "string" ? item : ""))
-        : [],
+        ? input.tags.map((item) =>
+            typeof item === "string" ? item : undefined,
+          )
+        : undefined,
     };
   },
   serialize(input: UpdatePostParamsData): string {

@@ -78,7 +78,7 @@ function schemaTemplate(input: TemplateInput): string {
 
 function stringTemplate(input: TemplateInput<AScalarSchema<"string">>) {
     const mainTemplate = input.instancePath.length
-        ? `"\${${input.val}}"`
+        ? `"\${${input.val}.split("\\n").join("\\\n")}"`
         : `\${${input.val}}`;
     if (input.schema.nullable) {
         return `\${typeof ${input.val} === 'string' ? \`${mainTemplate}\` : null}`;
