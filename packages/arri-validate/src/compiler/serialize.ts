@@ -78,7 +78,7 @@ function schemaTemplate(input: TemplateInput): string {
 
 function stringTemplate(input: TemplateInput<AScalarSchema<"string">>) {
     const mainTemplate = input.instancePath.length
-        ? `"\${${input.val}.split("\\n").join("\\\n")}"`
+        ? `"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"`
         : `\${${input.val}}`;
     if (input.schema.nullable) {
         return `\${typeof ${input.val} === 'string' ? \`${mainTemplate}\` : null}`;
@@ -192,7 +192,7 @@ function discriminatorTemplate(
     input: TemplateInput<ADiscriminatorSchema<any>>,
 ) {
     const subFunctionName = `${snakeCase(
-        input.schema.metadata.id ?? input.val,
+        input.schema.metadata.id ?? input.instancePath,
     )}_to_json`;
     const subFunctionParts: string[] = [];
     const types = Object.keys(input.schema.mapping);
