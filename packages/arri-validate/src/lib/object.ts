@@ -16,10 +16,12 @@ import {
  * Create an object schema
  *
  * @example
- * const MySchema = a.object({
+ * const Schema = a.object({
  *   foo: a.string(),
  *   bar: a.number()
  * });
+ * a.validate(Schema, {foo: "", bar: 0}) // true
+ * a.validate(Schema, {foo: null, bar: 0}) // false
  */
 export function object<
     TInput extends Record<any, ASchema> = any,

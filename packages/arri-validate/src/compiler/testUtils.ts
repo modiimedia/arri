@@ -121,6 +121,16 @@ export const testSuites: Record<
         goodInputs: ["A", "B", "C", null],
         badInputs: ["a", false, true, ["A", null]],
     },
+    timestamp: {
+        schema: a.timestamp(),
+        goodInputs: [new Date()],
+        badInputs: [null, true, false, {}, "hello world"],
+    },
+    "nullable timestamp": {
+        schema: a.nullable(a.timestamp()),
+        goodInputs: [new Date(), null],
+        badInputs: [true, false, {}, [], "hello world"],
+    },
     "simple object": {
         schema: a.object({
             id: a.string(),
@@ -331,5 +341,85 @@ export const testSuites: Record<
             {},
         ],
         badInputs: [{ id: 1, createdAt: null }, null, "hello world"],
+    },
+    "array of strings": {
+        schema: a.array(a.string()),
+        goodInputs: [["hello world", "goodbye world"], ["a", "b", "c"], []],
+        badInputs: [["hello world", true], [1, 2, 3], {}, true, false],
+    },
+    "array of nullable strings": {
+        schema: a.array(a.nullable(a.string())),
+        goodInputs: [
+            [null, "hello world"],
+            [null, null, null],
+            ["hello", "goodbye"],
+        ],
+        badInputs: [
+            [null, null, true],
+            ["hello world", false],
+            {},
+            "hello world",
+        ],
+    },
+    "nullable array of strings": {
+        schema: a.nullable(a.array(a.string())),
+        goodInputs: [null, ["hello world", "goodbye world"], []],
+        badInputs: [["hello world", null], "hello world", true, false, {}],
+    },
+    "array of numbers": {
+        schema: a.array(a.number()),
+        goodInputs: [[1, 2, 3.5], [-1, -100, 100.5], []],
+        badInputs: [["hello world"], null, false, true, [true]],
+    },
+    discriminator: {
+        schema: a.discriminator("type", {
+            CREATED: a.object({
+                itemId: a.string(),
+                createdAt: a.timestamp(),
+            }),
+            UPDATED: a.object({
+                itemId: a.string(),
+                createdAt: a.timestamp(),
+                updatedAt: a.timestamp(),
+            }),
+            DELETED: a.object({
+                itemId: a.string(),
+                createdAt: a.timestamp(),
+                updatedAt: a.timestamp(),
+                deletedAt: a.timestamp(),
+            }),
+        }),
+        goodInputs: [
+            { type: "CREATED", itemId: "1", createdAt: new Date() },
+            {
+                type: "DELETED",
+                itemId: "2",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: new Date(),
+            },
+            {
+                type: "UPDATED",
+                itemId: "3",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        ],
+        badInputs: [
+            false,
+            true,
+            { type: "CREATED", createdAt: "01/01/2001" },
+            { type: "MOVED", itemId: "1", createdAt: new Date() },
+        ],
+    },
+    "record with boolean values": {
+        schema: a.record(a.boolean()),
+        goodInputs: [{ a: true, b: false }, {}],
+        badInputs: [
+            { a: true, b: true, c: "true" },
+            { a: "null" },
+            null,
+            [true],
+        ],
     },
 };

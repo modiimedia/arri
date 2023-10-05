@@ -12,9 +12,21 @@ import { createSerializationTemplate } from "./compiler/serialize";
 import { createValidationTemplate } from "./compiler/validate";
 
 export interface CompiledValidator<TSchema extends ASchema<any>> {
+    /**
+     * Determine if a type matches a schema. This is a type guard.
+     */
     validate: (input: unknown) => input is InferType<TSchema>;
+    /**
+     * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
+     */
     parse: (input: unknown) => InferType<TSchema>;
+    /**
+     * Parse a JSON string or the result of JSON.parse() without throwing an error
+     */
     safeParse: (input: unknown) => SafeResult<InferType<TSchema>>;
+    /**
+     * Serialize to JSON
+     */
     serialize: (input: InferType<TSchema>) => string;
     compiledCode: {
         serialize: string;
@@ -23,6 +35,9 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
     };
 }
 
+/**
+ * Create compiled versions of the `parse()`, `validate()`, and `serialize()` functions
+ */
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {

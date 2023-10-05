@@ -5,6 +5,13 @@ import {
     type ValidationData,
 } from "../schemas";
 
+/**
+ * Create a Date schema
+ *
+ * @example
+ * const Schema = a.timestamp();
+ * a.validate(Schema, new Date()) // true
+ */
 export function timestamp(
     opts: ASchemaOptions = {},
 ): AScalarSchema<"timestamp", Date> {

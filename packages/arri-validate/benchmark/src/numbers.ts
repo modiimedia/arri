@@ -1,16 +1,23 @@
 import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
+import Ajv from "ajv";
+import AjvJtd from "ajv/dist/jtd";
 import benny from "benny";
 import { z } from "zod";
 import { a } from "../../src/_index";
-import { compile } from "../../src/compile";
 
 const IntSchema = a.int32();
 const IntSchemaValidator = a.compile(IntSchema);
-const IntSchemaValidatorV2 = compile(IntSchema);
 const TypeBoxIntSchema = Type.Integer();
 const TypeBoxIntValidator = TypeCompiler.Compile(TypeBoxIntSchema);
+const ajv = new Ajv({ strict: false });
+const ajvIntValidator = ajv.compile(TypeBoxIntSchema);
+const ajvCoerce = new Ajv({ strict: false, coerceTypes: true });
+const ajvJtd = new AjvJtd({ strictSchema: false });
+const ajvJtdValidator = ajvJtd.compile(IntSchema);
+const ajvJtdParser = ajvJtd.compileParser(IntSchema);
+const ajvJtdSerializer = ajvJtd.compileSerializer(IntSchema);
 const ZodIntSchema = z
     .number()
     .refine((val) => Number.isInteger(val), { message: "Must be an integer" });
@@ -28,8 +35,17 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         IntSchemaValidator.validate(intInput);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        IntSchemaValidatorV2.validate(intInput);
+    benny.add("Ajv - JSON Schema", () => {
+        ajv.validate(TypeBoxIntSchema, intInput);
+    }),
+    benny.add("Ajv - JSON Schema (Compiled)", () => {
+        ajvIntValidator(intInput);
+    }),
+    benny.add("Ajv - JTD", () => {
+        ajvJtd.validate(IntSchema, intInput);
+    }),
+    benny.add("Ajv - JTD (Compiled)", () => {
+        ajvJtdValidator(intInput);
     }),
     benny.add("TypeBox", () => {
         Value.Check(TypeBoxIntSchema, intInput);
@@ -57,8 +73,8 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         IntSchemaValidator.parse(intStringInput);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        IntSchemaValidatorV2.parse(intStringInput);
+    benny.add("Ajv - JTD (Compiled)", () => {
+        ajvJtdParser(intStringInput);
     }),
     benny.add("JSON.parse()", () => {
         JSON.parse(intStringInput);
@@ -76,6 +92,9 @@ void benny.suite(
     "Coercion",
     benny.add("Arri", () => {
         a.coerce(IntSchema, intStringInput);
+    }),
+    benny.add("Ajv - JSON Schema", () => {
+        ajvCoerce.validate(TypeBoxIntSchema, intStringInput);
     }),
     benny.add("TypeBox", () => {
         Value.Convert(TypeBoxIntSchema, intStringInput);
@@ -100,8 +119,8 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         IntSchemaValidator.serialize(intInput);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        IntSchemaValidatorV2.serialize(intInput);
+    benny.add("Ajv - JTD (Compiled)", () => {
+        ajvJtdSerializer(intInput);
     }),
     benny.add("JSON.stringify", () => {
         JSON.stringify(intInput);

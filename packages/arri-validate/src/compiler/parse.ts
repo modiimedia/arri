@@ -191,6 +191,26 @@ export function stringTemplate(
 export function floatTemplate(
     input: TemplateInput<AScalarSchema<"float32" | "float64">>,
 ): string {
+    if (input.instancePath.length === 0) {
+        const nullPart = `if(${input.val} === 'null') {
+                    return null;
+                }`;
+        return `// @final-template
+            if(typeof ${input.val} === 'string') {
+                ${input.schema.nullable ? nullPart : ""}
+                const parsedVal = Number(${input.val});
+                if(!Number.isNaN(parsedVal)) {
+                    return parsedVal;
+                }
+                throw new Error(\`Unable to parse float from \${${
+                    input.val
+                }}.\`)
+            }
+            if(typeof ${input.val} === 'number') {
+                return ${input.val};
+            }
+            throw new Error(\`Expected number. Got \${${input.val}}.\`)`;
+    }
     const mainTemplate = `typeof ${input.val} === 'number' ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected float at ${input.val}")`;
     if (input.schema.nullable) {
         return `${input.val} === null ? null : ${mainTemplate}`;
@@ -257,6 +277,23 @@ throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val
 export function timestampTemplate(
     input: TemplateInput<AScalarSchema<"timestamp">>,
 ) {
+    if (input.instancePath.length === 0) {
+        const nullPart = `if(${input.val} === 'null') {
+            return null;
+        }`;
+        return `// @final-template
+if(typeof ${input.val} === 'string') {
+    ${input.schema.nullable ? nullPart : ""}
+    return new Date(${input.val});
+}
+if(typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+    return ${input.val};
+}
+throw new Error(\`Expected instance of Date or ISO date string. Got \${${
+            input.val
+        }}\`);
+            `;
+    }
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} instanceof Date ? ${input.val} : typeof ${input.val} === 'string' ? new Date(${input.val}) : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instance of Date or ISO Date string at ${input.val}")`;
     if (input.schema.nullable) {
         return `${input.val} === null ? null : ${mainTemplate}`;
@@ -331,7 +368,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
 export function arraySchema(input: TemplateInput<AArraySchema<any>>): string {
     const innerTemplate = schemaTemplate({
         val: `item`,
-        instancePath: input.instancePath,
+        instancePath: `${input.instancePath}/item`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         subFunctionBodies: input.subFunctionBodies,

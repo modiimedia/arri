@@ -24,7 +24,8 @@ import {
  * Alias for float64 as that is the only number type that Javascript uses
  *
  * @example
- * const SomeNum = a.number()
+ * const Schema = a.number()
+ * a.validate(Schema, 1.5) // true
  */
 export function number(opts: ASchemaOptions = {}) {
     return float64(opts);

@@ -8,7 +8,6 @@ for (const key of Object.keys(testSuites)) {
         test(key, () => {
             const Compiled = compile(suite.schema);
             const result = Compiled.serialize(input);
-
             if (
                 !isAScalarSchema(suite.schema) &&
                 !isAStringEnumSchema(suite.schema)

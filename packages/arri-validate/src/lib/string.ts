@@ -5,6 +5,12 @@ import {
     type ValidationData,
 } from "../schemas";
 
+/**
+ * @example
+ * const StringSchema = a.string();
+ * a.validate(StringSchema, "hello world") // true
+ * a.validate(StringSchema, 10) // false
+ */
 export function string(
     opts: ASchemaOptions = {},
 ): AScalarSchema<"string", string> {

@@ -1,5 +1,8 @@
 import { type ASchema, SCHEMA_METADATA, type ASchemaOptions } from "../schemas";
 
+/**
+ * Create a schema that accepts anything
+ */
 export function any(options: ASchemaOptions = {}): ASchema<any> {
     return {
         metadata: {

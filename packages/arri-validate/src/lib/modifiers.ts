@@ -33,6 +33,13 @@ export function nullable<T>(
                 optional: schema.metadata[SCHEMA_METADATA].optional,
                 validate: isType,
                 parse(val, data) {
+                    if (
+                        data.instancePath.length === 0 &&
+                        typeof val === "string" &&
+                        val === "null"
+                    ) {
+                        return null;
+                    }
                     if (val === null) {
                         return null;
                     }

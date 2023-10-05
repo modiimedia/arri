@@ -177,12 +177,13 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         val: "item",
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
-        instancePath: `${input.instancePath}`,
+        instancePath: `${input.instancePath}/item`,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
+    const nullFallback = input.instancePath.length === 0 ? '"null"' : "null";
     if (input.schema.nullable) {
-        return `\${Array.isArray(${input.val}) ? \`\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}\` : null}`;
+        return `\${Array.isArray(${input.val}) ? \`[\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}]\` : ${nullFallback}}`;
     }
     return `[\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}]`;
 }

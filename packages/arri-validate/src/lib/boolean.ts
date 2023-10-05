@@ -6,6 +6,12 @@ import {
     type ValidationData,
 } from "../schemas";
 
+/**
+ * @example
+ * const Schema = a.boolean();
+ * a.validate(Schema, true) // true;
+ * a.validate(Schema, false) // true;
+ */
 export function boolean<TNullable extends boolean = false>(
     opts: ASchemaOptions = {},
 ): AScalarSchema<"boolean", MaybeNullable<boolean, TNullable>> {

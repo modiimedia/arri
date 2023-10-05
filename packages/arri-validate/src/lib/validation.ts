@@ -1,5 +1,8 @@
 import { type ASchema, SCHEMA_METADATA } from "../schemas";
 
+/**
+ * Check if the input matches the specified schema. This is a type guard.
+ */
 export function validate<T = any>(
     schema: ASchema<T>,
     input: unknown,
@@ -7,6 +10,9 @@ export function validate<T = any>(
     return schema.metadata[SCHEMA_METADATA].validate(input);
 }
 
+/**
+ * Parse a JSON string or the result of JSON.parse(). Throws a ValidationError if parsing fails.
+ */
 export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
     const errors: ValueError[] = [];
     const result = schema.metadata[SCHEMA_METADATA].parse(input, {
@@ -23,6 +29,9 @@ export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
     return result as T;
 }
 
+/**
+ * Parse a value without throwing an error.
+ */
 export function safeParse<T = any>(
     schema: ASchema<T>,
     input: unknown,
@@ -50,6 +59,9 @@ export function safeParse<T = any>(
     }
 }
 
+/**
+ * Try to convert input to match the specified schema. Throws a ValidationError if conversion fails.
+ */
 export function coerce<T = any>(schema: ASchema<T>, input: unknown): T {
     const errors: ValueError[] = [];
     const result = schema.metadata[SCHEMA_METADATA].coerce(input, {
@@ -70,6 +82,9 @@ export type SafeResult<T> =
     | { success: true; value: T }
     | { success: false; error: ValidationError };
 
+/**
+ * Convert a value into the specified schema without throwing an error.
+ */
 export function safeCoerce<T = any>(
     schema: ASchema<T>,
     input: unknown,
@@ -97,6 +112,9 @@ export function safeCoerce<T = any>(
     }
 }
 
+/**
+ * Serialize a value into a JSON string
+ */
 export function serialize<T = any>(schema: ASchema<T>, input: T) {
     return schema.metadata[SCHEMA_METADATA].serialize(input);
 }

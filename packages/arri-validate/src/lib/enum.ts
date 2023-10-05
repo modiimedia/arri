@@ -9,6 +9,12 @@ import {
  *
  * This is an implementation of:
  * https://jsontypedef.com/docs/jtd-in-5-minutes/#enum-schemas
+ *
+ * @example
+ * const Schema = a.stringEnum(["A", "B"])
+ * a.validate(Schema, "A") // true
+ * a.validate(Schema, "B") // true
+ * a.validate(Schema, "C") // false
  */
 export function stringEnum<
     TKeys extends string,

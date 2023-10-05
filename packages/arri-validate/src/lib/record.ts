@@ -8,6 +8,23 @@ import {
     type ValidationData,
 } from "../schemas";
 
+/**
+ * Create a schema for a record with strings keys
+ *
+ * @example
+ * const StringRecord = a.record(
+ *   a.string(),
+ * );
+ * a.validate(StringRecord, {foo: "bar"}) // true
+ *
+ * const ObjectRecord = a.record(
+ *   a.object({
+ *     id: a.string(),
+ *     date: a.timestamp(),
+ *   })
+ * )
+ * a.validate(ObjectRecord, {foo: {id: "1", date: new Date()}}) // true
+ */
 export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,
     opts: ASchemaOptions = {},
@@ -85,11 +102,6 @@ function parse<T>(
     }
     return result;
 }
-
-/**
- * An alias for `a.record()`
- */
-export const dictionary = record;
 
 type InferRecordType<TInnerSchema extends ASchema<any>> = Record<
     string,

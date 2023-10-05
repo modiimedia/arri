@@ -131,6 +131,13 @@ test("Parsing", () => {
         ];
         expect(a.safeParse(StringArray, nestedStringArr).success).toBe(false);
     });
+
+    it("parses array of nullable strings", () => {
+        const input = [null, null, "goodbye"];
+        const Schema = a.array(a.nullable(a.string()));
+        expect(a.parse(Schema, input)).toStrictEqual(input);
+        expect(a.parse(Schema, JSON.stringify(input))).toStrictEqual(input);
+    });
 });
 
 describe("Serialization", () => {

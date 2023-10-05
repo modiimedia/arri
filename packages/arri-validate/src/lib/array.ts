@@ -89,10 +89,10 @@ function parse<T>(
                     errors: data.errors,
                 },
             );
-            if (!parsedItem) {
+            if (data.errors.length) {
                 return undefined;
             }
-            result.push(parsedItem);
+            result.push(parsedItem as any);
         } else {
             const parsedItem = innerSchema.metadata[SCHEMA_METADATA].parse(
                 item,
@@ -102,10 +102,10 @@ function parse<T>(
                     errors: data.errors,
                 },
             );
-            if (!parsedItem) {
+            if (data.errors.length) {
                 return undefined;
             }
-            result.push(parsedItem);
+            result.push(parsedItem as any);
         }
     }
     if (data.errors.length) {
