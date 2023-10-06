@@ -16,7 +16,7 @@
             "executor": "nx:run-commands",
             "options": {
                 "command": "pnpm publish",
-                "cwd": "dist/packages/arri-codegen-utils"
+                "cwd": "packages/arri-codegen-utils"
             },
             "dependsOn": ["build"]
         },
