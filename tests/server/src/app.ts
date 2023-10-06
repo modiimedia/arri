@@ -1,9 +1,16 @@
-import { ArriApp } from "arri";
+import { ArriApp, defineError, getHeader } from "arri";
 import usersRouter from "./routes/users";
 
 const app = new ArriApp({
     rpcRoutePrefix: "rpcs",
-    onRequest(event) {},
+    onRequest(event) {
+        const authHeader = getHeader(event, "x-test-header");
+        if (!authHeader?.length) {
+            throw defineError(401, {
+                statusMessage: "Missing test auth header 'x-test-header'",
+            });
+        }
+    },
 });
 
 app.route({

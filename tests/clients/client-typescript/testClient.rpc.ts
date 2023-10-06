@@ -10,34 +10,12 @@ interface TestClientOptions {
 export class TestClient {
   private readonly baseUrl: string;
   private readonly headers: Record<string, string>;
-  users: TestClientUsersService;
   posts: TestClientPostsService;
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
     this.headers = options.headers ?? {};
-    this.users = new TestClientUsersService(options);
     this.posts = new TestClientPostsService(options);
-  }
-}
-
-export class TestClientUsersService {
-  private readonly baseUrl: string;
-  private readonly headers: Record<string, string>;
-
-  constructor(options: TestClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? "";
-    this.headers = options.headers ?? {};
-  }
-  SayHello() {
-    return arriRequest<undefined, undefined>({
-      url: `${this.baseUrl}/rpcs/users/say-hello`,
-      method: "post",
-      headers: this.headers,
-      params: undefined,
-      parser: (_) => {},
-      serializer: (_) => {},
-    });
   }
 }
 

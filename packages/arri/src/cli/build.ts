@@ -9,7 +9,11 @@ import { build } from "esbuild";
 import path from "pathe";
 import prettier from "prettier";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
-import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
+import {
+    createRoutesModule,
+    setupWorkingDir,
+    transpileFilesContext,
+} from "./_common";
 
 export default defineCommand({
     args: {
@@ -42,19 +46,16 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
     await setupWorkingDir(config);
     await Promise.all([
-        transpileFiles(config),
         createRoutesModule(config),
         createBuildEntryModule(config),
         createBuildCodegenModule(config),
     ]);
+    const transpile = await transpileFilesContext(config);
+    await transpile.rebuild();
     await bundleFiles(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
-    const codegenModule = path.resolve(
-        config.rootDir,
-        config.buildDir,
-        "codegen.js",
-    );
+    const codegenModule = path.resolve(config.rootDir, ".output", "codegen.js");
     if (clientCount > 0 && !skipCodeGen) {
         logger.log("Generating clients");
 
@@ -79,9 +80,30 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log(
         `Build finished! You can start your server by running "node .output/server.js"`,
     );
+    await transpile.dispose();
 }
 
-async function bundleFiles(config: ResolvedArriConfig) {
+async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
+    if (allowCodegen) {
+        await build({
+            ...config.esbuild,
+            entryPoints: [
+                path.resolve(config.rootDir, config.buildDir, "codegen.js"),
+            ],
+            platform: config.esbuild.platform ?? "node",
+            target: config.esbuild.target ?? "node18",
+            bundle: true,
+            packages: "external",
+            format: "esm",
+            sourcemap: false,
+            minifyWhitespace: true,
+            banner: {
+                js: `import { createRequire as topLevelCreateRequire } from 'module';
+            const require = topLevelCreateRequire(import.meta.url);`,
+            },
+            outdir: path.resolve(config.rootDir, ".output"),
+        });
+    }
     await build({
         ...config.esbuild,
         entryPoints: [
@@ -146,8 +168,15 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
     import app from './${appImportParts.join(".")}.js';
     import routes from './routes.js';
 
-    for(const route of routes) {
-        app.procedure(route.id, route.route);
+    for (const route of routes) {
+        app.rpc({
+            name: route.id,
+            method: route.route.method,
+            params: route.route.params,
+            response: route.route.response,
+            handler: route.route.handler,
+            postHandler: route.route.postHandler,
+        });
     }
 
     const __dirname = new URL(".", import.meta.url).pathname;

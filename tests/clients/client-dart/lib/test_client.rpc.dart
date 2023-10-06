@@ -13,38 +13,10 @@ class TestClient {
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  TestClientUsersService get users {
-    return TestClientUsersService(
-      baseUrl: _baseUrl,
-      headers: _headers,
-    );
-  }
-
   TestClientPostsService get posts {
     return TestClientPostsService(
       baseUrl: _baseUrl,
       headers: _headers,
-    );
-  }
-}
-
-class TestClientUsersService {
-  final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClientUsersService({
-    String baseUrl = "",
-    Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
-
-  Future<void> SayHello() {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/users/say-hello",
-      method: HttpMethod.post,
-      headers: _headers,
-      params: null,
-      parser: (body) {},
-      errorBuilder: _errorBuilder,
     );
   }
 }

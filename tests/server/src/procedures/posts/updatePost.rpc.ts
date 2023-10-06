@@ -22,7 +22,7 @@ export default defineRpc({
     ),
     response: Post,
     handler({ params }) {
-        console.log(params)
+        console.log(params);
         return getRandomPost({
             id: params.postId,
             title: params.data.title,

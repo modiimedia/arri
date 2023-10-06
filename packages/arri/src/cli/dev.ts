@@ -4,13 +4,17 @@ import { loadConfig } from "c12";
 import chokidar from "chokidar";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
-import { build } from "esbuild";
+import * as esbuild from "esbuild";
 import { listenAndWatch } from "listhen";
 import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
 import { isResolvedArriConfig, type ResolvedArriConfig } from "../config";
-import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
+import {
+    createRoutesModule,
+    setupWorkingDir,
+    transpileFilesContext,
+} from "./_common";
 
 const logger = createConsola().withTag("arri");
 
@@ -40,20 +44,20 @@ export default defineCommand({
 });
 
 const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(path.resolve(config.rootDir, config.buildDir, "bundle.js"), {
+    listenAndWatch(path.resolve(config.rootDir, ".output", "bundle.js"), {
         public: true,
         port: config.port,
         logger,
         qr: showQr,
     });
 
-async function bundleFiles(config: ResolvedArriConfig) {
-    await build({
+async function bundleFilesContext(config: ResolvedArriConfig) {
+    return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, "entry.js"),
         ],
-        outfile: path.resolve(config.rootDir, config.buildDir, "bundle.js"),
+        outfile: path.resolve(config.rootDir, ".output", "bundle.js"),
         format: "esm",
         bundle: true,
         sourcemap: true,
@@ -66,12 +70,11 @@ async function bundleFiles(config: ResolvedArriConfig) {
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     let fileWatcher: chokidar.FSWatcher | undefined;
-    await Promise.all([
-        createRoutesModule(config),
-        createEntryModule(config),
-        transpileFiles(config),
-    ]);
-    await bundleFiles(config);
+    await Promise.all([createRoutesModule(config), createEntryModule(config)]);
+    const transpileFiles = await transpileFilesContext(config);
+    const bundleFiles = await bundleFilesContext(config);
+    await transpileFiles.rebuild();
+    await bundleFiles.rebuild();
     const listener = await startListener(config, true);
     setTimeout(async () => {
         await generateClients(config);
@@ -80,7 +83,12 @@ async function startDevServer(config: ResolvedArriConfig) {
         process.exit();
     };
     process.on("exit", async () => {
-        await Promise.allSettled([listener.close(), fileWatcher?.close()]);
+        await Promise.allSettled([
+            listener.close(),
+            fileWatcher?.close(),
+            transpileFiles.dispose(),
+            bundleFiles.dispose(),
+        ]);
     });
     process.on("SIGINT", cleanExit);
     process.on("SIGTERM", cleanExit);
@@ -106,12 +114,11 @@ async function startDevServer(config: ResolvedArriConfig) {
                     logger.log(
                         "Change detected. Bundling files and restarting server....",
                     );
-                    await transpileFiles(config);
-                    await bundleFiles(config);
+                    await transpileFiles.rebuild();
+                    await bundleFiles.rebuild();
                     bundleCreated = true;
                 } catch (err) {
                     logger.error("ERROR", err);
-                    // logger.error(err);
                     bundleCreated = false;
                 }
                 if (bundleCreated && config.clientGenerators.length) {

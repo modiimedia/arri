@@ -5,16 +5,35 @@ import {
     defineEventHandler,
     setHeader,
     send,
+    type H3EventContext,
 } from "h3";
 import { type ArriOptions } from "./app";
 import { handleH3Error } from "./errors";
 import { type Middleware } from "./middleware";
 
+export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
+    ? Record<Param, string> & NextPart
+    : NextPart;
+
+export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
+    ? ExtractParam<Segment, ExtractParams<Rest>>
+    : // eslint-disable-next-line @typescript-eslint/ban-types
+      ExtractParam<Path, {}>;
+
+export interface RouteEventContext<TPath extends string>
+    extends H3EventContext {
+    params: ExtractParams<TPath>;
+}
+
+export interface RouteEvent<TPath extends string> extends H3Event {
+    context: RouteEventContext<TPath>;
+}
+
 export interface ArriRoute<TPath extends string> {
     path: TPath;
     method: HttpMethod | HttpMethod[];
-    handler: (event: H3Event) => any;
-    postHandler?: (event: H3Event) => any;
+    handler: (event: RouteEvent<TPath>) => any;
+    postHandler?: (event: RouteEvent<TPath>) => any;
 }
 
 export type RouteOptions = Pick<
@@ -52,7 +71,7 @@ export function handleRoute(
                     await m(event);
                 }
             }
-            const response = await route.handler(event);
+            const response = await route.handler(event as any);
             event.context.response = response;
             if (!event.handled) {
                 if (opts.onBeforeResponse) {
@@ -69,7 +88,7 @@ export function handleRoute(
                 await opts.onAfterResponse(event);
             }
             if (route.postHandler) {
-                await route.postHandler(event);
+                await route.postHandler(event as any);
             }
         } catch (err) {
             await handleH3Error(err, event, opts.onError);

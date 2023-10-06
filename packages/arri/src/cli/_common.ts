@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { removeDisallowedChars } from "arri-codegen-utils";
-import { build } from "esbuild";
+import * as esbuild from "esbuild";
 import { globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
@@ -142,12 +142,12 @@ export const getRpcMetaFromPath = (
     };
 };
 
-export async function transpileFiles(config: ResolvedArriConfig) {
+export async function transpileFilesContext(config: ResolvedArriConfig) {
     const outDir = path.resolve(config.rootDir, config.buildDir);
     const files = await globby(["**/*.ts"], {
         cwd: path.resolve(config.rootDir, config.srcDir),
     });
-    await build({
+    const ctx = await esbuild.context({
         entryPoints: [
             ...files.map((file) =>
                 path.resolve(config.rootDir, config.srcDir, file),
@@ -159,4 +159,5 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         target: "node18",
         platform: "node",
     });
+    return ctx;
 }
