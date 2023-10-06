@@ -9,7 +9,7 @@
         "test": "nx run-many -t test",
         "build": "nx run-many -t build",
         "scaffold": "jiti tools/scripts/scaffold-package.ts",
-        "publish": "jiti tools/scripts/publish.ts",
+        "publish-all": "jiti tools/scripts/publish.ts",
         "postversion": "jiti tools/scripts/version-sync.ts",
         "lint": "eslint . --ext ts",
         "lint:fix": "eslint . --ext ts --fix"
