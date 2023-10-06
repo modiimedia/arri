@@ -18,6 +18,7 @@ Future<http.Response> arriRequest(
 
   /// manually specify a specific encoding
   Encoding? encoding,
+  ArriErrorBuilder? errorBuilder,
 }) async {
   http.Response result = http.Response(
     "Placeholder request. If you see this that means a request was never sent to the server.",
@@ -29,7 +30,6 @@ Future<http.Response> arriRequest(
     finalHeaders["Content-Type"] = "application/json";
     bodyInput = json.encode(params);
   }
-  print("BODY INPUT, $bodyInput");
   switch (method) {
     case HttpMethod.get:
       final paramsInput = query ?? params;
@@ -88,53 +88,59 @@ Future<http.Response> arriRequest(
           headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
     default:
-      throw ArriRequestError(
-        statusCode: 400,
-        statusMessage: "Client has not implemented HTTP method \"$method\"",
-      );
+      throw errorBuilder?.fromJson({
+            "statusCode": 400,
+            "statusMesssage": "HttpMethod not implemented: $method"
+          }) ??
+          ArriRequestError.fromResponse(result);
   }
   return result;
 }
 
 /// Helper function for performing raw HTTP request to an Arri RPC server
 /// This function will throw an ArriRequestError if it fails
-Future<T> parsedArriRequest<T>(
+Future<T> parsedArriRequest<T, E extends Exception>(
   String url, {
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
   required T Function(String) parser,
+  required ArriErrorBuilder<E> errorBuilder,
 }) async {
   final result =
       await arriRequest(url, method: method, params: params, headers: headers);
-  if (result.statusCode == 200) {
+  if (result.statusCode >= 200 && result.statusCode <= 299) {
     return parser(result.body);
   }
-  throw ArriRequestError.fromResponse(result);
+  throw errorBuilder.fromJson(json.decode(result.body));
 }
 
 /// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result
 /// in which both value and the error can be null.
-Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
+Future<ArriRequestResult<T, E>> parsedArriRequestSafe<T, E extends Exception>(
   String url, {
   HttpMethod httpMethod = HttpMethod.get,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
   required T Function(String) parser,
+  required ArriErrorBuilder<E> errorBuilder,
 }) async {
   try {
-    final result = await parsedArriRequest(url, parser: parser);
+    final result = await parsedArriRequest(
+      url,
+      parser: parser,
+      errorBuilder: errorBuilder,
+    );
     return ArriRequestResult(value: result);
   } catch (err) {
-    return ArriRequestResult(
-        error: err is ArriRequestError ? err : ArriRequestError.unknown());
+    return ArriRequestResult(error: err is E ? err : null);
   }
 }
 
 /// Container for holding a request result or a request error
-class ArriRequestResult<T> {
+class ArriRequestResult<T, E extends Exception> {
   final T? value;
-  final ArriRequestError? error;
+  final E? error;
   const ArriRequestResult({this.value, this.error});
 }
 
@@ -162,7 +168,9 @@ class ArriRequestError implements Exception {
     try {
       final body = json.decode(response.body);
       return ArriRequestError(
-        statusCode: response.statusCode,
+        statusCode: body["statusCode"] is int
+            ? body["statusCode"]
+            : response.statusCode,
         statusMessage: body["statusMessage"] is String
             ? body["statusMessage"]
             : "Unknown error",
@@ -316,4 +324,8 @@ List<DateTime?> nullableDateTimeListFromDynamic(dynamic input) {
   return input is List
       ? input.map((e) => nullableDateTimeFromDynamic(e)).toList()
       : [];
+}
+
+abstract class ArriErrorBuilder<T extends Exception> {
+  T fromJson(Map<String, dynamic> json);
 }

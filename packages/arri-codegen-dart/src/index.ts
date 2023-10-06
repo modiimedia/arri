@@ -122,6 +122,8 @@ export function createDartClient(
 import "dart:convert";
 import "package:arri_client/arri_client.dart";
 
+final _errorBuilder = ${opts.clientName}ErrorBuilder();
+
 class ${opts.clientName} {
   final String _baseUrl;
   final Map<String, String> _headers;
@@ -137,6 +139,14 @@ class ${opts.clientName} {
 ${serviceParts.join("\n")}
 
 ${modelParts.join("\n")}
+
+class ${opts.clientName}ErrorBuilder implements ArriErrorBuilder<${
+        opts.clientName
+    }Error> {
+    ${opts.clientName}Error fromJson(Map<String, dynamic> json) => ${
+        opts.clientName
+    }Error.fromJson(json);
+}
 `;
 }
 
@@ -255,6 +265,7 @@ export function dartRpcFromDefinition(
       headers: _headers,
       params: ${paramsInput.length ? `params.toJson()` : "null"},
       parser: ${responseParser},
+      errorBuilder: _errorBuilder,
     );
   }`;
 }

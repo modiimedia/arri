@@ -9,20 +9,21 @@ class TestClient {
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
-  _headers = headers;
-  
+        _headers = headers;
+
   TestClientUsersService get users {
-  return TestClientUsersService(
-    baseUrl: _baseUrl, 
-    headers: _headers,
-  );
-}
+    return TestClientUsersService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
+
   TestClientPostsService get posts {
-  return TestClientPostsService(
-    baseUrl: _baseUrl, 
-    headers: _headers,
-  );
-}
+    return TestClientPostsService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
 }
 
 class TestClientUsersService {
@@ -32,8 +33,8 @@ class TestClientUsersService {
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
-  _headers = headers;
-  
+        _headers = headers;
+
   Future<void> SayHello() {
     return parsedArriRequest(
       "$_baseUrl/rpcs/users/say-hello",
@@ -45,7 +46,6 @@ class TestClientUsersService {
   }
 }
 
-
 class TestClientPostsService {
   final String _baseUrl;
   final Map<String, String> _headers;
@@ -53,8 +53,8 @@ class TestClientPostsService {
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
-  _headers = headers;
-  
+        _headers = headers;
+
   Future<Post> getPost(PostParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/get-post",
@@ -62,10 +62,11 @@ class TestClientPostsService {
       headers: _headers,
       params: params.toJson(),
       parser: (body) => Post.fromJson(
-                json.decode(body),
-            ),
+        json.decode(body),
+      ),
     );
   }
+
   Future<PostListResponse> getPosts(PostListParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/get-posts",
@@ -73,10 +74,11 @@ class TestClientPostsService {
       headers: _headers,
       params: params.toJson(),
       parser: (body) => PostListResponse.fromJson(
-                json.decode(body),
-            ),
+        json.decode(body),
+      ),
     );
   }
+
   Future<Post> updatePost(UpdatePostParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/posts/update-post",
@@ -84,16 +86,14 @@ class TestClientPostsService {
       headers: _headers,
       params: params.toJson(),
       parser: (body) => Post.fromJson(
-                json.decode(body),
-            ),
+        json.decode(body),
+      ),
     );
   }
 }
 
-
-
 class PostParams {
-    final String postId;
+  final String postId;
   const PostParams({
     required this.postId,
   });
@@ -102,14 +102,15 @@ class PostParams {
       postId: typeFromDynamic<String>(json["postId"], ""),
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "postId": postId,
     };
-    
+
     return result;
   }
+
   PostParams copyWith({
     String? postId,
   }) {
@@ -119,10 +120,8 @@ class PostParams {
   }
 }
 
-
-
 class Post {
-    final String id;
+  final String id;
   final String title;
   final PostType type;
   final String? description;
@@ -151,20 +150,24 @@ class Post {
       type: PostType.fromJson(json["type"]),
       description: nullableTypeFromDynamic<String>(json["description"]),
       content: typeFromDynamic<String>(json["content"], ""),
-      tags: json["tags"] is List ? (json["tags"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() : [],
+      tags: json["tags"] is List
+          ? (json["tags"] as List)
+              .map((item) => typeFromDynamic<String>(item, ""))
+              .toList()
+          : [],
       authorId: typeFromDynamic<String>(json["authorId"], ""),
       author: Author.fromJson(json["author"]),
       createdAt: dateTimeFromDynamic(
-      json["createdAt"],
-      DateTime.fromMillisecondsSinceEpoch(0),
-    ),
+        json["createdAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
       updatedAt: dateTimeFromDynamic(
-      json["updatedAt"],
-      DateTime.fromMillisecondsSinceEpoch(0),
-    ),
+        json["updatedAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "id": id,
@@ -178,9 +181,10 @@ class Post {
       "createdAt": createdAt.toUtc().toIso8601String(),
       "updatedAt": updatedAt.toUtc().toIso8601String(),
     };
-    
+
     return result;
   }
+
   Post copyWith({
     String? id,
     String? title,
@@ -207,16 +211,18 @@ class Post {
     );
   }
 }
+
 enum PostType implements Comparable<PostType> {
   text("text"),
   image("image"),
   video("video");
+
   const PostType(this.value);
   final String value;
 
   factory PostType.fromJson(dynamic json) {
-    for(final v in values) {
-      if(v.value == json) {
+    for (final v in values) {
+      if (v.value == json) {
         return v;
       }
     }
@@ -226,8 +232,9 @@ enum PostType implements Comparable<PostType> {
   @override
   compareTo(PostType other) => name.compareTo(other.name);
 }
+
 class Author {
-    final String id;
+  final String id;
   final String name;
   final String? bio;
   final DateTime createdAt;
@@ -245,16 +252,16 @@ class Author {
       name: typeFromDynamic<String>(json["name"], ""),
       bio: nullableTypeFromDynamic<String>(json["bio"]),
       createdAt: dateTimeFromDynamic(
-      json["createdAt"],
-      DateTime.fromMillisecondsSinceEpoch(0),
-    ),
+        json["createdAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
       updatedAt: dateTimeFromDynamic(
-      json["updatedAt"],
-      DateTime.fromMillisecondsSinceEpoch(0),
-    ),
+        json["updatedAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "id": id,
@@ -263,9 +270,10 @@ class Author {
       "createdAt": createdAt.toUtc().toIso8601String(),
       "updatedAt": updatedAt.toUtc().toIso8601String(),
     };
-    
+
     return result;
   }
+
   Author copyWith({
     String? id,
     String? name,
@@ -283,12 +291,8 @@ class Author {
   }
 }
 
-
-
-
-
 class PostListParams {
-    final int limit;
+  final int limit;
   final PostType? type;
   const PostListParams({
     required this.limit,
@@ -297,10 +301,12 @@ class PostListParams {
   factory PostListParams.fromJson(Map<String, dynamic> json) {
     return PostListParams(
       limit: intFromDynamic(json["limit"], 0),
-      type: json["type"] is Map<String, dynamic> ? PostType.fromJson(json["type"]) : null,
+      type: json["type"] is Map<String, dynamic>
+          ? PostType.fromJson(json["type"])
+          : null,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "limit": limit,
@@ -310,6 +316,7 @@ class PostListParams {
     }
     return result;
   }
+
   PostListParams copyWith({
     int? limit,
     PostType? type,
@@ -321,10 +328,8 @@ class PostListParams {
   }
 }
 
-
-
 class PostListResponse {
-    final int total;
+  final int total;
   final List<Post> items;
   const PostListResponse({
     required this.total,
@@ -333,18 +338,21 @@ class PostListResponse {
   factory PostListResponse.fromJson(Map<String, dynamic> json) {
     return PostListResponse(
       total: intFromDynamic(json["total"], 0),
-      items: json["items"] is List ? (json["items"] as List).map((item) => Post.fromJson(item)).toList() : [],
+      items: json["items"] is List
+          ? (json["items"] as List).map((item) => Post.fromJson(item)).toList()
+          : [],
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "total": total,
       "items": items.map((item) => item.toJson()).toList(),
     };
-    
+
     return result;
   }
+
   PostListResponse copyWith({
     int? total,
     List<Post>? items,
@@ -356,10 +364,8 @@ class PostListResponse {
   }
 }
 
-
-
 class UpdatePostParams {
-    final String postId;
+  final String postId;
   final UpdatePostParamsData data;
   const UpdatePostParams({
     required this.postId,
@@ -371,15 +377,16 @@ class UpdatePostParams {
       data: UpdatePostParamsData.fromJson(json["data"]),
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "postId": postId,
       "data": data.toJson(),
     };
-    
+
     return result;
   }
+
   UpdatePostParams copyWith({
     String? postId,
     UpdatePostParamsData? data,
@@ -390,8 +397,9 @@ class UpdatePostParams {
     );
   }
 }
+
 class UpdatePostParamsData {
-    final String? title;
+  final String? title;
   final String? description;
   final String? content;
   final List<String?>? tags;
@@ -406,33 +414,36 @@ class UpdatePostParamsData {
       title: nullableTypeFromDynamic<String>(json["title"]),
       description: nullableTypeFromDynamic<String>(json["description"]),
       content: nullableTypeFromDynamic<String>(json["content"]),
-      tags: json["tags"] is List ? (json["tags"] as List).map((item) => nullableTypeFromDynamic<String>("item")).toList() : null,
+      tags: json["tags"] is List
+          ? (json["tags"] as List)
+              .map((item) => nullableTypeFromDynamic<String>(item))
+              .toList()
+          : null,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
-      ,
-    };
+    final result = <String, dynamic>{};
     if (title != null) {
       result["title"] = title;
     }
-if (description != null) {
+    if (description != null) {
       result["description"] = description;
     }
-if (content != null) {
+    if (content != null) {
       result["content"] = content;
     }
-if (tags != null) {
+    if (tags != null) {
       result["tags"] = tags?.map((item) => item).toList();
     }
     return result;
   }
+
   UpdatePostParamsData copyWith({
     String? title,
     String? description,
     String? content,
-    List<String>?? tags,
+    List<String>? tags,
   }) {
     return UpdatePostParamsData(
       title: title ?? this.title,
@@ -443,12 +454,8 @@ if (tags != null) {
   }
 }
 
-
-
-
-
 class ErrorResponse implements Exception {
-    final int statusCode;
+  final int statusCode;
   final String statusMessage;
   final List<dynamic> stack;
   final dynamic data;
@@ -462,11 +469,13 @@ class ErrorResponse implements Exception {
     return ErrorResponse(
       statusCode: intFromDynamic(json["statusCode"], 0),
       statusMessage: typeFromDynamic<String>(json["statusMessage"], ""),
-      stack: json["stack"] is List ? (json["stack"] as List).map((item) => item).toList() : [],
+      stack: json["stack"] is List
+          ? (json["stack"] as List).map((item) => item).toList()
+          : [],
       data: json["data"],
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
       "statusCode": statusCode,
@@ -478,6 +487,7 @@ class ErrorResponse implements Exception {
     }
     return result;
   }
+
   ErrorResponse copyWith({
     int? statusCode,
     String? statusMessage,
@@ -492,6 +502,3 @@ class ErrorResponse implements Exception {
     );
   }
 }
-
-
-

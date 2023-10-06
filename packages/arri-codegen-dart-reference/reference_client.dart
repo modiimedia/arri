@@ -2,10 +2,12 @@
 import "dart:convert";
 import "package:arri_client/arri_client.dart";
 
-class Client {
+final _errorBuilder = TestClientErrorBuilder();
+
+class TestClient {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const Client({
+  const TestClient({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
@@ -20,28 +22,29 @@ class Client {
       parser: (body) => GetStatusResponse.fromJson(
         json.decode(body),
       ),
+      errorBuilder: _errorBuilder,
     );
   }
 
-  ClientUsersService get users {
-    return ClientUsersService(
+  TestClientUsersService get users {
+    return TestClientUsersService(
       baseUrl: _baseUrl,
       headers: _headers,
     );
   }
 }
 
-class ClientUsersService {
+class TestClientUsersService {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const ClientUsersService({
+  const TestClientUsersService({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
         _headers = headers;
 
-  ClientUsersSettingsService get settings {
-    return ClientUsersSettingsService(
+  TestClientUsersSettingsService get settings {
+    return TestClientUsersSettingsService(
       baseUrl: _baseUrl,
       headers: _headers,
     );
@@ -56,6 +59,7 @@ class ClientUsersService {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
+      errorBuilder: _errorBuilder,
     );
   }
 
@@ -68,14 +72,15 @@ class ClientUsersService {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
+      errorBuilder: _errorBuilder,
     );
   }
 }
 
-class ClientUsersSettingsService {
+class TestClientUsersSettingsService {
   final String _baseUrl;
   final Map<String, String> _headers;
-  const ClientUsersSettingsService({
+  const TestClientUsersSettingsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
   })  : _baseUrl = baseUrl,
@@ -88,6 +93,7 @@ class ClientUsersSettingsService {
       headers: _headers,
       params: null,
       parser: (body) {},
+      errorBuilder: _errorBuilder,
     );
   }
 }
@@ -541,19 +547,19 @@ class UpdateUserParams {
   }
 }
 
-class ClientError implements Exception {
+class TestClientError implements Exception {
   final int statusCode;
   final String statusMessage;
   final dynamic data;
   final String? stack;
-  const ClientError({
+  const TestClientError({
     required this.statusCode,
     required this.statusMessage,
     required this.data,
     required this.stack,
   });
-  factory ClientError.fromJson(Map<String, dynamic> json) {
-    return ClientError(
+  factory TestClientError.fromJson(Map<String, dynamic> json) {
+    return TestClientError(
       statusCode: intFromDynamic(json["statusCode"], 0),
       statusMessage: typeFromDynamic<String>(json["statusMessage"], ""),
       data: json["data"],
@@ -570,17 +576,22 @@ class ClientError implements Exception {
     return result;
   }
 
-  ClientError copyWith({
+  TestClientError copyWith({
     int? statusCode,
     String? statusMessage,
     dynamic data,
     String? stack,
   }) {
-    return ClientError(
+    return TestClientError(
       statusCode: statusCode ?? this.statusCode,
       statusMessage: statusMessage ?? this.statusMessage,
       data: data ?? this.data,
       stack: stack ?? this.stack,
     );
   }
+}
+
+class TestClientErrorBuilder implements ArriErrorBuilder<TestClientError> {
+  TestClientError fromJson(Map<String, dynamic> json) =>
+      TestClientError.fromJson(json);
 }
