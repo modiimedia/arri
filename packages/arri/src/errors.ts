@@ -9,15 +9,12 @@ import {
 } from "h3";
 import { type ArriOptions } from "./app";
 
-export const ErrorResponse = a.object(
-    {
-        statusCode: a.int8(),
-        statusMessage: a.string(),
-        stack: a.array(a.any()),
-        data: a.optional(a.any()),
-    },
-    { id: "ErrorResponse" },
-);
+export const ErrorResponse = a.object({
+    statusCode: a.int8(),
+    statusMessage: a.string(),
+    stack: a.array(a.any()),
+    data: a.optional(a.any()),
+});
 
 export type ErrorResponse = a.infer<typeof ErrorResponse>;
 

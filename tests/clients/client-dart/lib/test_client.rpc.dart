@@ -2,6 +2,8 @@
 import "dart:convert";
 import "package:arri_client/arri_client.dart";
 
+final _errorBuilder = TestClientErrorBuilder();
+
 class TestClient {
   final String _baseUrl;
   final Map<String, String> _headers;
@@ -42,6 +44,7 @@ class TestClientUsersService {
       headers: _headers,
       params: null,
       parser: (body) {},
+      errorBuilder: _errorBuilder,
     );
   }
 }
@@ -64,6 +67,7 @@ class TestClientPostsService {
       parser: (body) => Post.fromJson(
         json.decode(body),
       ),
+      errorBuilder: _errorBuilder,
     );
   }
 
@@ -76,6 +80,7 @@ class TestClientPostsService {
       parser: (body) => PostListResponse.fromJson(
         json.decode(body),
       ),
+      errorBuilder: _errorBuilder,
     );
   }
 
@@ -88,6 +93,7 @@ class TestClientPostsService {
       parser: (body) => Post.fromJson(
         json.decode(body),
       ),
+      errorBuilder: _errorBuilder,
     );
   }
 }
@@ -402,7 +408,7 @@ class UpdatePostParamsData {
   final String? title;
   final String? description;
   final String? content;
-  final List<String?>? tags;
+  final List<String>? tags;
   const UpdatePostParamsData({
     this.title,
     this.description,
@@ -416,7 +422,7 @@ class UpdatePostParamsData {
       content: nullableTypeFromDynamic<String>(json["content"]),
       tags: json["tags"] is List
           ? (json["tags"] as List)
-              .map((item) => nullableTypeFromDynamic<String>(item))
+              .map((item) => typeFromDynamic<String>(item, ""))
               .toList()
           : null,
     );
@@ -454,19 +460,19 @@ class UpdatePostParamsData {
   }
 }
 
-class ErrorResponse implements Exception {
+class TestClientError implements Exception {
   final int statusCode;
   final String statusMessage;
   final List<dynamic> stack;
   final dynamic data;
-  const ErrorResponse({
+  const TestClientError({
     required this.statusCode,
     required this.statusMessage,
     required this.stack,
     this.data,
   });
-  factory ErrorResponse.fromJson(Map<String, dynamic> json) {
-    return ErrorResponse(
+  factory TestClientError.fromJson(Map<String, dynamic> json) {
+    return TestClientError(
       statusCode: intFromDynamic(json["statusCode"], 0),
       statusMessage: typeFromDynamic<String>(json["statusMessage"], ""),
       stack: json["stack"] is List
@@ -488,17 +494,23 @@ class ErrorResponse implements Exception {
     return result;
   }
 
-  ErrorResponse copyWith({
+  TestClientError copyWith({
     int? statusCode,
     String? statusMessage,
     List<dynamic>? stack,
     dynamic data,
   }) {
-    return ErrorResponse(
+    return TestClientError(
       statusCode: statusCode ?? this.statusCode,
       statusMessage: statusMessage ?? this.statusMessage,
       stack: stack ?? this.stack,
       data: data ?? this.data,
     );
   }
+}
+
+class TestClientErrorBuilder implements ArriErrorBuilder<TestClientError> {
+  @override
+  TestClientError fromJson(Map<String, dynamic> json) =>
+      TestClientError.fromJson(json);
 }

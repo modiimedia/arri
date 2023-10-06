@@ -255,14 +255,14 @@ export const $$UpdatePostParamsData = {
   },
 };
 
-export interface ErrorResponse {
+export interface TestClientError {
   statusCode: number;
   statusMessage: string;
   stack: Array<any>;
   data?: any;
 }
-export const $$ErrorResponse = {
-  parse(input: Record<any, any>): ErrorResponse {
+export const $$TestClientError = {
+  parse(input: Record<any, any>): TestClientError {
     return {
       statusCode: typeof input.statusCode === "number" ? input.statusCode : 0,
       statusMessage:
@@ -271,7 +271,7 @@ export const $$ErrorResponse = {
       data: input.data,
     };
   },
-  serialize(input: ErrorResponse): string {
+  serialize(input: TestClientError): string {
     return JSON.stringify(input);
   },
 };

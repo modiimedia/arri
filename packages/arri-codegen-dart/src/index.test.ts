@@ -398,7 +398,7 @@ describe("Model Generation", () => {
             return Model(
               items: json["items"] is List ? (json["items"] as List).map((item) => doubleFromDynamic(item, 0)).toList() : [],
               nullableItems: json["nullableItems"] is List ? (json["nullableItems"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() : null,
-              objectItems: json["objectItems"] is List ? (json["objectItems"] as List).map((item) => item is Map<String, dynamic> ? ModelObjectItemsItem.fromJson(item) : null).toList() : null,
+              objectItems: json["objectItems"] is List ? (json["objectItems"] as List).map((item) => ModelObjectItemsItem.fromJson(item)).toList() : null,
             );
           }
           Map<String, dynamic> toJson() {
@@ -407,7 +407,7 @@ describe("Model Generation", () => {
               "nullableItems": nullableItems?.map((item) => item).toList(),
             };
             if (objectItems != null) {
-              result["objectItems"] = objectItems?.map((item) => item?.toJson()).toList();
+              result["objectItems"] = objectItems?.map((item) => item.toJson()).toList();
             }
             return result;
           }
@@ -448,6 +448,56 @@ describe("Model Generation", () => {
           }
         }
         `),
+        );
+    });
+    it("handles partials", () => {
+        const BaseSchema = a.object({
+            id: a.string(),
+            name: a.string(),
+            createdAt: a.timestamp(),
+            tags: a.array(a.string()),
+        });
+        const FinalSchema = a.partial(a.pick(BaseSchema, ["id", "tags"]));
+        const result = dartClassFromJtdSchema("Model", FinalSchema, {
+            existingClassNames: [],
+            isOptional: false,
+        });
+        expect(normalizeWhitespace(result.content)).toBe(
+            normalizeWhitespace(`class Model {
+          final String? id;
+          final List<String>? tags;
+          const Model({
+            this.id,
+            this.tags,
+          });
+          factory Model.fromJson(Map<String, dynamic> json) {
+            return Model(
+              id: nullableTypeFromDynamic<String>(json["id"]),
+              tags: json["tags"] is List ? (json["tags"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() : null,
+            );
+          }
+          Map<String, dynamic> toJson() {
+            final result = <String, dynamic>{
+
+            };
+            if (id != null) {
+              result["id"] = id;
+            }
+            if (tags != null) {
+              result["tags"] = tags?.map((item) => item).toList();
+            }
+            return result;
+          }
+          Model copyWith({
+            String? id,
+            List<String>? tags,
+          }) {
+            return Model(
+              id: id ?? this.id,
+              tags: tags ?? this.tags,
+            );
+          }
+        }`),
         );
     });
 });

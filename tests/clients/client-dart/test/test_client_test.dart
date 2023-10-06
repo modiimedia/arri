@@ -20,7 +20,7 @@ Future<void> main() async {
       await client.posts.getPosts(PostListParams(limit: 10000000000));
       expect(false, equals(true));
     } catch (err) {
-      if (err is ErrorResponse) {
+      if (err is TestClientError) {
         expect(err.statusCode, equals(400));
       } else if (err is ArriRequestError) {
         expect(err.statusCode, equals(400));
@@ -28,5 +28,18 @@ Future<void> main() async {
         expect(false, equals(true));
       }
     }
+  });
+  test("updatePost()", () async {
+    final result = await client.posts.updatePost(UpdatePostParams(
+        postId: 'test',
+        data: UpdatePostParamsData(
+          title: "Hello World",
+          tags: ["1", "2", "3"],
+        )));
+    expect(result.id, equals("test"));
+    expect(result.title, equals("Hello World"));
+    expect(result.tags[0], equals('1'));
+    expect(result.tags[1], equals('2'));
+    expect(result.tags[2], equals('3'));
   });
 }

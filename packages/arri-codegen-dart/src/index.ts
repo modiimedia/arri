@@ -107,6 +107,8 @@ export function createDartClient(
         });
         modelParts.push(result.content);
     });
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    const errorModelName = def.errors.metadata?.id || `${opts.clientName}Error`;
     const errorModel = dartClassFromJtdSchema(
         `${opts.clientName}Error`,
         def.errors,
@@ -122,7 +124,7 @@ export function createDartClient(
 import "dart:convert";
 import "package:arri_client/arri_client.dart";
 
-final _errorBuilder = ${opts.clientName}ErrorBuilder();
+final _errorBuilder = ${errorModelName}Builder();
 
 class ${opts.clientName} {
   final String _baseUrl;
@@ -140,12 +142,9 @@ ${serviceParts.join("\n")}
 
 ${modelParts.join("\n")}
 
-class ${opts.clientName}ErrorBuilder implements ArriErrorBuilder<${
-        opts.clientName
-    }Error> {
-    ${opts.clientName}Error fromJson(Map<String, dynamic> json) => ${
-        opts.clientName
-    }Error.fromJson(json);
+class ${errorModelName}Builder implements ArriErrorBuilder<${errorModelName}> {
+    @override
+    ${errorModelName} fromJson(Map<String, dynamic> json) => ${errorModelName}.fromJson(json);
 }
 `;
 }
@@ -389,9 +388,15 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
         if (prop.templates.typeName === "dynamic") {
             copyWithParamParts.push(`dynamic ${prop.key}`);
         } else {
-            copyWithParamParts.push(
-                `${prop.templates.typeName.replace("?", "")}? ${prop.key}`,
-            );
+            if (prop.templates.typeName.endsWith("?")) {
+                copyWithParamParts.push(
+                    `${prop.templates.typeName} ${prop.key}`,
+                );
+            } else {
+                copyWithParamParts.push(
+                    `${prop.templates.typeName}? ${prop.key}`,
+                );
+            }
         }
         copyWithInitParts.push(`${prop.key}: ${prop.key} ?? this.${prop.key}`);
     }
@@ -406,9 +411,15 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
         if (prop.templates.typeName === "dynamic") {
             copyWithParamParts.push(`dynamic ${prop.key}`);
         } else {
-            copyWithParamParts.push(
-                `${prop.templates.typeName.replace("?", "")}? ${prop.key}`,
-            );
+            if (prop.templates.typeName.endsWith("?")) {
+                copyWithParamParts.push(
+                    `${prop.templates.typeName} ${prop.key}`,
+                );
+            } else {
+                copyWithParamParts.push(
+                    `${prop.templates.typeName}? ${prop.key}`,
+                );
+            }
         }
         copyWithInitParts.push(`${prop.key}: ${prop.key} ?? this.${prop.key}`);
     }
@@ -443,7 +454,7 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
               (prop) =>
                   `"${prop.key}": ${prop.templates.toJsonTemplate(prop.key)}`,
           )
-          .join(",\n      ")},
+          .join(",\n      ")}${properties.length ? "," : ""}
     };
     ${optionalProperties
         .map(
@@ -524,11 +535,10 @@ function dartArrayFromJtdSchema(
     const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
     const jsonKey = nodePath.split(".").pop() ?? "";
     const key = camelCase(jsonKey);
-    const subtype = dartTypeFromJtdSchema(
-        `${nodePath}.Item`,
-        def.elements,
-        additionalOptions,
-    );
+    const subtype = dartTypeFromJtdSchema(`${nodePath}.Item`, def.elements, {
+        existingClassNames: additionalOptions.existingClassNames,
+        isOptional: false,
+    });
     const typeName = isNullable
         ? `List<${subtype.typeName}>?`
         : `List<${subtype.typeName}>`;
