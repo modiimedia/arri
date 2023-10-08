@@ -3,7 +3,9 @@ import "package:test/test.dart";
 import 'package:test_client_dart/test_client.rpc.dart';
 
 Future<void> main() async {
-  final client = TestClient(baseUrl: "http://127.0.0.1:2020");
+  final client = TestClient(
+      baseUrl: "http://127.0.0.1:2020", headers: {"x-test-client": 'test'});
+  final unauthenticatedClient = TestClient(baseUrl: "http://127.0.0.1:2020");
   test("getPost()", () async {
     final result = await client.posts.getPost(PostParams(postId: "12345"));
     expect(result.id, equals("12345"));
@@ -22,8 +24,6 @@ Future<void> main() async {
     } catch (err) {
       if (err is TestClientError) {
         expect(err.statusCode, equals(400));
-      } else if (err is ArriRequestError) {
-        expect(err.statusCode, equals(400));
       } else {
         expect(false, equals(true));
       }
@@ -41,5 +41,18 @@ Future<void> main() async {
     expect(result.tags[0], equals('1'));
     expect(result.tags[1], equals('2'));
     expect(result.tags[2], equals('3'));
+  });
+
+  test("unauthenticated requests", () async {
+    try {
+      await unauthenticatedClient.posts.getPost(PostParams(postId: "12345"));
+      expect(false, equals(true));
+    } catch (err) {
+      if (err is TestClientError) {
+        expect(err.statusCode, equals(401));
+        return;
+      }
+      expect(false, equals(true));
+    }
   });
 }

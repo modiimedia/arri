@@ -41,7 +41,6 @@ export class ArriApp implements ArriRouterBase {
     private procedures: Record<string, RpcDefinition> = {};
     private models: Record<string, ASchema> = {};
     private readonly middlewares: Middleware[] = [];
-    private readonly onRequest: ArriOptions["onRequest"];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
     private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
     private readonly onError: ArriOptions["onError"];
@@ -50,6 +49,16 @@ export class ArriApp implements ArriRouterBase {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
+            onRequest: opts.onRequest
+                ? async (event) => {
+                      if (event.path.startsWith(DEV_ENDPOINT_ROOT)) {
+                          return;
+                      }
+                      if (opts.onRequest) {
+                          await opts.onRequest(event);
+                      }
+                  }
+                : undefined,
         });
         this.onError = opts.onError;
         this.onAfterResponse = opts.onAfterResponse;
@@ -118,7 +127,8 @@ export class ArriApp implements ArriRouterBase {
         TParams extends AObjectSchema<any, any> | undefined,
         TResponse extends AObjectSchema<any, any> | undefined,
     >(procedure: ArriNamedProcedure<TParams, TResponse>) {
-        const path = getRpcPath(procedure.name, this.rpcRoutePrefix);
+        const path =
+            procedure.path ?? getRpcPath(procedure.name, this.rpcRoutePrefix);
         this.procedures[procedure.name] = createRpcDefinition(
             procedure.name,
             path,
@@ -132,7 +142,6 @@ export class ArriApp implements ArriRouterBase {
         }
         if (isAObjectSchema(procedure.response)) {
             const responseName = getRpcResponseName(procedure.name, procedure);
-
             if (responseName) {
                 this.models[responseName] = procedure.response;
             }

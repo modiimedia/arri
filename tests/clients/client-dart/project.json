@@ -9,7 +9,6 @@
             }
         },
         "integration-test": {
-            "dependsOn": ["pub-get"],
             "executor": "nx:run-commands",
             "options": {
                 "command": "dart test",

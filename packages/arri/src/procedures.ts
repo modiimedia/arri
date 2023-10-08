@@ -31,6 +31,7 @@ export interface ArriProcedure<
 > {
     description?: string;
     method?: HttpMethod;
+    path?: string;
     params: TParams;
     response: TResponse;
     handler: ArriProcedureHandler<
@@ -56,6 +57,7 @@ export type HandlerContext = Record<string, any>;
 export interface RpcHandlerContext<TParams = undefined>
     extends HandlerContext,
         Omit<H3EventContext, "params"> {
+    rpcName: string;
     params: TParams;
 }
 
@@ -180,7 +182,7 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    procedure: ArriProcedure<any, any>,
+    procedure: ArriNamedProcedure<any, any>,
     opts: RouteOptions,
 ) {
     const paramValidator = procedure.params
@@ -191,13 +193,11 @@ export function registerRpc(
         : undefined;
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: H3Event) => {
+        event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
             return "ok";
         }
         try {
-            if (opts.onRequest) {
-                await opts.onRequest(event);
-            }
             if (opts.middleware.length) {
                 for (const m of opts.middleware) {
                     await m(event);

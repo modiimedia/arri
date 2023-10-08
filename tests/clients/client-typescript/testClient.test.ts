@@ -1,7 +1,14 @@
 import { TestClient } from "./testClient.rpc";
 
-const client = new TestClient({ baseUrl: "http://127.0.0.1:2020" });
-
+const client = new TestClient({
+    baseUrl: "http://127.0.0.1:2020",
+    headers: {
+        "x-test-client": "test",
+    },
+});
+const unauthenticatedClient = new TestClient({
+    baseUrl: "http://127.0.0.1:2020",
+});
 test("posts.getPost", async () => {
     const result = await client.posts.getPost({ postId: "1" });
     expect(result.id).toBe("1");
@@ -41,4 +48,19 @@ test("posts.updatePost", async () => {
     expect(result.tags[0]).toBe("1");
     expect(result.tags[1]).toBe("2");
     expect(result.tags[2]).toBe("3");
+});
+
+test("unauthenticated request", async () => {
+    try {
+        await unauthenticatedClient.posts.getPost({
+            postId: "1",
+        });
+        expect(false);
+    } catch (err) {
+        if (typeof err === "object" && err !== null && "statusCode" in err) {
+            expect(err.statusCode).toBe(401);
+            return;
+        }
+        expect(false);
+    }
 });

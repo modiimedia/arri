@@ -172,6 +172,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         app.rpc({
             name: route.id,
             method: route.route.method,
+            path: route.route.path,
             params: route.route.params,
             response: route.route.response,
             handler: route.route.handler,

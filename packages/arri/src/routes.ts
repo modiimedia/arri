@@ -38,7 +38,7 @@ export interface ArriRoute<TPath extends string> {
 
 export type RouteOptions = Pick<
     ArriOptions,
-    "onAfterResponse" | "onBeforeResponse" | "onError" | "onRequest"
+    "onAfterResponse" | "onBeforeResponse" | "onError"
 > & { middleware: Middleware[] };
 
 export function registerRoute(
@@ -63,9 +63,6 @@ export function handleRoute(
 ) {
     const handler = defineEventHandler(async (event) => {
         try {
-            if (opts.onRequest) {
-                await opts.onRequest(event);
-            }
             if (opts.middleware.length) {
                 for (const m of opts.middleware) {
                     await m(event);

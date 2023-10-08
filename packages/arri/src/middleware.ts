@@ -1,6 +1,14 @@
-import { type H3Event } from "h3";
+import { type H3EventContext, type H3Event } from "h3";
 
-export type Middleware = (event: H3Event) => void | Promise<void>;
+interface MiddlewareContext extends H3EventContext {
+    rpcName?: string;
+}
+
+interface MiddlewareEvent extends H3Event {
+    context: MiddlewareContext;
+}
+
+export type Middleware = (event: MiddlewareEvent) => void | Promise<void>;
 export const defineMiddleware = (middleware: Middleware) => middleware;
 
 export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
