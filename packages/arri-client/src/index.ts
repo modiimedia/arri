@@ -1,24 +1,29 @@
-import { validate, a } from "arri-validate";
-import { ofetch } from "ofetch";
+import { ofetch, type FetchError } from "ofetch";
 
 export interface ArriRequestOpts<
-    T,
-    P extends Record<any, any> | undefined = undefined,
+    TType,
+    TParams extends Record<any, any> | undefined = undefined,
+    TError extends Error = Error,
 > {
     url: string;
     method: string;
     headers?: any;
-    params?: P;
-    parser: (input: string) => T;
-    serializer: (input: P) => P extends undefined ? undefined : string;
+    params?: TParams;
+    parser: (input: Record<any, any>) => TType;
+    errorParser: (input: Record<any, any>) => TError;
+    serializer: (
+        input: TParams,
+    ) => TParams extends undefined ? undefined : string;
 }
 
 export async function arriRequest<
-    T,
-    P extends Record<any, any> | undefined = undefined,
->(opts: ArriRequestOpts<T, P>): Promise<T> {
+    TType,
+    TParams extends Record<any, any> | undefined = undefined,
+    TError extends Error = Error,
+>(opts: ArriRequestOpts<TType, TParams, TError>): Promise<TType> {
     let url = opts.url;
     let body: undefined | string;
+    let contentType: undefined | string;
     switch (opts.method) {
         case "get":
         case "head":
@@ -34,59 +39,49 @@ export async function arriRequest<
         default:
             if (opts.params && typeof opts.params === "object") {
                 body = opts.serializer(opts.params);
+                contentType = "application/json";
             }
             break;
     }
-    const result = await ofetch<T>(url, {
-        method: opts.method,
-        body,
-        headers: { ...opts.headers, "Content-Type": "application/json" },
-        parseResponse: opts.parser,
-    });
-    return result;
+    try {
+        const result = await ofetch(url, {
+            method: opts.method,
+            body,
+            headers: { ...opts.headers, "Content-Type": contentType },
+        });
+        return opts.parser(result);
+    } catch (err) {
+        const error = err as any as FetchError;
+        const parsedError = opts.errorParser(error.data);
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw parsedError;
+    }
 }
 
 export async function arriSafeRequest<
-    T,
-    P extends Record<any, any> | undefined = undefined,
->(opts: ArriRequestOpts<T, P>): Promise<SafeResponse<T>> {
+    TType,
+    TParams extends Record<any, any> | undefined = undefined,
+    TError extends Error = Error,
+>(
+    opts: ArriRequestOpts<TType, TParams, TError>,
+): Promise<SafeResponse<TType, TError>> {
     try {
-        const result = await arriRequest<T, P>(opts);
+        const result = await arriRequest<TType, TParams>(opts);
         return {
             success: true,
             value: result,
         };
     } catch (err) {
-        if (validate({} as any, err)) {
-            return {
-                success: false,
-                error: err,
-            };
-        }
         return {
             success: false,
-            error: {
-                name: "UNKNOWN",
-                statusCode: 400,
-                statusMessage: "Unknown error",
-                data: err,
-            } satisfies ArriRequestError,
+            error: err as any as TError,
         };
     }
 }
 
-export const ArriRequestError = a.object({
-    name: a.string(),
-    statusCode: a.int8(),
-    statusMessage: a.string(),
-    data: a.optional(a.any()),
-});
-
-export type ArriRequestError = a.infer<typeof ArriRequestError>;
-
-export type SafeResponse<T> =
+export type SafeResponse<T, E> =
     | {
           success: true;
           value: T;
       }
-    | { success: false; error: ArriRequestError };
+    | { success: false; error: E };

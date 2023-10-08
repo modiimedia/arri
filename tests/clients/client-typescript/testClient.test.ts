@@ -1,9 +1,9 @@
-import { TestClient } from "./testClient.rpc";
+import { TestClient, TestClientError } from "./testClient.rpc";
 
 const client = new TestClient({
     baseUrl: "http://127.0.0.1:2020",
     headers: {
-        "x-test-client": "test",
+        "x-test-header": "test",
     },
 });
 const unauthenticatedClient = new TestClient({
@@ -27,6 +27,12 @@ test("posts.getPosts", async () => {
         expect(false);
     } catch (err) {
         expect(err !== undefined);
+        expect(err instanceof TestClientError);
+        if (err instanceof TestClientError) {
+            console.log(err);
+            console.log(err.data);
+            expect(err.data.statusCode).toBe(400);
+        }
     }
 });
 

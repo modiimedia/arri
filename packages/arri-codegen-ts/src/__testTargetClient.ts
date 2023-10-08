@@ -24,7 +24,8 @@ export class Client {
             method: "get",
             headers: this.headers,
             params: undefined,
-            parser: (input) => $$GetStatusResponse.parse(JSON.parse(input)),
+            parser: $$GetStatusResponse.parse,
+            errorParser: $$ClientError.parse,
             serializer: (_) => {},
         });
     }
@@ -47,7 +48,8 @@ export class ClientUsersService {
             method: "get",
             headers: this.headers,
             params,
-            parser: (input) => $$User.parse(JSON.parse(input)),
+            parser: $$User.parse,
+            errorParser: $$ClientError.parse,
             serializer: $$UserParams.serialize,
         });
     }
@@ -58,7 +60,8 @@ export class ClientUsersService {
             method: "post",
             headers: this.headers,
             params,
-            parser: (input) => $$User.parse(JSON.parse(input)),
+            parser: $$User.parse,
+            errorParser: $$ClientError.parse,
             serializer: $$UpdateUserParams.serialize,
         });
     }
@@ -80,6 +83,7 @@ export class ClientUsersSettingsService {
             headers: this.headers,
             params: undefined,
             parser: (_) => {},
+            errorParser: $$ClientError.parse,
             serializer: (_) => {},
         });
     }
@@ -337,16 +341,23 @@ export const $$UpdateUserParams = {
         return JSON.stringify(input);
     },
 };
-
-export interface ClientError {
+export interface ClientErrorData {
     statusCode: number;
     statusMessage: string;
     data: any;
     stack: string | null;
 }
+export class ClientError extends Error {
+    data: ClientErrorData;
+
+    constructor(data: ClientErrorData) {
+        super("instance of ClientError");
+        this.data = data;
+    }
+}
 export const $$ClientError = {
     parse(input: Record<any, any>): ClientError {
-        return {
+        return new ClientError({
             statusCode:
                 typeof input.statusCode === "number" ? input.statusCode : 0,
             statusMessage:
@@ -355,7 +366,7 @@ export const $$ClientError = {
                     : "",
             data: input.data,
             stack: typeof input.stack === "string" ? input.stack : null,
-        };
+        });
     },
     serialize(input: ClientError): string {
         return JSON.stringify(input);

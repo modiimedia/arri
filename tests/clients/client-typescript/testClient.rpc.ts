@@ -33,7 +33,8 @@ export class TestClientPostsService {
       method: "get",
       headers: this.headers,
       params,
-      parser: (input) => $$Post.parse(JSON.parse(input)),
+      parser: $$Post.parse,
+      errorParser: $$TestClientError.parse,
       serializer: $$PostParams.serialize,
     });
   }
@@ -43,7 +44,8 @@ export class TestClientPostsService {
       method: "get",
       headers: this.headers,
       params,
-      parser: (input) => $$PostListResponse.parse(JSON.parse(input)),
+      parser: $$PostListResponse.parse,
+      errorParser: $$TestClientError.parse,
       serializer: $$PostListParams.serialize,
     });
   }
@@ -53,7 +55,8 @@ export class TestClientPostsService {
       method: "post",
       headers: this.headers,
       params,
-      parser: (input) => $$Post.parse(JSON.parse(input)),
+      parser: $$Post.parse,
+      errorParser: $$TestClientError.parse,
       serializer: $$UpdatePostParams.serialize,
     });
   }
@@ -233,21 +236,29 @@ export const $$UpdatePostParamsData = {
   },
 };
 
-export interface TestClientError {
+export interface TestClientErrorData {
   statusCode: number;
   statusMessage: string;
   stack: Array<any>;
   data?: any;
 }
+export class TestClientError extends Error {
+  data: TestClientErrorData;
+
+  constructor(data: TestClientErrorData) {
+    super("instance of TestClientError");
+    this.data = data;
+  }
+}
 export const $$TestClientError = {
   parse(input: Record<any, any>): TestClientError {
-    return {
+    return new TestClientError({
       statusCode: typeof input.statusCode === "number" ? input.statusCode : 0,
       statusMessage:
         typeof input.statusMessage === "string" ? input.statusMessage : "",
       stack: Array.isArray(input.stack) ? input.stack.map((item) => item) : [],
       data: input.data,
-    };
+    });
   },
   serialize(input: TestClientError): string {
     return JSON.stringify(input);

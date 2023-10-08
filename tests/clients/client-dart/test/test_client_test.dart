@@ -1,10 +1,9 @@
-import "package:arri_client/arri_client.dart";
 import "package:test/test.dart";
 import 'package:test_client_dart/test_client.rpc.dart';
 
 Future<void> main() async {
   final client = TestClient(
-      baseUrl: "http://127.0.0.1:2020", headers: {"x-test-client": 'test'});
+      baseUrl: "http://127.0.0.1:2020", headers: {"x-test-header": 'test'});
   final unauthenticatedClient = TestClient(baseUrl: "http://127.0.0.1:2020");
   test("getPost()", () async {
     final result = await client.posts.getPost(PostParams(postId: "12345"));
@@ -30,17 +29,26 @@ Future<void> main() async {
     }
   });
   test("updatePost()", () async {
-    final result = await client.posts.updatePost(UpdatePostParams(
-        postId: 'test',
-        data: UpdatePostParamsData(
-          title: "Hello World",
-          tags: ["1", "2", "3"],
-        )));
-    expect(result.id, equals("test"));
-    expect(result.title, equals("Hello World"));
-    expect(result.tags[0], equals('1'));
-    expect(result.tags[1], equals('2'));
-    expect(result.tags[2], equals('3'));
+    try {
+      final result = await client.posts.updatePost(UpdatePostParams(
+          postId: 'test',
+          data: UpdatePostParamsData(
+            title: "Hello World",
+            tags: ["1", "2", "3"],
+          )));
+      expect(result.id, equals("test"));
+      expect(result.title, equals("Hello World"));
+      expect(result.tags[0], equals('1'));
+      expect(result.tags[1], equals('2'));
+      expect(result.tags[2], equals('3'));
+    } catch (err) {
+      if (err is TestClientError) {
+        print("${err.statusCode} ${err.statusMessage}");
+      } else {
+        print(err.toString());
+      }
+      expect(false, equals(true));
+    }
   });
 
   test("unauthenticated requests", () async {
