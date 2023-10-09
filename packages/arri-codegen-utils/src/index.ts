@@ -1,4 +1,4 @@
-import { type SchemaFormProperties, isPropertiesForm } from "@modii/jtd";
+import { type SchemaFormProperties } from "@modii/jtd";
 export * from "@modii/jtd";
 export * from "scule";
 
@@ -42,7 +42,6 @@ export interface AppDefinition {
     };
     procedures: Record<string, RpcDefinition>;
     models: Record<string, SchemaFormProperties>;
-    errors: SchemaFormProperties;
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {
@@ -57,9 +56,6 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
         return false;
     }
     if (typeof inputObj.models !== "object") {
-        return false;
-    }
-    if (!isPropertiesForm(inputObj.errors)) {
         return false;
     }
     return true;

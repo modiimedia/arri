@@ -54,6 +54,15 @@ test("posts.updatePost", async () => {
     expect(result.tags[0]).toBe("1");
     expect(result.tags[1]).toBe("2");
     expect(result.tags[2]).toBe("3");
+
+    const result2 = await client.posts.updatePost({
+        postId: "1",
+        data: {
+            title: "hi",
+        },
+    });
+    expect(result2.id).toBe("1");
+    expect(result2.title).toBe("hi");
 });
 
 test("unauthenticated request", async () => {

@@ -225,9 +225,7 @@ export const $$UpdatePostParamsData = {
         typeof input.description === "string" ? input.description : undefined,
       content: typeof input.content === "string" ? input.content : undefined,
       tags: Array.isArray(input.tags)
-        ? input.tags.map((item) =>
-            typeof item === "string" ? item : undefined,
-          )
+        ? input.tags.map((item) => (typeof item === "string" ? item : ""))
         : undefined,
     };
   },

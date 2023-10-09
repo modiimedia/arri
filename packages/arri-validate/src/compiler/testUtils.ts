@@ -429,4 +429,29 @@ export const testSuites: Record<
         goodInputs: [{ description: "hello\nworld\nhow are you" }],
         badInputs: [null, false],
     },
+    "object with nested modifiers": {
+        schema: a.object({
+            id: a.string(),
+            data: a.partial(
+                a.pick(
+                    a.object({
+                        name: a.string(),
+                        description: a.string(),
+                        createdAt: a.timestamp(),
+                    }),
+                    ["name", "createdAt"],
+                ),
+            ),
+        }),
+        goodInputs: [
+            { id: "12345", data: {} },
+            { id: "12345", data: { name: "john", createdAt: new Date() } },
+            { id: "1", data: { createdAt: new Date() } },
+            { id: "2", data: { name: "" } },
+        ],
+        badInputs: [
+            { id: 1, data: true },
+            { id: "1", data: { name: "", createdAt: 1 } },
+        ],
+    },
 };

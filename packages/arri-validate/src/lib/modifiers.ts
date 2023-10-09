@@ -82,7 +82,7 @@ export function optional<T>(
     opts: ASchemaOptions = {},
 ): ASchema<T | undefined> {
     const isType = (val: unknown): val is T | undefined => {
-        if (typeof val === "undefined") {
+        if (val === undefined) {
             return true;
         }
         return input.metadata[SCHEMA_METADATA].validate(val);
@@ -98,13 +98,16 @@ export function optional<T>(
                 validate: isType,
                 parse: (val, data) => {
                     if (typeof val === "undefined") {
-                        return val;
+                        return undefined;
+                    }
+                    if (data.instancePath.length === 0 && val === "undefined") {
+                        return undefined;
                     }
                     return input.metadata[SCHEMA_METADATA].parse(val, data);
                 },
                 coerce: (val, data) => {
                     if (typeof val === "undefined") {
-                        return val;
+                        return undefined;
                     }
                     if (val === "undefined") {
                         return undefined;

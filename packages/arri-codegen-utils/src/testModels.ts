@@ -107,5 +107,4 @@ export const TestAppDefinition: AppDefinition = {
         UserParams: TestUserParams,
         UpdateUserParams: TestUpdateUserParams,
     },
-    errors: TestErrorResponse,
 };
