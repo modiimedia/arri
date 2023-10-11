@@ -1,4 +1,5 @@
-import { TestClient, TestClientError } from "./testClient.rpc";
+import { ArriRequestError } from "arri-client";
+import { TestClient } from "./testClient.rpc";
 
 const client = new TestClient({
     baseUrl: "http://127.0.0.1:2020",
@@ -27,8 +28,8 @@ test("posts.getPosts", async () => {
         expect(false);
     } catch (err) {
         expect(err !== undefined);
-        expect(err instanceof TestClientError);
-        if (err instanceof TestClientError) {
+        expect(err instanceof ArriRequestError);
+        if (err instanceof ArriRequestError) {
             console.log(err);
             console.log(err.data);
             expect(err.data.statusCode).toBe(400);

@@ -49,7 +49,7 @@ export async function arriRequest<
         return opts.parser(result);
     } catch (err) {
         const error = err as any as FetchError;
-        throw new ArriError(error.data);
+        throw new ArriRequestError(error.data);
     }
 }
 
@@ -64,7 +64,7 @@ export async function arriSafeRequest<
             value: result,
         };
     } catch (err) {
-        if (err instanceof ArriError) {
+        if (err instanceof ArriRequestError) {
             return {
                 success: false,
                 error: err,
@@ -73,7 +73,7 @@ export async function arriSafeRequest<
         if (err instanceof FetchError) {
             return {
                 success: false,
-                error: new ArriError({
+                error: new ArriRequestError({
                     statusCode: err.statusCode ?? 0,
                     statusMessage: err.statusMessage ?? "",
                     stack: err.stack,
@@ -83,7 +83,7 @@ export async function arriSafeRequest<
         }
         return {
             success: false,
-            error: new ArriError({
+            error: new ArriRequestError({
                 statusCode: 500,
                 statusMessage: "Unknown error",
             }),
@@ -96,9 +96,9 @@ export type SafeResponse<T> =
           success: true;
           value: T;
       }
-    | { success: false; error: ArriError };
+    | { success: false; error: ArriRequestError };
 
-class ArriError extends Error {
+export class ArriRequestError extends Error {
     statusCode: number;
     statusMessage: string;
     data?: any;
@@ -118,12 +118,12 @@ class ArriError extends Error {
 
     static fromJson(json: any) {
         if (typeof json !== "object" || json === null) {
-            return new ArriError({
+            return new ArriRequestError({
                 statusCode: 500,
                 statusMessage: "Unknown error",
             });
         }
-        return new ArriError({
+        return new ArriRequestError({
             statusCode:
                 typeof json.statusCode === "number" ? json.statusCode : 500,
             statusMessage:

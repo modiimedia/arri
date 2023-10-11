@@ -14,6 +14,7 @@ import {
     type H3Event,
     sendError,
     setResponseStatus,
+    isPreflightRequest,
 } from "h3";
 import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./middleware";
@@ -41,6 +42,7 @@ export class ArriApp implements ArriRouterBase {
     private procedures: Record<string, RpcDefinition> = {};
     private models: Record<string, ASchema> = {};
     private readonly middlewares: Middleware[] = [];
+    private readonly onRequest: ArriOptions["onRequest"];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
     private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
     private readonly onError: ArriOptions["onError"];
@@ -49,17 +51,8 @@ export class ArriApp implements ArriRouterBase {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
-            onRequest: opts.onRequest
-                ? async (event) => {
-                      if (event.path.startsWith(DEV_ENDPOINT_ROOT)) {
-                          return;
-                      }
-                      if (opts.onRequest) {
-                          await opts.onRequest(event);
-                      }
-                  }
-                : undefined,
         });
+        this.onRequest = opts.onRequest;
         this.onError = opts.onError;
         this.onAfterResponse = opts.onAfterResponse;
         this.onBeforeResponse = opts.onBeforeResponse;
@@ -88,6 +81,9 @@ export class ArriApp implements ArriRouterBase {
                 setResponseStatus(event, 404);
                 const error = defineError(404);
                 try {
+                    if (this.onRequest) {
+                        await this.onRequest(event);
+                    }
                     if (this.middlewares.length) {
                         for (const m of this.middlewares) {
                             await m(event);
@@ -148,6 +144,7 @@ export class ArriApp implements ArriRouterBase {
         }
         registerRpc(this.h3Router, path, procedure, {
             middleware: this.middlewares,
+            onRequest: this.onRequest,
             onError: this.onError,
             onAfterResponse: this.onAfterResponse,
             onBeforeResponse: this.onBeforeResponse,
@@ -157,6 +154,7 @@ export class ArriApp implements ArriRouterBase {
     route<TPath extends string>(route: ArriRoute<TPath>) {
         registerRoute(this.h3Router, route, {
             middleware: this.middlewares,
+            onRequest: this.onRequest,
             onError: this.onError,
             onAfterResponse: this.onAfterResponse,
             onBeforeResponse: this.onBeforeResponse,

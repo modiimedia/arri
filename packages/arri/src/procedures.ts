@@ -198,6 +198,9 @@ export function registerRpc(
             return "ok";
         }
         try {
+            if (opts.onRequest) {
+                await opts.onRequest(event);
+            }
             if (opts.middleware.length) {
                 for (const m of opts.middleware) {
                     await m(event);

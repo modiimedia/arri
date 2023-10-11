@@ -6,6 +6,7 @@ import {
     setHeader,
     send,
     type H3EventContext,
+    isPreflightRequest,
 } from "h3";
 import { type ArriOptions } from "./app";
 import { handleH3Error } from "./errors";
@@ -38,7 +39,7 @@ export interface ArriRoute<TPath extends string> {
 
 export type RouteOptions = Pick<
     ArriOptions,
-    "onAfterResponse" | "onBeforeResponse" | "onError"
+    "onAfterResponse" | "onBeforeResponse" | "onError" | "onRequest"
 > & { middleware: Middleware[] };
 
 export function registerRoute(
@@ -62,7 +63,13 @@ export function handleRoute(
     opts: RouteOptions,
 ) {
     const handler = defineEventHandler(async (event) => {
+        if (isPreflightRequest(event)) {
+            return "ok";
+        }
         try {
+            if (opts.onRequest) {
+                await opts.onRequest(event);
+            }
             if (opts.middleware.length) {
                 for (const m of opts.middleware) {
                     await m(event);
@@ -90,6 +97,7 @@ export function handleRoute(
         } catch (err) {
             await handleH3Error(err, event, opts.onError);
         }
+        return "";
     });
 
     switch (method) {
