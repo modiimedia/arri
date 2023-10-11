@@ -306,6 +306,7 @@ export const testSuites: Record<
                 createdAt: new Date(),
                 count: 0,
                 isActive: true,
+                tags: [],
                 metadata: {
                     a: "a",
                     b: "b",
@@ -335,12 +336,17 @@ export const testSuites: Record<
             {
                 id: "",
                 createdAt: new Date(),
-                type: "",
+                type: "a",
             },
             { id: "" },
             {},
         ],
-        badInputs: [{ id: 1, createdAt: null }, null, "hello world"],
+        badInputs: [
+            { id: 1, createdAt: null },
+            null,
+            "hello world",
+            { id: "", createdAt: new Date(), type: "" },
+        ],
     },
     "array of strings": {
         schema: a.array(a.string()),

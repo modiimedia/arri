@@ -11,6 +11,7 @@ import {
     type ValidationData,
     isObject,
 } from "../schemas";
+import { optional } from "./modifiers";
 
 /**
  * Create an object schema
@@ -397,64 +398,13 @@ export function partial<
         nullable: schema.nullable,
     };
     for (const key of Object.keys(schema.properties)) {
-        (newSchema.optionalProperties as any)[key] = schema.properties[key];
+        const prop = schema.properties[key];
+        (newSchema.optionalProperties as any)[key] = optional(prop);
     }
     if (schema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
             const prop = schema.optionalProperties[key];
-            (newSchema.optionalProperties as any)[key] = {
-                ...prop,
-                metadata: {
-                    id: undefined,
-                    description: prop.metadata.description,
-                    [SCHEMA_METADATA]: {
-                        output: {} as any,
-                        coerce(input, data) {
-                            if (typeof input === "undefined") {
-                                return undefined;
-                            }
-                            if (input === "undefined") {
-                                return undefined;
-                            }
-                            return prop.metadata[SCHEMA_METADATA].coerce(
-                                input,
-                                data,
-                            );
-                        },
-                        parse(input, data) {
-                            if (typeof input === "undefined") {
-                                return undefined;
-                            }
-                            if (
-                                data.instancePath.length === 0 &&
-                                input === "undefined"
-                            ) {
-                                return undefined;
-                            }
-                            return prop.metadata[SCHEMA_METADATA].parse(
-                                input,
-                                data,
-                            );
-                        },
-                        validate(input): input is Partial<InferType<TSchema>> {
-                            if (typeof input === "undefined") {
-                                return true;
-                            }
-                            return prop.metadata[SCHEMA_METADATA].validate(
-                                input,
-                            );
-                        },
-                        serialize(input) {
-                            if (typeof input === "undefined") {
-                                return "undefined";
-                            }
-                            return prop.metadata[SCHEMA_METADATA].serialize(
-                                input,
-                            );
-                        },
-                    },
-                },
-            } satisfies ASchema;
+            (newSchema.optionalProperties as any)[key] = prop;
         }
     }
     const meta: ASchema["metadata"] = {

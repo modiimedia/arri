@@ -15,7 +15,7 @@ import {
     sendError,
     setResponseStatus,
 } from "h3";
-import { ErrorResponse, defineError, handleH3Error } from "./errors";
+import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./middleware";
 import {
     createRpcDefinition,
@@ -169,7 +169,6 @@ export class ArriApp implements ArriRouterBase {
             info: this.appInfo,
             procedures: {},
             models: this.models as any,
-            errors: ErrorResponse,
         };
         for (const key of Object.keys(this.procedures)) {
             const rpc = this.procedures[key];
