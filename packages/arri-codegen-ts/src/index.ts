@@ -422,7 +422,6 @@ export function tsObjectFromJtdSchema(
     additionalOptions: AdditionalOptions & {
         discriminatorKey?: string;
         discriminatorKeyValue?: string;
-        isError?: boolean;
     },
 ): TsProperty {
     const typeName = getTypeName(nodePath, def);
@@ -490,37 +489,20 @@ export function tsObjectFromJtdSchema(
     let content = "";
     const validatorPart = `export const $$${typeName} = {
             parse(input: Record<any, any>): ${typeName} {
-                return ${additionalOptions.isError ? `new ${typeName} (` : ""}{
+                return {
                     ${parserParts.join(",\n")},
-                }${additionalOptions.isError ? ")" : ""};
+                };
             },
             serialize(input: ${typeName}): string {
                 return JSON.stringify(input);
             }
         }`;
     if (!additionalOptions.existingTypeNames.includes(typeName)) {
-        if (additionalOptions.isError) {
-            content = `export interface ${typeName}Data {
-                ${fieldParts.join(`;\n    `)};
-            }
-            export class ${typeName} extends Error {
-                data: ${typeName}Data;
-
-                constructor(data: ${typeName}Data) {
-                    super("instance of ${typeName}")
-                    this.data = data;
-                }
-            }
-            ${validatorPart}
-            ${subContentParts.join("\n")}`;
-        } else {
-            content = `export interface ${typeName} {
+        content = `export interface ${typeName} {
         ${fieldParts.join(";\n    ")};
     }
     ${validatorPart}
     ${subContentParts.join("\n")}`;
-        }
-
         additionalOptions.existingTypeNames.push(typeName);
     }
     return {

@@ -24,16 +24,6 @@
                 "command": "node .output/server --host",
                 "cwd": "tests/server"
             }
-        },
-        "test": {
-            "dependsOn": ["build"],
-            "executor": "nx:run-commands",
-            "options": {
-                "commands": [
-                    "nx serve test-server",
-                    "wait-port 127.0.0.1:2020/status -t 30000 && nx run-many -t integration-test && fuser -k 2020/tcp"
-                ]
-            }
         }
     }
 }

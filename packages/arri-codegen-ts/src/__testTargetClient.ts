@@ -25,7 +25,6 @@ export class Client {
             headers: this.headers,
             params: undefined,
             parser: $$GetStatusResponse.parse,
-            errorParser: $$ClientError.parse,
             serializer: (_) => {},
         });
     }
@@ -49,7 +48,6 @@ export class ClientUsersService {
             headers: this.headers,
             params,
             parser: $$User.parse,
-            errorParser: $$ClientError.parse,
             serializer: $$UserParams.serialize,
         });
     }
@@ -61,7 +59,6 @@ export class ClientUsersService {
             headers: this.headers,
             params,
             parser: $$User.parse,
-            errorParser: $$ClientError.parse,
             serializer: $$UpdateUserParams.serialize,
         });
     }
@@ -83,7 +80,6 @@ export class ClientUsersSettingsService {
             headers: this.headers,
             params: undefined,
             parser: (_) => {},
-            errorParser: $$ClientError.parse,
             serializer: (_) => {},
         });
     }
@@ -338,37 +334,6 @@ export const $$UpdateUserParams = {
         };
     },
     serialize(input: UpdateUserParams): string {
-        return JSON.stringify(input);
-    },
-};
-export interface ClientErrorData {
-    statusCode: number;
-    statusMessage: string;
-    data: any;
-    stack: string | null;
-}
-export class ClientError extends Error {
-    data: ClientErrorData;
-
-    constructor(data: ClientErrorData) {
-        super("instance of ClientError");
-        this.data = data;
-    }
-}
-export const $$ClientError = {
-    parse(input: Record<any, any>): ClientError {
-        return new ClientError({
-            statusCode:
-                typeof input.statusCode === "number" ? input.statusCode : 0,
-            statusMessage:
-                typeof input.statusMessage === "string"
-                    ? input.statusMessage
-                    : "",
-            data: input.data,
-            stack: typeof input.stack === "string" ? input.stack : null,
-        });
-    },
-    serialize(input: ClientError): string {
         return JSON.stringify(input);
     },
 };
