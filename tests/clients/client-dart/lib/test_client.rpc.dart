@@ -37,7 +37,6 @@ class TestClientPostsService {
       parser: (body) => Post.fromJson(
         json.decode(body),
       ),
-      errorBuilder: _errorBuilder,
     );
   }
 
@@ -50,7 +49,6 @@ class TestClientPostsService {
       parser: (body) => PostListResponse.fromJson(
         json.decode(body),
       ),
-      errorBuilder: _errorBuilder,
     );
   }
 
@@ -63,7 +61,6 @@ class TestClientPostsService {
       parser: (body) => Post.fromJson(
         json.decode(body),
       ),
-      errorBuilder: _errorBuilder,
     );
   }
 }
