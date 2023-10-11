@@ -1,4 +1,4 @@
-import { ofetch, type FetchError } from "ofetch";
+import { ofetch, FetchError } from "ofetch";
 
 export interface ArriRequestOpts<
     TType,
