@@ -246,7 +246,6 @@ export function dartRpcFromDefinition(
       headers: _headers,
       params: ${paramsInput.length ? `params.toJson()` : "null"},
       parser: ${responseParser},
-      errorBuilder: _errorBuilder,
     );
   }`;
 }

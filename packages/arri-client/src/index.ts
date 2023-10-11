@@ -3,14 +3,12 @@ import { ofetch, type FetchError } from "ofetch";
 export interface ArriRequestOpts<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
-    TError extends Error = Error,
 > {
     url: string;
     method: string;
     headers?: any;
     params?: TParams;
     parser: (input: Record<any, any>) => TType;
-    errorParser: (input: Record<any, any>) => TError;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
@@ -19,8 +17,7 @@ export interface ArriRequestOpts<
 export async function arriRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
-    TError extends Error = Error,
->(opts: ArriRequestOpts<TType, TParams, TError>): Promise<TType> {
+>(opts: ArriRequestOpts<TType, TParams>): Promise<TType> {
     let url = opts.url;
     let body: undefined | string;
     let contentType: undefined | string;
@@ -52,19 +49,14 @@ export async function arriRequest<
         return opts.parser(result);
     } catch (err) {
         const error = err as any as FetchError;
-        const parsedError = opts.errorParser(error.data);
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
-        throw parsedError;
+        throw new ArriError(error.data);
     }
 }
 
 export async function arriSafeRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
-    TError extends Error = Error,
->(
-    opts: ArriRequestOpts<TType, TParams, TError>,
-): Promise<SafeResponse<TType, TError>> {
+>(opts: ArriRequestOpts<TType, TParams>): Promise<SafeResponse<TType>> {
     try {
         const result = await arriRequest<TType, TParams>(opts);
         return {
@@ -72,16 +64,74 @@ export async function arriSafeRequest<
             value: result,
         };
     } catch (err) {
+        if (err instanceof ArriError) {
+            return {
+                success: false,
+                error: err,
+            };
+        }
+        if (err instanceof FetchError) {
+            return {
+                success: false,
+                error: new ArriError({
+                    statusCode: err.statusCode ?? 0,
+                    statusMessage: err.statusMessage ?? "",
+                    stack: err.stack,
+                    data: err.data,
+                }),
+            };
+        }
         return {
             success: false,
-            error: err as any as TError,
+            error: new ArriError({
+                statusCode: 500,
+                statusMessage: "Unknown error",
+            }),
         };
     }
 }
 
-export type SafeResponse<T, E> =
+export type SafeResponse<T> =
     | {
           success: true;
           value: T;
       }
-    | { success: false; error: E };
+    | { success: false; error: ArriError };
+
+class ArriError extends Error {
+    statusCode: number;
+    statusMessage: string;
+    data?: any;
+
+    constructor(input: {
+        statusCode: number;
+        statusMessage: string;
+        stack?: string;
+        data?: any;
+    }) {
+        super(`ERROR ${input.statusCode}: ${input.statusMessage}`);
+        super.stack = input.stack;
+        this.statusCode = input.statusCode;
+        this.statusMessage = input.statusMessage;
+        this.data = input.data;
+    }
+
+    static fromJson(json: any) {
+        if (typeof json !== "object" || json === null) {
+            return new ArriError({
+                statusCode: 500,
+                statusMessage: "Unknown error",
+            });
+        }
+        return new ArriError({
+            statusCode:
+                typeof json.statusCode === "number" ? json.statusCode : 500,
+            statusMessage:
+                typeof json.statusMessage === "string"
+                    ? json.statusMessage
+                    : "",
+            stack: json.stack,
+            data: json.data,
+        });
+    }
+}

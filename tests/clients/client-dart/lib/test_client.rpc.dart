@@ -2,8 +2,6 @@
 import "dart:convert";
 import "package:arri_client/arri_client.dart";
 
-final _errorBuilder = TestClientErrorBuilder();
-
 class TestClient {
   final String _baseUrl;
   final Map<String, String> _headers;
@@ -430,59 +428,4 @@ class UpdatePostParamsData {
       tags: tags ?? this.tags,
     );
   }
-}
-
-class TestClientError implements Exception {
-  final int statusCode;
-  final String statusMessage;
-  final List<dynamic> stack;
-  final dynamic data;
-  const TestClientError({
-    required this.statusCode,
-    required this.statusMessage,
-    required this.stack,
-    this.data,
-  });
-  factory TestClientError.fromJson(Map<String, dynamic> json) {
-    return TestClientError(
-      statusCode: intFromDynamic(json["statusCode"], 0),
-      statusMessage: typeFromDynamic<String>(json["statusMessage"], ""),
-      stack: json["stack"] is List
-          ? (json["stack"] as List).map((item) => item).toList()
-          : [],
-      data: json["data"],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
-      "statusCode": statusCode,
-      "statusMessage": statusMessage,
-      "stack": stack.map((item) => item).toList(),
-    };
-    if (data != null) {
-      result["data"] = data;
-    }
-    return result;
-  }
-
-  TestClientError copyWith({
-    int? statusCode,
-    String? statusMessage,
-    List<dynamic>? stack,
-    dynamic data,
-  }) {
-    return TestClientError(
-      statusCode: statusCode ?? this.statusCode,
-      statusMessage: statusMessage ?? this.statusMessage,
-      stack: stack ?? this.stack,
-      data: data ?? this.data,
-    );
-  }
-}
-
-class TestClientErrorBuilder implements ArriErrorBuilder<TestClientError> {
-  @override
-  TestClientError fromJson(Map<String, dynamic> json) =>
-      TestClientError.fromJson(json);
 }

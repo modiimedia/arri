@@ -1,3 +1,4 @@
+import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
 import 'package:test_client_dart/test_client.rpc.dart';
 
@@ -21,7 +22,7 @@ Future<void> main() async {
       await client.posts.getPosts(PostListParams(limit: 10000000000));
       expect(false, equals(true));
     } catch (err) {
-      if (err is TestClientError) {
+      if (err is ArriRequestError) {
         expect(err.statusCode, equals(400));
       } else {
         expect(false, equals(true));
@@ -42,7 +43,7 @@ Future<void> main() async {
       expect(result.tags[1], equals('2'));
       expect(result.tags[2], equals('3'));
     } catch (err) {
-      if (err is TestClientError) {
+      if (err is ArriRequestError) {
         print("${err.statusCode} ${err.statusMessage}");
       } else {
         print(err.toString());
@@ -56,7 +57,7 @@ Future<void> main() async {
       await unauthenticatedClient.posts.getPost(PostParams(postId: "12345"));
       expect(false, equals(true));
     } catch (err) {
-      if (err is TestClientError) {
+      if (err is ArriRequestError) {
         expect(err.statusCode, equals(401));
         return;
       }

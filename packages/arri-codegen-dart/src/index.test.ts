@@ -64,7 +64,6 @@ describe("Service Generation", () => {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
-      errorBuilder: _errorBuilder,
     );
   }
   Future<User> updateUser(UserUpdateData params) {
@@ -76,7 +75,6 @@ describe("Service Generation", () => {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
-      errorBuilder: _errorBuilder,
     );
   }
 }
@@ -97,7 +95,6 @@ class UserSettingsService {
       parser: (body) => UserSettingsGetUserSettingsResponse.fromJson(
         json.decode(body),
       ),
-      errorBuilder: _errorBuilder,
     );
   }
 }`),
@@ -134,7 +131,6 @@ class UserSettingsService {
             headers: _headers,
             params: null,
             parser: (body) {},
-            errorBuilder: _errorBuilder,
           );
         }
       }`),
