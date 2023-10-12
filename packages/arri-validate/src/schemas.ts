@@ -33,12 +33,15 @@ export interface SchemaValidator<T> {
     validate: (input: unknown) => input is T;
 }
 
+export interface SchemaMetadata<T> {
+    [key: string]: any;
+    id?: string;
+    description?: string;
+    [SCHEMA_METADATA]: SchemaValidator<T>;
+}
+
 export interface ASchema<T = any> {
-    metadata: {
-        id?: string;
-        description?: string;
-        [SCHEMA_METADATA]: SchemaValidator<T>;
-    };
+    metadata: SchemaMetadata<T>;
     nullable?: boolean;
 }
 export function isASchema(input: unknown): input is ASchema {

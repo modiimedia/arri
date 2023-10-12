@@ -1,5 +1,4 @@
 import { Type } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { a } from "arri-validate";
 import { typeboxAdapter } from "./index";
 
@@ -126,28 +125,4 @@ it("parses objects in the expected way", () => {
     expect(!a.safeParse(TargetUserSchema, JSON.stringify(badInput)).success);
     expect(!a.safeParse(ConvertedUserSchema, badInput).success);
     expect(!a.safeParse(ConvertedUserSchema, JSON.stringify(badInput)).success);
-});
-
-it("Compiler Test", () => {
-    const UserReview = Type.Object({
-        id: Type.String(),
-        userId: Type.String(),
-        rating: Type.Integer(),
-        content: Type.String(),
-    });
-    const User = Type.Object({
-        id: Type.String(),
-        type: Type.Enum({
-            standard: "STANDARD",
-            admin: "ADMIN",
-        }),
-        reviews: Type.Array(UserReview),
-        settings: Type.Object({
-            theme: Type.Union([
-                Type.Literal("dark-mode"),
-                Type.Literal("light-mode"),
-                Type.Literal("system"),
-            ]),
-        }),
-    });
 });

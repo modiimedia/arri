@@ -30,9 +30,7 @@ test("posts.getPosts", async () => {
         expect(err !== undefined);
         expect(err instanceof ArriRequestError);
         if (err instanceof ArriRequestError) {
-            console.log(err);
-            console.log(err.data);
-            expect(err.data.statusCode).toBe(400);
+            expect(err.statusCode).toBe(400);
         }
     }
 });
@@ -73,10 +71,9 @@ test("unauthenticated request", async () => {
         });
         expect(false);
     } catch (err) {
-        if (typeof err === "object" && err !== null && "statusCode" in err) {
+        expect(err instanceof ArriRequestError);
+        if (err instanceof ArriRequestError) {
             expect(err.statusCode).toBe(401);
-            return;
         }
-        expect(false);
     }
 });

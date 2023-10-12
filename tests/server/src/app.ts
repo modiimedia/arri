@@ -1,19 +1,8 @@
-import {
-    ArriApp,
-    defineError,
-    defineMiddleware,
-    getHeader,
-    readBody,
-} from "arri";
+import { ArriApp, defineError, defineMiddleware, getHeader } from "arri";
 import usersRouter from "./routes/users";
 
 const app = new ArriApp({
     rpcRoutePrefix: "rpcs",
-    onRequest(event) {},
-    async onError(error, event) {
-        console.log("BODY", await readBody(event));
-        console.log(error);
-    },
 });
 
 app.use(

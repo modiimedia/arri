@@ -14,7 +14,6 @@ import {
     type H3Event,
     sendError,
     setResponseStatus,
-    isPreflightRequest,
 } from "h3";
 import { defineError, handleH3Error } from "./errors";
 import { type Middleware } from "./middleware";
