@@ -1,7 +1,6 @@
 import { type ASchema, type AObjectSchema } from "arri-validate";
 import { type ArriNamedProcedure } from "./procedures";
 import { type ArriRoute } from "./routes";
-export { defineRoute, type ArriRoute } from "./routes";
 
 export interface ArriRouterBase {
     rpc: <

@@ -19,16 +19,11 @@ import {
 } from "h3";
 import { type ArriOptions } from "./app";
 import { defineError, handleH3Error } from "./errors";
-import { type MiddlewareEvent, type Middleware } from "./middleware";
-
-export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
-    ? Record<Param, string> & NextPart
-    : NextPart;
-
-export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
-    ? ExtractParam<Segment, ExtractParams<Rest>>
-    : // eslint-disable-next-line @typescript-eslint/ban-types
-      ExtractParam<Path, {}>;
+import {
+    type MiddlewareEvent,
+    type Middleware,
+    type ExtractParams,
+} from "./middleware";
 
 export interface RouteEventContext<
     TPath extends string,
