@@ -142,12 +142,12 @@ export const getRpcMetaFromPath = (
     };
 };
 
-export async function transpileFilesContext(config: ResolvedArriConfig) {
+export async function transpileFiles(config: ResolvedArriConfig) {
     const outDir = path.resolve(config.rootDir, config.buildDir);
     const files = await globby(["**/*.ts"], {
         cwd: path.resolve(config.rootDir, config.srcDir),
     });
-    const ctx = await esbuild.context({
+    await esbuild.build({
         entryPoints: [
             ...files.map((file) =>
                 path.resolve(config.rootDir, config.srcDir, file),
@@ -159,5 +159,4 @@ export async function transpileFilesContext(config: ResolvedArriConfig) {
         target: "node18",
         platform: "node",
     });
-    return ctx;
 }

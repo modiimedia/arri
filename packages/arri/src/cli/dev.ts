@@ -10,11 +10,7 @@ import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
 import { isResolvedArriConfig, type ResolvedArriConfig } from "../config";
-import {
-    createRoutesModule,
-    setupWorkingDir,
-    transpileFilesContext,
-} from "./_common";
+import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
 const logger = createConsola().withTag("arri");
 
@@ -44,7 +40,7 @@ export default defineCommand({
 });
 
 const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(path.resolve(config.rootDir, ".output", "bundle.js"), {
+    listenAndWatch(path.resolve(config.rootDir, ".output", "server.js"), {
         public: true,
         port: config.port,
         logger,
@@ -57,7 +53,7 @@ async function bundleFilesContext(config: ResolvedArriConfig) {
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, "entry.js"),
         ],
-        outfile: path.resolve(config.rootDir, ".output", "bundle.js"),
+        outfile: path.resolve(config.rootDir, ".output", "server.js"),
         format: "esm",
         bundle: true,
         sourcemap: true,
@@ -71,9 +67,8 @@ async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     let fileWatcher: chokidar.FSWatcher | undefined;
     await Promise.all([createRoutesModule(config), createEntryModule(config)]);
-    const transpileFiles = await transpileFilesContext(config);
+    await transpileFiles(config);
     const bundleFiles = await bundleFilesContext(config);
-    await transpileFiles.rebuild();
     await bundleFiles.rebuild();
     const listener = await startListener(config, true);
     setTimeout(async () => {
@@ -86,7 +81,6 @@ async function startDevServer(config: ResolvedArriConfig) {
         await Promise.allSettled([
             listener.close(),
             fileWatcher?.close(),
-            transpileFiles.dispose(),
             bundleFiles.dispose(),
         ]);
     });
@@ -107,14 +101,17 @@ async function startDevServer(config: ResolvedArriConfig) {
                 ignored: [buildDir, outDir],
                 ignoreInitial: true,
             });
-            fileWatcher.on("all", async (_event, file) => {
+            fileWatcher.on("all", async (event, file) => {
+                if (event === "add" || event === "addDir") {
+                    return;
+                }
                 await createRoutesModule(config);
                 let bundleCreated = false;
                 try {
                     logger.log(
                         "Change detected. Bundling files and restarting server....",
                     );
-                    await transpileFiles.rebuild();
+                    await transpileFiles(config);
                     await bundleFiles.rebuild();
                     bundleCreated = true;
                 } catch (err) {

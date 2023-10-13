@@ -9,11 +9,7 @@ import { build } from "esbuild";
 import path from "pathe";
 import prettier from "prettier";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
-import {
-    createRoutesModule,
-    setupWorkingDir,
-    transpileFilesContext,
-} from "./_common";
+import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
 export default defineCommand({
     args: {
@@ -50,8 +46,7 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
         createBuildEntryModule(config),
         createBuildCodegenModule(config),
     ]);
-    const transpile = await transpileFilesContext(config);
-    await transpile.rebuild();
+    await transpileFiles(config);
     await bundleFiles(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
@@ -80,7 +75,6 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log(
         `Build finished! You can start your server by running "node .output/server.js"`,
     );
-    await transpile.dispose();
 }
 
 async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
