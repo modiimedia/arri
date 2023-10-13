@@ -23,9 +23,12 @@ describe("Type Inference", () => {
             },
         });
         const result = await rpc.handler(
-            { type: "procedure", params: { id: "12314" } },
+            {
+                params: { id: "12314" },
+                rpcName: "",
+            },
             {} as any,
         );
-        assertType<Params>(result);
+        assertType<Response>(result);
     });
 });

@@ -1,11 +1,11 @@
 import { type H3EventContext, type H3Event } from "h3";
 
-interface MiddlewareContext extends H3EventContext {
+export interface MiddlewareEventContext extends H3EventContext {
     rpcName?: string;
 }
 
-interface MiddlewareEvent extends H3Event {
-    context: MiddlewareContext;
+export interface MiddlewareEvent extends H3Event {
+    context: MiddlewareEventContext;
 }
 
 export type Middleware = (event: MiddlewareEvent) => void | Promise<void>;

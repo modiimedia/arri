@@ -120,6 +120,7 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
             js: `import { createRequire as topLevelCreateRequire } from 'module';
             const require = topLevelCreateRequire(import.meta.url);`,
         },
+        allowOverwrite: true,
         outdir: path.resolve(config.rootDir, ".output"),
     });
 }

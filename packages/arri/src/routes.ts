@@ -10,7 +10,7 @@ import {
 } from "h3";
 import { type ArriOptions } from "./app";
 import { handleH3Error } from "./errors";
-import { type Middleware } from "./middleware";
+import { type MiddlewareEvent, type Middleware } from "./middleware";
 
 export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
     ? Record<Param, string> & NextPart
@@ -62,7 +62,7 @@ export function handleRoute(
     route: ArriRoute<any>,
     opts: RouteOptions,
 ) {
-    const handler = defineEventHandler(async (event) => {
+    const handler = defineEventHandler(async (event: MiddlewareEvent) => {
         if (isPreflightRequest(event)) {
             return "ok";
         }

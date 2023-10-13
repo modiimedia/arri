@@ -458,6 +458,7 @@ export const testSuites: Record<
         badInputs: [
             { id: 1, data: true },
             { id: "1", data: { name: "", createdAt: 1 } },
+            { id: "", data: { name: "" } },
         ],
     },
 };

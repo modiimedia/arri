@@ -278,23 +278,27 @@ export function timestampTemplate(
     input: TemplateInput<AScalarSchema<"timestamp">>,
 ) {
     if (input.instancePath.length === 0) {
-        const nullPart = `if(${input.val} === 'null') {
+        const nullPart = `if (${input.val} === null) {
+            return null;
+        }`;
+        const nullStringPart = `if (${input.val} === 'null') {
             return null;
         }`;
         return `// @final-template
 if(typeof ${input.val} === 'string') {
-    ${input.schema.nullable ? nullPart : ""}
+    ${input.schema.nullable ? nullStringPart : ""}
     return new Date(${input.val});
 }
 if(typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
     return ${input.val};
 }
+${input.schema.nullable ? nullPart : ""}
 throw new Error(\`Expected instance of Date or ISO date string. Got \${${
             input.val
         }}\`);
             `;
     }
-    const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} instanceof Date ? ${input.val} : typeof ${input.val} === 'string' ? new Date(${input.val}) : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instance of Date or ISO Date string at ${input.val}")`;
+    const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} instanceof Date ? ${input.val} : typeof ${input.val} === 'string' ? new Date(${input.val}) : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instance of Date or ISO Date string at ${input.instancePath}")`;
     if (input.schema.nullable) {
         return `${input.val} === null ? null : ${mainTemplate}`;
     }
@@ -348,7 +352,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
                 subFunctionNames: input.subFunctionNames,
             });
             parsingParts.push(
-                `"${key}": ${input.val} === undefined ? undefined : ${innerTemplate}`,
+                `"${key}": typeof ${input.val} !== 'undefined' ? ${innerTemplate} : undefined`,
             );
         }
     }

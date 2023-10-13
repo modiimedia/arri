@@ -7,14 +7,10 @@ for (const key of Object.keys(testSuites)) {
     test(key, () => {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
-            const result = Compiled.safeParse(input);
-            expect(result.success);
+            expect(Compiled.parse(input)).toStrictEqual(
+                a.parse(suite.schema, input),
+            );
             expect(Compiled.safeParse(JSON.stringify(input)).success);
-            if (result.success) {
-                expect(result.value).toStrictEqual(
-                    a.parse(suite.schema, result.value),
-                );
-            }
         }
         for (const input of suite.badInputs) {
             expect(!Compiled.safeParse(input).success);

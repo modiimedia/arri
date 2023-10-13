@@ -20,6 +20,7 @@
     },
     "namedInputs": {
         "default": [
+            "{workspaceRoot}/pnpm-lock.yaml",
             "{projectRoot}/package.json",
             "{projectRoot}/project.json",
             "{projectRoot}/tsconfig.json",

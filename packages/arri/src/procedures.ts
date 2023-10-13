@@ -23,6 +23,7 @@ import {
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { defineError, handleH3Error } from "./errors";
+import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./routes";
 
 export interface ArriProcedure<
@@ -68,14 +69,24 @@ export interface RpcPostHandlerContext<
     response: TResponse;
 }
 
+export interface RpcEvent<TParams = undefined>
+    extends Omit<H3Event, "context"> {
+    context: RpcHandlerContext<TParams>;
+}
+
+export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
+    extends Omit<H3Event, "context"> {
+    context: RpcPostHandlerContext<TParams, TResponse>;
+}
+
 export type ArriProcedureHandler<TParams, TResponse> = (
     context: RpcHandlerContext<TParams>,
-    event: H3Event,
+    event: RpcEvent<TParams>,
 ) => TResponse | Promise<TResponse>;
 
 export type ArriProcedurePostHandler<TParams, TResponse> = (
     context: RpcPostHandlerContext<TParams, TResponse>,
-    event: H3Event,
+    event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
 export function isRpc(input: any): input is ArriProcedure<any, any> {
@@ -185,14 +196,15 @@ export function registerRpc(
     procedure: ArriNamedProcedure<any, any>,
     opts: RouteOptions,
 ) {
-    const paramValidator = procedure.params
-        ? a.compile(procedure.params)
-        : undefined;
+    // compiled parsing isn't working properly so temporarily disable this
+    // const paramValidator = procedure.params
+    //     ? a.compile(procedure.params)
+    //     : undefined;
     const responseValidator = procedure.response
         ? a.compile(procedure.response)
         : undefined;
     const httpMethod = procedure.method ?? "post";
-    const handler = eventHandler(async (event: H3Event) => {
+    const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
             return "ok";
@@ -206,7 +218,7 @@ export function registerRpc(
                     await m(event);
                 }
             }
-            if (isAObjectSchema(procedure.params) && paramValidator) {
+            if (isAObjectSchema(procedure.params)) {
                 switch (httpMethod) {
                     case "get":
                     case "head": {
@@ -246,7 +258,10 @@ export function registerRpc(
                                 statusMessage: `Invalid request body. Expected object. Got undefined.`,
                             });
                         }
-                        const parsedParams = paramValidator.safeParse(body);
+                        const parsedParams = a.safeParse(
+                            procedure.params,
+                            body,
+                        );
                         if (!parsedParams.success) {
                             const errorParts: string[] = [];
                             for (const err of parsedParams.error.errors) {
@@ -272,7 +287,7 @@ export function registerRpc(
             }
             const response = await procedure.handler(
                 event.context as any,
-                event,
+                event as any,
             );
             event.context.response = response;
             if (opts.onBeforeResponse) {
@@ -286,28 +301,14 @@ export function registerRpc(
                         JSON.stringify(response),
                 );
             } else {
-                await send(
-                    event,
-                    response ??
-                        `<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Empty Response</title>
-    </head>
-    <body>
-        nothing to see here
-    </body>
-</html>
-`,
-                );
+                setResponseHeader(event, "Content-Type", "application/json");
+                await send(event, `{}`);
             }
             if (opts.onAfterResponse) {
                 await opts.onAfterResponse(event);
             }
             if (procedure.postHandler) {
-                await procedure.postHandler(event.context as any, event);
+                await procedure.postHandler(event.context as any, event as any);
             }
         } catch (err) {
             await handleH3Error(err, event, opts.onError);

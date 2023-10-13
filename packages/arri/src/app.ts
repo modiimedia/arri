@@ -11,12 +11,11 @@ import {
     createRouter,
     eventHandler,
     type H3Error,
-    type H3Event,
     sendError,
     setResponseStatus,
 } from "h3";
 import { defineError, handleH3Error } from "./errors";
-import { type Middleware } from "./middleware";
+import { type MiddlewareEvent, type Middleware } from "./middleware";
 import {
     createRpcDefinition,
     getRpcParamName,
@@ -187,8 +186,8 @@ export interface ArriOptions {
      * This parameters also takes the rpcRoutePrefix option into account
      */
     rpcDefinitionPath?: string;
-    onRequest?: (event: H3Event) => void | Promise<void>;
-    onAfterResponse?: (event: H3Event) => void | Promise<void>;
-    onBeforeResponse?: (event: H3Event) => void | Promise<void>;
-    onError?: (error: H3Error, event: H3Event) => void | Promise<void>;
+    onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
+    onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
+    onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;
+    onError?: (error: H3Error, event: MiddlewareEvent) => void | Promise<void>;
 }
