@@ -196,9 +196,14 @@ export function registerRpc(
     procedure: ArriNamedProcedure<any, any>,
     opts: RouteOptions,
 ) {
-    const responseValidator = procedure.response
-        ? a.compile(procedure.response)
-        : undefined;
+    let responseValidator: undefined | ReturnType<typeof a.compile>;
+    try {
+        responseValidator = procedure.response
+            ? a.compile(procedure.response)
+            : undefined;
+    } catch (err) {
+        console.error("ERROR COMPILING VALIDATOR", err);
+    }
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
