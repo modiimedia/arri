@@ -1,5 +1,11 @@
 import { type HttpMethod } from "arri-codegen-utils";
 import {
+    type InferType,
+    type AObjectSchema,
+    a,
+    type ASchema,
+} from "arri-validate";
+import {
     type Router,
     type H3Event,
     defineEventHandler,
@@ -7,9 +13,12 @@ import {
     send,
     type H3EventContext,
     isPreflightRequest,
+    getQuery,
+    type HTTPMethod,
+    readRawBody,
 } from "h3";
 import { type ArriOptions } from "./app";
-import { handleH3Error } from "./errors";
+import { defineError, handleH3Error } from "./errors";
 import { type MiddlewareEvent, type Middleware } from "./middleware";
 
 export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
@@ -21,20 +30,72 @@ export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
     : // eslint-disable-next-line @typescript-eslint/ban-types
       ExtractParam<Path, {}>;
 
-export interface RouteEventContext<TPath extends string>
-    extends H3EventContext {
+export interface RouteEventContext<
+    TPath extends string,
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+> extends H3EventContext {
     params: ExtractParams<TPath>;
+    query: TQuery;
+    body: TBody;
 }
 
-export interface RouteEvent<TPath extends string> extends H3Event {
-    context: RouteEventContext<TPath>;
+export interface RouteEvent<
+    TPath extends string,
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+> extends H3Event {
+    context: RouteEventContext<TPath, TQuery, TBody>;
 }
 
-export interface ArriRoute<TPath extends string> {
+export interface PostRouteEventContext<
+    TPath extends string,
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+    TResponse = any,
+> extends RouteEventContext<TPath, TQuery, TBody> {
+    response: TResponse;
+}
+
+export interface PostRouteEvent<
+    TPath extends string,
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+    TResponse = any,
+> extends H3Event {
+    context: PostRouteEventContext<TPath, TQuery, TBody, TResponse>;
+}
+
+export interface ArriRoute<
+    TPath extends string,
+    TQuery extends AObjectSchema<any, any> = any,
+    TBody extends ASchema<any> = any,
+    TResponse = any,
+> {
     path: TPath;
     method: HttpMethod | HttpMethod[];
-    handler: (event: RouteEvent<TPath>) => any;
-    postHandler?: (event: RouteEvent<TPath>) => any;
+    query?: TQuery;
+    body?: TBody;
+    handler: (
+        event: RouteEvent<TPath, InferType<TQuery>, InferType<TBody>>,
+    ) => TResponse;
+    postHandler?: (
+        event: PostRouteEvent<
+            TPath,
+            InferType<TQuery>,
+            InferType<TBody>,
+            Awaited<TResponse>
+        >,
+    ) => any;
+}
+
+export function defineRoute<
+    TPath extends string,
+    TQuery extends AObjectSchema<any, any> = any,
+    TBody extends AObjectSchema<any, any> = any,
+    TResponse = any,
+>(route: ArriRoute<TPath, TQuery, TBody, TResponse>) {
+    return route;
 }
 
 export type RouteOptions = Pick<
@@ -74,6 +135,55 @@ export function handleRoute(
                 for (const m of opts.middleware) {
                     await m(event);
                 }
+            }
+            if (route.query) {
+                const query = getQuery(event);
+                const parsedQuery = a.safeCoerce(route.query, query);
+                if (!parsedQuery.success) {
+                    const errParts: string[] = [];
+                    for (const err of parsedQuery.error.errors) {
+                        const errPath = err.instancePath.split("/");
+                        errPath.shift();
+                        const propName = errPath.join(".");
+                        if (!errParts.includes(propName)) {
+                            errParts.push(propName);
+                        }
+                    }
+                    const message = `Missing or invalid url query parameters: [${errParts.join(
+                        ", ",
+                    )}]`;
+                    throw defineError(400, {
+                        statusMessage: message,
+                    });
+                }
+                event.context.query = parsedQuery.value;
+            }
+            const notAllowedBodyMethods: HTTPMethod[] = [
+                "GET",
+                "HEAD",
+                "CONNECT",
+                "OPTIONS",
+            ];
+            if (route.body && !notAllowedBodyMethods.includes(event.method)) {
+                const body = await readRawBody(event);
+                const parsedBody = a.safeParse(route.body, body);
+                if (!parsedBody.success) {
+                    const errorParts: string[] = [];
+                    for (const err of parsedBody.error.errors) {
+                        const errPath = err.instancePath.split("/");
+                        errPath.shift();
+                        if (!errorParts.includes(errPath.join("."))) {
+                            errorParts.push(errPath.join("."));
+                        }
+                    }
+                    throw defineError(400, {
+                        statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                            ", ",
+                        )}]`,
+                        data: parsedBody.error,
+                    });
+                }
+                event.context.body = parsedBody.value;
             }
             const response = await route.handler(event as any);
             event.context.response = response;

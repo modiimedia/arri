@@ -196,10 +196,6 @@ export function registerRpc(
     procedure: ArriNamedProcedure<any, any>,
     opts: RouteOptions,
 ) {
-    // compiled parsing isn't working properly so temporarily disable this
-    // const paramValidator = procedure.params
-    //     ? a.compile(procedure.params)
-    //     : undefined;
     const responseValidator = procedure.response
         ? a.compile(procedure.response)
         : undefined;

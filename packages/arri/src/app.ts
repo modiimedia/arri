@@ -149,7 +149,12 @@ export class ArriApp implements ArriRouterBase {
         });
     }
 
-    route<TPath extends string>(route: ArriRoute<TPath>) {
+    route<
+        TPath extends string,
+        TQuery extends AObjectSchema<any, any>,
+        TBody extends ASchema<any>,
+        TResponse = any,
+    >(route: ArriRoute<TPath, TQuery, TBody, TResponse>) {
         registerRoute(this.h3Router, route, {
             middleware: this.middlewares,
             onRequest: this.onRequest,

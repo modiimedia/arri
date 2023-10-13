@@ -1,4 +1,4 @@
-import { ArriRouter, readBody } from "arri";
+import { ArriRouter } from "arri";
 import { a } from "arri-validate";
 import { Author, getRandomAuthor } from "../models";
 
@@ -12,32 +12,21 @@ router.route({
     },
 });
 
-router.route({
-    path: "/routes/authors/:authorId",
-    method: "get",
-    async handler(event) {
-        return getRandomAuthor({
-            id: event.context.params.authorId,
-            name: "John Doe",
-        });
-    },
-});
-
 const UpdateUserData = a.partial(a.omit(Author, ["id"]));
 type UpdateUserData = a.infer<typeof UpdateUserData>;
 
 router.route({
     path: "/routes/authors/:authorId",
     method: "post",
+    body: UpdateUserData,
     async handler(event) {
-        const body = await readBody(event);
-        const parsedBody = a.parse(UpdateUserData, body);
+        const body = event.context.body;
         return getRandomAuthor({
             id: event.context.params.authorId,
-            name: parsedBody.name,
-            bio: parsedBody.bio,
-            createdAt: parsedBody.createdAt,
-            updatedAt: parsedBody.updatedAt,
+            name: body.name,
+            bio: body.bio,
+            createdAt: body.createdAt,
+            updatedAt: body.updatedAt,
         });
     },
 });

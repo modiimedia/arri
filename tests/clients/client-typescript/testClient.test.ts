@@ -1,14 +1,18 @@
 import { ArriRequestError } from "arri-client";
+import { ofetch } from "ofetch";
 import { TestClient } from "./testClient.rpc";
 
+const baseUrl = "http://127.0.0.1:2020";
+const headers = {
+    "x-test-header": "test",
+};
+
 const client = new TestClient({
-    baseUrl: "http://127.0.0.1:2020",
-    headers: {
-        "x-test-header": "test",
-    },
+    baseUrl,
+    headers,
 });
 const unauthenticatedClient = new TestClient({
-    baseUrl: "http://127.0.0.1:2020",
+    baseUrl,
 });
 test("posts.getPost", async () => {
     const result = await client.posts.getPost({ postId: "1" });
@@ -70,6 +74,36 @@ test("unauthenticated request", async () => {
             postId: "1",
         });
         expect(false);
+    } catch (err) {
+        expect(err instanceof ArriRequestError);
+        if (err instanceof ArriRequestError) {
+            expect(err.statusCode).toBe(401);
+        }
+    }
+});
+
+test("route request", async () => {
+    const result = await ofetch("/routes/authors/12345", {
+        method: "post",
+        baseURL: baseUrl,
+        headers,
+        body: {
+            name: "John Doe",
+        },
+    });
+    expect(result.id).toBe("12345");
+    expect(result.name).toBe("John Doe");
+});
+
+test("unauthorized route request", async () => {
+    try {
+        await ofetch("/routes/authors/12345", {
+            method: "post",
+            baseURL: baseUrl,
+            body: {
+                name: "John Doe",
+            },
+        });
     } catch (err) {
         expect(err instanceof ArriRequestError);
         if (err instanceof ArriRequestError) {
