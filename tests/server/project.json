@@ -12,6 +12,7 @@
         },
         "build": {
             "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/.arri", "{projectRoot}/.output"],
             "options": {
                 "command": "arri build",
                 "cwd": "tests/server"
