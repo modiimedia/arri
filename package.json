@@ -1,6 +1,6 @@
 {
     "name": "@arri/arri-source",
-    "version": "0.1.0-beta.11",
+    "version": "0.1.0",
     "license": "MIT",
     "repository": {
         "url": "https://github.com/modiimedia/arri"
