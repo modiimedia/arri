@@ -4,27 +4,12 @@
     "sourceRoot": "packages/arri/src",
     "projectType": "library",
     "targets": {
-        "serve": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "jiti src/cli/_index.ts dev --esmResolve",
-                "cwd": "packages/arri"
-            }
-        },
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri"
-            }
-        },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri/package.json"],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri --out-dir dist/packages/arri"
             }
         },
         "lint": {
@@ -36,6 +21,7 @@
         },
         "test": {
             "executor": "@nx/vite:test",
+            "inputs": ["{projectRoot}/src/**/*.ts"],
             "outputs": ["{workspaceRoot}/coverage/packages/arri"],
             "options": {
                 "passWithNoTests": true,
@@ -47,7 +33,7 @@
             "executor": "nx:run-commands",
             "options": {
                 "command": "pnpm publish",
-                "cwd": "dist/packages/arri"
+                "cwd": "packages/arri"
             }
         }
     },

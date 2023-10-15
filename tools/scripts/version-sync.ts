@@ -1,6 +1,10 @@
 import { readFileSync, writeFileSync } from "fs";
+import { readFile, writeFile } from "fs/promises";
+import { globby } from "globby";
+import prettier from "prettier";
 
 async function main() {
+    const prettierConfig = await require("../../.prettierrc");
     const packageJson = JSON.parse(
         readFileSync("package.json", { encoding: "utf-8" }),
     );
@@ -23,6 +27,24 @@ async function main() {
         "packages/arri-client-dart/pubspec.yaml",
         pubspecParts.join("\n"),
     );
+    const childPackageJsons = await globby([
+        "packages/**/package.json",
+        "!**/node_modules",
+    ]);
+    const tasks = childPackageJsons.map(async (jsonPath) => {
+        const json = JSON.parse(
+            await readFile(jsonPath, { encoding: "utf-8" }),
+        );
+        json.version = packageJson.version;
+        await writeFile(
+            jsonPath,
+            await prettier.format(JSON.stringify(json), {
+                parser: "json",
+                ...prettierConfig,
+            }),
+        );
+    });
+    await Promise.all(tasks);
 }
 
 void main();

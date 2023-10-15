@@ -1,15 +1,19 @@
 import {
-    type ScalarTypeSchema,
-    type InputOptions,
+    type AScalarSchema,
+    type ASchemaOptions,
     SCHEMA_METADATA,
-} from "./typedefs";
-import { ValidationError } from "./validation";
+    type ValidationData,
+} from "../schemas";
 
-const isString = (input: unknown): input is string => typeof input === "string";
-
+/**
+ * @example
+ * const StringSchema = a.string();
+ * a.validate(StringSchema, "hello world") // true
+ * a.validate(StringSchema, 10) // false
+ */
 export function string(
-    opts: InputOptions = {},
-): ScalarTypeSchema<"string", string> {
+    opts: ASchemaOptions = {},
+): AScalarSchema<"string", string> {
     return {
         type: "string",
         metadata: {
@@ -17,30 +21,32 @@ export function string(
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: "",
-                parse: (input) => {
-                    if (typeof input === "string") {
-                        return input;
-                    }
-                    throw new ValidationError([
-                        {
-                            message: "Expected string",
-                            instancePath: "/",
-                            keyword: "",
-                            params: {},
-                            schemaPath: "/",
-                        },
-                    ]);
-                },
-                coerce: (input) => {
-                    if (typeof input === "string") {
-                        return input;
-                    }
-                    return `${input as any}`;
-                },
-                validate: isString,
+                parse,
+                coerce,
+                validate,
                 serialize: (input) =>
                     typeof input === "string" ? input : `${input as any}`,
             },
         },
     };
+}
+
+function validate(input: unknown): input is string {
+    return typeof input === "string";
+}
+
+function parse(input: unknown, options: ValidationData) {
+    if (validate(input)) {
+        return input;
+    }
+    options.errors.push({
+        instancePath: options.instancePath,
+        schemaPath: options.schemaPath,
+        message: `Expected 'string' got ${typeof input}`,
+    });
+    return undefined;
+}
+
+function coerce(input: unknown, options: ValidationData) {
+    return parse(input, options);
 }

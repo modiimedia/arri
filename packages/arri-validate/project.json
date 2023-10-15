@@ -4,29 +4,28 @@
     "sourceRoot": "packages/arri-validate/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "dependsOn": ["setup-package-json"],
+        "benchmark": {
+            "inputs": ["default", "{projectRoot}/benchmark/src"],
+            "outputs": ["{projectRoot}/benchmark/dist"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri-validate"],
+            "options": {
+                "command": "jiti buildBenchmarks.ts && jiti benchmark/dist/_index.js",
+                "cwd": "packages/arri-validate"
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-validate"
             }
         },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/arri-validate/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-validate --out-dir dist/packages/arri-validate"
-            }
-        },
         "publish": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/arri-validate"
+                "command": "pnpm publish",
+                "cwd": "packages/arri-validate"
             },
             "dependsOn": ["build"]
         },

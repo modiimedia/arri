@@ -1,0 +1,19 @@
+{
+    "name": "test-client-dart",
+    "targets": {
+        "pub-get": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "dart pub get",
+                "cwd": "tests/clients/client-dart"
+            }
+        },
+        "integration-test": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "dart test",
+                "cwd": "tests/clients/client-dart"
+            }
+        }
+    }
+}

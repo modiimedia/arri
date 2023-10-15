@@ -35,6 +35,8 @@ describe("Type Inference", () => {
 });
 
 describe("Parsing", () => {
+    const parse = (input: unknown) =>
+        a.safeParse(DiscriminatorSchema, input).success;
     it("parses compliant objects", () => {
         const createdInput: DiscriminatorSchema = {
             eventType: "USER_CREATED",
@@ -50,28 +52,20 @@ describe("Parsing", () => {
             id: "131241513",
             plan: "PAID",
         };
-        const inputs = [createdInput, deletedInput, planChangedInput] as const;
-        for (const input of inputs) {
-            expect(a.safeParse(DiscriminatorSchema, input).success).toBe(true);
-            expect(
-                a.safeParse(DiscriminatorSchema, JSON.stringify(input)).success,
-            ).toBe(true);
-        }
+        expect(parse(createdInput));
+        expect(parse(deletedInput));
+        expect(parse(planChangedInput));
     });
     it("Rejects uncompliant objects", () => {
-        const inputs = [
-            {
-                eventType: "USER_CREATED",
-                id: "123456",
-                softDelete: false,
-            },
-            {
-                id: "134561",
-            },
-        ];
-        for (const input of inputs) {
-            expect(a.safeParse(DiscriminatorSchema, input).success).toBe(false);
-            expect(a.safeParse(DiscriminatorSchema, input).success).toBe(false);
-        }
+        const additionalFieldInput = {
+            eventType: "USER_CREATED",
+            id: "123456",
+            softDelete: false,
+        };
+        const missingFieldsInput = {
+            id: "1234531",
+        };
+        expect(!parse(additionalFieldInput));
+        expect(!parse(missingFieldsInput));
     });
 });

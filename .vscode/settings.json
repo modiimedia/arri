@@ -12,9 +12,13 @@
         "modii",
         "nitropack",
         "ofetch",
+        "pathe",
         "scule",
         "typebox",
-        "unflatten"
+        "typeof",
+        "unflatten",
+        "vals"
     ],
-    "eslint.validate": ["json"]
+    "eslint.validate": ["json"],
+    "java.compile.nullAnalysis.mode": "automatic"
 }

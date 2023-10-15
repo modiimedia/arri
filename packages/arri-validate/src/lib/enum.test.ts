@@ -1,22 +1,37 @@
-import { stringEnum } from "./enum";
-import { type InferType } from "./typedefs";
-import { safeParse } from "./validation";
+import * as a from "./_index";
 
-const UserRolesSchema = stringEnum(["admin", "standard"]);
-type UserRolesSchema = InferType<typeof UserRolesSchema>;
-test("Type Inference", () => {
+const UserRolesSchema = a.stringEnum(["admin", "standard"]);
+type UserRolesSchema = a.infer<typeof UserRolesSchema>;
+test("type inference", () => {
     assertType<UserRolesSchema>("admin");
+    assertType<UserRolesSchema>("standard");
 });
-describe("Parsing", () => {
+describe("parsing", () => {
+    const parse = (input: unknown) => a.safeParse(UserRolesSchema, input);
     it("accepts good inputs", () => {
-        expect(safeParse(UserRolesSchema, "admin").success).toBe(true);
-        expect(safeParse(UserRolesSchema, "standard").success).toBe(true);
+        expect(parse("admin"));
+        expect(parse("standard"));
     });
 
     it("rejects bad inputs", () => {
-        expect(safeParse(UserRolesSchema, "ADMIN").success).toBe(false);
-        expect(safeParse(UserRolesSchema, "STANDARD").success).toBe(false);
-        expect(safeParse(UserRolesSchema, 0).success).toBe(false);
-        expect(safeParse(UserRolesSchema, "laksjdf").success).toBe(false);
+        const badInput1 = parse("ADMIN");
+        expect(!badInput1.success && badInput1.error.errors.length > 0);
+        expect(!parse("STANDARD").success);
+        expect(!parse(0).success);
+        expect(!parse("aldskjfa").success);
+    });
+});
+
+describe("validation", () => {
+    const validate = (input: unknown) => a.validate(UserRolesSchema, input);
+    it("accepts good input", () => {
+        expect(validate("admin"));
+        expect(validate("standard"));
+    });
+    it("rejects bad input", () => {
+        expect(!validate("ADMIN"));
+        expect(!validate("STANDARD"));
+        expect(!validate(0));
+        expect(!validate({ j: 0 }));
     });
 });

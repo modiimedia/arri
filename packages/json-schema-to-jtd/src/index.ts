@@ -1,18 +1,18 @@
 import {
-    SchemaFormEmpty,
-    SchemaFormEnum,
-    Schema,
-    SchemaFormProperties,
-    SchemaFormElements,
-    SchemaFormValues,
+    type SchemaFormEmpty,
+    type SchemaFormEnum,
+    type Schema,
+    type SchemaFormProperties,
+    type SchemaFormElements,
+    type SchemaFormValues,
 } from "@modii/jtd";
 import {
-    JsonSchemaArray,
-    JsonSchemaEnum,
-    JsonSchemaObject,
-    JsonSchemaRecord,
-    JsonSchemaScalarType,
-    JsonSchemaType,
+    type JsonSchemaArray,
+    type JsonSchemaEnum,
+    type JsonSchemaObject,
+    type JsonSchemaRecord,
+    type JsonSchemaScalarType,
+    type JsonSchemaType,
     isJsonSchemaArray,
     isJsonSchemaEnum,
     isJsonSchemaObject,
@@ -39,7 +39,9 @@ export function jsonSchemaToJtdSchema(input: JsonSchemaType): Schema {
     }
 
     console.warn(
-        `WARNING: unable to determine type for ${input}. Falling back to "any" type.`,
+        `WARNING: unable to determine type for ${
+            input as any
+        }. Falling back to "any" type.`,
     );
     // fallback to "any" type
     return {};

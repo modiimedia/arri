@@ -5,28 +5,18 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri-adapter-typebox"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-adapter-typebox"
             }
         },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/arri-adapter-typebox/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-adapter-typebox --out-dir dist/packages/arri-adapter-typebox"
-            }
-        },
         "publish": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/arri-adapter-typebox"
+                "command": "pnpm publish",
+                "cwd": "packages/arri-adapter-typebox"
             },
             "dependsOn": ["build"]
         },

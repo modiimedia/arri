@@ -1,42 +1,34 @@
-import { defineBuildConfig } from "unbuild";
+import fs from "node:fs";
 import path from "pathe";
+import { defineBuildConfig } from "unbuild";
+
+const packageJson = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, "./package.json"), {
+        encoding: "utf-8",
+    }),
+);
+
+const deps = Object.keys(packageJson.dependencies).map((key) => key);
 
 export default defineBuildConfig({
+    rootDir: __dirname,
     entries: [
         { input: "./src/_index.ts", name: "index" },
-        { input: "./src/codegen/_index.ts", name: "codegen" },
+        {
+            input: "./src/codegen.ts",
+            name: "codegen",
+        },
         { input: "./src/cli/_index.ts", name: "cli" },
     ],
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: false,
+            respectExternal: true,
         },
     },
-    alias: {
-        "arri-codegen-utils": path.resolve(
-            __dirname,
-            "../../packages/arri-codegen-utils/src/index.ts",
-        ),
-        "json-schema-to-jtd": path.resolve(
-            __dirname,
-            "../../packages/json-schema-to-jtd/src/index.ts",
-        ),
-    },
-    outDir: "../../dist/packages/arri/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
-    externals: [
-        "esbuild",
-        "listhen",
-        "h3",
-        "@sinclair/typebox",
-        "ofetch",
-        "citty",
-        "consola",
-        "prettier",
-        "pathe",
-        "jiti",
-    ],
+    failOnWarn: true,
+    externals: deps,
 });

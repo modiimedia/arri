@@ -4,6 +4,7 @@
 dist
 tmp
 /out-tsc
+**/.output
 
 # dependencies
 node_modules
@@ -41,3 +42,5 @@ Thumbs.db
 build
 /**/.arri
 /.arri
+**/.temp
+**/*.dart_tool

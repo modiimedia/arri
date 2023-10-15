@@ -29,7 +29,6 @@ Future<http.Response> arriRequest(
     finalHeaders["Content-Type"] = "application/json";
     bodyInput = json.encode(params);
   }
-  print("BODY INPUT, $bodyInput");
   switch (method) {
     case HttpMethod.get:
       final paramsInput = query ?? params;
@@ -88,17 +87,14 @@ Future<http.Response> arriRequest(
           headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
     default:
-      throw ArriRequestError(
-        statusCode: 400,
-        statusMessage: "Client has not implemented HTTP method \"$method\"",
-      );
+      throw ArriRequestError.fromResponse(result);
   }
   return result;
 }
 
 /// Helper function for performing raw HTTP request to an Arri RPC server
 /// This function will throw an ArriRequestError if it fails
-Future<T> parsedArriRequest<T>(
+Future<T> parsedArriRequest<T, E extends Exception>(
   String url, {
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
@@ -107,7 +103,7 @@ Future<T> parsedArriRequest<T>(
 }) async {
   final result =
       await arriRequest(url, method: method, params: params, headers: headers);
-  if (result.statusCode == 200) {
+  if (result.statusCode >= 200 && result.statusCode <= 299) {
     return parser(result.body);
   }
   throw ArriRequestError.fromResponse(result);
@@ -123,11 +119,13 @@ Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
   required T Function(String) parser,
 }) async {
   try {
-    final result = await parsedArriRequest(url, parser: parser);
+    final result = await parsedArriRequest(
+      url,
+      parser: parser,
+    );
     return ArriRequestResult(value: result);
   } catch (err) {
-    return ArriRequestResult(
-        error: err is ArriRequestError ? err : ArriRequestError.unknown());
+    return ArriRequestResult(error: err is ArriRequestError ? err : null);
   }
 }
 
@@ -151,18 +149,21 @@ class ArriRequestError implements Exception {
   final String statusMessage;
   final dynamic data;
   final String? stackTrace;
-  const ArriRequestError(
-      {required this.statusCode,
-      required this.statusMessage,
-      this.data,
-      this.stackTrace});
+  const ArriRequestError({
+    required this.statusCode,
+    required this.statusMessage,
+    this.data,
+    this.stackTrace,
+  });
 
   /// Create an ArriRequestError from an HTTP response
   factory ArriRequestError.fromResponse(http.Response response) {
     try {
       final body = json.decode(response.body);
       return ArriRequestError(
-        statusCode: response.statusCode,
+        statusCode: body["statusCode"] is int
+            ? body["statusCode"]
+            : response.statusCode,
         statusMessage: body["statusMessage"] is String
             ? body["statusMessage"]
             : "Unknown error",
@@ -199,6 +200,18 @@ T? nullableTypeFromDynamic<T>(dynamic input) {
   return null;
 }
 
+List<T> typeListFromDynamic<T>(dynamic input, T fallback) {
+  return input is List
+      ? input.map((item) => typeFromDynamic<T>(input, fallback)).toList()
+      : [];
+}
+
+List<T?> nullableTypeListFromDynamic<T>(dynamic input) {
+  return input is List
+      ? input.map((item) => nullableTypeFromDynamic<T>(item)).toList()
+      : [];
+}
+
 double doubleFromDynamic(dynamic input, double fallback) {
   if (input is double) {
     return input;
@@ -217,6 +230,18 @@ double? nullableDoubleFromDynamic(dynamic input) {
     return input.toDouble();
   }
   return null;
+}
+
+List<double> doubleListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => doubleFromDynamic(input, 0)).toList()
+      : [];
+}
+
+List<double?> nullableDoubleListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => nullableDoubleFromDynamic(e)).toList()
+      : [];
 }
 
 int intFromDynamic(dynamic input, int fallback) {
@@ -239,10 +264,24 @@ int? nullableIntFromDynamic(dynamic input) {
   return null;
 }
 
+List<int> intListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => intFromDynamic(input, 0)).toList()
+      : [];
+}
+
+List<int?> nullableIntListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => nullableIntFromDynamic(e)).toList()
+      : [];
+}
+
 DateTime dateTimeFromDynamic(dynamic input, DateTime fallback) {
   if (input is DateTime) {
     return input;
   }
+  DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime.now().toUtc().toIso8601String();
   if (input is String) {
     return DateTime.parse(input);
   }
@@ -263,4 +302,23 @@ DateTime? nullableDateTimeFromDynamic(dynamic input) {
     return DateTime.fromMillisecondsSinceEpoch(input);
   }
   return null;
+}
+
+List<DateTime> dateTimeListFromDynamic(dynamic input) {
+  return input is List
+      ? input
+          .map((e) =>
+              dateTimeFromDynamic(e, DateTime.fromMillisecondsSinceEpoch(0)))
+          .toList()
+      : [];
+}
+
+List<DateTime?> nullableDateTimeListFromDynamic(dynamic input) {
+  return input is List
+      ? input.map((e) => nullableDateTimeFromDynamic(e)).toList()
+      : [];
+}
+
+abstract class ArriErrorBuilder<T extends Exception> {
+  T fromJson(Map<String, dynamic> json);
 }

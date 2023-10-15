@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
+import { dartClientGenerator } from "arri-codegen-dart";
+import { type AppDefinition } from "arri-codegen-utils";
 import { defineCommand } from "citty";
 import { ofetch } from "ofetch";
-import { dartClientGenerator } from "../codegen/_index";
-import { type ApplicationDef } from "../codegen/utils";
 
 const codegenDart = defineCommand({
     args: {
@@ -27,7 +27,7 @@ const codegenDart = defineCommand({
         const isUrl =
             args.location.startsWith("http://") ||
             args.location.startsWith("https://");
-        let def: ApplicationDef | undefined;
+        let def: AppDefinition | undefined;
         if (isUrl) {
             const result = await ofetch(args.location);
             def = result;
@@ -69,6 +69,7 @@ const codegenTypescript = defineCommand({
             required: true,
         },
     },
+    run({ args }) {},
 });
 
 export default defineCommand({
@@ -76,4 +77,5 @@ export default defineCommand({
         dart: codegenDart,
         typescript: codegenTypescript,
     },
+    run({ args }) {},
 });

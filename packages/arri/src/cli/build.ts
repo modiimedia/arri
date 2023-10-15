@@ -1,13 +1,13 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
+import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
 import { build } from "esbuild";
 import path from "pathe";
 import prettier from "prettier";
-import { isApplicationDef } from "../codegen/utils";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
 import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
 
@@ -36,27 +36,21 @@ export default defineCommand({
     },
 });
 
-const logger = createConsola({
-    fancy: true,
-}).withTag("arri");
+const logger = createConsola().withTag("arri");
 
 async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
     await setupWorkingDir(config);
     await Promise.all([
-        transpileFiles(config),
         createRoutesModule(config),
         createBuildEntryModule(config),
         createBuildCodegenModule(config),
     ]);
+    await transpileFiles(config);
     await bundleFiles(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
-    const codegenModule = path.resolve(
-        config.rootDir,
-        config.buildDir,
-        "codegen.js",
-    );
+    const codegenModule = path.resolve(config.rootDir, ".output", "codegen.js");
     if (clientCount > 0 && !skipCodeGen) {
         logger.log("Generating clients");
 
@@ -67,7 +61,7 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
             "__definition.json",
         );
         const def = JSON.parse(readFileSync(defJson, { encoding: "utf-8" }));
-        if (isApplicationDef(def)) {
+        if (isAppDefinition(def)) {
             await Promise.all(
                 config.clientGenerators.map((plugin) => plugin.generator(def)),
             );
@@ -83,7 +77,27 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     );
 }
 
-async function bundleFiles(config: ResolvedArriConfig) {
+async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
+    if (allowCodegen) {
+        await build({
+            ...config.esbuild,
+            entryPoints: [
+                path.resolve(config.rootDir, config.buildDir, "codegen.js"),
+            ],
+            platform: config.esbuild.platform ?? "node",
+            target: config.esbuild.target ?? "node18",
+            bundle: true,
+            packages: "external",
+            format: "esm",
+            sourcemap: false,
+            minifyWhitespace: true,
+            banner: {
+                js: `import { createRequire as topLevelCreateRequire } from 'module';
+            const require = topLevelCreateRequire(import.meta.url);`,
+            },
+            outdir: path.resolve(config.rootDir, ".output"),
+        });
+    }
     await build({
         ...config.esbuild,
         entryPoints: [
@@ -100,6 +114,7 @@ async function bundleFiles(config: ResolvedArriConfig) {
             js: `import { createRequire as topLevelCreateRequire } from 'module';
             const require = topLevelCreateRequire(import.meta.url);`,
         },
+        allowOverwrite: true,
         outdir: path.resolve(config.rootDir, ".output"),
     });
 }
@@ -110,16 +125,23 @@ async function createBuildEntryModule(config: ResolvedArriConfig) {
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
-    const virtualEntry = `import { toNodeListener } from 'h3';
+    const virtualEntry = `import { toNodeListener } from 'arri';
 import { listen } from 'listhen';
 import routes from './routes.js';
 import app from './${appImportParts.join(".")}.js';
 
 for (const route of routes) {
-    app.registerRpc(route.id, route.route);
+    app.rpc({
+        name: route.id,
+        method: route.route.method,
+        params: route.route.params,
+        response: route.route.response,
+        handler: route.route.handler,
+        postHandler: route.route.postHandler,
+    });
 }
 
-void listen(toNodeListener(app.getH3Instance()), {
+void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
 });`;
     await fs.writeFile(
@@ -141,8 +163,16 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
     import app from './${appImportParts.join(".")}.js';
     import routes from './routes.js';
 
-    for(const route of routes) {
-        app.registerRpc(route.id, route.route);
+    for (const route of routes) {
+        app.rpc({
+            name: route.id,
+            method: route.route.method,
+            path: route.route.path,
+            params: route.route.params,
+            response: route.route.response,
+            handler: route.route.handler,
+            postHandler: route.route.postHandler,
+        });
     }
 
     const __dirname = new URL(".", import.meta.url).pathname;

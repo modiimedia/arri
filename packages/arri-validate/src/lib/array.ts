@@ -1,53 +1,115 @@
-import { type Schema } from "@modii/jtd";
 import {
-    type ArriSchema,
-    SCHEMA_METADATA,
+    type AArraySchema,
+    type ASchema,
     type InferType,
-    type InputOptions,
-} from "./typedefs";
-import { ValidationError, AJV } from "./validation";
+    type ASchemaOptions,
+    SCHEMA_METADATA,
+    type ValidationData,
+} from "../schemas";
 
-export interface ArraySchema<TInnerSchema extends ArriSchema<any> = any>
-    extends ArriSchema<Array<InferType<TInnerSchema>>> {
-    elements: TInnerSchema;
-}
-
-export function array<TInnerSchema extends ArriSchema<any> = any>(
-    input: TInnerSchema,
-    opts: InputOptions = {},
-): ArraySchema<TInnerSchema> {
-    const schema: Schema = {
-        elements: input,
-    };
-    const validator = AJV.compile(schema, true);
-    const serializer = AJV.compileSerializer(schema);
-    const parser = AJV.compileParser(schema);
-    const isType = (
-        input: unknown,
-    ): input is InferType<ArraySchema<TInnerSchema>> => validator(input);
+export function array<TInnerSchema extends ASchema<any> = any>(
+    schema: TInnerSchema,
+    opts: ASchemaOptions = {},
+): AArraySchema<TInnerSchema> {
     return {
-        ...(schema as any),
+        elements: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: [] as any,
-                parse(input: unknown) {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                parse(input, data) {
+                    return parse(schema, input, data, false);
                 },
-                validate: isType,
-                serialize: serializer,
+                coerce(input, data) {
+                    return parse(schema, input, data, true);
+                },
+                validate(
+                    input,
+                ): input is InferType<AArraySchema<TInnerSchema>> {
+                    return validate(schema, input);
+                },
+                serialize(input) {
+                    return JSON.stringify(input);
+                },
             },
         },
     };
+}
+
+function validate<T>(innerSchema: ASchema<T>, input: unknown): input is T[] {
+    if (!Array.isArray(input)) {
+        return false;
+    }
+    for (const item of input) {
+        const isValid = innerSchema.metadata[SCHEMA_METADATA].validate(item);
+        if (!isValid) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function parse<T>(
+    innerSchema: ASchema<T>,
+    input: unknown,
+    data: ValidationData,
+    coerce = false,
+): T[] | undefined {
+    let parsedInput: any = input;
+    if (data.instancePath.length === 0 && typeof input === "string") {
+        try {
+            parsedInput = JSON.parse(input);
+        } catch (err) {
+            data.errors.push({
+                instancePath: data.instancePath,
+                schemaPath: data.schemaPath,
+                message: "Invalid JSON",
+            });
+            return undefined;
+        }
+    }
+    if (!Array.isArray(parsedInput)) {
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            message: `Expected array. Got ${typeof input}.`,
+        });
+        return undefined;
+    }
+    const result: T[] = [];
+    for (let i = 0; i < parsedInput.length; i++) {
+        const item = parsedInput[i];
+        if (coerce) {
+            const parsedItem = innerSchema.metadata[SCHEMA_METADATA].coerce(
+                item,
+                {
+                    instancePath: `${data.instancePath}/${i}`,
+                    schemaPath: `${data.schemaPath}/elements`,
+                    errors: data.errors,
+                },
+            );
+            if (data.errors.length) {
+                return undefined;
+            }
+            result.push(parsedItem as any);
+        } else {
+            const parsedItem = innerSchema.metadata[SCHEMA_METADATA].parse(
+                item,
+                {
+                    instancePath: `${data.instancePath}/${i}`,
+                    schemaPath: `${data.schemaPath}/elements`,
+                    errors: data.errors,
+                },
+            );
+            if (data.errors.length) {
+                return undefined;
+            }
+            result.push(parsedItem as any);
+        }
+    }
+    if (data.errors.length) {
+        return undefined;
+    }
+    return result;
 }

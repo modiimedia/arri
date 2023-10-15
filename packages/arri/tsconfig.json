@@ -1,14 +1,15 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "ES2022",
+        "moduleResolution": "Bundler",
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "noImplicitOverride": true,
         "noPropertyAccessFromIndexSignature": false,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "types": ["vitest"]
+        "types": ["vitest", "bun-types"]
     },
     "files": [],
     "include": [],

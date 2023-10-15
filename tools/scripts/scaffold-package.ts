@@ -78,6 +78,11 @@ function packageJsonTemplate(packageName: string) {
     return `{
     "name": "${packageName}",
     "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri",
+        "directory": "packages/${packageName}"
+    },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -95,28 +100,18 @@ function projectJsonTemplate(packageName: string) {
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/${packageName}"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/${packageName}"
             }
         },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/${packageName}/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/${packageName} --out-dir dist/packages/${packageName}"
-            }
-        },
         "publish": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/${packageName}"
+                "command": "pnpm publish",
+                "cwd": "packages/${packageName}"
             },
             "dependsOn": ["build"]
         },
@@ -144,7 +139,7 @@ function projectJsonTemplate(packageName: string) {
 function eslintConfigTemplate() {
     return `{
     "extends": ["../../.eslintrc.js"],
-    "ignorePatterns": ["!**/*"],
+    "ignorePatterns": [],
     "overrides": [
         {
             "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
@@ -168,7 +163,7 @@ import path from "node:path";
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
-    readFileSync(path.resolve(__dirname, "../../package.json"), {
+    readFileSync(path.resolve(__dirname, "./package.json"), {
         encoding: "utf-8",
     }),
 );
@@ -183,10 +178,10 @@ export default defineBuildConfig({
             respectExternal: false,
         },
     },
-    outDir: "../../dist/packages/${packageName}/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
+    failOnWarn: true,
     externals: deps,
 });`;
 }
@@ -195,7 +190,6 @@ function tsConfigTemplate() {
     return `{
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "module": "commonjs",
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "noImplicitOverride": true,

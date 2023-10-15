@@ -1,224 +1,228 @@
-import { type Static, type TObject, type TSchema } from "@sinclair/typebox";
+import { type HttpMethod } from "arri-codegen-utils";
 import {
-    type H3Event,
+    type InferType,
+    type AObjectSchema,
+    a,
+    type ASchema,
+} from "arri-validate";
+import {
     type Router,
-    getValidatedQuery,
-    readValidatedBody,
+    type H3Event,
+    defineEventHandler,
+    setHeader,
     send,
-    setResponseHeader,
-    eventHandler,
+    type H3EventContext,
+    isPreflightRequest,
+    getQuery,
+    type HTTPMethod,
+    readRawBody,
 } from "h3";
 import { type ArriOptions } from "./app";
-import { errorResponseFromValidationErrors, handleH3Error } from "./errors";
-import type { HandlerContext } from "./procedures";
-import { typeboxSafeValidate } from "./validation";
-import { HttpMethod } from "arri-codegen-utils";
+import { defineError, handleH3Error } from "./errors";
+import {
+    type MiddlewareEvent,
+    type Middleware,
+    type ExtractParams,
+} from "./middleware";
 
-export interface ArriRoute<
+export interface RouteEventContext<
     TPath extends string,
-    TMethod extends HttpMethod,
-    TQuery extends TObject | undefined = undefined,
-    TBody extends TSchema | undefined = undefined,
-    TResponse extends TSchema | undefined = undefined,
-    TFallbackResponse = any,
-> {
-    path: TPath;
-    method: TMethod;
-    query?: TQuery;
-    body?: TBody;
-    response?: TResponse;
-    handler: ArriRouteHandler<
-        TPath,
-        TQuery extends TObject ? Static<TQuery> : undefined,
-        TBody extends TSchema ? Static<TBody> : undefined,
-        TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
-    >;
-    postHandler?: ArriRoutePostHandler<
-        TPath,
-        TQuery extends TObject ? Static<TQuery> : undefined,
-        TBody extends TObject ? Static<TObject> : undefined,
-        TResponse extends TSchema ? Static<TResponse> : TFallbackResponse
-    >;
-}
-
-export function defineRoute<
-    TPath extends string,
-    TMethod extends HttpMethod,
-    TQuery extends TObject | undefined = any,
-    TBody extends TSchema | undefined = any,
-    TResponse extends TSchema | undefined = undefined,
-    TFallbackResponse = any,
->(
-    config: ArriRoute<
-        TPath,
-        TMethod,
-        TQuery,
-        TBody,
-        TResponse,
-        TFallbackResponse
-    >,
-) {
-    return config;
-}
-
-export type Middleware = (
-    context: HandlerContext,
-    event: H3Event,
-) => void | Promise<void>;
-export const defineMiddleware = (middleware: Middleware) => middleware;
-
-export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
-    ? Record<Param, string> & NextPart
-    : NextPart;
-
-export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
-    ? ExtractParam<Segment, ExtractParams<Rest>>
-    : // eslint-disable-next-line @typescript-eslint/ban-types
-      ExtractParam<Path, {}>;
-
-export type ArriRouteHandler<
-    TPath extends string,
-    TQuery = undefined,
-    TBody = undefined,
-    TResponse = any,
-> = (
-    context: RouteHandlerContext<ExtractParams<TPath>, TQuery, TBody>,
-    event: H3Event,
-) => TResponse extends undefined
-    ? void | Promise<void>
-    : TResponse | Promise<TResponse>;
-
-export interface RouteHandlerContext<
-    TParams extends Record<string, string>,
-    TQuery = undefined,
-    TBody = undefined,
-> extends HandlerContext {
-    type: "route";
-    params: TParams;
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+> extends H3EventContext {
+    params: ExtractParams<TPath>;
     query: TQuery;
     body: TBody;
 }
 
-export interface RoutePostHandlerContext<
-    TParams extends Record<string, string>,
-    TQuery = undefined,
-    TBody = undefined,
-    TResponse = undefined,
-> extends RouteHandlerContext<TParams, TQuery, TBody> {
+export interface RouteEvent<
+    TPath extends string,
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+> extends H3Event {
+    context: RouteEventContext<TPath, TQuery, TBody>;
+}
+
+export interface PostRouteEventContext<
+    TPath extends string,
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+    TResponse = any,
+> extends RouteEventContext<TPath, TQuery, TBody> {
     response: TResponse;
 }
 
-export type ArriRoutePostHandler<
+export interface PostRouteEvent<
     TPath extends string,
-    TQuery = undefined,
-    TBody = undefined,
-    TResponse = undefined,
-> = (
-    context: RoutePostHandlerContext<
-        ExtractParams<TPath>,
-        TQuery,
-        TBody,
-        TResponse
-    >,
-    event: H3Event,
-) => any;
+    TQuery extends Record<any, any> = any,
+    TBody = any,
+    TResponse = any,
+> extends H3Event {
+    context: PostRouteEventContext<TPath, TQuery, TBody, TResponse>;
+}
 
-export function registerRoute<TPath extends string>(
+export interface ArriRoute<
+    TPath extends string,
+    TQuery extends AObjectSchema<any, any> = any,
+    TBody extends ASchema<any> = any,
+    TResponse = any,
+> {
+    path: TPath;
+    method: HttpMethod | HttpMethod[];
+    query?: TQuery;
+    body?: TBody;
+    handler: (
+        event: RouteEvent<TPath, InferType<TQuery>, InferType<TBody>>,
+    ) => TResponse;
+    postHandler?: (
+        event: PostRouteEvent<
+            TPath,
+            InferType<TQuery>,
+            InferType<TBody>,
+            Awaited<TResponse>
+        >,
+    ) => any;
+}
+
+export function defineRoute<
+    TPath extends string,
+    TQuery extends AObjectSchema<any, any> = any,
+    TBody extends AObjectSchema<any, any> = any,
+    TResponse = any,
+>(route: ArriRoute<TPath, TQuery, TBody, TResponse>) {
+    return route;
+}
+
+export type RouteOptions = Pick<
+    ArriOptions,
+    "onAfterResponse" | "onBeforeResponse" | "onError" | "onRequest"
+> & { middleware: Middleware[] };
+
+export function registerRoute(
     router: Router,
-    route: ArriRoute<TPath, HttpMethod, any, any, any>,
-    middleware: Middleware[],
-    prefix?: string,
-    opts?: ArriOptions,
+    route: ArriRoute<any>,
+    opts: RouteOptions,
 ) {
-    const handler = eventHandler(async (event: H3Event) => {
-        const context: RouteHandlerContext<any> = {
-            type: "route",
-            params: event.context.params,
-            query: undefined,
-            body: undefined,
-        };
+    if (typeof route.method === "string") {
+        handleRoute(router, route.method, route, opts);
+        return;
+    }
+    for (const method of route.method) {
+        handleRoute(router, method, route, opts);
+    }
+}
+
+export function handleRoute(
+    router: Router,
+    method: HttpMethod,
+    route: ArriRoute<any>,
+    opts: RouteOptions,
+) {
+    const handler = defineEventHandler(async (event: MiddlewareEvent) => {
+        if (isPreflightRequest(event)) {
+            return "ok";
+        }
         try {
-            if (middleware.length) {
-                for (const m of middleware) {
-                    await m(context, event);
+            if (opts.onRequest) {
+                await opts.onRequest(event);
+            }
+            if (opts.middleware.length) {
+                for (const m of opts.middleware) {
+                    await m(event);
                 }
             }
             if (route.query) {
-                const result = await getValidatedQuery(
-                    event,
-                    typeboxSafeValidate(route.query, true),
-                );
-                if (!result.success) {
-                    throw errorResponseFromValidationErrors(
-                        result.errors,
-                        "Missing or invalid query parameters",
-                    );
+                const query = getQuery(event);
+                const parsedQuery = a.safeCoerce(route.query, query);
+                if (!parsedQuery.success) {
+                    const errParts: string[] = [];
+                    for (const err of parsedQuery.error.errors) {
+                        const errPath = err.instancePath.split("/");
+                        errPath.shift();
+                        const propName = errPath.join(".");
+                        if (!errParts.includes(propName)) {
+                            errParts.push(propName);
+                        }
+                    }
+                    const message = `Missing or invalid url query parameters: [${errParts.join(
+                        ", ",
+                    )}]`;
+                    throw defineError(400, {
+                        statusMessage: message,
+                    });
                 }
-                context.query = result.value;
+                event.context.query = parsedQuery.value;
             }
-            if (
-                route.body &&
-                route.method !== "get" &&
-                route.method !== "head"
-            ) {
-                const result = await readValidatedBody(
-                    event,
-                    typeboxSafeValidate(route.body),
-                );
-                if (!result.success) {
-                    throw errorResponseFromValidationErrors(
-                        result.errors,
-                        "Missing or invalid body parameters",
-                    );
+            const notAllowedBodyMethods: HTTPMethod[] = [
+                "GET",
+                "HEAD",
+                "CONNECT",
+                "OPTIONS",
+            ];
+            if (route.body && !notAllowedBodyMethods.includes(event.method)) {
+                const body = await readRawBody(event);
+                const parsedBody = a.safeParse(route.body, body);
+                if (!parsedBody.success) {
+                    const errorParts: string[] = [];
+                    for (const err of parsedBody.error.errors) {
+                        const errPath = err.instancePath.split("/");
+                        errPath.shift();
+                        if (!errorParts.includes(errPath.join("."))) {
+                            errorParts.push(errPath.join("."));
+                        }
+                    }
+                    throw defineError(400, {
+                        statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                            ", ",
+                        )}]`,
+                        data: parsedBody.error,
+                    });
                 }
-                context.body = result.value;
+                event.context.body = parsedBody.value;
             }
-            const response = await route.handler(context, event);
-            context.response = response;
-            if (opts?.onBeforeResponse) {
-                await opts.onBeforeResponse(context as any, event);
+            const response = await route.handler(event as any);
+            event.context.response = response;
+            if (!event.handled) {
+                if (opts.onBeforeResponse) {
+                    await opts.onBeforeResponse(event);
+                }
+                if (typeof response === "object" && response) {
+                    setHeader(event, "Content-Type", "application/json");
+                    await send(event, JSON.stringify(response));
+                } else {
+                    await send(event, response);
+                }
             }
-            if (typeof response === "object") {
-                setResponseHeader(event, "Content-Type", "application/json");
-                await send(event, JSON.stringify(response));
-            } else {
-                await send(event, response ?? "");
-            }
-            if (opts?.onAfterResponse) {
-                await opts.onAfterResponse(context as any, event);
+            if (opts.onAfterResponse) {
+                await opts.onAfterResponse(event);
             }
             if (route.postHandler) {
-                await route.postHandler(context as any, event);
+                await route.postHandler(event as any);
             }
         } catch (err) {
-            await handleH3Error(err, context, event, opts?.onError);
-        }
-        if (!event.handled) {
-            await send(event, "");
+            await handleH3Error(err, event, opts.onError);
         }
         return "";
     });
-    const finalPath = (prefix ? `/${prefix}${route.path}` : route.path)
-        .split("//")
-        .join("/");
-    switch (route.method) {
+
+    switch (method) {
         case "get":
-            router.get(finalPath, handler);
-            break;
-        case "head":
-            router.head(finalPath, handler);
+            router.get(route.path, handler);
             break;
         case "delete":
-            router.delete(finalPath, handler);
+            router.delete(route.path, handler);
+            break;
+        case "head":
+            router.head(route.path, handler);
             break;
         case "patch":
-            router.patch(finalPath, handler);
+            router.patch(route.path, handler);
             break;
         case "post":
-            router.post(finalPath, handler);
+            router.post(route.path, handler);
             break;
         case "put":
-            router.put(finalPath, handler);
+            router.put(route.path, handler);
             break;
     }
 }

@@ -1,4 +1,3 @@
-import path from "pathe";
 import { defineBuildConfig } from "unbuild";
 
 export default defineBuildConfig({
@@ -6,15 +5,12 @@ export default defineBuildConfig({
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: false,
+            respectExternal: true,
         },
     },
-    alias: {
-        arri: path.resolve(__dirname, "../arri/src/index.ts"),
-    },
-    outDir: "../../dist/packages/arri-client/dist",
+    outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
-    externals: ["ofetch", "@sinclair/typebox"],
+    failOnWarn: true,
+    externals: ["ofetch", "arri-validate"],
 });

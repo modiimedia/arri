@@ -5,7 +5,6 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
             "outputs": ["{workspaceRoot}/dist/packages/json-schema-to-jtd"],
             "options": {
@@ -13,22 +12,13 @@
                 "cwd": "packages/json-schema-to-jtd"
             }
         },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/json-schema-to-jtd/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/json-schema-to-jtd --out-dir dist/packages/json-schema-to-jtd"
-            }
-        },
         "publish": {
+            "dependsOn": ["build"],
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/json-schema-to-jtd"
-            },
-            "dependsOn": ["build"]
+                "command": "pnpm publish",
+                "cwd": "packages/json-schema-to-jtd"
+            }
         },
         "lint": {
             "executor": "@nx/linter:eslint",

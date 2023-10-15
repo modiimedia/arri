@@ -1,54 +1,64 @@
-import { type TObject, type Static, TypeGuard } from "@sinclair/typebox";
-import { ValueErrorType } from "@sinclair/typebox/errors";
+import {
+    type HttpMethod,
+    isHttpMethod,
+    type RpcDefinition,
+    removeDisallowedChars,
+} from "arri-codegen-utils";
+import {
+    type AObjectSchema,
+    type InferType,
+    isAObjectSchema,
+    a,
+} from "arri-validate";
 import {
     eventHandler,
     type Router,
-    getValidatedQuery,
     isPreflightRequest,
-    readValidatedBody,
     send,
     setResponseHeader,
     type H3Event,
+    getValidatedQuery,
+    readRawBody,
+    type H3EventContext,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
-import { type ProcedureDef, removeDisallowedChars } from "./codegen/utils";
 import { defineError, handleH3Error } from "./errors";
-import { type Middleware } from "./routes";
-import { typeboxSafeValidate } from "./validation";
-import { HttpMethod, isHttpMethod } from "arri-codegen-utils";
-import { ArriOptions } from "./app";
-
-export interface ArriProcedureBase {
-    method: HttpMethod;
-    params?: any;
-    response?: any;
-    handler: (context: any) => any;
-    postHandler?: (context: any) => any;
-}
+import { type MiddlewareEvent } from "./middleware";
+import { type RouteOptions } from "./routes";
 
 export interface ArriProcedure<
-    TParams extends TObject | undefined,
-    TResponse extends TObject | undefined,
+    TParams extends AObjectSchema | undefined,
+    TResponse extends AObjectSchema | undefined,
 > {
     description?: string;
     method?: HttpMethod;
+    path?: string;
     params: TParams;
     response: TResponse;
     handler: ArriProcedureHandler<
-        TParams extends TObject ? Static<TParams> : undefined,
+        TParams extends AObjectSchema ? InferType<TParams> : undefined,
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        TResponse extends TObject ? Static<TResponse> : void
+        TResponse extends AObjectSchema ? InferType<TResponse> : void
     >;
     postHandler?: ArriProcedurePostHandler<
-        TParams extends TObject ? Static<TParams> : undefined,
-        TResponse extends TObject ? Static<TResponse> : undefined
+        TParams extends AObjectSchema ? InferType<TParams> : undefined,
+        TResponse extends AObjectSchema ? InferType<TResponse> : undefined
     >;
+}
+
+export interface ArriNamedProcedure<
+    TParams extends AObjectSchema | undefined,
+    TResponse extends AObjectSchema | undefined,
+> extends ArriProcedure<TParams, TResponse> {
+    name: string;
 }
 
 export type HandlerContext = Record<string, any>;
 
-export interface RpcHandlerContext<TParams = undefined> extends HandlerContext {
-    type: "procedure";
+export interface RpcHandlerContext<TParams = undefined>
+    extends HandlerContext,
+        Omit<H3EventContext, "params"> {
+    rpcName: string;
     params: TParams;
 }
 
@@ -59,14 +69,24 @@ export interface RpcPostHandlerContext<
     response: TResponse;
 }
 
+export interface RpcEvent<TParams = undefined>
+    extends Omit<H3Event, "context"> {
+    context: RpcHandlerContext<TParams>;
+}
+
+export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
+    extends Omit<H3Event, "context"> {
+    context: RpcPostHandlerContext<TParams, TResponse>;
+}
+
 export type ArriProcedureHandler<TParams, TResponse> = (
     context: RpcHandlerContext<TParams>,
-    event: H3Event,
+    event: RpcEvent<TParams>,
 ) => TResponse | Promise<TResponse>;
 
 export type ArriProcedurePostHandler<TParams, TResponse> = (
     context: RpcPostHandlerContext<TParams, TResponse>,
-    event: H3Event,
+    event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
 export function isRpc(input: any): input is ArriProcedure<any, any> {
@@ -84,8 +104,8 @@ export function isRpc(input: any): input is ArriProcedure<any, any> {
 }
 
 export function defineRpc<
-    TParams extends TObject | undefined = undefined,
-    TResponse extends TObject | undefined | never = undefined,
+    TParams extends AObjectSchema | undefined = undefined,
+    TResponse extends AObjectSchema | undefined | never = undefined,
 >(
     config: ArriProcedure<TParams, TResponse>,
 ): ArriProcedure<TParams, TResponse> {
@@ -96,12 +116,12 @@ export function createRpcDefinition(
     rpcName: string,
     httpPath: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDef {
+): RpcDefinition {
     return {
         description: procedure.description,
         path: httpPath,
         method: procedure.method ?? "post",
-        params: getRpcParamDefinition(rpcName, procedure),
+        params: getRpcParamName(rpcName, procedure),
         response: getRpcResponseDefinition(rpcName, procedure),
     };
 }
@@ -123,9 +143,9 @@ export function getRpcPath(rpcName: string, prefix = ""): string {
 export function getRpcParamName(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
-): string | null {
-    if (!procedure.params) {
-        return null;
+): string | undefined {
+    if (!isAObjectSchema(procedure.params)) {
+        return undefined;
     }
     const nameParts = rpcName
         .split(".")
@@ -133,51 +153,34 @@ export function getRpcParamName(
             removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
         );
     const paramName =
-        (procedure.params as TObject).$id ??
+        procedure.params.metadata.id ??
         pascalCase(`${nameParts.join(`_`)}_params`);
     return paramName;
-}
-
-export function getRpcParamDefinition(
-    rpcName: string,
-    procedure: ArriProcedure<any, any>,
-): ProcedureDef["params"] {
-    if (!procedure.params) {
-        return undefined;
-    }
-    const name = getRpcParamName(rpcName, procedure);
-    if (!name) {
-        return undefined;
-    }
-    return name;
 }
 
 export function getRpcResponseName(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
-): string | null {
-    if (!procedure.response) {
-        return null;
+): string | undefined {
+    if (!isAObjectSchema(procedure.response)) {
+        return undefined;
     }
-    if (TypeGuard.TObject(procedure.response)) {
-        const nameParts = rpcName
-            .split(".")
-            .map((part) =>
-                removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
-            );
-        const responseName =
-            procedure.response.$id ??
-            pascalCase(`${nameParts.join("_")}_response`);
-        return responseName;
-    }
-    return null;
+    const nameParts = rpcName
+        .split(".")
+        .map((part) =>
+            removeDisallowedChars(part, "!@#$%^&*()+=[]{}|\\;:'\"<>,./?"),
+        );
+    const responseName =
+        procedure.response.metadata.id ??
+        pascalCase(`${nameParts.join("_")}_response`);
+    return responseName;
 }
 
 function getRpcResponseDefinition(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
-): ProcedureDef["response"] {
-    if (!procedure.response) {
+): RpcDefinition["response"] {
+    if (!isAObjectSchema(procedure.response)) {
         return undefined;
     }
     const name = getRpcResponseName(rpcName, procedure);
@@ -190,110 +193,126 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    procedure: ArriProcedure<any, any>,
-    middleware: Middleware[],
-    opts: ArriOptions,
+    procedure: ArriNamedProcedure<any, any>,
+    opts: RouteOptions,
 ) {
+    let responseValidator: undefined | ReturnType<typeof a.compile>;
+    try {
+        responseValidator = procedure.response
+            ? a.compile(procedure.response)
+            : undefined;
+    } catch (err) {
+        console.error("ERROR COMPILING VALIDATOR", err);
+    }
     const httpMethod = procedure.method ?? "post";
-    const handler = eventHandler(async (event: H3Event) => {
-        const context: RpcHandlerContext = {
-            type: "procedure",
-            params: undefined,
-        };
+    const handler = eventHandler(async (event: MiddlewareEvent) => {
+        event.context.rpcName = procedure.name;
         if (isPreflightRequest(event)) {
             return "ok";
         }
         try {
-            if (middleware.length) {
-                await Promise.all(middleware.map((m) => m(context, event)));
+            if (opts.onRequest) {
+                await opts.onRequest(event);
             }
-            if (procedure.params) {
+            if (opts.middleware.length) {
+                for (const m of opts.middleware) {
+                    await m(event);
+                }
+            }
+            if (isAObjectSchema(procedure.params)) {
                 switch (httpMethod) {
                     case "get":
                     case "head": {
                         const parsedParams = await getValidatedQuery(
                             event,
-                            typeboxSafeValidate(procedure.params, true),
+                            (input) => a.safeCoerce(procedure.params, input),
                         );
-                        if (!parsedParams.success) {
-                            const errorParts: string[] = [];
-                            for (const err of parsedParams.errors) {
-                                const propName = err.path.split("/");
-                                propName.shift();
-                                if (!errorParts.includes(propName.join("."))) {
-                                    errorParts.push(propName.join("."));
+                        if (parsedParams.success) {
+                            event.context.params = parsedParams.value;
+                        } else {
+                            const errParts: string[] = [];
+                            for (const err of parsedParams.error.errors) {
+                                const errPath = err.instancePath.split("/");
+                                errPath.shift();
+                                const propName = errPath.join(".");
+                                if (!errParts.includes(propName)) {
+                                    errParts.push(propName);
                                 }
                             }
+                            const message = `Missing or invalid url query parameters: [${errParts.join(
+                                ", ",
+                            )}]`;
                             throw defineError(400, {
-                                statusMessage: `Missing or invalid url query parameters: [${errorParts.join(
-                                    ",",
-                                )}]`,
-                                data: parsedParams.errors,
+                                statusMessage: message,
+                                data: parsedParams.error,
                             });
                         }
-                        context.params = parsedParams.value;
                         break;
                     }
-
                     case "delete":
                     case "patch":
                     case "post":
                     case "put": {
-                        const parsedParams = await readValidatedBody(
-                            event,
-                            typeboxSafeValidate(procedure.params),
+                        const body = await readRawBody(event);
+                        if (!body) {
+                            throw defineError(400, {
+                                statusMessage: `Invalid request body. Expected object. Got undefined.`,
+                            });
+                        }
+                        const parsedParams = a.safeParse(
+                            procedure.params,
+                            body,
                         );
                         if (!parsedParams.success) {
-                            let isObjectError = false;
                             const errorParts: string[] = [];
-                            for (const err of parsedParams.errors) {
-                                if (err.type === ValueErrorType.Object) {
-                                    isObjectError = true;
+                            for (const err of parsedParams.error.errors) {
+                                const errPath = err.instancePath.split("/");
+                                errPath.shift();
+                                if (!errorParts.includes(errPath.join("."))) {
+                                    errorParts.push(errPath.join("."));
                                 }
-                                const propName = err.path.split("/");
-                                propName.shift();
-                                if (!errorParts.includes(propName.join("."))) {
-                                    errorParts.push(propName.join("."));
-                                }
-                            }
-                            if (isObjectError) {
-                                throw defineError(400, {
-                                    statusMessage: `Invalid request body. Expected object.`,
-                                });
                             }
                             throw defineError(400, {
                                 statusMessage: `Invalid request body. Affected properties [${errorParts.join(
                                     ", ",
                                 )}]`,
-                                data: parsedParams.errors,
+                                data: parsedParams.error,
                             });
                         }
-                        context.params = parsedParams.value;
+                        event.context.params = parsedParams.value;
                         break;
                     }
                     default:
                         break;
                 }
             }
-            const response = await procedure.handler(context, event);
-            context.response = response;
+            const response = await procedure.handler(
+                event.context as any,
+                event as any,
+            );
+            event.context.response = response;
             if (opts.onBeforeResponse) {
-                await opts.onBeforeResponse(context as any, event);
+                await opts.onBeforeResponse(event);
             }
             if (typeof response === "object") {
                 setResponseHeader(event, "Content-Type", "application/json");
-                await send(event, JSON.stringify(response));
+                await send(
+                    event,
+                    responseValidator?.serialize(response) ??
+                        JSON.stringify(response),
+                );
             } else {
-                await send(event, response ?? "");
+                setResponseHeader(event, "Content-Type", "application/json");
+                await send(event, `{}`);
             }
             if (opts.onAfterResponse) {
-                await opts.onAfterResponse(context as any, event);
+                await opts.onAfterResponse(event);
             }
             if (procedure.postHandler) {
-                await procedure.postHandler(context as any, event);
+                await procedure.postHandler(event.context as any, event as any);
             }
         } catch (err) {
-            await handleH3Error(err, context, event, opts.onError);
+            await handleH3Error(err, event, opts.onError);
         }
         return "";
     });

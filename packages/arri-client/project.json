@@ -5,30 +5,20 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["setup-package-json"],
             "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/dist/packages/arri-client"],
+            "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
                 "cwd": "packages/arri-client"
             }
         },
-        "setup-package-json": {
-            "executor": "nx:run-commands",
-            "outputs": [
-                "{workspaceRoot}/dist/packages/arri-client/package.json"
-            ],
-            "options": {
-                "command": "jiti tools/scripts/setup-package-json.ts --project-dir packages/arri-client --out-dir dist/packages/arri-client"
-            }
-        },
         "publish": {
+            "dependsOn": ["build"],
             "executor": "nx:run-commands",
             "options": {
-                "command": "npm publish",
-                "cwd": "dist/packages/arri-client"
-            },
-            "dependsOn": ["build"]
+                "command": "pnpm publish",
+                "cwd": "packages/arri-client"
+            }
         },
         "lint": {
             "executor": "@nx/linter:eslint",

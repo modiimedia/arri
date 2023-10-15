@@ -3,7 +3,7 @@
         "default": {
             "runner": "nx-cloud",
             "options": {
-                "cacheableOperations": [],
+                "cacheableOperations": ["build", "test"],
                 "accessToken": "OGQzN2UxNzYtMzdkOC00Y2FmLTlkNDQtMTA0OTRjNThiYWRhfHJlYWQtd3JpdGU="
             }
         }
@@ -18,7 +18,22 @@
     "affected": {
         "defaultBase": "master"
     },
+    "namedInputs": {
+        "default": [
+            "{workspaceRoot}/pnpm-lock.yaml",
+            "{projectRoot}/package.json",
+            "{projectRoot}/project.json",
+            "{projectRoot}/tsconfig.json",
+            "{projectRoot}/build.config.ts",
+            "{projectRoot}/src/**/*"
+        ]
+    },
     "targetDefaults": {
+        "build": {
+            "inputs": ["default"],
+            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build", "prepare", "^prepare"]
+        },
         "lint": {
             "inputs": [
                 "default",
@@ -27,7 +42,11 @@
             ]
         },
         "test": {
-            "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"]
+            "inputs": [
+                "default",
+                "{workspaceRoot}/jest.preset.js",
+                "{projectRoot}/vite.config.ts"
+            ]
         }
     }
 }

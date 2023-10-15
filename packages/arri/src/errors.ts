@@ -1,28 +1,22 @@
-import { type Static, Type } from "@sinclair/typebox";
-import { type ValueError } from "@sinclair/typebox/errors";
+import { type ValidationError, a } from "arri-validate";
 import {
     type H3Error,
     createError,
     type H3Event,
     isError,
     setResponseStatus,
-    sendError,
+    send,
 } from "h3";
 import { type ArriOptions } from "./app";
-import { type RpcHandlerContext } from "./procedures";
-import { type RouteHandlerContext } from "./routes";
 
-export const ErrorResponse = Type.Object(
-    {
-        statusCode: Type.Integer(),
-        statusMessage: Type.String(),
-        stack: Type.Array(Type.Any()),
-        data: Type.Optional(Type.Object({}, { additionalProperties: true })),
-    },
-    { $id: "ErrorResponse" },
-);
+export const ErrorResponse = a.object({
+    statusCode: a.int8(),
+    statusMessage: a.string(),
+    stack: a.array(a.any()),
+    data: a.optional(a.any()),
+});
 
-export type ErrorResponse = Static<typeof ErrorResponse>;
+export type ErrorResponse = a.infer<typeof ErrorResponse>;
 
 export function defineError(
     statusCode: StatusCode,
@@ -43,13 +37,15 @@ export function defineError(
 }
 
 export function errorResponseFromValidationErrors(
-    errors: ValueError[],
+    errors: ValidationError["errors"],
     prefixText = `Missing or invalid parameters`,
 ): H3Error {
     const errorParts: string[] = [];
     for (const err of errors) {
-        const propName = err.path.split("/");
-        propName.shift();
+        const propName = err.instancePath?.split("/") ?? [];
+        if (propName.length) {
+            propName.shift();
+        }
         if (!errorParts.includes(propName.join("."))) {
             errorParts.push(propName.join("."));
         }
@@ -256,7 +252,6 @@ const errorResponseDefaults: Record<
 
 export async function handleH3Error(
     err: unknown,
-    context: RpcHandlerContext | RouteHandlerContext<any>,
     event: H3Event,
     onError: ArriOptions["onError"],
 ) {
@@ -265,10 +260,18 @@ export async function handleH3Error(
         : defineError(500, { data: err as any, stack: `${err as any}` });
     setResponseStatus(event, error.statusCode);
     if (onError) {
-        await onError(error, context, event);
+        await onError(error, event);
     }
     if (event.handled) {
         return;
     }
-    sendError(event, error);
+    await send(
+        event,
+        JSON.stringify({
+            statusCode: error.statusCode,
+            statusMessage: error.statusMessage,
+            data: error.data,
+            stack: error.stack,
+        }),
+    );
 }

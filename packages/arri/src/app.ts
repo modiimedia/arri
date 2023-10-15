@@ -1,4 +1,9 @@
-import { type TObject, TypeGuard, type TSchema } from "@sinclair/typebox";
+import { type AppDefinition, type RpcDefinition } from "arri-codegen-utils";
+import {
+    type AObjectSchema,
+    type ASchema,
+    isAObjectSchema,
+} from "arri-validate";
 import {
     type App,
     createApp,
@@ -6,46 +11,36 @@ import {
     createRouter,
     eventHandler,
     type H3Error,
-    type H3Event,
     sendError,
-    getQuery,
-    readBody,
     setResponseStatus,
 } from "h3";
-import { HttpMethod } from "arri-codegen-utils";
-import { type ApplicationDef, type ProcedureDef } from "./codegen/utils";
-import { ErrorResponse, defineError, handleH3Error } from "./errors";
+import { defineError, handleH3Error } from "./errors";
+import { type MiddlewareEvent, type Middleware } from "./middleware";
 import {
-    type ArriProcedure,
     createRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
     registerRpc,
-    type RpcHandlerContext,
-    type RpcPostHandlerContext,
+    type ArriNamedProcedure,
 } from "./procedures";
-import {
-    type ArriRoute,
-    registerRoute,
-    type Middleware,
-    type RouteHandlerContext,
-    type RoutePostHandlerContext,
-} from "./routes";
+import { ArriRouter, type ArriRouterBase } from "./router";
+import { type ArriRoute, registerRoute } from "./routes";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
-export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/definition`;
+export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/__definition`;
 
-export class Arri {
+export class ArriApp implements ArriRouterBase {
     __isArri__ = true;
-    private readonly h3App: App;
-    private readonly h3Router: Router = createRouter();
+    readonly h3App: App;
+    readonly h3Router: Router = createRouter();
     private readonly rpcDefinitionPath: string;
     private readonly rpcRoutePrefix: string;
-    appInfo: ApplicationDef["info"];
-    private procedures: Record<string, ProcedureDef> = {};
-    private models: Record<string, TObject> = {};
+    appInfo: AppDefinition["info"];
+    private procedures: Record<string, RpcDefinition> = {};
+    private models: Record<string, ASchema> = {};
     private readonly middlewares: Middleware[] = [];
+    private readonly onRequest: ArriOptions["onRequest"];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
     private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
     private readonly onError: ArriOptions["onError"];
@@ -54,30 +49,28 @@ export class Arri {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
-            onRequest: opts?.onRequest,
         });
+        this.onRequest = opts.onRequest;
         this.onError = opts.onError;
         this.onAfterResponse = opts.onAfterResponse;
         this.onBeforeResponse = opts.onBeforeResponse;
         this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3App.use(this.h3Router);
-        this.registerRoute({
-            path: this.rpcRoutePrefix
+        this.h3Router.get(
+            this.rpcRoutePrefix
                 ? `/${this.rpcRoutePrefix}/${this.rpcDefinitionPath}`
                       .split("//")
                       .join("/")
                 : `/${this.rpcDefinitionPath}`,
-            method: "get",
-            handler: () => this.getAppDefinition(),
-        });
+            eventHandler(() => this.getAppDefinition()),
+        );
         // this route is used by the dev server when auto-generating client code
         if (process.env.ARRI_DEV_MODE === "true") {
-            this.registerRoute({
-                path: DEV_DEFINITION_ENDPOINT,
-                method: "get",
-                handler: () => this.getAppDefinition(),
-            });
+            this.h3Router.get(
+                DEV_DEFINITION_ENDPOINT,
+                eventHandler(() => this.getAppDefinition()),
+            );
         }
         // default fallback route
         this.h3Router.use(
@@ -85,32 +78,23 @@ export class Arri {
             eventHandler(async (event) => {
                 setResponseStatus(event, 404);
                 const error = defineError(404);
-                const query = getQuery(event);
-                const disallowedBodyMethods = ["GET", "HEAD", "OPTION"];
-                const canBody = !disallowedBodyMethods.includes(event.method);
-                const context: RouteHandlerContext<any> = {
-                    type: "route",
-                    params: event.context.params,
-                    query: query as any,
-                    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-                    body: canBody
-                        ? await readBody(event).catch((_) => undefined)
-                        : undefined,
-                };
                 try {
+                    if (this.onRequest) {
+                        await this.onRequest(event);
+                    }
                     if (this.middlewares.length) {
                         for (const m of this.middlewares) {
-                            await m(context, event);
+                            await m(event);
                         }
                     }
                 } catch (err) {
-                    await handleH3Error(err, context, event, this.onError);
+                    await handleH3Error(err, event, this.onError);
                 }
                 if (event.handled) {
                     return;
                 }
                 if (this.onError) {
-                    await this.onError(error, context, event);
+                    await this.onError(error, event);
                 }
                 if (event.handled) {
                     return;
@@ -120,73 +104,78 @@ export class Arri {
         );
     }
 
-    registerMiddleware(middleware: Middleware) {
-        this.middlewares.push(middleware);
+    use(input: Middleware | ArriRouter): void {
+        if (typeof input === "object" && input instanceof ArriRouter) {
+            for (const route of input.getRoutes()) {
+                this.route(route);
+            }
+            for (const rpc of input.getProcedures()) {
+                this.rpc(rpc);
+            }
+            return;
+        }
+        this.middlewares.push(input);
     }
 
-    registerRpc<
-        TParams extends TObject | undefined,
-        TResponse extends TObject | undefined,
-    >(name: string, procedure: ArriProcedure<TParams, TResponse>) {
-        const path = getRpcPath(name, this.rpcRoutePrefix);
-        this.procedures[name] = createRpcDefinition(name, path, procedure);
-        if (TypeGuard.TObject(procedure.params)) {
-            const paramName = getRpcParamName(name, procedure);
+    rpc<
+        TParams extends AObjectSchema<any, any> | undefined,
+        TResponse extends AObjectSchema<any, any> | undefined,
+    >(procedure: ArriNamedProcedure<TParams, TResponse>) {
+        const path =
+            procedure.path ?? getRpcPath(procedure.name, this.rpcRoutePrefix);
+        this.procedures[procedure.name] = createRpcDefinition(
+            procedure.name,
+            path,
+            procedure,
+        );
+        if (isAObjectSchema(procedure.params)) {
+            const paramName = getRpcParamName(procedure.name, procedure);
             if (paramName) {
                 this.models[paramName] = procedure.params;
             }
         }
-        if (TypeGuard.TObject(procedure.response)) {
-            const responseName = getRpcResponseName(name, procedure);
-
+        if (isAObjectSchema(procedure.response)) {
+            const responseName = getRpcResponseName(procedure.name, procedure);
             if (responseName) {
                 this.models[responseName] = procedure.response;
             }
         }
-        registerRpc(this.h3Router, path, procedure, this.middlewares, {
+        registerRpc(this.h3Router, path, procedure, {
+            middleware: this.middlewares,
+            onRequest: this.onRequest,
             onError: this.onError,
             onAfterResponse: this.onAfterResponse,
             onBeforeResponse: this.onBeforeResponse,
         });
     }
 
-    registerRoute<
+    route<
         TPath extends string,
-        TMethod extends HttpMethod = HttpMethod,
-        TQuery extends TObject | undefined = undefined,
-        TBody extends TSchema | undefined = undefined,
-        TResponse extends TSchema | undefined = undefined,
-        TFallbackResponse = any,
-    >(
-        route: ArriRoute<
-            TPath,
-            TMethod,
-            TQuery,
-            TBody,
-            TResponse,
-            TFallbackResponse
-        >,
-    ) {
-        registerRoute(this.h3Router, route, this.middlewares);
+        TQuery extends AObjectSchema<any, any>,
+        TBody extends ASchema<any>,
+        TResponse = any,
+    >(route: ArriRoute<TPath, TQuery, TBody, TResponse>) {
+        registerRoute(this.h3Router, route, {
+            middleware: this.middlewares,
+            onRequest: this.onRequest,
+            onError: this.onError,
+            onAfterResponse: this.onAfterResponse,
+            onBeforeResponse: this.onBeforeResponse,
+        });
     }
 
-    getAppDefinition(): ApplicationDef {
-        const appDef: ApplicationDef = {
-            arriSchemaVersion: "0.0.1",
+    getAppDefinition(): AppDefinition {
+        const appDef: AppDefinition = {
+            arriSchemaVersion: "0.0.2",
             info: this.appInfo,
             procedures: {},
             models: this.models as any,
-            errors: ErrorResponse,
         };
-        Object.keys(this.procedures).forEach((key) => {
+        for (const key of Object.keys(this.procedures)) {
             const rpc = this.procedures[key];
             appDef.procedures[key] = rpc;
-        });
+        }
         return appDef;
-    }
-
-    getH3Instance(): App {
-        return this.h3App;
     }
 }
 
@@ -195,25 +184,15 @@ export interface ArriOptions {
     /**
      * Metadata to display in the __definition.json file
      */
-    appInfo?: ApplicationDef["info"];
+    appInfo?: AppDefinition["info"];
     rpcRoutePrefix?: string;
     /**
      * Defaults to /__definitions
      * This parameters also takes the rpcRoutePrefix option into account
      */
     rpcDefinitionPath?: string;
-    onRequest?: (event: H3Event) => void | Promise<void>;
-    onAfterResponse?: (
-        context: RpcPostHandlerContext | RoutePostHandlerContext<any>,
-        event: H3Event,
-    ) => void | Promise<void>;
-    onBeforeResponse?: (
-        context: RpcPostHandlerContext | RoutePostHandlerContext<any>,
-        event: H3Event,
-    ) => void | Promise<void>;
-    onError?: (
-        error: H3Error,
-        context: RpcHandlerContext | RouteHandlerContext<any>,
-        event: H3Event,
-    ) => void | Promise<void>;
+    onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
+    onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
+    onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;
+    onError?: (error: H3Error, event: MiddlewareEvent) => void | Promise<void>;
 }

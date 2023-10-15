@@ -1,24 +1,20 @@
-import { type SchemaFormType } from "@modii/jtd";
 import {
-    type ScalarTypeSchema,
-    type InputOptions,
+    type AScalarSchema,
+    type ASchemaOptions,
     type MaybeNullable,
     SCHEMA_METADATA,
-} from "./typedefs";
-import { ValidationError, AJV } from "./validation";
+    type ValidationData,
+} from "../schemas";
 
-const schema: SchemaFormType = {
-    type: "boolean",
-};
-
-const validator = AJV.compile(schema);
-const isBool = (input: unknown): input is boolean => validator(input);
-const parser = AJV.compileParser(schema);
-const serializer = AJV.compileSerializer(schema);
-
+/**
+ * @example
+ * const Schema = a.boolean();
+ * a.validate(Schema, true) // true;
+ * a.validate(Schema, false) // true;
+ */
 export function boolean<TNullable extends boolean = false>(
-    opts: InputOptions = {},
-): ScalarTypeSchema<"boolean", MaybeNullable<boolean, TNullable>> {
+    opts: ASchemaOptions = {},
+): AScalarSchema<"boolean", MaybeNullable<boolean, TNullable>> {
     return {
         type: "boolean",
         metadata: {
@@ -26,23 +22,11 @@ export function boolean<TNullable extends boolean = false>(
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: false,
-                parse(input) {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isBool(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isBool(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
-                },
-                validate: isBool,
-                serialize: serializer,
-                coerce(input) {
-                    if (isBool(input)) {
+                parse,
+                validate,
+                serialize,
+                coerce(input, data) {
+                    if (validate(input)) {
                         return input;
                     }
                     switch (input) {
@@ -59,9 +43,47 @@ export function boolean<TNullable extends boolean = false>(
                         default:
                             break;
                     }
-                    throw new ValidationError(validator.errors ?? []);
+                    data.errors.push({
+                        instancePath: data.instancePath,
+                        schemaPath: data.schemaPath,
+                        message: `Unable to coerce ${input as any} to boolean`,
+                    });
+                    return undefined;
                 },
             },
         },
     };
+}
+
+function validate(input: unknown): input is boolean {
+    return typeof input === "boolean";
+}
+function parse(input: unknown, data: ValidationData): boolean | undefined {
+    if (validate(input)) {
+        return input;
+    }
+    if (data.instancePath.length === 0 && typeof input === "string") {
+        if (input === "true") {
+            return true;
+        }
+        if (input === "false") {
+            return false;
+        }
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: `${data.schemaPath}/type`,
+            message: `Expected boolean. Got ${typeof input}.`,
+        });
+        return undefined;
+    }
+
+    data.errors.push({
+        instancePath: data.instancePath,
+        schemaPath: `${data.schemaPath}/type`,
+        message: `Expected boolean. Got ${typeof input}.`,
+    });
+    return undefined;
+}
+function serialize(input: boolean | null) {
+    return `${input}`;
 }

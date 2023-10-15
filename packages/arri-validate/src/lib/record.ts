@@ -1,63 +1,109 @@
-import { type SchemaFormValues } from "@modii/jtd";
 import {
+    type ARecordSchema,
+    type ASchema,
+    type ASchemaOptions,
     type InferType,
-    type ArriSchema,
-    type MaybeNullable,
     SCHEMA_METADATA,
-    type InputOptions,
-} from "./typedefs";
-import { ValidationError, AJV } from "./validation";
+    isObject,
+    type ValidationData,
+} from "../schemas";
 
-export interface RecordSchema<
-    TInnerSchema extends ArriSchema<any>,
-    TNullable extends boolean = false,
-> extends ArriSchema<
-        MaybeNullable<Record<any, InferType<TInnerSchema>>, TNullable>
-    > {
-    values: TInnerSchema;
-}
-
-type InferRecordType<TInnerSchema extends ArriSchema<any>> = Record<
-    any,
-    InferType<TInnerSchema>
->;
-
-export function record<TInnerSchema extends ArriSchema<any>>(
+/**
+ * Create a schema for a record with strings keys
+ *
+ * @example
+ * const StringRecord = a.record(
+ *   a.string(),
+ * );
+ * a.validate(StringRecord, {foo: "bar"}) // true
+ *
+ * const ObjectRecord = a.record(
+ *   a.object({
+ *     id: a.string(),
+ *     date: a.timestamp(),
+ *   })
+ * )
+ * a.validate(ObjectRecord, {foo: {id: "1", date: new Date()}}) // true
+ */
+export function record<TInnerSchema extends ASchema<any>>(
     schema: TInnerSchema,
-    opts: InputOptions = {},
-): RecordSchema<TInnerSchema> {
-    const jtdSchema: SchemaFormValues = {
-        values: schema,
-    };
-    const validator = AJV.compile(jtdSchema as any);
-    const isType = (input: unknown): input is InferRecordType<TInnerSchema> =>
-        validator(input);
-    const parser = AJV.compileParser(jtdSchema);
-    const serializer = AJV.compileSerializer(jtdSchema);
+    opts: ASchemaOptions = {},
+): ARecordSchema<TInnerSchema> {
     return {
-        ...(jtdSchema as any),
+        values: schema,
         metadata: {
             id: opts.id,
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: {},
-                validate: isType,
-                parse: (input: unknown) => {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
+                validate(input): input is InferRecordType<TInnerSchema> {
+                    if (!isObject(input)) {
+                        return false;
+                    }
+                    for (const key of Object.keys(input)) {
+                        const val = input[key];
+                        const isValid =
+                            schema.metadata[SCHEMA_METADATA].validate(val);
+                        if (!isValid) {
+                            return false;
                         }
-                        throw new ValidationError(validator.errors ?? []);
                     }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                    return true;
                 },
-                serialize: serializer,
+                parse(input, data) {
+                    return parse(schema, input, data, false);
+                },
+                coerce(input: unknown, data) {
+                    return parse(schema, input, data, true);
+                },
+                serialize: (input) => JSON.stringify(input),
             },
         },
     };
 }
-export const dictionary = record;
+
+function parse<T>(
+    schema: ASchema<T>,
+    input: unknown,
+    data: ValidationData,
+    coerce = false,
+): Record<string, T> | undefined {
+    let parsedInput: any = input;
+    if (data.instancePath.length === 0 && typeof input === "string") {
+        parsedInput = JSON.parse(input);
+    }
+    if (!isObject(parsedInput)) {
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            message: "Expected object",
+        });
+        return undefined;
+    }
+    const result: Record<any, any> = {};
+    for (const key of Object.keys(parsedInput)) {
+        const val = parsedInput[key];
+        if (coerce) {
+            result[key] = schema.metadata[SCHEMA_METADATA].coerce(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/values`,
+                errors: data.errors,
+            });
+        } else {
+            result[key] = schema.metadata[SCHEMA_METADATA].parse(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/values`,
+                errors: data.errors,
+            });
+        }
+    }
+    if (data.errors.length) {
+        return undefined;
+    }
+    return result;
+}
+
+type InferRecordType<TInnerSchema extends ASchema<any>> = Record<
+    string,
+    InferType<TInnerSchema>
+>;

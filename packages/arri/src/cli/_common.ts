@@ -1,11 +1,11 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
-import { build } from "esbuild";
+import { removeDisallowedChars } from "arri-codegen-utils";
+import * as esbuild from "esbuild";
 import { globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
-import { removeDisallowedChars } from "../codegen/utils";
 import { type ResolvedArriConfig } from "../config";
 
 export async function setupWorkingDir(config: ResolvedArriConfig) {
@@ -147,7 +147,7 @@ export async function transpileFiles(config: ResolvedArriConfig) {
     const files = await globby(["**/*.ts"], {
         cwd: path.resolve(config.rootDir, config.srcDir),
     });
-    await build({
+    await esbuild.build({
         entryPoints: [
             ...files.map((file) =>
                 path.resolve(config.rootDir, config.srcDir, file),

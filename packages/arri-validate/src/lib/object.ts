@@ -1,54 +1,54 @@
-import { type Schema, type SchemaFormProperties } from "@modii/jtd";
-import {
-    SCHEMA_METADATA,
-    type InferType,
-    type ArriSchema,
-    type InferObjectOutput,
-    type ScalarTypeSchema,
-    type InputOptions,
-} from "./typedefs";
-import { ValidationError, AJV } from "./validation";
+import { type SchemaFormProperties } from "@modii/jtd";
 
-export interface ObjectSchema<
-    TVal = any,
-    TAllowAdditionalProperties extends boolean = false,
-> extends ArriSchema<TVal> {
-    properties: Record<string, ArriSchema>;
-    optionalProperties?: Record<string, ScalarTypeSchema>;
-    additionalProperties?: TAllowAdditionalProperties;
-}
+import {
+    type ASchema,
+    type InferObjectOutput,
+    type InferType,
+    SCHEMA_METADATA,
+    type AObjectSchema,
+    type AObjectSchemaOptions,
+    type ResolveObject,
+    type ValidationData,
+    isObject,
+} from "../schemas";
+import { optional } from "./modifiers";
 
 /**
+ * Create an object schema
  *
+ * @example
+ * const Schema = a.object({
+ *   foo: a.string(),
+ *   bar: a.number()
+ * });
+ * a.validate(Schema, {foo: "", bar: 0}) // true
+ * a.validate(Schema, {foo: null, bar: 0}) // false
  */
 export function object<
-    TInput extends Record<any, ArriSchema> = any,
+    TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     input: TInput,
-    opts: ObjectOptions<TAdditionalProps> = {},
-): ObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps> {
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<
+    InferObjectOutput<TInput, TAdditionalProps>,
+    TAdditionalProps
+> {
     const schema: SchemaFormProperties = {
         properties: {},
     };
-    Object.keys(input).forEach((key) => {
+    for (const key of Object.keys(input)) {
         const prop = input[key];
         if (prop.metadata[SCHEMA_METADATA].optional) {
             if (!schema.optionalProperties) {
                 schema.optionalProperties = {};
             }
             schema.optionalProperties[key] = prop;
-            return;
+            continue;
         }
         schema.properties[key] = input[key];
-    });
-    const validator = AJV.compile(schema, true);
-    const parser = AJV.compileParser(schema);
-    const serializer = AJV.compileSerializer(schema);
-    const isType = (
-        input: unknown,
-    ): input is InferObjectOutput<TInput, TAdditionalProps> => validator(input);
-    const result: ObjectSchema<any, TAdditionalProps> = {
+    }
+    const result: AObjectSchema<any, TAdditionalProps> = {
         ...(schema as any),
         metadata: {
             id: opts.id,
@@ -58,108 +58,184 @@ export function object<
                     TInput,
                     TAdditionalProps
                 >,
-                parse: (input) => {
-                    if (typeof input === "string") {
-                        const parseResult = parser(input);
-                        if (isType(parseResult)) {
-                            return parseResult;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                parse(input, data) {
+                    return parse(schema as AObjectSchema, input, data, false);
                 },
-                coerce: (input: unknown) => {
-                    let parsedInput = input;
-                    if (typeof input === "string") {
-                        parsedInput = JSON.parse(input);
-                    }
-                    if (typeof parsedInput !== "object") {
-                        throw new ValidationError([
-                            {
-                                message: "Expected object",
-                                keyword: "",
-                                instancePath: "/",
-                                params: {},
-                                schemaPath: "",
-                            },
-                        ]);
-                    }
-                    const result: any = {};
-                    Object.keys(schema.properties).forEach((key) => {
-                        const prop = schema.properties[key] as ArriSchema;
-                        result[key] = prop.metadata[SCHEMA_METADATA].coerce(
-                            (input as any)[key],
-                        );
-                    });
-                    Object.keys(schema.optionalProperties ?? {}).forEach(
-                        (key) => {
-                            const prop = (schema.additionalProperties as any)[
-                                key
-                            ] as ArriSchema;
-                            if (typeof (input as any)[key] !== "undefined") {
-                                result[key] = prop.metadata[
-                                    SCHEMA_METADATA
-                                ].coerce((input as any)[key]);
-                            }
-                        },
-                    );
-                    return result as InferObjectOutput<
-                        TInput,
-                        TAdditionalProps
-                    >;
+                coerce(input: unknown, data) {
+                    return parse(schema as AObjectSchema, input, data, true);
                 },
-                validate: isType,
-                serialize: serializer,
+                validate(input) {
+                    return validate(schema as AObjectSchema, input);
+                },
+                serialize: (input) => JSON.stringify(input),
             },
         },
     };
     return result;
 }
 
+function parse<T>(
+    schema: AObjectSchema<T>,
+    input: unknown,
+    data: ValidationData,
+    coerce = false,
+): T | undefined {
+    let parsedInput: any = input;
+    if (data.instancePath.length === 0 && typeof input === "string") {
+        try {
+            const result = JSON.parse(input);
+            parsedInput = result;
+        } catch (err) {
+            data.errors.push({
+                instancePath: data.instancePath,
+                schemaPath: data.schemaPath,
+                message: `Error parsing. Invalid JSON.`,
+            });
+            return undefined;
+        }
+    }
+    if (!isObject(parsedInput)) {
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            message: "Expected object",
+        });
+    }
+    const result: Record<any, any> = {};
+    const optionalProps = schema.optionalProperties ?? {};
+    const inputKeys = Object.keys(parsedInput);
+    const requiredKeys = Object.keys(schema.properties);
+    const optionalKeys = Object.keys(optionalProps);
+    if (!schema.additionalProperties) {
+        for (const key of inputKeys) {
+            if (
+                !requiredKeys.includes(key) &&
+                !optionalKeys.includes(key) &&
+                key !== data.discriminatorKey
+            ) {
+                data.errors.push({
+                    instancePath: `${data.instancePath}/${key}`,
+                    schemaPath: `${data.schemaPath}/additionalKeys`,
+                    message: `Key '${key}' is not included in the schema. To allow additional input properties set additionalProperties to 'true'.`,
+                });
+            }
+        }
+    }
+    if (data.discriminatorKey) {
+        result[data.discriminatorKey] = data.discriminatorValue;
+    }
+    for (const key of requiredKeys) {
+        const val = parsedInput[key];
+        const prop = schema.properties[key];
+        if (coerce) {
+            result[key] = prop.metadata[SCHEMA_METADATA].coerce(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/properties/${key}`,
+                errors: data.errors,
+            });
+            continue;
+        }
+        result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
+            instancePath: `${data.instancePath}/${key}`,
+            schemaPath: `${data.schemaPath}/properties/${key}`,
+            errors: data.errors,
+        });
+    }
+    for (const key of optionalKeys) {
+        const val = parsedInput[key];
+        const prop = optionalProps[key];
+        if (val === undefined) {
+            continue;
+        }
+        if (coerce) {
+            result[key] = prop.metadata[SCHEMA_METADATA].coerce(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
+                errors: data.errors,
+            });
+            continue;
+        }
+        result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
+            instancePath: `${data.instancePath}/${key}`,
+            schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
+            errors: data.errors,
+        });
+    }
+    if (data.errors.length) {
+        return undefined;
+    }
+    return result;
+}
+
+function validate(schema: AObjectSchema, input: unknown): boolean {
+    if (!isObject(input)) {
+        return false;
+    }
+    const optionalProps = schema.optionalProperties ?? {};
+    for (const key of Object.keys(input)) {
+        const prop: ASchema<any> | undefined =
+            schema.properties[key] ?? optionalProps[key];
+        if (!prop && !schema.additionalProperties) {
+            return false;
+        }
+        const isValid = prop.metadata[SCHEMA_METADATA].validate(input[key]);
+        if (!isValid) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Create an object schema using a subset of keys from another object schema
+ *
+ * @example
+ * const BaseObject = a.object({
+ *   foo: a.string(),
+ *   bar: a.string(),
+ *   baz: a.string(),
+ * }) // { foo: string; bar: string; baz: string; }
+ *
+ * const SubObject = a.pick(User, ['foo']) // { foo: string; }
+ */
 export function pick<
-    TSchema extends ObjectSchema<any, any> = any,
+    TSchema extends AObjectSchema<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
     TAdditionalProps extends boolean = false,
 >(
-    input: TSchema,
+    inputSchema: TSchema,
     keys: TKeys[],
-    opts: ObjectOptions<TAdditionalProps> = {},
-): ObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
-    const schema: Schema = {
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
+    const schema: SchemaFormProperties = {
         properties: {},
-        nullable: input.nullable,
+        nullable: inputSchema.nullable,
     };
 
-    Object.keys(input.properties).forEach((key) => {
+    Object.keys(inputSchema.properties).forEach((key) => {
         if (!schema.properties) {
             return;
         }
         if (keys.includes(key as any)) {
-            schema.properties[key] = input.properties[key];
+            schema.properties[key] = inputSchema.properties[key];
         }
     });
-    if (input.optionalProperties) {
+    if (inputSchema.optionalProperties) {
         schema.optionalProperties = {};
-        Object.keys(input.optionalProperties).forEach((key) => {
-            if (!schema.optionalProperties || !input.optionalProperties) {
+        Object.keys(inputSchema.optionalProperties).forEach((key) => {
+            if (!schema.optionalProperties || !inputSchema.optionalProperties) {
                 return;
             }
             if (keys.includes(key as any)) {
-                schema.optionalProperties[key] = input.optionalProperties[key];
+                schema.optionalProperties[key] =
+                    inputSchema.optionalProperties[key];
             }
         });
     }
-    if (typeof input.additionalProperties === "boolean") {
-        schema.additionalProperties = input.additionalProperties;
+    if (typeof inputSchema.additionalProperties === "boolean") {
+        schema.additionalProperties = inputSchema.additionalProperties;
     }
-    const validator = AJV.compile(schema, true);
-    const isType = (input: unknown): input is Pick<InferType<TSchema>, TKeys> =>
-        validator(input);
-    const parser = AJV.compileParser(schema);
-    const serializer = AJV.compileSerializer(schema);
+
     return {
         ...(schema as any),
         metadata: {
@@ -167,53 +243,62 @@ export function pick<
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
-                parse: (input) => {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                parse: (input, data) => {
+                    return parse(schema as any, input, data, true);
                 },
-                validate: isType,
-                serialize: serializer,
+                coerce(input, data) {
+                    return parse(schema as any, input, data, false);
+                },
+                validate(input) {
+                    return validate(schema as any, input);
+                },
+                serialize(input) {
+                    return JSON.stringify(input);
+                },
             },
         },
     };
 }
 
+/**
+ * Create an object schema by omitting keys from another object schema
+ *
+ * @example
+ * const BaseObject = a.object({
+ *   foo: a.string(),
+ *   bar: a.string(),
+ *   baz: a.string(),
+ * }); // { foo: string; bar: string; baz: string; }
+ *
+ * const SubObject = a.omit(BaseObject, ['foo']) // { bar: string; baz: string; }
+ */
 export function omit<
-    TSchema extends ObjectSchema<any, any> = any,
+    TSchema extends AObjectSchema<any, any> = any,
     TKeys extends keyof InferType<TSchema> = any,
     TAdditionalProps extends boolean = false,
 >(
-    input: TSchema,
+    inputSchema: TSchema,
     keys: TKeys[],
-    opts: ObjectOptions<TAdditionalProps> = {},
-): ObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
-    const schema: Schema = {
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
+    const schema: SchemaFormProperties = {
         properties: {
-            ...input.properties,
+            ...inputSchema.properties,
         },
-        nullable: input.nullable,
+        nullable: inputSchema.nullable,
     };
-    Object.keys(input.properties).forEach((key) => {
+    Object.keys(inputSchema.properties).forEach((key) => {
         if (keys.includes(key as any)) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete schema.properties[key];
         }
     });
 
-    if (input.optionalProperties) {
+    if (inputSchema.optionalProperties) {
         schema.optionalProperties = {
-            ...(input.optionalProperties as any),
+            ...(inputSchema.optionalProperties as any),
         };
-        Object.keys(input.optionalProperties).forEach((key) => {
+        Object.keys(inputSchema.optionalProperties).forEach((key) => {
             if (!schema.optionalProperties) {
                 return;
             }
@@ -223,14 +308,9 @@ export function omit<
             }
         });
     }
-    if (typeof input.additionalProperties === "boolean") {
-        schema.additionalProperties = input.additionalProperties;
+    if (typeof inputSchema.additionalProperties === "boolean") {
+        schema.additionalProperties = inputSchema.additionalProperties;
     }
-    const validator = AJV.compile(schema, true);
-    const isType = (input: unknown): input is Omit<InferType<TSchema>, TKeys> =>
-        validator(input);
-    const parser = AJV.compileParser(schema);
-    const serializer = AJV.compileSerializer(schema);
     return {
         ...(schema as any),
         metadata: {
@@ -238,67 +318,113 @@ export function omit<
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: {} as any,
-                validate: isType,
-                parse(val: unknown) {
-                    if (typeof val === "string") {
-                        const result = parser(val);
-                        if (isType(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isType(val)) {
-                        return val;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                validate(input) {
+                    return validate(schema as any, input);
                 },
-                serialize: serializer,
-                coerce(val) {
-                    let parsedInput = val;
-                    if (typeof val === "string") {
-                        parsedInput = JSON.parse(val);
-                    }
-                    if (typeof parsedInput !== "object") {
-                        throw new ValidationError([
-                            {
-                                message: "Expected object",
-                                keyword: "",
-                                instancePath: "/",
-                                params: {},
-                                schemaPath: "",
-                            },
-                        ]);
-                    }
-                    const result: any = {};
-                    Object.keys(schema.properties).forEach((key) => {
-                        const prop = schema.properties[key] as ArriSchema;
-                        result[key] = prop.metadata[SCHEMA_METADATA].coerce(
-                            (val as any)[key],
-                        );
-                    });
-                    Object.keys(schema.optionalProperties ?? {}).forEach(
-                        (key) => {
-                            const prop = (schema.additionalProperties as any)[
-                                key
-                            ] as ArriSchema;
-                            if (typeof (val as any)[key] !== "undefined") {
-                                result[key] = prop.metadata[
-                                    SCHEMA_METADATA
-                                ].coerce((val as any)[key]);
-                            }
-                        },
-                    );
-                    return result;
+                parse(input: unknown, data) {
+                    return parse(schema as any, input, data, false);
+                },
+                serialize(input) {
+                    return JSON.stringify(input);
+                },
+                coerce(input, data) {
+                    return parse(schema as any, input, data, true);
                 },
             },
         },
     };
 }
 
-interface ObjectOptions<TAdditionalProps extends boolean = false>
-    extends InputOptions {
-    /**
-     * Allow this object to include additional properties not specified here
-     */
-    additionalProperties?: TAdditionalProps;
+export function extend<
+    TBaseSchema extends AObjectSchema<any, any> = any,
+    TSchema extends AObjectSchema<any, any> = any,
+    TAdditionalProps extends boolean = false,
+>(
+    baseSchema: TBaseSchema,
+    inputSchema: TSchema,
+    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<
+    ResolveObject<InferType<TBaseSchema> & InferType<TSchema>>,
+    TAdditionalProps
+> {
+    const schema: SchemaFormProperties = {
+        properties: {
+            ...baseSchema.properties,
+            ...inputSchema.properties,
+        },
+        optionalProperties: {
+            ...baseSchema.optionalProperties,
+            ...inputSchema.optionalProperties,
+        },
+        additionalProperties: opts.additionalProperties,
+    };
+
+    const isType = (
+        input: unknown,
+    ): input is InferType<TBaseSchema> & InferType<TSchema> =>
+        validate(schema as any, input);
+    const meta: ASchema["metadata"] = {
+        id: opts.id,
+        description: opts.description,
+        [SCHEMA_METADATA]: {
+            output: {} as any as InferType<TBaseSchema> & InferType<TSchema>,
+            parse(input: unknown, data) {
+                return parse(schema as any, input, data, false);
+            },
+            coerce(input: unknown, data) {
+                return parse(schema as any, input, data, true);
+            },
+            validate: isType,
+            serialize(input) {
+                return JSON.stringify(input);
+            },
+        },
+    };
+    schema.metadata = meta;
+    return schema as any;
+}
+
+export function partial<
+    TSchema extends AObjectSchema<any, any> = any,
+    TAdditionalProps extends boolean = false,
+>(
+    schema: TSchema,
+    options: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<Partial<InferType<TSchema>>, TAdditionalProps> {
+    const newSchema: SchemaFormProperties = {
+        properties: {},
+        optionalProperties: {},
+        additionalProperties: schema.additionalProperties,
+        nullable: schema.nullable,
+    };
+    for (const key of Object.keys(schema.properties)) {
+        const prop = schema.properties[key];
+        (newSchema.optionalProperties as any)[key] = optional(prop);
+    }
+    if (schema.optionalProperties) {
+        for (const key of Object.keys(schema.optionalProperties)) {
+            const prop = schema.optionalProperties[key];
+            (newSchema.optionalProperties as any)[key] = prop;
+        }
+    }
+    const meta: ASchema["metadata"] = {
+        id: options.id,
+        description: options.description,
+        [SCHEMA_METADATA]: {
+            output: {} as any,
+            optional: schema.metadata[SCHEMA_METADATA].optional,
+            validate(input): input is Partial<InferType<TSchema>> {
+                return validate(newSchema as any, input);
+            },
+            parse(input, data) {
+                return parse(newSchema as any, input, data, false);
+            },
+            coerce(input, data) {
+                return parse(newSchema as any, input, data, true);
+            },
+            serialize: JSON.stringify,
+        },
+    };
+    newSchema.metadata = meta;
+    return newSchema as any;
 }

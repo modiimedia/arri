@@ -1,97 +1,191 @@
-import { ValidationError } from "ajv";
-import { type SchemaFormDiscriminator } from "@modii/jtd";
-import { type ObjectSchema } from "./object";
 import {
-    type InputOptions,
-    type ArriSchema,
-    SCHEMA_METADATA,
+    type ADiscriminatorSchema,
+    type AObjectSchema,
+    type ASchemaOptions,
     type InferType,
     type ResolveObject,
-} from "./typedefs";
-import { AJV } from "./validation";
+    SCHEMA_METADATA,
+    isObject,
+    type ValidationData,
+} from "../schemas";
 
-export interface DiscriminatorSchema<T> extends ArriSchema<T> {
-    discriminator: string;
-    mapping: Record<string, ObjectSchema<any>>;
-}
-
-type JoinedDiscriminator<
-    TUnionKey extends string,
-    TInput extends Record<string, ObjectSchema<any>>,
-> = {
-    [TKey in keyof TInput]: InferType<TInput[TKey]> & Record<TUnionKey, TKey>;
-};
-
-type InferDiscriminatorType<
-    TDiscriminatorKey extends string,
-    TMapping extends Record<string, ObjectSchema<any>>,
-    TJoinedMapping extends JoinedDiscriminator<TDiscriminatorKey, TMapping>,
-> = ResolveObject<TJoinedMapping[keyof TJoinedMapping]>;
-
+/**
+ * Create a discriminated union / tagged union
+ *
+ * This is an implementation of https://jsontypedef.com/docs/jtd-in-5-minutes/#discriminator-schemas
+ *
+ * @example
+ * const Schema = a.discriminator("eventType", {
+ *   CREATED: a.object({
+ *     id: a.string(),
+ *     createdAt: a.timestamp(),
+ *   }),
+ *   UPDATED: a.object({
+ *     id: a.string(),
+ *     createdAt: a.timestamp(),
+ *     updatedAt: a.timestamp(),
+ *   })
+ * })
+ * a.validate(Schema, {
+ *   eventType: "CREATED",
+ *   id: "1",
+ *   createdAt: new Date()
+ * }) // true
+ * a.validate(Schema, {
+ *   eventType: "UPDATED",
+ *   id: "2",
+ *   createdAt: new Date(),
+ *   updatedAt: new Date(),
+ * }) // true
+ * a.validate(Schema, {
+ *   eventType: "DELETED",
+ *   id: "1",
+ *   createdAt: new Date(),
+ * }) // false
+ */
 export function discriminator<
     TDiscriminatorKey extends string,
-    TMapping extends Record<string, ObjectSchema<any>>,
+    TMapping extends Record<string, AObjectSchema<any>>,
 >(
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
-    opts: InputOptions = {},
-): DiscriminatorSchema<
+    opts: ASchemaOptions = {},
+): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
         TMapping,
         JoinedDiscriminator<TDiscriminatorKey, TMapping>
     >
 > {
-    const schema: SchemaFormDiscriminator = {
+    return {
         discriminator,
         mapping,
-    };
-    const validator = AJV.compile(schema as any);
-    const isType = (
-        input: unknown,
-    ): input is InferDiscriminatorType<
-        TDiscriminatorKey,
-        TMapping,
-        JoinedDiscriminator<TDiscriminatorKey, TMapping>
-    > => validator(input);
-    const parser = AJV.compileParser(schema);
-    const serializer = AJV.compileSerializer(schema);
-    return {
-        ...(schema as any),
         metadata: {
             id: opts.id,
             description: opts.description,
             [SCHEMA_METADATA]: {
                 output: {} as any,
-                validate: isType,
-                parse: (input: unknown) => {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                validate(
+                    input,
+                ): input is InferType<
+                    ADiscriminatorSchema<
+                        InferDiscriminatorType<
+                            TDiscriminatorKey,
+                            TMapping,
+                            JoinedDiscriminator<TDiscriminatorKey, TMapping>
+                        >
+                    >
+                > {
+                    return validate(discriminator, mapping, input);
                 },
-                coerce: (input) => {
-                    if (typeof input === "string") {
-                        const result = parser(input);
-                        if (isType(result)) {
-                            return result;
-                        }
-                        throw new ValidationError(validator.errors ?? []);
-                    }
-                    if (isType(input)) {
-                        return input;
-                    }
-                    throw new ValidationError(validator.errors ?? []);
+                parse(input, data) {
+                    return parse(discriminator, mapping, input, data, false);
                 },
-                serialize: serializer,
+                coerce: (input, data) => {
+                    return parse(discriminator, mapping, input, data, true);
+                },
+                serialize: (input) => JSON.stringify(input),
             },
         },
     };
+}
+
+type JoinedDiscriminator<
+    TUnionKey extends string,
+    TInput extends Record<string, AObjectSchema<any>>,
+> = {
+    [TKey in keyof TInput]: InferType<TInput[TKey]> & Record<TUnionKey, TKey>;
+};
+
+type InferDiscriminatorType<
+    TDiscriminatorKey extends string,
+    TMapping extends Record<string, AObjectSchema<any>>,
+    TJoinedMapping extends JoinedDiscriminator<TDiscriminatorKey, TMapping>,
+> = ResolveObject<TJoinedMapping[keyof TJoinedMapping]>;
+
+function validate(
+    discriminator: string,
+    mapping: Record<string, AObjectSchema<any>>,
+    input: unknown,
+) {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!(discriminator in input)) {
+        return false;
+    }
+    const discriminatorOptions = Object.keys(mapping);
+    if (!discriminatorOptions.includes(input[discriminator])) {
+        return false;
+    }
+    const targetSchema = mapping[input[discriminator]];
+    if (!targetSchema) {
+        return false;
+    }
+    return targetSchema.metadata[SCHEMA_METADATA].validate(input);
+}
+
+function parse(
+    discriminator: string,
+    mapping: Record<string, AObjectSchema<any>>,
+    input: unknown,
+    data: ValidationData,
+    coerce = false,
+) {
+    let parsedInput = input;
+    if (typeof input === "string" && data.instancePath.length === 0) {
+        parsedInput = JSON.parse(input);
+    }
+    if (!isObject(parsedInput)) {
+        data.errors.push({
+            instancePath: data.instancePath,
+            schemaPath: data.schemaPath,
+            message: `Expected object. Got ${typeof parsedInput}.`,
+        });
+        return undefined;
+    }
+    if (!(discriminator in parsedInput)) {
+        data.errors.push({
+            instancePath: `${data.instancePath}/${discriminator}`,
+            schemaPath: `${data.schemaPath}/discriminator`,
+            message: `Discriminator field "${discriminator}" cannot be undefined`,
+        });
+        return undefined;
+    }
+    const acceptedDiscriminatorVals = Object.keys(mapping);
+    const discriminatorVal = parsedInput[discriminator];
+    if (!acceptedDiscriminatorVals.includes(discriminatorVal)) {
+        data.errors.push({
+            instancePath: `${data.instancePath}/${discriminator}`,
+            schemaPath: `${data.schemaPath}/discriminator`,
+            message: `"${
+                parsedInput[discriminator]
+            }" is not one of the accepted discriminator values: [${acceptedDiscriminatorVals.join(
+                ", ",
+            )}]`,
+        });
+        return undefined;
+    }
+    const targetSchema = mapping[parsedInput[discriminator]];
+    if (coerce) {
+        const result = targetSchema.metadata[SCHEMA_METADATA].coerce(
+            parsedInput,
+            {
+                instancePath: data.instancePath,
+                schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
+                errors: data.errors,
+                discriminatorKey: discriminator,
+                discriminatorValue: discriminatorVal,
+            },
+        );
+        return result;
+    }
+    const result = targetSchema.metadata[SCHEMA_METADATA].parse(parsedInput, {
+        instancePath: data.instancePath,
+        schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
+        errors: data.errors,
+        discriminatorKey: discriminator,
+        discriminatorValue: discriminatorVal,
+    });
+    return result;
 }

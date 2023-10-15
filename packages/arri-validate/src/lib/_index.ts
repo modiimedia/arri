@@ -9,5 +9,13 @@ export * from "./object";
 export * from "./record";
 export * from "./string";
 export * from "./timestamp";
-export { parse, safeParse, serialize, validate } from "./validation";
-export type { InferType as infer } from "./typedefs";
+export {
+    parse,
+    safeParse,
+    serialize,
+    validate,
+    coerce,
+    safeCoerce,
+} from "./validation";
+export { compile } from "../compile";
+export type { InferType as infer } from "../schemas";

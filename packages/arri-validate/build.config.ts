@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
-import path from "node:path";
+import path from "pathe";
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
-    readFileSync(path.resolve(__dirname, "../../package.json"), {
+    readFileSync(path.resolve(__dirname, "./package.json"), {
         encoding: "utf-8",
     }),
 );
@@ -11,16 +11,17 @@ const packageJson = JSON.parse(
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
-    entries: ["./src/index"],
+    entries: [{ input: "./src/_index", name: "index" }],
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: false,
+            respectExternal: true,
         },
     },
-    outDir: "../../dist/packages/arri-validate/dist",
+
+    outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
-    externals: [],
+    failOnWarn: true,
+    externals: deps,
 });

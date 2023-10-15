@@ -1,5 +1,5 @@
+import { type ClientGenerator } from "arri-codegen-utils";
 import { type BuildOptions } from "esbuild";
-import { type ClientGenerator } from "./codegen/plugin";
 
 /* eslint-disable spaced-comment */
 export interface ArriConfig {
@@ -18,6 +18,38 @@ export interface ArriConfig {
         BuildOptions,
         "outfile" | "outdir" | "entryNames" | "entryPoints"
     >;
+}
+
+export function isArriConfig(input: unknown): input is ArriConfig {
+    if (typeof input !== "object" || !input) {
+        return false;
+    }
+    return (
+        "port" in input &&
+        typeof input.port === "number" &&
+        !Number.isNaN(input.port) &&
+        "entry" in input &&
+        typeof input.entry === "string"
+    );
+}
+export function isResolvedArriConfig(
+    input: unknown,
+): input is ResolvedArriConfig {
+    if (!isArriConfig(input)) {
+        return false;
+    }
+    return (
+        typeof input.rootDir === "string" &&
+        typeof input.srcDir === "string" &&
+        (typeof input.procedureDir === "string" ||
+            typeof input.procedureDir === "boolean") &&
+        Array.isArray(input.procedureGlobPatterns) &&
+        Array.isArray(input.clientGenerators) &&
+        typeof input.buildDir === "string" &&
+        typeof input.esbuild === "object" &&
+        input.esbuild &&
+        !Array.isArray(input.esbuild)
+    );
 }
 
 export type ResolvedArriConfig = Required<ArriConfig>;
