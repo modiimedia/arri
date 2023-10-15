@@ -66,6 +66,20 @@ export const testSuites: Record<
         badInputs: any[];
     }
 > = {
+    any: {
+        schema: a.any(),
+        goodInputs: [
+            "hello world",
+            true,
+            false,
+            1,
+            1.5,
+            -100.5,
+            [1, 2],
+            { a: { b: { c: "" } } },
+        ],
+        badInputs: [],
+    },
     string: {
         schema: a.string(),
         goodInputs: ["hello world"],
@@ -91,10 +105,20 @@ export const testSuites: Record<
         goodInputs: [131431.4134, -141341.1341],
         badInputs: ["hello world", true, null],
     },
+    "nullable float64": {
+        schema: a.nullable(a.float64()),
+        goodInputs: [null, 113511.5, -1351351.05],
+        badInputs: ["hello world", true],
+    },
     float32: {
         schema: a.float64(),
         goodInputs: [1491.13941, -134918.134],
         badInputs: ["hello world", true, null],
+    },
+    "nullable float32": {
+        schema: a.nullable(a.float32()),
+        goodInputs: [1351.5, -1151.315, null],
+        badInputs: ["hello world", true],
     },
     int32: {
         schema: a.int32(),
