@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-loss-of-precision */
-import { a } from "../_index";
-import { type ASchema } from "../schemas";
+import { a } from "./_index";
+import { type ASchema } from "./schemas";
 
 const User = a.object({
     id: a.string(),

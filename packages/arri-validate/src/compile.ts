@@ -1,15 +1,31 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
+import type { Type } from "@modii/jtd";
 import {
     type SafeResult,
     type ASchema,
     type InferType,
     ValidationError,
+    isAScalarSchema,
 } from "./_index";
 import { createParsingTemplate } from "./compiler/parse";
 import { createSerializationTemplate } from "./compiler/serialize";
 import { createValidationTemplate } from "./compiler/validate";
+import {
+    int16Max,
+    int16Min,
+    int32Max,
+    int32Min,
+    int8Max,
+    int8Min,
+    uint16Max,
+    uint16Min,
+    uint32Max,
+    uint32Min,
+    uint8Max,
+    uint8Min,
+} from "./lib/numberConstants";
 
 export interface CompiledValidator<TSchema extends ASchema<any>> {
     /**
@@ -35,6 +51,282 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
     };
 }
 
+type CompiledParser<TSchema extends ASchema<any>> =
+    CompiledValidator<TSchema>["parse"];
+
+function validateInt(input: number, minVal: number, maxValue: number) {
+    return Number.isInteger(input) && input >= minVal && input <= maxValue;
+}
+
+function compiledIntParser(
+    input: unknown,
+    minNum: number,
+    maxNum: number,
+    isNullable: boolean,
+): any {
+    if (typeof input === "number") {
+        if (validateInt(input, minNum, maxNum)) {
+            return input;
+        }
+        throw new ValidationError({
+            message: `Expected valid integer between ${minNum} & ${maxNum}`,
+            errors: [
+                {
+                    instancePath: "",
+                    schemaPath: "/type",
+                },
+            ],
+        });
+    }
+    if (typeof input === "string") {
+        const parsedInput = Number(input);
+        if (validateInt(parsedInput, minNum, maxNum)) {
+            return parsedInput;
+        }
+        if (isNullable && input === "null") {
+            return null;
+        }
+        throw new ValidationError({
+            message: `Expected valid integer between ${minNum} & ${maxNum}`,
+            errors: [
+                {
+                    instancePath: "",
+                    schemaPath: "/type",
+                },
+            ],
+        });
+    }
+    if (isNullable && input === null) {
+        return null;
+    }
+    throw new ValidationError({
+        message: `Expected valid integer between ${minNum} & ${maxNum}`,
+        errors: [
+            {
+                instancePath: "",
+                schemaPath: "/type",
+            },
+        ],
+    });
+}
+
+function getCompiledParser<TSchema extends ASchema<any>>(
+    input: string,
+    schema: TSchema,
+): { fn: CompiledParser<TSchema>; code: string } {
+    if (isAScalarSchema(schema)) {
+        switch (schema.type as Type) {
+            case "float32":
+            case "float64":
+                return {
+                    fn: function (input: any) {
+                        if (typeof input === "string") {
+                            if (schema.nullable) {
+                                if (input === "null") {
+                                    return null;
+                                }
+                            }
+                            const result = Number(input);
+                            if (Number.isNaN(result)) {
+                                throw new ValidationError({
+                                    message: `Unable to parse number from ${input}`,
+                                    errors: [
+                                        {
+                                            instancePath: "",
+                                            schemaPath: "/type",
+                                        },
+                                    ],
+                                });
+                            }
+                        }
+                        if (typeof input === "number") {
+                            return input;
+                        }
+                        if (schema.nullable && input === null) {
+                            return null;
+                        }
+                        throw new ValidationError({
+                            message: `Expected number. Got ${typeof input}.`,
+                            errors: [{ instancePath: "", schemaPath: "/type" }],
+                        });
+                    },
+                    code: "",
+                };
+            case "int32":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledIntParser(
+                            input,
+                            int32Min,
+                            int32Max,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "int16":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledIntParser(
+                            input,
+                            int16Min,
+                            int16Max,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "int8":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledIntParser(
+                            input,
+                            int8Min,
+                            int8Max,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "uint32":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledIntParser(
+                            input,
+                            uint32Min,
+                            uint32Max,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "uint16":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledIntParser(
+                            input,
+                            uint16Min,
+                            uint16Max,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "uint8":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledIntParser(
+                            input,
+                            uint8Min,
+                            uint8Max,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "boolean":
+                return {
+                    fn: function (input: unknown) {
+                        if (typeof input === "boolean") {
+                            return input;
+                        }
+                        if (typeof input === "string") {
+                            if (input === "true") {
+                                return true;
+                            }
+                            if (input === "false") {
+                                return false;
+                            }
+                            if (schema.nullable && input === "null") {
+                                return null;
+                            }
+                            throw new ValidationError({
+                                message: `Expected boolean. Got ${typeof input}.`,
+                                errors: [
+                                    {
+                                        instancePath: "",
+                                        schemaPath: "/type",
+                                    },
+                                ],
+                            });
+                        }
+                        if (schema.nullable && input === null) {
+                            return null;
+                        }
+                        throw new ValidationError({
+                            message: `Expected boolean. Got ${typeof input}.`,
+                            errors: [
+                                {
+                                    instancePath: "",
+                                    schemaPath: "/type",
+                                },
+                            ],
+                        });
+                    },
+                    code: "",
+                };
+            case "string":
+                return {
+                    fn: function (input: unknown) {
+                        if (typeof input === "string") {
+                            if (schema.nullable && input === "null") {
+                                return null;
+                            }
+                            return input;
+                        }
+                        if (schema.nullable && input === null) {
+                            return input;
+                        }
+                        throw new ValidationError({
+                            message: `Expected string. Got ${typeof input}.`,
+                            errors: [
+                                {
+                                    instancePath: "",
+                                    schemaPath: "/type",
+                                },
+                            ],
+                        });
+                    },
+                    code: "",
+                };
+            case "timestamp":
+                return {
+                    fn: function (input: unknown) {
+                        if (
+                            typeof input === "object" &&
+                            input instanceof Date
+                        ) {
+                            return input;
+                        }
+                        if (typeof input === "string") {
+                            if (schema.nullable && input === "null") {
+                                return null;
+                            }
+                            return new Date(input);
+                        }
+                        if (schema.nullable && input === null) {
+                            return input;
+                        }
+                        throw new ValidationError({
+                            message: `Expected instance of Date or ISO date string. Got ${typeof input}.`,
+                            errors: [
+                                {
+                                    instancePath: "",
+                                    schemaPath: "/type",
+                                },
+                            ],
+                        });
+                    },
+                    code: "",
+                };
+            default:
+                break;
+        }
+    }
+    const parseCode = createParsingTemplate(input, schema);
+    return { fn: new Function(input, parseCode) as any, code: parseCode };
+}
+
 /**
  * Create compiled versions of the `parse()`, `validate()`, and `serialize()` functions
  */
@@ -43,7 +335,7 @@ export function compile<TSchema extends ASchema<any>>(
 ): CompiledValidator<TSchema> {
     const serializeCode = createSerializationTemplate("input", schema);
     const validateCode = createValidationTemplate("input", schema);
-    const parseCode = createParsingTemplate("input", schema);
+    const parse = getCompiledParser("input", schema);
     const serialize = new Function(
         "input",
         serializeCode,
@@ -52,16 +344,13 @@ export function compile<TSchema extends ASchema<any>>(
         "input",
         validateCode,
     ) as CompiledValidator<TSchema>["validate"];
-    const parse = new Function(
-        "input",
-        parseCode,
-    ) as CompiledValidator<TSchema>["parse"];
+
     return {
         validate,
-        parse,
+        parse: parse.fn,
         safeParse(input) {
             try {
-                const result = parse(input);
+                const result = parse.fn(input);
                 return {
                     success: true,
                     value: result,
@@ -106,7 +395,7 @@ export function compile<TSchema extends ASchema<any>>(
         serialize,
         compiledCode: {
             validate: validateCode,
-            parse: parseCode,
+            parse: parse.code,
             serialize: serializeCode,
         },
     };

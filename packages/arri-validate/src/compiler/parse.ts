@@ -61,6 +61,8 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
      */
     function $fallback(instancePath, schemaPath, message) {
         throw new $ValidationError(instancePath, schemaPath, message);
+        // eslint-disable-next-line
+        return undefined;
     }`;
     let jsonParseCheck = "";
 
@@ -167,6 +169,7 @@ function booleanTemplate(
 
         const mainTemplate = `typeof ${input.val} === 'string' && (${input.val} === 'true' || ${input.val} === 'false') ? ${input.val} === 'true' : typeof ${input.val} === 'boolean' ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}")`;
         if (input.schema.nullable) {
+            console.log(input.val);
             return `${input.val} === null ? null : ${mainTemplate}`;
         }
         return mainTemplate;
@@ -352,7 +355,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
                 subFunctionNames: input.subFunctionNames,
             });
             parsingParts.push(
-                `"${key}": typeof ${input.val} !== 'undefined' ? ${innerTemplate} : undefined`,
+                `"${key}": typeof ${input.val} === 'undefined' ? undefined : ${innerTemplate}`,
             );
         }
     }

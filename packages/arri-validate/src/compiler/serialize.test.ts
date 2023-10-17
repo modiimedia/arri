@@ -1,6 +1,6 @@
 import { a, isAScalarSchema, isAStringEnumSchema } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "./testUtils";
+import { testSuites } from "../testSuites";
 
 for (const key of Object.keys(testSuites)) {
     const suite = testSuites[key];

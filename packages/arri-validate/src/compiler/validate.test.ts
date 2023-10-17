@@ -1,6 +1,6 @@
 import { a } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "./testUtils";
+import { testSuites } from "../testSuites";
 
 Object.keys(testSuites).forEach((key) => {
     test(key, () => {
