@@ -5,6 +5,7 @@ import {
     isEnumForm,
     isPropertiesForm,
     isValuesForm,
+    TypeValues,
 } from "@modii/jtd";
 import { type ValueError } from "./lib/validation";
 
@@ -87,7 +88,8 @@ export function isAScalarSchema(input: unknown): input is AScalarSchema {
     return (
         isASchema(input) &&
         "type" in input &&
-        NumberTypeValues.includes(input.type as any)
+        (TypeValues.includes(input.type as any) ||
+            NumberTypeValues.includes(input.type as any))
     );
 }
 

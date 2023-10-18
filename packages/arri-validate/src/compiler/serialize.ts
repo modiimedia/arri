@@ -33,6 +33,7 @@ export function createSerializationTemplate(
     });
     const template = `${subFunctionBodies.join("\n")}
 return \`${mainTemplate}\``;
+    console.log(template);
     return template;
 }
 
@@ -97,6 +98,9 @@ function booleanTemplate(input: TemplateInput<AScalarSchema<"boolean">>) {
 }
 
 function timestampTemplate(input: TemplateInput<AScalarSchema<"timestamp">>) {
+    if (input.instancePath.length) {
+        console.log(input.instancePath);
+    }
     const mainTemplate = input.instancePath.length
         ? `"\${${input.val}.toISOString()}"`
         : `\${${input.val}.toISOString()}`;
@@ -120,7 +124,7 @@ function bigIntTemplate(input: TemplateInput<AScalarSchema>) {
     if (input.schema.nullable) {
         return `\${typeof ${input.val} === 'bigint' ? \`${mainTemplate}\` : null}`;
     }
-    return '""';
+    return mainTemplate;
 }
 
 function objectTemplate(input: TemplateInput<AObjectSchema>) {
