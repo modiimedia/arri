@@ -1,4 +1,4 @@
-import { type ValidationError, a } from "arri-validate";
+import { type ValidationError, a, type AObjectSchema } from "arri-validate";
 import {
     type H3Error,
     createError,
@@ -12,9 +12,14 @@ import { type ArriOptions } from "./app";
 export const ErrorResponse = a.object({
     statusCode: a.int8(),
     statusMessage: a.string(),
-    stack: a.array(a.any()),
+    stack: a.optional(a.string()),
     data: a.optional(a.any()),
-});
+}) as AObjectSchema<{
+    statusCode: number;
+    statusMessage: string;
+    stack?: string;
+    data?: any;
+}>;
 
 export type ErrorResponse = a.infer<typeof ErrorResponse>;
 
