@@ -41,6 +41,10 @@
                 "{workspaceRoot}/.eslintignore"
             ]
         },
+        "publish": {
+            "inputs": ["default"],
+            "dependsOn": ["build", "^build"]
+        },
         "test": {
             "inputs": [
                 "default",
