@@ -8,6 +8,7 @@ import {
     type InferType,
     ValidationError,
     isAScalarSchema,
+    isAStringEnumSchema,
 } from "./_index";
 import { createParsingTemplate } from "./compiler/parse";
 import { createSerializationTemplate } from "./compiler/serialize";
@@ -138,6 +139,7 @@ function getCompiledParser<TSchema extends ASchema<any>>(
                                     ],
                                 });
                             }
+                            return result;
                         }
                         if (typeof input === "number") {
                             return input;
@@ -322,6 +324,48 @@ function getCompiledParser<TSchema extends ASchema<any>>(
             default:
                 break;
         }
+    }
+    if (isAStringEnumSchema(schema)) {
+        return {
+            fn: function (input: unknown) {
+                if (typeof input === "string") {
+                    for (const val of schema.enum as string[]) {
+                        if (input === val) {
+                            return val;
+                        }
+                    }
+                    if (schema.nullable && input === "null") {
+                        return null;
+                    }
+                    throw new ValidationError({
+                        message: `Expected one of the following values: [${(
+                            schema.enum as string[]
+                        ).join(", ")}]`,
+                        errors: [
+                            {
+                                instancePath: "",
+                                schemaPath: "/enum",
+                            },
+                        ],
+                    });
+                }
+                if (schema.nullable && input === null) {
+                    return input;
+                }
+                throw new ValidationError({
+                    message: `Expected one of the following values: [${(
+                        schema.enum as string[]
+                    ).join(", ")}]`,
+                    errors: [
+                        {
+                            instancePath: "",
+                            schemaPath: "/enum",
+                        },
+                    ],
+                });
+            },
+            code: "",
+        };
     }
     const parseCode = createParsingTemplate(input, schema);
     return { fn: new Function(input, parseCode) as any, code: parseCode };
