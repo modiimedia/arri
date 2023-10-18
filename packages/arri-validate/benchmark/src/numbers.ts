@@ -28,7 +28,7 @@ const intInput = 1245;
 const intStringInput = `${intInput}`;
 
 void benny.suite(
-    "Validation",
+    "Int Validation",
     benny.add("Arri", () => {
         a.validate(IntSchema, intInput);
     }),
@@ -66,7 +66,7 @@ void benny.suite(
 );
 
 void benny.suite(
-    "Parsing",
+    "Int Parsing",
     benny.add("Arri", () => {
         a.parse(IntSchema, intStringInput);
     }),
@@ -89,7 +89,7 @@ void benny.suite(
 );
 
 void benny.suite(
-    "Coercion",
+    "Int Coercion",
     benny.add("Arri", () => {
         a.coerce(IntSchema, intStringInput);
     }),
@@ -112,7 +112,7 @@ void benny.suite(
 );
 
 void benny.suite(
-    "Serialization",
+    "Int Serialization",
     benny.add("Arri", () => {
         a.serialize(IntSchema, intInput);
     }),
