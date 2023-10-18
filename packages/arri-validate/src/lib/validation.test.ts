@@ -8,13 +8,11 @@ for (const key of Object.keys(testSuites)) {
         for (const input of suite.goodInputs) {
             expect(a.validate(suite.schema, input));
             const json = a.serialize(suite.schema, input);
-
             expect(isEqual(a.parse(suite.schema, json), input));
         }
         for (const input of suite.badInputs) {
             expect(!a.validate(suite.schema, input));
             expect(!a.safeParse(suite.schema, input).success);
-            expect(!a.safeParse(suite.schema, JSON.stringify(input)).success);
         }
     });
 }

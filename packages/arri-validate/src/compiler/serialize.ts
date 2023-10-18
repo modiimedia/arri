@@ -1,4 +1,3 @@
-import { type Type } from "@modii/jtd";
 import { camelCase, snakeCase } from "scule";
 import {
     type AScalarSchema,
@@ -15,7 +14,7 @@ import {
     isARecordSchema,
     type ARecordSchema,
 } from "../schemas";
-import { type TemplateInput } from "./common";
+import { type TemplateInput, type ScalarType } from "./common";
 
 export function createSerializationTemplate(
     inputName: string,
@@ -25,6 +24,7 @@ export function createSerializationTemplate(
     const subFunctionBodies: string[] = [];
     const mainTemplate = schemaTemplate({
         val: inputName,
+        targetVal: "",
         schema,
         instancePath: "",
         schemaPath: "",
@@ -38,7 +38,7 @@ return \`${mainTemplate}\``;
 
 function schemaTemplate(input: TemplateInput): string {
     if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as Type) {
+        switch (input.schema.type as ScalarType) {
             case "boolean":
                 return booleanTemplate(input);
             case "string": {
@@ -56,6 +56,9 @@ function schemaTemplate(input: TemplateInput): string {
             case "uint32":
             case "uint8":
                 return numberTemplate(input);
+            case "int64":
+            case "uint64":
+                return bigIntTemplate(input);
         }
     }
     if (isAObjectSchema(input.schema)) {
@@ -110,6 +113,16 @@ function numberTemplate(input: TemplateInput<AScalarSchema>) {
     return `\${${input.val}}`;
 }
 
+function bigIntTemplate(input: TemplateInput<AScalarSchema>) {
+    const mainTemplate = input.instancePath.length
+        ? `"\${${input.val}.toString()}"`
+        : `\${${input.val}.toString()}`;
+    if (input.schema.nullable) {
+        return `\${typeof ${input.val} === 'bigint' ? \`${mainTemplate}\` : null}`;
+    }
+    return '""';
+}
+
 function objectTemplate(input: TemplateInput<AObjectSchema>) {
     const fieldParts: string[] = [];
     if (input.schema.optionalProperties) {
@@ -118,6 +131,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
             const val = `${input.val}.${key}`;
             const template = schemaTemplate({
                 val,
+                targetVal: "",
                 schema: propSchema,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
@@ -133,6 +147,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
         const propSchema = input.schema.properties[key];
         const template = schemaTemplate({
             val: `${input.val}.${key}`,
+            targetVal: "",
             schema: propSchema,
             schemaPath: `${input.schemaPath}/properties/${key}`,
             instancePath: `${input.instancePath}/${key}`,
@@ -175,6 +190,7 @@ function stringEnumTemplate(input: TemplateInput<AStringEnumSchema<any>>) {
 function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     const subTemplate = schemaTemplate({
         val: "item",
+        targetVal: "",
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
         instancePath: `${input.instancePath}/item`,
@@ -200,6 +216,7 @@ function discriminatorTemplate(
         const prop = input.schema.mapping[type];
         const template = schemaTemplate({
             val: "val",
+            targetVal: "",
             schema: prop,
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
@@ -238,6 +255,7 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
 
     const subTemplate = schemaTemplate({
         val: "v",
+        targetVal: "",
         schema: input.schema.values,
         schemaPath: `${input.schemaPath}/values`,
         instancePath: `${input.instancePath}`,

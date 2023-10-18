@@ -1,7 +1,6 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
-import type { Type } from "@modii/jtd";
 import {
     type SafeResult,
     type ASchema,
@@ -10,6 +9,7 @@ import {
     isAScalarSchema,
     isAStringEnumSchema,
 } from "./_index";
+import { type ScalarType } from "./compiler/common";
 import { createParsingTemplate } from "./compiler/parse";
 import { createSerializationTemplate } from "./compiler/serialize";
 import { createValidationTemplate } from "./compiler/validate";
@@ -57,6 +57,80 @@ type CompiledParser<TSchema extends ASchema<any>> =
 
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
+}
+
+function compiledBigIntParser(
+    input: unknown,
+    isUnsigned: boolean,
+    isNullable: boolean,
+): any {
+    if (typeof input === "string") {
+        if (isNullable && input === "null") {
+            return null;
+        }
+        try {
+            const val = BigInt(input);
+            if (isUnsigned) {
+                if (val >= BigInt("0")) {
+                    return val;
+                }
+                throw new ValidationError({
+                    message: "uint64 must be greater than or equal to 0",
+                    errors: [
+                        {
+                            message:
+                                "uint64 must be greater than or equal to 0",
+                            schemaPath: "/type",
+                            instancePath: "",
+                        },
+                    ],
+                });
+            }
+            return val;
+        } catch (err) {
+            throw new ValidationError({
+                message: `Error transforming ${input} to BigInt`,
+                errors: [
+                    {
+                        schemaPath: "/type",
+                        instancePath: "",
+                        data: err,
+                    },
+                ],
+            });
+        }
+    }
+    if (typeof input === "bigint") {
+        if (isUnsigned) {
+            if (input >= BigInt("0")) {
+                return input;
+            }
+        } else {
+            throw new ValidationError({
+                message: "uint64 must be greater than or equal to 0",
+                errors: [
+                    {
+                        message: "uint64 must be greater than or equal to 0",
+                        schemaPath: "/type",
+                        instancePath: "",
+                    },
+                ],
+            });
+        }
+        return input;
+    }
+    if (isNullable && input === null) {
+        return null;
+    }
+    throw new ValidationError({
+        message: "Expected BigInt or Integer string",
+        errors: [
+            {
+                schemaPath: "/type",
+                instancePath: "",
+            },
+        ],
+    });
 }
 
 function compiledIntParser(
@@ -116,7 +190,7 @@ function getCompiledParser<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): { fn: CompiledParser<TSchema>; code: string } {
     if (isAScalarSchema(schema)) {
-        switch (schema.type as Type) {
+        switch (schema.type as ScalarType) {
             case "float32":
             case "float64":
                 return {
@@ -151,6 +225,28 @@ function getCompiledParser<TSchema extends ASchema<any>>(
                             message: `Expected number. Got ${typeof input}.`,
                             errors: [{ instancePath: "", schemaPath: "/type" }],
                         });
+                    },
+                    code: "",
+                };
+            case "int64":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledBigIntParser(
+                            input,
+                            false,
+                            schema.nullable ?? false,
+                        );
+                    },
+                    code: "",
+                };
+            case "uint64":
+                return {
+                    fn: function (input: unknown) {
+                        return compiledBigIntParser(
+                            input,
+                            true,
+                            schema.nullable ?? false,
+                        );
                     },
                     code: "",
                 };

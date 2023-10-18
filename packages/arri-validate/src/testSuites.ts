@@ -120,6 +120,20 @@ export const testSuites: Record<
         goodInputs: [1351.5, -1151.315, null],
         badInputs: ["hello world", true],
     },
+    int64: {
+        schema: a.int64(),
+        goodInputs: [
+            BigInt("1"),
+            BigInt("9223372036854775807"),
+            BigInt("-9223372036854775808"),
+        ],
+        badInputs: [
+            BigInt("9223372036854775808"),
+            BigInt("-9223372036854775809"),
+            null,
+            {},
+        ],
+    },
     int32: {
         schema: a.int32(),
         goodInputs: [491451, -13411],

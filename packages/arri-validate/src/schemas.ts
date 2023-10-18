@@ -4,7 +4,6 @@ import {
     isElementsForm,
     isEnumForm,
     isPropertiesForm,
-    isTypeForm,
     isValuesForm,
 } from "@modii/jtd";
 import { type ValueError } from "./lib/validation";
@@ -80,62 +79,31 @@ export type InferType<TInput extends ASchema<any>> = Resolve<
 >;
 
 // basic types
-export interface AScalarSchema<T extends JtdType = any, TVal = any>
+export interface AScalarSchema<T extends JtdType | NumberType = any, TVal = any>
     extends ASchema<TVal> {
     type: T;
 }
 export function isAScalarSchema(input: unknown): input is AScalarSchema {
-    return isASchema(input) && isTypeForm(input);
+    return (
+        isASchema(input) &&
+        "type" in input &&
+        NumberTypeValues.includes(input.type as any)
+    );
 }
 
 export const NumberTypeValues = [
     "float32",
     "float64",
+    "int8",
     "int16",
     "int32",
-    "int8",
+    "int64",
+    "uint8",
     "uint16",
     "uint32",
-    "uint8",
+    "uint64",
 ] as const;
 export type NumberType = (typeof NumberTypeValues)[number];
-export const NumberValidationMap: Record<
-    NumberType,
-    { min?: number; max?: number }
-> = {
-    float32: {
-        min: undefined,
-        max: undefined,
-    },
-    float64: {
-        min: undefined,
-        max: undefined,
-    },
-    int8: {
-        min: undefined,
-        max: undefined,
-    },
-    uint8: {
-        min: undefined,
-        max: undefined,
-    },
-    int16: {
-        min: undefined,
-        max: undefined,
-    },
-    uint16: {
-        min: undefined,
-        max: undefined,
-    },
-    int32: {
-        min: undefined,
-        max: undefined,
-    },
-    uint32: {
-        min: undefined,
-        max: undefined,
-    },
-};
 
 // arrays
 export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
