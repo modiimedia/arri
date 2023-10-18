@@ -2,7 +2,7 @@
     "name": "test-server",
     "type": "module",
     "dependencies": {
-        "@faker-js/faker": "^8.1.0",
+        "@faker-js/faker": "^8.2.0",
         "arri": "workspace:*",
         "arri-validate": "workspace:*"
     },

@@ -24,7 +24,7 @@
         }
     },
     "devDependencies": {
-        "@faker-js/faker": "^8.1.0",
+        "@faker-js/faker": "^8.2.0",
         "benny": "^3.7.1"
     }
 }
