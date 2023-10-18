@@ -139,5 +139,10 @@ export function isValidationError(input: unknown): input is ValidationError {
     if (typeof input !== "object" || !input) {
         return false;
     }
-    return input instanceof ValidationError;
+    return (
+        "message" in input &&
+        typeof input.message === "string" &&
+        "errors" in input &&
+        Array.isArray(input.errors)
+    );
 }

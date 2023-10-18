@@ -2,6 +2,7 @@ import { type ASchema } from "../schemas";
 
 export interface TemplateInput<TSchema extends ASchema<any> = any> {
     val: string;
+    targetVal: string;
     schema: TSchema;
     instancePath: string;
     schemaPath: string;

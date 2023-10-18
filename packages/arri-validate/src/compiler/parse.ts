@@ -1,5 +1,6 @@
+import { randomUUID } from "crypto";
 import { type Type } from "@modii/jtd";
-import { snakeCase } from "scule";
+import { camelCase } from "scule";
 import {
     int16Max,
     int16Min,
@@ -32,35 +33,26 @@ import {
 import { type TemplateInput } from "./common";
 
 export function createParsingTemplate(input: string, schema: ASchema): string {
-    const fallbackTemplate = `  class $ValidationError extends Error {
-        /**
-         * @type {string}
-         */
-        instancePath;
-        /**
-         * @type {string}
-         */
-        schemaPath;
-        /**
-         *
-         * @param instancePath {string}
-         * @param schemaPath {string}
-         * @param message {string}
-         */
-        constructor(instancePath, schemaPath, message) {
-            super(message);
-            this.instancePath = instancePath;
-            this.schemaPath = schemaPath;
+    const validationErrorName = `$ValidationError${camelCase(
+        schema.metadata.id ?? randomUUID(),
+    )}`;
+    const fallbackTemplate = `    class ${validationErrorName} extends Error {
+        errors;
+        constructor(input) {
+            super(input.message);
+            this.errors = input.errors;
         }
     }
 
-    /**
-     * @param instancePath {string}
-     * @param schemaPath {string}
-     * @param message {string}
-     */
     function $fallback(instancePath, schemaPath, message) {
-        throw new $ValidationError(instancePath, schemaPath, message);
+        throw new ${validationErrorName}({ 
+            message: message,
+            errors: [{ 
+                instancePath: instancePath,
+                schemaPath: schemaPath,
+                message: message 
+            }],
+        });
     }`;
     let jsonParseCheck = "";
 
@@ -68,6 +60,7 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
     const functionNameParts: string[] = [];
     const template = schemaTemplate({
         val: input,
+        targetVal: "result",
         schema,
         instancePath: "",
         schemaPath: "",
@@ -76,6 +69,7 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
     });
     const jsonTemplate = schemaTemplate({
         val: "json",
+        targetVal: "jsonResult",
         schema,
         instancePath: "",
         schemaPath: "",
@@ -89,18 +83,20 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
         isADiscriminatorSchema(schema) ||
         isAAraySchema(schema)
     ) {
-        jsonParseCheck = `if(typeof ${input} === 'string') {
+        jsonParseCheck = `if (typeof ${input} === 'string') {
             const json = JSON.parse(${input});
-            return ${jsonTemplate}
+            let jsonResult = {};
+            ${jsonTemplate}
+            return jsonResult;
         }`;
     }
-    if (template.includes("// @final-template")) {
-        return template;
-    }
-    return `${fallbackTemplate}
+    const finalTemplate = `${fallbackTemplate}
     ${functionBodyParts.join("\n")}
     ${jsonParseCheck}
-    return ${template}`;
+    let result = {};
+    ${template}
+    return result;`;
+    return finalTemplate;
 }
 
 export function schemaTemplate(input: TemplateInput): string {
@@ -150,30 +146,17 @@ function booleanTemplate(
     const errorMessage = input.instancePath.length
         ? `Expected boolean for ${input.instancePath}`
         : `Expected boolean`;
-    if (input.instancePath.length === 0) {
-        input.subFunctionBodies
-            .push(`function boolFromString(val, instancePath, schemaPath) {
-            if(typeof val === 'string') {
-                if(val === 'true') {
-                    return true;
-                }
-                if(val === 'false') {
-                    return false;
-                }
-                throw $ValidationError(instancePath, schemaPath, \`Unable to parse boolean from \${val}\`)
-            }
-            
-        }`);
-
-        const mainTemplate = `typeof ${input.val} === 'string' && (${input.val} === 'true' || ${input.val} === 'false') ? ${input.val} === 'true' : typeof ${input.val} === 'boolean' ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}")`;
-        if (input.schema.nullable) {
-            return `${input.val} === null ? null : ${mainTemplate}`;
-        }
-        return mainTemplate;
-    }
-    const mainTemplate = `typeof ${input.val} === 'boolean' ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}")`;
+    const mainTemplate = `if (typeof ${input.val} === 'boolean') {
+        ${input.targetVal} = ${input.val};
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
+    }`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -181,9 +164,18 @@ function booleanTemplate(
 export function stringTemplate(
     input: TemplateInput<AScalarSchema<"string">>,
 ): string {
-    const mainTemplate = `typeof ${input.val} === 'string' ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected string at ${input.val}.")`;
+    const errorMessage = `Expected string at ${input.instancePath}`;
+    const mainTemplate = `if (typeof ${input.val} === 'string') {
+        ${input.targetVal} = ${input.val};
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
+    }`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = ${input.val};
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -191,29 +183,18 @@ export function stringTemplate(
 export function floatTemplate(
     input: TemplateInput<AScalarSchema<"float32" | "float64">>,
 ): string {
-    if (input.instancePath.length === 0) {
-        const nullPart = `if(${input.val} === 'null') {
-                    return null;
-                }`;
-        return `// @final-template
-            if(typeof ${input.val} === 'string') {
-                ${input.schema.nullable ? nullPart : ""}
-                const parsedVal = Number(${input.val});
-                if(!Number.isNaN(parsedVal)) {
-                    return parsedVal;
-                }
-                throw new Error(\`Unable to parse float from \${${
-                    input.val
-                }}.\`)
-            }
-            if(typeof ${input.val} === 'number') {
-                return ${input.val};
-            }
-            throw new Error(\`Expected number. Got \${${input.val}}.\`)`;
-    }
-    const mainTemplate = `typeof ${input.val} === 'number' ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected float at ${input.val}")`;
+    const errorMessage = `Expected number at ${input.instancePath}`;
+    const mainTemplate = `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
+        ${input.targetVal} = ${input.val};
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
+    }`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -227,80 +208,38 @@ export function intTemplate(
     min: number,
     max: number,
 ) {
-    function mainTemplate(inputName: string) {
-        return `typeof ${inputName} === 'number' && Number.isInteger(${inputName}) && ${inputName} >= ${min} && ${inputName} <= ${max} ? ${inputName} : $fallback("${input.instancePath}", "${input.schemaPath}", \`Expected integer between ${min} and ${max} at ${input.instancePath}. Got \${${inputName}}\`)`;
-    }
-    if (input.instancePath.length === 0) {
-        if (input.schema.nullable) {
-            const functionBody = `
-// @final-template
-if(typeof ${input.val} === 'string') {
-    if(${input.val} === 'null') {
-        return null;
-    }
-    const parsedVal = Number(${input.val});
-    if(Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
-        return parsedVal;
-    }
-    throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val}}.\`);
-}
-if(typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && val <= ${max}) {
-    return ${input.val}
-}
-throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val}}.\`);
-`;
-            return functionBody;
-        }
-        const functionBody = `
-// @final-template
-if(typeof ${input.val} === 'string') {
-    const parsedVal = Number(${input.val});
-    if(Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
-        return parsedVal;
-    }
-    throw new Error(\`Expected integer between ${min} and ${max}. Got \${parsedVal}.\`);
-}
-if(typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max}) {
-    return ${input.val};
-}
-throw new Error(\`Expected integer between ${min} and ${max}. Got \${${input.val}}.\`);`;
-        input.finalFunctionBody = functionBody;
-        return functionBody;
-    }
+    const mainTemplate = `if (typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max}) {
+            ${input.targetVal} = ${input.val};
+        } else {
+            $fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max}");
+        }`;
 
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate(input.val)}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
-    return mainTemplate(input.val);
+    return mainTemplate;
 }
 
 export function timestampTemplate(
     input: TemplateInput<AScalarSchema<"timestamp">>,
 ) {
-    if (input.instancePath.length === 0) {
-        const nullPart = `if (${input.val} === null) {
-            return null;
-        }`;
-        const nullStringPart = `if (${input.val} === 'null') {
-            return null;
-        }`;
-        return `// @final-template
-if(typeof ${input.val} === 'string') {
-    ${input.schema.nullable ? nullStringPart : ""}
-    return new Date(${input.val});
-}
-if(typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
-    return ${input.val};
-}
-${input.schema.nullable ? nullPart : ""}
-throw new Error(\`Expected instance of Date or ISO date string. Got \${${
-            input.val
-        }}\`);
-            `;
-    }
-    const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} instanceof Date ? ${input.val} : typeof ${input.val} === 'string' ? new Date(${input.val}) : $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instance of Date or ISO Date string at ${input.instancePath}")`;
+    const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+        ${input.targetVal} = ${input.val};
+    } else if (typeof ${input.val} === 'string') {
+        ${input.targetVal} = new Date(${input.val});
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string at ${input.instancePath}")
+    }`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -314,57 +253,79 @@ function enumTemplate(
     const errorMessage = `Expected one of the following values: [${input.schema.enum.join(
         ", ",
     )}]${input.instancePath.length ? ` at ${input.instancePath}` : ""}.`;
-    const mainTemplate = `typeof ${input.val} === 'string' && (${enumTemplate}) ? ${input.val} : $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}")`;
+    const mainTemplate = `if (typeof ${input.val} === 'string' && (${enumTemplate})) {
+            ${input.targetVal} = ${input.val};
+        } else {
+            $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}");
+        }`;
+
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if(${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
 
 function objectTemplate(input: TemplateInput<AObjectSchema>): string {
     const parsingParts: string[] = [];
+    const targetVal = `objectVal`;
     if (input.discriminatorKey && input.discriminatorValue) {
         parsingParts.push(
-            `"${input.discriminatorKey}": "${input.discriminatorValue}"`,
+            `${targetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
         );
     }
     for (const key of Object.keys(input.schema.properties)) {
         const subSchema = input.schema.properties[key];
         const innerTemplate = schemaTemplate({
             val: `${input.val}.${key}`,
+            targetVal: `${targetVal}.${key}`,
             schema: subSchema,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
         });
-        parsingParts.push(`"${key}": ${innerTemplate}`);
+        parsingParts.push(innerTemplate);
     }
     if (input.schema.optionalProperties) {
         for (const key of Object.keys(input.schema.optionalProperties)) {
             const subSchema = input.schema.optionalProperties[key];
             const innerTemplate = schemaTemplate({
                 val: `${input.val}.${key}`,
+                targetVal: `${targetVal}.${key}`,
                 schema: subSchema,
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
             });
-            parsingParts.push(
-                `"${key}": typeof ${input.val} !== 'undefined' ? ${innerTemplate} : undefined`,
-            );
+            parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
+                // ignore undefined
+            } else {
+                ${innerTemplate}
+            }`);
         }
     }
-    const mainTemplate = `typeof ${input.val} === 'object' && ${
+    const mainTemplate = `if (typeof ${input.val} === 'object' && ${
         input.val
-    } !== null ? {
-        ${parsingParts.join(",\n    ")}
-    } : $fallback("${input.instancePath}", "${
-        input.schemaPath
-    }", "Expected object.")`;
+    } !== null) {
+        const ${targetVal} = {}
+        ${parsingParts.join("\n")}
+        ${input.targetVal} = ${targetVal};
+    } else {
+        $fallback("${input.instancePath}", "${
+            input.schemaPath
+        }", "Expected object");
+    }`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if(${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -372,16 +333,31 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
 export function arraySchema(input: TemplateInput<AArraySchema<any>>): string {
     const innerTemplate = schemaTemplate({
         val: `item`,
-        instancePath: `${input.instancePath}/item`,
+        targetVal: "itemResult",
+        instancePath: `${input.instancePath}/[0]`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
+    const mainTemplate = `if (Array.isArray(${input.val})) {
+        const innerResult = [];
+        for(const item of ${input.val}) {
+            let itemResult;
+            ${innerTemplate}
+            innerResult.push(itemResult);
+        }
+        ${input.targetVal} = innerResult;
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected Array");
+    }`;
 
-    const mainTemplate = `Array.isArray(${input.val}) ? ${input.val}.map((item) => ${innerTemplate}) : $fallback("${input.instancePath}", "${input.schemaPath}/elements", "Expected Array")`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -392,12 +368,28 @@ export function recordSchema(input: TemplateInput<ARecordSchema<any>>): string {
         instancePath: `${input.instancePath}`,
         schemaPath: `${input.schemaPath}/values`,
         val: `${input.val}[key]`,
+        targetVal: `keyVal`,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
-    const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null ? Object.keys(${input.val}).forEach((key) => ${innerTemplate}) : $fallback("${input.instancePath}", "${input.schemaPath}/values", "Expected object")`;
+
+    const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
+        const innerResult = {}
+        for (const key of Object.keys(${input.val})) {
+            let keyVal;
+            ${innerTemplate}
+            innerResult[key] = keyVal;
+        }
+        ${input.targetVal} = innerResult;
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected Object.");
+    }`;
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${mainTemplate}`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
     return mainTemplate;
 }
@@ -405,15 +397,13 @@ export function recordSchema(input: TemplateInput<ARecordSchema<any>>): string {
 export function discriminatorSchema(
     input: TemplateInput<ADiscriminatorSchema<any>>,
 ): string {
-    const subFunctionName = `${snakeCase(
-        (input.schema.metadata.id ?? input.val) || input.schemaPath,
-    )}_from_json`;
     const switchParts: string[] = [];
     const types = Object.keys(input.schema.mapping);
     for (const type of types) {
         const innerSchema = input.schema.mapping[type];
         const template = objectTemplate({
-            val: "val",
+            val: input.val,
+            targetVal: input.targetVal,
             schema: innerSchema,
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
@@ -422,26 +412,35 @@ export function discriminatorSchema(
             discriminatorKey: input.schema.discriminator,
             discriminatorValue: type,
         });
-        switchParts.push(`case "${type}":
-        return ${template}`);
+        switchParts.push(`case "${type}": {
+            ${template}
+            break;
+        }`);
     }
-    const subFunction = `function ${subFunctionName}(val) {
-        switch(val.${input.schema.discriminator}) {
+    const mainTemplate = `if (typeof ${input.val} === 'object' && ${
+        input.val
+    } !== null) {
+        switch(${input.val}.${input.schema.discriminator}) {
             ${switchParts.join("\n")}
             default:
-                return $fallback("${input.instancePath}", "${
+                $fallback("${input.instancePath}", "${
                     input.schemaPath
                 }/mapping", "${input.val}.${
                     input.schema.discriminator
-                } did not match one of the specified values")
+                } did not match one of the specified values");
+                break;
         }
+    } else {
+        $fallback("${input.instancePath}", "${
+            input.schemaPath
+        }", "Expected Object.");
     }`;
-    if (!input.subFunctionNames.includes(subFunctionName)) {
-        input.subFunctionBodies.push(subFunction);
-        input.subFunctionNames.push(subFunctionName);
-    }
     if (input.schema.nullable) {
-        return `${input.val} === null ? null : ${subFunctionName}(${input.val})`;
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
     }
-    return `${subFunctionName}(${input.val})`;
+    return mainTemplate;
 }

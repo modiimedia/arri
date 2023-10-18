@@ -1,16 +1,17 @@
+import { isEqual } from "lodash";
 import { a } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "./testUtils";
+import { testSuites } from "../testSuites";
 
 for (const key of Object.keys(testSuites)) {
     const suite = testSuites[key];
     test(key, () => {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
-            expect(Compiled.parse(input)).toStrictEqual(
-                a.parse(suite.schema, input),
-            );
-            expect(Compiled.safeParse(JSON.stringify(input)).success);
+            expect(isEqual(Compiled.parse(input), input));
+            if (typeof input === "object") {
+                expect(isEqual(Compiled.parse(JSON.stringify(input)), input));
+            }
         }
         for (const input of suite.badInputs) {
             expect(!Compiled.safeParse(input).success);

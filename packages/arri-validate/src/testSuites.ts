@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-loss-of-precision */
-import { a } from "../_index";
-import { type ASchema } from "../schemas";
+import { a } from "./_index";
+import { type ASchema } from "./schemas";
 
 const User = a.object({
     id: a.string(),
@@ -134,6 +134,36 @@ export const testSuites: Record<
         schema: a.uint32(),
         goodInputs: [4815141, 100],
         badInputs: [-1, 100.5, 13999999999999999999999, "hello world"],
+    },
+    int16: {
+        schema: a.int16(),
+        goodInputs: [-32768, 32767],
+        badInputs: ["hello world", null, {}, [], -32769, 32768, 1.5],
+    },
+    uint16: {
+        schema: a.uint16(),
+        goodInputs: [0, 65535],
+        badInputs: ["hello world", null, {}, [], -1, 65536, 1.5],
+    },
+    "nullable int16": {
+        schema: a.nullable(a.int16()),
+        goodInputs: [null, -32768, 32767],
+        badInputs: [undefined, "hello world", 1.5],
+    },
+    int8: {
+        schema: a.int8(),
+        goodInputs: [-128, 127],
+        badInputs: [null, -129, 128, "hello world"],
+    },
+    uint8: {
+        schema: a.uint8(),
+        goodInputs: [0, 255],
+        badInputs: [null, -1, 1.5, 256, "hello world"],
+    },
+    "nullable uint8": {
+        schema: a.nullable(a.uint8()),
+        goodInputs: [0, 255, null],
+        badInputs: [undefined, -1, 1.5, "hello world"],
     },
     enum: {
         schema: a.stringEnum(["A", "B", "C"]),
