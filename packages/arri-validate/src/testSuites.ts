@@ -529,4 +529,27 @@ export const testSuites: Record<
             { id: "", data: { name: "" } },
         ],
     },
+    "object with int64 and uint64": {
+        schema: a.object({
+            id: a.string(),
+            count: a.uint64(),
+            limit: a.int64(),
+        }),
+        goodInputs: [
+            {
+                id: "1",
+                count: BigInt("10000"),
+                limit: BigInt("-1000"),
+            },
+        ],
+        badInputs: [
+            {
+                id: "1",
+                count: 0,
+                limit: 0,
+            },
+            null,
+            { id: "1" },
+        ],
+    },
 };

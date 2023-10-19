@@ -84,7 +84,20 @@ export function discriminator<
                 coerce: (input, data) => {
                     return parse(discriminator, mapping, input, data, true);
                 },
-                serialize: (input) => JSON.stringify(input),
+                serialize(input, data) {
+                    const discriminatorVal = input[discriminator];
+                    const targetSchema = mapping[discriminatorVal];
+                    return targetSchema.metadata[SCHEMA_METADATA].serialize(
+                        input,
+                        {
+                            instancePath: data.instancePath,
+                            schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
+                            errors: data.errors,
+                            discriminatorKey: discriminator,
+                            discriminatorValue: discriminatorVal,
+                        },
+                    );
+                },
             },
         },
     };

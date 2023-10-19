@@ -24,8 +24,12 @@ export function string(
                 parse,
                 coerce,
                 validate,
-                serialize: (input) =>
-                    typeof input === "string" ? input : `${input as any}`,
+                serialize(input, data) {
+                    if (data.instancePath.length === 0) {
+                        return input;
+                    }
+                    return `"${input}"`;
+                },
             },
         },
     };

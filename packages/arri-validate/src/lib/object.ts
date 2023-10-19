@@ -67,7 +67,13 @@ export function object<
                 validate(input) {
                     return validate(schema as AObjectSchema, input);
                 },
-                serialize: (input) => JSON.stringify(input),
+                serialize(input, data) {
+                    return serializeObject(
+                        schema as AObjectSchema,
+                        input,
+                        data,
+                    );
+                },
             },
         },
     };
@@ -324,8 +330,8 @@ export function omit<
                 parse(input: unknown, data) {
                     return parse(schema as any, input, data, false);
                 },
-                serialize(input) {
-                    return JSON.stringify(input);
+                serialize(input, data) {
+                    return serializeObject(schema as any, input, data);
                 },
                 coerce(input, data) {
                     return parse(schema as any, input, data, true);
@@ -333,6 +339,46 @@ export function omit<
             },
         },
     };
+}
+
+export function serializeObject(
+    schema: AObjectSchema,
+    input: any,
+    data: ValidationData,
+) {
+    const strParts: string[] = [];
+    if (data.discriminatorKey && data.discriminatorValue) {
+        strParts.push(
+            `"${data.discriminatorKey}":"${data.discriminatorValue}"`,
+        );
+    }
+    for (const key of Object.keys(schema.properties)) {
+        const prop = schema.properties[key];
+        const val = input[key];
+        strParts.push(
+            `"${key}":${prop.metadata[SCHEMA_METADATA].serialize(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/properties/${key}`,
+                errors: data.errors,
+            })}`,
+        );
+    }
+    if (schema.optionalProperties) {
+        for (const key of Object.keys(schema.optionalProperties)) {
+            const prop = schema.optionalProperties[key];
+            const val = input[key];
+            if (typeof val !== "undefined") {
+                strParts.push(
+                    `"${key}":${prop.metadata[SCHEMA_METADATA].serialize(val, {
+                        instancePath: `${data.instancePath}/${key}`,
+                        schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
+                        errors: data.errors,
+                    })}`,
+                );
+            }
+        }
+    }
+    return `{${strParts.join(",")}}`;
 }
 
 export function extend<
@@ -375,8 +421,8 @@ export function extend<
                 return parse(schema as any, input, data, true);
             },
             validate: isType,
-            serialize(input) {
-                return JSON.stringify(input);
+            serialize(input, data) {
+                return serializeObject(schema as any, input, data);
             },
         },
     };
@@ -422,7 +468,9 @@ export function partial<
             coerce(input, data) {
                 return parse(newSchema as any, input, data, true);
             },
-            serialize: JSON.stringify,
+            serialize(input, data) {
+                return serializeObject(schema, input, data);
+            },
         },
     };
     newSchema.metadata = meta;

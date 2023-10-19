@@ -54,11 +54,14 @@ export function nullable<T>(
                     }
                     return schema.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
-                serialize(val) {
+                serialize(val, data) {
                     if (val === null) {
                         return "null";
                     }
-                    return schema.metadata[SCHEMA_METADATA].serialize(val);
+                    return schema.metadata[SCHEMA_METADATA].serialize(
+                        val,
+                        data,
+                    );
                 },
             },
         },
@@ -114,11 +117,11 @@ export function optional<T>(
                     }
                     return input.metadata[SCHEMA_METADATA].coerce(val, data);
                 },
-                serialize: (val) => {
+                serialize: (val, data) => {
                     if (typeof val === "undefined") {
                         return "undefined";
                     }
-                    return input.metadata[SCHEMA_METADATA].serialize(val);
+                    return input.metadata[SCHEMA_METADATA].serialize(val, data);
                 },
             },
         },

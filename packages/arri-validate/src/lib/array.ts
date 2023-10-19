@@ -29,8 +29,19 @@ export function array<TInnerSchema extends ASchema<any> = any>(
                 ): input is InferType<AArraySchema<TInnerSchema>> {
                     return validate(schema, input);
                 },
-                serialize(input) {
-                    return JSON.stringify(input);
+                serialize(input, data) {
+                    const strParts: string[] = [];
+                    for (let i = 0; i < input.length; i++) {
+                        const item = input[i];
+                        strParts.push(
+                            schema.metadata[SCHEMA_METADATA].serialize(item, {
+                                instancePath: `${data.instancePath}/${i}`,
+                                schemaPath: `${data.schemaPath}/elements`,
+                                errors: data.errors,
+                            }),
+                        );
+                    }
+                    return `[${strParts.join(",")}]`;
                 },
             },
         },

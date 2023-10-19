@@ -29,7 +29,7 @@ export interface SchemaValidator<T> {
     optional?: boolean;
     parse: (input: unknown, data: ValidationData) => T | undefined;
     coerce: (input: unknown, data: ValidationData) => T | undefined;
-    serialize: (input: T) => string;
+    serialize: (input: T, data: ValidationData) => string;
     validate: (input: unknown) => input is T;
 }
 
@@ -117,15 +117,13 @@ export function isAAraySchema(input: unknown): input is AArraySchema {
 }
 
 // string enums
-export interface AStringEnumSchema<
-    TValues extends string[],
-    TNullable extends boolean = false,
-> extends ASchema<MaybeNullable<TValues[number], TNullable>> {
+export interface AStringEnumSchema<TValues extends string[]>
+    extends ASchema<TValues[number]> {
     enum: TValues;
 }
 export function isAStringEnumSchema(
     input: unknown,
-): input is AStringEnumSchema<any, any> {
+): input is AStringEnumSchema<any> {
     return isASchema(input) && isEnumForm(input);
 }
 

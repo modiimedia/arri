@@ -198,8 +198,11 @@ export function int64(
                 validate: isType,
                 parse,
                 coerce: parse,
-                serialize(input) {
-                    return input.toString();
+                serialize(input, data) {
+                    if (data.instancePath.length === 0) {
+                        return input.toString();
+                    }
+                    return `"${input.toString()}"`;
                 },
             },
         },
@@ -258,8 +261,11 @@ export function uint64(
                 validate: isType,
                 parse,
                 coerce: parse,
-                serialize(input) {
-                    return input.toString();
+                serialize(input, data) {
+                    if (data.instancePath.length === 0) {
+                        return input.toString();
+                    }
+                    return `"${input.toString()}"`;
                 },
             },
         },
@@ -272,7 +278,7 @@ function validateNumber(input: unknown): input is number {
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number): string {
+function serializeNumber(input: number, data: ValidationData): string {
     return input.toString();
 }
 function parseNumber(input: unknown, options: ValidationData) {

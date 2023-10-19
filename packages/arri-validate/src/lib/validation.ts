@@ -1,4 +1,4 @@
-import { type ASchema, SCHEMA_METADATA } from "../schemas";
+import { type ASchema, SCHEMA_METADATA, type ValidationData } from "../schemas";
 
 /**
  * Check if the input matches the specified schema. This is a type guard.
@@ -116,7 +116,12 @@ export function safeCoerce<T = any>(
  * Serialize a value into a JSON string
  */
 export function serialize<T = any>(schema: ASchema<T>, input: T) {
-    return schema.metadata[SCHEMA_METADATA].serialize(input);
+    const data: ValidationData = {
+        instancePath: "",
+        schemaPath: "",
+        errors: [],
+    };
+    return schema.metadata[SCHEMA_METADATA].serialize(input, data);
 }
 
 export interface ValueError {
