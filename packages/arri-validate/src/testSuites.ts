@@ -445,6 +445,20 @@ export const testSuites: Record<
         goodInputs: [[1, 2, 3.5], [-1, -100, 100.5], []],
         badInputs: [["hello world"], null, false, true, [true]],
     },
+    "array of objects": {
+        schema: a.array(
+            a.object({
+                a: a.string(),
+                b: a.timestamp(),
+                c: a.object({
+                    a: a.string(),
+                    b: a.uint64(),
+                }),
+            }),
+        ),
+        goodInputs: [[{ a: "", b: new Date(), c: { a: "", b: BigInt("0") } }]],
+        badInputs: [[null, {}]],
+    },
     discriminator: {
         schema: a.discriminator("type", {
             CREATED: a.object({

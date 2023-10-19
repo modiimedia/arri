@@ -161,11 +161,13 @@ function parse<T>(
             });
             continue;
         }
-        result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
-            instancePath: `${data.instancePath}/${key}`,
-            schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
-            errors: data.errors,
-        });
+        if (typeof val !== "undefined") {
+            result[key] = prop.metadata[SCHEMA_METADATA].parse(val, {
+                instancePath: `${data.instancePath}/${key}`,
+                schemaPath: `${data.schemaPath}/optionalProperties/${key}`,
+                errors: data.errors,
+            });
+        }
     }
     if (data.errors.length) {
         return undefined;
@@ -355,13 +357,15 @@ export function serializeObject(
     for (const key of Object.keys(schema.properties)) {
         const prop = schema.properties[key];
         const val = input[key];
-        strParts.push(
-            `"${key}":${prop.metadata[SCHEMA_METADATA].serialize(val, {
-                instancePath: `${data.instancePath}/${key}`,
-                schemaPath: `${data.schemaPath}/properties/${key}`,
-                errors: data.errors,
-            })}`,
-        );
+        if (typeof val !== "undefined") {
+            strParts.push(
+                `"${key}":${prop.metadata[SCHEMA_METADATA].serialize(val, {
+                    instancePath: `${data.instancePath}/${key}`,
+                    schemaPath: `${data.schemaPath}/properties/${key}`,
+                    errors: data.errors,
+                })}`,
+            );
+        }
     }
     if (schema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
@@ -447,10 +451,14 @@ export function partial<
         const prop = schema.properties[key];
         (newSchema.optionalProperties as any)[key] = optional(prop);
     }
-    if (schema.optionalProperties) {
+    if (schema.optionalProperties && newSchema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
             const prop = schema.optionalProperties[key];
-            (newSchema.optionalProperties as any)[key] = prop;
+            if (prop.metadata[SCHEMA_METADATA].optional) {
+                newSchema.optionalProperties[key] = prop;
+            } else {
+                newSchema.optionalProperties[key] = optional(prop);
+            }
         }
     }
     const meta: ASchema["metadata"] = {

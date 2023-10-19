@@ -28,7 +28,7 @@ export function string(
                     if (data.instancePath.length === 0) {
                         return input;
                     }
-                    return `"${input}"`;
+                    return `"${input.replace(/[\n]/g, "\\n")}"`;
                 },
             },
         },

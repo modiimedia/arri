@@ -156,6 +156,11 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
         });
         fieldParts.push(`"${key}":${template},`);
     }
+    if (input.discriminatorKey && input.discriminatorValue) {
+        fieldParts.push(
+            `"${input.discriminatorKey}":"\${${input.discriminatorValue}}",`,
+        );
+    }
     const allFieldsAreOptional =
         Object.keys(input.schema.properties).length === 0;
     let result = `{${fieldParts.join("")}}`;
@@ -193,15 +198,15 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         targetVal: "",
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
-        instancePath: `${input.instancePath}/item`,
+        instancePath: `${input.instancePath}/0`,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
     const nullFallback = input.instancePath.length === 0 ? '"null"' : "null";
     if (input.schema.nullable) {
-        return `\${Array.isArray(${input.val}) ? \`[\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}]\` : ${nullFallback}}`;
+        return `\${Array.isArray(${input.val}) ? \`[\${${input.val}.map((item) => {return \`${subTemplate}\`}).join(",")}]\` : ${nullFallback}}`;
     }
-    return `[\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}]`;
+    return `[\${${input.val}.map((item) => {return \`${subTemplate}\`}).join(",")}]`;
 }
 
 function discriminatorTemplate(
@@ -221,6 +226,7 @@ function discriminatorTemplate(
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
             discriminatorKey: input.schema.discriminator,
+            discriminatorValue: `${input.val}.${input.schema.discriminator}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
         });
