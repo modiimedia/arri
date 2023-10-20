@@ -17,6 +17,13 @@ class TestClient {
       headers: _headers,
     );
   }
+
+  TestClientVideosService get videos {
+    return TestClientVideosService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
 }
 
 class TestClientPostsService {
@@ -59,6 +66,40 @@ class TestClientPostsService {
       headers: _headers,
       params: params.toJson(),
       parser: (body) => Post.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+}
+
+class TestClientVideosService {
+  final String _baseUrl;
+  final Map<String, String> _headers;
+  const TestClientVideosService({
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  })  : _baseUrl = baseUrl,
+        _headers = headers;
+
+  Future<Annotation> getAnnotation(AnnotationId params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/videos/get-annotation",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => Annotation.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<Annotation> updateAnnotation(UpdateAnnotationParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/videos/update-annotation",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => Annotation.fromJson(
         json.decode(body),
       ),
     );
@@ -423,6 +464,381 @@ class UpdatePostParamsData {
       description: description ?? this.description,
       content: content ?? this.content,
       tags: tags ?? this.tags,
+    );
+  }
+}
+
+class AnnotationId {
+  final String id;
+  final String version;
+  const AnnotationId({
+    required this.id,
+    required this.version,
+  });
+  factory AnnotationId.fromJson(Map<String, dynamic> json) {
+    return AnnotationId(
+      id: typeFromDynamic<String>(json["id"], ""),
+      version: typeFromDynamic<String>(json["version"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "version": version,
+    };
+
+    return result;
+  }
+
+  AnnotationId copyWith({
+    String? id,
+    String? version,
+  }) {
+    return AnnotationId(
+      id: id ?? this.id,
+      version: version ?? this.version,
+    );
+  }
+}
+
+class Annotation {
+  final AnnotationId annotationId;
+  final AssociatedId associatedId;
+  final AnnotationAnnotationType annotationType;
+  final int annotationTypeVersion;
+  final dynamic metadata;
+  final AnnotationBoxTypeRange boxTypeRange;
+  const Annotation({
+    required this.annotationId,
+    required this.associatedId,
+    required this.annotationType,
+    required this.annotationTypeVersion,
+    required this.metadata,
+    required this.boxTypeRange,
+  });
+  factory Annotation.fromJson(Map<String, dynamic> json) {
+    return Annotation(
+      annotationId: AnnotationId.fromJson(json["annotation_id"]),
+      associatedId: AssociatedId.fromJson(json["associated_id"]),
+      annotationType:
+          AnnotationAnnotationType.fromJson(json["annotation_type"]),
+      annotationTypeVersion: intFromDynamic(json["annotation_type_version"], 0),
+      metadata: json["metadata"],
+      boxTypeRange: AnnotationBoxTypeRange.fromJson(json["box_type_range"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "annotation_id": annotationId.toJson(),
+      "associated_id": associatedId.toJson(),
+      "annotation_type": annotationType.value,
+      "annotation_type_version": annotationTypeVersion,
+      "metadata": metadata,
+      "box_type_range": boxTypeRange.toJson(),
+    };
+
+    return result;
+  }
+
+  Annotation copyWith({
+    AnnotationId? annotationId,
+    AssociatedId? associatedId,
+    AnnotationAnnotationType? annotationType,
+    int? annotationTypeVersion,
+    dynamic metadata,
+    AnnotationBoxTypeRange? boxTypeRange,
+  }) {
+    return Annotation(
+      annotationId: annotationId ?? this.annotationId,
+      associatedId: associatedId ?? this.associatedId,
+      annotationType: annotationType ?? this.annotationType,
+      annotationTypeVersion:
+          annotationTypeVersion ?? this.annotationTypeVersion,
+      metadata: metadata ?? this.metadata,
+      boxTypeRange: boxTypeRange ?? this.boxTypeRange,
+    );
+  }
+}
+
+class AssociatedId {
+  final AnnotationAssociatedIdEntityType entityType;
+  final String id;
+  const AssociatedId({
+    required this.entityType,
+    required this.id,
+  });
+  factory AssociatedId.fromJson(Map<String, dynamic> json) {
+    return AssociatedId(
+      entityType:
+          AnnotationAssociatedIdEntityType.fromJson(json["entity_type"]),
+      id: typeFromDynamic<String>(json["id"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "entity_type": entityType.value,
+      "id": id,
+    };
+
+    return result;
+  }
+
+  AssociatedId copyWith({
+    AnnotationAssociatedIdEntityType? entityType,
+    String? id,
+  }) {
+    return AssociatedId(
+      entityType: entityType ?? this.entityType,
+      id: id ?? this.id,
+    );
+  }
+}
+
+enum AnnotationAssociatedIdEntityType
+    implements Comparable<AnnotationAssociatedIdEntityType> {
+  mOVIEID("MOVIE_ID"),
+  sHOWID("SHOW_ID");
+
+  const AnnotationAssociatedIdEntityType(this.value);
+  final String value;
+
+  factory AnnotationAssociatedIdEntityType.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return mOVIEID;
+  }
+
+  @override
+  compareTo(AnnotationAssociatedIdEntityType other) =>
+      name.compareTo(other.name);
+}
+
+enum AnnotationAnnotationType implements Comparable<AnnotationAnnotationType> {
+  aNNOTATIONBOUNDINGBOX("ANNOTATION_BOUNDINGBOX");
+
+  const AnnotationAnnotationType(this.value);
+  final String value;
+
+  factory AnnotationAnnotationType.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return aNNOTATIONBOUNDINGBOX;
+  }
+
+  @override
+  compareTo(AnnotationAnnotationType other) => name.compareTo(other.name);
+}
+
+class AnnotationBoxTypeRange {
+  final BigInt startTimeInNanoSec;
+  final BigInt endTimeInNanoSec;
+  const AnnotationBoxTypeRange({
+    required this.startTimeInNanoSec,
+    required this.endTimeInNanoSec,
+  });
+  factory AnnotationBoxTypeRange.fromJson(Map<String, dynamic> json) {
+    return AnnotationBoxTypeRange(
+      startTimeInNanoSec:
+          bigIntFromDynamic(json["start_time_in_nano_sec"], BigInt.zero),
+      endTimeInNanoSec:
+          bigIntFromDynamic(json["end_time_in_nano_sec"], BigInt.zero),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "start_time_in_nano_sec": startTimeInNanoSec.toString(),
+      "end_time_in_nano_sec": endTimeInNanoSec.toString(),
+    };
+
+    return result;
+  }
+
+  AnnotationBoxTypeRange copyWith({
+    BigInt? startTimeInNanoSec,
+    BigInt? endTimeInNanoSec,
+  }) {
+    return AnnotationBoxTypeRange(
+      startTimeInNanoSec: startTimeInNanoSec ?? this.startTimeInNanoSec,
+      endTimeInNanoSec: endTimeInNanoSec ?? this.endTimeInNanoSec,
+    );
+  }
+}
+
+class UpdateAnnotationParams {
+  final String annotationId;
+  final String annotationIdVersion;
+  final UpdateAnnotationData data;
+  const UpdateAnnotationParams({
+    required this.annotationId,
+    required this.annotationIdVersion,
+    required this.data,
+  });
+  factory UpdateAnnotationParams.fromJson(Map<String, dynamic> json) {
+    return UpdateAnnotationParams(
+      annotationId: typeFromDynamic<String>(json["annotation_id"], ""),
+      annotationIdVersion:
+          typeFromDynamic<String>(json["annotation_id_version"], ""),
+      data: UpdateAnnotationData.fromJson(json["data"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "annotation_id": annotationId,
+      "annotation_id_version": annotationIdVersion,
+      "data": data.toJson(),
+    };
+
+    return result;
+  }
+
+  UpdateAnnotationParams copyWith({
+    String? annotationId,
+    String? annotationIdVersion,
+    UpdateAnnotationData? data,
+  }) {
+    return UpdateAnnotationParams(
+      annotationId: annotationId ?? this.annotationId,
+      annotationIdVersion: annotationIdVersion ?? this.annotationIdVersion,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class UpdateAnnotationData {
+  final AssociatedId? associatedId;
+  final UpdateAnnotationParamsDataAnnotationType? annotationType;
+  final int? annotationTypeVersion;
+  final dynamic metadata;
+  final UpdateAnnotationParamsDataBoxTypeRange? boxTypeRange;
+  const UpdateAnnotationData({
+    this.associatedId,
+    this.annotationType,
+    this.annotationTypeVersion,
+    this.metadata,
+    this.boxTypeRange,
+  });
+  factory UpdateAnnotationData.fromJson(Map<String, dynamic> json) {
+    return UpdateAnnotationData(
+      associatedId: json["associated_id"] is Map<String, dynamic>
+          ? AssociatedId.fromJson(json["associated_id"])
+          : null,
+      annotationType: json["annotation_type"] is Map<String, dynamic>
+          ? UpdateAnnotationParamsDataAnnotationType.fromJson(
+              json["annotation_type"])
+          : null,
+      annotationTypeVersion:
+          nullableIntFromDynamic(json["annotation_type_version"]),
+      metadata: json["metadata"],
+      boxTypeRange: json["box_type_range"] is Map<String, dynamic>
+          ? UpdateAnnotationParamsDataBoxTypeRange.fromJson(
+              json["box_type_range"])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{};
+    if (associatedId != null) {
+      result["associated_id"] = associatedId?.toJson();
+    }
+    if (annotationType != null) {
+      result["annotation_type"] = annotationType?.value;
+    }
+    if (annotationTypeVersion != null) {
+      result["annotation_type_version"] = annotationTypeVersion;
+    }
+    if (metadata != null) {
+      result["metadata"] = metadata;
+    }
+    if (boxTypeRange != null) {
+      result["box_type_range"] = boxTypeRange?.toJson();
+    }
+    return result;
+  }
+
+  UpdateAnnotationData copyWith({
+    AssociatedId? associatedId,
+    UpdateAnnotationParamsDataAnnotationType? annotationType,
+    int? annotationTypeVersion,
+    dynamic metadata,
+    UpdateAnnotationParamsDataBoxTypeRange? boxTypeRange,
+  }) {
+    return UpdateAnnotationData(
+      associatedId: associatedId ?? this.associatedId,
+      annotationType: annotationType ?? this.annotationType,
+      annotationTypeVersion:
+          annotationTypeVersion ?? this.annotationTypeVersion,
+      metadata: metadata ?? this.metadata,
+      boxTypeRange: boxTypeRange ?? this.boxTypeRange,
+    );
+  }
+}
+
+enum UpdateAnnotationParamsDataAnnotationType
+    implements Comparable<UpdateAnnotationParamsDataAnnotationType> {
+  aNNOTATIONBOUNDINGBOX("ANNOTATION_BOUNDINGBOX");
+
+  const UpdateAnnotationParamsDataAnnotationType(this.value);
+  final String value;
+
+  factory UpdateAnnotationParamsDataAnnotationType.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return aNNOTATIONBOUNDINGBOX;
+  }
+
+  @override
+  compareTo(UpdateAnnotationParamsDataAnnotationType other) =>
+      name.compareTo(other.name);
+}
+
+class UpdateAnnotationParamsDataBoxTypeRange {
+  final BigInt startTimeInNanoSec;
+  final BigInt endTimeInNanoSec;
+  const UpdateAnnotationParamsDataBoxTypeRange({
+    required this.startTimeInNanoSec,
+    required this.endTimeInNanoSec,
+  });
+  factory UpdateAnnotationParamsDataBoxTypeRange.fromJson(
+      Map<String, dynamic> json) {
+    return UpdateAnnotationParamsDataBoxTypeRange(
+      startTimeInNanoSec:
+          bigIntFromDynamic(json["start_time_in_nano_sec"], BigInt.zero),
+      endTimeInNanoSec:
+          bigIntFromDynamic(json["end_time_in_nano_sec"], BigInt.zero),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "start_time_in_nano_sec": startTimeInNanoSec.toString(),
+      "end_time_in_nano_sec": endTimeInNanoSec.toString(),
+    };
+
+    return result;
+  }
+
+  UpdateAnnotationParamsDataBoxTypeRange copyWith({
+    BigInt? startTimeInNanoSec,
+    BigInt? endTimeInNanoSec,
+  }) {
+    return UpdateAnnotationParamsDataBoxTypeRange(
+      startTimeInNanoSec: startTimeInNanoSec ?? this.startTimeInNanoSec,
+      endTimeInNanoSec: endTimeInNanoSec ?? this.endTimeInNanoSec,
     );
   }
 }

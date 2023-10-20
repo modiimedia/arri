@@ -433,14 +433,18 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
       ${properties
           .map(
               (prop) =>
-                  `"${prop.key}": ${prop.templates.toJsonTemplate(prop.key)}`,
+                  `"${prop.key}": ${prop.templates.toJsonTemplate(
+                      camelCase(prop.key),
+                  )}`,
           )
           .join(",\n      ")}${properties.length ? "," : ""}
     };
     ${optionalProperties
         .map(
             (prop) => `if (${camelCase(prop.key)} != null) {
-      result["${prop.key}"] = ${prop.templates.toJsonTemplate(prop.key)};
+      result["${prop.key}"] = ${prop.templates.toJsonTemplate(
+          camelCase(prop.key),
+      )};
     }`,
         )
         .join("\n")}

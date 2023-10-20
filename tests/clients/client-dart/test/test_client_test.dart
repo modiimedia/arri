@@ -64,4 +64,32 @@ Future<void> main() async {
       expect(false, equals(true));
     }
   });
+
+  group("large integer requests", () {
+    test("get request", () async {
+      final result = await client.videos
+          .getAnnotation(AnnotationId(id: "2", version: "1"));
+      expect(result.annotationId.id, equals('2'));
+      expect(result.annotationId.version, equals("1"));
+    });
+    test("post request", () async {
+      final result =
+          await client.videos.updateAnnotation(UpdateAnnotationParams(
+        annotationId: "12345",
+        annotationIdVersion: '3',
+        data: UpdateAnnotationData(
+          boxTypeRange: UpdateAnnotationParamsDataBoxTypeRange(
+            startTimeInNanoSec: BigInt.parse("123456789"),
+            endTimeInNanoSec: BigInt.parse("1234567890"),
+          ),
+        ),
+      ));
+      expect(result.annotationId.id, equals("12345"));
+      expect(result.annotationId.version, "3");
+      expect(result.boxTypeRange.startTimeInNanoSec,
+          equals(BigInt.parse("123456789")));
+      expect(result.boxTypeRange.endTimeInNanoSec,
+          equals(BigInt.parse("1234567890")));
+    });
+  });
 }

@@ -11,11 +11,13 @@ export class TestClient {
   private readonly baseUrl: string;
   private readonly headers: Record<string, string>;
   posts: TestClientPostsService;
+  videos: TestClientVideosService;
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
     this.headers = options.headers ?? {};
     this.posts = new TestClientPostsService(options);
+    this.videos = new TestClientVideosService(options);
   }
 }
 
@@ -55,6 +57,36 @@ export class TestClientPostsService {
       params,
       parser: $$Post.parse,
       serializer: $$UpdatePostParams.serialize,
+    });
+  }
+}
+
+export class TestClientVideosService {
+  private readonly baseUrl: string;
+  private readonly headers: Record<string, string>;
+
+  constructor(options: TestClientOptions = {}) {
+    this.baseUrl = options.baseUrl ?? "";
+    this.headers = options.headers ?? {};
+  }
+  getAnnotation(params: AnnotationId) {
+    return arriRequest<Annotation, AnnotationId>({
+      url: `${this.baseUrl}/rpcs/videos/get-annotation`,
+      method: "get",
+      headers: this.headers,
+      params,
+      parser: $$Annotation.parse,
+      serializer: $$AnnotationId.serialize,
+    });
+  }
+  updateAnnotation(params: UpdateAnnotationParams) {
+    return arriRequest<Annotation, UpdateAnnotationParams>({
+      url: `${this.baseUrl}/rpcs/videos/update-annotation`,
+      method: "post",
+      headers: this.headers,
+      params,
+      parser: $$Annotation.parse,
+      serializer: $$UpdateAnnotationParams.serialize,
     });
   }
 }
@@ -227,6 +259,209 @@ export const $$UpdatePostParamsData = {
     };
   },
   serialize(input: UpdatePostParamsData): string {
+    return JSON.stringify(input);
+  },
+};
+
+export interface AnnotationId {
+  id: string;
+  version: string;
+}
+export const $$AnnotationId = {
+  parse(input: Record<any, any>): AnnotationId {
+    return {
+      id: typeof input.id === "string" ? input.id : "",
+      version: typeof input.version === "string" ? input.version : "",
+    };
+  },
+  serialize(input: AnnotationId): string {
+    return JSON.stringify(input);
+  },
+};
+
+export interface Annotation {
+  annotation_id: AnnotationId;
+  associated_id: AssociatedId;
+  annotation_type: AnnotationAnnotationType;
+  annotation_type_version: number;
+  metadata: any;
+  box_type_range: AnnotationBoxTypeRange;
+}
+export const $$Annotation = {
+  parse(input: Record<any, any>): Annotation {
+    return {
+      annotation_id: $$AnnotationId.parse(input.annotation_id),
+      associated_id: $$AssociatedId.parse(input.associated_id),
+      annotation_type: $$AnnotationAnnotationType.parse(input.annotation_type),
+      annotation_type_version:
+        typeof input.annotation_type_version === "number"
+          ? input.annotation_type_version
+          : 0,
+      metadata: input.metadata,
+      box_type_range: $$AnnotationBoxTypeRange.parse(input.box_type_range),
+    };
+  },
+  serialize(input: Annotation): string {
+    return JSON.stringify(input);
+  },
+};
+export interface AssociatedId {
+  entity_type: AnnotationAssociatedIdEntityType;
+  id: string;
+}
+export const $$AssociatedId = {
+  parse(input: Record<any, any>): AssociatedId {
+    return {
+      entity_type: $$AnnotationAssociatedIdEntityType.parse(input.entity_type),
+      id: typeof input.id === "string" ? input.id : "",
+    };
+  },
+  serialize(input: AssociatedId): string {
+    return JSON.stringify(input);
+  },
+};
+export type AnnotationAssociatedIdEntityType = "MOVIE_ID" | "SHOW_ID";
+export const $$AnnotationAssociatedIdEntityType = {
+  parse(input: any): AnnotationAssociatedIdEntityType {
+    const vals = ["MOVIE_ID", "SHOW_ID"];
+    if (typeof input !== "string" || !vals.includes(input)) {
+      throw new Error(
+        `Invalid input for AnnotationAssociatedIdEntityType. Expected one of the following [MOVIE_ID, SHOW_ID]. Got ${input}.`,
+      );
+    }
+    return input as AnnotationAssociatedIdEntityType;
+  },
+  serialize(input: AnnotationAssociatedIdEntityType): string {
+    return input;
+  },
+};
+export type AnnotationAnnotationType = "ANNOTATION_BOUNDINGBOX";
+export const $$AnnotationAnnotationType = {
+  parse(input: any): AnnotationAnnotationType {
+    const vals = ["ANNOTATION_BOUNDINGBOX"];
+    if (typeof input !== "string" || !vals.includes(input)) {
+      throw new Error(
+        `Invalid input for AnnotationAnnotationType. Expected one of the following [ANNOTATION_BOUNDINGBOX]. Got ${input}.`,
+      );
+    }
+    return input as AnnotationAnnotationType;
+  },
+  serialize(input: AnnotationAnnotationType): string {
+    return input;
+  },
+};
+export interface AnnotationBoxTypeRange {
+  start_time_in_nano_sec: bigint;
+  end_time_in_nano_sec: bigint;
+}
+export const $$AnnotationBoxTypeRange = {
+  parse(input: Record<any, any>): AnnotationBoxTypeRange {
+    return {
+      start_time_in_nano_sec:
+        typeof input.start_time_in_nano_sec === "string"
+          ? BigInt(input.start_time_in_nano_sec)
+          : BigInt("0"),
+      end_time_in_nano_sec:
+        typeof input.end_time_in_nano_sec === "string"
+          ? BigInt(input.end_time_in_nano_sec)
+          : BigInt("0"),
+    };
+  },
+  serialize(input: AnnotationBoxTypeRange): string {
+    return JSON.stringify(input);
+  },
+};
+
+export interface UpdateAnnotationParams {
+  annotation_id: string;
+  annotation_id_version: string;
+  data: UpdateAnnotationData;
+}
+export const $$UpdateAnnotationParams = {
+  parse(input: Record<any, any>): UpdateAnnotationParams {
+    return {
+      annotation_id:
+        typeof input.annotation_id === "string" ? input.annotation_id : "",
+      annotation_id_version:
+        typeof input.annotation_id_version === "string"
+          ? input.annotation_id_version
+          : "",
+      data: $$UpdateAnnotationData.parse(input.data),
+    };
+  },
+  serialize(input: UpdateAnnotationParams): string {
+    return JSON.stringify(input);
+  },
+};
+export interface UpdateAnnotationData {
+  associated_id?: AssociatedId;
+  annotation_type?: UpdateAnnotationParamsDataAnnotationType;
+  annotation_type_version?: number;
+  metadata?: any;
+  box_type_range?: UpdateAnnotationParamsDataBoxTypeRange;
+}
+export const $$UpdateAnnotationData = {
+  parse(input: Record<any, any>): UpdateAnnotationData {
+    return {
+      associated_id:
+        typeof input.associated_id === "object" && input.associated_id !== null
+          ? $$AssociatedId.parse(input.associated_id)
+          : undefined,
+      annotation_type:
+        typeof input.annotation_type === "string"
+          ? $$UpdateAnnotationParamsDataAnnotationType.parse(
+              input.annotation_type,
+            )
+          : undefined,
+      annotation_type_version:
+        typeof input.annotation_type_version === "number"
+          ? input.annotation_type_version
+          : undefined,
+      metadata: input.metadata,
+      box_type_range:
+        typeof input.box_type_range === "object" &&
+        input.box_type_range !== null
+          ? $$UpdateAnnotationParamsDataBoxTypeRange.parse(input.box_type_range)
+          : undefined,
+    };
+  },
+  serialize(input: UpdateAnnotationData): string {
+    return JSON.stringify(input);
+  },
+};
+export type UpdateAnnotationParamsDataAnnotationType = "ANNOTATION_BOUNDINGBOX";
+export const $$UpdateAnnotationParamsDataAnnotationType = {
+  parse(input: any): UpdateAnnotationParamsDataAnnotationType {
+    const vals = ["ANNOTATION_BOUNDINGBOX"];
+    if (typeof input !== "string" || !vals.includes(input)) {
+      throw new Error(
+        `Invalid input for UpdateAnnotationParamsDataAnnotationType. Expected one of the following [ANNOTATION_BOUNDINGBOX]. Got ${input}.`,
+      );
+    }
+    return input as UpdateAnnotationParamsDataAnnotationType;
+  },
+  serialize(input: UpdateAnnotationParamsDataAnnotationType): string {
+    return input;
+  },
+};
+export interface UpdateAnnotationParamsDataBoxTypeRange {
+  start_time_in_nano_sec: bigint;
+  end_time_in_nano_sec: bigint;
+}
+export const $$UpdateAnnotationParamsDataBoxTypeRange = {
+  parse(input: Record<any, any>): UpdateAnnotationParamsDataBoxTypeRange {
+    return {
+      start_time_in_nano_sec:
+        typeof input.start_time_in_nano_sec === "string"
+          ? BigInt(input.start_time_in_nano_sec)
+          : BigInt("0"),
+      end_time_in_nano_sec:
+        typeof input.end_time_in_nano_sec === "string"
+          ? BigInt(input.end_time_in_nano_sec)
+          : BigInt("0"),
+    };
+  },
+  serialize(input: UpdateAnnotationParamsDataBoxTypeRange): string {
     return JSON.stringify(input);
   },
 };
