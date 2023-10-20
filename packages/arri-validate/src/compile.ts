@@ -105,7 +105,6 @@ function compiledBigIntParser(
             if (input >= BigInt("0")) {
                 return input;
             }
-        } else {
             throw new ValidationError({
                 message: "uint64 must be greater than or equal to 0",
                 errors: [

@@ -226,7 +226,7 @@ function discriminatorTemplate(
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
             discriminatorKey: input.schema.discriminator,
-            discriminatorValue: `${input.val}.${input.schema.discriminator}`,
+            discriminatorValue: `val.${input.schema.discriminator}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
         });

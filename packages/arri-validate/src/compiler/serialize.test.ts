@@ -5,6 +5,9 @@ import { testSuites } from "../testSuites";
 for (const key of Object.keys(testSuites)) {
     const suite = testSuites[key];
     const Compiled = compile(suite.schema);
+    if (key === "complex object") {
+        console.log(Compiled.compiledCode.serialize);
+    }
     for (const input of suite.goodInputs) {
         test(key, () => {
             const result = Compiled.serialize(input);
