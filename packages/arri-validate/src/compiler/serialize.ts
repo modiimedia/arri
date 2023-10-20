@@ -14,7 +14,7 @@ import {
     isARecordSchema,
     type ARecordSchema,
 } from "../schemas";
-import { type TemplateInput, type ScalarType } from "./common";
+import { type TemplateInput, type Type } from "./common";
 
 export function createSerializationTemplate(
     inputName: string,
@@ -38,7 +38,7 @@ return \`${mainTemplate}\``;
 
 function schemaTemplate(input: TemplateInput): string {
     if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as ScalarType) {
+        switch (input.schema.type as Type) {
             case "boolean":
                 return booleanTemplate(input);
             case "string": {

@@ -5,9 +5,11 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "dependencies": {
-        "@modii/jtd": "^0.2.1",
+        "jtd-utils": "workspace:*",
         "scule": "^1.0.0",
         "arri-validate": "workspace:*"
     }

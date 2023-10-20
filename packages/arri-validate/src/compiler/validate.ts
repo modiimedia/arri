@@ -27,7 +27,7 @@ import {
     isADiscriminatorSchema,
     type ADiscriminatorSchema,
 } from "../schemas";
-import { type ScalarType, type TemplateInput } from "./common";
+import { type Type, type TemplateInput } from "./common";
 
 export function createValidationTemplate(
     inputName: string,
@@ -51,7 +51,7 @@ export function createValidationTemplate(
 
 function schemaTemplate(input: TemplateInput): string {
     if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as ScalarType) {
+        switch (input.schema.type as Type) {
             case "boolean":
                 return booleanTemplate(input);
             case "float32":

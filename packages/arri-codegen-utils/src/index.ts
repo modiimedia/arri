@@ -1,13 +1,6 @@
-import { type SchemaFormProperties } from "@modii/jtd";
-export * from "@modii/jtd";
+import { type SchemaFormProperties } from "jtd-utils";
+export * from "jtd-utils";
 export * from "scule";
-
-declare module "@modii/jtd" {
-    export interface SchemaMetadata {
-        id?: string;
-        description?: string;
-    }
-}
 
 export const HttpMethodValues = [
     "get",

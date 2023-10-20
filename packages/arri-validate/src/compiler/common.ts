@@ -1,4 +1,3 @@
-import { type Type } from "@modii/jtd";
 import { type ASchema } from "../schemas";
 
 export interface TemplateInput<TSchema extends ASchema<any> = any> {
@@ -13,5 +12,3 @@ export interface TemplateInput<TSchema extends ASchema<any> = any> {
     subFunctionBodies: string[];
     finalFunctionBody?: string;
 }
-
-export type ScalarType = Type | "int64" | "uint64";

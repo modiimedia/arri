@@ -279,24 +279,24 @@ importers:
 
   packages/arri-codegen-utils:
     dependencies:
-      '@modii/jtd':
-        specifier: ^0.2.1
-        version: 0.2.1
       arri-validate:
         specifier: workspace:*
         version: link:../arri-validate
+      jtd-utils:
+        specifier: workspace:*
+        version: link:../jtd-utils
       scule:
         specifier: ^1.0.0
         version: 1.0.0
 
   packages/arri-validate:
     dependencies:
-      '@modii/jtd':
-        specifier: ^0.2.1
-        version: 0.2.1
       ajv:
         specifier: ^8.12.0
         version: 8.12.0
+      jtd-utils:
+        specifier: workspace:*
+        version: link:../jtd-utils
       scule:
         specifier: ^1.0.0
         version: 1.0.0
@@ -313,6 +313,8 @@ importers:
       '@modii/jtd':
         specifier: ^0.2.1
         version: 0.2.1
+
+  packages/jtd-utils: {}
 
   tests/clients/client-typescript:
     dependencies:

@@ -1,6 +1,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:http/http.dart' as http;
 
 /// Enum of available HTTP methods
@@ -242,6 +243,38 @@ List<double?> nullableDoubleListFromDynamic(dynamic input) {
   return input is List
       ? input.map((e) => nullableDoubleFromDynamic(e)).toList()
       : [];
+}
+
+BigInt bigIntFromDynamic(dynamic input, BigInt fallback) {
+  if (input is BigInt) {
+    return input;
+  }
+  if (input is String) {
+    return BigInt.parse(input);
+  }
+  if (input is double) {
+    return BigInt.from(input);
+  }
+  if (input is int) {
+    return BigInt.from(input);
+  }
+  return fallback;
+}
+
+BigInt? nullableBigIntFromDynamic(dynamic input) {
+  if (input is BigInt) {
+    return input;
+  }
+  if (input is String) {
+    return BigInt.parse(input);
+  }
+  if (input is double) {
+    return BigInt.from(input);
+  }
+  if (input is int) {
+    return BigInt.from(input);
+  }
+  return null;
 }
 
 int intFromDynamic(dynamic input, int fallback) {

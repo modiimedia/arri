@@ -6,13 +6,13 @@ import {
     type RpcDefinition,
     type SchemaFormProperties,
     type SchemaFormType,
-    isTypeForm,
+    isSchemaFormType,
     type Schema,
-    isPropertiesForm,
-    isElementsForm,
-    isEnumForm,
-    isValuesForm,
-    isDiscriminatorForm,
+    isSchemaFormProperties,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormValues,
+    isSchemaFormDiscriminator,
     type AppDefinition,
     unflattenProcedures,
     isServiceDefinition,
@@ -261,22 +261,22 @@ export function dartTypeFromJtdSchema(
         existingClassNames: string[];
     },
 ): DartProperty {
-    if (isTypeForm(def)) {
+    if (isSchemaFormType(def)) {
         return dartScalarFromJtdScalar(nodePath, def, additionalOptions);
     }
-    if (isPropertiesForm(def)) {
+    if (isSchemaFormProperties(def)) {
         return dartClassFromJtdSchema(nodePath, def, additionalOptions);
     }
-    if (isElementsForm(def)) {
+    if (isSchemaFormElements(def)) {
         return dartArrayFromJtdSchema(nodePath, def, additionalOptions);
     }
-    if (isEnumForm(def)) {
+    if (isSchemaFormEnum(def)) {
         return dartEnumFromJtdSchema(nodePath, def, additionalOptions);
     }
-    if (isValuesForm(def)) {
+    if (isSchemaFormValues(def)) {
         return dartMapFromJtdSchema(nodePath, def, additionalOptions);
     }
-    if (isDiscriminatorForm(def)) {
+    if (isSchemaFormDiscriminator(def)) {
         return dartSealedClassFromJtdSchema(nodePath, def, additionalOptions);
     }
     return dartDynamicFromAny(nodePath, a.any(), additionalOptions);
@@ -361,48 +361,48 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
     for (const prop of properties) {
         fieldParts.push(prop.templates.fieldTemplate);
         constructorParts.push(prop.templates.constructorTemplate);
+        const subJsonKey = prop.key;
+        const subKey = camelCase(prop.key);
         fromJsonParts.push(
-            `${camelCase(prop.key)}: ${prop.templates.fromJsonTemplate(
-                `json["${prop.key}"]`,
+            `${subKey}: ${prop.templates.fromJsonTemplate(
+                `json["${subJsonKey}"]`,
             )}`,
         );
         if (prop.templates.typeName === "dynamic") {
-            copyWithParamParts.push(`dynamic ${prop.key}`);
+            copyWithParamParts.push(`dynamic ${subKey}`);
         } else {
             if (prop.templates.typeName.endsWith("?")) {
-                copyWithParamParts.push(
-                    `${prop.templates.typeName} ${prop.key}`,
-                );
+                copyWithParamParts.push(`${prop.templates.typeName} ${subKey}`);
             } else {
                 copyWithParamParts.push(
-                    `${prop.templates.typeName}? ${prop.key}`,
+                    `${prop.templates.typeName}? ${subKey}`,
                 );
             }
         }
-        copyWithInitParts.push(`${prop.key}: ${prop.key} ?? this.${prop.key}`);
+        copyWithInitParts.push(`${subKey}: ${subKey} ?? this.${subKey}`);
     }
     for (const prop of optionalProperties) {
         fieldParts.push(prop.templates.fieldTemplate);
         constructorParts.push(prop.templates.constructorTemplate);
+        const subKey = camelCase(prop.key);
+        const subJsonKey = prop.key;
         fromJsonParts.push(
-            `${camelCase(prop.key)}: ${prop.templates.fromJsonTemplate(
-                `json["${prop.key}"]`,
+            `${subKey}: ${prop.templates.fromJsonTemplate(
+                `json["${subJsonKey}"]`,
             )}`,
         );
         if (prop.templates.typeName === "dynamic") {
-            copyWithParamParts.push(`dynamic ${prop.key}`);
+            copyWithParamParts.push(`dynamic ${subKey}`);
         } else {
             if (prop.templates.typeName.endsWith("?")) {
-                copyWithParamParts.push(
-                    `${prop.templates.typeName} ${prop.key}`,
-                );
+                copyWithParamParts.push(`${prop.templates.typeName} ${subKey}`);
             } else {
                 copyWithParamParts.push(
-                    `${prop.templates.typeName}? ${prop.key}`,
+                    `${prop.templates.typeName}? ${subKey}`,
                 );
             }
         }
-        copyWithInitParts.push(`${prop.key}: ${prop.key} ?? this.${prop.key}`);
+        copyWithInitParts.push(`${subKey}: ${subKey} ?? this.${subKey}`);
     }
     let classNamePart = `class ${className}`;
     if (isDiscriminatorChild) {
@@ -633,6 +633,28 @@ function dartScalarFromJtdScalar(
                 toJsonTemplate: defaultToJsonTemplate,
                 content: "",
             };
+        case "int64":
+        case "uint64":
+            if (isNullable) {
+                return {
+                    typeName: "BigInt?",
+                    fieldTemplate: `final BigInt? ${key}`,
+                    constructorTemplate: defaultInitializationTemplate,
+                    fromJsonTemplate: (input) =>
+                        `nullableBigIntFromDynamic(${input})`,
+                    toJsonTemplate: (input) => `${input}?.toString()`,
+                    content: "",
+                };
+            }
+            return {
+                typeName: "BigInt",
+                fieldTemplate: `final BigInt ${key}`,
+                constructorTemplate: defaultInitializationTemplate,
+                fromJsonTemplate: (input) =>
+                    `bigIntFromDynamic(${input}, BigInt.zero)`,
+                toJsonTemplate: (input) => `${input}.toString()`,
+                content: "",
+            };
         case "timestamp":
             if (isNullable) {
                 return {
@@ -806,7 +828,7 @@ function dartSealedClassFromJtdSchema(
     const childContentParts: string[] = [];
     Object.keys(def.mapping).forEach((discKeyValue) => {
         const childDef = def.mapping[discKeyValue];
-        if (!isPropertiesForm(childDef)) {
+        if (!isSchemaFormProperties(childDef)) {
             return;
         }
         const child = dartClassFromJtdSchema(

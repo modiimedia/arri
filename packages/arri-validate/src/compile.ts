@@ -1,6 +1,7 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
+import { type Type } from "jtd-utils";
 import {
     type SafeResult,
     type ASchema,
@@ -9,7 +10,6 @@ import {
     isAScalarSchema,
     isAStringEnumSchema,
 } from "./_index";
-import { type ScalarType } from "./compiler/common";
 import { createParsingTemplate } from "./compiler/parse";
 import { createSerializationTemplate } from "./compiler/serialize";
 import { createValidationTemplate } from "./compiler/validate";
@@ -189,7 +189,7 @@ function getCompiledParser<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): { fn: CompiledParser<TSchema>; code: string } {
     if (isAScalarSchema(schema)) {
-        switch (schema.type as ScalarType) {
+        switch (schema.type as Type) {
             case "float32":
             case "float64":
                 return {

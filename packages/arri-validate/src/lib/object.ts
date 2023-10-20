@@ -1,4 +1,4 @@
-import { type SchemaFormProperties } from "@modii/jtd";
+import { type SchemaFormProperties } from "jtd-utils";
 
 import {
     type ASchema,

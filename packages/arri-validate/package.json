@@ -9,7 +9,7 @@
         "dist"
     ],
     "dependencies": {
-        "@modii/jtd": "^0.2.1",
+        "jtd-utils": "workspace:*",
         "ajv": "^8.12.0",
         "scule": "^1.0.0"
     },

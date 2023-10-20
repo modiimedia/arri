@@ -4,18 +4,18 @@ import {
     defineClientGeneratorPlugin,
     pascalCase,
     type Schema,
-    isTypeForm,
+    isSchemaFormType,
     type SchemaFormType,
-    isPropertiesForm,
+    isSchemaFormProperties,
     type SchemaFormProperties,
-    isEnumForm,
+    isSchemaFormEnum,
     type SchemaFormEnum,
-    isElementsForm,
+    isSchemaFormElements,
     type SchemaFormElements,
     type SchemaFormDiscriminator,
     camelCase,
-    isDiscriminatorForm,
-    isValuesForm,
+    isSchemaFormDiscriminator,
+    isSchemaFormValues,
     type SchemaFormValues,
     type RpcDefinition,
     unflattenProcedures,
@@ -90,7 +90,7 @@ export async function createTypescriptClient(
     });
     for (const key of Object.keys(def.models)) {
         const schema = def.models[key];
-        if (isPropertiesForm(schema)) {
+        if (isSchemaFormProperties(schema)) {
             const type = tsTypeFromJtdSchema(key, schema, options, {
                 isOptional: false,
                 existingTypeNames,
@@ -230,19 +230,19 @@ export function tsTypeFromJtdSchema(
     options: GeneratorOptions,
     additionalOptions: AdditionalOptions,
 ): TsProperty {
-    if (isTypeForm(def)) {
+    if (isSchemaFormType(def)) {
         return tsScalarFromJtdSchema(nodePath, def, options, additionalOptions);
     }
-    if (isPropertiesForm(def)) {
+    if (isSchemaFormProperties(def)) {
         return tsObjectFromJtdSchema(nodePath, def, options, additionalOptions);
     }
-    if (isEnumForm(def)) {
+    if (isSchemaFormEnum(def)) {
         return tsEnumFromJtdSchema(nodePath, def, options, additionalOptions);
     }
-    if (isElementsForm(def)) {
+    if (isSchemaFormElements(def)) {
         return tsArrayFromJtdSchema(nodePath, def, options, additionalOptions);
     }
-    if (isDiscriminatorForm(def)) {
+    if (isSchemaFormDiscriminator(def)) {
         return tsDiscriminatedUnionFromJtdSchema(
             nodePath,
             def,
@@ -250,7 +250,7 @@ export function tsTypeFromJtdSchema(
             additionalOptions,
         );
     }
-    if (isValuesForm(def)) {
+    if (isSchemaFormValues(def)) {
         return tsRecordFromJtdSchema(nodePath, def, options, additionalOptions);
     }
 
@@ -402,6 +402,32 @@ export function tsScalarFromJtdSchema(
                 },
                 toJsonTemplate(input) {
                     return `JSON.stringify(${input})`;
+                },
+                content: "",
+            };
+        case "int64":
+        case "uint64":
+            return {
+                tsType: "bigint",
+                schema: def,
+                fieldTemplate: `${maybeOptionalKey(
+                    key,
+                    isOptional,
+                )}: ${maybeNullType("bigint", isNullable)}`,
+                fromJsonTemplate(input) {
+                    if (isOptional) {
+                        return `typeof ${input} === 'string' ? BigInt(${input}) : undefined`;
+                    }
+                    if (isNullable) {
+                        return `typeof ${input} === 'string' ? BigInt(${input}) : null`;
+                    }
+                    return `typeof ${input} === 'string' ? BigInt(${input}) : BigInt("0")`;
+                },
+                toJsonTemplate(input) {
+                    if (isOptional || isNullable) {
+                        return `${input}?.toString()`;
+                    }
+                    return `${input}.toString()`;
                 },
                 content: "",
             };
@@ -640,7 +666,7 @@ export function tsDiscriminatedUnionFromJtdSchema(
     const parserParts: string[] = [];
     for (const val of Object.keys(def.mapping)) {
         const optionSchema = def.mapping[val];
-        if (!isPropertiesForm(optionSchema)) {
+        if (!isSchemaFormProperties(optionSchema)) {
             continue;
         }
         const optionType = tsObjectFromJtdSchema(

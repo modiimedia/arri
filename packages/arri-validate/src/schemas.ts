@@ -1,12 +1,12 @@
 import {
     type Type as JtdType,
-    isDiscriminatorForm,
-    isElementsForm,
-    isEnumForm,
-    isPropertiesForm,
-    isValuesForm,
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormValues,
     TypeValues,
-} from "@modii/jtd";
+} from "jtd-utils";
 import { type ValueError } from "./lib/validation";
 
 export const SCHEMA_METADATA = Symbol.for("arri.schema_metadata");
@@ -113,7 +113,7 @@ export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
     elements: TInnerSchema;
 }
 export function isAAraySchema(input: unknown): input is AArraySchema {
-    return isASchema(input) && isElementsForm(input);
+    return isASchema(input) && isSchemaFormElements(input);
 }
 
 // string enums
@@ -124,7 +124,7 @@ export interface AStringEnumSchema<TValues extends string[]>
 export function isAStringEnumSchema(
     input: unknown,
 ): input is AStringEnumSchema<any> {
-    return isASchema(input) && isEnumForm(input);
+    return isASchema(input) && isSchemaFormEnum(input);
 }
 
 // discriminators
@@ -135,7 +135,7 @@ export interface ADiscriminatorSchema<T> extends ASchema<T> {
 export function isADiscriminatorSchema(
     input: unknown,
 ): input is ADiscriminatorSchema<any> {
-    return isASchema(input) && isDiscriminatorForm(input);
+    return isASchema(input) && isSchemaFormDiscriminator(input);
 }
 
 // records
@@ -150,7 +150,7 @@ export interface ARecordSchema<
 export function isARecordSchema(
     input: unknown,
 ): input is ARecordSchema<any, any> {
-    return isASchema(input) && isValuesForm(input);
+    return isASchema(input) && isSchemaFormValues(input);
 }
 
 // object types
@@ -163,7 +163,7 @@ export interface AObjectSchema<
     additionalProperties?: TAllowAdditionalProperties;
 }
 export function isAObjectSchema(input: unknown): input is AObjectSchema {
-    return isASchema(input) && isPropertiesForm(input);
+    return isASchema(input) && isSchemaFormProperties(input);
 }
 
 export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>

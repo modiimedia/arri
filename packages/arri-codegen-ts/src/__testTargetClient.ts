@@ -163,6 +163,8 @@ export interface UserPhoto {
     url: string;
     width: number;
     height: number;
+    bytes: bigint;
+    nanoseconds: bigint;
 }
 export const $$UserPhoto = {
     parse(input: Record<any, any>): UserPhoto {
@@ -170,6 +172,14 @@ export const $$UserPhoto = {
             url: typeof input.url === "string" ? input.url : "",
             width: typeof input.width === "number" ? input.width : 0,
             height: typeof input.height === "number" ? input.height : 0,
+            bytes:
+                typeof input.bytes === "string"
+                    ? BigInt(input.bytes)
+                    : BigInt("0"),
+            nanoseconds:
+                typeof input.nanoseconds === "string"
+                    ? BigInt(input.nanoseconds)
+                    : BigInt("0"),
         };
     },
     serialize(input: UserPhoto): string {

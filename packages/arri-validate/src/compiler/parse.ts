@@ -29,7 +29,7 @@ import {
     isADiscriminatorSchema,
     isARecordSchema,
 } from "../schemas";
-import { type ScalarType, type TemplateInput } from "./common";
+import { type Type, type TemplateInput } from "./common";
 
 export function createParsingTemplate(input: string, schema: ASchema): string {
     const validationErrorName = `$ValidationError${camelCase(
@@ -100,7 +100,7 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
 
 export function schemaTemplate(input: TemplateInput): string {
     if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as ScalarType) {
+        switch (input.schema.type as Type) {
             case "boolean":
                 return booleanTemplate(input);
             case "string":
