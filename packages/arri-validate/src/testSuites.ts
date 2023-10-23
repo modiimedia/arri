@@ -510,6 +510,71 @@ export const testSuites: Record<
             [true],
         ],
     },
+    "record with objects": {
+        schema: a.record(
+            a.object({
+                name: a.string(),
+                count: a.number(),
+                date: a.timestamp(),
+                subObject: a.object({
+                    a: a.string(),
+                }),
+            }),
+        ),
+        goodInputs: [
+            {
+                a: {
+                    name: "",
+                    count: 1,
+                    date: new Date(),
+                    subObject: {
+                        a: "",
+                    },
+                },
+                b: {
+                    name: "John",
+                    count: 100.5,
+                    date: new Date(),
+                    subObject: {
+                        a: "",
+                    },
+                },
+            },
+        ],
+        badInputs: [
+            {},
+            null,
+            {
+                a: {
+                    name: "",
+                    count: null,
+                    date: new Date(),
+                    subObject: {
+                        a: "",
+                    },
+                },
+            },
+        ],
+    },
+    "record with nullable objects": {
+        schema: a.record(
+            a.nullable(
+                a.object({
+                    id: a.string(),
+                    url: a.string(),
+                }),
+            ),
+        ),
+        goodInputs: [
+            { a: { id: "", url: "" }, b: { id: "", url: "" } },
+            { a: null, b: { id: "", url: "" } },
+        ],
+        badInputs: [
+            { a: { id: 1, url: "" }, b: { id: "", url: "" } },
+            true,
+            null,
+        ],
+    },
     "object with multiline strings": {
         schema: a.object({
             description: a.string(),

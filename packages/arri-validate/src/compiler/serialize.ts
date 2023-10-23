@@ -232,7 +232,8 @@ function discriminatorTemplate(
   return \`${template}\`;
 `);
     }
-    const subFunction = `function ${subFunctionName}(val) {
+    const subFunction = `// @ts-ignore
+    function ${subFunctionName}(val) {
             switch(val.${input.schema.discriminator}) {
                 ${subFunctionParts.join("\n")}
                 default:
@@ -267,7 +268,8 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
         subFunctionBodies: [],
     });
 
-    const subFunction = `function ${subFunctionName}(val) {
+    const subFunction = `// @ts-ignore
+    function ${subFunctionName}(val) {
         const keyParts = []
         const keys = Object.keys(val);
         for(let i = 0; i < Object.keys(val).length; i++) {

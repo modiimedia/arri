@@ -8,6 +8,7 @@ for (const key of Object.keys(testSuites)) {
     for (const input of suite.goodInputs) {
         test(key, () => {
             const result = Compiled.serialize(input);
+            expect(typeof result === "string");
             if (
                 !isAScalarSchema(suite.schema) &&
                 !isAStringEnumSchema(suite.schema)

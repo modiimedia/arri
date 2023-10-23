@@ -23,10 +23,7 @@ import {
     isServiceDefinition,
     type ServiceDefinition,
 } from "arri-codegen-utils";
-import {
-    getSchemaSerializationCode,
-    getSchemaValidationCode,
-} from "arri-validate/src/compile";
+import { getSchemaSerializationCode } from "arri-validate/src/compile";
 import prettier from "prettier";
 
 interface GeneratorOptions {
@@ -759,7 +756,10 @@ export function tsRecordFromJtdSchema(
     );
     let content = "";
     if (!additionalOptions.existingTypeNames.includes(typeName)) {
-        const serializationCode = getSchemaValidationCode("input", def as any);
+        const serializationCode = getSchemaSerializationCode(
+            "input",
+            def as any,
+        );
         content = `export type ${typeName} = Record<string, ${subType.tsType}>;
 export const $$${typeName} = {
     parse(input: Record<any, any>): ${typeName} {
