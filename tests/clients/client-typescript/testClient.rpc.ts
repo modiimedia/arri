@@ -101,7 +101,7 @@ export const $$PostParams = {
     };
   },
   serialize(input: PostParams): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -142,7 +142,7 @@ export const $$Post = {
     };
   },
   serialize(input: Post): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 export type PostType = "text" | "image" | "video";
@@ -184,7 +184,7 @@ export const $$Author = {
     };
   },
   serialize(input: Author): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -203,7 +203,7 @@ export const $$PostListParams = {
     };
   },
   serialize(input: PostListParams): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -221,7 +221,7 @@ export const $$PostListResponse = {
     };
   },
   serialize(input: PostListResponse): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -237,7 +237,7 @@ export const $$UpdatePostParams = {
     };
   },
   serialize(input: UpdatePostParams): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 export interface UpdatePostParamsData {
@@ -259,7 +259,7 @@ export const $$UpdatePostParamsData = {
     };
   },
   serialize(input: UpdatePostParamsData): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -275,7 +275,7 @@ export const $$AnnotationId = {
     };
   },
   serialize(input: AnnotationId): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -302,7 +302,7 @@ export const $$Annotation = {
     };
   },
   serialize(input: Annotation): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 export interface AssociatedId {
@@ -317,7 +317,7 @@ export const $$AssociatedId = {
     };
   },
   serialize(input: AssociatedId): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 export type AnnotationAssociatedIdEntityType = "MOVIE_ID" | "SHOW_ID";
@@ -368,7 +368,7 @@ export const $$AnnotationBoxTypeRange = {
     };
   },
   serialize(input: AnnotationBoxTypeRange): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 
@@ -390,7 +390,7 @@ export const $$UpdateAnnotationParams = {
     };
   },
   serialize(input: UpdateAnnotationParams): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 export interface UpdateAnnotationData {
@@ -426,7 +426,7 @@ export const $$UpdateAnnotationData = {
     };
   },
   serialize(input: UpdateAnnotationData): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };
 export type UpdateAnnotationParamsDataAnnotationType = "ANNOTATION_BOUNDINGBOX";
@@ -462,6 +462,6 @@ export const $$UpdateAnnotationParamsDataBoxTypeRange = {
     };
   },
   serialize(input: UpdateAnnotationParamsDataBoxTypeRange): string {
-    return JSON.stringify(input);
+    return `${JSON.stringify(input)}`;
   },
 };

@@ -1,18 +1,19 @@
-import { type Type } from "jtd-utils";
+import {
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormType,
+    isSchemaFormValues,
+} from "jtd-utils";
 import { camelCase, snakeCase } from "scule";
 import {
     type AScalarSchema,
     type ASchema,
-    isAScalarSchema,
-    isAObjectSchema,
     type AObjectSchema,
-    isAStringEnumSchema,
     type AStringEnumSchema,
-    isAAraySchema,
     type AArraySchema,
-    isADiscriminatorSchema,
     type ADiscriminatorSchema,
-    isARecordSchema,
     type ARecordSchema,
 } from "../schemas";
 import { type TemplateInput } from "./common";
@@ -38,8 +39,8 @@ return \`${mainTemplate}\``;
 }
 
 function schemaTemplate(input: TemplateInput): string {
-    if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as Type) {
+    if (isSchemaFormType(input.schema)) {
+        switch (input.schema.type) {
             case "boolean":
                 return booleanTemplate(input);
             case "string": {
@@ -62,19 +63,19 @@ function schemaTemplate(input: TemplateInput): string {
                 return bigIntTemplate(input);
         }
     }
-    if (isAObjectSchema(input.schema)) {
+    if (isSchemaFormProperties(input.schema)) {
         return objectTemplate(input);
     }
-    if (isAStringEnumSchema(input.schema)) {
+    if (isSchemaFormEnum(input.schema)) {
         return stringEnumTemplate(input);
     }
-    if (isAAraySchema(input.schema)) {
+    if (isSchemaFormElements(input.schema)) {
         return arrayTemplate(input);
     }
-    if (isADiscriminatorSchema(input.schema)) {
+    if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
     }
-    if (isARecordSchema(input.schema)) {
+    if (isSchemaFormValues(input.schema)) {
         return recordTemplate(input);
     }
     return `\${JSON.stringify(${input.val})}`;

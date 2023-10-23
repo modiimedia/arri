@@ -29,7 +29,7 @@ describe("Model Creation", () => {
         );
         const result = tsTypeFromJtdSchema(
             "user",
-            User,
+            JSON.parse(JSON.stringify(User)),
             {
                 clientName: "TestClient",
                 outputFile: "",

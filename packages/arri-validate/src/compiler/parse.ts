@@ -1,6 +1,14 @@
-import { randomUUID } from "crypto";
-import { type Type } from "jtd-utils";
+import {
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormType,
+    isSchemaFormValues,
+    type SchemaFormValues,
+} from "jtd-utils";
 import { camelCase } from "scule";
+import { randomUUID } from "uncrypto";
 import {
     int16Max,
     int16Min,
@@ -17,10 +25,8 @@ import {
 } from "../lib/numberConstants";
 import {
     type AScalarSchema,
-    isAScalarSchema,
     type ASchema,
     isAObjectSchema,
-    isAStringEnumSchema,
     type AStringEnumSchema,
     type AObjectSchema,
     isAAraySchema,
@@ -100,8 +106,8 @@ export function createParsingTemplate(input: string, schema: ASchema): string {
 }
 
 export function schemaTemplate(input: TemplateInput): string {
-    if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as Type) {
+    if (isSchemaFormType(input.schema)) {
+        switch (input.schema.type) {
             case "boolean":
                 return booleanTemplate(input);
             case "string":
@@ -125,17 +131,20 @@ export function schemaTemplate(input: TemplateInput): string {
                 return intTemplate(input, uint8Min, uint8Max);
         }
     }
-    if (isAStringEnumSchema(input.schema)) {
+    if (isSchemaFormEnum(input.schema)) {
         return enumTemplate(input);
     }
-    if (isAObjectSchema(input.schema)) {
+    if (isSchemaFormProperties(input.schema)) {
         return objectTemplate(input);
     }
-    if (isAAraySchema(input.schema)) {
-        return arraySchema(input);
+    if (isSchemaFormElements(input.schema)) {
+        return arrayTemplate(input);
     }
-    if (isADiscriminatorSchema(input.schema)) {
-        return discriminatorSchema(input);
+    if (isSchemaFormValues(input.schema)) {
+        return recordTemplate(input);
+    }
+    if (isSchemaFormDiscriminator(input.schema)) {
+        return discriminatorTemplate(input);
     }
     return `${input.val}`;
 }
@@ -330,7 +339,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
     return mainTemplate;
 }
 
-export function arraySchema(input: TemplateInput<AArraySchema<any>>): string {
+export function arrayTemplate(input: TemplateInput<AArraySchema<any>>): string {
     const innerTemplate = schemaTemplate({
         val: `item`,
         targetVal: "itemResult",
@@ -394,7 +403,7 @@ export function recordSchema(input: TemplateInput<ARecordSchema<any>>): string {
     return mainTemplate;
 }
 
-export function discriminatorSchema(
+export function discriminatorTemplate(
     input: TemplateInput<ADiscriminatorSchema<any>>,
 ): string {
     const switchParts: string[] = [];
@@ -434,6 +443,37 @@ export function discriminatorSchema(
         $fallback("${input.instancePath}", "${
             input.schemaPath
         }", "Expected Object.");
+    }`;
+    if (input.schema.nullable) {
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${mainTemplate}
+        }`;
+    }
+    return mainTemplate;
+}
+
+function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
+    const innerTemplate = schemaTemplate({
+        val: `${input.val}[key]`,
+        targetVal: "parsedVal",
+        instancePath: `${input.instancePath}/[key]`,
+        schemaPath: `${input.schemaPath}/values`,
+        schema: input.schema.values,
+        subFunctionBodies: input.subFunctionBodies,
+        subFunctionNames: input.subFunctionNames,
+    });
+    const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
+        const innerResult = {};
+        for(const key of Object.keys(${input.val})) {
+            let parsedVal;
+            ${innerTemplate};
+            innerResult[key] = parsedVal;
+        }
+        ${input.targetVal} = innerResult;
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected object.");
     }`;
     if (input.schema.nullable) {
         return `if (${input.val} === null) {

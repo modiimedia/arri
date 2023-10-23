@@ -575,6 +575,26 @@ export const testSuites: Record<
             null,
         ],
     },
+    "record of int64s": {
+        schema: a.record(a.int64()),
+        goodInputs: [
+            {
+                a: BigInt("999999999"),
+                b: BigInt("-9999"),
+            },
+        ],
+        badInputs: [
+            {
+                a: 1,
+                b: BigInt("0"),
+            },
+            {
+                a: null,
+            },
+            null,
+            true,
+        ],
+    },
     "object with multiline strings": {
         schema: a.object({
             description: a.string(),

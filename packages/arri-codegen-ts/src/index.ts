@@ -214,6 +214,7 @@ export function tsServiceFromDefinition(
 interface AdditionalOptions {
     isOptional: boolean;
     existingTypeNames: string[];
+    logDef?: boolean;
 }
 
 interface TsProperty {
@@ -231,6 +232,9 @@ export function tsTypeFromJtdSchema(
     options: GeneratorOptions,
     additionalOptions: AdditionalOptions,
 ): TsProperty {
+    if (additionalOptions.logDef) {
+        console.log(def);
+    }
     if (isSchemaFormType(def)) {
         return tsScalarFromJtdSchema(nodePath, def, options, additionalOptions);
     }
