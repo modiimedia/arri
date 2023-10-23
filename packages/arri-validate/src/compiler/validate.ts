@@ -1,3 +1,4 @@
+import { type Type } from "jtd-utils";
 import {
     int16Max,
     int16Min,
@@ -27,7 +28,7 @@ import {
     isADiscriminatorSchema,
     type ADiscriminatorSchema,
 } from "../schemas";
-import { type Type, type TemplateInput } from "./common";
+import { type TemplateInput } from "./common";
 
 export function createValidationTemplate(
     inputName: string,

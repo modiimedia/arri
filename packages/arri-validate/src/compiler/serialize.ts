@@ -1,3 +1,4 @@
+import { type Type } from "jtd-utils";
 import { camelCase, snakeCase } from "scule";
 import {
     type AScalarSchema,
@@ -14,7 +15,7 @@ import {
     isARecordSchema,
     type ARecordSchema,
 } from "../schemas";
-import { type TemplateInput, type Type } from "./common";
+import { type TemplateInput } from "./common";
 
 export function createSerializationTemplate(
     inputName: string,
@@ -173,11 +174,8 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
 
     if (input.schema.nullable) {
         const fallback = input.instancePath.length ? "null" : '"null"';
-        const actualResult =
-            input.instancePath.length === 0 || allFieldsAreOptional
-                ? `\`${result}\``
-                : result;
-        return `\${typeof ${input.val} === 'object' && ${input.val} !== null ? ${actualResult} : ${fallback}}`;
+        const actualResult = result;
+        return `\${typeof ${input.val} === 'object' && ${input.val} !== null ? \`${actualResult}\` : ${fallback}}`;
     }
     return result;
 }

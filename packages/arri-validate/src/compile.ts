@@ -11,8 +11,8 @@ import {
     isAStringEnumSchema,
 } from "./_index";
 import { createParsingTemplate } from "./compiler/parse";
-import { createSerializationTemplate } from "./compiler/serialize";
-import { createValidationTemplate } from "./compiler/validate";
+import { createSerializationTemplate as getSchemaSerializationCode } from "./compiler/serialize";
+import { createValidationTemplate as getSchemaValidationCode } from "./compiler/validate";
 import {
     int16Max,
     int16Min,
@@ -27,6 +27,8 @@ import {
     uint8Max,
     uint8Min,
 } from "./lib/numberConstants";
+
+export { getSchemaSerializationCode, getSchemaValidationCode };
 
 export interface CompiledValidator<TSchema extends ASchema<any>> {
     /**
@@ -184,7 +186,7 @@ function compiledIntParser(
     });
 }
 
-function getCompiledParser<TSchema extends ASchema<any>>(
+export function getCompiledParser<TSchema extends ASchema<any>>(
     input: string,
     schema: TSchema,
 ): { fn: CompiledParser<TSchema>; code: string } {
@@ -472,8 +474,8 @@ function getCompiledParser<TSchema extends ASchema<any>>(
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
-    const serializeCode = createSerializationTemplate("input", schema);
-    const validateCode = createValidationTemplate("input", schema);
+    const serializeCode = getSchemaSerializationCode("input", schema);
+    const validateCode = getSchemaValidationCode("input", schema);
     const parse = getCompiledParser("input", schema);
     const serialize = new Function(
         "input",

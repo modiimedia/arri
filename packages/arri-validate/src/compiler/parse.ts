@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { type Type } from "jtd-utils";
 import { camelCase } from "scule";
 import {
     int16Max,
@@ -29,7 +30,7 @@ import {
     isADiscriminatorSchema,
     isARecordSchema,
 } from "../schemas";
-import { type Type, type TemplateInput } from "./common";
+import { type TemplateInput } from "./common";
 
 export function createParsingTemplate(input: string, schema: ASchema): string {
     const validationErrorName = `$ValidationError${camelCase(

@@ -183,7 +183,9 @@ export const $$UserPhoto = {
         };
     },
     serialize(input: UserPhoto): string {
-        return JSON.stringify(input);
+        return `{"url":"${input.url}","width":"${input.width}","height":"${
+            input.height
+        }","bytes":"${input.bytes.toString()}","nanoseconds":"${input.nanoseconds.toString()}"}`;
     },
 };
 

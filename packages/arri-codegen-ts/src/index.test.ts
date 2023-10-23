@@ -36,6 +36,7 @@ describe("Model Creation", () => {
             },
             { existingTypeNames: [], isOptional: false },
         );
+        const CompiledValidator = a.compile(User);
         expect(normalizeWhitespace(result.content)).toBe(
             normalizeWhitespace(`export interface User {
             id: string;
@@ -57,7 +58,7 @@ describe("Model Creation", () => {
                 };
             },
             serialize(input: User): string {
-                return JSON.stringify(input);
+                ${CompiledValidator.compiledCode.serialize}
             }
         }`),
         );
@@ -72,6 +73,7 @@ describe("Model Creation", () => {
             { id: "User" },
         );
         const PartialUser = a.partial(User, { id: "PartialUser" });
+        const UserValidator = a.compile(PartialUser);
         const result = tsTypeFromJtdSchema(
             "user",
             PartialUser,
@@ -99,7 +101,7 @@ describe("Model Creation", () => {
                 };
             },
             serialize(input: PartialUser): string {
-                return JSON.stringify(input);
+                ${UserValidator.compiledCode.serialize}
             }
         }`),
         );
