@@ -64,6 +64,9 @@ function coerce(input: unknown, options: ValidationData): Date | undefined {
     }
     return parse(input, options);
 }
-function serialize(input: Date): string {
-    return input.toISOString();
+function serialize(input: Date, data: ValidationData): string {
+    if (data.instancePath.length === 0) {
+        return input.toISOString();
+    }
+    return `"${input.toISOString()}"`;
 }

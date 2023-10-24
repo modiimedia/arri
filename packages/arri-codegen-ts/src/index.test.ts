@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { normalizeWhitespace } from "arri-codegen-utils";
 import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
-import { a } from "packages/arri-validate/dist";
+import { a } from "arri-validate";
 import path from "pathe";
 import prettier from "prettier";
 import { createTypescriptClient, tsTypeFromJtdSchema } from "./index";
@@ -29,13 +29,14 @@ describe("Model Creation", () => {
         );
         const result = tsTypeFromJtdSchema(
             "user",
-            User,
+            JSON.parse(JSON.stringify(User)),
             {
                 clientName: "TestClient",
                 outputFile: "",
             },
             { existingTypeNames: [], isOptional: false },
         );
+        const CompiledValidator = a.compile(User);
         expect(normalizeWhitespace(result.content)).toBe(
             normalizeWhitespace(`export interface User {
             id: string;
@@ -57,7 +58,7 @@ describe("Model Creation", () => {
                 };
             },
             serialize(input: User): string {
-                return JSON.stringify(input);
+                ${CompiledValidator.compiledCode.serialize}
             }
         }`),
         );
@@ -72,6 +73,7 @@ describe("Model Creation", () => {
             { id: "User" },
         );
         const PartialUser = a.partial(User, { id: "PartialUser" });
+        const UserValidator = a.compile(PartialUser);
         const result = tsTypeFromJtdSchema(
             "user",
             PartialUser,
@@ -99,7 +101,7 @@ describe("Model Creation", () => {
                 };
             },
             serialize(input: PartialUser): string {
-                return JSON.stringify(input);
+                ${UserValidator.compiledCode.serialize}
             }
         }`),
         );

@@ -16,14 +16,10 @@ import {
  * a.validate(Schema, "B") // true
  * a.validate(Schema, "C") // false
  */
-export function stringEnum<
-    TKeys extends string,
-    TValues extends TKeys[],
-    TNullable extends boolean = false,
->(
+export function stringEnum<TKeys extends string, TValues extends TKeys[]>(
     values: TValues,
     opts: ASchemaOptions = {},
-): AStringEnumSchema<TValues, TNullable> {
+): AStringEnumSchema<TValues> {
     const isType = (input: unknown): input is TKeys => {
         if (typeof input !== "string") {
             return false;
@@ -69,7 +65,12 @@ export function stringEnum<
                     return undefined;
                 },
                 validate: isType,
-                serialize: (input) => input?.toString() ?? "null",
+                serialize(input, data) {
+                    if (data.instancePath.length === 0) {
+                        return input;
+                    }
+                    return `"${input}"`;
+                },
             },
         },
     };

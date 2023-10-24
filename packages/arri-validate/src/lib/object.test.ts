@@ -230,6 +230,50 @@ describe("a.object()", () => {
             }),
         );
     });
+    it("serializes a simple object", () => {
+        const SimpleObject = a.object({
+            limit: a.number(),
+            isActive: a.boolean(),
+            createdAt: a.timestamp(),
+            name: a.string(),
+        });
+        type SimpleObject = a.infer<typeof SimpleObject>;
+        const input: SimpleObject = {
+            limit: 1,
+            isActive: true,
+            createdAt: new Date(),
+            name: "John Doe",
+        };
+        const result = a.serialize(SimpleObject, input);
+        expect(a.parse(SimpleObject, result)).toStrictEqual(input);
+        JSON.parse(result);
+    });
+    it("serializes nested object", () => {
+        const NestedObject = a.object({
+            limit: a.number(),
+            isActive: a.boolean(),
+            date: a.timestamp(),
+            nestedObject: a.object({
+                name: a.string(),
+                enum: a.stringEnum(["A", "B"]),
+                date: a.timestamp(),
+            }),
+        });
+        type NestedObject = a.infer<typeof NestedObject>;
+        const input: NestedObject = {
+            limit: 0,
+            isActive: false,
+            date: new Date(),
+            nestedObject: {
+                name: "",
+                enum: "A",
+                date: new Date(),
+            },
+        };
+        const result = a.serialize(NestedObject, input);
+        JSON.parse(result);
+        expect(a.parse(NestedObject, result)).toStrictEqual(input);
+    });
 });
 
 describe("a.object() -> Coersion", () => {

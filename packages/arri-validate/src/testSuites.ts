@@ -120,6 +120,20 @@ export const testSuites: Record<
         goodInputs: [1351.5, -1151.315, null],
         badInputs: ["hello world", true],
     },
+    int64: {
+        schema: a.int64(),
+        goodInputs: [
+            BigInt("1"),
+            BigInt("9223372036854775807"),
+            BigInt("-9223372036854775808"),
+        ],
+        badInputs: [
+            BigInt("9223372036854775808"),
+            BigInt("-9223372036854775809"),
+            null,
+            {},
+        ],
+    },
     int32: {
         schema: a.int32(),
         goodInputs: [491451, -13411],
@@ -431,6 +445,20 @@ export const testSuites: Record<
         goodInputs: [[1, 2, 3.5], [-1, -100, 100.5], []],
         badInputs: [["hello world"], null, false, true, [true]],
     },
+    "array of objects": {
+        schema: a.array(
+            a.object({
+                a: a.string(),
+                b: a.timestamp(),
+                c: a.object({
+                    a: a.string(),
+                    b: a.uint64(),
+                }),
+            }),
+        ),
+        goodInputs: [[{ a: "", b: new Date(), c: { a: "", b: BigInt("0") } }]],
+        badInputs: [[null, {}]],
+    },
     discriminator: {
         schema: a.discriminator("type", {
             CREATED: a.object({
@@ -482,6 +510,91 @@ export const testSuites: Record<
             [true],
         ],
     },
+    "record with objects": {
+        schema: a.record(
+            a.object({
+                name: a.string(),
+                count: a.number(),
+                date: a.timestamp(),
+                subObject: a.object({
+                    a: a.string(),
+                }),
+            }),
+        ),
+        goodInputs: [
+            {
+                a: {
+                    name: "",
+                    count: 1,
+                    date: new Date(),
+                    subObject: {
+                        a: "",
+                    },
+                },
+                b: {
+                    name: "John",
+                    count: 100.5,
+                    date: new Date(),
+                    subObject: {
+                        a: "",
+                    },
+                },
+            },
+        ],
+        badInputs: [
+            {},
+            null,
+            {
+                a: {
+                    name: "",
+                    count: null,
+                    date: new Date(),
+                    subObject: {
+                        a: "",
+                    },
+                },
+            },
+        ],
+    },
+    "record with nullable objects": {
+        schema: a.record(
+            a.nullable(
+                a.object({
+                    id: a.string(),
+                    url: a.string(),
+                }),
+            ),
+        ),
+        goodInputs: [
+            { a: { id: "", url: "" }, b: { id: "", url: "" } },
+            { a: null, b: { id: "", url: "" } },
+        ],
+        badInputs: [
+            { a: { id: 1, url: "" }, b: { id: "", url: "" } },
+            true,
+            null,
+        ],
+    },
+    "record of int64s": {
+        schema: a.record(a.int64()),
+        goodInputs: [
+            {
+                a: BigInt("999999999"),
+                b: BigInt("-9999"),
+            },
+        ],
+        badInputs: [
+            {
+                a: 1,
+                b: BigInt("0"),
+            },
+            {
+                a: null,
+            },
+            null,
+            true,
+        ],
+    },
     "object with multiline strings": {
         schema: a.object({
             description: a.string(),
@@ -513,6 +626,29 @@ export const testSuites: Record<
             { id: 1, data: true },
             { id: "1", data: { name: "", createdAt: 1 } },
             { id: "", data: { name: "" } },
+        ],
+    },
+    "object with int64 and uint64": {
+        schema: a.object({
+            id: a.string(),
+            count: a.uint64(),
+            limit: a.int64(),
+        }),
+        goodInputs: [
+            {
+                id: "1",
+                count: BigInt("10000"),
+                limit: BigInt("-1000"),
+            },
+        ],
+        badInputs: [
+            {
+                id: "1",
+                count: 0,
+                limit: 0,
+            },
+            null,
+            { id: "1" },
         ],
     },
 };

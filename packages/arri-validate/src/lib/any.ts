@@ -13,7 +13,9 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
                 parse: (input, _) => input,
                 coerce: (input, _) => input,
                 validate: (input): input is any => true,
-                serialize: JSON.stringify,
+                serialize(input) {
+                    return JSON.stringify(input);
+                },
             },
         },
     };

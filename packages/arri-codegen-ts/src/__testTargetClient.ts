@@ -95,7 +95,7 @@ export const $$GetStatusResponse = {
         };
     },
     serialize(input: GetStatusResponse): string {
-        return JSON.stringify(input);
+        return `{"message":"${input.message.replace(/[\n]/g, "\\n")}"}`;
     },
 };
 
@@ -139,7 +139,74 @@ export const $$User = {
         };
     },
     serialize(input: User): string {
-        return JSON.stringify(input);
+        // @ts-ignore
+        function _recent_notifications_0_to_json(val) {
+            switch (val.notificationType) {
+                case "POST_LIKE":
+                    return `{"postId":"${val.postId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","userId":"${val.userId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","notificationType":"${val.notificationType}"}`;
+                case "POST_COMMENT":
+                    return `{"postId":"${val.postId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","userId":"${val.userId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","commentText":"${val.commentText.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","notificationType":"${val.notificationType}"}`;
+                default:
+                    return null;
+            }
+        }
+        // @ts-ignore
+        function bookmarks(val) {
+            const keyParts = [];
+            const keys = Object.keys(val);
+            for (let i = 0; i < Object.keys(val).length; i++) {
+                const key = keys[i];
+                const v = val[key];
+                keyParts.push(
+                    `"${key}":{"postId":"${v.postId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","userId":"${v.userId.replace(/[\n]/g, "\\n")}"}`,
+                );
+            }
+            return `{${keyParts.join(",")}}`;
+        }
+        return `{${
+            input.bio !== undefined
+                ? `"bio":"${input.bio.replace(/[\n]/g, "\\n")}",`
+                : ""
+        }"id":"${input.id.replace(/[\n]/g, "\\n")}","role":"${
+            input.role
+        }","photo":${
+            typeof input.photo === "object" && input.photo !== null
+                ? `{"url":"${input.photo.url.replace(
+                      /[\n]/g,
+                      "\\n",
+                  )}","width":${input.photo.width},"height":${
+                      input.photo.height
+                  },"bytes":"${input.photo.bytes.toString()}","nanoseconds":"${input.photo.nanoseconds.toString()}"}`
+                : null
+        },"createdAt":"${input.createdAt.toISOString()}","numFollowers":${
+            input.numFollowers
+        },"settings":{"notificationsEnabled":${
+            input.settings.notificationsEnabled
+        },"preferredTheme":"${
+            input.settings.preferredTheme
+        }"},"recentNotifications":[${input.recentNotifications
+            .map((item) => {
+                return `${_recent_notifications_0_to_json(item)}`;
+            })
+            .join(",")}],"bookmarks":${bookmarks(input.bookmarks)}}`;
     },
 };
 
@@ -163,6 +230,8 @@ export interface UserPhoto {
     url: string;
     width: number;
     height: number;
+    bytes: bigint;
+    nanoseconds: bigint;
 }
 export const $$UserPhoto = {
     parse(input: Record<any, any>): UserPhoto {
@@ -170,10 +239,26 @@ export const $$UserPhoto = {
             url: typeof input.url === "string" ? input.url : "",
             width: typeof input.width === "number" ? input.width : 0,
             height: typeof input.height === "number" ? input.height : 0,
+            bytes:
+                typeof input.bytes === "string"
+                    ? BigInt(input.bytes)
+                    : BigInt("0"),
+            nanoseconds:
+                typeof input.nanoseconds === "string"
+                    ? BigInt(input.nanoseconds)
+                    : BigInt("0"),
         };
     },
     serialize(input: UserPhoto): string {
-        return JSON.stringify(input);
+        return `${
+            typeof input === "object" && input !== null
+                ? `{"url":"${input.url.replace(/[\n]/g, "\\n")}","width":${
+                      input.width
+                  },"height":${
+                      input.height
+                  },"bytes":"${input.bytes.toString()}","nanoseconds":"${input.nanoseconds.toString()}"}`
+                : "null"
+        }`;
     },
 };
 
@@ -194,7 +279,7 @@ export const $$UserSettings = {
         };
     },
     serialize(input: UserSettings): string {
-        return JSON.stringify(input);
+        return `{"notificationsEnabled":${input.notificationsEnabled},"preferredTheme":"${input.preferredTheme}"}`;
     },
 };
 
@@ -231,7 +316,33 @@ export const $$UserRecentNotificationsItem = {
         );
     },
     serialize(input: UserRecentNotificationsItem): string {
-        return JSON.stringify(input);
+        // @ts-ignore
+        function _to_json(val) {
+            switch (val.notificationType) {
+                case "POST_LIKE":
+                    return `{"postId":"${val.postId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","userId":"${val.userId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","notificationType":"${val.notificationType}"}`;
+                case "POST_COMMENT":
+                    return `{"postId":"${val.postId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","userId":"${val.userId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","commentText":"${val.commentText.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","notificationType":"${val.notificationType}"}`;
+                default:
+                    return null;
+            }
+        }
+        return `${_to_json(input)}`;
     },
 };
 export interface UserRecentNotificationsItemPostLike {
@@ -248,7 +359,10 @@ export const $$UserRecentNotificationsItemPostLike = {
         };
     },
     serialize(input: UserRecentNotificationsItemPostLike): string {
-        return JSON.stringify(input);
+        return `{"postId":"${input.postId.replace(
+            /[\n]/g,
+            "\\n",
+        )}","userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
     },
 };
 
@@ -269,7 +383,13 @@ export const $$UserRecentNotificationsItemPostComment = {
         };
     },
     serialize(input: UserRecentNotificationsItemPostComment): string {
-        return JSON.stringify(input);
+        return `{"postId":"${input.postId.replace(
+            /[\n]/g,
+            "\\n",
+        )}","userId":"${input.userId.replace(
+            /[\n]/g,
+            "\\n",
+        )}","commentText":"${input.commentText.replace(/[\n]/g, "\\n")}"}`;
     },
 };
 
@@ -283,7 +403,23 @@ export const $$UserBookmarks = {
         return result;
     },
     serialize(input: UserBookmarks): string {
-        return JSON.stringify(input);
+        // @ts-ignore
+        function serializeVal(val) {
+            const keyParts = [];
+            const keys = Object.keys(val);
+            for (let i = 0; i < Object.keys(val).length; i++) {
+                const key = keys[i];
+                const v = val[key];
+                keyParts.push(
+                    `"${key}":{"postId":"${v.postId.replace(
+                        /[\n]/g,
+                        "\\n",
+                    )}","userId":"${v.userId.replace(/[\n]/g, "\\n")}"}`,
+                );
+            }
+            return `{${keyParts.join(",")}}`;
+        }
+        return `${serializeVal(input)}`;
     },
 };
 
@@ -299,7 +435,10 @@ export const $$UserBookmarksValue = {
         };
     },
     serialize(input: UserBookmarksValue): string {
-        return JSON.stringify(input);
+        return `{"postId":"${input.postId.replace(
+            /[\n]/g,
+            "\\n",
+        )}","userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
     },
 };
 
@@ -313,7 +452,7 @@ export const $$UserParams = {
         };
     },
     serialize(input: UserParams): string {
-        return JSON.stringify(input);
+        return `{"userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
     },
 };
 
@@ -334,6 +473,19 @@ export const $$UpdateUserParams = {
         };
     },
     serialize(input: UpdateUserParams): string {
-        return JSON.stringify(input);
+        return `{${
+            input.bio !== undefined
+                ? `"bio":"${input.bio.replace(/[\n]/g, "\\n")}",`
+                : ""
+        }"id":"${input.id.replace(/[\n]/g, "\\n")}","photo":${
+            typeof input.photo === "object" && input.photo !== null
+                ? `{"url":"${input.photo.url.replace(
+                      /[\n]/g,
+                      "\\n",
+                  )}","width":${input.photo.width},"height":${
+                      input.photo.height
+                  },"bytes":"${input.photo.bytes.toString()}","nanoseconds":"${input.photo.nanoseconds.toString()}"}`
+                : null
+        }}`;
     },
 };

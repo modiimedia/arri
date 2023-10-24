@@ -1,7 +1,6 @@
 import {
     type AScalarSchema,
     type ASchemaOptions,
-    type MaybeNullable,
     SCHEMA_METADATA,
     type ValidationData,
 } from "../schemas";
@@ -12,9 +11,9 @@ import {
  * a.validate(Schema, true) // true;
  * a.validate(Schema, false) // true;
  */
-export function boolean<TNullable extends boolean = false>(
+export function boolean(
     opts: ASchemaOptions = {},
-): AScalarSchema<"boolean", MaybeNullable<boolean, TNullable>> {
+): AScalarSchema<"boolean", boolean> {
     return {
         type: "boolean",
         metadata: {
@@ -84,6 +83,6 @@ function parse(input: unknown, data: ValidationData): boolean | undefined {
     });
     return undefined;
 }
-function serialize(input: boolean | null) {
+function serialize(input: boolean) {
     return `${input}`;
 }

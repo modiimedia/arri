@@ -111,3 +111,34 @@ test("unauthorized route request", async () => {
         }
     }
 });
+
+describe("bigint requests", () => {
+    test("get request", async () => {
+        const result = await client.videos.getAnnotation({
+            id: "100",
+            version: "1",
+        });
+        expect(result.annotation_id.id).toBe("100");
+        expect(result.annotation_id.version).toBe("1");
+    });
+    test("post request", async () => {
+        const result = await client.videos.updateAnnotation({
+            annotation_id: "12345",
+            annotation_id_version: "2",
+            data: {
+                box_type_range: {
+                    start_time_in_nano_sec: BigInt("123456789"),
+                    end_time_in_nano_sec: BigInt("1234567890"),
+                },
+            },
+        });
+        expect(result.annotation_id.id).toBe("12345");
+        expect(result.annotation_id.version).toBe("2");
+        expect(result.box_type_range.start_time_in_nano_sec).toBe(
+            BigInt("123456789"),
+        );
+        expect(result.box_type_range.end_time_in_nano_sec).toBe(
+            BigInt("1234567890"),
+        );
+    });
+});

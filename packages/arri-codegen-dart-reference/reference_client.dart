@@ -235,16 +235,22 @@ class UserPhoto {
   final String url;
   final double width;
   final double height;
+  final BigInt bytes;
+  final BigInt nanoseconds;
   const UserPhoto({
     required this.url,
     required this.width,
     required this.height,
+    required this.bytes,
+    required this.nanoseconds,
   });
   factory UserPhoto.fromJson(Map<String, dynamic> json) {
     return UserPhoto(
       url: typeFromDynamic<String>(json["url"], ""),
       width: doubleFromDynamic(json["width"], 0),
       height: doubleFromDynamic(json["height"], 0),
+      bytes: bigIntFromDynamic(json["bytes"], BigInt.zero),
+      nanoseconds: bigIntFromDynamic(json["nanoseconds"], BigInt.zero),
     );
   }
 
@@ -253,6 +259,8 @@ class UserPhoto {
       "url": url,
       "width": width,
       "height": height,
+      "bytes": bytes.toString(),
+      "nanoseconds": nanoseconds.toString(),
     };
     return result;
   }
@@ -261,11 +269,15 @@ class UserPhoto {
     String? url,
     double? width,
     double? height,
+    BigInt? bytes,
+    BigInt? nanoseconds,
   }) {
     return UserPhoto(
       url: url ?? this.url,
       width: width ?? this.width,
       height: height ?? this.height,
+      bytes: bytes ?? this.bytes,
+      nanoseconds: nanoseconds ?? this.nanoseconds,
     );
   }
 }

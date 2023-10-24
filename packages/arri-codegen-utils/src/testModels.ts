@@ -16,6 +16,8 @@ export const TestUserPhotoSchema = a.object(
         url: a.string(),
         width: a.number(),
         height: a.number(),
+        bytes: a.int64(),
+        nanoseconds: a.uint64(),
     },
     { id: "UserPhoto" },
 );

@@ -10,12 +10,13 @@ for (const key of Object.keys(testSuites)) {
         for (const input of suite.goodInputs) {
             expect(isEqual(Compiled.parse(input), input));
             if (typeof input === "object") {
-                expect(isEqual(Compiled.parse(JSON.stringify(input)), input));
+                expect(
+                    isEqual(Compiled.parse(Compiled.serialize(input)), input),
+                );
             }
         }
         for (const input of suite.badInputs) {
             expect(!Compiled.safeParse(input).success);
-            expect(!Compiled.safeParse(JSON.stringify(input)).success);
             expect(!a.safeParse(suite.schema, input).success);
         }
     });

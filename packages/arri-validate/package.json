@@ -5,11 +5,17 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "dependencies": {
-        "@modii/jtd": "^0.2.1",
         "ajv": "^8.12.0",
-        "scule": "^1.0.0"
+        "jtd-utils": "workspace:*",
+        "scule": "^1.0.0",
+        "uncrypto": "^0.1.3"
     },
-    "devDependencies": { "@faker-js/faker": "^8.2.0", "benny": "^3.7.1" }
+    "devDependencies": {
+        "@faker-js/faker": "^8.2.0",
+        "benny": "^3.7.1"
+    }
 }

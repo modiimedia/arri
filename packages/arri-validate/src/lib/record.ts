@@ -56,7 +56,22 @@ export function record<TInnerSchema extends ASchema<any>>(
                 coerce(input: unknown, data) {
                     return parse(schema, input, data, true);
                 },
-                serialize: (input) => JSON.stringify(input),
+                serialize(input, data) {
+                    const strParts: string[] = [];
+                    for (const key of Object.keys(input)) {
+                        const val = input[key];
+                        strParts.push(
+                            `"${key}":${schema.metadata[
+                                SCHEMA_METADATA
+                            ].serialize(val, {
+                                instancePath: `${data.instancePath}/${key}`,
+                                schemaPath: `${data.schemaPath}/values`,
+                                errors: data.errors,
+                            })}`,
+                        );
+                    }
+                    return `{${strParts.join(",")}}`;
+                },
             },
         },
     };

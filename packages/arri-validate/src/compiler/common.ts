@@ -1,6 +1,6 @@
-import { type ASchema } from "../schemas";
+import type { Schema } from "jtd-utils";
 
-export interface TemplateInput<TSchema extends ASchema<any> = any> {
+export interface TemplateInput<TSchema extends Schema = any> {
     val: string;
     targetVal: string;
     schema: TSchema;

@@ -1,18 +1,19 @@
-import { type Type } from "@modii/jtd";
+import {
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormType,
+    isSchemaFormValues,
+} from "jtd-utils";
 import { camelCase, snakeCase } from "scule";
 import {
     type AScalarSchema,
     type ASchema,
-    isAScalarSchema,
-    isAObjectSchema,
     type AObjectSchema,
-    isAStringEnumSchema,
     type AStringEnumSchema,
-    isAAraySchema,
     type AArraySchema,
-    isADiscriminatorSchema,
     type ADiscriminatorSchema,
-    isARecordSchema,
     type ARecordSchema,
 } from "../schemas";
 import { type TemplateInput } from "./common";
@@ -25,6 +26,7 @@ export function createSerializationTemplate(
     const subFunctionBodies: string[] = [];
     const mainTemplate = schemaTemplate({
         val: inputName,
+        targetVal: "",
         schema,
         instancePath: "",
         schemaPath: "",
@@ -37,8 +39,8 @@ return \`${mainTemplate}\``;
 }
 
 function schemaTemplate(input: TemplateInput): string {
-    if (isAScalarSchema(input.schema)) {
-        switch (input.schema.type as Type) {
+    if (isSchemaFormType(input.schema)) {
+        switch (input.schema.type) {
             case "boolean":
                 return booleanTemplate(input);
             case "string": {
@@ -56,21 +58,24 @@ function schemaTemplate(input: TemplateInput): string {
             case "uint32":
             case "uint8":
                 return numberTemplate(input);
+            case "int64":
+            case "uint64":
+                return bigIntTemplate(input);
         }
     }
-    if (isAObjectSchema(input.schema)) {
+    if (isSchemaFormProperties(input.schema)) {
         return objectTemplate(input);
     }
-    if (isAStringEnumSchema(input.schema)) {
+    if (isSchemaFormEnum(input.schema)) {
         return stringEnumTemplate(input);
     }
-    if (isAAraySchema(input.schema)) {
+    if (isSchemaFormElements(input.schema)) {
         return arrayTemplate(input);
     }
-    if (isADiscriminatorSchema(input.schema)) {
+    if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
     }
-    if (isARecordSchema(input.schema)) {
+    if (isSchemaFormValues(input.schema)) {
         return recordTemplate(input);
     }
     return `\${JSON.stringify(${input.val})}`;
@@ -110,6 +115,16 @@ function numberTemplate(input: TemplateInput<AScalarSchema>) {
     return `\${${input.val}}`;
 }
 
+function bigIntTemplate(input: TemplateInput<AScalarSchema>) {
+    const mainTemplate = input.instancePath.length
+        ? `"\${${input.val}.toString()}"`
+        : `\${${input.val}.toString()}`;
+    if (input.schema.nullable) {
+        return `\${typeof ${input.val} === 'bigint' ? \`${mainTemplate}\` : null}`;
+    }
+    return mainTemplate;
+}
+
 function objectTemplate(input: TemplateInput<AObjectSchema>) {
     const fieldParts: string[] = [];
     if (input.schema.optionalProperties) {
@@ -118,6 +133,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
             const val = `${input.val}.${key}`;
             const template = schemaTemplate({
                 val,
+                targetVal: "",
                 schema: propSchema,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
@@ -133,6 +149,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
         const propSchema = input.schema.properties[key];
         const template = schemaTemplate({
             val: `${input.val}.${key}`,
+            targetVal: "",
             schema: propSchema,
             schemaPath: `${input.schemaPath}/properties/${key}`,
             instancePath: `${input.instancePath}/${key}`,
@@ -140,6 +157,11 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
             subFunctionNames: input.subFunctionNames,
         });
         fieldParts.push(`"${key}":${template},`);
+    }
+    if (input.discriminatorKey && input.discriminatorValue) {
+        fieldParts.push(
+            `"${input.discriminatorKey}":"\${${input.discriminatorValue}}",`,
+        );
     }
     const allFieldsAreOptional =
         Object.keys(input.schema.properties).length === 0;
@@ -153,11 +175,8 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
 
     if (input.schema.nullable) {
         const fallback = input.instancePath.length ? "null" : '"null"';
-        const actualResult =
-            input.instancePath.length === 0 || allFieldsAreOptional
-                ? `\`${result}\``
-                : result;
-        return `\${typeof ${input.val} === 'object' && ${input.val} !== null ? ${actualResult} : ${fallback}}`;
+        const actualResult = result;
+        return `\${typeof ${input.val} === 'object' && ${input.val} !== null ? \`${actualResult}\` : ${fallback}}`;
     }
     return result;
 }
@@ -175,17 +194,18 @@ function stringEnumTemplate(input: TemplateInput<AStringEnumSchema<any>>) {
 function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     const subTemplate = schemaTemplate({
         val: "item",
+        targetVal: "",
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
-        instancePath: `${input.instancePath}/item`,
+        instancePath: `${input.instancePath}/0`,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
     const nullFallback = input.instancePath.length === 0 ? '"null"' : "null";
     if (input.schema.nullable) {
-        return `\${Array.isArray(${input.val}) ? \`[\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}]\` : ${nullFallback}}`;
+        return `\${Array.isArray(${input.val}) ? \`[\${${input.val}.map((item) => {return \`${subTemplate}\`}).join(",")}]\` : ${nullFallback}}`;
     }
-    return `[\${${input.val}.map((item) => \`${subTemplate}\`).join(",")}]`;
+    return `[\${${input.val}.map((item) => {return \`${subTemplate}\`}).join(",")}]`;
 }
 
 function discriminatorTemplate(
@@ -200,10 +220,12 @@ function discriminatorTemplate(
         const prop = input.schema.mapping[type];
         const template = schemaTemplate({
             val: "val",
+            targetVal: "",
             schema: prop,
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
             discriminatorKey: input.schema.discriminator,
+            discriminatorValue: `val.${input.schema.discriminator}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
         });
@@ -211,7 +233,8 @@ function discriminatorTemplate(
   return \`${template}\`;
 `);
     }
-    const subFunction = `function ${subFunctionName}(val) {
+    const subFunction = `// @ts-ignore
+    function ${subFunctionName}(val) {
             switch(val.${input.schema.discriminator}) {
                 ${subFunctionParts.join("\n")}
                 default:
@@ -238,6 +261,7 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
 
     const subTemplate = schemaTemplate({
         val: "v",
+        targetVal: "",
         schema: input.schema.values,
         schemaPath: `${input.schemaPath}/values`,
         instancePath: `${input.instancePath}`,
@@ -245,7 +269,8 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
         subFunctionBodies: [],
     });
 
-    const subFunction = `function ${subFunctionName}(val) {
+    const subFunction = `// @ts-ignore
+    function ${subFunctionName}(val) {
         const keyParts = []
         const keys = Object.keys(val);
         for(let i = 0; i < Object.keys(val).length; i++) {

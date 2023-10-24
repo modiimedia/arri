@@ -15,3 +15,9 @@ export const int32Max = 2147483647;
 
 export const uint32Min = 0;
 export const uint32Max = 4294967295;
+
+export const int64Min = BigInt("-9223372036854775808");
+export const int64Max = BigInt("9223372036854775807");
+
+export const uint64Min = BigInt("0");
+export const uint64Max = BigInt("18446744073709551615");

@@ -1,12 +1,12 @@
 import {
     type Type as JtdType,
-    isDiscriminatorForm,
-    isElementsForm,
-    isEnumForm,
-    isPropertiesForm,
-    isTypeForm,
-    isValuesForm,
-} from "@modii/jtd";
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormValues,
+    TypeValues,
+} from "jtd-utils";
 import { type ValueError } from "./lib/validation";
 
 export const SCHEMA_METADATA = Symbol.for("arri.schema_metadata");
@@ -29,7 +29,7 @@ export interface SchemaValidator<T> {
     optional?: boolean;
     parse: (input: unknown, data: ValidationData) => T | undefined;
     coerce: (input: unknown, data: ValidationData) => T | undefined;
-    serialize: (input: T) => string;
+    serialize: (input: T, data: ValidationData) => string;
     validate: (input: unknown) => input is T;
 }
 
@@ -80,62 +80,32 @@ export type InferType<TInput extends ASchema<any>> = Resolve<
 >;
 
 // basic types
-export interface AScalarSchema<T extends JtdType = any, TVal = any>
+export interface AScalarSchema<T extends JtdType | NumberType = any, TVal = any>
     extends ASchema<TVal> {
     type: T;
 }
 export function isAScalarSchema(input: unknown): input is AScalarSchema {
-    return isASchema(input) && isTypeForm(input);
+    return (
+        isASchema(input) &&
+        "type" in input &&
+        (TypeValues.includes(input.type as any) ||
+            NumberTypeValues.includes(input.type as any))
+    );
 }
 
 export const NumberTypeValues = [
     "float32",
     "float64",
+    "int8",
     "int16",
     "int32",
-    "int8",
+    "int64",
+    "uint8",
     "uint16",
     "uint32",
-    "uint8",
+    "uint64",
 ] as const;
 export type NumberType = (typeof NumberTypeValues)[number];
-export const NumberValidationMap: Record<
-    NumberType,
-    { min?: number; max?: number }
-> = {
-    float32: {
-        min: undefined,
-        max: undefined,
-    },
-    float64: {
-        min: undefined,
-        max: undefined,
-    },
-    int8: {
-        min: undefined,
-        max: undefined,
-    },
-    uint8: {
-        min: undefined,
-        max: undefined,
-    },
-    int16: {
-        min: undefined,
-        max: undefined,
-    },
-    uint16: {
-        min: undefined,
-        max: undefined,
-    },
-    int32: {
-        min: undefined,
-        max: undefined,
-    },
-    uint32: {
-        min: undefined,
-        max: undefined,
-    },
-};
 
 // arrays
 export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
@@ -143,20 +113,18 @@ export interface AArraySchema<TInnerSchema extends ASchema<any> = any>
     elements: TInnerSchema;
 }
 export function isAAraySchema(input: unknown): input is AArraySchema {
-    return isASchema(input) && isElementsForm(input);
+    return isASchema(input) && isSchemaFormElements(input);
 }
 
 // string enums
-export interface AStringEnumSchema<
-    TValues extends string[],
-    TNullable extends boolean = false,
-> extends ASchema<MaybeNullable<TValues[number], TNullable>> {
+export interface AStringEnumSchema<TValues extends string[]>
+    extends ASchema<TValues[number]> {
     enum: TValues;
 }
 export function isAStringEnumSchema(
     input: unknown,
-): input is AStringEnumSchema<any, any> {
-    return isASchema(input) && isEnumForm(input);
+): input is AStringEnumSchema<any> {
+    return isASchema(input) && isSchemaFormEnum(input);
 }
 
 // discriminators
@@ -167,7 +135,7 @@ export interface ADiscriminatorSchema<T> extends ASchema<T> {
 export function isADiscriminatorSchema(
     input: unknown,
 ): input is ADiscriminatorSchema<any> {
-    return isASchema(input) && isDiscriminatorForm(input);
+    return isASchema(input) && isSchemaFormDiscriminator(input);
 }
 
 // records
@@ -182,7 +150,7 @@ export interface ARecordSchema<
 export function isARecordSchema(
     input: unknown,
 ): input is ARecordSchema<any, any> {
-    return isASchema(input) && isValuesForm(input);
+    return isASchema(input) && isSchemaFormValues(input);
 }
 
 // object types
@@ -195,7 +163,7 @@ export interface AObjectSchema<
     additionalProperties?: TAllowAdditionalProperties;
 }
 export function isAObjectSchema(input: unknown): input is AObjectSchema {
-    return isASchema(input) && isPropertiesForm(input);
+    return isASchema(input) && isSchemaFormProperties(input);
 }
 
 export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>

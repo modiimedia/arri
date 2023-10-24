@@ -1,16 +1,15 @@
 {
-    "name": "arri-codegen-kotlin",
+    "name": "jtd-utils",
     "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri",
-        "directory": "packages/arri-codegen-kotlin"
+        "directory": "packages/jtd-utils"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "files": [
         "dist"
-    ],
-    "version": "0.1.4"
+    ]
 }

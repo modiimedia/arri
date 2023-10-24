@@ -4,10 +4,11 @@ import { testSuites } from "../testSuites";
 
 for (const key of Object.keys(testSuites)) {
     const suite = testSuites[key];
+    const Compiled = compile(suite.schema);
     for (const input of suite.goodInputs) {
         test(key, () => {
-            const Compiled = compile(suite.schema);
             const result = Compiled.serialize(input);
+            expect(typeof result === "string");
             if (
                 !isAScalarSchema(suite.schema) &&
                 !isAStringEnumSchema(suite.schema)

@@ -1,4 +1,4 @@
-import { type Type } from "@modii/jtd";
+import { type Type } from "jtd-utils";
 import {
     int16Max,
     int16Min,
@@ -38,6 +38,7 @@ export function createValidationTemplate(
     const subFunctionBodies: string[] = [];
     const template = schemaTemplate({
         val: inputName,
+        targetVal: "",
         schema,
         schemaPath: ``,
         instancePath: "",
@@ -69,6 +70,10 @@ function schemaTemplate(input: TemplateInput): string {
                 return intTemplate(input, uint16Min, uint16Max);
             case "uint32":
                 return intTemplate(input, uint32Min, uint32Max);
+            case "int64":
+                return bigIntTemplate(input, false);
+            case "uint64":
+                return bigIntTemplate(input, true);
             case "string":
                 return stringTemplate(input);
             case "timestamp":
@@ -128,6 +133,19 @@ function intTemplate(
     return `(typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max})`;
 }
 
+function bigIntTemplate(
+    input: TemplateInput<AScalarSchema<"int64" | "uint64">>,
+    isUnsigned = false,
+) {
+    const mainTemplate = isUnsigned
+        ? `typeof ${input.val} === 'bigint' && ${input.val} >= BigInt("0")`
+        : `typeof ${input.val} === 'bigint'`;
+    if (input.schema.nullable) {
+        return `(${mainTemplate}) || ${input.val} === null`;
+    }
+    return mainTemplate;
+}
+
 function stringTemplate(input: TemplateInput<AScalarSchema<"string">>): string {
     if (input.schema.nullable) {
         return `(typeof ${input.val} === 'string' || ${input.val} === null)`;
@@ -159,6 +177,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 schemaPath: `${input.schemaPath}/properties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
+                targetVal: "",
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
             }),
@@ -173,6 +192,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                     schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                     instancePath: `${input.instancePath}/${key}`,
                     val: `${input.val}.${key}`,
+                    targetVal: "",
                     subFunctionBodies: input.subFunctionBodies,
                     subFunctionNames: input.subFunctionNames,
                 }),
@@ -206,6 +226,7 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         instancePath: `${input.instancePath}/item`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
+        targetVal: "",
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
@@ -222,6 +243,7 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         instancePath: `${input.instancePath}`,
         schemaPath: `${input.schemaPath}/values`,
         val: `${input.val}[key]`,
+        targetVal: "",
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
     });
@@ -241,6 +263,7 @@ function discriminatorTemplate(
         parts.push(
             objectTemplate({
                 val: input.val,
+                targetVal: "",
                 schema: subSchema,
                 schemaPath: `${input.schemaPath}/mapping/${discriminatorVal}`,
                 instancePath: input.instancePath,

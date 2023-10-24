@@ -10,12 +10,16 @@ import {
     int16Min,
     int32Max,
     int32Min,
+    int64Max,
+    int64Min,
     int8Max,
     int8Min,
     uint16Max,
     uint16Min,
     uint32Max,
     uint32Min,
+    uint64Max,
+    uint64Min,
     uint8Max,
     uint8Min,
 } from "./numberConstants";
@@ -144,13 +148,137 @@ export function uint32(opts: ASchemaOptions = {}) {
     });
 }
 
+export function int64(
+    opts: ASchemaOptions = {},
+): AScalarSchema<"int64", bigint> {
+    function isType(input: unknown): input is bigint {
+        return (
+            typeof input === "bigint" && input >= int64Min && input <= int64Max
+        );
+    }
+    function parse(input: unknown, data: ValidationData): bigint | undefined {
+        if (typeof input === "string") {
+            try {
+                const val = BigInt(input);
+                if (isType(val)) {
+                    return val;
+                }
+                data.errors.push({
+                    message: `Invalid int64`,
+                    schemaPath: `${data.schemaPath}/type`,
+                    instancePath: data.instancePath,
+                });
+                return undefined;
+            } catch (err) {
+                data.errors.push({
+                    message: `Unable to transform ${input} to BigInt`,
+                    schemaPath: `${data.schemaPath}/type`,
+                    instancePath: data.instancePath,
+                });
+                return undefined;
+            }
+        }
+        if (isType(input)) {
+            return input;
+        }
+        data.errors.push({
+            message: `Expected BigInt or integer string`,
+            schemaPath: `${data.schemaPath}/type`,
+            instancePath: data.instancePath,
+        });
+        return undefined;
+    }
+    return {
+        type: "int64",
+        metadata: {
+            id: opts.id,
+            description: opts.description,
+            [SCHEMA_METADATA]: {
+                output: BigInt("0"),
+                validate: isType,
+                parse,
+                coerce: parse,
+                serialize(input, data) {
+                    if (data.instancePath.length === 0) {
+                        return input.toString();
+                    }
+                    return `"${input.toString()}"`;
+                },
+            },
+        },
+    };
+}
+
+export function uint64(
+    opts: ASchemaOptions = {},
+): AScalarSchema<"uint64", bigint> {
+    function isType(input: unknown): input is bigint {
+        return (
+            typeof input === "bigint" &&
+            input >= uint64Min &&
+            input <= uint64Max
+        );
+    }
+    function parse(input: unknown, data: ValidationData): bigint | undefined {
+        if (typeof input === "string") {
+            try {
+                const val = BigInt(input);
+                if (isType(val)) {
+                    return val;
+                }
+                data.errors.push({
+                    message: `Invalid uint64`,
+                    schemaPath: `${data.schemaPath}/type`,
+                    instancePath: data.instancePath,
+                });
+                return undefined;
+            } catch (err) {
+                data.errors.push({
+                    message: `Unable to transform ${input} to BigInt`,
+                    schemaPath: `${data.schemaPath}/type`,
+                    instancePath: data.instancePath,
+                });
+                return undefined;
+            }
+        }
+        if (isType(input)) {
+            return input;
+        }
+        data.errors.push({
+            message: `Expected BigInt or integer string`,
+            schemaPath: `${data.schemaPath}/type`,
+            instancePath: data.instancePath,
+        });
+        return undefined;
+    }
+    return {
+        type: "uint64",
+        metadata: {
+            id: opts.id,
+            description: opts.description,
+            [SCHEMA_METADATA]: {
+                output: BigInt("0"),
+                validate: isType,
+                parse,
+                coerce: parse,
+                serialize(input, data) {
+                    if (data.instancePath.length === 0) {
+                        return input.toString();
+                    }
+                    return `"${input.toString()}"`;
+                },
+            },
+        },
+    };
+}
+
 function validateNumber(input: unknown): input is number {
     return typeof input === "number" || !Number.isNaN(input);
 }
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number): string {
+function serializeNumber(input: number, data: ValidationData): string {
     return input.toString();
 }
 function parseNumber(input: unknown, options: ValidationData) {

@@ -10,7 +10,9 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "dependencies": {
         "arri-codegen-utils": "workspace:*",
         "arri-validate": "workspace:*"

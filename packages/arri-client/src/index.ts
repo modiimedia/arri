@@ -86,6 +86,7 @@ export async function arriSafeRequest<
             error: new ArriRequestError({
                 statusCode: 500,
                 statusMessage: "Unknown error",
+                data: err,
             }),
         };
     }

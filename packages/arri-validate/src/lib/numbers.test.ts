@@ -99,3 +99,43 @@ describe("parsing", () => {
         }
     });
 });
+
+describe("int64", () => {
+    it("properly infers types", () => {
+        const Schema = a.int64();
+        type Schema = a.infer<typeof Schema>;
+        assertType<Schema>(BigInt("0"));
+
+        const NullableSchema = a.nullable(a.int64());
+        type NullableSchema = a.infer<typeof NullableSchema>;
+        assertType<NullableSchema>(BigInt("0"));
+        assertType<NullableSchema>(null);
+    });
+    it("parses valid inputs", () => {
+        const Schema = a.int64();
+        const inputs = [
+            "1413141",
+            BigInt("12453113"),
+            "-135915111351",
+            BigInt("-115191141"),
+        ];
+        for (const input of inputs) {
+            expect(a.safeParse(Schema, input).success);
+        }
+    });
+    it("rejects invalid inputs", () => {
+        const Schema = a.int64();
+        const inputs = [
+            "9223372036854775808",
+            "-9223372036854775809",
+            null,
+            "14315h",
+        ];
+        for (const input of inputs) {
+            expect(!a.safeParse(Schema, input).success);
+        }
+    });
+    it("serializes to json string", () => {
+        expect(a.serialize(a.int64(), BigInt("123456789"))).toBe("123456789");
+    });
+});

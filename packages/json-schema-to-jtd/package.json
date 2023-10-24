@@ -5,6 +5,10 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
-    "dependencies": { "@modii/jtd": "^0.2.1" }
+    "files": [
+        "dist"
+    ],
+    "dependencies": {
+        "@modii/jtd": "^0.2.1"
+    }
 }
