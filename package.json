@@ -20,10 +20,9 @@
     },
     "devDependencies": {
         "@faker-js/faker": "^8.2.0",
-        "@nx/js": "16.10.0",
-        "@nx/linter": "16.10.0",
-        "@nx/vite": "16.10.0",
-        "@nx/workspace": "16.10.0",
+        "@nx/js": "17.0.1",
+        "@nx/vite": "17.0.1",
+        "@nx/workspace": "17.0.1",
         "@sinclair/typebox": "^0.31.18",
         "@swc-node/register": "1.6.8",
         "@swc/cli": "^0.1.62",
@@ -39,9 +38,9 @@
         "bun-types": "latest",
         "citty": "^0.1.4",
         "depcheck": "^1.4.7",
-        "esbuild": "^0.19.5",
+        "esbuild": "0.19.5",
         "eslint": "8.51.0",
-        "eslint-config-prettier": "^9.0.0",
+        "eslint-config-prettier": "9.0.0",
         "eslint-config-standard-with-typescript": "^39.1.1",
         "eslint-plugin-import": "^2.28.1",
         "eslint-plugin-json": "^3.1.0",
@@ -52,8 +51,7 @@
         "kill-port": "^2.0.1",
         "listhen": "^1.5.5",
         "lodash": "^4.17.21",
-        "nx": "16.10.0",
-        "nx-cloud": "16.5.2",
+        "nx": "17.0.1",
         "pathe": "^1.1.1",
         "prettier": "^3.0.3",
         "scule": "^1.0.0",
@@ -69,7 +67,8 @@
         "vite-tsconfig-paths": "^4.2.1",
         "vitest": "^0.34.6",
         "wait-port": "^1.1.0",
-        "zod": "^3.22.4"
+        "zod": "^3.22.4",
+        "@nx/eslint": "17.0.1"
     },
     "nx": {
         "includedScripts": []

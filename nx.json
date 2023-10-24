@@ -1,13 +1,4 @@
 {
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx-cloud",
-            "options": {
-                "cacheableOperations": ["build", "test"],
-                "accessToken": "OGQzN2UxNzYtMzdkOC00Y2FmLTlkNDQtMTA0OTRjNThiYWRhfHJlYWQtd3JpdGU="
-            }
-        }
-    },
     "pluginsConfig": {
         "@nx/js": {
             "analyzeSourceFiles": true
@@ -32,7 +23,8 @@
         "build": {
             "inputs": ["default"],
             "outputs": ["{projectRoot}/dist"],
-            "dependsOn": ["^build", "prepare", "^prepare"]
+            "dependsOn": ["^build", "prepare", "^prepare"],
+            "cache": true
         },
         "lint": {
             "inputs": [
@@ -50,7 +42,9 @@
                 "default",
                 "{workspaceRoot}/jest.preset.js",
                 "{projectRoot}/vite.config.ts"
-            ]
+            ],
+            "cache": true
         }
-    }
+    },
+    "nxCloudAccessToken": "OGQzN2UxNzYtMzdkOC00Y2FmLTlkNDQtMTA0OTRjNThiYWRhfHJlYWQtd3JpdGU="
 }

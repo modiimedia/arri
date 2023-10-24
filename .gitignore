@@ -44,3 +44,4 @@ build
 /.arri
 **/.temp
 **/*.dart_tool
+.nx/cache
