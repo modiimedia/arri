@@ -1,7 +1,6 @@
 library;
 
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:http/http.dart' as http;
 
 /// Enum of available HTTP methods
