@@ -1,21 +1,17 @@
 {
     "name": "arri",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri",
         "directory": "packages/arri"
     },
-    "bin": {
-        "arri": "./dist/cli.mjs"
-    },
+    "bin": { "arri": "./dist/cli.mjs" },
     "dependencies": {
         "ajv": "^8.12.0",
         "arri-codegen-dart": "workspace:*",
@@ -36,7 +32,5 @@
         "prettier": "^3.0.3",
         "scule": "^1.0.0"
     },
-    "devDependencies": {
-        "bun-types": "^1.0.7"
-    }
+    "devDependencies": { "bun-types": "^1.0.7" }
 }

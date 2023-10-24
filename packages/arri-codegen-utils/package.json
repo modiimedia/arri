@@ -1,13 +1,11 @@
 {
     "name": "arri-codegen-utils",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "dependencies": {
         "jtd-utils": "workspace:*",
         "scule": "^1.0.0",
