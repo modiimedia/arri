@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { defineCommand } from "citty";
-import { createConsola } from "consola";
+import consola, { createConsola } from "consola";
+import Degit from "degit";
 import path from "pathe";
 
 const logger = createConsola();
@@ -29,13 +30,22 @@ export default defineCommand({
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
+
         const dirFiles = fs.readdirSync(dir);
         if (dirFiles.length && !context.args.force) {
             logger.error(
                 `"${context.args.dir}" is a non-empty directory. To continue with this operation rerun "arri init" with the --force flag.`,
             );
-            return;
+            process.exit(1);
         }
         logger.error("This feature is not yet available");
+        const degit = Degit("https://github.com/modiimedia/arri-starters", {
+            force: context.args.force,
+        });
+        await degit.clone(dir);
+        consola.log(
+            `Project initialized in ${dir}. Cd into the directory and install dependencies to get started.`,
+        );
+        process.exit(0);
     },
 });
