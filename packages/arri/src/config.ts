@@ -57,7 +57,7 @@ export type ResolvedArriConfig = Required<ArriConfig>;
 export const defaultConfig: Required<ArriConfig> = {
     port: 3000,
     rootDir: ".",
-    srcDir: ".",
+    srcDir: "src",
     entry: "app.ts",
     procedureDir: "procedures",
     procedureGlobPatterns: ["**/*.rpc.ts"],
