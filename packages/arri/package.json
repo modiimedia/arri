@@ -22,7 +22,7 @@
         "arri-codegen-ts": "workspace:*",
         "arri-codegen-utils": "workspace:*",
         "arri-validate": "workspace:*",
-        "c12": "^1.4.2",
+        "c12": "^1.5.1",
         "chokidar": "^3.5.3",
         "citty": "^0.1.4",
         "consola": "^3.2.3",
@@ -37,6 +37,6 @@
         "scule": "^1.0.0"
     },
     "devDependencies": {
-        "bun-types": "^1.0.6"
+        "bun-types": "^1.0.7"
     }
 }

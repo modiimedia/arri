@@ -16,8 +16,5 @@
     "dependencies": {
         "arri-validate": "workspace:*",
         "ofetch": "^1.3.3"
-    },
-    "devDependencies": {
-        "nitropack": "^2.6.3"
     }
 }
