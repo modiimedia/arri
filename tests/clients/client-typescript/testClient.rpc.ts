@@ -101,7 +101,7 @@ export const $$PostParams = {
     };
   },
   serialize(input: PostParams): string {
-    return `${JSON.stringify(input)}`;
+    return `{"postId":"${input.postId.replace(/[\n]/g, "\\n")}"}`;
   },
 };
 
@@ -142,7 +142,30 @@ export const $$Post = {
     };
   },
   serialize(input: Post): string {
-    return `${JSON.stringify(input)}`;
+    return `{"id":"${input.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}","title":"${input.title.replace(/[\n]/g, "\\n")}","type":"${
+      input.type
+    }","description":${
+      typeof input.description === "string"
+        ? `"${input.description.replace(/[\n]/g, "\\n")}"`
+        : null
+    },"content":"${input.content.replace(/[\n]/g, "\\n")}","tags":[${input.tags
+      .map((item) => {
+        return `"${item.replace(/[\n]/g, "\\n")}"`;
+      })
+      .join(",")}],"authorId":"${input.authorId.replace(
+      /[\n]/g,
+      "\\n",
+    )}","author":{"id":"${input.author.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}","name":"${input.author.name.replace(/[\n]/g, "\\n")}","bio":${
+      typeof input.author.bio === "string"
+        ? `"${input.author.bio.replace(/[\n]/g, "\\n")}"`
+        : null
+    },"createdAt":"${input.author.createdAt.toISOString()}","updatedAt":"${input.author.updatedAt.toISOString()}"},"createdAt":"${input.createdAt.toISOString()}","updatedAt":"${input.updatedAt.toISOString()}"}`;
   },
 };
 export type PostType = "text" | "image" | "video";
@@ -184,7 +207,14 @@ export const $$Author = {
     };
   },
   serialize(input: Author): string {
-    return `${JSON.stringify(input)}`;
+    return `{"id":"${input.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}","name":"${input.name.replace(/[\n]/g, "\\n")}","bio":${
+      typeof input.bio === "string"
+        ? `"${input.bio.replace(/[\n]/g, "\\n")}"`
+        : null
+    },"createdAt":"${input.createdAt.toISOString()}","updatedAt":"${input.updatedAt.toISOString()}"}`;
   },
 };
 
@@ -203,7 +233,9 @@ export const $$PostListParams = {
     };
   },
   serialize(input: PostListParams): string {
-    return `${JSON.stringify(input)}`;
+    return `{${
+      input.type !== undefined ? `"type":"${input.type}",` : ""
+    }"limit":${input.limit}}`;
   },
 };
 
@@ -221,7 +253,37 @@ export const $$PostListResponse = {
     };
   },
   serialize(input: PostListResponse): string {
-    return `${JSON.stringify(input)}`;
+    return `{"total":${input.total},"items":[${input.items
+      .map((item) => {
+        return `{"id":"${item.id.replace(
+          /[\n]/g,
+          "\\n",
+        )}","title":"${item.title.replace(/[\n]/g, "\\n")}","type":"${
+          item.type
+        }","description":${
+          typeof item.description === "string"
+            ? `"${item.description.replace(/[\n]/g, "\\n")}"`
+            : null
+        },"content":"${item.content.replace(
+          /[\n]/g,
+          "\\n",
+        )}","tags":[${item.tags
+          .map((item) => {
+            return `"${item.replace(/[\n]/g, "\\n")}"`;
+          })
+          .join(",")}],"authorId":"${item.authorId.replace(
+          /[\n]/g,
+          "\\n",
+        )}","author":{"id":"${item.author.id.replace(
+          /[\n]/g,
+          "\\n",
+        )}","name":"${item.author.name.replace(/[\n]/g, "\\n")}","bio":${
+          typeof item.author.bio === "string"
+            ? `"${item.author.bio.replace(/[\n]/g, "\\n")}"`
+            : null
+        },"createdAt":"${item.author.createdAt.toISOString()}","updatedAt":"${item.author.updatedAt.toISOString()}"},"createdAt":"${item.createdAt.toISOString()}","updatedAt":"${item.updatedAt.toISOString()}"}`;
+      })
+      .join(",")}]}`;
   },
 };
 
@@ -237,7 +299,33 @@ export const $$UpdatePostParams = {
     };
   },
   serialize(input: UpdatePostParams): string {
-    return `${JSON.stringify(input)}`;
+    return `{"postId":"${input.postId.replace(/[\n]/g, "\\n")}","data":${`{${
+      input.data.title !== undefined
+        ? `"title":"${input.data.title.replace(/[\n]/g, "\\n")}",`
+        : ""
+    }${
+      input.data.description !== undefined
+        ? `"description":${
+            typeof input.data.description === "string"
+              ? `"${input.data.description.replace(/[\n]/g, "\\n")}"`
+              : null
+          },`
+        : ""
+    }${
+      input.data.content !== undefined
+        ? `"content":"${input.data.content.replace(/[\n]/g, "\\n")}",`
+        : ""
+    }${
+      input.data.tags !== undefined
+        ? `"tags":[${input.data.tags
+            .map((item) => {
+              return `"${item.replace(/[\n]/g, "\\n")}"`;
+            })
+            .join(",")}],`
+        : ""
+    }}`
+      .split(",}")
+      .join("}")}}`;
   },
 };
 export interface UpdatePostParamsData {
@@ -259,7 +347,33 @@ export const $$UpdatePostParamsData = {
     };
   },
   serialize(input: UpdatePostParamsData): string {
-    return `${JSON.stringify(input)}`;
+    return `${`{${
+      input.title !== undefined
+        ? `"title":"${input.title.replace(/[\n]/g, "\\n")}",`
+        : ""
+    }${
+      input.description !== undefined
+        ? `"description":${
+            typeof input.description === "string"
+              ? `"${input.description.replace(/[\n]/g, "\\n")}"`
+              : null
+          },`
+        : ""
+    }${
+      input.content !== undefined
+        ? `"content":"${input.content.replace(/[\n]/g, "\\n")}",`
+        : ""
+    }${
+      input.tags !== undefined
+        ? `"tags":[${input.tags
+            .map((item) => {
+              return `"${item.replace(/[\n]/g, "\\n")}"`;
+            })
+            .join(",")}],`
+        : ""
+    }}`
+      .split(",}")
+      .join("}")}`;
   },
 };
 
@@ -275,7 +389,10 @@ export const $$AnnotationId = {
     };
   },
   serialize(input: AnnotationId): string {
-    return `${JSON.stringify(input)}`;
+    return `{"id":"${input.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}","version":"${input.version.replace(/[\n]/g, "\\n")}"}`;
   },
 };
 
@@ -302,7 +419,24 @@ export const $$Annotation = {
     };
   },
   serialize(input: Annotation): string {
-    return `${JSON.stringify(input)}`;
+    return `{"annotation_id":{"id":"${input.annotation_id.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}","version":"${input.annotation_id.version.replace(
+      /[\n]/g,
+      "\\n",
+    )}"},"associated_id":{"entity_type":"${
+      input.associated_id.entity_type
+    }","id":"${input.associated_id.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}"},"annotation_type":"${
+      input.annotation_type
+    }","annotation_type_version":${
+      input.annotation_type_version
+    },"metadata":${JSON.stringify(
+      input.metadata,
+    )},"box_type_range":{"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"}}`;
   },
 };
 export interface AssociatedId {
@@ -317,7 +451,10 @@ export const $$AssociatedId = {
     };
   },
   serialize(input: AssociatedId): string {
-    return `${JSON.stringify(input)}`;
+    return `{"entity_type":"${input.entity_type}","id":"${input.id.replace(
+      /[\n]/g,
+      "\\n",
+    )}"}`;
   },
 };
 export type AnnotationAssociatedIdEntityType = "MOVIE_ID" | "SHOW_ID";
@@ -368,7 +505,7 @@ export const $$AnnotationBoxTypeRange = {
     };
   },
   serialize(input: AnnotationBoxTypeRange): string {
-    return `${JSON.stringify(input)}`;
+    return `{"start_time_in_nano_sec":"${input.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.end_time_in_nano_sec.toString()}"}`;
   },
 };
 
@@ -390,7 +527,37 @@ export const $$UpdateAnnotationParams = {
     };
   },
   serialize(input: UpdateAnnotationParams): string {
-    return `${JSON.stringify(input)}`;
+    return `{"annotation_id":"${input.annotation_id.replace(
+      /[\n]/g,
+      "\\n",
+    )}","annotation_id_version":"${input.annotation_id_version.replace(
+      /[\n]/g,
+      "\\n",
+    )}","data":${`{${
+      input.data.associated_id !== undefined
+        ? `"associated_id":{"entity_type":"${
+            input.data.associated_id.entity_type
+          }","id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n")}"},`
+        : ""
+    }${
+      input.data.annotation_type !== undefined
+        ? `"annotation_type":"${input.data.annotation_type}",`
+        : ""
+    }${
+      input.data.annotation_type_version !== undefined
+        ? `"annotation_type_version":${input.data.annotation_type_version},`
+        : ""
+    }${
+      input.data.metadata !== undefined
+        ? `"metadata":${JSON.stringify(input.data.metadata)},`
+        : ""
+    }${
+      input.data.box_type_range !== undefined
+        ? `"box_type_range":{"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"},`
+        : ""
+    }}`
+      .split(",}")
+      .join("}")}}`;
   },
 };
 export interface UpdateAnnotationData {
@@ -426,7 +593,31 @@ export const $$UpdateAnnotationData = {
     };
   },
   serialize(input: UpdateAnnotationData): string {
-    return `${JSON.stringify(input)}`;
+    return `${`{${
+      input.associated_id !== undefined
+        ? `"associated_id":{"entity_type":"${
+            input.associated_id.entity_type
+          }","id":"${input.associated_id.id.replace(/[\n]/g, "\\n")}"},`
+        : ""
+    }${
+      input.annotation_type !== undefined
+        ? `"annotation_type":"${input.annotation_type}",`
+        : ""
+    }${
+      input.annotation_type_version !== undefined
+        ? `"annotation_type_version":${input.annotation_type_version},`
+        : ""
+    }${
+      input.metadata !== undefined
+        ? `"metadata":${JSON.stringify(input.metadata)},`
+        : ""
+    }${
+      input.box_type_range !== undefined
+        ? `"box_type_range":{"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"},`
+        : ""
+    }}`
+      .split(",}")
+      .join("}")}`;
   },
 };
 export type UpdateAnnotationParamsDataAnnotationType = "ANNOTATION_BOUNDINGBOX";
@@ -462,6 +653,6 @@ export const $$UpdateAnnotationParamsDataBoxTypeRange = {
     };
   },
   serialize(input: UpdateAnnotationParamsDataBoxTypeRange): string {
-    return `${JSON.stringify(input)}`;
+    return `{"start_time_in_nano_sec":"${input.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.end_time_in_nano_sec.toString()}"}`;
   },
 };
