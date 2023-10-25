@@ -36,6 +36,10 @@ export function object<
 > {
     const schema: SchemaFormProperties = {
         properties: {},
+        additionalProperties:
+            typeof opts.additionalProperties === "boolean"
+                ? opts.additionalProperties
+                : true,
     };
     for (const key of Object.keys(input)) {
         const prop = input[key];
@@ -127,6 +131,9 @@ function parse<T>(
             }
         }
     }
+    if (data.errors.length) {
+        return undefined;
+    }
     if (data.discriminatorKey) {
         result[data.discriminatorKey] = data.discriminatorValue;
     }
@@ -186,9 +193,11 @@ function validate(schema: AObjectSchema, input: unknown): boolean {
         if (!prop && !schema.additionalProperties) {
             return false;
         }
-        const isValid = prop.metadata[SCHEMA_METADATA].validate(input[key]);
-        if (!isValid) {
-            return false;
+        if (prop) {
+            const isValid = prop.metadata[SCHEMA_METADATA].validate(input[key]);
+            if (!isValid) {
+                return false;
+            }
         }
     }
     return true;
@@ -218,6 +227,10 @@ export function pick<
     const schema: SchemaFormProperties = {
         properties: {},
         nullable: inputSchema.nullable,
+        additionalProperties:
+            typeof opts.additionalProperties === "boolean"
+                ? opts.additionalProperties
+                : true,
     };
 
     Object.keys(inputSchema.properties).forEach((key) => {
@@ -240,10 +253,6 @@ export function pick<
             }
         });
     }
-    if (typeof inputSchema.additionalProperties === "boolean") {
-        schema.additionalProperties = inputSchema.additionalProperties;
-    }
-
     return {
         ...(schema as any),
         metadata: {
@@ -294,6 +303,10 @@ export function omit<
             ...inputSchema.properties,
         },
         nullable: inputSchema.nullable,
+        additionalProperties:
+            typeof opts.additionalProperties === "boolean"
+                ? opts.additionalProperties
+                : true,
     };
     Object.keys(inputSchema.properties).forEach((key) => {
         if (keys.includes(key as any)) {
@@ -315,9 +328,6 @@ export function omit<
                 delete schema.optionalProperties[key];
             }
         });
-    }
-    if (typeof inputSchema.additionalProperties === "boolean") {
-        schema.additionalProperties = inputSchema.additionalProperties;
     }
     return {
         ...(schema as any),
@@ -406,7 +416,10 @@ export function extend<
             ...baseSchema.optionalProperties,
             ...inputSchema.optionalProperties,
         },
-        additionalProperties: opts.additionalProperties,
+        additionalProperties:
+            typeof opts.additionalProperties === "boolean"
+                ? opts.additionalProperties
+                : true,
     };
 
     const isType = (
@@ -444,7 +457,10 @@ export function partial<
     const newSchema: SchemaFormProperties = {
         properties: {},
         optionalProperties: {},
-        additionalProperties: schema.additionalProperties,
+        additionalProperties:
+            typeof options.additionalProperties === "boolean"
+                ? options.additionalProperties
+                : true,
         nullable: schema.nullable,
     };
     for (const key of Object.keys(schema.properties)) {

@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 describe("Type Inference", () => {
     it("infers basic array types", () => {

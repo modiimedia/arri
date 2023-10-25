@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 const UserRolesSchema = a.stringEnum(["admin", "standard"]);
 type UserRolesSchema = a.infer<typeof UserRolesSchema>;

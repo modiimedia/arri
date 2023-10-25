@@ -53,3 +53,34 @@ it("parses arrays", () => {
         1, 2, 3, 4, 5,
     ]);
 });
+
+it("respects the additionalProperties option", () => {
+    const LooseSchema = a.compile(
+        a.object({
+            id: a.string(),
+            name: a.string(),
+        }),
+    );
+    const StrictSchema = a.compile(
+        a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+            },
+            { additionalProperties: false },
+        ),
+    );
+    const input = {
+        id: "",
+        name: "",
+    };
+    const inputWithAdditionalFields = {
+        id: "",
+        name: "",
+        description: "",
+    };
+    expect(LooseSchema.safeParse(input).success);
+    expect(LooseSchema.safeParse(inputWithAdditionalFields).success);
+    expect(StrictSchema.safeParse(input).success);
+    expect(!StrictSchema.safeParse(inputWithAdditionalFields).success);
+});

@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 const UserSchema = a.object({
     id: a.string(),
@@ -200,35 +200,34 @@ describe("a.object()", () => {
                 favorites: a.optional(a.array(a.string())),
             }),
         );
-        expect(result).toBe(
-            JSON.stringify({
-                properties: {
-                    id: {
+        expect(JSON.parse(result)).toStrictEqual({
+            properties: {
+                id: {
+                    type: "string",
+                    metadata: {},
+                },
+                name: {
+                    type: "string",
+                    metadata: {},
+                    nullable: true,
+                },
+                createdAt: {
+                    type: "timestamp",
+                    metadata: {},
+                },
+            },
+            optionalProperties: {
+                favorites: {
+                    elements: {
                         type: "string",
                         metadata: {},
                     },
-                    name: {
-                        type: "string",
-                        metadata: {},
-                        nullable: true,
-                    },
-                    createdAt: {
-                        type: "timestamp",
-                        metadata: {},
-                    },
+                    metadata: {},
                 },
-                optionalProperties: {
-                    favorites: {
-                        elements: {
-                            type: "string",
-                            metadata: {},
-                        },
-                        metadata: {},
-                    },
-                },
-                metadata: {},
-            }),
-        );
+            },
+            additionalProperties: true,
+            metadata: {},
+        });
     });
     it("serializes a simple object", () => {
         const SimpleObject = a.object({
@@ -379,28 +378,29 @@ describe("a.pick()", () => {
         expect(!result.success);
     });
     it("produces jtd object schema with picked properties", () => {
-        expect(JSON.stringify(UserSubsetSchema)).toBe(
-            JSON.stringify({
-                properties: {
-                    name: {
-                        type: "string",
-                        metadata: {},
-                    },
-                    email: {
-                        type: "string",
-                        metadata: {},
-                        nullable: true,
-                    },
+        expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
+            properties: {
+                name: {
+                    type: "string",
+                    metadata: {},
                 },
-                optionalProperties: {},
-                metadata: {},
-            }),
-        );
+                email: {
+                    type: "string",
+                    metadata: {},
+                    nullable: true,
+                },
+            },
+            optionalProperties: {},
+            additionalProperties: true,
+            metadata: {},
+        });
     });
 });
 
 describe("a.omit()", () => {
-    const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"]);
+    const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"], {
+        additionalProperties: false,
+    });
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
     const parse = (input: unknown) => a.safeParse(UserSubsetSchema, input);
     it("infers object with omitted fields", () => {
@@ -437,28 +437,27 @@ describe("a.omit()", () => {
         expect(badResult.success).toBe(false);
     });
     it("produces jtd schema without omitted properties", () => {
-        expect(JSON.stringify(UserSubsetSchema)).toBe(
-            JSON.stringify({
-                properties: {
-                    name: {
-                        type: "string",
-                        metadata: {},
-                    },
-                    email: {
-                        type: "string",
-                        metadata: {},
-                        nullable: true,
-                    },
+        expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
+            properties: {
+                name: {
+                    type: "string",
+                    metadata: {},
                 },
-                optionalProperties: {
-                    createdAt: {
-                        type: "timestamp",
-                        metadata: {},
-                    },
+                email: {
+                    type: "string",
+                    metadata: {},
+                    nullable: true,
                 },
-                metadata: {},
-            }),
-        );
+            },
+            optionalProperties: {
+                createdAt: {
+                    type: "timestamp",
+                    metadata: {},
+                },
+            },
+            additionalProperties: false,
+            metadata: {},
+        });
     });
 });
 
@@ -548,33 +547,32 @@ describe("a.partial()", () => {
                 }),
             ),
         );
-        expect(result).toBe(
-            JSON.stringify({
-                properties: {},
-                optionalProperties: {
-                    id: {
-                        type: "string",
-                        metadata: {},
-                    },
-                    name: {
-                        type: "string",
-                        metadata: {},
-                        nullable: true,
-                    },
-                    createdAt: {
-                        type: "timestamp",
-                        metadata: {},
-                    },
-                    favorites: {
-                        elements: {
-                            type: "string",
-                            metadata: {},
-                        },
-                        metadata: {},
-                    },
+        expect(JSON.parse(result)).toStrictEqual({
+            properties: {},
+            optionalProperties: {
+                id: {
+                    type: "string",
+                    metadata: {},
                 },
-                metadata: {},
-            }),
-        );
+                name: {
+                    type: "string",
+                    metadata: {},
+                    nullable: true,
+                },
+                createdAt: {
+                    type: "timestamp",
+                    metadata: {},
+                },
+                favorites: {
+                    elements: {
+                        type: "string",
+                        metadata: {},
+                    },
+                    metadata: {},
+                },
+            },
+            additionalProperties: true,
+            metadata: {},
+        });
     });
 });

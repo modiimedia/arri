@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 test("type inference", () => {
     const Num = a.number();
