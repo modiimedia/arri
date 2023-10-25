@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 describe("parsing", () => {
     const parse = (input: unknown) => a.safeParse(a.boolean(), input).success;
     it("accepts good input", () => {

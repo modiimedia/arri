@@ -651,4 +651,57 @@ export const testSuites: Record<
             { id: "1" },
         ],
     },
+    "object with additionalProperties false": {
+        schema: a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+            },
+            { additionalProperties: false },
+        ),
+        goodInputs: [
+            {
+                id: "1",
+                name: "john",
+            },
+        ],
+        badInputs: [
+            {
+                id: "1",
+                name: "john",
+                createdAt: new Date(),
+            },
+            {
+                id: "1",
+                name: "john",
+                description: "",
+            },
+            {},
+            null,
+            true,
+        ],
+    },
+    "object with additionalProperties true": {
+        schema: a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+            },
+            { additionalProperties: true },
+        ),
+        goodInputs: [
+            {
+                id: "",
+                name: "",
+                description: "",
+            },
+            {
+                id: "",
+                name: "",
+                description: "",
+                createdAt: new Date(),
+            },
+        ],
+        badInputs: [{}, null, { id: "" }],
+    },
 };

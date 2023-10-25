@@ -4,6 +4,8 @@ import {
     SCHEMA_METADATA,
 } from "../schemas";
 
+export const stringEnum = enumerator;
+
 /**
  * An enumeration of string values
  *
@@ -11,12 +13,12 @@ import {
  * https://jsontypedef.com/docs/jtd-in-5-minutes/#enum-schemas
  *
  * @example
- * const Schema = a.stringEnum(["A", "B"])
+ * const Schema = a.enumerator(["A", "B"])
  * a.validate(Schema, "A") // true
  * a.validate(Schema, "B") // true
  * a.validate(Schema, "C") // false
  */
-export function stringEnum<TKeys extends string, TValues extends TKeys[]>(
+export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     values: TValues,
     opts: ASchemaOptions = {},
 ): AStringEnumSchema<TValues> {

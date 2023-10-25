@@ -448,3 +448,30 @@ it("validates nullable discriminators", () => {
         }),
     );
 });
+
+it("uses additionalProperties properly", () => {
+    const LooseSchema = a.compile(
+        a.object({ id: a.string(), name: a.string() }),
+    );
+    const StrictSchema = a.compile(
+        a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+            },
+            { additionalProperties: false },
+        ),
+    );
+    const input = {
+        id: "",
+        name: "",
+    };
+    const inputWithAdditionalFields = {
+        id: "",
+        name: "",
+    };
+    expect(LooseSchema.validate(input));
+    expect(LooseSchema.validate(inputWithAdditionalFields));
+    expect(StrictSchema.validate(input));
+    expect(!StrictSchema.validate(inputWithAdditionalFields));
+});

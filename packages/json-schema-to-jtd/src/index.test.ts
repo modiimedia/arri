@@ -67,7 +67,7 @@ it("Converts objects", () => {
                 metadata: emptyMetadata,
             },
         },
-        additionalProperties: undefined,
+        additionalProperties: true,
         metadata: emptyMetadata,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
@@ -99,7 +99,7 @@ it("Converts objects with optional values", () => {
                 metadata: emptyMetadata,
             },
         },
-        additionalProperties: undefined,
+        additionalProperties: true,
         metadata: emptyMetadata,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);

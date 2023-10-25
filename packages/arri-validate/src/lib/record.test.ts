@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 const NumberRecordSchema = a.record(a.int32());
 type NumberRecordSchema = a.infer<typeof NumberRecordSchema>;

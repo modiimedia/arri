@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 it("infers types", () => {
     const Timestamp = a.timestamp();

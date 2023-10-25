@@ -1,4 +1,4 @@
-import * as a from "./_index";
+import * as a from "./_namespace";
 
 const DiscriminatorSchema = a.discriminator("eventType", {
     USER_CREATED: a.object({
