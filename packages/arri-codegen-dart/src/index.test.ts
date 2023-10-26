@@ -38,17 +38,17 @@ describe("Service Generation", () => {
                     },
                 },
             },
-            { clientName: "", outputFile: "" },
+            { clientName: "", outputFile: "", versionNumber: "" },
         );
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class UserService {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const UserService({
+  late final Map<String, String> _headers;
+  UserService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-  _headers = headers;
+  })  : _baseUrl = baseUrl
+  { _headers = { "client-version": "", ...headers }; }
   UserSettingsService get settings {
     return UserSettingsService(
       baseUrl: _baseUrl,
@@ -80,12 +80,12 @@ describe("Service Generation", () => {
 }
 class UserSettingsService {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const UserSettingsService({
+  late final Map<String, String> _headers;
+  UserSettingsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-  _headers = headers;
+  })  : _baseUrl = baseUrl
+  { _headers = { "client-version": "", ...headers }; }
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/settings/get-user-settings",
@@ -112,17 +112,17 @@ class UserSettingsService {
                     response: undefined,
                 },
             },
-            { clientName: "", outputFile: "" },
+            { clientName: "", outputFile: "", versionNumber: "" },
         );
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class PostsService {
         final String _baseUrl;
-        final Map<String, String> _headers;
-        const PostsService({
+        late final Map<String, String> _headers;
+        PostsService({
           String baseUrl = "",
           Map<String, String> headers = const {},
-        })  : _baseUrl = baseUrl,
-            _headers = headers;
+        })  : _baseUrl = baseUrl
+            { _headers = { "client-version": "", ...headers }; }
 
         Future<void> getPost() {
           return parsedArriRequest(

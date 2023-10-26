@@ -73,6 +73,7 @@ export function createDartClient(
     opts: DartClientGeneratorOptions,
 ): string {
     const existingClassNames: string[] = [];
+    const clientVersion = def.info?.version ?? "";
     const services = unflattenProcedures(def.procedures);
     const rpcParts: string[] = [];
     const serviceGetterParts: string[] = [];
@@ -88,7 +89,10 @@ export function createDartClient(
         }
         if (isServiceDefinition(item)) {
             const serviceName: string = pascalCase(`${opts.clientName}_${key}`);
-            const service = dartServiceFromDefinition(serviceName, item, opts);
+            const service = dartServiceFromDefinition(serviceName, item, {
+                versionNumber: clientVersion,
+                ...opts,
+            });
             serviceParts.push(service);
             serviceGetterParts.push(`${serviceName}Service get ${key} {
   return ${serviceName}Service(
@@ -115,12 +119,12 @@ import "package:arri_client/arri_client.dart";
 
 class ${opts.clientName} {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const ${opts.clientName}({
+  late final Map<String, String> _headers;
+  ${opts.clientName}({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-  _headers = headers;
+  })  : _baseUrl = baseUrl
+  { _headers = { "client-version": "${clientVersion}", ...headers }; }
   ${rpcParts.join("\n  ")}
   ${serviceGetterParts.join("\n  ")}
 }
@@ -131,10 +135,14 @@ ${modelParts.join("\n")}
 `;
 }
 
+interface ServiceOptions extends DartClientGeneratorOptions {
+    versionNumber: string;
+}
+
 export function dartServiceFromDefinition(
     name: string,
     def: ServiceDefinition,
-    opts: DartClientGeneratorOptions,
+    opts: ServiceOptions,
 ) {
     const rpcParts: string[] = [];
     const subServiceParts: Array<{
@@ -163,12 +171,12 @@ export function dartServiceFromDefinition(
     });
     return `class ${serviceName}Service {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const ${serviceName}Service({
+  late final Map<String, String> _headers;
+  ${serviceName}Service({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-  _headers = headers;
+  })  : _baseUrl = baseUrl
+ { _headers = { "client-version": "${opts.versionNumber}", ...headers }; }
   ${subServiceParts
       .map(
           (sub) => `${sub.name}Service get ${sub.key} {

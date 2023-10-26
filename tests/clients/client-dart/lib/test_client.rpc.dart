@@ -4,12 +4,13 @@ import "package:arri_client/arri_client.dart";
 
 class TestClient {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClient({
+  late final Map<String, String> _headers;
+  TestClient({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "9", ...headers};
+  }
 
   TestClientPostsService get posts {
     return TestClientPostsService(
@@ -28,12 +29,13 @@ class TestClient {
 
 class TestClientPostsService {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClientPostsService({
+  late final Map<String, String> _headers;
+  TestClientPostsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "9", ...headers};
+  }
 
   Future<Post> getPost(PostParams params) {
     return parsedArriRequest(
@@ -74,12 +76,13 @@ class TestClientPostsService {
 
 class TestClientVideosService {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClientVideosService({
+  late final Map<String, String> _headers;
+  TestClientVideosService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "9", ...headers};
+  }
 
   Future<Annotation> getAnnotation(AnnotationId params) {
     return parsedArriRequest(

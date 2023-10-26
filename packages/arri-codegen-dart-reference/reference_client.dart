@@ -4,12 +4,13 @@ import "package:arri_client/arri_client.dart";
 
 class TestClient {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClient({
+  late final Map<String, String> _headers;
+  TestClient({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "11", ...headers};
+  }
 
   Future<GetStatusResponse> getStatus() {
     return parsedArriRequest(
@@ -33,12 +34,13 @@ class TestClient {
 
 class TestClientUsersService {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClientUsersService({
+  late final Map<String, String> _headers;
+  TestClientUsersService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "11", ...headers};
+  }
 
   TestClientUsersSettingsService get settings {
     return TestClientUsersSettingsService(
@@ -74,12 +76,13 @@ class TestClientUsersService {
 
 class TestClientUsersSettingsService {
   final String _baseUrl;
-  final Map<String, String> _headers;
-  const TestClientUsersSettingsService({
+  late final Map<String, String> _headers;
+  TestClientUsersSettingsService({
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl,
-        _headers = headers;
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "11", ...headers};
+  }
 
   Future<void> getUserSettings() {
     return parsedArriRequest(

@@ -15,7 +15,7 @@ export class TestClient {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = options.headers ?? {};
+    this.headers = { "client-version": "9", ...options.headers };
     this.posts = new TestClientPostsService(options);
     this.videos = new TestClientVideosService(options);
   }
@@ -27,7 +27,7 @@ export class TestClientPostsService {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = options.headers ?? {};
+    this.headers = { "client-version": "9", ...options.headers };
   }
   getPost(params: PostParams) {
     return arriRequest<Post, PostParams>({
@@ -67,7 +67,7 @@ export class TestClientVideosService {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = options.headers ?? {};
+    this.headers = { "client-version": "9", ...options.headers };
   }
   getAnnotation(params: AnnotationId) {
     return arriRequest<Annotation, AnnotationId>({

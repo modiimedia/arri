@@ -59,17 +59,17 @@ export async function createTypescriptClient(
 ): Promise<string> {
     const clientName = pascalCase(options.clientName);
     const services = unflattenProcedures(def.procedures);
+    const versionNumber = def.info?.version ?? "";
     const serviceFieldParts: string[] = [];
     const serviceInitializationParts: string[] = [];
     const procedureParts: string[] = [];
     const subContentParts: string[] = [];
     const existingTypeNames: string[] = [];
-    const typesNeedingValidator: string[] = [];
     Object.keys(services).forEach((key) => {
         const item = services[key];
         if (isRpcDefinition(item)) {
             const rpc = tsRpcFromDefinition(key, item, {
-                typesNeedingValidator,
+                versionNumber,
                 ...options,
             });
             procedureParts.push(rpc);
@@ -78,7 +78,7 @@ export async function createTypescriptClient(
         if (isServiceDefinition(item)) {
             const serviceName: string = pascalCase(`${clientName}_${key}`);
             const service = tsServiceFromDefinition(serviceName, item, {
-                typesNeedingValidator,
+                versionNumber,
                 ...options,
             });
             serviceFieldParts.push(`${key}: ${serviceName}Service;`);
@@ -115,7 +115,7 @@ export class ${clientName} {
 
     constructor(options: ${clientName}Options = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = options.headers ?? {};
+        this.headers = { 'client-version': '${versionNumber}', ...options.headers };
         ${serviceInitializationParts.join(";\n        ")}
     }
     ${procedureParts.join("\n    ")}
@@ -130,7 +130,7 @@ ${subContentParts.join("\n")}
 }
 
 interface RpcOptions extends GeneratorOptions {
-    typesNeedingValidator: string[];
+    versionNumber: string;
 }
 
 export function tsRpcFromDefinition(
@@ -203,7 +203,9 @@ export function tsServiceFromDefinition(
             `${options.clientName}_Options`,
         )} = {}) {
             this.baseUrl = options.baseUrl ?? '';
-            this.headers = options.headers ?? {};
+            this.headers = { 'client-version': '${
+                options.versionNumber
+            }', ...options.headers };
             ${serviceConstructorParts.join("\n        ")}
         }
         ${rpcContent.join("\n    ")}
