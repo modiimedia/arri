@@ -108,6 +108,8 @@ export interface User {
     settings: UserSettings;
     recentNotifications: Array<UserRecentNotificationsItem>;
     bookmarks: UserBookmarks;
+    metadata: UserMetadata;
+    randomList: Array<any>;
     bio?: string;
 }
 export const $$User = {
@@ -135,6 +137,13 @@ export const $$User = {
                 typeof input.bookmarks === "object" && input.bookmarks !== null
                     ? $$UserBookmarks.parse(input.bookmarks)
                     : {},
+            metadata:
+                typeof input.metadata === "object" && input.metadata !== null
+                    ? $$UserMetadata.parse(input.metadata)
+                    : {},
+            randomList: Array.isArray(input.randomList)
+                ? input.randomList.map((item) => item)
+                : [],
             bio: typeof input.bio === "string" ? input.bio : undefined,
         };
     },
@@ -181,6 +190,17 @@ export const $$User = {
             }
             return `{${keyParts.join(",")}}`;
         }
+        // @ts-ignore
+        function metadata(val) {
+            const keyParts = [];
+            const keys = Object.keys(val);
+            for (let i = 0; i < Object.keys(val).length; i++) {
+                const key = keys[i];
+                const v = val[key];
+                keyParts.push(`"${key}":${JSON.stringify(v)}`);
+            }
+            return `{${keyParts.join(",")}}`;
+        }
         return `{${
             input.bio !== undefined
                 ? `"bio":"${input.bio.replace(/[\n]/g, "\\n")}",`
@@ -206,7 +226,15 @@ export const $$User = {
             .map((item) => {
                 return `${_recent_notifications_0_to_json(item)}`;
             })
-            .join(",")}],"bookmarks":${bookmarks(input.bookmarks)}}`;
+            .join(",")}],"bookmarks":${bookmarks(
+            input.bookmarks,
+        )},"metadata":${metadata(
+            input.metadata,
+        )},"randomList":[${input.randomList
+            .map((item) => {
+                return `${JSON.stringify(item)}`;
+            })
+            .join(",")}]}`;
     },
 };
 
@@ -439,6 +467,31 @@ export const $$UserBookmarksValue = {
             /[\n]/g,
             "\\n",
         )}","userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
+    },
+};
+
+export type UserMetadata = Record<string, any>;
+export const $$UserMetadata = {
+    parse(input: Record<any, any>): UserMetadata {
+        const result: UserMetadata = {};
+        for (const key of Object.keys(input)) {
+            result[key] = input[key];
+        }
+        return result;
+    },
+    serialize(input: UserMetadata): string {
+        // @ts-ignore
+        function serializeVal(val) {
+            const keyParts = [];
+            const keys = Object.keys(val);
+            for (let i = 0; i < Object.keys(val).length; i++) {
+                const key = keys[i];
+                const v = val[key];
+                keyParts.push(`"${key}":${JSON.stringify(v)}`);
+            }
+            return `{${keyParts.join(",")}}`;
+        }
+        return `${serializeVal(input)}`;
     },
 };
 

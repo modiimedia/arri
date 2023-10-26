@@ -129,6 +129,8 @@ class User {
   final UserSettings settings;
   final List<UserRecentNotificationsItem> recentNotifications;
   final Map<String, UserBookmarksValue> bookmarks;
+  final Map<String, dynamic> metadata;
+  final List<dynamic> randomList;
   final String? bio;
   const User({
     required this.id,
@@ -139,6 +141,8 @@ class User {
     required this.settings,
     required this.recentNotifications,
     required this.bookmarks,
+    required this.metadata,
+    required this.randomList,
     this.bio,
   });
 
@@ -164,6 +168,13 @@ class User {
           ? (json["bookmarks"] as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, UserBookmarksValue.fromJson(value)))
           : <String, UserBookmarksValue>{},
+      metadata: json["metadata"] is Map<String, dynamic>
+          ? (json["metadata"] as Map<String, dynamic>)
+              .map((key, value) => MapEntry(key, value))
+          : <String, dynamic>{},
+      randomList: json["randomList"] is List
+          ? (json["randomList"] as List).map((item) => item).toList()
+          : [],
       bio: nullableTypeFromDynamic<String>(json["bio"]),
     );
   }
@@ -179,6 +190,8 @@ class User {
       "recentNotifications":
           recentNotifications.map((item) => item.toJson()).toList(),
       "bookmarks": bookmarks.map((key, value) => MapEntry(key, value.toJson())),
+      "metadata": metadata.map((key, value) => MapEntry(key, value)),
+      "randomList": randomList.map((item) => item).toList(),
     };
     if (bio != null) {
       result["bio"] = bio;
@@ -195,6 +208,8 @@ class User {
     UserSettings? settings,
     List<UserRecentNotificationsItem>? recentNotifications,
     Map<String, UserBookmarksValue>? bookmarks,
+    Map<String, dynamic>? metadata,
+    List<dynamic>? randomList,
     String? bio,
   }) {
     return User(
@@ -206,6 +221,8 @@ class User {
       settings: settings ?? this.settings,
       recentNotifications: recentNotifications ?? this.recentNotifications,
       bookmarks: bookmarks ?? this.bookmarks,
+      metadata: metadata ?? this.metadata,
+      randomList: randomList ?? this.randomList,
       bio: bio ?? this.bio,
     );
   }

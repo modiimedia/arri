@@ -47,6 +47,8 @@ export const TestUserSchema = a.object(
             a.object({ postId: a.string(), userId: a.string() }),
         ),
         bio: a.optional(a.string()),
+        metadata: a.record(a.any()),
+        randomList: a.array(a.any()),
     },
     { id: "User" },
 );

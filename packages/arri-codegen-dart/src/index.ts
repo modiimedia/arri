@@ -536,7 +536,7 @@ function dartArrayFromJtdSchema(
         fromJsonTemplate: (input) => {
             if (isNullable) {
                 return `${input} is List ? (${input} as List).map((item) => ${subtype.fromJsonTemplate(
-                    `item`,
+                    "item",
                 )}).toList() : null`;
             }
             return `${input} is List ? (${input} as List).map((item) => ${subtype.fromJsonTemplate(
@@ -800,10 +800,9 @@ function dartMapFromJtdSchema(
             : `required this.${key}`,
         fromJsonTemplate: (input) => `${input} is Map<String, dynamic>
           ? (${input} as Map<String, dynamic>).map(
-              (key, value) => MapEntry(key, ${innerType.typeName.replace(
-                  "?",
-                  "",
-              )}.fromJson(value)))
+              (key, value) => MapEntry(key, ${innerType.fromJsonTemplate(
+                  "value",
+              )}))
           : <String, ${innerType.typeName}>{}`,
         toJsonTemplate: (input) =>
             `${input}${
