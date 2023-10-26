@@ -14,7 +14,7 @@ export class Client {
 
     constructor(options: ClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = options.headers ?? {};
+        this.headers = { "client-version": "11", ...options.headers };
         this.users = new ClientUsersService(options);
     }
 
@@ -37,7 +37,7 @@ export class ClientUsersService {
 
     constructor(options: ClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = options.headers ?? {};
+        this.headers = { "client-version": "11", ...options.headers };
         this.settings = new ClientUsersSettingsService(options);
     }
 
@@ -70,7 +70,7 @@ export class ClientUsersSettingsService {
 
     constructor(options: ClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = options.headers ?? {};
+        this.headers = { "client-version": "11", ...options.headers };
     }
 
     getUserSettings() {

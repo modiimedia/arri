@@ -77,6 +77,11 @@ export const TestErrorResponse = a.object({
 
 export const TestAppDefinition: AppDefinition = {
     arriSchemaVersion: "0.0.2",
+    info: {
+        title: "Test App Client",
+        description: "This is a example app definition",
+        version: "11",
+    },
     procedures: {
         getStatus: {
             path: "/status",
