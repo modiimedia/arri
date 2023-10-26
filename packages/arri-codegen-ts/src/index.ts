@@ -23,7 +23,7 @@ import {
     isServiceDefinition,
     type ServiceDefinition,
 } from "arri-codegen-utils";
-import { getSchemaSerializationCode } from "arri-validate/src/compile";
+import { getSchemaSerializationCode } from "arri-validate";
 import prettier from "prettier";
 
 interface GeneratorOptions {
