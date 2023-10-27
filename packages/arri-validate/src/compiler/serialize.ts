@@ -38,7 +38,7 @@ return \`${mainTemplate}\``;
     return template;
 }
 
-function schemaTemplate(input: TemplateInput): string {
+export function schemaTemplate(input: TemplateInput): string {
     if (isSchemaFormType(input.schema)) {
         switch (input.schema.type) {
             case "boolean":
@@ -81,7 +81,7 @@ function schemaTemplate(input: TemplateInput): string {
     return `\${JSON.stringify(${input.val})}`;
 }
 
-function stringTemplate(input: TemplateInput<AScalarSchema<"string">>) {
+export function stringTemplate(input: TemplateInput<AScalarSchema<"string">>) {
     const mainTemplate = input.instancePath.length
         ? `"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"`
         : `\${${input.val}}`;
@@ -91,14 +91,18 @@ function stringTemplate(input: TemplateInput<AScalarSchema<"string">>) {
     return mainTemplate;
 }
 
-function booleanTemplate(input: TemplateInput<AScalarSchema<"boolean">>) {
+export function booleanTemplate(
+    input: TemplateInput<AScalarSchema<"boolean">>,
+) {
     if (input.schema.nullable) {
         return `\${typeof ${input.val} === 'boolean' ? ${input.val} : null}`;
     }
     return `\${${input.val}}`;
 }
 
-function timestampTemplate(input: TemplateInput<AScalarSchema<"timestamp">>) {
+export function timestampTemplate(
+    input: TemplateInput<AScalarSchema<"timestamp">>,
+) {
     const mainTemplate = input.instancePath.length
         ? `"\${${input.val}.toISOString()}"`
         : `\${${input.val}.toISOString()}`;
@@ -108,14 +112,14 @@ function timestampTemplate(input: TemplateInput<AScalarSchema<"timestamp">>) {
     return mainTemplate;
 }
 
-function numberTemplate(input: TemplateInput<AScalarSchema>) {
+export function numberTemplate(input: TemplateInput<AScalarSchema>) {
     if (input.schema.nullable) {
         return `\${typeof ${input.val} === 'number' && !Number.isNaN(${input.val}) ? ${input.val} : null}`;
     }
     return `\${${input.val}}`;
 }
 
-function bigIntTemplate(input: TemplateInput<AScalarSchema>) {
+export function bigIntTemplate(input: TemplateInput<AScalarSchema>) {
     const mainTemplate = input.instancePath.length
         ? `"\${${input.val}.toString()}"`
         : `\${${input.val}.toString()}`;
@@ -125,7 +129,7 @@ function bigIntTemplate(input: TemplateInput<AScalarSchema>) {
     return mainTemplate;
 }
 
-function objectTemplate(input: TemplateInput<AObjectSchema>) {
+export function objectTemplate(input: TemplateInput<AObjectSchema>) {
     const fieldParts: string[] = [];
     if (input.schema.optionalProperties) {
         for (const key of Object.keys(input.schema.optionalProperties)) {
@@ -181,7 +185,9 @@ function objectTemplate(input: TemplateInput<AObjectSchema>) {
     return result;
 }
 
-function stringEnumTemplate(input: TemplateInput<AStringEnumSchema<any>>) {
+export function stringEnumTemplate(
+    input: TemplateInput<AStringEnumSchema<any>>,
+) {
     const mainTemplate = input.instancePath.length
         ? `"\${${input.val}}"`
         : `\${${input.val}}`;
@@ -191,7 +197,7 @@ function stringEnumTemplate(input: TemplateInput<AStringEnumSchema<any>>) {
     return mainTemplate;
 }
 
-function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
+export function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     const subTemplate = schemaTemplate({
         val: "item",
         targetVal: "",
@@ -208,7 +214,7 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
     return `[\${${input.val}.map((item) => {return \`${subTemplate}\`}).join(",")}]`;
 }
 
-function discriminatorTemplate(
+export function discriminatorTemplate(
     input: TemplateInput<ADiscriminatorSchema<any>>,
 ) {
     const subFunctionName = `${snakeCase(
@@ -251,7 +257,7 @@ function discriminatorTemplate(
     return `\${${subFunctionName}(${input.val})}`;
 }
 
-function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
+export function recordTemplate(input: TemplateInput<ARecordSchema<any>>) {
     let subFunctionName = `${camelCase(
         input.schema.metadata.id ?? input.instancePath.split("/").join("_"),
     )}`;

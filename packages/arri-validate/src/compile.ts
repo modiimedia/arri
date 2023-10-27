@@ -12,6 +12,7 @@ import {
 } from "./_index";
 import { createParsingTemplate } from "./compiler/parse";
 import { createSerializationTemplate as getSchemaSerializationCode } from "./compiler/serialize";
+import { createSerializationV2Template as getSchemaSerializationV2Code } from "./compiler/serializeV2";
 import { createValidationTemplate as getSchemaValidationCode } from "./compiler/validate";
 import {
     int16Max,
@@ -47,6 +48,7 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
      * Serialize to JSON
      */
     serialize: (input: InferType<TSchema>) => string;
+    serializeV2: (input: InferType<TSchema>) => string;
     compiledCode: {
         serialize: string;
         parse: string;
@@ -475,12 +477,22 @@ export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
     const serializeCode = getSchemaSerializationCode("input", schema);
+    const serializeV2Code = getSchemaSerializationV2Code("input", schema);
     const validateCode = getSchemaValidationCode("input", schema);
     const parse = getCompiledParser("input", schema);
     const serialize = new Function(
         "input",
         serializeCode,
     ) as CompiledValidator<TSchema>["serialize"];
+    let serializeV2: any = (input: any) => "";
+    try {
+        serializeV2 = new Function(
+            "input",
+            serializeV2Code,
+        ) as CompiledValidator<TSchema>["serializeV2"];
+    } catch (err) {
+        console.log(serializeV2Code);
+    }
     const validate = new Function(
         "input",
         validateCode,
@@ -534,6 +546,7 @@ export function compile<TSchema extends ASchema<any>>(
         },
         // eslint-disable-next-line no-eval
         serialize,
+        serializeV2,
         compiledCode: {
             validate: validateCode,
             parse: parse.code,
