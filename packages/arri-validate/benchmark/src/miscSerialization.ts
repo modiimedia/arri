@@ -141,8 +141,8 @@ function serialize2(input: User): string {
 }
 
 const arriCompiledSerializer = a.compile(User).serialize;
+const arriCompiledSerializerV2 = a.compile(User).serializeV2;
 const ajvCompiledSerializer = ajv.compileSerializer(User);
-console.log(a.compile(User).compiledCode.serialize);
 void benny.suite(
     "Misc Serialization",
     benny.add("Ternaries", () => {
@@ -156,6 +156,9 @@ void benny.suite(
     }),
     benny.add("Arri (Compiled)", () => {
         arriCompiledSerializer(userInput);
+    }),
+    benny.add("Arri (Compiled V2)", () => {
+        arriCompiledSerializerV2(userInput);
     }),
     benny.add("Ajv (Compiled)", () => {
         ajvCompiledSerializer(userInput);
