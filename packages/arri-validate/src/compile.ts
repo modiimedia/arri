@@ -474,13 +474,9 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
-    const serializeCode = getSchemaSerializationCode("input", schema);
     const validateCode = getSchemaValidationCode("input", schema);
     const parse = getCompiledParser("input", schema);
-    const serialize = new Function(
-        "input",
-        serializeCode,
-    ) as CompiledValidator<TSchema>["serialize"];
+    const serializer = getCompiledSerializer(schema);
     const validate = new Function(
         "input",
         validateCode,
@@ -533,11 +529,11 @@ export function compile<TSchema extends ASchema<any>>(
             }
         },
         // eslint-disable-next-line no-eval
-        serialize,
+        serialize: serializer.fn,
         compiledCode: {
             validate: validateCode,
             parse: parse.code,
-            serialize: serializeCode,
+            serialize: serializer.code,
         },
     };
 }

@@ -18,6 +18,11 @@ import { camelCase } from "scule";
 import { randomUUID } from "uncrypto";
 import { type TemplateInput } from "./common";
 
+interface SerializeTemplateInput<TSchema extends Schema = any>
+    extends TemplateInput<TSchema> {
+    outputPrefix: string;
+}
+
 export function createSerializationV2Template(
     inputName: string,
     schema: Schema,
@@ -30,6 +35,7 @@ export function createSerializationV2Template(
         instancePath: "",
         subFunctionBodies: [],
         subFunctionNames: [],
+        outputPrefix: "",
     });
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
         return result;
@@ -39,7 +45,7 @@ export function createSerializationV2Template(
     return json;`;
 }
 
-export function template(input: TemplateInput): string {
+export function template(input: SerializeTemplateInput): string {
     if (isSchemaFormType(input.schema)) {
         return scalarTemplate(input);
     }
@@ -61,7 +67,9 @@ export function template(input: TemplateInput): string {
     return anyTemplate(input);
 }
 
-export function scalarTemplate(input: TemplateInput<SchemaFormType>): string {
+export function scalarTemplate(
+    input: SerializeTemplateInput<SchemaFormType>,
+): string {
     switch (input.schema.type) {
         case "string":
             return stringTemplate(input);
@@ -87,7 +95,9 @@ export function scalarTemplate(input: TemplateInput<SchemaFormType>): string {
     }
 }
 
-export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
+export function stringTemplate(
+    input: SerializeTemplateInput<SchemaFormType>,
+): string {
     if (input.instancePath.length === 0) {
         if (input.schema.nullable) {
             return `if (typeof ${input.val} === 'string') {
@@ -97,34 +107,38 @@ export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
         }
         return `return ${input.val};`;
     }
-    const mainTemplate = `${input.targetVal} += \`"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"\`;`;
+    const mainTemplate = `${input.targetVal} += \`${
+        input.outputPrefix ?? ""
+    }"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix ?? ""}null';
         }`;
     }
     return mainTemplate;
 }
 
-export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
+export function booleanTemplate(
+    input: SerializeTemplateInput<SchemaFormType>,
+): string {
     if (input.instancePath.length === 0) {
         return `return \`\${${input.val}}\`;`;
     }
-    const mainTemplate = `${input.targetVal} += \`\${${input.val}}\`;`;
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}\${${input.val}}\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'boolean') {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
 export function timestampTemplate(
-    input: TemplateInput<SchemaFormType>,
+    input: SerializeTemplateInput<SchemaFormType>,
 ): string {
     if (input.instancePath.length === 0) {
         if (input.schema.nullable) {
@@ -135,18 +149,20 @@ export function timestampTemplate(
         }
         return `return ${input.val}.toISOString();`;
     }
-    const mainTemplate = `${input.targetVal} += \`"\${${input.val}.toISOString()}"\`;`;
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}"\${${input.val}.toISOString()}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
-export function numberTemplate(input: TemplateInput<SchemaFormType>): string {
+export function numberTemplate(
+    input: SerializeTemplateInput<SchemaFormType>,
+): string {
     if (input.instancePath.length === 0) {
         if (input.schema.nullable) {
             return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
@@ -156,18 +172,20 @@ export function numberTemplate(input: TemplateInput<SchemaFormType>): string {
         }
         return `return \`\${${input.val}}\`;`;
     }
-    const mainTemplate = `${input.targetVal} += \`\${${input.val}}\`;`;
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}\${${input.val}}\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
-export function bigIntTemplate(input: TemplateInput<SchemaFormType>): string {
+export function bigIntTemplate(
+    input: SerializeTemplateInput<SchemaFormType>,
+): string {
     if (input.instancePath.length === 0) {
         if (input.schema.nullable) {
             return `if (typeof ${input.val} === 'bigint') {
@@ -177,18 +195,20 @@ export function bigIntTemplate(input: TemplateInput<SchemaFormType>): string {
         }
         return `return ${input.val}.toString();`;
     }
-    const mainTemplate = `${input.targetVal} += \`"\${${input.val}.toString()}"\`;`;
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}"\${${input.val}.toString()}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'bigint') {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
-export function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
+export function enumTemplate(
+    input: SerializeTemplateInput<SchemaFormEnum>,
+): string {
     if (input.instancePath.length === 0) {
         if (input.schema.nullable) {
             return `if (typeof ${input.val} === 'string') {
@@ -198,21 +218,23 @@ export function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
         }
         return `return ${input.val};`;
     }
-    const mainTemplate = `${input.targetVal} += \`"\${${input.val}}"\``;
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}"\${${input.val}}"\``;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
 export function objectTemplate(
-    input: TemplateInput<SchemaFormProperties>,
+    input: SerializeTemplateInput<SchemaFormProperties>,
 ): string {
-    const templateParts: string[] = [`${input.targetVal} += "{";`];
+    const templateParts: string[] = [
+        `${input.targetVal} += '${input.outputPrefix}{';`,
+    ];
     if (input.discriminatorKey && input.discriminatorValue) {
         templateParts.push(
             `${input.targetVal} += \`"${input.discriminatorKey}":"${input.discriminatorValue}"\`;`,
@@ -227,11 +249,13 @@ export function objectTemplate(
     for (let i = 0; i < propKeys.length; i++) {
         const key = propKeys[i];
         const propSchema = input.schema.properties[key];
-        if (i !== 0 || (input.discriminatorKey && input.discriminatorValue)) {
-            templateParts.push(`${input.targetVal} += \`,"${key}":\``);
-        } else {
-            templateParts.push(`${input.targetVal} += \`"${key}":\``);
-        }
+        const includeComma =
+            i !== 0 || (input.discriminatorKey && input.discriminatorValue);
+        // if (i !== 0 || (input.discriminatorKey && input.discriminatorValue)) {
+        //     templateParts.push(`${input.targetVal} += \`,"${key}":\``);
+        // } else {
+        //     templateParts.push(`${input.targetVal} += \`"${key}":\``);
+        // }
         const innerTemplate = template({
             schema: propSchema,
             val: `${input.val}.${key}`,
@@ -240,6 +264,7 @@ export function objectTemplate(
             schemaPath: `${input.schemaPath}/properties/${key}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
+            outputPrefix: includeComma ? `,"${key}":` : `"${key}":`,
         });
         templateParts.push(innerTemplate);
     }
@@ -271,13 +296,22 @@ export function objectTemplate(
                 targetVal: input.targetVal,
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
+                outputPrefix: `"${key}":`,
+            });
+            const innerTemplateWithComma = template({
+                schema: optionalPropSchema,
+                schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
+                instancePath: `${input.instancePath}/${key}`,
+                val: innerVal,
+                targetVal: input.targetVal,
+                subFunctionBodies: input.subFunctionBodies,
+                subFunctionNames: input.subFunctionNames,
+                outputPrefix: `,"${key}":`,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
                 if (${hasFieldsVar}) {
-                    ${input.targetVal} += ',"${key}":';
-                    ${innerTemplate}
+                    ${innerTemplateWithComma}
                 } else {
-                    ${input.targetVal} += '"${key}":';
                     ${innerTemplate}
                     ${hasFieldsVar} = true;
                 }
@@ -299,9 +333,9 @@ export function objectTemplate(
                 targetVal: "json",
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
+                outputPrefix: `,"${key}":`,
             });
             const completeInnerTemplate = `if (typeof ${innerVal} !== 'undefined') {
-                ${input.targetVal} += ',"${key}":';
                 ${innerTemplate}
             }`;
             templateParts.push(completeInnerTemplate);
@@ -313,16 +347,18 @@ export function objectTemplate(
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
 export function arrayTemplate(
-    input: TemplateInput<SchemaFormElements>,
+    input: SerializeTemplateInput<SchemaFormElements>,
 ): string {
-    const templateParts: string[] = [`${input.targetVal} += '[';`];
+    const templateParts: string[] = [
+        `${input.targetVal} += '${input.outputPrefix}[';`,
+    ];
     const innerTemplate = template({
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
@@ -331,6 +367,7 @@ export function arrayTemplate(
         targetVal: input.targetVal,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
+        outputPrefix: "",
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
         if (i !== 0) {
@@ -344,19 +381,21 @@ export function arrayTemplate(
         return `if (Array.isArray(${input.val})) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
-export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
+export function recordTemplate(
+    input: SerializeTemplateInput<SchemaFormValues>,
+): string {
     const keysVarName = input.instancePath.length
         ? camelCase(input.instancePath.split("/").join("_")) + "Keys"
         : camelCase(`Keys${randomUUID()}`);
     const templateParts: string[] = [
         `let ${keysVarName} = Object.keys(${input.val});`,
-        `${input.targetVal} += '{';`,
+        `${input.targetVal} += '${input.outputPrefix}{';`,
     ];
     const innerTemplate = template({
         schema: input.schema.values,
@@ -366,6 +405,7 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         targetVal: input.targetVal,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
+        outputPrefix: "",
     });
     templateParts.push(`for (let i = 0; i < ${keysVarName}.length; i++) {
         const key = ${keysVarName}[i];
@@ -383,14 +423,14 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
 function discriminatorTemplate(
-    input: TemplateInput<SchemaFormDiscriminator>,
+    input: SerializeTemplateInput<SchemaFormDiscriminator>,
 ): string {
     const discriminatorKey = input.schema.discriminator;
     const discriminatorVals = Object.keys(input.schema.mapping);
@@ -407,6 +447,7 @@ function discriminatorTemplate(
             subFunctionNames: input.subFunctionNames,
             discriminatorKey,
             discriminatorValue: val,
+            outputPrefix: input.outputPrefix,
         });
         templateParts.push(`case '${val}': {
             ${innerTemplate}
@@ -419,12 +460,25 @@ function discriminatorTemplate(
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
             ${mainTemplate}
         } else {
-            ${input.targetVal} += 'null';
+            ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
     return mainTemplate;
 }
 
-export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
+export function anyTemplate(
+    input: SerializeTemplateInput<SchemaFormEmpty>,
+): string {
+    if (input.outputPrefix) {
+        const mainTemplate = `${input.targetVal} += '${input.outputPrefix}' + JSON.stringify(${input.val});`;
+        if (input.schema.nullable) {
+            return `if (${input.val} === null) {
+                ${input.targetVal} = '${input.outputPrefix}null';
+            } else {
+                ${mainTemplate}
+            }`;
+        }
+        return mainTemplate;
+    }
     return `${input.targetVal} += JSON.stringify(${input.val});`;
 }
