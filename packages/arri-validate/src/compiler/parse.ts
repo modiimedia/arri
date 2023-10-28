@@ -155,19 +155,40 @@ function booleanTemplate(
     const errorMessage = input.instancePath.length
         ? `Expected boolean for ${input.instancePath}`
         : `Expected boolean`;
+    const templateParts: string[] = [];
+    if (input.instancePath.length === 0) {
+        templateParts.push(`if (typeof ${input.val} === 'string') {
+            if (${input.val} === 'true') {
+                ${input.targetVal} = true;
+            }
+            if (${input.val} === 'false') {
+                ${input.targetVal} = false;
+            }`);
+        if (input.schema.nullable) {
+            templateParts.push(`if (${input.val} === 'null') {
+                ${input.targetVal} = null;
+            }`);
+        }
+        templateParts.push(
+            `$fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");`,
+        );
+        templateParts.push("}");
+    }
     const mainTemplate = `if (typeof ${input.val} === 'boolean') {
         ${input.targetVal} = ${input.val};
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
     if (input.schema.nullable) {
-        return `if (${input.val} === null) {
+        templateParts.push(`if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
-        }`;
+        }`);
+    } else {
+        templateParts.push(mainTemplate);
     }
-    return mainTemplate;
+    return templateParts.join("\n");
 }
 
 export function stringTemplate(
@@ -192,6 +213,23 @@ export function stringTemplate(
 export function floatTemplate(
     input: TemplateInput<AScalarSchema<"float32" | "float64">>,
 ): string {
+    const templateParts: string[] = [];
+    if (input.instancePath.length === 0) {
+        templateParts.push(`if (typeof ${input.val} === 'string') {
+            const parsedVal = Number(${input.val});
+            if (!Number.isNaN(parsedVal)) {
+                ${input.targetVal} = parsedVal;
+            }`);
+        if (input.schema.nullable) {
+            templateParts.push(`if (${input.val} === 'null') {
+                ${input.targetVal} = null;
+            }`);
+        }
+        templateParts.push(
+            `$fallback("${input.instancePath}", "${input.schemaPath}/type", \`Could not parse number from \${${input.val}}\`);`,
+        );
+        templateParts.push("}");
+    }
     const errorMessage = `Expected number at ${input.instancePath}`;
     const mainTemplate = `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
         ${input.targetVal} = ${input.val};
@@ -199,13 +237,15 @@ export function floatTemplate(
         $fallback("${input.instancePath}", "${input.schemaPath}/type", "${errorMessage}");
     }`;
     if (input.schema.nullable) {
-        return `if (${input.val} === null) {
+        templateParts.push(`if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
-        }`;
+        }`);
+    } else {
+        templateParts.push(mainTemplate);
     }
-    return mainTemplate;
+    return templateParts.join("\n");
 }
 
 export function intTemplate(
@@ -217,6 +257,24 @@ export function intTemplate(
     min: number,
     max: number,
 ) {
+    const templateParts: string[] = [];
+
+    if (input.instancePath.length === 0) {
+        templateParts.push(`if (typeof ${input.val} === 'string') {
+            const parsedVal = Number(${input.val});
+            if (Number.isInteger(parsedVal) && parsedVal >= ${min} && parsedVal <= ${max}) {
+                ${input.targetVal} = ${input.val};
+            }`);
+        if (input.schema.nullable) {
+            templateParts.push(`if (${input.val} === 'null') {
+                ${input.targetVal} = null;
+            }`);
+        }
+        templateParts.push(
+            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected valid integer between ${min} and ${max});`,
+        );
+        templateParts.push("}");
+    }
     const mainTemplate = `if (typeof ${input.val} === 'number' && Number.isInteger(${input.val}) && ${input.val} >= ${min} && ${input.val} <= ${max}) {
             ${input.targetVal} = ${input.val};
         } else {
@@ -224,18 +282,37 @@ export function intTemplate(
         }`;
 
     if (input.schema.nullable) {
-        return `if (${input.val} === null) {
+        templateParts.push(`if (${input.val} === null) {
             ${input.targetVal} = null;
         } else {
             ${mainTemplate}
-        }`;
+        }`);
+    } else {
+        templateParts.push(mainTemplate);
     }
-    return mainTemplate;
+    return templateParts.join("\n");
 }
 
 export function timestampTemplate(
     input: TemplateInput<AScalarSchema<"timestamp">>,
 ) {
+    const templateParts: string[] = [];
+    if (input.instancePath.length === 0) {
+        templateParts.push(`if (typeof ${input.val} === 'string') {
+            const parsedVal = new Date(${input.val});
+            if(!Number.isNaN(parsedVal.getMonth())) {
+                ${input.targetVal} = parsedVal;
+            }`);
+        if (input.schema.nullable) {
+            templateParts.push(`if (${input.val} === 'null') {
+                ${input.targetVal} = null;
+            }`);
+        }
+        templateParts.push(
+            `$fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string");`,
+        );
+        templateParts.push("}");
+    }
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
         ${input.targetVal} = ${input.val};
     } else if (typeof ${input.val} === 'string') {
@@ -244,13 +321,15 @@ export function timestampTemplate(
         $fallback("${input.instancePath}", "${input.schemaPath}", "Expected instanceof Date or ISO Date string at ${input.instancePath}")
     }`;
     if (input.schema.nullable) {
-        return `if (${input.val} === null) {
+        templateParts.push(`if (${input.val} === null) {
             ${input.targetVal} = null
         } else {
             ${mainTemplate}
-        }`;
+        }`);
+    } else {
+        templateParts.push(mainTemplate);
     }
-    return mainTemplate;
+    return templateParts.join("\n");
 }
 
 function enumTemplate(
@@ -262,12 +341,26 @@ function enumTemplate(
     const errorMessage = `Expected one of the following values: [${input.schema.enum.join(
         ", ",
     )}]${input.instancePath.length ? ` at ${input.instancePath}` : ""}.`;
-    const mainTemplate = `if (typeof ${input.val} === 'string' && (${enumTemplate})) {
+    const templateParts: string[] = [];
+    templateParts.push(`if (typeof ${input.val} === 'string') {
+        if (${enumTemplate}) {
             ${input.targetVal} = ${input.val};
-        } else {
-            $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}");
-        }`;
-
+        }
+    `);
+    if (input.instancePath.length === 0 && input.schema.nullable) {
+        templateParts.push(`else if (${input.val} === 'null') {
+            ${input.targetVal} = null;
+        }`);
+    }
+    templateParts.push(
+        `else {
+            $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}"); 
+        }
+    } else {
+        $fallback("${input.instancePath}", "${input.schemaPath}", "${errorMessage}");
+    }`,
+    );
+    const mainTemplate = templateParts.join("\n");
     if (input.schema.nullable) {
         return `if(${input.val} === null) {
             ${input.targetVal} = null;

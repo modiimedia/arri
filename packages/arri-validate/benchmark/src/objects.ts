@@ -245,14 +245,8 @@ void benny.suite(
     benny.add("Ajv - JTD (Compiled)", () => {
         AjvJtdUserParser(inputJson);
     }),
-    benny.add("TypeBox", () => {
-        Value.Decode(TypeBoxUser, JSON.parse(inputJson));
-    }),
-    benny.add("TypeBox (Compiled)", () => {
-        TypeBoxUserValidator.Decode(JSON.parse(inputJson));
-    }),
-    benny.add("Zod", () => {
-        ZodUser.parse(JSON.parse(inputJson));
+    benny.add("JSON.parse", () => {
+        JSON.parse(inputJson);
     }),
     benny.cycle(),
     benny.complete(),

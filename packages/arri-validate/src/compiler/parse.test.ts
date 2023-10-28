@@ -8,19 +8,11 @@ for (const key of Object.keys(testSuites)) {
     test(key, () => {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
-            try {
-                expect(isEqual(Compiled.parse(input), input));
-                if (typeof input === "object") {
-                    expect(
-                        isEqual(
-                            Compiled.parse(Compiled.serialize(input)),
-                            input,
-                        ),
-                    );
-                }
-            } catch (err) {
-                console.log(Compiled.compiledCode.serialize);
-                throw err;
+            expect(isEqual(Compiled.parse(input), input));
+            if (typeof input === "object") {
+                expect(
+                    isEqual(Compiled.parse(Compiled.serialize(input)), input),
+                );
             }
         }
         for (const input of suite.badInputs) {
