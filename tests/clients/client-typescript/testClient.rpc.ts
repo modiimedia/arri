@@ -101,7 +101,11 @@ export const $$PostParams = {
     };
   },
   serialize(input: PostParams): string {
-    return `{"postId":"${input.postId.replace(/[\n]/g, "\\n")}"}`;
+    let json = "";
+    json += "{";
+    json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+    json += "}";
+    return json;
   },
 };
 
@@ -142,30 +146,42 @@ export const $$Post = {
     };
   },
   serialize(input: Post): string {
-    return `{"id":"${input.id.replace(
-      /[\n]/g,
-      "\\n",
-    )}","title":"${input.title.replace(/[\n]/g, "\\n")}","type":"${
-      input.type
-    }","description":${
-      typeof input.description === "string"
-        ? `"${input.description.replace(/[\n]/g, "\\n")}"`
-        : null
-    },"content":"${input.content.replace(/[\n]/g, "\\n")}","tags":[${input.tags
-      .map((item) => {
-        return `"${item.replace(/[\n]/g, "\\n")}"`;
-      })
-      .join(",")}],"authorId":"${input.authorId.replace(
-      /[\n]/g,
-      "\\n",
-    )}","author":{"id":"${input.author.id.replace(
-      /[\n]/g,
-      "\\n",
-    )}","name":"${input.author.name.replace(/[\n]/g, "\\n")}","bio":${
-      typeof input.author.bio === "string"
-        ? `"${input.author.bio.replace(/[\n]/g, "\\n")}"`
-        : null
-    },"createdAt":"${input.author.createdAt.toISOString()}","updatedAt":"${input.author.updatedAt.toISOString()}"},"createdAt":"${input.createdAt.toISOString()}","updatedAt":"${input.updatedAt.toISOString()}"}`;
+    let json = "";
+    json += "{";
+    json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"title":"${input.title.replace(/[\n]/g, "\\n")}"`;
+    json += `,"type":"${input.type}"`;
+    if (typeof input.description === "string") {
+      json += `,"description":"${input.description.replace(/[\n]/g, "\\n")}"`;
+    } else {
+      json += ',"description":null';
+    }
+    json += `,"content":"${input.content.replace(/[\n]/g, "\\n")}"`;
+    json += ',"tags":[';
+    for (let i = 0; i < input.tags.length; i++) {
+      const inputTagsItem = input.tags[i];
+      if (i !== 0) {
+        json += ",";
+      }
+      json += `"${inputTagsItem.replace(/[\n]/g, "\\n")}"`;
+    }
+    json += "]";
+    json += `,"authorId":"${input.authorId.replace(/[\n]/g, "\\n")}"`;
+    json += ',"author":{';
+    json += `"id":"${input.author.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"name":"${input.author.name.replace(/[\n]/g, "\\n")}"`;
+    if (typeof input.author.bio === "string") {
+      json += `,"bio":"${input.author.bio.replace(/[\n]/g, "\\n")}"`;
+    } else {
+      json += ',"bio":null';
+    }
+    json += `,"createdAt":"${input.author.createdAt.toISOString()}"`;
+    json += `,"updatedAt":"${input.author.updatedAt.toISOString()}"`;
+    json += "}";
+    json += `,"createdAt":"${input.createdAt.toISOString()}"`;
+    json += `,"updatedAt":"${input.updatedAt.toISOString()}"`;
+    json += "}";
+    return json;
   },
 };
 export type PostType = "text" | "image" | "video";
@@ -207,14 +223,19 @@ export const $$Author = {
     };
   },
   serialize(input: Author): string {
-    return `{"id":"${input.id.replace(
-      /[\n]/g,
-      "\\n",
-    )}","name":"${input.name.replace(/[\n]/g, "\\n")}","bio":${
-      typeof input.bio === "string"
-        ? `"${input.bio.replace(/[\n]/g, "\\n")}"`
-        : null
-    },"createdAt":"${input.createdAt.toISOString()}","updatedAt":"${input.updatedAt.toISOString()}"}`;
+    let json = "";
+    json += "{";
+    json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"name":"${input.name.replace(/[\n]/g, "\\n")}"`;
+    if (typeof input.bio === "string") {
+      json += `,"bio":"${input.bio.replace(/[\n]/g, "\\n")}"`;
+    } else {
+      json += ',"bio":null';
+    }
+    json += `,"createdAt":"${input.createdAt.toISOString()}"`;
+    json += `,"updatedAt":"${input.updatedAt.toISOString()}"`;
+    json += "}";
+    return json;
   },
 };
 
@@ -233,9 +254,14 @@ export const $$PostListParams = {
     };
   },
   serialize(input: PostListParams): string {
-    return `{${
-      input.type !== undefined ? `"type":"${input.type}",` : ""
-    }"limit":${input.limit}}`;
+    let json = "";
+    json += "{";
+    json += `"limit":${input.limit}`;
+    if (typeof input.type !== "undefined") {
+      json += `,"type":"${input.type}"`;
+    }
+    json += "}";
+    return json;
   },
 };
 
@@ -253,37 +279,59 @@ export const $$PostListResponse = {
     };
   },
   serialize(input: PostListResponse): string {
-    return `{"total":${input.total},"items":[${input.items
-      .map((item) => {
-        return `{"id":"${item.id.replace(
+    let json = "";
+    json += "{";
+    json += `"total":${input.total}`;
+    json += ',"items":[';
+    for (let i = 0; i < input.items.length; i++) {
+      const inputItemsItem = input.items[i];
+      if (i !== 0) {
+        json += ",";
+      }
+      json += "{";
+      json += `"id":"${inputItemsItem.id.replace(/[\n]/g, "\\n")}"`;
+      json += `,"title":"${inputItemsItem.title.replace(/[\n]/g, "\\n")}"`;
+      json += `,"type":"${inputItemsItem.type}"`;
+      if (typeof inputItemsItem.description === "string") {
+        json += `,"description":"${inputItemsItem.description.replace(
           /[\n]/g,
           "\\n",
-        )}","title":"${item.title.replace(/[\n]/g, "\\n")}","type":"${
-          item.type
-        }","description":${
-          typeof item.description === "string"
-            ? `"${item.description.replace(/[\n]/g, "\\n")}"`
-            : null
-        },"content":"${item.content.replace(
-          /[\n]/g,
-          "\\n",
-        )}","tags":[${item.tags
-          .map((item) => {
-            return `"${item.replace(/[\n]/g, "\\n")}"`;
-          })
-          .join(",")}],"authorId":"${item.authorId.replace(
-          /[\n]/g,
-          "\\n",
-        )}","author":{"id":"${item.author.id.replace(
-          /[\n]/g,
-          "\\n",
-        )}","name":"${item.author.name.replace(/[\n]/g, "\\n")}","bio":${
-          typeof item.author.bio === "string"
-            ? `"${item.author.bio.replace(/[\n]/g, "\\n")}"`
-            : null
-        },"createdAt":"${item.author.createdAt.toISOString()}","updatedAt":"${item.author.updatedAt.toISOString()}"},"createdAt":"${item.createdAt.toISOString()}","updatedAt":"${item.updatedAt.toISOString()}"}`;
-      })
-      .join(",")}]}`;
+        )}"`;
+      } else {
+        json += ',"description":null';
+      }
+      json += `,"content":"${inputItemsItem.content.replace(/[\n]/g, "\\n")}"`;
+      json += ',"tags":[';
+      for (let i = 0; i < inputItemsItem.tags.length; i++) {
+        const inputItemsItemTagsItem = inputItemsItem.tags[i];
+        if (i !== 0) {
+          json += ",";
+        }
+        json += `"${inputItemsItemTagsItem.replace(/[\n]/g, "\\n")}"`;
+      }
+      json += "]";
+      json += `,"authorId":"${inputItemsItem.authorId.replace(
+        /[\n]/g,
+        "\\n",
+      )}"`;
+      json += ',"author":{';
+      json += `"id":"${inputItemsItem.author.id.replace(/[\n]/g, "\\n")}"`;
+      json += `,"name":"${inputItemsItem.author.name.replace(/[\n]/g, "\\n")}"`;
+      if (typeof inputItemsItem.author.bio === "string") {
+        json += `,"bio":"${inputItemsItem.author.bio.replace(/[\n]/g, "\\n")}"`;
+      } else {
+        json += ',"bio":null';
+      }
+      json += `,"createdAt":"${inputItemsItem.author.createdAt.toISOString()}"`;
+      json += `,"updatedAt":"${inputItemsItem.author.updatedAt.toISOString()}"`;
+      json += "}";
+      json += `,"createdAt":"${inputItemsItem.createdAt.toISOString()}"`;
+      json += `,"updatedAt":"${inputItemsItem.updatedAt.toISOString()}"`;
+      json += "}";
+    }
+    json += "]";
+    json += "}";
+    return json;
   },
 };
 
@@ -299,33 +347,76 @@ export const $$UpdatePostParams = {
     };
   },
   serialize(input: UpdatePostParams): string {
-    return `{"postId":"${input.postId.replace(/[\n]/g, "\\n")}","data":${`{${
-      input.data.title !== undefined
-        ? `"title":"${input.data.title.replace(/[\n]/g, "\\n")}",`
-        : ""
-    }${
-      input.data.description !== undefined
-        ? `"description":${
-            typeof input.data.description === "string"
-              ? `"${input.data.description.replace(/[\n]/g, "\\n")}"`
-              : null
-          },`
-        : ""
-    }${
-      input.data.content !== undefined
-        ? `"content":"${input.data.content.replace(/[\n]/g, "\\n")}",`
-        : ""
-    }${
-      input.data.tags !== undefined
-        ? `"tags":[${input.data.tags
-            .map((item) => {
-              return `"${item.replace(/[\n]/g, "\\n")}"`;
-            })
-            .join(",")}],`
-        : ""
-    }}`
-      .split(",}")
-      .join("}")}}`;
+    let json = "";
+    json += "{";
+    json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+    json += ',"data":{';
+    let dataHasFields = false;
+    if (typeof input.data.title !== "undefined") {
+      if (dataHasFields) {
+        json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n")}"`;
+      } else {
+        json += `"title":"${input.data.title.replace(/[\n]/g, "\\n")}"`;
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.description !== "undefined") {
+      if (dataHasFields) {
+        if (typeof input.data.description === "string") {
+          json += `,"description":"${input.data.description.replace(
+            /[\n]/g,
+            "\\n",
+          )}"`;
+        } else {
+          json += ',"description":null';
+        }
+      } else {
+        if (typeof input.data.description === "string") {
+          json += `"description":"${input.data.description.replace(
+            /[\n]/g,
+            "\\n",
+          )}"`;
+        } else {
+          json += '"description":null';
+        }
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.content !== "undefined") {
+      if (dataHasFields) {
+        json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n")}"`;
+      } else {
+        json += `"content":"${input.data.content.replace(/[\n]/g, "\\n")}"`;
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.tags !== "undefined") {
+      if (dataHasFields) {
+        json += ',"tags":[';
+        for (let i = 0; i < input.data.tags.length; i++) {
+          const inputDataTagsItem = input.data.tags[i];
+          if (i !== 0) {
+            json += ",";
+          }
+          json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n")}"`;
+        }
+        json += "]";
+      } else {
+        json += '"tags":[';
+        for (let i = 0; i < input.data.tags.length; i++) {
+          const inputDataTagsItem = input.data.tags[i];
+          if (i !== 0) {
+            json += ",";
+          }
+          json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n")}"`;
+        }
+        json += "]";
+        dataHasFields = true;
+      }
+    }
+    json += "}";
+    json += "}";
+    return json;
   },
 };
 export interface UpdatePostParamsData {
@@ -347,33 +438,73 @@ export const $$UpdatePostParamsData = {
     };
   },
   serialize(input: UpdatePostParamsData): string {
-    return `${`{${
-      input.title !== undefined
-        ? `"title":"${input.title.replace(/[\n]/g, "\\n")}",`
-        : ""
-    }${
-      input.description !== undefined
-        ? `"description":${
-            typeof input.description === "string"
-              ? `"${input.description.replace(/[\n]/g, "\\n")}"`
-              : null
-          },`
-        : ""
-    }${
-      input.content !== undefined
-        ? `"content":"${input.content.replace(/[\n]/g, "\\n")}",`
-        : ""
-    }${
-      input.tags !== undefined
-        ? `"tags":[${input.tags
-            .map((item) => {
-              return `"${item.replace(/[\n]/g, "\\n")}"`;
-            })
-            .join(",")}],`
-        : ""
-    }}`
-      .split(",}")
-      .join("}")}`;
+    let json = "";
+    json += "{";
+    let inputHasFields = false;
+    if (typeof input.title !== "undefined") {
+      if (inputHasFields) {
+        json += `,"title":"${input.title.replace(/[\n]/g, "\\n")}"`;
+      } else {
+        json += `"title":"${input.title.replace(/[\n]/g, "\\n")}"`;
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.description !== "undefined") {
+      if (inputHasFields) {
+        if (typeof input.description === "string") {
+          json += `,"description":"${input.description.replace(
+            /[\n]/g,
+            "\\n",
+          )}"`;
+        } else {
+          json += ',"description":null';
+        }
+      } else {
+        if (typeof input.description === "string") {
+          json += `"description":"${input.description.replace(
+            /[\n]/g,
+            "\\n",
+          )}"`;
+        } else {
+          json += '"description":null';
+        }
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.content !== "undefined") {
+      if (inputHasFields) {
+        json += `,"content":"${input.content.replace(/[\n]/g, "\\n")}"`;
+      } else {
+        json += `"content":"${input.content.replace(/[\n]/g, "\\n")}"`;
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.tags !== "undefined") {
+      if (inputHasFields) {
+        json += ',"tags":[';
+        for (let i = 0; i < input.tags.length; i++) {
+          const inputTagsItem = input.tags[i];
+          if (i !== 0) {
+            json += ",";
+          }
+          json += `"${inputTagsItem.replace(/[\n]/g, "\\n")}"`;
+        }
+        json += "]";
+      } else {
+        json += '"tags":[';
+        for (let i = 0; i < input.tags.length; i++) {
+          const inputTagsItem = input.tags[i];
+          if (i !== 0) {
+            json += ",";
+          }
+          json += `"${inputTagsItem.replace(/[\n]/g, "\\n")}"`;
+        }
+        json += "]";
+        inputHasFields = true;
+      }
+    }
+    json += "}";
+    return json;
   },
 };
 
@@ -389,10 +520,12 @@ export const $$AnnotationId = {
     };
   },
   serialize(input: AnnotationId): string {
-    return `{"id":"${input.id.replace(
-      /[\n]/g,
-      "\\n",
-    )}","version":"${input.version.replace(/[\n]/g, "\\n")}"}`;
+    let json = "";
+    json += "{";
+    json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"version":"${input.version.replace(/[\n]/g, "\\n")}"`;
+    json += "}";
+    return json;
   },
 };
 
@@ -419,24 +552,28 @@ export const $$Annotation = {
     };
   },
   serialize(input: Annotation): string {
-    return `{"annotation_id":{"id":"${input.annotation_id.id.replace(
+    let json = "";
+    json += "{";
+    json += '"annotation_id":{';
+    json += `"id":"${input.annotation_id.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"version":"${input.annotation_id.version.replace(
       /[\n]/g,
       "\\n",
-    )}","version":"${input.annotation_id.version.replace(
-      /[\n]/g,
-      "\\n",
-    )}"},"associated_id":{"entity_type":"${
-      input.associated_id.entity_type
-    }","id":"${input.associated_id.id.replace(
-      /[\n]/g,
-      "\\n",
-    )}"},"annotation_type":"${
-      input.annotation_type
-    }","annotation_type_version":${
-      input.annotation_type_version
-    },"metadata":${JSON.stringify(
-      input.metadata,
-    )},"box_type_range":{"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"}}`;
+    )}"`;
+    json += "}";
+    json += ',"associated_id":{';
+    json += `"entity_type":"${input.associated_id.entity_type}"`;
+    json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n")}"`;
+    json += "}";
+    json += `,"annotation_type":"${input.annotation_type}"`;
+    json += `,"annotation_type_version":${input.annotation_type_version}`;
+    json += ',"metadata":' + JSON.stringify(input.metadata);
+    json += ',"box_type_range":{';
+    json += `"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}"`;
+    json += `,"end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"`;
+    json += "}";
+    json += "}";
+    return json;
   },
 };
 export interface AssociatedId {
@@ -451,10 +588,12 @@ export const $$AssociatedId = {
     };
   },
   serialize(input: AssociatedId): string {
-    return `{"entity_type":"${input.entity_type}","id":"${input.id.replace(
-      /[\n]/g,
-      "\\n",
-    )}"}`;
+    let json = "";
+    json += "{";
+    json += `"entity_type":"${input.entity_type}"`;
+    json += `,"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+    json += "}";
+    return json;
   },
 };
 export type AnnotationAssociatedIdEntityType = "MOVIE_ID" | "SHOW_ID";
@@ -505,7 +644,12 @@ export const $$AnnotationBoxTypeRange = {
     };
   },
   serialize(input: AnnotationBoxTypeRange): string {
-    return `{"start_time_in_nano_sec":"${input.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.end_time_in_nano_sec.toString()}"}`;
+    let json = "";
+    json += "{";
+    json += `"start_time_in_nano_sec":"${input.start_time_in_nano_sec.toString()}"`;
+    json += `,"end_time_in_nano_sec":"${input.end_time_in_nano_sec.toString()}"`;
+    json += "}";
+    return json;
   },
 };
 
@@ -527,37 +671,76 @@ export const $$UpdateAnnotationParams = {
     };
   },
   serialize(input: UpdateAnnotationParams): string {
-    return `{"annotation_id":"${input.annotation_id.replace(
+    let json = "";
+    json += "{";
+    json += `"annotation_id":"${input.annotation_id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"annotation_id_version":"${input.annotation_id_version.replace(
       /[\n]/g,
       "\\n",
-    )}","annotation_id_version":"${input.annotation_id_version.replace(
-      /[\n]/g,
-      "\\n",
-    )}","data":${`{${
-      input.data.associated_id !== undefined
-        ? `"associated_id":{"entity_type":"${
-            input.data.associated_id.entity_type
-          }","id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n")}"},`
-        : ""
-    }${
-      input.data.annotation_type !== undefined
-        ? `"annotation_type":"${input.data.annotation_type}",`
-        : ""
-    }${
-      input.data.annotation_type_version !== undefined
-        ? `"annotation_type_version":${input.data.annotation_type_version},`
-        : ""
-    }${
-      input.data.metadata !== undefined
-        ? `"metadata":${JSON.stringify(input.data.metadata)},`
-        : ""
-    }${
-      input.data.box_type_range !== undefined
-        ? `"box_type_range":{"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"},`
-        : ""
-    }}`
-      .split(",}")
-      .join("}")}}`;
+    )}"`;
+    json += ',"data":{';
+    let dataHasFields = false;
+    if (typeof input.data.associated_id !== "undefined") {
+      if (dataHasFields) {
+        json += ',"associated_id":{';
+        json += `"entity_type":"${input.data.associated_id.entity_type}"`;
+        json += `,"id":"${input.data.associated_id.id.replace(
+          /[\n]/g,
+          "\\n",
+        )}"`;
+        json += "}";
+      } else {
+        json += '"associated_id":{';
+        json += `"entity_type":"${input.data.associated_id.entity_type}"`;
+        json += `,"id":"${input.data.associated_id.id.replace(
+          /[\n]/g,
+          "\\n",
+        )}"`;
+        json += "}";
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.annotation_type !== "undefined") {
+      if (dataHasFields) {
+        json += `,"annotation_type":"${input.data.annotation_type}"`;
+      } else {
+        json += `"annotation_type":"${input.data.annotation_type}"`;
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.annotation_type_version !== "undefined") {
+      if (dataHasFields) {
+        json += `,"annotation_type_version":${input.data.annotation_type_version}`;
+      } else {
+        json += `"annotation_type_version":${input.data.annotation_type_version}`;
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.metadata !== "undefined") {
+      if (dataHasFields) {
+        json += ',"metadata":' + JSON.stringify(input.data.metadata);
+      } else {
+        json += '"metadata":' + JSON.stringify(input.data.metadata);
+        dataHasFields = true;
+      }
+    }
+    if (typeof input.data.box_type_range !== "undefined") {
+      if (dataHasFields) {
+        json += ',"box_type_range":{';
+        json += `"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}"`;
+        json += `,"end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"`;
+        json += "}";
+      } else {
+        json += '"box_type_range":{';
+        json += `"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}"`;
+        json += `,"end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"`;
+        json += "}";
+        dataHasFields = true;
+      }
+    }
+    json += "}";
+    json += "}";
+    return json;
   },
 };
 export interface UpdateAnnotationData {
@@ -593,31 +776,63 @@ export const $$UpdateAnnotationData = {
     };
   },
   serialize(input: UpdateAnnotationData): string {
-    return `${`{${
-      input.associated_id !== undefined
-        ? `"associated_id":{"entity_type":"${
-            input.associated_id.entity_type
-          }","id":"${input.associated_id.id.replace(/[\n]/g, "\\n")}"},`
-        : ""
-    }${
-      input.annotation_type !== undefined
-        ? `"annotation_type":"${input.annotation_type}",`
-        : ""
-    }${
-      input.annotation_type_version !== undefined
-        ? `"annotation_type_version":${input.annotation_type_version},`
-        : ""
-    }${
-      input.metadata !== undefined
-        ? `"metadata":${JSON.stringify(input.metadata)},`
-        : ""
-    }${
-      input.box_type_range !== undefined
-        ? `"box_type_range":{"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"},`
-        : ""
-    }}`
-      .split(",}")
-      .join("}")}`;
+    let json = "";
+    json += "{";
+    let inputHasFields = false;
+    if (typeof input.associated_id !== "undefined") {
+      if (inputHasFields) {
+        json += ',"associated_id":{';
+        json += `"entity_type":"${input.associated_id.entity_type}"`;
+        json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+      } else {
+        json += '"associated_id":{';
+        json += `"entity_type":"${input.associated_id.entity_type}"`;
+        json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.annotation_type !== "undefined") {
+      if (inputHasFields) {
+        json += `,"annotation_type":"${input.annotation_type}"`;
+      } else {
+        json += `"annotation_type":"${input.annotation_type}"`;
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.annotation_type_version !== "undefined") {
+      if (inputHasFields) {
+        json += `,"annotation_type_version":${input.annotation_type_version}`;
+      } else {
+        json += `"annotation_type_version":${input.annotation_type_version}`;
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.metadata !== "undefined") {
+      if (inputHasFields) {
+        json += ',"metadata":' + JSON.stringify(input.metadata);
+      } else {
+        json += '"metadata":' + JSON.stringify(input.metadata);
+        inputHasFields = true;
+      }
+    }
+    if (typeof input.box_type_range !== "undefined") {
+      if (inputHasFields) {
+        json += ',"box_type_range":{';
+        json += `"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}"`;
+        json += `,"end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"`;
+        json += "}";
+      } else {
+        json += '"box_type_range":{';
+        json += `"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}"`;
+        json += `,"end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"`;
+        json += "}";
+        inputHasFields = true;
+      }
+    }
+    json += "}";
+    return json;
   },
 };
 export type UpdateAnnotationParamsDataAnnotationType = "ANNOTATION_BOUNDINGBOX";
@@ -653,6 +868,11 @@ export const $$UpdateAnnotationParamsDataBoxTypeRange = {
     };
   },
   serialize(input: UpdateAnnotationParamsDataBoxTypeRange): string {
-    return `{"start_time_in_nano_sec":"${input.start_time_in_nano_sec.toString()}","end_time_in_nano_sec":"${input.end_time_in_nano_sec.toString()}"}`;
+    let json = "";
+    json += "{";
+    json += `"start_time_in_nano_sec":"${input.start_time_in_nano_sec.toString()}"`;
+    json += `,"end_time_in_nano_sec":"${input.end_time_in_nano_sec.toString()}"`;
+    json += "}";
+    return json;
   },
 };

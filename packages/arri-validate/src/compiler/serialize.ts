@@ -355,6 +355,7 @@ export function objectTemplate(
 export function arrayTemplate(
     input: SerializeTemplateInput<SchemaFormElements>,
 ): string {
+    const itemVarName = camelCase(`${input.val || "list"}_item`);
     const templateParts: string[] = [
         `${input.targetVal} += '${input.outputPrefix}[';`,
     ];
@@ -362,14 +363,14 @@ export function arrayTemplate(
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
         instancePath: `${input.instancePath}/i`,
-        val: `arrayItem`,
+        val: itemVarName,
         targetVal: input.targetVal,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
         outputPrefix: "",
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
-        const arrayItem = ${input.val}[i];
+        const ${itemVarName} = ${input.val}[i];
         if (i !== 0) {
             ${input.targetVal} += ',';
         }
