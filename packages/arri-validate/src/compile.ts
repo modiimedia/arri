@@ -1,7 +1,7 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
-import { isSchemaFormType, type Type } from "jtd-utils";
+import { isSchemaFormEnum, isSchemaFormType, type Type } from "jtd-utils";
 import {
     type SafeResult,
     type ASchema,
@@ -11,8 +11,7 @@ import {
     isAStringEnumSchema,
 } from "./_index";
 import { createParsingTemplate } from "./compiler/parse";
-import { createSerializationTemplate as getSchemaSerializationCode } from "./compiler/serialize";
-import { createSerializationV2Template as getSchemaSerializationV2Code } from "./compiler/serializeV2";
+import { createSerializationV2Template as getSchemaSerializationCode } from "./compiler/serialize";
 import { createValidationTemplate as getSchemaValidationCode } from "./compiler/validate";
 import {
     int16Max,
@@ -475,7 +474,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
-    const serializeCode = getSchemaSerializationV2Code("input", schema);
+    const serializeCode = getSchemaSerializationCode("input", schema);
     const validateCode = getSchemaValidationCode("input", schema);
     const parse = getCompiledParser("input", schema);
     const serialize = new Function(
@@ -546,7 +545,7 @@ export function compile<TSchema extends ASchema<any>>(
 export function getCompiledSerializer<TSchema extends ASchema>(
     schema: TSchema,
 ): { fn: (input: InferType<TSchema>) => string; code: string } {
-    const code = getSchemaSerializationV2Code("input", schema);
+    const code = getSchemaSerializationCode("input", schema);
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case "string":
@@ -630,8 +629,46 @@ export function getCompiledSerializer<TSchema extends ASchema>(
                 };
             case "int64":
             case "uint64":
-                break;
+                if (schema.nullable) {
+                    return {
+                        fn(input: bigint | null) {
+                            if (typeof input === "bigint") {
+                                return input.toString();
+                            }
+                            return "null";
+                        },
+                        code,
+                    };
+                }
+                return {
+                    fn(input: bigint) {
+                        return input.toString();
+                    },
+                    code,
+                };
         }
+    }
+    if (isSchemaFormEnum(schema)) {
+        if (schema.nullable) {
+            return {
+                fn(input: string | null) {
+                    if (
+                        typeof input === "string" &&
+                        schema.enum.includes(input)
+                    ) {
+                        return input;
+                    }
+                    return "null";
+                },
+                code,
+            };
+        }
+        return {
+            fn(input: string) {
+                return input;
+            },
+            code,
+        };
     }
     const fn = new Function("input", code) as any;
     return {
