@@ -95,7 +95,11 @@ export const $$GetStatusResponse = {
         };
     },
     serialize(input: GetStatusResponse): string {
-        return `{"message":"${input.message.replace(/[\n]/g, "\\n")}"}`;
+        let json = "";
+        json += "{";
+        json += `"message":"${input.message.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+        return json;
     },
 };
 
@@ -148,93 +152,112 @@ export const $$User = {
         };
     },
     serialize(input: User): string {
-        // @ts-ignore
-        function _recent_notifications_0_to_json(val) {
-            switch (val.notificationType) {
-                case "POST_LIKE":
-                    return `{"postId":"${val.postId.replace(
+        let json = "";
+        json += "{";
+        json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+        json += `,"role":"${input.role}"`;
+        if (typeof input.photo === "object" && input.photo !== null) {
+            json += ',"photo":{';
+            json += `"url":"${input.photo.url.replace(/[\n]/g, "\\n")}"`;
+            json += `,"width":${input.photo.width}`;
+            json += `,"height":${input.photo.height}`;
+            json += `,"bytes":"${input.photo.bytes.toString()}"`;
+            json += `,"nanoseconds":"${input.photo.nanoseconds.toString()}"`;
+            json += "}";
+        } else {
+            json += ',"photo":null';
+        }
+        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
+        json += `,"numFollowers":${input.numFollowers}`;
+        json += ',"settings":{';
+        json += `"notificationsEnabled":${input.settings.notificationsEnabled}`;
+        json += `,"preferredTheme":"${input.settings.preferredTheme}"`;
+        json += "}";
+        json += ',"recentNotifications":[';
+        for (let i = 0; i < input.recentNotifications.length; i++) {
+            const arrayItem = input.recentNotifications[i];
+            if (i !== 0) {
+                json += ",";
+            }
+            switch (arrayItem.notificationType) {
+                case "POST_LIKE": {
+                    json += "{";
+                    json += `"notificationType":"POST_LIKE"`;
+                    json += `,"postId":"${arrayItem.postId.replace(
                         /[\n]/g,
                         "\\n",
-                    )}","userId":"${val.userId.replace(
+                    )}"`;
+                    json += `,"userId":"${arrayItem.userId.replace(
                         /[\n]/g,
                         "\\n",
-                    )}","notificationType":"${val.notificationType}"}`;
-                case "POST_COMMENT":
-                    return `{"postId":"${val.postId.replace(
+                    )}"`;
+                    json += "}";
+                    break;
+                }
+                case "POST_COMMENT": {
+                    json += "{";
+                    json += `"notificationType":"POST_COMMENT"`;
+                    json += `,"postId":"${arrayItem.postId.replace(
                         /[\n]/g,
                         "\\n",
-                    )}","userId":"${val.userId.replace(
+                    )}"`;
+                    json += `,"userId":"${arrayItem.userId.replace(
                         /[\n]/g,
                         "\\n",
-                    )}","commentText":"${val.commentText.replace(
+                    )}"`;
+                    json += `,"commentText":"${arrayItem.commentText.replace(
                         /[\n]/g,
                         "\\n",
-                    )}","notificationType":"${val.notificationType}"}`;
-                default:
-                    return null;
+                    )}"`;
+                    json += "}";
+                    break;
+                }
             }
         }
-        // @ts-ignore
-        function bookmarks(val) {
-            const keyParts = [];
-            const keys = Object.keys(val);
-            for (let i = 0; i < Object.keys(val).length; i++) {
-                const key = keys[i];
-                const v = val[key];
-                keyParts.push(
-                    `"${key}":{"postId":"${v.postId.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","userId":"${v.userId.replace(/[\n]/g, "\\n")}"}`,
-                );
+        json += "]";
+        const bookmarksKeys = Object.keys(input.bookmarks);
+        json += ',"bookmarks":{';
+        for (let i = 0; i < bookmarksKeys.length; i++) {
+            const key = bookmarksKeys[i];
+            const innerVal = input.bookmarks[key];
+            if (i !== 0) {
+                json += `,"${key}":`;
+            } else {
+                json += `"${key}":`;
             }
-            return `{${keyParts.join(",")}}`;
+            json += "{";
+            json += `"postId":"${innerVal.postId.replace(/[\n]/g, "\\n")}"`;
+            json += `,"userId":"${innerVal.userId.replace(/[\n]/g, "\\n")}"`;
+            json += "}";
         }
-        // @ts-ignore
-        function metadata(val) {
-            const keyParts = [];
-            const keys = Object.keys(val);
-            for (let i = 0; i < Object.keys(val).length; i++) {
-                const key = keys[i];
-                const v = val[key];
-                keyParts.push(`"${key}":${JSON.stringify(v)}`);
+        json += "}";
+        const metadataKeys = Object.keys(input.metadata);
+        json += ',"metadata":{';
+        for (let i = 0; i < metadataKeys.length; i++) {
+            const key = metadataKeys[i];
+            const innerVal = input.metadata[key];
+            if (i !== 0) {
+                json += `,"${key}":`;
+            } else {
+                json += `"${key}":`;
             }
-            return `{${keyParts.join(",")}}`;
+            json += JSON.stringify(innerVal);
         }
-        return `{${
-            input.bio !== undefined
-                ? `"bio":"${input.bio.replace(/[\n]/g, "\\n")}",`
-                : ""
-        }"id":"${input.id.replace(/[\n]/g, "\\n")}","role":"${
-            input.role
-        }","photo":${
-            typeof input.photo === "object" && input.photo !== null
-                ? `{"url":"${input.photo.url.replace(
-                      /[\n]/g,
-                      "\\n",
-                  )}","width":${input.photo.width},"height":${
-                      input.photo.height
-                  },"bytes":"${input.photo.bytes.toString()}","nanoseconds":"${input.photo.nanoseconds.toString()}"}`
-                : null
-        },"createdAt":"${input.createdAt.toISOString()}","numFollowers":${
-            input.numFollowers
-        },"settings":{"notificationsEnabled":${
-            input.settings.notificationsEnabled
-        },"preferredTheme":"${
-            input.settings.preferredTheme
-        }"},"recentNotifications":[${input.recentNotifications
-            .map((item) => {
-                return `${_recent_notifications_0_to_json(item)}`;
-            })
-            .join(",")}],"bookmarks":${bookmarks(
-            input.bookmarks,
-        )},"metadata":${metadata(
-            input.metadata,
-        )},"randomList":[${input.randomList
-            .map((item) => {
-                return `${JSON.stringify(item)}`;
-            })
-            .join(",")}]}`;
+        json += "}";
+        json += ',"randomList":[';
+        for (let i = 0; i < input.randomList.length; i++) {
+            const arrayItem = input.randomList[i];
+            if (i !== 0) {
+                json += ",";
+            }
+            json += JSON.stringify(arrayItem);
+        }
+        json += "]";
+        if (typeof input.bio !== "undefined") {
+            json += `,"bio":"${input.bio.replace(/[\n]/g, "\\n")}"`;
+        }
+        json += "}";
+        return json;
     },
 };
 
@@ -278,15 +301,19 @@ export const $$UserPhoto = {
         };
     },
     serialize(input: UserPhoto): string {
-        return `${
-            typeof input === "object" && input !== null
-                ? `{"url":"${input.url.replace(/[\n]/g, "\\n")}","width":${
-                      input.width
-                  },"height":${
-                      input.height
-                  },"bytes":"${input.bytes.toString()}","nanoseconds":"${input.nanoseconds.toString()}"}`
-                : "null"
-        }`;
+        let json = "";
+        if (typeof input === "object" && input !== null) {
+            json += "{";
+            json += `"url":"${input.url.replace(/[\n]/g, "\\n")}"`;
+            json += `,"width":${input.width}`;
+            json += `,"height":${input.height}`;
+            json += `,"bytes":"${input.bytes.toString()}"`;
+            json += `,"nanoseconds":"${input.nanoseconds.toString()}"`;
+            json += "}";
+        } else {
+            json += "null";
+        }
+        return json;
     },
 };
 
@@ -307,7 +334,12 @@ export const $$UserSettings = {
         };
     },
     serialize(input: UserSettings): string {
-        return `{"notificationsEnabled":${input.notificationsEnabled},"preferredTheme":"${input.preferredTheme}"}`;
+        let json = "";
+        json += "{";
+        json += `"notificationsEnabled":${input.notificationsEnabled}`;
+        json += `,"preferredTheme":"${input.preferredTheme}"`;
+        json += "}";
+        return json;
     },
 };
 
@@ -344,33 +376,30 @@ export const $$UserRecentNotificationsItem = {
         );
     },
     serialize(input: UserRecentNotificationsItem): string {
-        // @ts-ignore
-        function _to_json(val) {
-            switch (val.notificationType) {
-                case "POST_LIKE":
-                    return `{"postId":"${val.postId.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","userId":"${val.userId.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","notificationType":"${val.notificationType}"}`;
-                case "POST_COMMENT":
-                    return `{"postId":"${val.postId.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","userId":"${val.userId.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","commentText":"${val.commentText.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","notificationType":"${val.notificationType}"}`;
-                default:
-                    return null;
+        let json = "";
+        switch (input.notificationType) {
+            case "POST_LIKE": {
+                json += "{";
+                json += `"notificationType":"POST_LIKE"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n")}"`;
+                json += "}";
+                break;
+            }
+            case "POST_COMMENT": {
+                json += "{";
+                json += `"notificationType":"POST_COMMENT"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n")}"`;
+                json += `,"commentText":"${input.commentText.replace(
+                    /[\n]/g,
+                    "\\n",
+                )}"`;
+                json += "}";
+                break;
             }
         }
-        return `${_to_json(input)}`;
+        return json;
     },
 };
 export interface UserRecentNotificationsItemPostLike {
@@ -387,10 +416,12 @@ export const $$UserRecentNotificationsItemPostLike = {
         };
     },
     serialize(input: UserRecentNotificationsItemPostLike): string {
-        return `{"postId":"${input.postId.replace(
-            /[\n]/g,
-            "\\n",
-        )}","userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
+        let json = "";
+        json += "{";
+        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+        return json;
     },
 };
 
@@ -411,13 +442,13 @@ export const $$UserRecentNotificationsItemPostComment = {
         };
     },
     serialize(input: UserRecentNotificationsItemPostComment): string {
-        return `{"postId":"${input.postId.replace(
-            /[\n]/g,
-            "\\n",
-        )}","userId":"${input.userId.replace(
-            /[\n]/g,
-            "\\n",
-        )}","commentText":"${input.commentText.replace(/[\n]/g, "\\n")}"}`;
+        let json = "";
+        json += "{";
+        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"commentText":"${input.commentText.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+        return json;
     },
 };
 
@@ -431,23 +462,24 @@ export const $$UserBookmarks = {
         return result;
     },
     serialize(input: UserBookmarks): string {
-        // @ts-ignore
-        function serializeVal(val) {
-            const keyParts = [];
-            const keys = Object.keys(val);
-            for (let i = 0; i < Object.keys(val).length; i++) {
-                const key = keys[i];
-                const v = val[key];
-                keyParts.push(
-                    `"${key}":{"postId":"${v.postId.replace(
-                        /[\n]/g,
-                        "\\n",
-                    )}","userId":"${v.userId.replace(/[\n]/g, "\\n")}"}`,
-                );
+        let json = "";
+        const inputKeys = Object.keys(input);
+        json += "{";
+        for (let i = 0; i < inputKeys.length; i++) {
+            const key = inputKeys[i];
+            const innerVal = input[key];
+            if (i !== 0) {
+                json += `,"${key}":`;
+            } else {
+                json += `"${key}":`;
             }
-            return `{${keyParts.join(",")}}`;
+            json += "{";
+            json += `"postId":"${innerVal.postId.replace(/[\n]/g, "\\n")}"`;
+            json += `,"userId":"${innerVal.userId.replace(/[\n]/g, "\\n")}"`;
+            json += "}";
         }
-        return `${serializeVal(input)}`;
+        json += "}";
+        return json;
     },
 };
 
@@ -463,10 +495,12 @@ export const $$UserBookmarksValue = {
         };
     },
     serialize(input: UserBookmarksValue): string {
-        return `{"postId":"${input.postId.replace(
-            /[\n]/g,
-            "\\n",
-        )}","userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
+        let json = "";
+        json += "{";
+        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+        return json;
     },
 };
 
@@ -480,18 +514,21 @@ export const $$UserMetadata = {
         return result;
     },
     serialize(input: UserMetadata): string {
-        // @ts-ignore
-        function serializeVal(val) {
-            const keyParts = [];
-            const keys = Object.keys(val);
-            for (let i = 0; i < Object.keys(val).length; i++) {
-                const key = keys[i];
-                const v = val[key];
-                keyParts.push(`"${key}":${JSON.stringify(v)}`);
+        let json = "";
+        const inputKeys = Object.keys(input);
+        json += "{";
+        for (let i = 0; i < inputKeys.length; i++) {
+            const key = inputKeys[i];
+            const innerVal = input[key];
+            if (i !== 0) {
+                json += `,"${key}":`;
+            } else {
+                json += `"${key}":`;
             }
-            return `{${keyParts.join(",")}}`;
+            json += JSON.stringify(innerVal);
         }
-        return `${serializeVal(input)}`;
+        json += "}";
+        return json;
     },
 };
 
@@ -505,7 +542,11 @@ export const $$UserParams = {
         };
     },
     serialize(input: UserParams): string {
-        return `{"userId":"${input.userId.replace(/[\n]/g, "\\n")}"}`;
+        let json = "";
+        json += "{";
+        json += `"userId":"${input.userId.replace(/[\n]/g, "\\n")}"`;
+        json += "}";
+        return json;
     },
 };
 
@@ -526,19 +567,24 @@ export const $$UpdateUserParams = {
         };
     },
     serialize(input: UpdateUserParams): string {
-        return `{${
-            input.bio !== undefined
-                ? `"bio":"${input.bio.replace(/[\n]/g, "\\n")}",`
-                : ""
-        }"id":"${input.id.replace(/[\n]/g, "\\n")}","photo":${
-            typeof input.photo === "object" && input.photo !== null
-                ? `{"url":"${input.photo.url.replace(
-                      /[\n]/g,
-                      "\\n",
-                  )}","width":${input.photo.width},"height":${
-                      input.photo.height
-                  },"bytes":"${input.photo.bytes.toString()}","nanoseconds":"${input.photo.nanoseconds.toString()}"}`
-                : null
-        }}`;
+        let json = "";
+        json += "{";
+        json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+        if (typeof input.photo === "object" && input.photo !== null) {
+            json += ',"photo":{';
+            json += `"url":"${input.photo.url.replace(/[\n]/g, "\\n")}"`;
+            json += `,"width":${input.photo.width}`;
+            json += `,"height":${input.photo.height}`;
+            json += `,"bytes":"${input.photo.bytes.toString()}"`;
+            json += `,"nanoseconds":"${input.photo.nanoseconds.toString()}"`;
+            json += "}";
+        } else {
+            json += ',"photo":null';
+        }
+        if (typeof input.bio !== "undefined") {
+            json += `,"bio":"${input.bio.replace(/[\n]/g, "\\n")}"`;
+        }
+        json += "}";
+        return json;
     },
 };

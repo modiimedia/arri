@@ -15,7 +15,6 @@ import {
     type SchemaFormEmpty,
 } from "jtd-utils";
 import { camelCase } from "scule";
-import { randomUUID } from "uncrypto";
 import { type TemplateInput } from "./common";
 
 interface SerializeTemplateInput<TSchema extends Schema = any>
@@ -363,13 +362,14 @@ export function arrayTemplate(
         schema: input.schema.elements,
         schemaPath: `${input.schemaPath}/elements`,
         instancePath: `${input.instancePath}/i`,
-        val: `${input.val}[i]`,
+        val: `arrayItem`,
         targetVal: input.targetVal,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
         outputPrefix: "",
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
+        const arrayItem = ${input.val}[i];
         if (i !== 0) {
             ${input.targetVal} += ',';
         }
@@ -392,9 +392,9 @@ export function recordTemplate(
 ): string {
     const keysVarName = input.instancePath.length
         ? camelCase(input.instancePath.split("/").join("_")) + "Keys"
-        : camelCase(`Keys${randomUUID()}`);
+        : camelCase(`${input.val.split(".").join("_")}_Keys`);
     const templateParts: string[] = [
-        `let ${keysVarName} = Object.keys(${input.val});`,
+        `const ${keysVarName} = Object.keys(${input.val});`,
         `${input.targetVal} += '${input.outputPrefix}{';`,
     ];
     const innerTemplate = template({
