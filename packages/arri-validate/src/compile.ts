@@ -1,7 +1,7 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
-import { Schema, isSchemaFormType, type Type } from "jtd-utils";
+import { isSchemaFormType, type Type } from "jtd-utils";
 import {
     type SafeResult,
     type ASchema,
