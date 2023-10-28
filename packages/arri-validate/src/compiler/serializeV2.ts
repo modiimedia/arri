@@ -31,6 +31,9 @@ export function createSerializationV2Template(
         subFunctionBodies: [],
         subFunctionNames: [],
     });
+    if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
+        return result;
+    }
     return `let json = '';
     ${result}
     return json;`;
@@ -85,10 +88,16 @@ export function scalarTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
-    const mainTemplate =
-        input.instancePath.length === 0
-            ? `${input.targetVal} += \`\${${input.val}}\`;`
-            : `${input.targetVal} += \`"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"\`;`;
+    if (input.instancePath.length === 0) {
+        if (input.schema.nullable) {
+            return `if (typeof ${input.val} === 'string') {
+                return ${input.val};
+            }
+            return 'null';`;
+        }
+        return `return ${input.val};`;
+    }
+    const mainTemplate = `${input.targetVal} += \`"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
@@ -100,6 +109,9 @@ export function stringTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
+    if (input.instancePath.length === 0) {
+        return `return \`\${${input.val}}\`;`;
+    }
     const mainTemplate = `${input.targetVal} += \`\${${input.val}}\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'boolean') {
@@ -114,10 +126,16 @@ export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
 export function timestampTemplate(
     input: TemplateInput<SchemaFormType>,
 ): string {
-    const mainTemplate =
-        input.instancePath.length === 0
-            ? `${input.targetVal} += \`\${${input.val}.toISOString()}\`;`
-            : `${input.targetVal} += \`"\${${input.val}.toISOString()}"\`;`;
+    if (input.instancePath.length === 0) {
+        if (input.schema.nullable) {
+            return `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
+                return ${input.val}.toISOString();
+            }
+            return 'null';`;
+        }
+        return `return ${input.val}.toISOString();`;
+    }
+    const mainTemplate = `${input.targetVal} += \`"\${${input.val}.toISOString()}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} instanceof Date) {
             ${mainTemplate}
@@ -129,6 +147,15 @@ export function timestampTemplate(
 }
 
 export function numberTemplate(input: TemplateInput<SchemaFormType>): string {
+    if (input.instancePath.length === 0) {
+        if (input.schema.nullable) {
+            return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
+                return \`\${${input.val}}\`;
+            }
+            return 'null';`;
+        }
+        return `return \`\${${input.val}}\`;`;
+    }
     const mainTemplate = `${input.targetVal} += \`\${${input.val}}\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
@@ -141,10 +168,16 @@ export function numberTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 export function bigIntTemplate(input: TemplateInput<SchemaFormType>): string {
-    const mainTemplate =
-        input.instancePath.length === 0
-            ? `${input.targetVal} += \`\${${input.val}.toString()}\`;`
-            : `${input.targetVal} += \`"\${${input.val}.toString()}"\`;`;
+    if (input.instancePath.length === 0) {
+        if (input.schema.nullable) {
+            return `if (typeof ${input.val} === 'bigint') {
+                return ${input.val}.toString();
+            }
+            return 'null';`;
+        }
+        return `return ${input.val}.toString();`;
+    }
+    const mainTemplate = `${input.targetVal} += \`"\${${input.val}.toString()}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'bigint') {
             ${mainTemplate}
@@ -156,10 +189,16 @@ export function bigIntTemplate(input: TemplateInput<SchemaFormType>): string {
 }
 
 export function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
-    const mainTemplate =
-        input.instancePath.length === 0
-            ? `${input.targetVal} += \`\${${input.val}}\`;`
-            : `${input.targetVal} += \`"\${${input.val}}"\``;
+    if (input.instancePath.length === 0) {
+        if (input.schema.nullable) {
+            return `if (typeof ${input.val} === 'string') {
+                return ${input.val};
+            }
+            return 'null';`;
+        }
+        return `return ${input.val};`;
+    }
+    const mainTemplate = `${input.targetVal} += \`"\${${input.val}}"\``;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
@@ -180,37 +219,41 @@ export function objectTemplate(
         );
     }
     const propKeys = Object.keys(input.schema.properties);
+    const optionalPropKeys = Object.keys(input.schema.optionalProperties ?? {});
     const isAllOptionalKeys =
         propKeys.length === 0 &&
-        !input.discriminatorKey &&
-        !input.discriminatorValue;
+        !input.discriminatorKey?.length &&
+        !input.discriminatorValue?.length;
     for (let i = 0; i < propKeys.length; i++) {
         const key = propKeys[i];
         const propSchema = input.schema.properties[key];
         if (i !== 0 || (input.discriminatorKey && input.discriminatorValue)) {
-            templateParts.push(`${input.targetVal} += \`,"${key}":\`;`);
+            templateParts.push(`${input.targetVal} += \`,"${key}":\``);
         } else {
-            templateParts.push(`${input.targetVal} += \`"${key}":\`;`);
+            templateParts.push(`${input.targetVal} += \`"${key}":\``);
         }
-        templateParts.push(
-            template({
-                schema: propSchema,
-                val: `${input.val}.${key}`,
-                targetVal: input.targetVal,
-                instancePath: `${input.instancePath}/${key}`,
-                schemaPath: `${input.schemaPath}/properties/${key}`,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
-            }),
-        );
+        const innerTemplate = template({
+            schema: propSchema,
+            val: `${input.val}.${key}`,
+            targetVal: input.targetVal,
+            instancePath: `${input.instancePath}/${key}`,
+            schemaPath: `${input.schemaPath}/properties/${key}`,
+            subFunctionBodies: input.subFunctionBodies,
+            subFunctionNames: input.subFunctionNames,
+        });
+        templateParts.push(innerTemplate);
     }
-    const optionalPropKeys = Object.keys(input.schema.optionalProperties ?? {});
     if (isAllOptionalKeys) {
-        const innerVarName = input.instancePath
-            ? camelCase(input.instancePath.split("/").join("_")) + "Json"
-            : camelCase(`Json${randomUUID()}`);
-        templateParts.push(`let ${innerVarName}HasFields = false;`);
-        templateParts.push(`let ${innerVarName} = '';`);
+        const hasFieldsVar = input.instancePath.length
+            ? camelCase(`${input.instancePath}_HasFields`)
+            : camelCase(
+                  `${input.val}_HasFields`
+                      .split("[")
+                      .join("")
+                      .split("]")
+                      .join(""),
+              );
+        templateParts.push(`let ${hasFieldsVar} = false;`);
         for (let i = 0; i < optionalPropKeys.length; i++) {
             const key = optionalPropKeys[i];
             const optionalPropSchema = input.schema.optionalProperties?.[
@@ -225,21 +268,20 @@ export function objectTemplate(
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 instancePath: `${input.instancePath}/${key}`,
                 val: innerVal,
-                targetVal: innerVarName,
+                targetVal: input.targetVal,
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
-                if (${innerVarName}HasFields) {
-                    ${innerVarName} += ',"${key}":';
+                if (${hasFieldsVar}) {
+                    ${input.targetVal} += ',"${key}":';
                     ${innerTemplate}
                 } else {
-                    ${innerVarName} += '"${key}":';
+                    ${input.targetVal} += '"${key}":';
                     ${innerTemplate}
-                    ${innerVarName}HasFields = true;
+                    ${hasFieldsVar} = true;
                 }
             }`);
-            templateParts.push(`${input.targetVal} += ${innerVarName};`);
         }
     } else {
         for (let i = 0; i < optionalPropKeys.length; i++) {

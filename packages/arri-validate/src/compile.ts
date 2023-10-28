@@ -1,7 +1,7 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 /* eslint-disable @typescript-eslint/dot-notation */
-import { type Type } from "jtd-utils";
+import { Schema, isSchemaFormType, type Type } from "jtd-utils";
 import {
     type SafeResult,
     type ASchema,
@@ -48,7 +48,6 @@ export interface CompiledValidator<TSchema extends ASchema<any>> {
      * Serialize to JSON
      */
     serialize: (input: InferType<TSchema>) => string;
-    serializeV2: (input: InferType<TSchema>) => string;
     compiledCode: {
         serialize: string;
         parse: string;
@@ -476,23 +475,13 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
 export function compile<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): CompiledValidator<TSchema> {
-    const serializeCode = getSchemaSerializationCode("input", schema);
-    const serializeV2Code = getSchemaSerializationV2Code("input", schema);
+    const serializeCode = getSchemaSerializationV2Code("input", schema);
     const validateCode = getSchemaValidationCode("input", schema);
     const parse = getCompiledParser("input", schema);
     const serialize = new Function(
         "input",
         serializeCode,
     ) as CompiledValidator<TSchema>["serialize"];
-    let serializeV2: any = (input: any) => "";
-    try {
-        serializeV2 = new Function(
-            "input",
-            serializeV2Code,
-        ) as CompiledValidator<TSchema>["serializeV2"];
-    } catch (err) {
-        console.log(serializeV2Code);
-    }
     const validate = new Function(
         "input",
         validateCode,
@@ -546,11 +535,107 @@ export function compile<TSchema extends ASchema<any>>(
         },
         // eslint-disable-next-line no-eval
         serialize,
-        serializeV2,
         compiledCode: {
             validate: validateCode,
             parse: parse.code,
             serialize: serializeCode,
         },
+    };
+}
+
+export function getCompiledSerializer<TSchema extends ASchema>(
+    schema: TSchema,
+): { fn: (input: InferType<TSchema>) => string; code: string } {
+    const code = getSchemaSerializationV2Code("input", schema);
+    if (isSchemaFormType(schema)) {
+        switch (schema.type) {
+            case "string":
+                if (schema.nullable) {
+                    return {
+                        fn(input: string | null) {
+                            if (typeof input === "string") {
+                                return input;
+                            }
+                            return "null";
+                        },
+                        code,
+                    };
+                }
+                return {
+                    fn(input: string) {
+                        return input;
+                    },
+                    code,
+                };
+            case "timestamp":
+                if (schema.nullable) {
+                    return {
+                        fn(input: Date | null) {
+                            if (typeof input === "object" && input !== null) {
+                                return input.toISOString();
+                            }
+                            return "null";
+                        },
+                        code,
+                    };
+                }
+                return {
+                    fn(input: Date) {
+                        return input.toISOString();
+                    },
+                    code,
+                };
+            case "boolean":
+                if (schema.nullable) {
+                    return {
+                        fn(input: boolean | null) {
+                            if (typeof input === "boolean") {
+                                return `${input}`;
+                            }
+                            return "null";
+                        },
+                        code,
+                    };
+                }
+                return {
+                    fn(input: boolean) {
+                        return `${input}`;
+                    },
+                    code,
+                };
+            case "float32":
+            case "float64":
+            case "int8":
+            case "int16":
+            case "int32":
+            case "uint8":
+            case "uint16":
+            case "uint32":
+                if (schema.nullable) {
+                    return {
+                        fn(input: number) {
+                            if (typeof input === "number") {
+                                return `${input}`;
+                            }
+                            return `null`;
+                        },
+                        code,
+                    };
+                }
+                return {
+                    fn(input: number) {
+                        return `${input}`;
+                    },
+                    code,
+                };
+            case "int64":
+            case "uint64":
+                break;
+        }
+    }
+    const fn = new Function("input", code) as any;
+    return {
+        fn,
+        code,
     };
 }

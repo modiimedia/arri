@@ -141,7 +141,6 @@ function serialize2(input: User): string {
 }
 
 const arriCompiledSerializer = a.compile(User).serialize;
-const arriCompiledSerializerV2 = a.compile(User).serializeV2;
 const ajvCompiledSerializer = ajv.compileSerializer(User);
 void benny.suite(
     "Misc Serialization",
@@ -157,9 +156,6 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         arriCompiledSerializer(userInput);
     }),
-    benny.add("Arri (Compiled V2)", () => {
-        arriCompiledSerializerV2(userInput);
-    }),
     benny.add("Ajv (Compiled)", () => {
         ajvCompiledSerializer(userInput);
     }),
@@ -170,6 +166,40 @@ void benny.suite(
     benny.complete(),
     benny.save({
         file: "misc-serialization",
+        format: "chart.html",
+        folder: "benchmark/dist",
+    }),
+);
+
+const IntSchema = a.int32();
+const intInput = 99999;
+const ArriCompiledIntValidator = a.compile(IntSchema);
+const ArriCompiledIntSerializer = ArriCompiledIntValidator.serialize;
+const AjvCompiledIntSerializer = ajv.compileSerializer(IntSchema);
+function serializeInt(input: number): string {
+    return `${input}`;
+}
+void benny.suite(
+    "Misc Serialization Integers",
+    benny.add("Manual", () => {
+        serializeInt(intInput);
+    }),
+    benny.add("Arri", () => {
+        a.serialize(IntSchema, intInput);
+    }),
+    benny.add("Arri (Compiled)", () => {
+        ArriCompiledIntSerializer(intInput);
+    }),
+    benny.add("Ajv (Compiled)", () => {
+        AjvCompiledIntSerializer(intInput);
+    }),
+    benny.add("JSON.stringify", () => {
+        JSON.stringify(userInput);
+    }),
+    benny.cycle(),
+    benny.complete(),
+    benny.save({
+        file: "misc-serialization-integers",
         format: "chart.html",
         folder: "benchmark/dist",
     }),
