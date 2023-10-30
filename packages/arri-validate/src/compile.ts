@@ -136,6 +136,9 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaParsingCode(input, schema);
+    if (schema.metadata.id === "logplz") {
+        console.log(code);
+    }
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case "float32":

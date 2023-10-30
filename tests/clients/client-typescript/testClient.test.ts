@@ -118,6 +118,7 @@ describe("bigint requests", () => {
             id: "100",
             version: "1",
         });
+        console.log("RESULT", result);
         expect(result.annotation_id.id).toBe("100");
         expect(result.annotation_id.version).toBe("1");
     });

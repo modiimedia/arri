@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { normalizeWhitespace } from "arri-codegen-utils";
 import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
 import { a } from "arri-validate";
@@ -33,6 +33,8 @@ describe("Model Creation", () => {
             {
                 clientName: "TestClient",
                 outputFile: "",
+                versionNumber: "",
+                typesNeedingParser: ["user"],
             },
             { existingTypeNames: [], isOptional: false },
         );
@@ -80,6 +82,8 @@ describe("Model Creation", () => {
             {
                 clientName: "TestClient",
                 outputFile: "",
+                versionNumber: "",
+                typesNeedingParser: ["user"],
             },
             {
                 existingTypeNames: [],
@@ -129,6 +133,7 @@ test("Client Creation", async () => {
         outputFile: "",
         prettierOptions,
     });
+    writeFileSync(path.resolve(tempDir, "example_client.test.ts"), result);
     expect(normalizeWhitespace(result)).toEqual(
         normalizeWhitespace(
             await prettier.format(targetClient, {

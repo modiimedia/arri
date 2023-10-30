@@ -564,6 +564,9 @@ export const testSuites: Record<
                     url: a.string(),
                 }),
             ),
+            {
+                id: "logplz",
+            },
         ),
         goodInputs: [
             { a: { id: "", url: "" }, b: { id: "", url: "" } },

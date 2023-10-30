@@ -5,6 +5,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormType,
     isSchemaFormValues,
+    type SchemaFormType,
     type SchemaFormValues,
 } from "jtd-utils";
 import { camelCase } from "scule";
@@ -14,12 +15,16 @@ import {
     int16Min,
     int32Max,
     int32Min,
+    int64Max,
+    int64Min,
     int8Max,
     int8Min,
     uint16Max,
     uint16Min,
     uint32Max,
     uint32Min,
+    uint64Max,
+    uint64Min,
     uint8Max,
     uint8Min,
 } from "../lib/numberConstants";
@@ -129,6 +134,10 @@ export function schemaTemplate(input: TemplateInput): string {
                 return intTemplate(input, uint16Min, uint16Max);
             case "uint8":
                 return intTemplate(input, uint8Min, uint8Max);
+            case "int64":
+                return bigIntTemplate(input, false);
+            case "uint64":
+                return bigIntTemplate(input, true);
         }
     }
     if (isSchemaFormEnum(input.schema)) {
@@ -293,6 +302,76 @@ export function intTemplate(
     return templateParts.join("\n");
 }
 
+export function bigIntTemplate(
+    input: TemplateInput<SchemaFormType>,
+    isUnsigned: boolean,
+): string {
+    const templateParts: string[] = [];
+    const unsignedPart = `if (val >= BigInt("0")) {
+            return val;
+        }
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Unsigned integer must be greater than or equal to 0.");`;
+    if (input.instancePath.length === 0) {
+        templateParts.push(`if (typeof ${input.val} === 'string') {`);
+        if (input.schema.nullable) {
+            return `if (${input.val} === 'null') {
+                return null;
+            }`;
+        }
+
+        templateParts.push(`
+            try {
+                const val = BigInt(${input.val});
+                ${isUnsigned ? unsignedPart : `return val;`}
+            } catch(err) {
+                $fallback("${input.instancePath}", "${
+                    input.schemaPath
+                }", \`Error parsing BigInt from \${typeof ${input.val}}\`);
+            }
+        }`);
+    }
+    templateParts.push(`if (typeof ${input.val} === 'string') {
+        try {
+            const val = BigInt(${input.val});
+            ${
+                isUnsigned
+                    ? `if (val >= BigInt("0")) {
+                ${input.targetVal} = val;
+            } else {
+                $fallback("${input.instancePath}", "${input.schemaPath}", "Unsigned Int must be >= 0.");
+            }`
+                    : `${input.targetVal} = val;`
+            }
+        } catch(err) {
+             $fallback("${input.instancePath}", "${
+                 input.schemaPath
+             }", \`Error parsing BigInt from \${typeof ${input.val}}\`);
+        }
+    }`);
+    if (isUnsigned) {
+        templateParts.push(`if (typeof ${input.val} === 'bigint') {
+        if (${input.val} >= BigInt("0")) {
+            ${input.targetVal} = ${input.val};
+        } else {
+            $fallback("${input.instancePath}", "${input.schemaPath}", "Unsigned int must be greater than or equal to 0".);
+        }
+    }`);
+    } else {
+        templateParts.push(`if (typeof ${input.val} === 'bigint') {
+            ${input.targetVal} = ${input.val};
+        }`);
+    }
+    if (input.schema.nullable) {
+        templateParts.push(`else if (${input.val} === null) {
+            ${input.targetVal} = null;
+        }`);
+    }
+    templateParts.push(`else {
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected BigInt or Integer string.");
+    }`);
+    return templateParts.join("\n");
+}
+
 export function timestampTemplate(
     input: TemplateInput<AScalarSchema<"timestamp">>,
 ) {
@@ -372,18 +451,26 @@ function enumTemplate(
 }
 
 function objectTemplate(input: TemplateInput<AObjectSchema>): string {
+    const innerTargetVal = camelCase(
+        `${input.val
+            .split(".")
+            .join("_")
+            .split("[")
+            .join("_")
+            .split("]")
+            .join("")}_innerVal`,
+    );
     const parsingParts: string[] = [];
-    const targetVal = `objectVal`;
     if (input.discriminatorKey && input.discriminatorValue) {
         parsingParts.push(
-            `${targetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
+            `${innerTargetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
         );
     }
     for (const key of Object.keys(input.schema.properties)) {
         const subSchema = input.schema.properties[key];
         const innerTemplate = schemaTemplate({
             val: `${input.val}.${key}`,
-            targetVal: `${targetVal}.${key}`,
+            targetVal: `${innerTargetVal}.${key}`,
             schema: subSchema,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
@@ -397,7 +484,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
             const subSchema = input.schema.optionalProperties[key];
             const innerTemplate = schemaTemplate({
                 val: `${input.val}.${key}`,
-                targetVal: `${targetVal}.${key}`,
+                targetVal: `${innerTargetVal}.${key}`,
                 schema: subSchema,
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
@@ -414,9 +501,9 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${
         input.val
     } !== null) {
-        const ${targetVal} = {}
+        const ${innerTargetVal} = {};
         ${parsingParts.join("\n")}
-        ${input.targetVal} = ${targetVal};
+        ${input.targetVal} = ${innerTargetVal};
     } else {
         $fallback("${input.instancePath}", "${
             input.schemaPath
@@ -433,9 +520,19 @@ function objectTemplate(input: TemplateInput<AObjectSchema>): string {
 }
 
 export function arrayTemplate(input: TemplateInput<AArraySchema<any>>): string {
+    const resultVar = camelCase(
+        `${input.targetVal
+            .split(".")
+            .join("_")
+            .split("[")
+            .join("_")
+            .split("]")
+            .join("_")}_innerResult`,
+    );
+    const itemResultVar = `${resultVar}Item`;
     const innerTemplate = schemaTemplate({
         val: `item`,
-        targetVal: "itemResult",
+        targetVal: itemResultVar,
         instancePath: `${input.instancePath}/[0]`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
@@ -443,13 +540,13 @@ export function arrayTemplate(input: TemplateInput<AArraySchema<any>>): string {
         subFunctionNames: input.subFunctionNames,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
-        const innerResult = [];
+        const ${resultVar} = [];
         for(const item of ${input.val}) {
-            let itemResult;
+            let ${itemResultVar};
             ${innerTemplate}
-            innerResult.push(itemResult);
+            ${resultVar}.push(${itemResultVar});
         }
-        ${input.targetVal} = innerResult;
+        ${input.targetVal} = ${resultVar};
     } else {
         $fallback("${input.instancePath}", "${input.schemaPath}", "Expected Array");
     }`;

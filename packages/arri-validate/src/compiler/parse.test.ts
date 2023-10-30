@@ -84,3 +84,55 @@ it("respects the additionalProperties option", () => {
     expect(StrictSchema.safeParse(input).success);
     expect(!StrictSchema.safeParse(inputWithAdditionalFields).success);
 });
+
+it("parses discriminated unions", () => {
+    const Schema = a.discriminator("eventType", {
+        POST_CREATED: a.object({
+            id: a.string(),
+            date: a.timestamp(),
+        }),
+        POST_UPDATED: a.object({
+            id: a.string(),
+            date: a.timestamp(),
+            data: a.object({
+                title: a.string(),
+                description: a.string(),
+            }),
+        }),
+        POST_DELETED: a.object({
+            id: a.string(),
+            date: a.timestamp(),
+            deletionReason: a.string(),
+        }),
+    });
+    type Schema = a.infer<typeof Schema>;
+    const inputs: Schema[] = [
+        {
+            eventType: "POST_CREATED",
+            id: "1",
+            date: new Date(),
+        },
+        {
+            eventType: "POST_UPDATED",
+            id: "2",
+            date: new Date(),
+            data: {
+                title: "Hello World",
+                description: "Hello World!",
+            },
+        },
+        {
+            eventType: "POST_DELETED",
+            id: "3",
+            date: new Date(),
+            deletionReason: "",
+        },
+    ];
+    const CompiledValidator = a.compile(Schema);
+    for (const input of inputs) {
+        expect(CompiledValidator.parse(input)).toStrictEqual(input);
+        expect(
+            CompiledValidator.parse(CompiledValidator.serialize(input)),
+        ).toStrictEqual(input);
+    }
+});
