@@ -12,6 +12,7 @@ import {
     type SchemaFormProperties,
     type SchemaFormElements,
     type SchemaFormDiscriminator,
+    type SchemaFormEmpty,
 } from "jtd-utils";
 import { camelCase } from "scule";
 import { randomUUID } from "uncrypto";
@@ -143,10 +144,14 @@ export function schemaTemplate(input: TemplateInput): string {
     if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
     }
-    return `${input.val}`;
+    return anyTemplate(input);
 }
 
-function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
+export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
+    return `${input.targetVal} = ${input.val}`;
+}
+
+export function booleanTemplate(input: TemplateInput<SchemaFormType>): string {
     const errorMessage = input.instancePath.length
         ? `Expected boolean for ${input.instancePath}`
         : `Expected boolean`;
@@ -292,7 +297,9 @@ export function bigIntTemplate(
     isUnsigned: boolean,
 ): string {
     const templateParts: string[] = [];
-    templateParts.push(`if (typeof ${input.val} === 'string') {`);
+    templateParts.push(
+        `if (typeof ${input.val} === 'string' || typeof ${input.val} === 'number') {`,
+    );
     if (input.instancePath.length === 0 && input.schema.nullable) {
         templateParts.push(`if (${input.val} === 'null') {
             ${input.targetVal} = null;
@@ -323,18 +330,10 @@ export function bigIntTemplate(
         } else {
             $fallback("${input.instancePath}", "${input.schemaPath}", "Unsigned int must be greater than or equal to 0.");
         }
-    } else if (typeof ${input.val} === 'number') {
-        if (${input.val} >= 0) {
-            ${input.targetVal} = BigInt(${input.val});
-        } else {
-            $fallback("${input.instancePath}", "${input.schemaPath}", "Unsigned int must be greater than or equal to 0.");
-        }
     }`);
     } else {
         templateParts.push(`else if (typeof ${input.val} === 'bigint') {
             ${input.targetVal} = ${input.val};
-        } else if (typeof ${input.val} === 'number') {
-            ${input.targetVal} = BigInt(${input.val});
         }`);
     }
     if (input.schema.nullable) {
@@ -343,7 +342,7 @@ export function bigIntTemplate(
         }`);
     }
     templateParts.push(`else {
-        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected BigInt or Integer string.");
+        $fallback("${input.instancePath}", "${input.schemaPath}", "Expected BigInt or Integer string. Got \${${input.val}}");
     }`);
     return templateParts.join("\n");
 }

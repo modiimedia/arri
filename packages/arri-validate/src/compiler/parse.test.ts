@@ -36,6 +36,9 @@ describe("parsing test suites", () => {
                 expect(isEqual(Compiled.parse(serializedResult), expectResult));
                 expect(isEqual(actualResult, a.parse(suite.schema, input)));
             }
+            for (const input of suite.badInputs) {
+                expect(!Compiled.safeParse(input).success);
+            }
         });
     }
 });

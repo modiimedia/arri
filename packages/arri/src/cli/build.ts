@@ -87,7 +87,6 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
             platform: config.esbuild.platform ?? "node",
             target: config.esbuild.target ?? "node18",
             bundle: true,
-            packages: "external",
             format: "esm",
             sourcemap: false,
             minifyWhitespace: true,

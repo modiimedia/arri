@@ -11,6 +11,6 @@
         "integration-tests": "nx run-many -t integration-test"
     },
     "devDependencies": {
-        "listhen": "^1.5.5"
+        "arri-codegen-utils": "workspace:*"
     }
 }

@@ -26,6 +26,9 @@ describe("parsing test suites", () => {
                 const expectedResult = suite.expectedResults[i];
                 expect(isEqual(a.parse(suite.schema, input), expectedResult));
             }
+            for (const input of suite.badInputs) {
+                expect(!a.safeParse(suite.schema, input).success);
+            }
         });
     }
 });

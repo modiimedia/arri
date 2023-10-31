@@ -9,6 +9,11 @@ import {
     type InferType,
     isAObjectSchema,
     a,
+    type ARecordSchema,
+    type ADiscriminatorSchema,
+    type ASchema,
+    isARecordSchema,
+    isADiscriminatorSchema,
 } from "arri-validate";
 import {
     eventHandler,
@@ -26,9 +31,26 @@ import { defineError, handleH3Error } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./routes";
 
+export type RpcParamSchema<
+    TObjectInner = any,
+    TRecordInner extends ASchema = any,
+    TDiscriminatorInner = any,
+> =
+    | AObjectSchema<TObjectInner>
+    | ARecordSchema<TRecordInner>
+    | ADiscriminatorSchema<TDiscriminatorInner>;
+
+export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
+    return (
+        isAObjectSchema(input) ||
+        isARecordSchema(input) ||
+        isADiscriminatorSchema(input)
+    );
+}
+
 export interface ArriProcedure<
-    TParams extends AObjectSchema | undefined,
-    TResponse extends AObjectSchema | undefined,
+    TParams extends RpcParamSchema | undefined,
+    TResponse extends RpcParamSchema | undefined,
 > {
     description?: string;
     method?: HttpMethod;
@@ -36,19 +58,19 @@ export interface ArriProcedure<
     params: TParams;
     response: TResponse;
     handler: ArriProcedureHandler<
-        TParams extends AObjectSchema ? InferType<TParams> : undefined,
+        TParams extends RpcParamSchema ? InferType<TParams> : undefined,
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        TResponse extends AObjectSchema ? InferType<TResponse> : void
+        TResponse extends RpcParamSchema ? InferType<TResponse> : void
     >;
     postHandler?: ArriProcedurePostHandler<
-        TParams extends AObjectSchema ? InferType<TParams> : undefined,
-        TResponse extends AObjectSchema ? InferType<TResponse> : undefined
+        TParams extends RpcParamSchema ? InferType<TParams> : undefined,
+        TResponse extends RpcParamSchema ? InferType<TResponse> : undefined
     >;
 }
 
 export interface ArriNamedProcedure<
-    TParams extends AObjectSchema | undefined,
-    TResponse extends AObjectSchema | undefined,
+    TParams extends RpcParamSchema | undefined,
+    TResponse extends RpcParamSchema | undefined,
 > extends ArriProcedure<TParams, TResponse> {
     name: string;
 }
@@ -104,8 +126,8 @@ export function isRpc(input: any): input is ArriProcedure<any, any> {
 }
 
 export function defineRpc<
-    TParams extends AObjectSchema | undefined = undefined,
-    TResponse extends AObjectSchema | undefined | never = undefined,
+    TParams extends RpcParamSchema | undefined = undefined,
+    TResponse extends RpcParamSchema | undefined | never = undefined,
 >(
     config: ArriProcedure<TParams, TResponse>,
 ): ArriProcedure<TParams, TResponse> {
@@ -144,7 +166,7 @@ export function getRpcParamName(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
 ): string | undefined {
-    if (!isAObjectSchema(procedure.params)) {
+    if (!isRpcParamSchema(procedure.params)) {
         return undefined;
     }
     const nameParts = rpcName
@@ -162,7 +184,7 @@ export function getRpcResponseName(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
 ): string | undefined {
-    if (!isAObjectSchema(procedure.response)) {
+    if (!isRpcParamSchema(procedure.response)) {
         return undefined;
     }
     const nameParts = rpcName
@@ -180,7 +202,7 @@ function getRpcResponseDefinition(
     rpcName: string,
     procedure: ArriProcedure<any, any>,
 ): RpcDefinition["response"] {
-    if (!isAObjectSchema(procedure.response)) {
+    if (!isRpcParamSchema(procedure.response)) {
         return undefined;
     }
     const name = getRpcResponseName(rpcName, procedure);
@@ -219,7 +241,7 @@ export function registerRpc(
                     await m(event);
                 }
             }
-            if (isAObjectSchema(procedure.params)) {
+            if (isRpcParamSchema(procedure.params)) {
                 switch (httpMethod) {
                     case "get":
                     case "head": {

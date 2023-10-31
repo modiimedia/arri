@@ -9,6 +9,12 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
-    "version": "0.6.0"
+    "files": [
+        "dist"
+    ],
+    "version": "0.6.0",
+    "dependencies": {
+        "arri-codegen-utils": "workspace:*",
+        "json-schema-to-jtd": "workspace:*"
+    }
 }

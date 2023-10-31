@@ -570,7 +570,7 @@ function bigIntParser(
     isUnsigned: boolean,
     isNullable: boolean,
 ): any {
-    if (typeof input === "string") {
+    if (typeof input === "string" || typeof input === "number") {
         if (isNullable && input === "null") {
             return null;
         }

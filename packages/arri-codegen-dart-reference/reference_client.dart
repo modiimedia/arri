@@ -163,10 +163,11 @@ class User {
       numFollowers: intFromDynamic(json["numFollowers"], 0),
       settings: UserSettings.fromJson(json["settings"]),
       recentNotifications: json["recentNotifications"] is List
+          // ignore: unnecessary_cast
           ? (json["recentNotifications"] as List)
               .map((item) => UserRecentNotificationsItem.fromJson(item))
-              .toList()
-          : [],
+              .toList() as List<UserRecentNotificationsItem>
+          : <UserRecentNotificationsItem>[],
       bookmarks: json["bookmarks"] is Map<String, dynamic>
           ? (json["bookmarks"] as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, UserBookmarksValue.fromJson(value)))

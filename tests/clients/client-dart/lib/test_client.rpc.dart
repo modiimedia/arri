@@ -12,6 +12,13 @@ class TestClient {
     _headers = {"client-version": "9", ...headers};
   }
 
+  TestClientMiscTestsService get miscTests {
+    return TestClientMiscTestsService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
+
   TestClientPostsService get posts {
     return TestClientPostsService(
       baseUrl: _baseUrl,
@@ -23,6 +30,29 @@ class TestClient {
     return TestClientVideosService(
       baseUrl: _baseUrl,
       headers: _headers,
+    );
+  }
+}
+
+class TestClientMiscTestsService {
+  final String _baseUrl;
+  late final Map<String, String> _headers;
+  TestClientMiscTestsService({
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "9", ...headers};
+  }
+
+  Future<ProcessEveryTypeParams> testEveryType(ProcessEveryTypeParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/misc-tests/test-every-type",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ProcessEveryTypeParams.fromJson(
+        json.decode(body),
+      ),
     );
   }
 }
@@ -56,6 +86,18 @@ class TestClientPostsService {
       headers: _headers,
       params: params.toJson(),
       parser: (body) => PostListResponse.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<LogPostEventResponse> logEvent(PostEvent params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/posts/log-event",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => LogPostEventResponse.fromJson(
         json.decode(body),
       ),
     );
@@ -105,6 +147,512 @@ class TestClientVideosService {
       parser: (body) => Annotation.fromJson(
         json.decode(body),
       ),
+    );
+  }
+}
+
+class ProcessEveryTypeParams {
+  final dynamic any;
+  final bool boolean;
+  final String string;
+  final DateTime timestamp;
+  final double float32;
+  final double float64;
+  final int int8;
+  final int uint8;
+  final int int16;
+  final int uint16;
+  final int int32;
+  final int uint32;
+  final BigInt int64;
+  final BigInt uint64;
+  final ProcessEveryTypeParamsEnumerator enumerator;
+  final List<bool> array;
+  final ProcessEveryTypeParamsObject object;
+  final Map<String, bool> record;
+  final ProcessEveryTypeParamsDiscriminator discriminator;
+  final ProcessEveryTypeParamsNestedObject nestedObject;
+  final List<List<ProcessEveryTypeParamsNestedArrayItemItem>> nestedArray;
+  const ProcessEveryTypeParams({
+    required this.any,
+    required this.boolean,
+    required this.string,
+    required this.timestamp,
+    required this.float32,
+    required this.float64,
+    required this.int8,
+    required this.uint8,
+    required this.int16,
+    required this.uint16,
+    required this.int32,
+    required this.uint32,
+    required this.int64,
+    required this.uint64,
+    required this.enumerator,
+    required this.array,
+    required this.object,
+    required this.record,
+    required this.discriminator,
+    required this.nestedObject,
+    required this.nestedArray,
+  });
+  factory ProcessEveryTypeParams.fromJson(Map<String, dynamic> json) {
+    return ProcessEveryTypeParams(
+      any: json["any"],
+      boolean: typeFromDynamic<bool>(json["boolean"], false),
+      string: typeFromDynamic<String>(json["string"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      float32: doubleFromDynamic(json["float32"], 0),
+      float64: doubleFromDynamic(json["float64"], 0),
+      int8: intFromDynamic(json["int8"], 0),
+      uint8: intFromDynamic(json["uint8"], 0),
+      int16: intFromDynamic(json["int16"], 0),
+      uint16: intFromDynamic(json["uint16"], 0),
+      int32: intFromDynamic(json["int32"], 0),
+      uint32: intFromDynamic(json["uint32"], 0),
+      int64: bigIntFromDynamic(json["int64"], BigInt.zero),
+      uint64: bigIntFromDynamic(json["uint64"], BigInt.zero),
+      enumerator: ProcessEveryTypeParamsEnumerator.fromJson(json["enumerator"]),
+      array: json["array"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["array"] as List)
+              .map((item) => typeFromDynamic<bool>(item, false))
+              .toList() as List<bool>
+          : <bool>[],
+      object: ProcessEveryTypeParamsObject.fromJson(json["object"]),
+      record: json["record"] is Map<String, dynamic>
+          ? (json["record"] as Map<String, dynamic>).map((key, value) =>
+              MapEntry(key, typeFromDynamic<bool>(value, false)))
+          : <String, bool>{},
+      discriminator:
+          ProcessEveryTypeParamsDiscriminator.fromJson(json["discriminator"]),
+      nestedObject:
+          ProcessEveryTypeParamsNestedObject.fromJson(json["nestedObject"]),
+      nestedArray: json["nestedArray"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["nestedArray"] as List)
+              .map((item) => item is List
+                  ?
+                  // ignore: unnecessary_cast
+                  (item as List)
+                          .map((item) =>
+                              ProcessEveryTypeParamsNestedArrayItemItem
+                                  .fromJson(item))
+                          .toList()
+                      as List<ProcessEveryTypeParamsNestedArrayItemItem>
+                  : <ProcessEveryTypeParamsNestedArrayItemItem>[])
+              .toList() as List<List<ProcessEveryTypeParamsNestedArrayItemItem>>
+          : <List<ProcessEveryTypeParamsNestedArrayItemItem>>[],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "any": any,
+      "boolean": boolean,
+      "string": string,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "float32": float32,
+      "float64": float64,
+      "int8": int8,
+      "uint8": uint8,
+      "int16": int16,
+      "uint16": uint16,
+      "int32": int32,
+      "uint32": uint32,
+      "int64": int64.toString(),
+      "uint64": uint64.toString(),
+      "enumerator": enumerator.value,
+      "array": array.map((item) => item).toList(),
+      "object": object.toJson(),
+      "record": record.map((key, value) => MapEntry(key, value)),
+      "discriminator": discriminator.toJson(),
+      "nestedObject": nestedObject.toJson(),
+      "nestedArray": nestedArray
+          .map((item) => item.map((item) => item.toJson()).toList())
+          .toList(),
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParams copyWith({
+    dynamic any,
+    bool? boolean,
+    String? string,
+    DateTime? timestamp,
+    double? float32,
+    double? float64,
+    int? int8,
+    int? uint8,
+    int? int16,
+    int? uint16,
+    int? int32,
+    int? uint32,
+    BigInt? int64,
+    BigInt? uint64,
+    ProcessEveryTypeParamsEnumerator? enumerator,
+    List<bool>? array,
+    ProcessEveryTypeParamsObject? object,
+    Map<String, bool>? record,
+    ProcessEveryTypeParamsDiscriminator? discriminator,
+    ProcessEveryTypeParamsNestedObject? nestedObject,
+    List<List<ProcessEveryTypeParamsNestedArrayItemItem>>? nestedArray,
+  }) {
+    return ProcessEveryTypeParams(
+      any: any ?? this.any,
+      boolean: boolean ?? this.boolean,
+      string: string ?? this.string,
+      timestamp: timestamp ?? this.timestamp,
+      float32: float32 ?? this.float32,
+      float64: float64 ?? this.float64,
+      int8: int8 ?? this.int8,
+      uint8: uint8 ?? this.uint8,
+      int16: int16 ?? this.int16,
+      uint16: uint16 ?? this.uint16,
+      int32: int32 ?? this.int32,
+      uint32: uint32 ?? this.uint32,
+      int64: int64 ?? this.int64,
+      uint64: uint64 ?? this.uint64,
+      enumerator: enumerator ?? this.enumerator,
+      array: array ?? this.array,
+      object: object ?? this.object,
+      record: record ?? this.record,
+      discriminator: discriminator ?? this.discriminator,
+      nestedObject: nestedObject ?? this.nestedObject,
+      nestedArray: nestedArray ?? this.nestedArray,
+    );
+  }
+}
+
+enum ProcessEveryTypeParamsEnumerator
+    implements Comparable<ProcessEveryTypeParamsEnumerator> {
+  a("A"),
+  b("B"),
+  c("C");
+
+  const ProcessEveryTypeParamsEnumerator(this.value);
+  final String value;
+
+  factory ProcessEveryTypeParamsEnumerator.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return a;
+  }
+
+  @override
+  compareTo(ProcessEveryTypeParamsEnumerator other) =>
+      name.compareTo(other.name);
+}
+
+class ProcessEveryTypeParamsObject {
+  final String string;
+  final bool boolean;
+  final DateTime timestamp;
+  const ProcessEveryTypeParamsObject({
+    required this.string,
+    required this.boolean,
+    required this.timestamp,
+  });
+  factory ProcessEveryTypeParamsObject.fromJson(Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsObject(
+      string: typeFromDynamic<String>(json["string"], ""),
+      boolean: typeFromDynamic<bool>(json["boolean"], false),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "string": string,
+      "boolean": boolean,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsObject copyWith({
+    String? string,
+    bool? boolean,
+    DateTime? timestamp,
+  }) {
+    return ProcessEveryTypeParamsObject(
+      string: string ?? this.string,
+      boolean: boolean ?? this.boolean,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+sealed class ProcessEveryTypeParamsDiscriminator {
+  final String type;
+  const ProcessEveryTypeParamsDiscriminator({
+    required this.type,
+  });
+  factory ProcessEveryTypeParamsDiscriminator.fromJson(
+      Map<String, dynamic> json) {
+    if (json["type"] is! String) {
+      throw Exception(
+        "Unable to decode ProcessEveryTypeParamsDiscriminator. Expected String from \"type\". Received ${json["type"]}}",
+      );
+    }
+    switch (json["type"]) {
+      case "A":
+        return ProcessEveryTypeParamsDiscriminatorA.fromJson(json);
+      case "B":
+        return ProcessEveryTypeParamsDiscriminatorB.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode ProcessEveryTypeParamsDiscriminator. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class ProcessEveryTypeParamsDiscriminatorA
+    implements ProcessEveryTypeParamsDiscriminator {
+  @override
+  final String type = "A";
+  final String title;
+  const ProcessEveryTypeParamsDiscriminatorA({
+    required this.title,
+  });
+  factory ProcessEveryTypeParamsDiscriminatorA.fromJson(
+      Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsDiscriminatorA(
+      title: typeFromDynamic<String>(json["title"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "type": type,
+      "title": title,
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsDiscriminatorA copyWith({
+    String? title,
+  }) {
+    return ProcessEveryTypeParamsDiscriminatorA(
+      title: title ?? this.title,
+    );
+  }
+}
+
+class ProcessEveryTypeParamsDiscriminatorB
+    implements ProcessEveryTypeParamsDiscriminator {
+  @override
+  final String type = "B";
+  final String title;
+  final String description;
+  const ProcessEveryTypeParamsDiscriminatorB({
+    required this.title,
+    required this.description,
+  });
+  factory ProcessEveryTypeParamsDiscriminatorB.fromJson(
+      Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsDiscriminatorB(
+      title: typeFromDynamic<String>(json["title"], ""),
+      description: typeFromDynamic<String>(json["description"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "type": type,
+      "title": title,
+      "description": description,
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsDiscriminatorB copyWith({
+    String? title,
+    String? description,
+  }) {
+    return ProcessEveryTypeParamsDiscriminatorB(
+      title: title ?? this.title,
+      description: description ?? this.description,
+    );
+  }
+}
+
+class ProcessEveryTypeParamsNestedObject {
+  final String id;
+  final DateTime timestamp;
+  final ProcessEveryTypeParamsNestedObjectData data;
+  const ProcessEveryTypeParamsNestedObject({
+    required this.id,
+    required this.timestamp,
+    required this.data,
+  });
+  factory ProcessEveryTypeParamsNestedObject.fromJson(
+      Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsNestedObject(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      data: ProcessEveryTypeParamsNestedObjectData.fromJson(json["data"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "data": data.toJson(),
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsNestedObject copyWith({
+    String? id,
+    DateTime? timestamp,
+    ProcessEveryTypeParamsNestedObjectData? data,
+  }) {
+    return ProcessEveryTypeParamsNestedObject(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class ProcessEveryTypeParamsNestedObjectData {
+  final String id;
+  final DateTime timestamp;
+  final ProcessEveryTypeParamsNestedObjectDataData data;
+  const ProcessEveryTypeParamsNestedObjectData({
+    required this.id,
+    required this.timestamp,
+    required this.data,
+  });
+  factory ProcessEveryTypeParamsNestedObjectData.fromJson(
+      Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsNestedObjectData(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      data: ProcessEveryTypeParamsNestedObjectDataData.fromJson(json["data"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "data": data.toJson(),
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsNestedObjectData copyWith({
+    String? id,
+    DateTime? timestamp,
+    ProcessEveryTypeParamsNestedObjectDataData? data,
+  }) {
+    return ProcessEveryTypeParamsNestedObjectData(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class ProcessEveryTypeParamsNestedObjectDataData {
+  final String id;
+  final DateTime timestamp;
+  const ProcessEveryTypeParamsNestedObjectDataData({
+    required this.id,
+    required this.timestamp,
+  });
+  factory ProcessEveryTypeParamsNestedObjectDataData.fromJson(
+      Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsNestedObjectDataData(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsNestedObjectDataData copyWith({
+    String? id,
+    DateTime? timestamp,
+  }) {
+    return ProcessEveryTypeParamsNestedObjectDataData(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class ProcessEveryTypeParamsNestedArrayItemItem {
+  final String id;
+  final DateTime timestamp;
+  const ProcessEveryTypeParamsNestedArrayItemItem({
+    required this.id,
+    required this.timestamp,
+  });
+  factory ProcessEveryTypeParamsNestedArrayItemItem.fromJson(
+      Map<String, dynamic> json) {
+    return ProcessEveryTypeParamsNestedArrayItemItem(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ProcessEveryTypeParamsNestedArrayItemItem copyWith({
+    String? id,
+    DateTime? timestamp,
+  }) {
+    return ProcessEveryTypeParamsNestedArrayItemItem(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
     );
   }
 }
@@ -168,10 +716,12 @@ class Post {
       description: nullableTypeFromDynamic<String>(json["description"]),
       content: typeFromDynamic<String>(json["content"], ""),
       tags: json["tags"] is List
-          ? (json["tags"] as List)
+          ?
+          // ignore: unnecessary_cast
+          (json["tags"] as List)
               .map((item) => typeFromDynamic<String>(item, ""))
-              .toList()
-          : [],
+              .toList() as List<String>
+          : <String>[],
       authorId: typeFromDynamic<String>(json["authorId"], ""),
       author: Author.fromJson(json["author"]),
       createdAt: dateTimeFromDynamic(
@@ -356,8 +906,11 @@ class PostListResponse {
     return PostListResponse(
       total: intFromDynamic(json["total"], 0),
       items: json["items"] is List
-          ? (json["items"] as List).map((item) => Post.fromJson(item)).toList()
-          : [],
+          ?
+          // ignore: unnecessary_cast
+          (json["items"] as List).map((item) => Post.fromJson(item)).toList()
+              as List<Post>
+          : <Post>[],
     );
   }
 
@@ -377,6 +930,416 @@ class PostListResponse {
     return PostListResponse(
       total: total ?? this.total,
       items: items ?? this.items,
+    );
+  }
+}
+
+sealed class PostEvent {
+  final String eventType;
+  const PostEvent({
+    required this.eventType,
+  });
+  factory PostEvent.fromJson(Map<String, dynamic> json) {
+    if (json["eventType"] is! String) {
+      throw Exception(
+        "Unable to decode PostEvent. Expected String from \"eventType\". Received ${json["eventType"]}}",
+      );
+    }
+    switch (json["eventType"]) {
+      case "POST_CREATED":
+        return PostEventPostCreated.fromJson(json);
+      case "POST_DELETED":
+        return PostEventPostDeleted.fromJson(json);
+      case "POST_UPDATED":
+        return PostEventPostUpdated.fromJson(json);
+      case "POST_LIKED":
+        return PostEventPostLiked.fromJson(json);
+      case "POST_COMMENTED":
+        return PostEventPostCommented.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode PostEvent. \"${json["eventType"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class PostEventPostCreated implements PostEvent {
+  @override
+  final String eventType = "POST_CREATED";
+  final String postId;
+  final DateTime timestamp;
+  const PostEventPostCreated({
+    required this.postId,
+    required this.timestamp,
+  });
+  factory PostEventPostCreated.fromJson(Map<String, dynamic> json) {
+    return PostEventPostCreated(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "eventType": eventType,
+      "postId": postId,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  PostEventPostCreated copyWith({
+    String? postId,
+    DateTime? timestamp,
+  }) {
+    return PostEventPostCreated(
+      postId: postId ?? this.postId,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class PostEventPostDeleted implements PostEvent {
+  @override
+  final String eventType = "POST_DELETED";
+  final String postId;
+  final DateTime timestamp;
+  const PostEventPostDeleted({
+    required this.postId,
+    required this.timestamp,
+  });
+  factory PostEventPostDeleted.fromJson(Map<String, dynamic> json) {
+    return PostEventPostDeleted(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "eventType": eventType,
+      "postId": postId,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  PostEventPostDeleted copyWith({
+    String? postId,
+    DateTime? timestamp,
+  }) {
+    return PostEventPostDeleted(
+      postId: postId ?? this.postId,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class PostEventPostUpdated implements PostEvent {
+  @override
+  final String eventType = "POST_UPDATED";
+  final String postId;
+  final DateTime timestamp;
+  final PostEventPostUpdatedData data;
+  const PostEventPostUpdated({
+    required this.postId,
+    required this.timestamp,
+    required this.data,
+  });
+  factory PostEventPostUpdated.fromJson(Map<String, dynamic> json) {
+    return PostEventPostUpdated(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      data: PostEventPostUpdatedData.fromJson(json["data"]),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "eventType": eventType,
+      "postId": postId,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "data": data.toJson(),
+    };
+
+    return result;
+  }
+
+  PostEventPostUpdated copyWith({
+    String? postId,
+    DateTime? timestamp,
+    PostEventPostUpdatedData? data,
+  }) {
+    return PostEventPostUpdated(
+      postId: postId ?? this.postId,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class PostEventPostUpdatedData {
+  final String? id;
+  final String? title;
+  final PostType? type;
+  final String? description;
+  final String? content;
+  final List<String>? tags;
+  final String? authorId;
+  final Author? author;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const PostEventPostUpdatedData({
+    this.id,
+    this.title,
+    this.type,
+    this.description,
+    this.content,
+    this.tags,
+    this.authorId,
+    this.author,
+    this.createdAt,
+    this.updatedAt,
+  });
+  factory PostEventPostUpdatedData.fromJson(Map<String, dynamic> json) {
+    return PostEventPostUpdatedData(
+      id: nullableTypeFromDynamic<String>(json["id"]),
+      title: nullableTypeFromDynamic<String>(json["title"]),
+      type: json["type"] is Map<String, dynamic>
+          ? PostType.fromJson(json["type"])
+          : null,
+      description: nullableTypeFromDynamic<String>(json["description"]),
+      content: nullableTypeFromDynamic<String>(json["content"]),
+      tags: json["tags"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["tags"] as List)
+              .map((item) => typeFromDynamic<String>(item, ""))
+              .toList() as List<String>?
+          : null,
+      authorId: nullableTypeFromDynamic<String>(json["authorId"]),
+      author: json["author"] is Map<String, dynamic>
+          ? Author.fromJson(json["author"])
+          : null,
+      createdAt: nullableDateTimeFromDynamic(json["createdAt"]),
+      updatedAt: nullableDateTimeFromDynamic(json["updatedAt"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{};
+    if (id != null) {
+      result["id"] = id;
+    }
+    if (title != null) {
+      result["title"] = title;
+    }
+    if (type != null) {
+      result["type"] = type?.value;
+    }
+    if (description != null) {
+      result["description"] = description;
+    }
+    if (content != null) {
+      result["content"] = content;
+    }
+    if (tags != null) {
+      result["tags"] = tags?.map((item) => item).toList();
+    }
+    if (authorId != null) {
+      result["authorId"] = authorId;
+    }
+    if (author != null) {
+      result["author"] = author?.toJson();
+    }
+    if (createdAt != null) {
+      result["createdAt"] = createdAt?.toUtc().toIso8601String();
+    }
+    if (updatedAt != null) {
+      result["updatedAt"] = updatedAt?.toUtc().toIso8601String();
+    }
+    return result;
+  }
+
+  PostEventPostUpdatedData copyWith({
+    String? id,
+    String? title,
+    PostType? type,
+    String? description,
+    String? content,
+    List<String>? tags,
+    String? authorId,
+    Author? author,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return PostEventPostUpdatedData(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      type: type ?? this.type,
+      description: description ?? this.description,
+      content: content ?? this.content,
+      tags: tags ?? this.tags,
+      authorId: authorId ?? this.authorId,
+      author: author ?? this.author,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class PostEventPostLiked implements PostEvent {
+  @override
+  final String eventType = "POST_LIKED";
+  final String postId;
+  final DateTime timestamp;
+  final String postLikeId;
+  final int postLikeCount;
+  const PostEventPostLiked({
+    required this.postId,
+    required this.timestamp,
+    required this.postLikeId,
+    required this.postLikeCount,
+  });
+  factory PostEventPostLiked.fromJson(Map<String, dynamic> json) {
+    return PostEventPostLiked(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      postLikeId: typeFromDynamic<String>(json["postLikeId"], ""),
+      postLikeCount: intFromDynamic(json["postLikeCount"], 0),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "eventType": eventType,
+      "postId": postId,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "postLikeId": postLikeId,
+      "postLikeCount": postLikeCount,
+    };
+
+    return result;
+  }
+
+  PostEventPostLiked copyWith({
+    String? postId,
+    DateTime? timestamp,
+    String? postLikeId,
+    int? postLikeCount,
+  }) {
+    return PostEventPostLiked(
+      postId: postId ?? this.postId,
+      timestamp: timestamp ?? this.timestamp,
+      postLikeId: postLikeId ?? this.postLikeId,
+      postLikeCount: postLikeCount ?? this.postLikeCount,
+    );
+  }
+}
+
+class PostEventPostCommented implements PostEvent {
+  @override
+  final String eventType = "POST_COMMENTED";
+  final String postId;
+  final DateTime timestamp;
+  final String commentId;
+  final String commentText;
+  final int commentCount;
+  const PostEventPostCommented({
+    required this.postId,
+    required this.timestamp,
+    required this.commentId,
+    required this.commentText,
+    required this.commentCount,
+  });
+  factory PostEventPostCommented.fromJson(Map<String, dynamic> json) {
+    return PostEventPostCommented(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      commentId: typeFromDynamic<String>(json["commentId"], ""),
+      commentText: typeFromDynamic<String>(json["commentText"], ""),
+      commentCount: intFromDynamic(json["commentCount"], 0),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "eventType": eventType,
+      "postId": postId,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "commentId": commentId,
+      "commentText": commentText,
+      "commentCount": commentCount,
+    };
+
+    return result;
+  }
+
+  PostEventPostCommented copyWith({
+    String? postId,
+    DateTime? timestamp,
+    String? commentId,
+    String? commentText,
+    int? commentCount,
+  }) {
+    return PostEventPostCommented(
+      postId: postId ?? this.postId,
+      timestamp: timestamp ?? this.timestamp,
+      commentId: commentId ?? this.commentId,
+      commentText: commentText ?? this.commentText,
+      commentCount: commentCount ?? this.commentCount,
+    );
+  }
+}
+
+class LogPostEventResponse {
+  final bool success;
+  final String message;
+  const LogPostEventResponse({
+    required this.success,
+    required this.message,
+  });
+  factory LogPostEventResponse.fromJson(Map<String, dynamic> json) {
+    return LogPostEventResponse(
+      success: typeFromDynamic<bool>(json["success"], false),
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "success": success,
+      "message": message,
+    };
+
+    return result;
+  }
+
+  LogPostEventResponse copyWith({
+    bool? success,
+    String? message,
+  }) {
+    return LogPostEventResponse(
+      success: success ?? this.success,
+      message: message ?? this.message,
     );
   }
 }
@@ -432,9 +1395,11 @@ class UpdatePostParamsData {
       description: nullableTypeFromDynamic<String>(json["description"]),
       content: nullableTypeFromDynamic<String>(json["content"]),
       tags: json["tags"] is List
-          ? (json["tags"] as List)
+          ?
+          // ignore: unnecessary_cast
+          (json["tags"] as List)
               .map((item) => typeFromDynamic<String>(item, ""))
-              .toList()
+              .toList() as List<String>?
           : null,
     );
   }

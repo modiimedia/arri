@@ -1,6 +1,6 @@
 import { ArriRequestError } from "arri-client";
 import { ofetch } from "ofetch";
-import { TestClient } from "./testClient.rpc";
+import { type ProcessEveryTypeParams, TestClient } from "./testClient.rpc";
 
 const baseUrl = "http://127.0.0.1:2020";
 const headers = {
@@ -68,6 +68,32 @@ test("posts.updatePost", async () => {
     expect(result2.title).toBe("hi");
 });
 
+test("post.logEvent()", async () => {
+    const createResult = await client.posts.logEvent({
+        eventType: "POST_CREATED",
+        postId: "1",
+        timestamp: new Date(),
+    });
+    expect(createResult.success);
+    const deleteResult = await client.posts.logEvent({
+        eventType: "POST_DELETED",
+        postId: "1",
+        timestamp: new Date(),
+    });
+    expect(deleteResult.success);
+    const updateResult = await client.posts.logEvent({
+        eventType: "POST_UPDATED",
+        postId: "1",
+        timestamp: new Date(),
+        data: {
+            title: "Hello World",
+            tags: ["1", "2"],
+            updatedAt: new Date(),
+        },
+    });
+    expect(updateResult.success);
+});
+
 test("unauthenticated request", async () => {
     try {
         await unauthenticatedClient.posts.getPost({
@@ -93,6 +119,65 @@ test("route request", async () => {
     });
     expect(result.id).toBe("12345");
     expect(result.name).toBe("John Doe");
+});
+
+test("miscTests.testEveryType()", async () => {
+    const input: ProcessEveryTypeParams = {
+        any: {
+            blah: "blah",
+            blah2: "blah2",
+            blah3: true,
+        },
+        boolean: true,
+        string: "hello world",
+        timestamp: new Date(),
+        float32: 0,
+        float64: 0,
+        int8: 0,
+        uint8: 0,
+        int16: 0,
+        uint16: 0,
+        int32: 0,
+        uint32: 0,
+        int64: 0n,
+        uint64: 0n,
+        enumerator: "B",
+        array: [true, false, false],
+        object: {
+            string: "",
+            boolean: false,
+            timestamp: new Date(),
+        },
+        record: {
+            A: true,
+            B: false,
+        },
+        discriminator: {
+            type: "B",
+            title: "Hello World",
+            description: "",
+        },
+        nestedObject: {
+            id: "",
+            timestamp: new Date(),
+            data: {
+                id: "",
+                timestamp: new Date(),
+                data: {
+                    id: "",
+                    timestamp: new Date(),
+                },
+            },
+        },
+        nestedArray: [
+            [
+                { id: "", timestamp: new Date() },
+                { id: "", timestamp: new Date() },
+            ],
+        ],
+    };
+    const result = await client.miscTests.testEveryType(input);
+    expect(result).toStrictEqual(input);
 });
 
 test("unauthorized route request", async () => {

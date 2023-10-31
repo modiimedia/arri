@@ -753,6 +753,12 @@ export const parsingTestSuites: Record<
         expectedResults: ["hello world"],
         badInputs: [],
     },
+    "nullable string": {
+        schema: a.nullable(a.string()),
+        goodInputs: [null, "Hello World"],
+        expectedResults: [null, "Hello World"],
+        badInputs: [false, true, {}],
+    },
     timestamp: {
         schema: a.timestamp(),
         goodInputs: ["2001/01/01", new Date("2001/01/01")],
@@ -770,6 +776,87 @@ export const parsingTestSuites: Record<
         goodInputs: ["A", "B", "C"],
         expectedResults: ["A", "B", "C"],
         badInputs: ["D", "F", null, false, {}],
+    },
+    int64: {
+        schema: a.int64(),
+        goodInputs: [BigInt(1000), BigInt(-1000), 1000, -1000, "1000", "-1000"],
+        expectedResults: [
+            BigInt(1000),
+            BigInt(-1000),
+            BigInt(1000),
+            BigInt(-1000),
+            BigInt(1000),
+            BigInt(-1000),
+        ],
+        badInputs: [null, true, []],
+    },
+    "nullable int64": {
+        schema: a.nullable(a.int64()),
+        goodInputs: [null, BigInt(-1000), "-1000", "null"],
+        expectedResults: [null, BigInt(-1000), BigInt(-1000), null],
+        badInputs: [true, false, {}],
+    },
+    uint64: {
+        schema: a.uint64(),
+        goodInputs: [BigInt(0), BigInt(1000), "0", "1000", 0, 1000],
+        expectedResults: [
+            BigInt(0),
+            BigInt(1000),
+            BigInt(0),
+            BigInt(1000),
+            BigInt(0),
+            BigInt(1000),
+        ],
+        badInputs: ["-1", "-1.5", "1.5", null],
+    },
+    "object with large integers": {
+        schema: a.object({
+            int64: a.int64(),
+            uint64: a.uint64(),
+            nullableInt64: a.nullable(a.int64()),
+            nullableUint64: a.nullable(a.uint64()),
+        }),
+        goodInputs: [
+            {
+                int64: -1,
+                uint64: 1,
+                nullableInt64: -1,
+                nullableUint64: 1,
+            },
+            {
+                int64: "-1",
+                uint64: "1",
+                nullableInt64: "-1",
+                nullableUint64: "1",
+            },
+            {
+                int64: BigInt(-1),
+                uint64: BigInt(1),
+                nullableInt64: null,
+                nullableUint64: null,
+            },
+        ],
+        expectedResults: [
+            {
+                int64: BigInt(-1),
+                uint64: BigInt(1),
+                nullableInt64: BigInt(-1),
+                nullableUint64: BigInt(1),
+            },
+            {
+                int64: BigInt(-1),
+                uint64: BigInt(1),
+                nullableInt64: BigInt(-1),
+                nullableUint64: BigInt(1),
+            },
+            {
+                int64: BigInt(-1),
+                uint64: BigInt(1),
+                nullableInt64: null,
+                nullableUint64: null,
+            },
+        ],
+        badInputs: [],
     },
     "object schema": {
         schema: ObjectSchema,
@@ -798,7 +885,10 @@ export const parsingTestSuites: Record<
                     "id": "",
                     "name": "Hello"
                 },
-                "any": {}
+                "any": {
+                    "a": "a",
+                    "b": "b"
+                }
             }`,
             {
                 string: "hello world",
@@ -824,7 +914,10 @@ export const parsingTestSuites: Record<
                     id: "",
                     name: "Hello",
                 },
-                any: {},
+                any: {
+                    a: "a",
+                    b: "b",
+                },
                 blah: "",
                 blah2: "",
             },
@@ -854,7 +947,10 @@ export const parsingTestSuites: Record<
                     id: "",
                     name: "Hello",
                 },
-                any: {},
+                any: {
+                    a: "a",
+                    b: "b",
+                },
             },
             {
                 string: "hello world",
@@ -880,7 +976,10 @@ export const parsingTestSuites: Record<
                     id: "",
                     name: "Hello",
                 },
-                any: {},
+                any: {
+                    a: "a",
+                    b: "b",
+                },
             },
         ] satisfies ObjectSchema[],
         badInputs: [],
