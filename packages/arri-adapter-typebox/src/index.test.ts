@@ -2,7 +2,7 @@ import { Type } from "@sinclair/typebox";
 import { a } from "arri-validate";
 import { typeboxAdapter } from "./index";
 
-test("infers types correctly", () => {
+it("infers types correctly", () => {
     const Schema = typeboxAdapter(
         Type.Object({
             id: Type.String(),
@@ -51,6 +51,16 @@ test("infers types correctly", () => {
                 title: "1324lk14j",
             },
         ],
+    });
+
+    const RecordSchema = typeboxAdapter(
+        Type.Record(Type.String(), Type.Boolean()),
+    );
+    type RecordSchema = a.infer<typeof RecordSchema>;
+    assertType<RecordSchema>({
+        A: true,
+        B: false,
+        C: true,
     });
 });
 

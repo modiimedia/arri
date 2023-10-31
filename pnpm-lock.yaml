@@ -310,9 +310,9 @@ importers:
 
   packages/json-schema-to-jtd:
     dependencies:
-      '@modii/jtd':
-        specifier: ^0.2.1
-        version: 0.2.1
+      jtd-utils:
+        specifier: workspace:*
+        version: link:../jtd-utils
 
   packages/jtd-utils: {}
 
@@ -340,6 +340,9 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arri-validate
     devDependencies:
+      arri-adapter-typebox:
+        specifier: workspace:*
+        version: link:../../packages/arri-adapter-typebox
       arri-codegen-utils:
         specifier: workspace:*
         version: link:../../packages/arri-codegen-utils
@@ -2367,10 +2370,6 @@ packages:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
-
-  /@modii/jtd@0.2.1:
-    resolution: {integrity: sha512-bHQPTe57eOSiXx2rk4IkNHNVNdTI/QNS5MO+/x1t/8XUAkHYe0oBTXjrigXPXolDm3GxAmPYVYf6qu+Ei9bQBg==}
-    dev: false
 
   /@mole-inc/bin-wrapper@8.0.1:
     resolution: {integrity: sha512-sTGoeZnjI8N4KS+sW2AN95gDBErhAguvkw/tWdCjeM8bvxpz5lqrnd0vOJABA1A+Ic3zED7PYoLP/RANLgVotA==}

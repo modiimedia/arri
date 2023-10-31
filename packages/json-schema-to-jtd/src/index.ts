@@ -1,11 +1,11 @@
 import {
-    type SchemaFormEmpty,
-    type SchemaFormEnum,
     type Schema,
     type SchemaFormProperties,
+    type SchemaFormEmpty,
+    type SchemaFormEnum,
     type SchemaFormElements,
     type SchemaFormValues,
-} from "@modii/jtd";
+} from "jtd-utils";
 import {
     type JsonSchemaArray,
     type JsonSchemaEnum,
@@ -44,7 +44,12 @@ export function jsonSchemaToJtdSchema(input: JsonSchemaType): Schema {
         }. Falling back to "any" type.`,
     );
     // fallback to "any" type
-    return {};
+    return {
+        metadata: {
+            id: input.$id ?? input.title,
+            description: input.description,
+        },
+    } satisfies SchemaFormEmpty;
 }
 
 export function jsonSchemaEnumToJtdEnum(input: JsonSchemaEnum): Schema {

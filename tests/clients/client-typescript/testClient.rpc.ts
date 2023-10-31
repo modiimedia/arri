@@ -11,6 +11,7 @@ interface TestClientOptions {
 export class TestClient {
   private readonly baseUrl: string;
   private readonly headers: Record<string, string>;
+  adapters: TestClientAdaptersService;
   miscTests: TestClientMiscTestsService;
   posts: TestClientPostsService;
   videos: TestClientVideosService;
@@ -18,9 +19,33 @@ export class TestClient {
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
     this.headers = { "client-version": "9", ...options.headers };
+    this.adapters = new TestClientAdaptersService(options);
     this.miscTests = new TestClientMiscTestsService(options);
     this.posts = new TestClientPostsService(options);
     this.videos = new TestClientVideosService(options);
+  }
+}
+
+export class TestClientAdaptersService {
+  private readonly baseUrl: string;
+  private readonly headers: Record<string, string>;
+
+  constructor(options: TestClientOptions = {}) {
+    this.baseUrl = options.baseUrl ?? "";
+    this.headers = { "client-version": "9", ...options.headers };
+  }
+  typeboxAdapter(params: AdaptersTypeboxAdapterParams) {
+    return arriRequest<
+      AdaptersTypeboxAdapterResponse,
+      AdaptersTypeboxAdapterParams
+    >({
+      url: `${this.baseUrl}/rpcs/adapters/typebox-adapter`,
+      method: "post",
+      headers: this.headers,
+      params,
+      parser: $$AdaptersTypeboxAdapterResponse.parse,
+      serializer: $$AdaptersTypeboxAdapterParams.serialize,
+    });
   }
 }
 
@@ -123,6 +148,174 @@ export class TestClientVideosService {
     });
   }
 }
+
+export interface AdaptersTypeboxAdapterParams {
+  id: string;
+  timestamp: number;
+}
+const $$AdaptersTypeboxAdapterParams = {
+  parse(input: Record<any, any>): AdaptersTypeboxAdapterParams {
+    class $ValidationErrorf34d4f04618d478592184529372fbd0f extends Error {
+      errors;
+      constructor(input) {
+        super(input.message);
+        this.errors = input.errors;
+      }
+    }
+
+    function $fallback(instancePath, schemaPath, message) {
+      throw new $ValidationErrorf34d4f04618d478592184529372fbd0f({
+        message: message,
+        errors: [
+          {
+            instancePath: instancePath,
+            schemaPath: schemaPath,
+            message: message,
+          },
+        ],
+      });
+    }
+
+    if (typeof input === "string") {
+      const json = JSON.parse(input);
+      let result = {};
+      if (typeof json === "object" && json !== null) {
+        const jsonInnerVal = {};
+        if (typeof json.id === "string") {
+          jsonInnerVal.id = json.id;
+        } else {
+          $fallback("/id", "/properties/id/type", "Expected string at /id");
+        }
+        if (
+          typeof json.timestamp === "number" &&
+          Number.isInteger(json.timestamp) &&
+          json.timestamp >= -2147483648 &&
+          json.timestamp <= 2147483647
+        ) {
+          jsonInnerVal.timestamp = json.timestamp;
+        } else {
+          $fallback(
+            "/timestamp",
+            "/properties/timestamp",
+            "Expected valid integer between -2147483648 and 2147483647",
+          );
+        }
+        result = jsonInnerVal;
+      } else {
+        $fallback("", "", "Expected object");
+      }
+      return result;
+    }
+    let result = {};
+    if (typeof input === "object" && input !== null) {
+      const inputInnerVal = {};
+      if (typeof input.id === "string") {
+        inputInnerVal.id = input.id;
+      } else {
+        $fallback("/id", "/properties/id/type", "Expected string at /id");
+      }
+      if (
+        typeof input.timestamp === "number" &&
+        Number.isInteger(input.timestamp) &&
+        input.timestamp >= -2147483648 &&
+        input.timestamp <= 2147483647
+      ) {
+        inputInnerVal.timestamp = input.timestamp;
+      } else {
+        $fallback(
+          "/timestamp",
+          "/properties/timestamp",
+          "Expected valid integer between -2147483648 and 2147483647",
+        );
+      }
+      result = inputInnerVal;
+    } else {
+      $fallback("", "", "Expected object");
+    }
+    return result;
+  },
+  serialize(input: AdaptersTypeboxAdapterParams): string {
+    let json = "";
+    json += "{";
+    json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"timestamp":${input.timestamp}`;
+    json += "}";
+    return json;
+  },
+};
+
+export interface AdaptersTypeboxAdapterResponse {
+  message: string;
+}
+const $$AdaptersTypeboxAdapterResponse = {
+  parse(input: Record<any, any>): AdaptersTypeboxAdapterResponse {
+    class $ValidationError4d96f870332649ac935177b5e1861daa extends Error {
+      errors;
+      constructor(input) {
+        super(input.message);
+        this.errors = input.errors;
+      }
+    }
+
+    function $fallback(instancePath, schemaPath, message) {
+      throw new $ValidationError4d96f870332649ac935177b5e1861daa({
+        message: message,
+        errors: [
+          {
+            instancePath: instancePath,
+            schemaPath: schemaPath,
+            message: message,
+          },
+        ],
+      });
+    }
+
+    if (typeof input === "string") {
+      const json = JSON.parse(input);
+      let result = {};
+      if (typeof json === "object" && json !== null) {
+        const jsonInnerVal = {};
+        if (typeof json.message === "string") {
+          jsonInnerVal.message = json.message;
+        } else {
+          $fallback(
+            "/message",
+            "/properties/message/type",
+            "Expected string at /message",
+          );
+        }
+        result = jsonInnerVal;
+      } else {
+        $fallback("", "", "Expected object");
+      }
+      return result;
+    }
+    let result = {};
+    if (typeof input === "object" && input !== null) {
+      const inputInnerVal = {};
+      if (typeof input.message === "string") {
+        inputInnerVal.message = input.message;
+      } else {
+        $fallback(
+          "/message",
+          "/properties/message/type",
+          "Expected string at /message",
+        );
+      }
+      result = inputInnerVal;
+    } else {
+      $fallback("", "", "Expected object");
+    }
+    return result;
+  },
+  serialize(input: AdaptersTypeboxAdapterResponse): string {
+    let json = "";
+    json += "{";
+    json += `"message":"${input.message.replace(/[\n]/g, "\\n")}"`;
+    json += "}";
+    return json;
+  },
+};
 
 export interface ProcessEveryTypeParams {
   any: any;

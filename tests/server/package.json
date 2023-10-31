@@ -11,6 +11,7 @@
         "integration-tests": "nx run-many -t integration-test"
     },
     "devDependencies": {
-        "arri-codegen-utils": "workspace:*"
+        "arri-codegen-utils": "workspace:*",
+        "arri-adapter-typebox": "workspace:*"
     }
 }

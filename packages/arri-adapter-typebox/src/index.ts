@@ -1,4 +1,10 @@
-import { Optional, type Static, type TObject } from "@sinclair/typebox";
+import {
+    Optional,
+    type TSchema,
+    type Static,
+    type TObject,
+    type TRecord,
+} from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
 import {
@@ -6,16 +12,26 @@ import {
     ValidationError,
     type ValueError,
     type AAdaptedSchema,
+    type AAdaptedRecordSchema,
+    type AAdaptedObjectSchema,
 } from "arri-validate";
 import { jsonSchemaToJtdSchema } from "json-schema-to-jtd";
 
-export function typeboxAdapter<TInput extends TObject<any>>(
+export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,
-): AAdaptedSchema<Static<TInput>> {
+): TInput extends TObject
+    ? AAdaptedObjectSchema<Static<TInput>>
+    : TInput extends TRecord
+    ? AAdaptedRecordSchema<
+          Static<TInput> extends Record<string, any>
+              ? Static<TInput>[string]
+              : any
+      >
+    : AAdaptedSchema<Static<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as any);
     const compiled = TypeCompiler.Compile<any>(input);
     return {
-        ...schema,
+        ...(schema as any),
         metadata: {
             id: input.$id ?? input.title,
             description: input.description,

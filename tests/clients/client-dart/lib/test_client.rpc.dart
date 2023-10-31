@@ -12,6 +12,13 @@ class TestClient {
     _headers = {"client-version": "9", ...headers};
   }
 
+  TestClientAdaptersService get adapters {
+    return TestClientAdaptersService(
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
+
   TestClientMiscTestsService get miscTests {
     return TestClientMiscTestsService(
       baseUrl: _baseUrl,
@@ -30,6 +37,30 @@ class TestClient {
     return TestClientVideosService(
       baseUrl: _baseUrl,
       headers: _headers,
+    );
+  }
+}
+
+class TestClientAdaptersService {
+  final String _baseUrl;
+  late final Map<String, String> _headers;
+  TestClientAdaptersService({
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  }) : _baseUrl = baseUrl {
+    _headers = {"client-version": "9", ...headers};
+  }
+
+  Future<AdaptersTypeboxAdapterResponse> typeboxAdapter(
+      AdaptersTypeboxAdapterParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/adapters/typebox-adapter",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => AdaptersTypeboxAdapterResponse.fromJson(
+        json.decode(body),
+      ),
     );
   }
 }
@@ -147,6 +178,68 @@ class TestClientVideosService {
       parser: (body) => Annotation.fromJson(
         json.decode(body),
       ),
+    );
+  }
+}
+
+class AdaptersTypeboxAdapterParams {
+  final String id;
+  final int timestamp;
+  const AdaptersTypeboxAdapterParams({
+    required this.id,
+    required this.timestamp,
+  });
+  factory AdaptersTypeboxAdapterParams.fromJson(Map<String, dynamic> json) {
+    return AdaptersTypeboxAdapterParams(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: intFromDynamic(json["timestamp"], 0),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp,
+    };
+
+    return result;
+  }
+
+  AdaptersTypeboxAdapterParams copyWith({
+    String? id,
+    int? timestamp,
+  }) {
+    return AdaptersTypeboxAdapterParams(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class AdaptersTypeboxAdapterResponse {
+  final String message;
+  const AdaptersTypeboxAdapterResponse({
+    required this.message,
+  });
+  factory AdaptersTypeboxAdapterResponse.fromJson(Map<String, dynamic> json) {
+    return AdaptersTypeboxAdapterResponse(
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "message": message,
+    };
+
+    return result;
+  }
+
+  AdaptersTypeboxAdapterResponse copyWith({
+    String? message,
+  }) {
+    return AdaptersTypeboxAdapterResponse(
+      message: message ?? this.message,
     );
   }
 }

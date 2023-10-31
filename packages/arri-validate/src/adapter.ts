@@ -4,6 +4,9 @@ import {
     type SchemaValidator,
     SCHEMA_METADATA,
     type SchemaMetadata,
+    type AObjectSchema,
+    type ARecordSchema,
+    type ADiscriminatorSchema,
 } from "./schemas";
 
 export interface AAdaptedSchemaValidator<T> extends SchemaValidator<T> {
@@ -15,6 +18,19 @@ export interface AAdaptedSchemaMetadata<T> extends SchemaMetadata<T> {
 }
 
 export interface AAdaptedSchema<T> extends ASchema<T> {
+    metadata: AAdaptedSchemaMetadata<T>;
+}
+
+export interface AAdaptedObjectSchema<T> extends AObjectSchema<T> {
+    metadata: AAdaptedSchemaMetadata<T>;
+}
+
+export interface AAdaptedRecordSchema<T> extends ARecordSchema<ASchema<T>> {
+    metadata: AAdaptedSchemaMetadata<Record<string, T>>;
+}
+
+export interface AAdaptedDiscriminatorSchema<T>
+    extends ADiscriminatorSchema<T> {
     metadata: AAdaptedSchemaMetadata<T>;
 }
 
