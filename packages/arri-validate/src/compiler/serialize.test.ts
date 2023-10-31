@@ -1,9 +1,9 @@
 import { a, isAScalarSchema, isAStringEnumSchema } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "../testSuites";
+import { validationTestSuites } from "../testSuites";
 
-for (const key of Object.keys(testSuites)) {
-    const suite = testSuites[key];
+for (const key of Object.keys(validationTestSuites)) {
+    const suite = validationTestSuites[key];
     const Compiled = compile(suite.schema);
     for (const input of suite.goodInputs) {
         test(key, () => {

@@ -1,10 +1,10 @@
 import { a } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "../testSuites";
+import { validationTestSuites } from "../testSuites";
 
-Object.keys(testSuites).forEach((key) => {
+Object.keys(validationTestSuites).forEach((key) => {
     test(key, () => {
-        const suite = testSuites[key];
+        const suite = validationTestSuites[key];
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
             expect(Compiled.validate(input));

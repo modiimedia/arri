@@ -9,5 +9,8 @@
     "scripts": {
         "start-server": "nx serve test-server",
         "integration-tests": "nx run-many -t integration-test"
+    },
+    "devDependencies": {
+        "listhen": "^1.5.5"
     }
 }

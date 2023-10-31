@@ -1,10 +1,10 @@
 import { isEqual } from "lodash";
 import { a } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "../testSuites";
+import { parsingTestSuites, validationTestSuites } from "../testSuites";
 
-for (const key of Object.keys(testSuites)) {
-    const suite = testSuites[key];
+for (const key of Object.keys(validationTestSuites)) {
+    const suite = validationTestSuites[key];
     test(key, () => {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
@@ -21,6 +21,24 @@ for (const key of Object.keys(testSuites)) {
         }
     });
 }
+
+describe("parsing test suites", () => {
+    for (const key of Object.keys(parsingTestSuites)) {
+        const suite = parsingTestSuites[key];
+        test(key, () => {
+            const Compiled = compile(suite.schema);
+            for (let i = 0; i < suite.goodInputs.length; i++) {
+                const input = suite.goodInputs[i];
+                const expectResult = suite.expectedResults[i];
+                const actualResult = Compiled.parse(input);
+                const serializedResult = Compiled.serialize(actualResult);
+                expect(isEqual(actualResult, expectResult));
+                expect(isEqual(Compiled.parse(serializedResult), expectResult));
+                expect(isEqual(actualResult, a.parse(suite.schema, input)));
+            }
+        });
+    }
+});
 
 it("parses floats", () => {
     const Compiled = a.compile(a.number());
@@ -83,4 +101,56 @@ it("respects the additionalProperties option", () => {
     expect(LooseSchema.safeParse(inputWithAdditionalFields).success);
     expect(StrictSchema.safeParse(input).success);
     expect(!StrictSchema.safeParse(inputWithAdditionalFields).success);
+});
+
+it("parses discriminated unions", () => {
+    const Schema = a.discriminator("eventType", {
+        POST_CREATED: a.object({
+            id: a.string(),
+            date: a.timestamp(),
+        }),
+        POST_UPDATED: a.object({
+            id: a.string(),
+            date: a.timestamp(),
+            data: a.object({
+                title: a.string(),
+                description: a.string(),
+            }),
+        }),
+        POST_DELETED: a.object({
+            id: a.string(),
+            date: a.timestamp(),
+            deletionReason: a.string(),
+        }),
+    });
+    type Schema = a.infer<typeof Schema>;
+    const inputs: Schema[] = [
+        {
+            eventType: "POST_CREATED",
+            id: "1",
+            date: new Date(),
+        },
+        {
+            eventType: "POST_UPDATED",
+            id: "2",
+            date: new Date(),
+            data: {
+                title: "Hello World",
+                description: "Hello World!",
+            },
+        },
+        {
+            eventType: "POST_DELETED",
+            id: "3",
+            date: new Date(),
+            deletionReason: "",
+        },
+    ];
+    const CompiledValidator = a.compile(Schema);
+    for (const input of inputs) {
+        expect(CompiledValidator.parse(input)).toStrictEqual(input);
+        expect(
+            CompiledValidator.parse(CompiledValidator.serialize(input)),
+        ).toStrictEqual(input);
+    }
 });

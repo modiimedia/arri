@@ -104,7 +104,7 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
             path.resolve(config.rootDir, config.buildDir, "server.js"),
         ],
         platform: config.esbuild.platform ?? "node",
-        target: config.esbuild.target ?? "node18",
+        target: config.esbuild.target ?? "node20",
         bundle: true,
         packages: "external",
         format: "esm",
