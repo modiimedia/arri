@@ -1,14 +1,10 @@
 {
     "name": "json-schema-to-jtd",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
-    "dependencies": {
-        "jtd-utils": "workspace:*"
-    }
+    "files": ["dist"],
+    "dependencies": { "jtd-utils": "workspace:*" }
 }
