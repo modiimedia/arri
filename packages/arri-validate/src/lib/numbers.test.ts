@@ -114,6 +114,8 @@ describe("int64", () => {
     it("parses valid inputs", () => {
         const Schema = a.int64();
         const inputs = [
+            131381,
+            -135131,
             "1413141",
             BigInt("12453113"),
             "-135915111351",
@@ -128,6 +130,9 @@ describe("int64", () => {
         const inputs = [
             "9223372036854775808",
             "-9223372036854775809",
+            -1,
+            // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+            9999999999999999999999999999999999999999999,
             null,
             "14315h",
         ];
