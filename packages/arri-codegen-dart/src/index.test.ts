@@ -260,7 +260,9 @@ describe("Model Generation", () => {
                 json["createdAt"],
                 DateTime.fromMillisecondsSinceEpoch(0),
               ),
-              followers: json["followers"] is List ? (json["followers"] as List).map((item) => UserFollowersItem.fromJson(item)).toList() : [],
+              followers: json["followers"] is List ? 
+              // ignore: unnecessary_cast
+              (json["followers"] as List).map((item) => UserFollowersItem.fromJson(item)).toList() as List<UserFollowersItem> : <UserFollowersItem>[],
               settings: UserSettings.fromJson(json["settings"]),
             );
           }
@@ -392,9 +394,15 @@ describe("Model Generation", () => {
           });
           factory Model.fromJson(Map<String, dynamic> json) {
             return Model(
-              items: json["items"] is List ? (json["items"] as List).map((item) => doubleFromDynamic(item, 0)).toList() : [],
-              nullableItems: json["nullableItems"] is List ? (json["nullableItems"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() : null,
-              objectItems: json["objectItems"] is List ? (json["objectItems"] as List).map((item) => ModelObjectItemsItem.fromJson(item)).toList() : null,
+              items: json["items"] is List ? 
+              // ignore: unnecessary_cast
+              (json["items"] as List).map((item) => doubleFromDynamic(item, 0)).toList() as List<double> : <double>[],
+              nullableItems: json["nullableItems"] is List ? 
+              // ignore: unnecessary_cast
+              (json["nullableItems"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() as List<String>? : null,
+              objectItems: json["objectItems"] is List ? 
+              // ignore: unnecessary_cast
+              (json["objectItems"] as List).map((item) => ModelObjectItemsItem.fromJson(item)).toList() as List<ModelObjectItemsItem>? : null,
             );
           }
           Map<String, dynamic> toJson() {
@@ -469,7 +477,9 @@ describe("Model Generation", () => {
           factory Model.fromJson(Map<String, dynamic> json) {
             return Model(
               id: nullableTypeFromDynamic<String>(json["id"]),
-              tags: json["tags"] is List ? (json["tags"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() : null,
+              tags: json["tags"] is List ?
+              // ignore: unnecessary_cast
+              (json["tags"] as List).map((item) => typeFromDynamic<String>(item, "")).toList() as List<String>? : null,
             );
           }
           Map<String, dynamic> toJson() {

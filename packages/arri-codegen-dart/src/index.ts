@@ -556,8 +556,7 @@ function dartArrayFromJtdSchema(
                 // ignore: unnecessary_cast
                 (${input} as List).map((item) => ${subtype.fromJsonTemplate(
                     "item",
-                )}).toList() as ${typeName} : 
-                <${subtype.typeName}>[]`;
+                )}).toList() as ${typeName} : <${subtype.typeName}>[]`;
         },
         toJsonTemplate: (input) => {
             return `${input}${
