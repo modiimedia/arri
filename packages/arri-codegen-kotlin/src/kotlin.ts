@@ -4,6 +4,7 @@ import {
     isServiceDefinition,
     type ServiceDefinition,
     type RpcDefinition,
+    defineClientGeneratorPlugin,
 } from "arri-codegen-utils";
 import {
     type JsonSchemaObject,
@@ -14,7 +15,6 @@ import {
     isJsonSchemaScalarType,
 } from "json-schema-to-jtd";
 import { camelCase, pascalCase } from "scule";
-import { defineClientGeneratorPlugin } from "./plugin";
 
 interface KotlinClientGeneratorOptions {
     clientName: string;

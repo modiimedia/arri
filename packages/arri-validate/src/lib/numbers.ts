@@ -157,7 +157,7 @@ export function int64(
         );
     }
     function parse(input: unknown, data: ValidationData): bigint | undefined {
-        if (typeof input === "string") {
+        if (typeof input === "string" || typeof input === "number") {
             try {
                 const val = BigInt(input);
                 if (isType(val)) {
@@ -220,7 +220,7 @@ export function uint64(
         );
     }
     function parse(input: unknown, data: ValidationData): bigint | undefined {
-        if (typeof input === "string") {
+        if (typeof input === "string" || typeof input === "number") {
             try {
                 const val = BigInt(input);
                 if (isType(val)) {

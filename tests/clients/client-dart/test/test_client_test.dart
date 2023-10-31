@@ -52,6 +52,66 @@ Future<void> main() async {
     }
   });
 
+  test("miscTests.testEveryType()", () async {
+    final input = ProcessEveryTypeParams(
+        any: {"hello": "world", "goodbye": "world"},
+        boolean: true,
+        string: "",
+        timestamp: DateTime.now(),
+        float32: 1,
+        float64: 1,
+        int8: 1,
+        uint8: 1,
+        int16: 1,
+        uint16: 1,
+        int32: 1,
+        uint32: 1,
+        int64: BigInt.from(1),
+        uint64: BigInt.from(1),
+        enumerator: ProcessEveryTypeParamsEnumerator.a,
+        array: [true, false],
+        object: ProcessEveryTypeParamsObject(
+            boolean: true, string: "", timestamp: DateTime.now()),
+        record: {
+          "A": true,
+          "B": false,
+        },
+        discriminator:
+            ProcessEveryTypeParamsDiscriminatorA(title: "Hello World"),
+        nestedObject: ProcessEveryTypeParamsNestedObject(
+          id: "",
+          timestamp: DateTime.now(),
+          data: ProcessEveryTypeParamsNestedObjectData(
+              id: "",
+              timestamp: DateTime.now(),
+              data: ProcessEveryTypeParamsNestedObjectDataData(
+                id: "",
+                timestamp: DateTime.now(),
+              )),
+        ),
+        nestedArray: [
+          [
+            ProcessEveryTypeParamsNestedArrayItemItem(
+                id: "", timestamp: DateTime.now())
+          ]
+        ]);
+    final result = await client.miscTests.testEveryType(input);
+    expect(result.any["hello"], equals(input.any["hello"]));
+    expect(result.array.length, equals(input.array.length));
+    expect(result.array[0], equals(input.array[0]));
+    expect(result.boolean, equals(input.boolean));
+    expect(result.discriminator.type, equals(input.discriminator.type));
+    expect(result.enumerator.value, equals(input.enumerator.value));
+    expect(result.float32, equals(input.float32));
+    expect(result.float64, equals(input.float64));
+    expect(result.int16, equals(input.int16));
+    expect(result.int64, equals(input.int64));
+    expect(result.object.boolean, equals(input.object.boolean));
+    expect(result.record["A"], equals(input.record["A"]));
+    expect(result.nestedObject.data.data.timestamp.microsecond,
+        equals(result.nestedObject.data.data.timestamp.microsecond));
+  });
+
   test("unauthenticated requests", () async {
     try {
       await unauthenticatedClient.posts.getPost(PostParams(postId: "12345"));

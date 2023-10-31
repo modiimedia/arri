@@ -90,3 +90,22 @@ it("serializes objects will nullable fields", () => {
         Compiled.serialize({ a: null, b: null, c: null, d: null, e: null }),
     ).toBe(`{"a":null,"b":null,"c":null,"d":null,"e":null}`);
 });
+
+it("serializes any object", () => {
+    const Schema = a.object({
+        any: a.any(),
+        string: a.string(),
+    });
+    type Schema = a.infer<typeof Schema>;
+    const Compiled = a.compile(Schema);
+    const input: Schema = {
+        any: {
+            a: "",
+            b: "",
+            c: false,
+        },
+        string: "",
+    };
+    const result = Compiled.serialize(input);
+    expect(Compiled.parse(result)).toStrictEqual(input);
+});

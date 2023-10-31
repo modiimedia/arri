@@ -97,7 +97,11 @@ export async function createTypescriptClient(
     });
     for (const key of typesNeedingParser) {
         const schema = def.models[key];
-        if (isSchemaFormProperties(schema)) {
+        if (
+            isSchemaFormProperties(schema) ||
+            isSchemaFormDiscriminator(schema) ||
+            isSchemaFormValues(schema)
+        ) {
             const type = tsTypeFromJtdSchema(
                 key,
                 schema,

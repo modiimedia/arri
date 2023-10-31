@@ -1,4 +1,8 @@
-import { type SchemaFormProperties } from "jtd-utils";
+import {
+    type SchemaFormDiscriminator,
+    type SchemaFormValues,
+    type SchemaFormProperties,
+} from "jtd-utils";
 export * from "jtd-utils";
 export * from "scule";
 
@@ -34,7 +38,10 @@ export interface AppDefinition {
         url: string;
     };
     procedures: Record<string, RpcDefinition>;
-    models: Record<string, SchemaFormProperties>;
+    models: Record<
+        string,
+        SchemaFormProperties | SchemaFormDiscriminator | SchemaFormValues
+    >;
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {

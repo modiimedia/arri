@@ -1,9 +1,5 @@
 import { type AppDefinition, type RpcDefinition } from "arri-codegen-utils";
-import {
-    type AObjectSchema,
-    type ASchema,
-    isAObjectSchema,
-} from "arri-validate";
+import { type AObjectSchema, type ASchema } from "arri-validate";
 import {
     type App,
     createApp,
@@ -23,6 +19,7 @@ import {
     getRpcResponseName,
     registerRpc,
     type ArriNamedProcedure,
+    isRpcParamSchema,
 } from "./procedures";
 import { ArriRouter, type ArriRouterBase } from "./router";
 import { type ArriRoute, registerRoute } from "./routes";
@@ -128,13 +125,13 @@ export class ArriApp implements ArriRouterBase {
             path,
             procedure,
         );
-        if (isAObjectSchema(procedure.params)) {
+        if (isRpcParamSchema(procedure.params)) {
             const paramName = getRpcParamName(procedure.name, procedure);
             if (paramName) {
                 this.models[paramName] = procedure.params;
             }
         }
-        if (isAObjectSchema(procedure.response)) {
+        if (isRpcParamSchema(procedure.response)) {
             const responseName = getRpcResponseName(procedure.name, procedure);
             if (responseName) {
                 this.models[responseName] = procedure.response;

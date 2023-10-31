@@ -163,10 +163,12 @@ class User {
       numFollowers: intFromDynamic(json["numFollowers"], 0),
       settings: UserSettings.fromJson(json["settings"]),
       recentNotifications: json["recentNotifications"] is List
-          ? (json["recentNotifications"] as List)
+          ?
+          // ignore: unnecessary_cast
+          (json["recentNotifications"] as List)
               .map((item) => UserRecentNotificationsItem.fromJson(item))
-              .toList()
-          : [],
+              .toList() as List<UserRecentNotificationsItem>
+          : <UserRecentNotificationsItem>[],
       bookmarks: json["bookmarks"] is Map<String, dynamic>
           ? (json["bookmarks"] as Map<String, dynamic>).map(
               (key, value) => MapEntry(key, UserBookmarksValue.fromJson(value)))
@@ -176,8 +178,11 @@ class User {
               .map((key, value) => MapEntry(key, value))
           : <String, dynamic>{},
       randomList: json["randomList"] is List
-          ? (json["randomList"] as List).map((item) => item).toList()
-          : [],
+          ?
+          // ignore: unnecessary_cast
+          (json["randomList"] as List).map((item) => item).toList()
+              as List<dynamic>
+          : <dynamic>[],
       bio: nullableTypeFromDynamic<String>(json["bio"]),
     );
   }
