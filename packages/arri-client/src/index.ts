@@ -49,7 +49,17 @@ export async function arriRequest<
         return opts.parser(result);
     } catch (err) {
         const error = err as any as FetchError;
-        throw new ArriRequestError(error.data);
+        if (isArriRequestErrorResponse(error.data)) {
+            throw new ArriRequestError(error.data);
+        } else {
+            throw new ArriRequestError({
+                statusCode: error.statusCode ?? 500,
+                statusMessage:
+                    error.statusMessage ?? `Error connecting to ${url}`,
+                data: error.data,
+                stack: error.stack,
+            });
+        }
     }
 }
 
@@ -85,7 +95,7 @@ export async function arriSafeRequest<
             success: false,
             error: new ArriRequestError({
                 statusCode: 500,
-                statusMessage: "Unknown error",
+                statusMessage: `Unknown error connecting to ${opts.url}`,
                 data: err,
             }),
         };
@@ -99,7 +109,31 @@ export type SafeResponse<T> =
       }
     | { success: false; error: ArriRequestError };
 
-export class ArriRequestError extends Error {
+export interface ArriRequestErrorResponse {
+    statusCode: number;
+    statusMessage: string;
+    data?: any;
+    stack?: string;
+}
+
+export function isArriRequestErrorResponse(
+    input: unknown,
+): input is ArriRequestErrorResponse {
+    if (typeof input !== "object" || input === null) {
+        return false;
+    }
+    return (
+        "statusCode" in input &&
+        typeof input.statusCode === "number" &&
+        "statusMessage" in input &&
+        typeof input.statusMessage === "string"
+    );
+}
+
+export class ArriRequestError
+    extends Error
+    implements ArriRequestErrorResponse
+{
     statusCode: number;
     statusMessage: string;
     data?: any;

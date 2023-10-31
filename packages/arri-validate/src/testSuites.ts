@@ -58,7 +58,7 @@ const Post = a.object({
 
 type Post = a.infer<typeof Post>;
 
-export const testSuites: Record<
+export const validationTestSuites: Record<
     string,
     {
         schema: ASchema;
@@ -564,9 +564,6 @@ export const testSuites: Record<
                     url: a.string(),
                 }),
             ),
-            {
-                id: "logplz",
-            },
         ),
         goodInputs: [
             { a: { id: "", url: "" }, b: { id: "", url: "" } },
@@ -706,5 +703,186 @@ export const testSuites: Record<
             },
         ],
         badInputs: [{}, null, { id: "" }],
+    },
+};
+
+const ObjectSchema = a.object({
+    string: a.string(),
+    date: a.timestamp(),
+    enum: a.enumerator(["A", "B", "C"]),
+    int8: a.int8(),
+    int16: a.int16(),
+    int32: a.int32(),
+    int64: a.int64(),
+    uint64: a.uint64(),
+    boolean: a.boolean(),
+    object: a.object({
+        id: a.string(),
+        count: a.number(),
+    }),
+    record: a.record(a.uint64()),
+    array: a.array(a.boolean()),
+    taggedUnion: a.discriminator("type", {
+        USER: a.object({
+            id: a.string(),
+            name: a.string(),
+        }),
+        POST: a.object({
+            id: a.string(),
+            title: a.string(),
+            createdAt: a.timestamp(),
+        }),
+    }),
+    any: a.any(),
+});
+
+type ObjectSchema = a.infer<typeof ObjectSchema>;
+
+export const parsingTestSuites: Record<
+    string,
+    {
+        schema: ASchema;
+        goodInputs: any[];
+        expectedResults: any[];
+        badInputs: any[];
+    }
+> = {
+    string: {
+        schema: a.string(),
+        goodInputs: ["hello world"],
+        expectedResults: ["hello world"],
+        badInputs: [],
+    },
+    timestamp: {
+        schema: a.timestamp(),
+        goodInputs: ["2001/01/01", new Date("2001/01/01")],
+        expectedResults: [new Date("2001/01/01"), new Date("2001/01/01")],
+        badInputs: [],
+    },
+    boolean: {
+        schema: a.boolean(),
+        goodInputs: [true, false, "true", "false"],
+        badInputs: [],
+        expectedResults: [true, false, true, false],
+    },
+    enum: {
+        schema: a.enumerator(["A", "B", "C"]),
+        goodInputs: ["A", "B", "C"],
+        expectedResults: ["A", "B", "C"],
+        badInputs: ["D", "F", null, false, {}],
+    },
+    "object schema": {
+        schema: ObjectSchema,
+        goodInputs: [
+            `{
+                "string": "hello world",
+                "date": "2001/01/01",
+                "enum": "A",
+                "int8": 1,
+                "int16": 2,
+                "int32": 3,
+                "int64": "999",
+                "uint64": "999",
+                "boolean": true,
+                "object": {
+                    "id": "",
+                    "count": 1
+                },
+                "record": {
+                    "a": "0",
+                    "b": "1000"
+                },
+                "array": [true, false, true],
+                "taggedUnion": {
+                    "type": "USER",
+                    "id": "",
+                    "name": "Hello"
+                },
+                "any": {}
+            }`,
+            {
+                string: "hello world",
+                date: new Date("2001/01/01"),
+                enum: "A",
+                int8: 1,
+                int16: 2,
+                int32: 3,
+                int64: BigInt(999),
+                uint64: BigInt(999),
+                boolean: true,
+                object: {
+                    id: "",
+                    count: 1,
+                },
+                record: {
+                    a: BigInt(0),
+                    b: BigInt(1000),
+                },
+                array: [true, false, true],
+                taggedUnion: {
+                    type: "USER",
+                    id: "",
+                    name: "Hello",
+                },
+                any: {},
+                blah: "",
+                blah2: "",
+            },
+        ],
+        expectedResults: [
+            {
+                string: "hello world",
+                date: new Date("2001/01/01"),
+                enum: "A",
+                int8: 1,
+                int16: 2,
+                int32: 3,
+                int64: BigInt(999),
+                uint64: BigInt(999),
+                boolean: true,
+                object: {
+                    id: "",
+                    count: 1,
+                },
+                record: {
+                    a: BigInt(0),
+                    b: BigInt(1000),
+                },
+                array: [true, false, true],
+                taggedUnion: {
+                    type: "USER",
+                    id: "",
+                    name: "Hello",
+                },
+                any: {},
+            },
+            {
+                string: "hello world",
+                date: new Date("2001/01/01"),
+                enum: "A",
+                int8: 1,
+                int16: 2,
+                int32: 3,
+                int64: BigInt(999),
+                uint64: BigInt(999),
+                boolean: true,
+                object: {
+                    id: "",
+                    count: 1,
+                },
+                record: {
+                    a: BigInt(0),
+                    b: BigInt(1000),
+                },
+                array: [true, false, true],
+                taggedUnion: {
+                    type: "USER",
+                    id: "",
+                    name: "Hello",
+                },
+                any: {},
+            },
+        ] satisfies ObjectSchema[],
+        badInputs: [],
     },
 };

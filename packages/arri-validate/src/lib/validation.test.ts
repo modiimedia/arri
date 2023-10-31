@@ -1,9 +1,9 @@
 import { isEqual } from "lodash";
 import { a } from "../_index";
-import { testSuites } from "../testSuites";
+import { parsingTestSuites, validationTestSuites } from "../testSuites";
 
-for (const key of Object.keys(testSuites)) {
-    const suite = testSuites[key];
+for (const key of Object.keys(validationTestSuites)) {
+    const suite = validationTestSuites[key];
     test(key, () => {
         for (const input of suite.goodInputs) {
             expect(a.validate(suite.schema, input));
@@ -16,3 +16,16 @@ for (const key of Object.keys(testSuites)) {
         }
     });
 }
+
+describe("parsing test suites", () => {
+    for (const key of Object.keys(parsingTestSuites)) {
+        const suite = parsingTestSuites[key];
+        test(key, () => {
+            for (let i = 0; i < suite.goodInputs.length; i++) {
+                const input = suite.goodInputs[i];
+                const expectedResult = suite.expectedResults[i];
+                expect(isEqual(a.parse(suite.schema, input), expectedResult));
+            }
+        });
+    }
+});

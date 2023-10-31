@@ -471,7 +471,9 @@ export function anyTemplate(
     input: SerializeTemplateInput<SchemaFormEmpty>,
 ): string {
     if (input.outputPrefix) {
-        const mainTemplate = `${input.targetVal} += '${input.outputPrefix}' + JSON.stringify(${input.val});`;
+        const mainTemplate = `if (typeof ${input.val} !== 'undefined') {
+            ${input.targetVal} += '${input.outputPrefix}' + JSON.stringify(${input.val});
+        }`;
         if (input.schema.nullable) {
             return `if (${input.val} === null) {
                 ${input.targetVal} = '${input.outputPrefix}null';
@@ -481,5 +483,7 @@ export function anyTemplate(
         }
         return mainTemplate;
     }
-    return `${input.targetVal} += JSON.stringify(${input.val});`;
+    return `if (typeof ${input.val} !== 'undefined') {
+        ${input.targetVal} += JSON.stringify(${input.val});
+    }`;
 }

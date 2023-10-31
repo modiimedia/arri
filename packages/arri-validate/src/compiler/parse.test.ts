@@ -1,10 +1,10 @@
 import { isEqual } from "lodash";
 import { a } from "../_index";
 import { compile } from "../compile";
-import { testSuites } from "../testSuites";
+import { parsingTestSuites, validationTestSuites } from "../testSuites";
 
-for (const key of Object.keys(testSuites)) {
-    const suite = testSuites[key];
+for (const key of Object.keys(validationTestSuites)) {
+    const suite = validationTestSuites[key];
     test(key, () => {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
@@ -21,6 +21,24 @@ for (const key of Object.keys(testSuites)) {
         }
     });
 }
+
+describe("parsing test suites", () => {
+    for (const key of Object.keys(parsingTestSuites)) {
+        const suite = parsingTestSuites[key];
+        test(key, () => {
+            const Compiled = compile(suite.schema);
+            for (let i = 0; i < suite.goodInputs.length; i++) {
+                const input = suite.goodInputs[i];
+                const expectResult = suite.expectedResults[i];
+                const actualResult = Compiled.parse(input);
+                const serializedResult = Compiled.serialize(actualResult);
+                expect(isEqual(actualResult, expectResult));
+                expect(isEqual(Compiled.parse(serializedResult), expectResult));
+                expect(isEqual(actualResult, a.parse(suite.schema, input)));
+            }
+        });
+    }
+});
 
 it("parses floats", () => {
     const Compiled = a.compile(a.number());
