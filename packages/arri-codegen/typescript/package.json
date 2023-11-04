@@ -1,18 +1,23 @@
 {
-    "name": "arri-codegen-dart",
-    "version": "0.8.0",
+    "name": "arri-codegen-ts",
     "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri",
-        "directory": "packages/arri-codegen-dart"
+        "directory": "packages/arri-codegen/typescript"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "dependencies": {
+        "ajv": "^8.12.0",
+        "arri-client": "workspace:*",
         "arri-codegen-utils": "workspace:*",
-        "arri-validate": "workspace:*"
-    }
+        "arri-validate": "workspace:*",
+        "prettier": "^3.0.3"
+    },
+    "version": "0.8.0"
 }

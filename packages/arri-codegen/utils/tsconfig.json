@@ -1,13 +1,21 @@
 {
-    "extends": "../../tsconfig.base.json",
+    "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
+        "moduleResolution": "node",
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "noImplicitOverride": true,
         "noPropertyAccessFromIndexSignature": false,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": false,
-        "types": ["vitest"]
+        "types": ["vitest"],
+        "typeRoots": [
+            "src/types",
+            "node_modules",
+            "node_modules/@types",
+            "../../../node_modules",
+            "../../../node_modules/@types"
+        ]
     },
     "files": [],
     "include": [],
