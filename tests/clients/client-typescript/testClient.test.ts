@@ -1,6 +1,11 @@
 import { ArriRequestError } from "arri-client";
 import { ofetch } from "ofetch";
-import { type ProcessEveryTypeParams, TestClient } from "./testClient.rpc";
+import {
+    TestClient,
+    type ObjectWithEveryType,
+    type ObjectWithEveryOptionalType,
+    type ObjectWithEveryNullableType,
+} from "./testClient.rpc";
 
 const baseUrl = "http://127.0.0.1:2020";
 const headers = {
@@ -121,8 +126,8 @@ test("route request", async () => {
     expect(result.name).toBe("John Doe");
 });
 
-test("miscTests.testEveryType()", async () => {
-    const input: ProcessEveryTypeParams = {
+describe("miscTests", () => {
+    const input: ObjectWithEveryType = {
         any: {
             blah: "blah",
             blah2: "blah2",
@@ -176,8 +181,116 @@ test("miscTests.testEveryType()", async () => {
             ],
         ],
     };
-    const result = await client.miscTests.testEveryType(input);
-    expect(result).toStrictEqual(input);
+    test("sendObject()", async () => {
+        const input: ObjectWithEveryType = {
+            any: {
+                blah: "blah",
+                blah2: "blah2",
+                blah3: true,
+            },
+            boolean: true,
+            string: "hello world",
+            timestamp: new Date(),
+            float32: 0,
+            float64: 0,
+            int8: 0,
+            uint8: 0,
+            int16: 0,
+            uint16: 0,
+            int32: 0,
+            uint32: 0,
+            int64: 0n,
+            uint64: 0n,
+            enumerator: "B",
+            array: [true, false, false],
+            object: {
+                string: "",
+                boolean: false,
+                timestamp: new Date(),
+            },
+            record: {
+                A: true,
+                B: false,
+            },
+            discriminator: {
+                type: "B",
+                title: "Hello World",
+                description: "",
+            },
+            nestedObject: {
+                id: "",
+                timestamp: new Date(),
+                data: {
+                    id: "",
+                    timestamp: new Date(),
+                    data: {
+                        id: "",
+                        timestamp: new Date(),
+                    },
+                },
+            },
+            nestedArray: [
+                [
+                    { id: "", timestamp: new Date() },
+                    { id: "", timestamp: new Date() },
+                ],
+            ],
+        };
+        const result = await client.miscTests.sendObject(input);
+        expect(result).toStrictEqual(input);
+    });
+    test("sendPartialObject()", async () => {
+        const fullObjectResult =
+            await client.miscTests.sendPartialObject(input);
+        expect(fullObjectResult).toStrictEqual(input);
+        const partialInput: ObjectWithEveryOptionalType = {
+            string: "",
+            int16: 0,
+            int64: 0n,
+        };
+        const partialObjectResult =
+            await client.miscTests.sendPartialObject(partialInput);
+        expect(partialObjectResult).toStrictEqual(partialInput);
+    });
+    test("sendObjectWithNullableFields", async () => {
+        const fullObjectResult =
+            await client.miscTests.sendObjectWithNullableFields(input);
+        expect(fullObjectResult).toStrictEqual(input);
+        const nullableInput: ObjectWithEveryNullableType = {
+            any: null,
+            boolean: null,
+            string: null,
+            timestamp: null,
+            float32: null,
+            float64: null,
+            int8: null,
+            uint8: null,
+            int16: null,
+            uint16: null,
+            int32: null,
+            uint32: null,
+            int64: null,
+            uint64: null,
+            enumerator: null,
+            array: null,
+            object: null,
+            record: null,
+            discriminator: null,
+            nestedObject: {
+                id: null,
+                timestamp: null,
+                data: {
+                    id: null,
+                    timestamp: null,
+                    data: null,
+                },
+            },
+            nestedArray: [null],
+        };
+        const nullableResult =
+            await client.miscTests.sendObjectWithNullableFields(nullableInput);
+        expect(nullableResult).toStrictEqual(nullableInput);
+    });
 });
 
 test("unauthorized route request", async () => {

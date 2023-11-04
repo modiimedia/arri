@@ -1,7 +1,7 @@
 import { defineRpc } from "arri";
 import { a } from "arri-validate";
 
-const ProcessEveryTypeParams = a.object(
+export const ObjectWithEveryType = a.object(
     {
         any: a.any(),
         boolean: a.boolean(),
@@ -56,13 +56,13 @@ const ProcessEveryTypeParams = a.object(
         ),
     },
     {
-        id: "ProcessEveryTypeParams",
+        id: "ObjectWithEveryType",
     },
 );
 
 export default defineRpc({
-    params: ProcessEveryTypeParams,
-    response: ProcessEveryTypeParams,
+    params: ObjectWithEveryType,
+    response: ObjectWithEveryType,
     handler({ params }) {
         return params;
     },

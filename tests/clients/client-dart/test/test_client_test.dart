@@ -52,64 +52,136 @@ Future<void> main() async {
     }
   });
 
-  test("miscTests.testEveryType()", () async {
-    final input = ProcessEveryTypeParams(
-        any: {"hello": "world", "goodbye": "world"},
-        boolean: true,
-        string: "",
-        timestamp: DateTime.now(),
-        float32: 1,
-        float64: 1,
-        int8: 1,
-        uint8: 1,
-        int16: 1,
-        uint16: 1,
-        int32: 1,
-        uint32: 1,
-        int64: BigInt.from(1),
-        uint64: BigInt.from(1),
-        enumerator: ProcessEveryTypeParamsEnumerator.a,
-        array: [true, false],
-        object: ProcessEveryTypeParamsObject(
-            boolean: true, string: "", timestamp: DateTime.now()),
-        record: {
-          "A": true,
-          "B": false,
-        },
-        discriminator:
-            ProcessEveryTypeParamsDiscriminatorA(title: "Hello World"),
-        nestedObject: ProcessEveryTypeParamsNestedObject(
-          id: "",
+  group("miscTests", () {
+    test("sendObject()", () async {
+      final input = ObjectWithEveryType(
+          any: {"hello": "world", "goodbye": "world"},
+          boolean: true,
+          string: "",
           timestamp: DateTime.now(),
-          data: ProcessEveryTypeParamsNestedObjectData(
-              id: "",
-              timestamp: DateTime.now(),
-              data: ProcessEveryTypeParamsNestedObjectDataData(
+          float32: 1,
+          float64: 1,
+          int8: 1,
+          uint8: 1,
+          int16: 1,
+          uint16: 1,
+          int32: 1,
+          uint32: 1,
+          int64: BigInt.from(1),
+          uint64: BigInt.from(1),
+          enumerator: ObjectWithEveryTypeEnumerator.a,
+          array: [true, false],
+          object: ObjectWithEveryTypeObject(
+              boolean: true, string: "", timestamp: DateTime.now()),
+          record: {
+            "A": true,
+            "B": false,
+          },
+          discriminator:
+              ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
+          nestedObject: ObjectWithEveryTypeNestedObject(
+            id: "",
+            timestamp: DateTime.now(),
+            data: ObjectWithEveryTypeNestedObjectData(
                 id: "",
                 timestamp: DateTime.now(),
-              )),
-        ),
+                data: ObjectWithEveryTypeNestedObjectDataData(
+                  id: "",
+                  timestamp: DateTime.now(),
+                )),
+          ),
+          nestedArray: [
+            [
+              ObjectWithEveryTypeNestedArrayItemItem(
+                  id: "", timestamp: DateTime.now())
+            ]
+          ]);
+      final result = await client.miscTests.sendObject(input);
+      expect(result.any["hello"], equals(input.any["hello"]));
+      expect(result.array.length, equals(input.array.length));
+      expect(result.array[0], equals(input.array[0]));
+      expect(result.boolean, equals(input.boolean));
+      expect(result.discriminator.type, equals(input.discriminator.type));
+      expect(result.enumerator.value, equals(input.enumerator.value));
+      expect(result.float32, equals(input.float32));
+      expect(result.float64, equals(input.float64));
+      expect(result.int16, equals(input.int16));
+      expect(result.int64, equals(input.int64));
+      expect(result.object.boolean, equals(input.object.boolean));
+      expect(result.record["A"], equals(input.record["A"]));
+      expect(
+        result.nestedObject.data.data.timestamp.microsecond,
+        equals(result.nestedObject.data.data.timestamp.microsecond),
+      );
+      final input2 = input.copyWith(int16: 999);
+      final result2 = await client.miscTests.sendObject(input2);
+      expect(result2.int16, equals(999));
+    });
+    test("sendPartialObject()", () async {
+      final input = ObjectWithEveryOptionalType(
+        int16: 0,
+        int64: BigInt.zero,
         nestedArray: [
           [
-            ProcessEveryTypeParamsNestedArrayItemItem(
+            ObjectWithEveryOptionalTypeNestedArrayItemItem(
                 id: "", timestamp: DateTime.now())
           ]
-        ]);
-    final result = await client.miscTests.testEveryType(input);
-    expect(result.any["hello"], equals(input.any["hello"]));
-    expect(result.array.length, equals(input.array.length));
-    expect(result.array[0], equals(input.array[0]));
-    expect(result.boolean, equals(input.boolean));
-    expect(result.discriminator.type, equals(input.discriminator.type));
-    expect(result.enumerator.value, equals(input.enumerator.value));
-    expect(result.float32, equals(input.float32));
-    expect(result.float64, equals(input.float64));
-    expect(result.int16, equals(input.int16));
-    expect(result.int64, equals(input.int64));
-    expect(result.object.boolean, equals(input.object.boolean));
-    expect(result.record["A"], equals(input.record["A"]));
-    expect(result.nestedObject.data.data.timestamp.microsecond,
-        equals(result.nestedObject.data.data.timestamp.microsecond));
+        ],
+      );
+      final result = await client.miscTests.sendPartialObject(input);
+      expect(result.string, equals(null));
+      expect(result.int16, equals(0));
+      expect(result.int64, equals(BigInt.zero));
+      expect(result.nestedArray?[0][0].id, equals(""));
+    });
+    test("sendObjectWithNullableFields()", () async {
+      final input = ObjectWithEveryNullableType(
+        any: null,
+        boolean: null,
+        string: null,
+        timestamp: null,
+        float32: null,
+        float64: null,
+        int8: null,
+        uint8: null,
+        int16: null,
+        uint16: null,
+        int32: null,
+        uint32: null,
+        int64: null,
+        uint64: null,
+        enumerator: null,
+        array: null,
+        object: null,
+        record: null,
+        discriminator: null,
+        nestedObject: null,
+        nestedArray: null,
+      );
+      final result = await client.miscTests.sendObjectWithNullableFields(input);
+      expect(result.string, equals(null));
+      expect(result.array, equals(null));
+      final input2 = input.copyWith(
+        int64: BigInt.zero,
+        discriminator: ObjectWithEveryNullableTypeDiscriminatorA(title: null),
+        nestedObject: ObjectWithEveryNullableTypeNestedObject(
+          id: null,
+          timestamp: null,
+          data: ObjectWithEveryNullableTypeNestedObjectData(
+              id: "", timestamp: null, data: null),
+        ),
+        nestedArray: [null],
+      );
+      final result2 =
+          await client.miscTests.sendObjectWithNullableFields(input2);
+      expect(result2.nestedArray?[0], equals(null));
+      expect(result2.nestedObject?.data?.id, equals(""));
+      expect(result2.int64, equals(BigInt.zero));
+      expect(
+        result.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
+        equals(true),
+      );
+    });
   });
 
   test("unauthenticated requests", () async {
