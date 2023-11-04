@@ -1958,14 +1958,12 @@ export interface ObjectWithEveryNullableType {
   int64: bigint | null;
   uint64: bigint | null;
   enumerator: ObjectWithEveryNullableTypeEnumerator | null;
-  array: Array<boolean> | null;
+  array: Array<boolean | null> | null;
   object: ObjectWithEveryNullableTypeObject | null;
   record: ObjectWithEveryNullableTypeRecord | null;
   discriminator: ObjectWithEveryNullableTypeDiscriminator | null;
   nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
-  nestedArray: Array<
-    Array<ObjectWithEveryNullableTypeNestedArrayItemItem>
-  > | null;
+  nestedArray: Array<Array<ObjectWithEveryNullableTypeNestedArrayItemItem | null> | null> | null;
 }
 const $$ObjectWithEveryNullableType = {
   parse(input: Record<any, any>): ObjectWithEveryNullableType {

@@ -653,7 +653,10 @@ export function tsArrayFromJtdSchema(
             existingTypeNames: additionalOptions.existingTypeNames,
         },
     );
-    const tsType = `Array<${subType.tsType}>`;
+    const tsType = `Array<${maybeNullType(
+        subType.tsType,
+        def.elements.nullable,
+    )}>`;
     return {
         tsType,
         schema: def,
