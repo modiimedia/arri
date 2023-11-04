@@ -187,7 +187,7 @@ export interface AdaptersTypeboxAdapterParams {
 }
 const $$AdaptersTypeboxAdapterParams = {
   parse(input: Record<any, any>): AdaptersTypeboxAdapterParams {
-    class $ValidationErroradaptersTypeboxAdapterParams extends Error {
+    class $ValidationErrorAdaptersTypeboxAdapterParams extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -196,7 +196,7 @@ const $$AdaptersTypeboxAdapterParams = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErroradaptersTypeboxAdapterParams({
+      throw new $ValidationErrorAdaptersTypeboxAdapterParams({
         message: message,
         errors: [
           {
@@ -492,7 +492,7 @@ export interface AdaptersTypeboxAdapterResponse {
 }
 const $$AdaptersTypeboxAdapterResponse = {
   parse(input: Record<any, any>): AdaptersTypeboxAdapterResponse {
-    class $ValidationErroradaptersTypeboxAdapterResponse extends Error {
+    class $ValidationErrorAdaptersTypeboxAdapterResponse extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -501,7 +501,7 @@ const $$AdaptersTypeboxAdapterResponse = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErroradaptersTypeboxAdapterResponse({
+      throw new $ValidationErrorAdaptersTypeboxAdapterResponse({
         message: message,
         errors: [
           {
@@ -585,7 +585,7 @@ export interface ObjectWithEveryType {
 }
 const $$ObjectWithEveryType = {
   parse(input: Record<any, any>): ObjectWithEveryType {
-    class $ValidationErrorobjectWithEveryType extends Error {
+    class $ValidationErrorObjectWithEveryType extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -594,7 +594,7 @@ const $$ObjectWithEveryType = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorobjectWithEveryType({
+      throw new $ValidationErrorObjectWithEveryType({
         message: message,
         errors: [
           {
@@ -1969,7 +1969,7 @@ export interface ObjectWithEveryNullableType {
 }
 const $$ObjectWithEveryNullableType = {
   parse(input: Record<any, any>): ObjectWithEveryNullableType {
-    class $ValidationErrorobjectWithEveryNullableType extends Error {
+    class $ValidationErrorObjectWithEveryNullableType extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -1978,7 +1978,7 @@ const $$ObjectWithEveryNullableType = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorobjectWithEveryNullableType({
+      throw new $ValidationErrorObjectWithEveryNullableType({
         message: message,
         errors: [
           {
@@ -3912,7 +3912,7 @@ export interface ObjectWithEveryOptionalType {
 }
 const $$ObjectWithEveryOptionalType = {
   parse(input: Record<any, any>): ObjectWithEveryOptionalType {
-    class $ValidationErrorobjectWithEveryOptionalType extends Error {
+    class $ValidationErrorObjectWithEveryOptionalType extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -3921,7 +3921,7 @@ const $$ObjectWithEveryOptionalType = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorobjectWithEveryOptionalType({
+      throw new $ValidationErrorObjectWithEveryOptionalType({
         message: message,
         errors: [
           {
@@ -5706,7 +5706,7 @@ export interface PostParams {
 }
 const $$PostParams = {
   parse(input: Record<any, any>): PostParams {
-    class $ValidationErrorpostParams extends Error {
+    class $ValidationErrorPostParams extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -5715,7 +5715,7 @@ const $$PostParams = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorpostParams({
+      throw new $ValidationErrorPostParams({
         message: message,
         errors: [
           {
@@ -5788,7 +5788,7 @@ export interface Post {
 }
 const $$Post = {
   parse(input: Record<any, any>): Post {
-    class $ValidationErrorpost extends Error {
+    class $ValidationErrorPost extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -5797,7 +5797,7 @@ const $$Post = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorpost({
+      throw new $ValidationErrorPost({
         message: message,
         errors: [
           {
@@ -6245,7 +6245,7 @@ export interface PostListParams {
 }
 const $$PostListParams = {
   parse(input: Record<any, any>): PostListParams {
-    class $ValidationErrorpostListParams extends Error {
+    class $ValidationErrorPostListParams extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -6254,7 +6254,7 @@ const $$PostListParams = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorpostListParams({
+      throw new $ValidationErrorPostListParams({
         message: message,
         errors: [
           {
@@ -6382,7 +6382,7 @@ export interface PostListResponse {
 }
 const $$PostListResponse = {
   parse(input: Record<any, any>): PostListResponse {
-    class $ValidationErrorpostListResponse extends Error {
+    class $ValidationErrorPostListResponse extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -6391,7 +6391,7 @@ const $$PostListResponse = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorpostListResponse({
+      throw new $ValidationErrorPostListResponse({
         message: message,
         errors: [
           {
@@ -7072,7 +7072,7 @@ export type PostEvent =
   | PostEventPostCommented;
 const $$PostEvent = {
   parse(input: Record<any, any>): PostEvent {
-    class $ValidationErrorpostEvent extends Error {
+    class $ValidationErrorPostEvent extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -7081,7 +7081,7 @@ const $$PostEvent = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorpostEvent({
+      throw new $ValidationErrorPostEvent({
         message: message,
         errors: [
           {
@@ -8334,7 +8334,7 @@ export interface LogPostEventResponse {
 }
 const $$LogPostEventResponse = {
   parse(input: Record<any, any>): LogPostEventResponse {
-    class $ValidationErrorlogPostEventResponse extends Error {
+    class $ValidationErrorLogPostEventResponse extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -8343,7 +8343,7 @@ const $$LogPostEventResponse = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorlogPostEventResponse({
+      throw new $ValidationErrorLogPostEventResponse({
         message: message,
         errors: [
           {
@@ -8427,7 +8427,7 @@ export interface UpdatePostParams {
 }
 const $$UpdatePostParams = {
   parse(input: Record<any, any>): UpdatePostParams {
-    class $ValidationErrorupdatePostParams extends Error {
+    class $ValidationErrorUpdatePostParams extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -8436,7 +8436,7 @@ const $$UpdatePostParams = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorupdatePostParams({
+      throw new $ValidationErrorUpdatePostParams({
         message: message,
         errors: [
           {
@@ -8732,7 +8732,7 @@ export interface AnnotationId {
 }
 const $$AnnotationId = {
   parse(input: Record<any, any>): AnnotationId {
-    class $ValidationErrorannotationId extends Error {
+    class $ValidationErrorAnnotationId extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -8741,7 +8741,7 @@ const $$AnnotationId = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorannotationId({
+      throw new $ValidationErrorAnnotationId({
         message: message,
         errors: [
           {
@@ -8821,7 +8821,7 @@ export interface Annotation {
 }
 const $$Annotation = {
   parse(input: Record<any, any>): Annotation {
-    class $ValidationErrorannotation extends Error {
+    class $ValidationErrorAnnotation extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -8830,7 +8830,7 @@ const $$Annotation = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorannotation({
+      throw new $ValidationErrorAnnotation({
         message: message,
         errors: [
           {
@@ -9282,7 +9282,7 @@ export interface UpdateAnnotationParams {
 }
 const $$UpdateAnnotationParams = {
   parse(input: Record<any, any>): UpdateAnnotationParams {
-    class $ValidationErrorupdateAnnotationParams extends Error {
+    class $ValidationErrorUpdateAnnotationParams extends Error {
       errors;
       constructor(input) {
         super(input.message);
@@ -9291,7 +9291,7 @@ const $$UpdateAnnotationParams = {
     }
 
     function $fallback(instancePath, schemaPath, message) {
-      throw new $ValidationErrorupdateAnnotationParams({
+      throw new $ValidationErrorUpdateAnnotationParams({
         message: message,
         errors: [
           {
