@@ -178,7 +178,7 @@ Future<void> main() async {
       expect(result2.nestedObject?.data?.id, equals(""));
       expect(result2.int64, equals(BigInt.zero));
       expect(
-        result.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
+        result2.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
         equals(true),
       );
     });

@@ -3531,7 +3531,7 @@ const $$ObjectWithEveryNullableType = {
     let json = "";
     json += "{";
     if (input.any === null) {
-      json = '"any":null';
+      json += '"any":null';
     } else {
       if (typeof input.any !== "undefined") {
         json += '"any":' + JSON.stringify(input.any);
