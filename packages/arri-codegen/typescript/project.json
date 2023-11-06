@@ -1,7 +1,7 @@
 {
     "name": "arri-codegen-ts",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri-codegen-ts/src",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/arri-codegen/typescript/src",
     "projectType": "library",
     "targets": {
         "build": {
@@ -9,14 +9,14 @@
             "outputs": ["{projectRoot}/dist"],
             "options": {
                 "command": "unbuild",
-                "cwd": "packages/arri-codegen-ts"
+                "cwd": "packages/arri-codegen/typescript"
             }
         },
         "publish": {
             "executor": "nx:run-commands",
             "options": {
                 "command": "pnpm publish",
-                "cwd": "packages/arri-codegen-ts"
+                "cwd": "packages/arri-codegen/typescript"
             },
             "dependsOn": ["build"]
         },
@@ -24,15 +24,17 @@
             "executor": "@nx/eslint:lint",
             "outputs": ["{options.outputFile}"],
             "options": {
-                "lintFilePatterns": ["packages/arri-codegen-ts/**/*.ts"]
+                "lintFilePatterns": ["packages/arri-codegen/typescript/**/*.ts"]
             }
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen-ts"],
+            "outputs": [
+                "{workspaceRoot}/coverage/packages/arri-codegen/typescript"
+            ],
             "options": {
                 "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-codegen-ts"
+                "reportsDirectory": "../../../coverage/packages/arri-codegen/typescript"
             }
         }
     },

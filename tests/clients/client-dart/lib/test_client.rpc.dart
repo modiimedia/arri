@@ -75,13 +75,39 @@ class TestClientMiscTestsService {
     _headers = {"client-version": "9", ...headers};
   }
 
-  Future<ProcessEveryTypeParams> testEveryType(ProcessEveryTypeParams params) {
+  Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/test-every-type",
+      "$_baseUrl/rpcs/misc-tests/send-object",
       method: HttpMethod.post,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => ProcessEveryTypeParams.fromJson(
+      parser: (body) => ObjectWithEveryType.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<ObjectWithEveryNullableType> sendObjectWithNullableFields(
+      ObjectWithEveryNullableType params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/misc-tests/send-object-with-nullable-fields",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ObjectWithEveryNullableType.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<ObjectWithEveryOptionalType> sendPartialObject(
+      ObjectWithEveryOptionalType params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/misc-tests/send-partial-object",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ObjectWithEveryOptionalType.fromJson(
         json.decode(body),
       ),
     );
@@ -183,35 +209,131 @@ class TestClientVideosService {
 }
 
 class AdaptersTypeboxAdapterParams {
-  final String id;
-  final int timestamp;
+  final String string;
+  final bool boolean;
+  final int integer;
+  final double number;
+  final AdaptersTypeboxAdapterParamsEnumField enumField;
+  final AdaptersTypeboxAdapterParamsObject object;
+  final List<bool> array;
+  final String? optionalString;
   const AdaptersTypeboxAdapterParams({
-    required this.id,
-    required this.timestamp,
+    required this.string,
+    required this.boolean,
+    required this.integer,
+    required this.number,
+    required this.enumField,
+    required this.object,
+    required this.array,
+    this.optionalString,
   });
   factory AdaptersTypeboxAdapterParams.fromJson(Map<String, dynamic> json) {
     return AdaptersTypeboxAdapterParams(
-      id: typeFromDynamic<String>(json["id"], ""),
-      timestamp: intFromDynamic(json["timestamp"], 0),
+      string: typeFromDynamic<String>(json["string"], ""),
+      boolean: typeFromDynamic<bool>(json["boolean"], false),
+      integer: intFromDynamic(json["integer"], 0),
+      number: doubleFromDynamic(json["number"], 0),
+      enumField:
+          AdaptersTypeboxAdapterParamsEnumField.fromJson(json["enumField"]),
+      object: AdaptersTypeboxAdapterParamsObject.fromJson(json["object"]),
+      array: json["array"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["array"] as List)
+              .map((item) => typeFromDynamic<bool>(item, false))
+              .toList() as List<bool>
+          : <bool>[],
+      optionalString: nullableTypeFromDynamic<String>(json["optionalString"]),
     );
   }
 
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{
-      "id": id,
-      "timestamp": timestamp,
+      "string": string,
+      "boolean": boolean,
+      "integer": integer,
+      "number": number,
+      "enumField": enumField.value,
+      "object": object.toJson(),
+      "array": array.map((item) => item).toList(),
+    };
+    if (optionalString != null) {
+      result["optionalString"] = optionalString;
+    }
+    return result;
+  }
+
+  AdaptersTypeboxAdapterParams copyWith({
+    String? string,
+    bool? boolean,
+    int? integer,
+    double? number,
+    AdaptersTypeboxAdapterParamsEnumField? enumField,
+    AdaptersTypeboxAdapterParamsObject? object,
+    List<bool>? array,
+    String? optionalString,
+  }) {
+    return AdaptersTypeboxAdapterParams(
+      string: string ?? this.string,
+      boolean: boolean ?? this.boolean,
+      integer: integer ?? this.integer,
+      number: number ?? this.number,
+      enumField: enumField ?? this.enumField,
+      object: object ?? this.object,
+      array: array ?? this.array,
+      optionalString: optionalString ?? this.optionalString,
+    );
+  }
+}
+
+enum AdaptersTypeboxAdapterParamsEnumField
+    implements Comparable<AdaptersTypeboxAdapterParamsEnumField> {
+  a("A"),
+  b("B"),
+  c("C");
+
+  const AdaptersTypeboxAdapterParamsEnumField(this.value);
+  final String value;
+
+  factory AdaptersTypeboxAdapterParamsEnumField.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return a;
+  }
+
+  @override
+  compareTo(AdaptersTypeboxAdapterParamsEnumField other) =>
+      name.compareTo(other.name);
+}
+
+class AdaptersTypeboxAdapterParamsObject {
+  final String string;
+  const AdaptersTypeboxAdapterParamsObject({
+    required this.string,
+  });
+  factory AdaptersTypeboxAdapterParamsObject.fromJson(
+      Map<String, dynamic> json) {
+    return AdaptersTypeboxAdapterParamsObject(
+      string: typeFromDynamic<String>(json["string"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "string": string,
     };
 
     return result;
   }
 
-  AdaptersTypeboxAdapterParams copyWith({
-    String? id,
-    int? timestamp,
+  AdaptersTypeboxAdapterParamsObject copyWith({
+    String? string,
   }) {
-    return AdaptersTypeboxAdapterParams(
-      id: id ?? this.id,
-      timestamp: timestamp ?? this.timestamp,
+    return AdaptersTypeboxAdapterParamsObject(
+      string: string ?? this.string,
     );
   }
 }
@@ -244,7 +366,7 @@ class AdaptersTypeboxAdapterResponse {
   }
 }
 
-class ProcessEveryTypeParams {
+class ObjectWithEveryType {
   final dynamic any;
   final bool boolean;
   final String string;
@@ -259,14 +381,14 @@ class ProcessEveryTypeParams {
   final int uint32;
   final BigInt int64;
   final BigInt uint64;
-  final ProcessEveryTypeParamsEnumerator enumerator;
+  final ObjectWithEveryTypeEnumerator enumerator;
   final List<bool> array;
-  final ProcessEveryTypeParamsObject object;
+  final ObjectWithEveryTypeObject object;
   final Map<String, bool> record;
-  final ProcessEveryTypeParamsDiscriminator discriminator;
-  final ProcessEveryTypeParamsNestedObject nestedObject;
-  final List<List<ProcessEveryTypeParamsNestedArrayItemItem>> nestedArray;
-  const ProcessEveryTypeParams({
+  final ObjectWithEveryTypeDiscriminator discriminator;
+  final ObjectWithEveryTypeNestedObject nestedObject;
+  final List<List<ObjectWithEveryTypeNestedArrayItemItem>> nestedArray;
+  const ObjectWithEveryType({
     required this.any,
     required this.boolean,
     required this.string,
@@ -289,8 +411,8 @@ class ProcessEveryTypeParams {
     required this.nestedObject,
     required this.nestedArray,
   });
-  factory ProcessEveryTypeParams.fromJson(Map<String, dynamic> json) {
-    return ProcessEveryTypeParams(
+  factory ObjectWithEveryType.fromJson(Map<String, dynamic> json) {
+    return ObjectWithEveryType(
       any: json["any"],
       boolean: typeFromDynamic<bool>(json["boolean"], false),
       string: typeFromDynamic<String>(json["string"], ""),
@@ -308,7 +430,7 @@ class ProcessEveryTypeParams {
       uint32: intFromDynamic(json["uint32"], 0),
       int64: bigIntFromDynamic(json["int64"], BigInt.zero),
       uint64: bigIntFromDynamic(json["uint64"], BigInt.zero),
-      enumerator: ProcessEveryTypeParamsEnumerator.fromJson(json["enumerator"]),
+      enumerator: ObjectWithEveryTypeEnumerator.fromJson(json["enumerator"]),
       array: json["array"] is List
           ?
           // ignore: unnecessary_cast
@@ -316,15 +438,15 @@ class ProcessEveryTypeParams {
               .map((item) => typeFromDynamic<bool>(item, false))
               .toList() as List<bool>
           : <bool>[],
-      object: ProcessEveryTypeParamsObject.fromJson(json["object"]),
+      object: ObjectWithEveryTypeObject.fromJson(json["object"]),
       record: json["record"] is Map<String, dynamic>
           ? (json["record"] as Map<String, dynamic>).map((key, value) =>
               MapEntry(key, typeFromDynamic<bool>(value, false)))
           : <String, bool>{},
       discriminator:
-          ProcessEveryTypeParamsDiscriminator.fromJson(json["discriminator"]),
+          ObjectWithEveryTypeDiscriminator.fromJson(json["discriminator"]),
       nestedObject:
-          ProcessEveryTypeParamsNestedObject.fromJson(json["nestedObject"]),
+          ObjectWithEveryTypeNestedObject.fromJson(json["nestedObject"]),
       nestedArray: json["nestedArray"] is List
           ?
           // ignore: unnecessary_cast
@@ -333,14 +455,12 @@ class ProcessEveryTypeParams {
                   ?
                   // ignore: unnecessary_cast
                   (item as List)
-                          .map((item) =>
-                              ProcessEveryTypeParamsNestedArrayItemItem
-                                  .fromJson(item))
-                          .toList()
-                      as List<ProcessEveryTypeParamsNestedArrayItemItem>
-                  : <ProcessEveryTypeParamsNestedArrayItemItem>[])
-              .toList() as List<List<ProcessEveryTypeParamsNestedArrayItemItem>>
-          : <List<ProcessEveryTypeParamsNestedArrayItemItem>>[],
+                      .map((item) =>
+                          ObjectWithEveryTypeNestedArrayItemItem.fromJson(item))
+                      .toList() as List<ObjectWithEveryTypeNestedArrayItemItem>
+                  : <ObjectWithEveryTypeNestedArrayItemItem>[])
+              .toList() as List<List<ObjectWithEveryTypeNestedArrayItemItem>>
+          : <List<ObjectWithEveryTypeNestedArrayItemItem>>[],
     );
   }
 
@@ -374,7 +494,7 @@ class ProcessEveryTypeParams {
     return result;
   }
 
-  ProcessEveryTypeParams copyWith({
+  ObjectWithEveryType copyWith({
     dynamic any,
     bool? boolean,
     String? string,
@@ -389,15 +509,15 @@ class ProcessEveryTypeParams {
     int? uint32,
     BigInt? int64,
     BigInt? uint64,
-    ProcessEveryTypeParamsEnumerator? enumerator,
+    ObjectWithEveryTypeEnumerator? enumerator,
     List<bool>? array,
-    ProcessEveryTypeParamsObject? object,
+    ObjectWithEveryTypeObject? object,
     Map<String, bool>? record,
-    ProcessEveryTypeParamsDiscriminator? discriminator,
-    ProcessEveryTypeParamsNestedObject? nestedObject,
-    List<List<ProcessEveryTypeParamsNestedArrayItemItem>>? nestedArray,
+    ObjectWithEveryTypeDiscriminator? discriminator,
+    ObjectWithEveryTypeNestedObject? nestedObject,
+    List<List<ObjectWithEveryTypeNestedArrayItemItem>>? nestedArray,
   }) {
-    return ProcessEveryTypeParams(
+    return ObjectWithEveryType(
       any: any ?? this.any,
       boolean: boolean ?? this.boolean,
       string: string ?? this.string,
@@ -423,16 +543,16 @@ class ProcessEveryTypeParams {
   }
 }
 
-enum ProcessEveryTypeParamsEnumerator
-    implements Comparable<ProcessEveryTypeParamsEnumerator> {
+enum ObjectWithEveryTypeEnumerator
+    implements Comparable<ObjectWithEveryTypeEnumerator> {
   a("A"),
   b("B"),
   c("C");
 
-  const ProcessEveryTypeParamsEnumerator(this.value);
+  const ObjectWithEveryTypeEnumerator(this.value);
   final String value;
 
-  factory ProcessEveryTypeParamsEnumerator.fromJson(dynamic json) {
+  factory ObjectWithEveryTypeEnumerator.fromJson(dynamic json) {
     for (final v in values) {
       if (v.value == json) {
         return v;
@@ -442,21 +562,20 @@ enum ProcessEveryTypeParamsEnumerator
   }
 
   @override
-  compareTo(ProcessEveryTypeParamsEnumerator other) =>
-      name.compareTo(other.name);
+  compareTo(ObjectWithEveryTypeEnumerator other) => name.compareTo(other.name);
 }
 
-class ProcessEveryTypeParamsObject {
+class ObjectWithEveryTypeObject {
   final String string;
   final bool boolean;
   final DateTime timestamp;
-  const ProcessEveryTypeParamsObject({
+  const ObjectWithEveryTypeObject({
     required this.string,
     required this.boolean,
     required this.timestamp,
   });
-  factory ProcessEveryTypeParamsObject.fromJson(Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsObject(
+  factory ObjectWithEveryTypeObject.fromJson(Map<String, dynamic> json) {
+    return ObjectWithEveryTypeObject(
       string: typeFromDynamic<String>(json["string"], ""),
       boolean: typeFromDynamic<bool>(json["boolean"], false),
       timestamp: dateTimeFromDynamic(
@@ -476,12 +595,12 @@ class ProcessEveryTypeParamsObject {
     return result;
   }
 
-  ProcessEveryTypeParamsObject copyWith({
+  ObjectWithEveryTypeObject copyWith({
     String? string,
     bool? boolean,
     DateTime? timestamp,
   }) {
-    return ProcessEveryTypeParamsObject(
+    return ObjectWithEveryTypeObject(
       string: string ?? this.string,
       boolean: boolean ?? this.boolean,
       timestamp: timestamp ?? this.timestamp,
@@ -489,42 +608,41 @@ class ProcessEveryTypeParamsObject {
   }
 }
 
-sealed class ProcessEveryTypeParamsDiscriminator {
+sealed class ObjectWithEveryTypeDiscriminator {
   final String type;
-  const ProcessEveryTypeParamsDiscriminator({
+  const ObjectWithEveryTypeDiscriminator({
     required this.type,
   });
-  factory ProcessEveryTypeParamsDiscriminator.fromJson(
-      Map<String, dynamic> json) {
+  factory ObjectWithEveryTypeDiscriminator.fromJson(Map<String, dynamic> json) {
     if (json["type"] is! String) {
       throw Exception(
-        "Unable to decode ProcessEveryTypeParamsDiscriminator. Expected String from \"type\". Received ${json["type"]}}",
+        "Unable to decode ObjectWithEveryTypeDiscriminator. Expected String from \"type\". Received ${json["type"]}}",
       );
     }
     switch (json["type"]) {
       case "A":
-        return ProcessEveryTypeParamsDiscriminatorA.fromJson(json);
+        return ObjectWithEveryTypeDiscriminatorA.fromJson(json);
       case "B":
-        return ProcessEveryTypeParamsDiscriminatorB.fromJson(json);
+        return ObjectWithEveryTypeDiscriminatorB.fromJson(json);
     }
     throw Exception(
-      "Unable to decode ProcessEveryTypeParamsDiscriminator. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
+      "Unable to decode ObjectWithEveryTypeDiscriminator. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
     );
   }
   Map<String, dynamic> toJson();
 }
 
-class ProcessEveryTypeParamsDiscriminatorA
-    implements ProcessEveryTypeParamsDiscriminator {
+class ObjectWithEveryTypeDiscriminatorA
+    implements ObjectWithEveryTypeDiscriminator {
   @override
   final String type = "A";
   final String title;
-  const ProcessEveryTypeParamsDiscriminatorA({
+  const ObjectWithEveryTypeDiscriminatorA({
     required this.title,
   });
-  factory ProcessEveryTypeParamsDiscriminatorA.fromJson(
+  factory ObjectWithEveryTypeDiscriminatorA.fromJson(
       Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsDiscriminatorA(
+    return ObjectWithEveryTypeDiscriminatorA(
       title: typeFromDynamic<String>(json["title"], ""),
     );
   }
@@ -538,28 +656,28 @@ class ProcessEveryTypeParamsDiscriminatorA
     return result;
   }
 
-  ProcessEveryTypeParamsDiscriminatorA copyWith({
+  ObjectWithEveryTypeDiscriminatorA copyWith({
     String? title,
   }) {
-    return ProcessEveryTypeParamsDiscriminatorA(
+    return ObjectWithEveryTypeDiscriminatorA(
       title: title ?? this.title,
     );
   }
 }
 
-class ProcessEveryTypeParamsDiscriminatorB
-    implements ProcessEveryTypeParamsDiscriminator {
+class ObjectWithEveryTypeDiscriminatorB
+    implements ObjectWithEveryTypeDiscriminator {
   @override
   final String type = "B";
   final String title;
   final String description;
-  const ProcessEveryTypeParamsDiscriminatorB({
+  const ObjectWithEveryTypeDiscriminatorB({
     required this.title,
     required this.description,
   });
-  factory ProcessEveryTypeParamsDiscriminatorB.fromJson(
+  factory ObjectWithEveryTypeDiscriminatorB.fromJson(
       Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsDiscriminatorB(
+    return ObjectWithEveryTypeDiscriminatorB(
       title: typeFromDynamic<String>(json["title"], ""),
       description: typeFromDynamic<String>(json["description"], ""),
     );
@@ -575,35 +693,34 @@ class ProcessEveryTypeParamsDiscriminatorB
     return result;
   }
 
-  ProcessEveryTypeParamsDiscriminatorB copyWith({
+  ObjectWithEveryTypeDiscriminatorB copyWith({
     String? title,
     String? description,
   }) {
-    return ProcessEveryTypeParamsDiscriminatorB(
+    return ObjectWithEveryTypeDiscriminatorB(
       title: title ?? this.title,
       description: description ?? this.description,
     );
   }
 }
 
-class ProcessEveryTypeParamsNestedObject {
+class ObjectWithEveryTypeNestedObject {
   final String id;
   final DateTime timestamp;
-  final ProcessEveryTypeParamsNestedObjectData data;
-  const ProcessEveryTypeParamsNestedObject({
+  final ObjectWithEveryTypeNestedObjectData data;
+  const ObjectWithEveryTypeNestedObject({
     required this.id,
     required this.timestamp,
     required this.data,
   });
-  factory ProcessEveryTypeParamsNestedObject.fromJson(
-      Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsNestedObject(
+  factory ObjectWithEveryTypeNestedObject.fromJson(Map<String, dynamic> json) {
+    return ObjectWithEveryTypeNestedObject(
       id: typeFromDynamic<String>(json["id"], ""),
       timestamp: dateTimeFromDynamic(
         json["timestamp"],
         DateTime.fromMillisecondsSinceEpoch(0),
       ),
-      data: ProcessEveryTypeParamsNestedObjectData.fromJson(json["data"]),
+      data: ObjectWithEveryTypeNestedObjectData.fromJson(json["data"]),
     );
   }
 
@@ -617,12 +734,12 @@ class ProcessEveryTypeParamsNestedObject {
     return result;
   }
 
-  ProcessEveryTypeParamsNestedObject copyWith({
+  ObjectWithEveryTypeNestedObject copyWith({
     String? id,
     DateTime? timestamp,
-    ProcessEveryTypeParamsNestedObjectData? data,
+    ObjectWithEveryTypeNestedObjectData? data,
   }) {
-    return ProcessEveryTypeParamsNestedObject(
+    return ObjectWithEveryTypeNestedObject(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
       data: data ?? this.data,
@@ -630,24 +747,24 @@ class ProcessEveryTypeParamsNestedObject {
   }
 }
 
-class ProcessEveryTypeParamsNestedObjectData {
+class ObjectWithEveryTypeNestedObjectData {
   final String id;
   final DateTime timestamp;
-  final ProcessEveryTypeParamsNestedObjectDataData data;
-  const ProcessEveryTypeParamsNestedObjectData({
+  final ObjectWithEveryTypeNestedObjectDataData data;
+  const ObjectWithEveryTypeNestedObjectData({
     required this.id,
     required this.timestamp,
     required this.data,
   });
-  factory ProcessEveryTypeParamsNestedObjectData.fromJson(
+  factory ObjectWithEveryTypeNestedObjectData.fromJson(
       Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsNestedObjectData(
+    return ObjectWithEveryTypeNestedObjectData(
       id: typeFromDynamic<String>(json["id"], ""),
       timestamp: dateTimeFromDynamic(
         json["timestamp"],
         DateTime.fromMillisecondsSinceEpoch(0),
       ),
-      data: ProcessEveryTypeParamsNestedObjectDataData.fromJson(json["data"]),
+      data: ObjectWithEveryTypeNestedObjectDataData.fromJson(json["data"]),
     );
   }
 
@@ -661,12 +778,12 @@ class ProcessEveryTypeParamsNestedObjectData {
     return result;
   }
 
-  ProcessEveryTypeParamsNestedObjectData copyWith({
+  ObjectWithEveryTypeNestedObjectData copyWith({
     String? id,
     DateTime? timestamp,
-    ProcessEveryTypeParamsNestedObjectDataData? data,
+    ObjectWithEveryTypeNestedObjectDataData? data,
   }) {
-    return ProcessEveryTypeParamsNestedObjectData(
+    return ObjectWithEveryTypeNestedObjectData(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
       data: data ?? this.data,
@@ -674,16 +791,16 @@ class ProcessEveryTypeParamsNestedObjectData {
   }
 }
 
-class ProcessEveryTypeParamsNestedObjectDataData {
+class ObjectWithEveryTypeNestedObjectDataData {
   final String id;
   final DateTime timestamp;
-  const ProcessEveryTypeParamsNestedObjectDataData({
+  const ObjectWithEveryTypeNestedObjectDataData({
     required this.id,
     required this.timestamp,
   });
-  factory ProcessEveryTypeParamsNestedObjectDataData.fromJson(
+  factory ObjectWithEveryTypeNestedObjectDataData.fromJson(
       Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsNestedObjectDataData(
+    return ObjectWithEveryTypeNestedObjectDataData(
       id: typeFromDynamic<String>(json["id"], ""),
       timestamp: dateTimeFromDynamic(
         json["timestamp"],
@@ -701,27 +818,27 @@ class ProcessEveryTypeParamsNestedObjectDataData {
     return result;
   }
 
-  ProcessEveryTypeParamsNestedObjectDataData copyWith({
+  ObjectWithEveryTypeNestedObjectDataData copyWith({
     String? id,
     DateTime? timestamp,
   }) {
-    return ProcessEveryTypeParamsNestedObjectDataData(
+    return ObjectWithEveryTypeNestedObjectDataData(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
     );
   }
 }
 
-class ProcessEveryTypeParamsNestedArrayItemItem {
+class ObjectWithEveryTypeNestedArrayItemItem {
   final String id;
   final DateTime timestamp;
-  const ProcessEveryTypeParamsNestedArrayItemItem({
+  const ObjectWithEveryTypeNestedArrayItemItem({
     required this.id,
     required this.timestamp,
   });
-  factory ProcessEveryTypeParamsNestedArrayItemItem.fromJson(
+  factory ObjectWithEveryTypeNestedArrayItemItem.fromJson(
       Map<String, dynamic> json) {
-    return ProcessEveryTypeParamsNestedArrayItemItem(
+    return ObjectWithEveryTypeNestedArrayItemItem(
       id: typeFromDynamic<String>(json["id"], ""),
       timestamp: dateTimeFromDynamic(
         json["timestamp"],
@@ -739,11 +856,1070 @@ class ProcessEveryTypeParamsNestedArrayItemItem {
     return result;
   }
 
-  ProcessEveryTypeParamsNestedArrayItemItem copyWith({
+  ObjectWithEveryTypeNestedArrayItemItem copyWith({
     String? id,
     DateTime? timestamp,
   }) {
-    return ProcessEveryTypeParamsNestedArrayItemItem(
+    return ObjectWithEveryTypeNestedArrayItemItem(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class ObjectWithEveryNullableType {
+  final dynamic any;
+  final bool? boolean;
+  final String? string;
+  final DateTime? timestamp;
+  final double? float32;
+  final double? float64;
+  final int? int8;
+  final int? uint8;
+  final int? int16;
+  final int? uint16;
+  final int? int32;
+  final int? uint32;
+  final BigInt? int64;
+  final BigInt? uint64;
+  final ObjectWithEveryNullableTypeEnumerator? enumerator;
+  final List<bool?>? array;
+  final ObjectWithEveryNullableTypeObject? object;
+  final Map<String, bool?>? record;
+  final ObjectWithEveryNullableTypeDiscriminator? discriminator;
+  final ObjectWithEveryNullableTypeNestedObject? nestedObject;
+  final List<List<ObjectWithEveryNullableTypeNestedArrayItemItem>?>?
+      nestedArray;
+  const ObjectWithEveryNullableType({
+    required this.any,
+    required this.boolean,
+    required this.string,
+    required this.timestamp,
+    required this.float32,
+    required this.float64,
+    required this.int8,
+    required this.uint8,
+    required this.int16,
+    required this.uint16,
+    required this.int32,
+    required this.uint32,
+    required this.int64,
+    required this.uint64,
+    required this.enumerator,
+    required this.array,
+    required this.object,
+    required this.record,
+    required this.discriminator,
+    required this.nestedObject,
+    required this.nestedArray,
+  });
+  factory ObjectWithEveryNullableType.fromJson(Map<String, dynamic> json) {
+    return ObjectWithEveryNullableType(
+      any: json["any"],
+      boolean: nullableTypeFromDynamic<bool>(json["boolean"]),
+      string: nullableTypeFromDynamic<String>(json["string"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+      float32: nullableDoubleFromDynamic(json["float32"]),
+      float64: nullableDoubleFromDynamic(json["float64"]),
+      int8: nullableIntFromDynamic(json["int8"]),
+      uint8: nullableIntFromDynamic(json["uint8"]),
+      int16: nullableIntFromDynamic(json["int16"]),
+      uint16: nullableIntFromDynamic(json["uint16"]),
+      int32: nullableIntFromDynamic(json["int32"]),
+      uint32: nullableIntFromDynamic(json["uint32"]),
+      int64: nullableBigIntFromDynamic(json["int64"]),
+      uint64: nullableBigIntFromDynamic(json["uint64"]),
+      enumerator: json["enumerator"] is Map<String, dynamic>
+          ? ObjectWithEveryNullableTypeEnumerator.fromJson(json["enumerator"])
+          : null,
+      array: json["array"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["array"] as List)
+              .map((item) => nullableTypeFromDynamic<bool>(item))
+              .toList() as List<bool?>?
+          : null,
+      object: json["object"] is Map<String, dynamic>
+          ? ObjectWithEveryNullableTypeObject.fromJson(json["object"])
+          : null,
+      record: json["record"] is Map<String, dynamic>
+          ? (json["record"] as Map<String, dynamic>).map((key, value) =>
+              MapEntry(key, nullableTypeFromDynamic<bool>(value)))
+          : <String, bool?>{},
+      discriminator: json["discriminator"] is Map<String, dynamic>
+          ? ObjectWithEveryNullableTypeDiscriminator.fromJson(
+              json["discriminator"])
+          : null,
+      nestedObject: json["nestedObject"] is Map<String, dynamic>
+          ? ObjectWithEveryNullableTypeNestedObject.fromJson(
+              json["nestedObject"])
+          : null,
+      nestedArray: json["nestedArray"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["nestedArray"] as List)
+                  .map((item) => item is List
+                      ?
+                      // ignore: unnecessary_cast
+                      (item as List)
+                              .map((item) => item is Map<String, dynamic>
+                                  ? ObjectWithEveryNullableTypeNestedArrayItemItem
+                                      .fromJson(item)
+                                  : null)
+                              .toList()
+                          as List<ObjectWithEveryNullableTypeNestedArrayItemItem>?
+                      : null)
+                  .toList()
+              as List<List<ObjectWithEveryNullableTypeNestedArrayItemItem>?>?
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "any": any,
+      "boolean": boolean,
+      "string": string,
+      "timestamp": timestamp?.toUtc().toIso8601String(),
+      "float32": float32,
+      "float64": float64,
+      "int8": int8,
+      "uint8": uint8,
+      "int16": int16,
+      "uint16": uint16,
+      "int32": int32,
+      "uint32": uint32,
+      "int64": int64?.toString(),
+      "uint64": uint64?.toString(),
+      "enumerator": enumerator?.value,
+      "array": array?.map((item) => item).toList(),
+      "object": object?.toJson(),
+      "record": record?.map((key, value) => MapEntry(key, value)),
+      "discriminator": discriminator?.toJson(),
+      "nestedObject": nestedObject?.toJson(),
+      "nestedArray": nestedArray
+          ?.map((item) => item?.map((item) => item?.toJson()).toList())
+          .toList(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableType copyWith({
+    dynamic any,
+    bool? boolean,
+    String? string,
+    DateTime? timestamp,
+    double? float32,
+    double? float64,
+    int? int8,
+    int? uint8,
+    int? int16,
+    int? uint16,
+    int? int32,
+    int? uint32,
+    BigInt? int64,
+    BigInt? uint64,
+    ObjectWithEveryNullableTypeEnumerator? enumerator,
+    List<bool?>? array,
+    ObjectWithEveryNullableTypeObject? object,
+    Map<String, bool?>? record,
+    ObjectWithEveryNullableTypeDiscriminator? discriminator,
+    ObjectWithEveryNullableTypeNestedObject? nestedObject,
+    List<List<ObjectWithEveryNullableTypeNestedArrayItemItem>?>? nestedArray,
+  }) {
+    return ObjectWithEveryNullableType(
+      any: any ?? this.any,
+      boolean: boolean ?? this.boolean,
+      string: string ?? this.string,
+      timestamp: timestamp ?? this.timestamp,
+      float32: float32 ?? this.float32,
+      float64: float64 ?? this.float64,
+      int8: int8 ?? this.int8,
+      uint8: uint8 ?? this.uint8,
+      int16: int16 ?? this.int16,
+      uint16: uint16 ?? this.uint16,
+      int32: int32 ?? this.int32,
+      uint32: uint32 ?? this.uint32,
+      int64: int64 ?? this.int64,
+      uint64: uint64 ?? this.uint64,
+      enumerator: enumerator ?? this.enumerator,
+      array: array ?? this.array,
+      object: object ?? this.object,
+      record: record ?? this.record,
+      discriminator: discriminator ?? this.discriminator,
+      nestedObject: nestedObject ?? this.nestedObject,
+      nestedArray: nestedArray ?? this.nestedArray,
+    );
+  }
+}
+
+enum ObjectWithEveryNullableTypeEnumerator
+    implements Comparable<ObjectWithEveryNullableTypeEnumerator> {
+  a("A"),
+  b("B"),
+  c("C");
+
+  const ObjectWithEveryNullableTypeEnumerator(this.value);
+  final String value;
+
+  factory ObjectWithEveryNullableTypeEnumerator.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return a;
+  }
+
+  @override
+  compareTo(ObjectWithEveryNullableTypeEnumerator other) =>
+      name.compareTo(other.name);
+}
+
+class ObjectWithEveryNullableTypeObject {
+  final String? string;
+  final bool? boolean;
+  final DateTime? timestamp;
+  const ObjectWithEveryNullableTypeObject({
+    required this.string,
+    required this.boolean,
+    required this.timestamp,
+  });
+  factory ObjectWithEveryNullableTypeObject.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeObject(
+      string: nullableTypeFromDynamic<String>(json["string"]),
+      boolean: nullableTypeFromDynamic<bool>(json["boolean"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "string": string,
+      "boolean": boolean,
+      "timestamp": timestamp?.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeObject copyWith({
+    String? string,
+    bool? boolean,
+    DateTime? timestamp,
+  }) {
+    return ObjectWithEveryNullableTypeObject(
+      string: string ?? this.string,
+      boolean: boolean ?? this.boolean,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+sealed class ObjectWithEveryNullableTypeDiscriminator {
+  final String type;
+  const ObjectWithEveryNullableTypeDiscriminator({
+    required this.type,
+  });
+  factory ObjectWithEveryNullableTypeDiscriminator.fromJson(
+      Map<String, dynamic> json) {
+    if (json["type"] is! String) {
+      throw Exception(
+        "Unable to decode ObjectWithEveryNullableTypeDiscriminator. Expected String from \"type\". Received ${json["type"]}}",
+      );
+    }
+    switch (json["type"]) {
+      case "A":
+        return ObjectWithEveryNullableTypeDiscriminatorA.fromJson(json);
+      case "B":
+        return ObjectWithEveryNullableTypeDiscriminatorB.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode ObjectWithEveryNullableTypeDiscriminator. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class ObjectWithEveryNullableTypeDiscriminatorA
+    implements ObjectWithEveryNullableTypeDiscriminator {
+  @override
+  final String type = "A";
+  final String? title;
+  const ObjectWithEveryNullableTypeDiscriminatorA({
+    required this.title,
+  });
+  factory ObjectWithEveryNullableTypeDiscriminatorA.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeDiscriminatorA(
+      title: nullableTypeFromDynamic<String>(json["title"]),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "type": type,
+      "title": title,
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeDiscriminatorA copyWith({
+    String? title,
+  }) {
+    return ObjectWithEveryNullableTypeDiscriminatorA(
+      title: title ?? this.title,
+    );
+  }
+}
+
+class ObjectWithEveryNullableTypeDiscriminatorB
+    implements ObjectWithEveryNullableTypeDiscriminator {
+  @override
+  final String type = "B";
+  final String? title;
+  final String? description;
+  const ObjectWithEveryNullableTypeDiscriminatorB({
+    required this.title,
+    required this.description,
+  });
+  factory ObjectWithEveryNullableTypeDiscriminatorB.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeDiscriminatorB(
+      title: nullableTypeFromDynamic<String>(json["title"]),
+      description: nullableTypeFromDynamic<String>(json["description"]),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "type": type,
+      "title": title,
+      "description": description,
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeDiscriminatorB copyWith({
+    String? title,
+    String? description,
+  }) {
+    return ObjectWithEveryNullableTypeDiscriminatorB(
+      title: title ?? this.title,
+      description: description ?? this.description,
+    );
+  }
+}
+
+class ObjectWithEveryNullableTypeNestedObject {
+  final String? id;
+  final DateTime? timestamp;
+  final ObjectWithEveryNullableTypeNestedObjectData? data;
+  const ObjectWithEveryNullableTypeNestedObject({
+    required this.id,
+    required this.timestamp,
+    required this.data,
+  });
+  factory ObjectWithEveryNullableTypeNestedObject.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeNestedObject(
+      id: nullableTypeFromDynamic<String>(json["id"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+      data: json["data"] is Map<String, dynamic>
+          ? ObjectWithEveryNullableTypeNestedObjectData.fromJson(json["data"])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp?.toUtc().toIso8601String(),
+      "data": data?.toJson(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeNestedObject copyWith({
+    String? id,
+    DateTime? timestamp,
+    ObjectWithEveryNullableTypeNestedObjectData? data,
+  }) {
+    return ObjectWithEveryNullableTypeNestedObject(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class ObjectWithEveryNullableTypeNestedObjectData {
+  final String? id;
+  final DateTime? timestamp;
+  final ObjectWithEveryNullableTypeNestedObjectDataData? data;
+  const ObjectWithEveryNullableTypeNestedObjectData({
+    required this.id,
+    required this.timestamp,
+    required this.data,
+  });
+  factory ObjectWithEveryNullableTypeNestedObjectData.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeNestedObjectData(
+      id: nullableTypeFromDynamic<String>(json["id"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+      data: json["data"] is Map<String, dynamic>
+          ? ObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
+              json["data"])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp?.toUtc().toIso8601String(),
+      "data": data?.toJson(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeNestedObjectData copyWith({
+    String? id,
+    DateTime? timestamp,
+    ObjectWithEveryNullableTypeNestedObjectDataData? data,
+  }) {
+    return ObjectWithEveryNullableTypeNestedObjectData(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class ObjectWithEveryNullableTypeNestedObjectDataData {
+  final String? id;
+  final DateTime? timestamp;
+  const ObjectWithEveryNullableTypeNestedObjectDataData({
+    required this.id,
+    required this.timestamp,
+  });
+  factory ObjectWithEveryNullableTypeNestedObjectDataData.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeNestedObjectDataData(
+      id: nullableTypeFromDynamic<String>(json["id"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp?.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeNestedObjectDataData copyWith({
+    String? id,
+    DateTime? timestamp,
+  }) {
+    return ObjectWithEveryNullableTypeNestedObjectDataData(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class ObjectWithEveryNullableTypeNestedArrayItemItem {
+  final String? id;
+  final DateTime? timestamp;
+  const ObjectWithEveryNullableTypeNestedArrayItemItem({
+    required this.id,
+    required this.timestamp,
+  });
+  factory ObjectWithEveryNullableTypeNestedArrayItemItem.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryNullableTypeNestedArrayItemItem(
+      id: nullableTypeFromDynamic<String>(json["id"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp?.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryNullableTypeNestedArrayItemItem copyWith({
+    String? id,
+    DateTime? timestamp,
+  }) {
+    return ObjectWithEveryNullableTypeNestedArrayItemItem(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class ObjectWithEveryOptionalType {
+  final dynamic any;
+  final bool? boolean;
+  final String? string;
+  final DateTime? timestamp;
+  final double? float32;
+  final double? float64;
+  final int? int8;
+  final int? uint8;
+  final int? int16;
+  final int? uint16;
+  final int? int32;
+  final int? uint32;
+  final BigInt? int64;
+  final BigInt? uint64;
+  final ObjectWithEveryOptionalTypeEnumerator? enumerator;
+  final List<bool>? array;
+  final ObjectWithEveryOptionalTypeObject? object;
+  final Map<String, bool>? record;
+  final ObjectWithEveryOptionalTypeDiscriminator? discriminator;
+  final ObjectWithEveryOptionalTypeNestedObject? nestedObject;
+  final List<List<ObjectWithEveryOptionalTypeNestedArrayItemItem>>? nestedArray;
+  const ObjectWithEveryOptionalType({
+    this.any,
+    this.boolean,
+    this.string,
+    this.timestamp,
+    this.float32,
+    this.float64,
+    this.int8,
+    this.uint8,
+    this.int16,
+    this.uint16,
+    this.int32,
+    this.uint32,
+    this.int64,
+    this.uint64,
+    this.enumerator,
+    this.array,
+    this.object,
+    this.record,
+    this.discriminator,
+    this.nestedObject,
+    this.nestedArray,
+  });
+  factory ObjectWithEveryOptionalType.fromJson(Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalType(
+      any: json["any"],
+      boolean: nullableTypeFromDynamic<bool>(json["boolean"]),
+      string: nullableTypeFromDynamic<String>(json["string"]),
+      timestamp: nullableDateTimeFromDynamic(json["timestamp"]),
+      float32: nullableDoubleFromDynamic(json["float32"]),
+      float64: nullableDoubleFromDynamic(json["float64"]),
+      int8: nullableIntFromDynamic(json["int8"]),
+      uint8: nullableIntFromDynamic(json["uint8"]),
+      int16: nullableIntFromDynamic(json["int16"]),
+      uint16: nullableIntFromDynamic(json["uint16"]),
+      int32: nullableIntFromDynamic(json["int32"]),
+      uint32: nullableIntFromDynamic(json["uint32"]),
+      int64: nullableBigIntFromDynamic(json["int64"]),
+      uint64: nullableBigIntFromDynamic(json["uint64"]),
+      enumerator: json["enumerator"] is Map<String, dynamic>
+          ? ObjectWithEveryOptionalTypeEnumerator.fromJson(json["enumerator"])
+          : null,
+      array: json["array"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["array"] as List)
+              .map((item) => typeFromDynamic<bool>(item, false))
+              .toList() as List<bool>?
+          : null,
+      object: json["object"] is Map<String, dynamic>
+          ? ObjectWithEveryOptionalTypeObject.fromJson(json["object"])
+          : null,
+      record: json["record"] is Map<String, dynamic>
+          ? (json["record"] as Map<String, dynamic>).map((key, value) =>
+              MapEntry(key, typeFromDynamic<bool>(value, false)))
+          : <String, bool>{},
+      discriminator: json["discriminator"] is Map<String, dynamic>
+          ? ObjectWithEveryOptionalTypeDiscriminator.fromJson(
+              json["discriminator"])
+          : null,
+      nestedObject: json["nestedObject"] is Map<String, dynamic>
+          ? ObjectWithEveryOptionalTypeNestedObject.fromJson(
+              json["nestedObject"])
+          : null,
+      nestedArray: json["nestedArray"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["nestedArray"] as List)
+                  .map((item) => item is List
+                      ?
+                      // ignore: unnecessary_cast
+                      (item as List)
+                              .map((item) =>
+                                  ObjectWithEveryOptionalTypeNestedArrayItemItem
+                                      .fromJson(item))
+                              .toList()
+                          as List<ObjectWithEveryOptionalTypeNestedArrayItemItem>
+                      : <ObjectWithEveryOptionalTypeNestedArrayItemItem>[])
+                  .toList()
+              as List<List<ObjectWithEveryOptionalTypeNestedArrayItemItem>>?
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{};
+    if (any != null) {
+      result["any"] = any;
+    }
+    if (boolean != null) {
+      result["boolean"] = boolean;
+    }
+    if (string != null) {
+      result["string"] = string;
+    }
+    if (timestamp != null) {
+      result["timestamp"] = timestamp?.toUtc().toIso8601String();
+    }
+    if (float32 != null) {
+      result["float32"] = float32;
+    }
+    if (float64 != null) {
+      result["float64"] = float64;
+    }
+    if (int8 != null) {
+      result["int8"] = int8;
+    }
+    if (uint8 != null) {
+      result["uint8"] = uint8;
+    }
+    if (int16 != null) {
+      result["int16"] = int16;
+    }
+    if (uint16 != null) {
+      result["uint16"] = uint16;
+    }
+    if (int32 != null) {
+      result["int32"] = int32;
+    }
+    if (uint32 != null) {
+      result["uint32"] = uint32;
+    }
+    if (int64 != null) {
+      result["int64"] = int64?.toString();
+    }
+    if (uint64 != null) {
+      result["uint64"] = uint64?.toString();
+    }
+    if (enumerator != null) {
+      result["enumerator"] = enumerator?.value;
+    }
+    if (array != null) {
+      result["array"] = array?.map((item) => item).toList();
+    }
+    if (object != null) {
+      result["object"] = object?.toJson();
+    }
+    if (record != null) {
+      result["record"] = record?.map((key, value) => MapEntry(key, value));
+    }
+    if (discriminator != null) {
+      result["discriminator"] = discriminator?.toJson();
+    }
+    if (nestedObject != null) {
+      result["nestedObject"] = nestedObject?.toJson();
+    }
+    if (nestedArray != null) {
+      result["nestedArray"] = nestedArray
+          ?.map((item) => item.map((item) => item.toJson()).toList())
+          .toList();
+    }
+    return result;
+  }
+
+  ObjectWithEveryOptionalType copyWith({
+    dynamic any,
+    bool? boolean,
+    String? string,
+    DateTime? timestamp,
+    double? float32,
+    double? float64,
+    int? int8,
+    int? uint8,
+    int? int16,
+    int? uint16,
+    int? int32,
+    int? uint32,
+    BigInt? int64,
+    BigInt? uint64,
+    ObjectWithEveryOptionalTypeEnumerator? enumerator,
+    List<bool>? array,
+    ObjectWithEveryOptionalTypeObject? object,
+    Map<String, bool>? record,
+    ObjectWithEveryOptionalTypeDiscriminator? discriminator,
+    ObjectWithEveryOptionalTypeNestedObject? nestedObject,
+    List<List<ObjectWithEveryOptionalTypeNestedArrayItemItem>>? nestedArray,
+  }) {
+    return ObjectWithEveryOptionalType(
+      any: any ?? this.any,
+      boolean: boolean ?? this.boolean,
+      string: string ?? this.string,
+      timestamp: timestamp ?? this.timestamp,
+      float32: float32 ?? this.float32,
+      float64: float64 ?? this.float64,
+      int8: int8 ?? this.int8,
+      uint8: uint8 ?? this.uint8,
+      int16: int16 ?? this.int16,
+      uint16: uint16 ?? this.uint16,
+      int32: int32 ?? this.int32,
+      uint32: uint32 ?? this.uint32,
+      int64: int64 ?? this.int64,
+      uint64: uint64 ?? this.uint64,
+      enumerator: enumerator ?? this.enumerator,
+      array: array ?? this.array,
+      object: object ?? this.object,
+      record: record ?? this.record,
+      discriminator: discriminator ?? this.discriminator,
+      nestedObject: nestedObject ?? this.nestedObject,
+      nestedArray: nestedArray ?? this.nestedArray,
+    );
+  }
+}
+
+enum ObjectWithEveryOptionalTypeEnumerator
+    implements Comparable<ObjectWithEveryOptionalTypeEnumerator> {
+  a("A"),
+  b("B"),
+  c("C");
+
+  const ObjectWithEveryOptionalTypeEnumerator(this.value);
+  final String value;
+
+  factory ObjectWithEveryOptionalTypeEnumerator.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return a;
+  }
+
+  @override
+  compareTo(ObjectWithEveryOptionalTypeEnumerator other) =>
+      name.compareTo(other.name);
+}
+
+class ObjectWithEveryOptionalTypeObject {
+  final String string;
+  final bool boolean;
+  final DateTime timestamp;
+  const ObjectWithEveryOptionalTypeObject({
+    required this.string,
+    required this.boolean,
+    required this.timestamp,
+  });
+  factory ObjectWithEveryOptionalTypeObject.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeObject(
+      string: typeFromDynamic<String>(json["string"], ""),
+      boolean: typeFromDynamic<bool>(json["boolean"], false),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "string": string,
+      "boolean": boolean,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeObject copyWith({
+    String? string,
+    bool? boolean,
+    DateTime? timestamp,
+  }) {
+    return ObjectWithEveryOptionalTypeObject(
+      string: string ?? this.string,
+      boolean: boolean ?? this.boolean,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+sealed class ObjectWithEveryOptionalTypeDiscriminator {
+  final String type;
+  const ObjectWithEveryOptionalTypeDiscriminator({
+    required this.type,
+  });
+  factory ObjectWithEveryOptionalTypeDiscriminator.fromJson(
+      Map<String, dynamic> json) {
+    if (json["type"] is! String) {
+      throw Exception(
+        "Unable to decode ObjectWithEveryOptionalTypeDiscriminator. Expected String from \"type\". Received ${json["type"]}}",
+      );
+    }
+    switch (json["type"]) {
+      case "A":
+        return ObjectWithEveryOptionalTypeDiscriminatorA.fromJson(json);
+      case "B":
+        return ObjectWithEveryOptionalTypeDiscriminatorB.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode ObjectWithEveryOptionalTypeDiscriminator. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class ObjectWithEveryOptionalTypeDiscriminatorA
+    implements ObjectWithEveryOptionalTypeDiscriminator {
+  @override
+  final String type = "A";
+  final String title;
+  const ObjectWithEveryOptionalTypeDiscriminatorA({
+    required this.title,
+  });
+  factory ObjectWithEveryOptionalTypeDiscriminatorA.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeDiscriminatorA(
+      title: typeFromDynamic<String>(json["title"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "type": type,
+      "title": title,
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeDiscriminatorA copyWith({
+    String? title,
+  }) {
+    return ObjectWithEveryOptionalTypeDiscriminatorA(
+      title: title ?? this.title,
+    );
+  }
+}
+
+class ObjectWithEveryOptionalTypeDiscriminatorB
+    implements ObjectWithEveryOptionalTypeDiscriminator {
+  @override
+  final String type = "B";
+  final String title;
+  final String description;
+  const ObjectWithEveryOptionalTypeDiscriminatorB({
+    required this.title,
+    required this.description,
+  });
+  factory ObjectWithEveryOptionalTypeDiscriminatorB.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeDiscriminatorB(
+      title: typeFromDynamic<String>(json["title"], ""),
+      description: typeFromDynamic<String>(json["description"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "type": type,
+      "title": title,
+      "description": description,
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeDiscriminatorB copyWith({
+    String? title,
+    String? description,
+  }) {
+    return ObjectWithEveryOptionalTypeDiscriminatorB(
+      title: title ?? this.title,
+      description: description ?? this.description,
+    );
+  }
+}
+
+class ObjectWithEveryOptionalTypeNestedObject {
+  final String id;
+  final DateTime timestamp;
+  final ObjectWithEveryOptionalTypeNestedObjectData data;
+  const ObjectWithEveryOptionalTypeNestedObject({
+    required this.id,
+    required this.timestamp,
+    required this.data,
+  });
+  factory ObjectWithEveryOptionalTypeNestedObject.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeNestedObject(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      data: ObjectWithEveryOptionalTypeNestedObjectData.fromJson(json["data"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "data": data.toJson(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeNestedObject copyWith({
+    String? id,
+    DateTime? timestamp,
+    ObjectWithEveryOptionalTypeNestedObjectData? data,
+  }) {
+    return ObjectWithEveryOptionalTypeNestedObject(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class ObjectWithEveryOptionalTypeNestedObjectData {
+  final String id;
+  final DateTime timestamp;
+  final ObjectWithEveryOptionalTypeNestedObjectDataData data;
+  const ObjectWithEveryOptionalTypeNestedObjectData({
+    required this.id,
+    required this.timestamp,
+    required this.data,
+  });
+  factory ObjectWithEveryOptionalTypeNestedObjectData.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeNestedObjectData(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      data: ObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
+          json["data"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+      "data": data.toJson(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeNestedObjectData copyWith({
+    String? id,
+    DateTime? timestamp,
+    ObjectWithEveryOptionalTypeNestedObjectDataData? data,
+  }) {
+    return ObjectWithEveryOptionalTypeNestedObjectData(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class ObjectWithEveryOptionalTypeNestedObjectDataData {
+  final String id;
+  final DateTime timestamp;
+  const ObjectWithEveryOptionalTypeNestedObjectDataData({
+    required this.id,
+    required this.timestamp,
+  });
+  factory ObjectWithEveryOptionalTypeNestedObjectDataData.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeNestedObjectDataData(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeNestedObjectDataData copyWith({
+    String? id,
+    DateTime? timestamp,
+  }) {
+    return ObjectWithEveryOptionalTypeNestedObjectDataData(
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class ObjectWithEveryOptionalTypeNestedArrayItemItem {
+  final String id;
+  final DateTime timestamp;
+  const ObjectWithEveryOptionalTypeNestedArrayItemItem({
+    required this.id,
+    required this.timestamp,
+  });
+  factory ObjectWithEveryOptionalTypeNestedArrayItemItem.fromJson(
+      Map<String, dynamic> json) {
+    return ObjectWithEveryOptionalTypeNestedArrayItemItem(
+      id: typeFromDynamic<String>(json["id"], ""),
+      timestamp: dateTimeFromDynamic(
+        json["timestamp"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "id": id,
+      "timestamp": timestamp.toUtc().toIso8601String(),
+    };
+
+    return result;
+  }
+
+  ObjectWithEveryOptionalTypeNestedArrayItemItem copyWith({
+    String? id,
+    DateTime? timestamp,
+  }) {
+    return ObjectWithEveryOptionalTypeNestedArrayItemItem(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
     );

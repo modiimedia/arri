@@ -509,7 +509,7 @@ describe("Model Generation", () => {
 });
 
 it("Matches the dart example client", () => {
-    const tmpDir = path.resolve(__dirname, ".temp");
+    const tmpDir = path.resolve(__dirname, "../.temp");
     if (!existsSync(tmpDir)) {
         mkdirSync(tmpDir);
     }
@@ -522,10 +522,7 @@ it("Matches the dart example client", () => {
     execSync(`dart format ${outputFilePath}`);
     const targetResult = readFileSync(outputFilePath, { encoding: "utf-8" });
     const expectedResult = readFileSync(
-        path.resolve(
-            __dirname,
-            "../../arri-codegen-dart-reference/reference_client.dart",
-        ),
+        path.resolve(__dirname, "../../dart-reference/reference_client.dart"),
         { encoding: "utf-8" },
     );
     expect(normalizeWhitespace(targetResult)).toBe(

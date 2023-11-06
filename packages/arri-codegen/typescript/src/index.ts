@@ -543,10 +543,17 @@ export function tsObjectFromJtdSchema(
         }
     }
     let content = "";
-    const modifiedDef = { ...def, nullable: false };
+    const modifiedDef = {
+        ...def,
+        metadata: {
+            id: def.metadata?.id ?? typeName,
+            description: def.metadata?.description,
+        },
+        nullable: false,
+    } satisfies Schema;
     let validatorPart = "";
     if (options.typesNeedingParser.includes(typeName)) {
-        const parsingCode = getSchemaParsingCode("input", modifiedDef as any);
+        const parsingCode = getSchemaParsingCode("input", modifiedDef);
         const serializationCode = getSchemaSerializationCode(
             "input",
             modifiedDef,
@@ -646,7 +653,10 @@ export function tsArrayFromJtdSchema(
             existingTypeNames: additionalOptions.existingTypeNames,
         },
     );
-    const tsType = `Array<${subType.tsType}>`;
+    const tsType = `Array<${maybeNullType(
+        subType.tsType,
+        def.elements.nullable,
+    )}>`;
     return {
         tsType,
         schema: def,

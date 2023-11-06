@@ -1,18 +1,20 @@
 {
-    "name": "arri-codegen-kotlin",
+    "name": "arri-codegen-dart",
+    "version": "0.8.0",
     "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri",
-        "directory": "packages/arri-codegen-kotlin"
+        "directory": "packages/arri-codegen/dart"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
-    "version": "0.8.0",
+    "files": [
+        "dist"
+    ],
     "dependencies": {
         "arri-codegen-utils": "workspace:*",
-        "json-schema-to-jtd": "workspace:*"
+        "arri-validate": "workspace:*"
     }
 }

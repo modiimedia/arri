@@ -28,7 +28,7 @@ packages:
   arri_client:
     dependency: "direct main"
     description:
-      path: "../arri-client-dart"
+      path: "../../arri-client-dart"
       relative: true
     source: path
     version: "0.8.0"
