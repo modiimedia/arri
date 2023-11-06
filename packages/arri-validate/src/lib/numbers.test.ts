@@ -144,3 +144,42 @@ describe("int64", () => {
         expect(a.serialize(a.int64(), BigInt("123456789"))).toBe("123456789");
     });
 });
+
+it("coerces uint8", () => {
+    const Schema = a.uint8();
+    expect(a.coerce(Schema, "99")).toBe(99);
+    expect(a.coerce(Schema, "10")).toBe(10);
+    expect(a.coerce(Schema, 99)).toBe(99);
+
+    const ObjectSchema = a.object({
+        int8: a.int8(),
+        uint8: a.uint8(),
+        int16: a.int16(),
+        uint16: a.uint16(),
+        int32: a.int32(),
+        uint32: a.uint32(),
+        int64: a.int64(),
+        uint64: a.uint64(),
+    });
+    expect(
+        a.coerce(ObjectSchema, {
+            int8: "0",
+            uint8: "0",
+            int16: "0",
+            uint16: "0",
+            int32: "0",
+            uint32: "0",
+            int64: "0",
+            uint64: "0",
+        }),
+    ).toStrictEqual({
+        int8: 1,
+        uint8: 1,
+        int16: 1,
+        uint16: 1,
+        int32: 1,
+        uint32: 1,
+        int64: BigInt(1),
+        uint64: BigInt(1),
+    });
+});

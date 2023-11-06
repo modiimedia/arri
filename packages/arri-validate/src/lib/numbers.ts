@@ -353,7 +353,7 @@ function numberScalarType<TType extends NumberType>(
                 serialize: serializeNumber,
                 coerce(input, options) {
                     const result = coerceNumber(input, options);
-                    if (!result) {
+                    if (typeof result !== "number") {
                         options.errors.push({
                             instancePath: options.instancePath,
                             schemaPath: options.schemaPath,
