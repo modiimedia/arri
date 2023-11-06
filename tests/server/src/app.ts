@@ -11,7 +11,11 @@ const app = new ArriApp({
 app.use(
     defineMiddleware((event) => {
         const authHeader = getHeader(event, "x-test-header");
-        if (!authHeader?.length) {
+        if (
+            !authHeader?.length &&
+            event.path !== "/status" &&
+            event.path !== "/favicon.ico"
+        ) {
             throw defineError(401, {
                 statusMessage: "Missing test auth header 'x-test-header'",
             });
