@@ -136,9 +136,6 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
     schema: TSchema,
 ): { fn: CompiledParser<TSchema>; code: string } {
     const code = getSchemaParsingCode(input, schema);
-    if (schema.metadata.id === "logplz") {
-        console.log(code);
-    }
     if (isSchemaFormType(schema)) {
         switch (schema.type) {
             case "float32":
@@ -496,6 +493,7 @@ export function getCompiledParser<TSchema extends ASchema<any>>(
             code,
         };
     }
+
     return { fn: new Function(input, code) as any, code };
 }
 

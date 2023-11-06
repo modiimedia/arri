@@ -476,7 +476,7 @@ export function anyTemplate(
         }`;
         if (input.schema.nullable) {
             return `if (${input.val} === null) {
-                ${input.targetVal} = '${input.outputPrefix}null';
+                ${input.targetVal} += '${input.outputPrefix}null';
             } else {
                 ${mainTemplate}
             }`;

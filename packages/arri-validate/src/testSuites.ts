@@ -352,14 +352,20 @@ export const validationTestSuites: Record<
         ],
     },
     "object with nullable fields": {
-        schema: a.object({
-            id: a.nullable(a.string()),
-            createdAt: a.nullable(a.timestamp()),
-            count: a.nullable(a.number()),
-            isActive: a.nullable(a.boolean()),
-            tags: a.nullable(a.array(a.string())),
-            metadata: a.nullable(a.record(a.string())),
-        }),
+        schema: a.object(
+            {
+                id: a.nullable(a.string()),
+                createdAt: a.nullable(a.timestamp()),
+                count: a.nullable(a.number()),
+                isActive: a.nullable(a.boolean()),
+                tags: a.nullable(a.array(a.string())),
+                metadata: a.nullable(a.record(a.string())),
+                unknown: a.nullable(a.any()),
+            },
+            {
+                id: "logserializer",
+            },
+        ),
         goodInputs: [
             {
                 id: null,
@@ -368,6 +374,7 @@ export const validationTestSuites: Record<
                 isActive: null,
                 tags: null,
                 metadata: null,
+                unknown: null,
             },
             {
                 id: "",
@@ -378,6 +385,9 @@ export const validationTestSuites: Record<
                 metadata: {
                     a: "a",
                     b: "b",
+                },
+                unknown: {
+                    blah: true,
                 },
             },
         ],
@@ -747,6 +757,54 @@ export const parsingTestSuites: Record<
         badInputs: any[];
     }
 > = {
+    any: {
+        schema: a.any(),
+        goodInputs: [
+            "hello world",
+            "[]",
+            "[true, false]",
+            '{ "a": "a", "b": null }',
+            "true",
+            "false",
+            "1",
+            "null",
+        ],
+        expectedResults: [
+            "hello world",
+            [],
+            [true, false],
+            { a: "a", b: null },
+            true,
+            false,
+            1,
+            "null",
+        ],
+        badInputs: [],
+    },
+    "nullable any": {
+        schema: a.nullable(a.any()),
+        goodInputs: [
+            "hello world",
+            "[]",
+            "[true, false]",
+            '{ "a": "a", "b": null }',
+            "true",
+            "false",
+            "1",
+            "null",
+        ],
+        expectedResults: [
+            "hello world",
+            [],
+            [true, false],
+            { a: "a", b: null },
+            true,
+            false,
+            1,
+            "null",
+        ],
+        badInputs: [],
+    },
     string: {
         schema: a.string(),
         goodInputs: ["hello world"],
@@ -982,6 +1040,49 @@ export const parsingTestSuites: Record<
                 },
             },
         ] satisfies ObjectSchema[],
+        badInputs: [],
+    },
+    "object with nullable any": {
+        schema: a.object({
+            any: a.any(),
+            nullableAny: a.nullable(a.any()),
+        }),
+        goodInputs: [
+            {
+                any: {},
+                nullableAny: null,
+            },
+            `{"any":{},"nullableAny":null}`,
+            {
+                any: false,
+                nullableAny: {
+                    id: "hello",
+                },
+            },
+            `{"any":false,"nullableAny":{"id":"hello"}}`,
+        ],
+        expectedResults: [
+            {
+                any: {},
+                nullableAny: null,
+            },
+            {
+                any: {},
+                nullableAny: null,
+            },
+            {
+                any: false,
+                nullableAny: {
+                    id: "hello",
+                },
+            },
+            {
+                any: false,
+                nullableAny: {
+                    id: "hello",
+                },
+            },
+        ],
         badInputs: [],
     },
 };
