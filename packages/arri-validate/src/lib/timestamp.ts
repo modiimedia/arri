@@ -42,7 +42,7 @@ function parse(input: unknown, data: ValidationData): Date | undefined {
         const result = Date.parse(input);
         if (Number.isNaN(result)) {
             data?.errors.push({
-                message: "Invalid date string",
+                message: `Error at ${data.instancePath}. Invalid date string.`,
                 instancePath: data.instancePath,
                 schemaPath: `${data.schemaPath}/type`,
             });
@@ -52,7 +52,7 @@ function parse(input: unknown, data: ValidationData): Date | undefined {
     }
 
     data.errors.push({
-        message: "Invalid date",
+        message: `Error at ${data.instancePath}. Invalid date.`,
         instancePath: data.instancePath,
         schemaPath: `${data.schemaPath}/type`,
     });

@@ -75,7 +75,7 @@ function parse<T>(
             data.errors.push({
                 instancePath: data.instancePath,
                 schemaPath: data.schemaPath,
-                message: "Invalid JSON",
+                message: `Error at ${data.instancePath}. Invalid JSON.`,
             });
             return undefined;
         }
@@ -84,7 +84,9 @@ function parse<T>(
         data.errors.push({
             instancePath: data.instancePath,
             schemaPath: data.schemaPath,
-            message: `Expected array. Got ${typeof input}.`,
+            message: `Error at ${
+                data.instancePath
+            }. Expected array. Got ${typeof input}.`,
         });
         return undefined;
     }

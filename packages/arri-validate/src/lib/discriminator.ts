@@ -153,7 +153,9 @@ function parse(
         data.errors.push({
             instancePath: data.instancePath,
             schemaPath: data.schemaPath,
-            message: `Expected object. Got ${typeof parsedInput}.`,
+            message: `Error at ${
+                data.instancePath
+            }. Expected object. Got ${typeof parsedInput}.`,
         });
         return undefined;
     }
@@ -161,7 +163,7 @@ function parse(
         data.errors.push({
             instancePath: `${data.instancePath}/${discriminator}`,
             schemaPath: `${data.schemaPath}/discriminator`,
-            message: `Discriminator field "${discriminator}" cannot be undefined`,
+            message: `Error at ${data.instancePath}/${discriminator}. Discriminator field "${discriminator}" cannot be undefined`,
         });
         return undefined;
     }
@@ -171,7 +173,7 @@ function parse(
         data.errors.push({
             instancePath: `${data.instancePath}/${discriminator}`,
             schemaPath: `${data.schemaPath}/discriminator`,
-            message: `"${
+            message: `Error at ${data.instancePath}/${discriminator}. "${
                 parsedInput[discriminator]
             }" is not one of the accepted discriminator values: [${acceptedDiscriminatorVals.join(
                 ", ",

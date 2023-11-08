@@ -91,7 +91,7 @@ function parse<T>(
         data.errors.push({
             instancePath: data.instancePath,
             schemaPath: data.schemaPath,
-            message: "Expected object",
+            message: `Error at ${data.instancePath} Expected object`,
         });
         return undefined;
     }

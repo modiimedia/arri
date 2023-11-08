@@ -42,7 +42,9 @@ function coerceNumber(input: unknown, options: ValidationData) {
             options.errors.push({
                 instancePath: `${options.instancePath}`,
                 schemaPath: `${options.schemaPath}/type`,
-                message: `Unable to coerce ${typeof input} into a number`,
+                message: `Error at ${
+                    options.instancePath
+                }. Unable to coerce ${typeof input} into a number`,
             });
             return undefined;
         }
@@ -164,14 +166,14 @@ export function int64(
                     return val;
                 }
                 data.errors.push({
-                    message: `Invalid int64`,
+                    message: `Error at ${data.instancePath}. Invalid int64.`,
                     schemaPath: `${data.schemaPath}/type`,
                     instancePath: data.instancePath,
                 });
                 return undefined;
             } catch (err) {
                 data.errors.push({
-                    message: `Unable to transform ${input} to BigInt`,
+                    message: `Error at ${data.instancePath}. Unable to transform ${input} to BigInt`,
                     schemaPath: `${data.schemaPath}/type`,
                     instancePath: data.instancePath,
                 });
@@ -182,7 +184,7 @@ export function int64(
             return input;
         }
         data.errors.push({
-            message: `Expected BigInt or integer string`,
+            message: `Error at ${data.instancePath}. Expected BigInt or integer string`,
             schemaPath: `${data.schemaPath}/type`,
             instancePath: data.instancePath,
         });
@@ -227,14 +229,14 @@ export function uint64(
                     return val;
                 }
                 data.errors.push({
-                    message: `Invalid uint64`,
+                    message: `Error at ${data.instancePath}. Invalid uint64.`,
                     schemaPath: `${data.schemaPath}/type`,
                     instancePath: data.instancePath,
                 });
                 return undefined;
             } catch (err) {
                 data.errors.push({
-                    message: `Unable to transform ${input} to BigInt`,
+                    message: `Error at ${data.instancePath}. Unable to transform ${input} to BigInt.`,
                     schemaPath: `${data.schemaPath}/type`,
                     instancePath: data.instancePath,
                 });
@@ -245,7 +247,7 @@ export function uint64(
             return input;
         }
         data.errors.push({
-            message: `Expected BigInt or integer string`,
+            message: `Error at ${data.instancePath}. Expected BigInt or integer string.`,
             schemaPath: `${data.schemaPath}/type`,
             instancePath: data.instancePath,
         });
@@ -288,7 +290,7 @@ function parseNumber(input: unknown, options: ValidationData) {
             options?.errors.push({
                 instancePath: options.instancePath,
                 schemaPath: options.schemaPath,
-                message: `Invalid number`,
+                message: `Error at ${options.instancePath}. Invalid number.`,
             });
             return undefined;
         }
@@ -300,7 +302,7 @@ function parseNumber(input: unknown, options: ValidationData) {
     options?.errors.push({
         instancePath: options.instancePath,
         schemaPath: options.schemaPath,
-        message: "Invalid number",
+        message: `Error at ${options.instancePath}. Invalid number.`,
     });
     return undefined;
 }
@@ -335,7 +337,7 @@ function numberScalarType<TType extends NumberType>(
                         options?.errors.push({
                             instancePath: options.instancePath,
                             schemaPath: options.schemaPath,
-                            message: "Invalid number",
+                            message: `Error at ${options.instancePath}. Invalid number.`,
                         });
                         return undefined;
                     }
@@ -346,7 +348,7 @@ function numberScalarType<TType extends NumberType>(
                     options?.errors.push({
                         instancePath: options.instancePath,
                         schemaPath: options.schemaPath,
-                        message: matchResult.message,
+                        message: `Error at ${options.instancePath}. ${matchResult.message}`,
                     });
                     return undefined;
                 },
@@ -357,7 +359,9 @@ function numberScalarType<TType extends NumberType>(
                         options.errors.push({
                             instancePath: options.instancePath,
                             schemaPath: options.schemaPath,
-                            message: `Unable to coerce ${typeof input} to ${type}`,
+                            message: `Error at ${
+                                options.instancePath
+                            }. Unable to coerce ${typeof input} to ${type}.`,
                         });
                         return undefined;
                     }
@@ -368,7 +372,7 @@ function numberScalarType<TType extends NumberType>(
                     options.errors.push({
                         instancePath: options.instancePath,
                         schemaPath: options.schemaPath,
-                        message: matchResult.message,
+                        message: `Error at ${options.instancePath}. ${matchResult.message}`,
                     });
                     return undefined;
                 },

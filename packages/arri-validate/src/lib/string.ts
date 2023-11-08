@@ -46,7 +46,9 @@ function parse(input: unknown, options: ValidationData) {
     options.errors.push({
         instancePath: options.instancePath,
         schemaPath: options.schemaPath,
-        message: `Expected 'string' got ${typeof input}`,
+        message: `Error at ${
+            options.instancePath
+        }. Expected 'string' got ${typeof input}.`,
     });
     return undefined;
 }

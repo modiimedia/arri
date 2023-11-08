@@ -45,7 +45,9 @@ export function boolean(
                     data.errors.push({
                         instancePath: data.instancePath,
                         schemaPath: data.schemaPath,
-                        message: `Unable to coerce ${input as any} to boolean`,
+                        message: `Error at ${
+                            data.instancePath
+                        }. Unable to coerce ${input as any} to boolean.`,
                     });
                     return undefined;
                 },
@@ -71,7 +73,9 @@ function parse(input: unknown, data: ValidationData): boolean | undefined {
         data.errors.push({
             instancePath: data.instancePath,
             schemaPath: `${data.schemaPath}/type`,
-            message: `Expected boolean. Got ${typeof input}.`,
+            message: `Error at ${
+                data.instancePath
+            }. Expected boolean. Got ${typeof input}.`,
         });
         return undefined;
     }
@@ -79,7 +83,9 @@ function parse(input: unknown, data: ValidationData): boolean | undefined {
     data.errors.push({
         instancePath: data.instancePath,
         schemaPath: `${data.schemaPath}/type`,
-        message: `Expected boolean. Got ${typeof input}.`,
+        message: `Error at ${
+            data.instancePath
+        }. Expected boolean. Got ${typeof input}.`,
     });
     return undefined;
 }

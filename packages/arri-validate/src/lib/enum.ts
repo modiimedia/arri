@@ -47,7 +47,9 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                     data.errors.push({
                         instancePath: data.instancePath,
                         schemaPath: `${data.schemaPath}/enum`,
-                        message: `Invalid enum value. Expected one of the following values: [${values.join(
+                        message: `Error at ${
+                            data.instancePath
+                        }. Invalid enum value. Expected one of the following values: [${values.join(
                             ", ",
                         )}]`,
                     });
@@ -60,7 +62,9 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                     data.errors.push({
                         instancePath: data.instancePath,
                         schemaPath: `${data.schemaPath}/enum`,
-                        message: `Invalid enum value. Expected one of the following values: [${values.join(
+                        message: `Error at ${
+                            data.instancePath
+                        }. Invalid enum value. Expected one of the following values: [${values.join(
                             ", ",
                         )}]`,
                     });
