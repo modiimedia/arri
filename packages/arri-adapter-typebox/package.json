@@ -5,14 +5,16 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri",
         "directory": "packages/arri-adapter-typebox"
     },
     "dependencies": {
-        "@sinclair/typebox": "^0.31.22",
+        "@sinclair/typebox": "^0.31.23",
         "arri-validate": "workspace:*",
         "json-schema-to-jtd": "workspace:*"
     }

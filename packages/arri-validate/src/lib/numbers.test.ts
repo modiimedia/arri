@@ -173,13 +173,13 @@ it("coerces uint8", () => {
             uint64: "0",
         }),
     ).toStrictEqual({
-        int8: 1,
-        uint8: 1,
-        int16: 1,
-        uint16: 1,
-        int32: 1,
-        uint32: 1,
-        int64: BigInt(1),
-        uint64: BigInt(1),
+        int8: 0,
+        uint8: 0,
+        int16: 0,
+        uint16: 0,
+        int32: 0,
+        uint32: 0,
+        int64: BigInt(0),
+        uint64: BigInt(0),
     });
 });
