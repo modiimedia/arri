@@ -206,14 +206,14 @@ export function handleRoute(
     });
 
     switch (method) {
+        case "head":
+            router.head(route.path, handler);
+            break;
         case "get":
             router.get(route.path, handler);
             break;
         case "delete":
             router.delete(route.path, handler);
-            break;
-        case "head":
-            router.head(route.path, handler);
             break;
         case "patch":
             router.patch(route.path, handler);
