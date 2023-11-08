@@ -16,12 +16,15 @@ export const HttpMethodValues = [
 ] as const;
 
 export type HttpMethod = (typeof HttpMethodValues)[number];
-
+export type RpcHttpMethod = Exclude<HttpMethod, "head">;
 export const isHttpMethod = (input: any): input is HttpMethod => {
     if (typeof input !== "string") {
         return false;
     }
     return HttpMethodValues.includes(input as any);
+};
+export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
+    return isHttpMethod(input) && input !== "head";
 };
 
 export const SCHEMA_VERSION = "0.0.2" as const;
@@ -64,7 +67,7 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
 export interface RpcDefinition {
     path: string;
     description?: string;
-    method: HttpMethod;
+    method: RpcHttpMethod;
     params: string | undefined;
     response: string | undefined;
 }
@@ -75,7 +78,7 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
     const inputObj = input as Record<any, any>;
     return (
         typeof inputObj.path === "string" &&
-        isHttpMethod(inputObj.method) &&
+        isRpcHttpMethod(inputObj.method) &&
         (typeof inputObj.params === "string" ||
             typeof inputObj.params === "undefined") &&
         (typeof inputObj.response === "string" ||

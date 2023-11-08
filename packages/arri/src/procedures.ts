@@ -1,8 +1,8 @@
 import {
-    type HttpMethod,
-    isHttpMethod,
     type RpcDefinition,
     removeDisallowedChars,
+    isRpcHttpMethod,
+    type RpcHttpMethod,
 } from "arri-codegen-utils";
 import {
     type AObjectSchema,
@@ -53,7 +53,7 @@ export interface ArriProcedure<
     TResponse extends RpcParamSchema | undefined,
 > {
     description?: string;
-    method?: HttpMethod;
+    method?: RpcHttpMethod;
     path?: string;
     params: TParams;
     response: TResponse;
@@ -112,11 +112,11 @@ export type ArriProcedurePostHandler<TParams, TResponse> = (
 ) => any;
 
 export function isRpc(input: any): input is ArriProcedure<any, any> {
-    if (typeof input !== "object") {
+    if (typeof input !== "object" || input === null) {
         return false;
     }
     const anyInput = input as Record<string, any>;
-    if (!isHttpMethod(anyInput.method)) {
+    if (!isRpcHttpMethod(anyInput.method)) {
         return false;
     }
     if (typeof anyInput.handler !== "function") {
@@ -243,8 +243,7 @@ export function registerRpc(
             }
             if (isRpcParamSchema(procedure.params)) {
                 switch (httpMethod) {
-                    case "get":
-                    case "head": {
+                    case "get": {
                         const parsedParams = await getValidatedQuery(
                             event,
                             (input) => a.safeCoerce(procedure.params, input),
@@ -308,6 +307,7 @@ export function registerRpc(
                         break;
                 }
             }
+
             const response = await procedure.handler(
                 event.context as any,
                 event as any,
@@ -341,9 +341,6 @@ export function registerRpc(
     switch (httpMethod) {
         case "get":
             router.get(path, handler);
-            break;
-        case "head":
-            router.head(path, handler);
             break;
         case "delete":
             router.delete(path, handler);
