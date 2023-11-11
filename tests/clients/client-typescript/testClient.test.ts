@@ -1,4 +1,4 @@
-import { ArriRequestError } from "arri-client";
+import { ArriRequestErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import {
     TestClient,
@@ -37,8 +37,8 @@ test("posts.getPosts", async () => {
         expect(false);
     } catch (err) {
         expect(err !== undefined);
-        expect(err instanceof ArriRequestError);
-        if (err instanceof ArriRequestError) {
+        expect(err instanceof ArriRequestErrorInstance);
+        if (err instanceof ArriRequestErrorInstance) {
             expect(err.statusCode).toBe(400);
         }
     }
@@ -106,8 +106,8 @@ test("unauthenticated request", async () => {
         });
         expect(false);
     } catch (err) {
-        expect(err instanceof ArriRequestError);
-        if (err instanceof ArriRequestError) {
+        expect(err instanceof ArriRequestErrorInstance);
+        if (err instanceof ArriRequestErrorInstance) {
             expect(err.statusCode).toBe(401);
         }
     }
@@ -303,8 +303,8 @@ test("unauthorized route request", async () => {
             },
         });
     } catch (err) {
-        expect(err instanceof ArriRequestError);
-        if (err instanceof ArriRequestError) {
+        expect(err instanceof ArriRequestErrorInstance);
+        if (err instanceof ArriRequestErrorInstance) {
             expect(err.statusCode).toBe(401);
         }
     }
