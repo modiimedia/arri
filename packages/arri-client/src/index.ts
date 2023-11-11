@@ -55,7 +55,9 @@ export async function arriRequest<
             throw new ArriRequestError({
                 statusCode: error.statusCode ?? 500,
                 statusMessage:
-                    error.statusMessage ?? `Error connecting to ${url}`,
+                    error.statusMessage ??
+                    error.message ??
+                    `Error connecting to ${url}`,
                 data: error.data,
                 stack: error.stack,
             });
@@ -145,13 +147,12 @@ export class ArriRequestError
         data?: any;
     }) {
         super(`ERROR ${input.statusCode}: ${input.statusMessage}`);
-        super.stack = input.stack;
         this.statusCode = input.statusCode;
         this.statusMessage = input.statusMessage;
         this.data = input.data;
     }
 
-    static fromJson(json: any) {
+    static fromJson(json: unknown) {
         if (typeof json !== "object" || json === null) {
             return new ArriRequestError({
                 statusCode: 500,
@@ -160,13 +161,19 @@ export class ArriRequestError
         }
         return new ArriRequestError({
             statusCode:
-                typeof json.statusCode === "number" ? json.statusCode : 500,
+                "statusCode" in json && typeof json.statusCode === "number"
+                    ? json.statusCode
+                    : 500,
             statusMessage:
+                "statusMessage" in json &&
                 typeof json.statusMessage === "string"
                     ? json.statusMessage
                     : "",
-            stack: json.stack,
-            data: json.data,
+            stack:
+                "stack" in json && typeof json.stack === "string"
+                    ? json.stack
+                    : undefined,
+            data: "data" in json ? json.data : undefined,
         });
     }
 }
