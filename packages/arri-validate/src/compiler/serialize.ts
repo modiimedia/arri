@@ -108,7 +108,7 @@ export function stringTemplate(
     }
     const mainTemplate = `${input.targetVal} += \`${
         input.outputPrefix ?? ""
-    }"\${${input.val}.replace(/[\\n]/g, "\\\\n")}"\`;`;
+    }"\${${input.val}.replace(/[\\n]/g, "\\\\n").replace(/"/g, '\\\\"')}"\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}

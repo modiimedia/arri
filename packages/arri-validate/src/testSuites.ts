@@ -82,7 +82,7 @@ export const validationTestSuites: Record<
     },
     string: {
         schema: a.string(),
-        goodInputs: ["hello world"],
+        goodInputs: ["hello world", `Hello "world"`, `Hello\nworld`],
         badInputs: [1, false, null, {}],
     },
     "nullable string": {
@@ -605,11 +605,17 @@ export const validationTestSuites: Record<
             true,
         ],
     },
-    "object with multiline strings": {
+    "object with multiline and quoted strings": {
         schema: a.object({
             description: a.string(),
         }),
-        goodInputs: [{ description: "hello\nworld\nhow are you" }],
+        goodInputs: [
+            { description: "hello\nworld\nhow are you" },
+            {
+                description:
+                    'She say, "Hello Johnathon! How Are You?"\n"Fine..." He replied quietly.',
+            },
+        ],
         badInputs: [null, false],
     },
     "object with nested modifiers": {
