@@ -49,10 +49,10 @@ export async function arriRequest<
         return opts.parser(result);
     } catch (err) {
         const error = err as any as FetchError;
-        if (isArriRequestErrorResponse(error.data)) {
-            throw new ArriRequestError(error.data);
+        if (isArriRequestError(error.data)) {
+            throw new ArriRequestErrorInstance(error.data);
         } else {
-            throw new ArriRequestError({
+            throw new ArriRequestErrorInstance({
                 statusCode: error.statusCode ?? 500,
                 statusMessage:
                     error.statusMessage ??
@@ -76,7 +76,7 @@ export async function arriSafeRequest<
             value: result,
         };
     } catch (err) {
-        if (err instanceof ArriRequestError) {
+        if (err instanceof ArriRequestErrorInstance) {
             return {
                 success: false,
                 error: err,
@@ -85,7 +85,7 @@ export async function arriSafeRequest<
         if (err instanceof FetchError) {
             return {
                 success: false,
-                error: new ArriRequestError({
+                error: new ArriRequestErrorInstance({
                     statusCode: err.statusCode ?? 0,
                     statusMessage: err.statusMessage ?? "",
                     stack: err.stack,
@@ -95,7 +95,7 @@ export async function arriSafeRequest<
         }
         return {
             success: false,
-            error: new ArriRequestError({
+            error: new ArriRequestErrorInstance({
                 statusCode: 500,
                 statusMessage: `Unknown error connecting to ${opts.url}`,
                 data: err,
@@ -109,18 +109,16 @@ export type SafeResponse<T> =
           success: true;
           value: T;
       }
-    | { success: false; error: ArriRequestError };
+    | { success: false; error: ArriRequestErrorInstance };
 
-export interface ArriRequestErrorResponse {
+export interface ArriRequestError {
     statusCode: number;
     statusMessage: string;
     data?: any;
     stack?: string;
 }
 
-export function isArriRequestErrorResponse(
-    input: unknown,
-): input is ArriRequestErrorResponse {
+export function isArriRequestError(input: unknown): input is ArriRequestError {
     if (typeof input !== "object" || input === null) {
         return false;
     }
@@ -132,9 +130,9 @@ export function isArriRequestErrorResponse(
     );
 }
 
-export class ArriRequestError
+export class ArriRequestErrorInstance
     extends Error
-    implements ArriRequestErrorResponse
+    implements ArriRequestError
 {
     statusCode: number;
     statusMessage: string;
@@ -154,12 +152,12 @@ export class ArriRequestError
 
     static fromJson(json: unknown) {
         if (typeof json !== "object" || json === null) {
-            return new ArriRequestError({
+            return new ArriRequestErrorInstance({
                 statusCode: 500,
                 statusMessage: "Unknown error",
             });
         }
-        return new ArriRequestError({
+        return new ArriRequestErrorInstance({
             statusCode:
                 "statusCode" in json && typeof json.statusCode === "number"
                     ? json.statusCode

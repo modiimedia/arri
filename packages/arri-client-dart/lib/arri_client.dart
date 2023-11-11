@@ -148,12 +148,12 @@ class ArriRequestError implements Exception {
   final int statusCode;
   final String statusMessage;
   final dynamic data;
-  final String? stackTrace;
+  final String? stack;
   const ArriRequestError({
     required this.statusCode,
     required this.statusMessage,
     this.data,
-    this.stackTrace,
+    this.stack,
   });
 
   /// Create an ArriRequestError from an HTTP response
@@ -166,9 +166,9 @@ class ArriRequestError implements Exception {
             : response.statusCode,
         statusMessage: body["statusMessage"] is String
             ? body["statusMessage"]
-            : "Unknown error",
+            : "Unknown error requesting ${response.request?.url.toString()}",
         data: body["data"],
-        stackTrace: body["stackTrack"] is String ? body["stackTrack"] : null,
+        stack: body["stack"] is String ? body["stack"] : null,
       );
     } catch (err) {
       return ArriRequestError.unknown();
@@ -182,7 +182,7 @@ class ArriRequestError implements Exception {
   }
   @override
   String toString() {
-    return "{ statusCode: $statusCode, statusMessage: $statusMessage, data: ${data.toString()}, stackTrack: $stackTrace }";
+    return "{ statusCode: $statusCode, statusMessage: $statusMessage, data: ${data.toString()}, stack: $stack }";
   }
 }
 
