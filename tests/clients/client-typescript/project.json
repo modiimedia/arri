@@ -1,5 +1,6 @@
 {
     "name": "test-client-typescript",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "targets": {
         "integration-test": {
             "executor": "@nx/vite:test",
