@@ -10,7 +10,7 @@
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "files": ["dist"],
-    "version": "0.11.0",
+    "version": "0.11.1",
     "dependencies": {
         "arri-codegen-utils": "workspace:*",
         "json-schema-to-jtd": "workspace:*"
