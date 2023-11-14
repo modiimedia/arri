@@ -888,7 +888,7 @@ class ObjectWithEveryNullableType {
   final Map<String, bool?>? record;
   final ObjectWithEveryNullableTypeDiscriminator? discriminator;
   final ObjectWithEveryNullableTypeNestedObject? nestedObject;
-  final List<List<ObjectWithEveryNullableTypeNestedArrayItemItem>?>?
+  final List<List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?>?
       nestedArray;
   const ObjectWithEveryNullableType({
     required this.any,
@@ -967,10 +967,10 @@ class ObjectWithEveryNullableType {
                                       .fromJson(item)
                                   : null)
                               .toList()
-                          as List<ObjectWithEveryNullableTypeNestedArrayItemItem>?
+                          as List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?
                       : null)
                   .toList()
-              as List<List<ObjectWithEveryNullableTypeNestedArrayItemItem>?>?
+              as List<List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?>?
           : null,
     );
   }
@@ -1026,7 +1026,7 @@ class ObjectWithEveryNullableType {
     Map<String, bool?>? record,
     ObjectWithEveryNullableTypeDiscriminator? discriminator,
     ObjectWithEveryNullableTypeNestedObject? nestedObject,
-    List<List<ObjectWithEveryNullableTypeNestedArrayItemItem>?>? nestedArray,
+    List<List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?>? nestedArray,
   }) {
     return ObjectWithEveryNullableType(
       any: any ?? this.any,

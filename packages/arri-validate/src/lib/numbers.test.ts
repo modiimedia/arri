@@ -1,3 +1,4 @@
+import { type SchemaFormType } from "packages/jtd-utils/dist";
 import * as a from "./_namespace";
 
 test("type inference", () => {
@@ -181,5 +182,28 @@ it("coerces uint8", () => {
         uint32: 0,
         int64: BigInt(0),
         uint64: BigInt(0),
+    });
+});
+
+describe("jtd schema production", () => {
+    it("produces int8 jtd schema", () => {
+        const Schema = a.int8({ id: "Int8", description: "An 8 bit integer" });
+        expect(JSON.parse(JSON.stringify(Schema))).toStrictEqual({
+            type: "int8",
+            metadata: { id: "Int8", description: "An 8 bit integer" },
+        } satisfies SchemaFormType);
+    });
+    it("produces int64 jtd schema", () => {
+        const Schema = a.int64({
+            id: "Int64",
+            description: "A 64 bit integer",
+        });
+        expect(JSON.parse(JSON.stringify(Schema))).toStrictEqual({
+            type: "int64",
+            metadata: {
+                id: "Int64",
+                description: "A 64 bit integer",
+            },
+        } satisfies SchemaFormType);
     });
 });

@@ -1,3 +1,4 @@
+import { type SchemaFormElements } from "jtd-utils";
 import * as a from "./_namespace";
 
 describe("Type Inference", () => {
@@ -161,4 +162,21 @@ describe("Serialization", () => {
             `[{"id":"1","role":"CUSTOMER"},{"id":"2","role":"HOST"}]`,
         );
     });
+});
+
+it("Produces Valid JTD Schema", () => {
+    const SimpleSchema = a.array(a.number(), {
+        id: "ArraySchema",
+        description: "hello world",
+    });
+    expect(JSON.parse(JSON.stringify(SimpleSchema))).toStrictEqual({
+        elements: {
+            type: "float64",
+            metadata: {},
+        },
+        metadata: {
+            id: "ArraySchema",
+            description: "hello world",
+        },
+    } satisfies SchemaFormElements);
 });

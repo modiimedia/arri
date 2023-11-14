@@ -1,5 +1,4 @@
 import { type SchemaFormProperties } from "jtd-utils";
-
 import {
     type ASchema,
     type InferObjectOutput,
