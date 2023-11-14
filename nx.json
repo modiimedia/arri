@@ -11,17 +11,20 @@
     },
     "namedInputs": {
         "default": [
-            "{workspaceRoot}/pnpm-lock.yaml",
             "{projectRoot}/package.json",
             "{projectRoot}/project.json",
             "{projectRoot}/tsconfig.json",
             "{projectRoot}/build.config.ts",
             "{projectRoot}/src/**/*"
+        ],
+        "shared-globals": [
+            "{workspaceRoot}/pnpm-lock.yaml",
+            "{workspaceRoot}/package.json"
         ]
     },
     "targetDefaults": {
         "build": {
-            "inputs": ["default"],
+            "inputs": ["default", "^default"],
             "outputs": ["{projectRoot}/dist"],
             "dependsOn": ["^build", "prepare", "^prepare"],
             "cache": true
@@ -29,9 +32,13 @@
         "lint": {
             "inputs": [
                 "default",
+                "{projectRoot}/.eslintrc.json",
+                "{projectRoot}/.eslintrc.js",
                 "{workspaceRoot}/.eslintrc.json",
+                "{workspaceRoot}/.eslintrc.js",
                 "{workspaceRoot}/.eslintignore"
-            ]
+            ],
+            "cache": true
         },
         "publish": {
             "inputs": ["default"],
@@ -40,6 +47,7 @@
         "test": {
             "inputs": [
                 "default",
+                "shared-globals",
                 "{workspaceRoot}/jest.preset.js",
                 "{projectRoot}/vite.config.ts"
             ],

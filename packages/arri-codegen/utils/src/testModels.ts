@@ -17,9 +17,11 @@ export const TestUserPhotoSchema = a.object(
         width: a.number(),
         height: a.number(),
         bytes: a.int64(),
-        nanoseconds: a.uint64(),
+        nanoseconds: a.uint64({
+            description: "When the photo was last updated in nanoseconds",
+        }),
     },
-    { id: "UserPhoto" },
+    { id: "UserPhoto", description: "A profile picture" },
 );
 
 export const TestUserSchema = a.object(
@@ -90,12 +92,14 @@ export const TestAppDefinition: AppDefinition = {
             response: "GetStatusResponse",
         },
         "users.getUser": {
+            description: "Get a user by id",
             path: "/users/get-user",
             method: "get",
             params: "UserParams",
             response: "User",
         },
         "users.updateUser": {
+            description: "Update a user",
             path: "/users/update-user",
             method: "post",
             params: "UpdateUserParams",

@@ -49,6 +49,7 @@ class TestClientUsersService {
     );
   }
 
+  /// Get a user by id
   Future<User> getUser(UserParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/get-user",
@@ -61,6 +62,7 @@ class TestClientUsersService {
     );
   }
 
+  /// Update a user
   Future<User> updateUser(UpdateUserParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/update-user",
@@ -126,6 +128,8 @@ class GetStatusResponse {
 class User {
   final String id;
   final UserRole role;
+
+  /// A profile picture
   final UserPhoto? photo;
   final DateTime createdAt;
   final int numFollowers;
@@ -256,11 +260,14 @@ enum UserRole implements Comparable<UserRole> {
   compareTo(UserRole other) => name.compareTo(other.name);
 }
 
+/// A profile picture
 class UserPhoto {
   final String url;
   final double width;
   final double height;
   final BigInt bytes;
+
+  /// When the photo was last updated in nanoseconds
   final BigInt nanoseconds;
   const UserPhoto({
     required this.url,
@@ -537,6 +544,8 @@ class UserParams {
 
 class UpdateUserParams {
   final String id;
+
+  /// A profile picture
   final UserPhoto? photo;
   final String? bio;
   const UpdateUserParams({

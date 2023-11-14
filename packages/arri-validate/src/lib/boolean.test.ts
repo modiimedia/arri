@@ -1,3 +1,4 @@
+import { type SchemaFormType } from "jtd-utils";
 import * as a from "./_namespace";
 describe("parsing", () => {
     const parse = (input: unknown) => a.safeParse(a.boolean(), input).success;
@@ -52,4 +53,20 @@ describe("coercion", () => {
         expect(!coerce("-1"));
         expect(!coerce({ helloWorld: "helloWorld" }));
     });
+});
+
+it("produces valid JTD schema", () => {
+    const Schema = a.boolean();
+    expect(JSON.parse(JSON.stringify(Schema))).toStrictEqual({
+        type: "boolean",
+        metadata: {},
+    } satisfies SchemaFormType);
+    const SchemaWithMetadata = a.boolean({
+        id: "Bool",
+        description: "Boolean value",
+    });
+    expect(JSON.parse(JSON.stringify(SchemaWithMetadata))).toStrictEqual({
+        type: "boolean",
+        metadata: { id: "Bool", description: "Boolean value" },
+    } satisfies SchemaFormType);
 });

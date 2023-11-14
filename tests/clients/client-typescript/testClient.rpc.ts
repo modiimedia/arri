@@ -455,13 +455,17 @@ const $$AdaptersTypeboxAdapterParams = {
   serialize(input: AdaptersTypeboxAdapterParams): string {
     let json = "";
     json += "{";
-    json += `"string":"${input.string.replace(/[\n]/g, "\\n")}"`;
+    json += `"string":"${input.string
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"boolean":${input.boolean}`;
     json += `,"integer":${input.integer}`;
     json += `,"number":${input.number}`;
     json += `,"enumField":"${input.enumField}"`;
     json += ',"object":{';
-    json += `"string":"${input.object.string.replace(/[\n]/g, "\\n")}"`;
+    json += `"string":"${input.object.string
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     json += ',"array":[';
     for (let i = 0; i < input.array.length; i++) {
@@ -473,10 +477,9 @@ const $$AdaptersTypeboxAdapterParams = {
     }
     json += "]";
     if (typeof input.optionalString !== "undefined") {
-      json += `,"optionalString":"${input.optionalString.replace(
-        /[\n]/g,
-        "\\n",
-      )}"`;
+      json += `,"optionalString":"${input.optionalString
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
     }
     json += "}";
     return json;
@@ -554,7 +557,9 @@ const $$AdaptersTypeboxAdapterResponse = {
   serialize(input: AdaptersTypeboxAdapterResponse): string {
     let json = "";
     json += "{";
-    json += `"message":"${input.message.replace(/[\n]/g, "\\n")}"`;
+    json += `"message":"${input.message
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     return json;
   },
@@ -1794,7 +1799,9 @@ const $$ObjectWithEveryType = {
       json += '"any":' + JSON.stringify(input.any);
     }
     json += `,"boolean":${input.boolean}`;
-    json += `,"string":"${input.string.replace(/[\n]/g, "\\n")}"`;
+    json += `,"string":"${input.string
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"timestamp":"${input.timestamp.toISOString()}"`;
     json += `,"float32":${input.float32}`;
     json += `,"float64":${input.float64}`;
@@ -1817,7 +1824,9 @@ const $$ObjectWithEveryType = {
     }
     json += "]";
     json += ',"object":{';
-    json += `"string":"${input.object.string.replace(/[\n]/g, "\\n")}"`;
+    json += `"string":"${input.object.string
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"boolean":${input.object.boolean}`;
     json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
     json += "}";
@@ -1838,36 +1847,39 @@ const $$ObjectWithEveryType = {
       case "A": {
         json += ',"discriminator":{';
         json += `"type":"A"`;
-        json += `,"title":"${input.discriminator.title.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `,"title":"${input.discriminator.title
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += "}";
         break;
       }
       case "B": {
         json += ',"discriminator":{';
         json += `"type":"B"`;
-        json += `,"title":"${input.discriminator.title.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
-        json += `,"description":"${input.discriminator.description.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `,"title":"${input.discriminator.title
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
+        json += `,"description":"${input.discriminator.description
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += "}";
         break;
       }
     }
     json += ',"nestedObject":{';
-    json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n")}"`;
+    json += `"id":"${input.nestedObject.id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
     json += ',"data":{';
-    json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n")}"`;
+    json += `"id":"${input.nestedObject.data.id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
     json += ',"data":{';
-    json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n")}"`;
+    json += `"id":"${input.nestedObject.data.data.id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
     json += "}";
     json += "}";
@@ -1885,7 +1897,9 @@ const $$ObjectWithEveryType = {
           json += ",";
         }
         json += "{";
-        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n")}"`;
+        json += `"id":"${inputNestedArrayItemItem.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
         json += "}";
       }
@@ -3543,7 +3557,9 @@ const $$ObjectWithEveryNullableType = {
       json += ',"boolean":null';
     }
     if (typeof input.string === "string") {
-      json += `,"string":"${input.string.replace(/[\n]/g, "\\n")}"`;
+      json += `,"string":"${input.string
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
     } else {
       json += ',"string":null';
     }
@@ -3630,7 +3646,9 @@ const $$ObjectWithEveryNullableType = {
     if (typeof input.object === "object" && input.object !== null) {
       json += ',"object":{';
       if (typeof input.object.string === "string") {
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n")}"`;
+        json += `"string":"${input.object.string
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
         json += '"string":null';
       }
@@ -3681,10 +3699,9 @@ const $$ObjectWithEveryNullableType = {
           json += ',"discriminator":{';
           json += `"type":"A"`;
           if (typeof input.discriminator.title === "string") {
-            json += `,"title":"${input.discriminator.title.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"title":"${input.discriminator.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
             json += ',"title":null';
           }
@@ -3695,18 +3712,16 @@ const $$ObjectWithEveryNullableType = {
           json += ',"discriminator":{';
           json += `"type":"B"`;
           if (typeof input.discriminator.title === "string") {
-            json += `,"title":"${input.discriminator.title.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"title":"${input.discriminator.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
             json += ',"title":null';
           }
           if (typeof input.discriminator.description === "string") {
-            json += `,"description":"${input.discriminator.description.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"description":"${input.discriminator.description
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
             json += ',"description":null';
           }
@@ -3720,7 +3735,9 @@ const $$ObjectWithEveryNullableType = {
     if (typeof input.nestedObject === "object" && input.nestedObject !== null) {
       json += ',"nestedObject":{';
       if (typeof input.nestedObject.id === "string") {
-        json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n")}"`;
+        json += `"id":"${input.nestedObject.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
         json += '"id":null';
       }
@@ -3738,10 +3755,9 @@ const $$ObjectWithEveryNullableType = {
       ) {
         json += ',"data":{';
         if (typeof input.nestedObject.data.id === "string") {
-          json += `"id":"${input.nestedObject.data.id.replace(
-            /[\n]/g,
-            "\\n",
-          )}"`;
+          json += `"id":"${input.nestedObject.data.id
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
         } else {
           json += '"id":null';
         }
@@ -3759,10 +3775,9 @@ const $$ObjectWithEveryNullableType = {
         ) {
           json += ',"data":{';
           if (typeof input.nestedObject.data.data.id === "string") {
-            json += `"id":"${input.nestedObject.data.data.id.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `"id":"${input.nestedObject.data.data.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
             json += '"id":null';
           }
@@ -3806,10 +3821,9 @@ const $$ObjectWithEveryNullableType = {
             ) {
               json += "{";
               if (typeof inputNestedArrayItemItem.id === "string") {
-                json += `"id":"${inputNestedArrayItemItem.id.replace(
-                  /[\n]/g,
-                  "\\n",
-                )}"`;
+                json += `"id":"${inputNestedArrayItemItem.id
+                  .replace(/[\n]/g, "\\n")
+                  .replace(/"/g, '\\"')}"`;
               } else {
                 json += '"id":null';
               }
@@ -5329,9 +5343,13 @@ const $$ObjectWithEveryOptionalType = {
     }
     if (typeof input.string !== "undefined") {
       if (inputHasFields) {
-        json += `,"string":"${input.string.replace(/[\n]/g, "\\n")}"`;
+        json += `,"string":"${input.string
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
-        json += `"string":"${input.string.replace(/[\n]/g, "\\n")}"`;
+        json += `"string":"${input.string
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         inputHasFields = true;
       }
     }
@@ -5458,13 +5476,17 @@ const $$ObjectWithEveryOptionalType = {
     if (typeof input.object !== "undefined") {
       if (inputHasFields) {
         json += ',"object":{';
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n")}"`;
+        json += `"string":"${input.object.string
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"boolean":${input.object.boolean}`;
         json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
         json += "}";
       } else {
         json += '"object":{';
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n")}"`;
+        json += `"string":"${input.object.string
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"boolean":${input.object.boolean}`;
         json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
         json += "}";
@@ -5509,24 +5531,21 @@ const $$ObjectWithEveryOptionalType = {
           case "A": {
             json += ',"discriminator":{';
             json += `"type":"A"`;
-            json += `,"title":"${input.discriminator.title.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"title":"${input.discriminator.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             json += "}";
             break;
           }
           case "B": {
             json += ',"discriminator":{';
             json += `"type":"B"`;
-            json += `,"title":"${input.discriminator.title.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
-            json += `,"description":"${input.discriminator.description.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"title":"${input.discriminator.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
+            json += `,"description":"${input.discriminator.description
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             json += "}";
             break;
           }
@@ -5536,24 +5555,21 @@ const $$ObjectWithEveryOptionalType = {
           case "A": {
             json += '"discriminator":{';
             json += `"type":"A"`;
-            json += `,"title":"${input.discriminator.title.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"title":"${input.discriminator.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             json += "}";
             break;
           }
           case "B": {
             json += '"discriminator":{';
             json += `"type":"B"`;
-            json += `,"title":"${input.discriminator.title.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
-            json += `,"description":"${input.discriminator.description.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"title":"${input.discriminator.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
+            json += `,"description":"${input.discriminator.description
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             json += "}";
             break;
           }
@@ -5564,32 +5580,38 @@ const $$ObjectWithEveryOptionalType = {
     if (typeof input.nestedObject !== "undefined") {
       if (inputHasFields) {
         json += ',"nestedObject":{';
-        json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n")}"`;
+        json += `"id":"${input.nestedObject.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n")}"`;
+        json += `"id":"${input.nestedObject.data.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.data.id.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `"id":"${input.nestedObject.data.data.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
         json += "}";
         json += "}";
         json += "}";
       } else {
         json += '"nestedObject":{';
-        json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n")}"`;
+        json += `"id":"${input.nestedObject.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n")}"`;
+        json += `"id":"${input.nestedObject.data.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.data.id.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `"id":"${input.nestedObject.data.data.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
         json += "}";
         json += "}";
@@ -5612,10 +5634,9 @@ const $$ObjectWithEveryOptionalType = {
               json += ",";
             }
             json += "{";
-            json += `"id":"${inputNestedArrayItemItem.id.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `"id":"${inputNestedArrayItemItem.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
             json += "}";
           }
@@ -5636,10 +5657,9 @@ const $$ObjectWithEveryOptionalType = {
               json += ",";
             }
             json += "{";
-            json += `"id":"${inputNestedArrayItemItem.id.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `"id":"${inputNestedArrayItemItem.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
             json += "}";
           }
@@ -5766,7 +5786,9 @@ const $$PostParams = {
   serialize(input: PostParams): string {
     let json = "";
     json += "{";
-    json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+    json += `"postId":"${input.postId
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     return json;
   },
@@ -6192,30 +6214,44 @@ const $$Post = {
   serialize(input: Post): string {
     let json = "";
     json += "{";
-    json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
-    json += `,"title":"${input.title.replace(/[\n]/g, "\\n")}"`;
+    json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+    json += `,"title":"${input.title
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += `,"type":"${input.type}"`;
     if (typeof input.description === "string") {
-      json += `,"description":"${input.description.replace(/[\n]/g, "\\n")}"`;
+      json += `,"description":"${input.description
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
     } else {
       json += ',"description":null';
     }
-    json += `,"content":"${input.content.replace(/[\n]/g, "\\n")}"`;
+    json += `,"content":"${input.content
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += ',"tags":[';
     for (let i = 0; i < input.tags.length; i++) {
       const inputTagsItem = input.tags[i];
       if (i !== 0) {
         json += ",";
       }
-      json += `"${inputTagsItem.replace(/[\n]/g, "\\n")}"`;
+      json += `"${inputTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
     }
     json += "]";
-    json += `,"authorId":"${input.authorId.replace(/[\n]/g, "\\n")}"`;
+    json += `,"authorId":"${input.authorId
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += ',"author":{';
-    json += `"id":"${input.author.id.replace(/[\n]/g, "\\n")}"`;
-    json += `,"name":"${input.author.name.replace(/[\n]/g, "\\n")}"`;
+    json += `"id":"${input.author.id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
+    json += `,"name":"${input.author.name
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     if (typeof input.author.bio === "string") {
-      json += `,"bio":"${input.author.bio.replace(/[\n]/g, "\\n")}"`;
+      json += `,"bio":"${input.author.bio
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
     } else {
       json += ',"bio":null';
     }
@@ -7016,36 +7052,48 @@ const $$PostListResponse = {
         json += ",";
       }
       json += "{";
-      json += `"id":"${inputItemsItem.id.replace(/[\n]/g, "\\n")}"`;
-      json += `,"title":"${inputItemsItem.title.replace(/[\n]/g, "\\n")}"`;
+      json += `"id":"${inputItemsItem.id
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
+      json += `,"title":"${inputItemsItem.title
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
       json += `,"type":"${inputItemsItem.type}"`;
       if (typeof inputItemsItem.description === "string") {
-        json += `,"description":"${inputItemsItem.description.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `,"description":"${inputItemsItem.description
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
         json += ',"description":null';
       }
-      json += `,"content":"${inputItemsItem.content.replace(/[\n]/g, "\\n")}"`;
+      json += `,"content":"${inputItemsItem.content
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
       json += ',"tags":[';
       for (let i = 0; i < inputItemsItem.tags.length; i++) {
         const inputItemsItemTagsItem = inputItemsItem.tags[i];
         if (i !== 0) {
           json += ",";
         }
-        json += `"${inputItemsItemTagsItem.replace(/[\n]/g, "\\n")}"`;
+        json += `"${inputItemsItemTagsItem
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       }
       json += "]";
-      json += `,"authorId":"${inputItemsItem.authorId.replace(
-        /[\n]/g,
-        "\\n",
-      )}"`;
+      json += `,"authorId":"${inputItemsItem.authorId
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
       json += ',"author":{';
-      json += `"id":"${inputItemsItem.author.id.replace(/[\n]/g, "\\n")}"`;
-      json += `,"name":"${inputItemsItem.author.name.replace(/[\n]/g, "\\n")}"`;
+      json += `"id":"${inputItemsItem.author.id
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
+      json += `,"name":"${inputItemsItem.author.name
+        .replace(/[\n]/g, "\\n")
+        .replace(/"/g, '\\"')}"`;
       if (typeof inputItemsItem.author.bio === "string") {
-        json += `,"bio":"${inputItemsItem.author.bio.replace(/[\n]/g, "\\n")}"`;
+        json += `,"bio":"${inputItemsItem.author.bio
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
         json += ',"bio":null';
       }
@@ -8077,7 +8125,9 @@ const $$PostEvent = {
       case "POST_CREATED": {
         json += "{";
         json += `"eventType":"POST_CREATED"`;
-        json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"postId":"${input.postId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
         json += "}";
         break;
@@ -8085,7 +8135,9 @@ const $$PostEvent = {
       case "POST_DELETED": {
         json += "{";
         json += `"eventType":"POST_DELETED"`;
-        json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"postId":"${input.postId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
         json += "}";
         break;
@@ -8093,23 +8145,33 @@ const $$PostEvent = {
       case "POST_UPDATED": {
         json += "{";
         json += `"eventType":"POST_UPDATED"`;
-        json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"postId":"${input.postId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
         json += ',"data":{';
         let dataHasFields = false;
         if (typeof input.data.id !== "undefined") {
           if (dataHasFields) {
-            json += `,"id":"${input.data.id.replace(/[\n]/g, "\\n")}"`;
+            json += `,"id":"${input.data.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
-            json += `"id":"${input.data.id.replace(/[\n]/g, "\\n")}"`;
+            json += `"id":"${input.data.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             dataHasFields = true;
           }
         }
         if (typeof input.data.title !== "undefined") {
           if (dataHasFields) {
-            json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n")}"`;
+            json += `,"title":"${input.data.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
-            json += `"title":"${input.data.title.replace(/[\n]/g, "\\n")}"`;
+            json += `"title":"${input.data.title
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             dataHasFields = true;
           }
         }
@@ -8124,19 +8186,17 @@ const $$PostEvent = {
         if (typeof input.data.description !== "undefined") {
           if (dataHasFields) {
             if (typeof input.data.description === "string") {
-              json += `,"description":"${input.data.description.replace(
-                /[\n]/g,
-                "\\n",
-              )}"`;
+              json += `,"description":"${input.data.description
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
             } else {
               json += ',"description":null';
             }
           } else {
             if (typeof input.data.description === "string") {
-              json += `"description":"${input.data.description.replace(
-                /[\n]/g,
-                "\\n",
-              )}"`;
+              json += `"description":"${input.data.description
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
             } else {
               json += '"description":null';
             }
@@ -8145,12 +8205,13 @@ const $$PostEvent = {
         }
         if (typeof input.data.content !== "undefined") {
           if (dataHasFields) {
-            json += `,"content":"${input.data.content.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"content":"${input.data.content
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
-            json += `"content":"${input.data.content.replace(/[\n]/g, "\\n")}"`;
+            json += `"content":"${input.data.content
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             dataHasFields = true;
           }
         }
@@ -8162,7 +8223,9 @@ const $$PostEvent = {
               if (i !== 0) {
                 json += ",";
               }
-              json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n")}"`;
+              json += `"${inputDataTagsItem
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
             }
             json += "]";
           } else {
@@ -8172,7 +8235,9 @@ const $$PostEvent = {
               if (i !== 0) {
                 json += ",";
               }
-              json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n")}"`;
+              json += `"${inputDataTagsItem
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
             }
             json += "]";
             dataHasFields = true;
@@ -8180,31 +8245,29 @@ const $$PostEvent = {
         }
         if (typeof input.data.authorId !== "undefined") {
           if (dataHasFields) {
-            json += `,"authorId":"${input.data.authorId.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `,"authorId":"${input.data.authorId
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
           } else {
-            json += `"authorId":"${input.data.authorId.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `"authorId":"${input.data.authorId
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             dataHasFields = true;
           }
         }
         if (typeof input.data.author !== "undefined") {
           if (dataHasFields) {
             json += ',"author":{';
-            json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n")}"`;
-            json += `,"name":"${input.data.author.name.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `"id":"${input.data.author.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
+            json += `,"name":"${input.data.author.name
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             if (typeof input.data.author.bio === "string") {
-              json += `,"bio":"${input.data.author.bio.replace(
-                /[\n]/g,
-                "\\n",
-              )}"`;
+              json += `,"bio":"${input.data.author.bio
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
             } else {
               json += ',"bio":null';
             }
@@ -8213,16 +8276,16 @@ const $$PostEvent = {
             json += "}";
           } else {
             json += '"author":{';
-            json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n")}"`;
-            json += `,"name":"${input.data.author.name.replace(
-              /[\n]/g,
-              "\\n",
-            )}"`;
+            json += `"id":"${input.data.author.id
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
+            json += `,"name":"${input.data.author.name
+              .replace(/[\n]/g, "\\n")
+              .replace(/"/g, '\\"')}"`;
             if (typeof input.data.author.bio === "string") {
-              json += `,"bio":"${input.data.author.bio.replace(
-                /[\n]/g,
-                "\\n",
-              )}"`;
+              json += `,"bio":"${input.data.author.bio
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
             } else {
               json += ',"bio":null';
             }
@@ -8255,9 +8318,13 @@ const $$PostEvent = {
       case "POST_LIKED": {
         json += "{";
         json += `"eventType":"POST_LIKED"`;
-        json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"postId":"${input.postId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-        json += `,"postLikeId":"${input.postLikeId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"postLikeId":"${input.postLikeId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"postLikeCount":${input.postLikeCount}`;
         json += "}";
         break;
@@ -8265,10 +8332,16 @@ const $$PostEvent = {
       case "POST_COMMENTED": {
         json += "{";
         json += `"eventType":"POST_COMMENTED"`;
-        json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+        json += `,"postId":"${input.postId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-        json += `,"commentId":"${input.commentId.replace(/[\n]/g, "\\n")}"`;
-        json += `,"commentText":"${input.commentText.replace(/[\n]/g, "\\n")}"`;
+        json += `,"commentId":"${input.commentId
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
+        json += `,"commentText":"${input.commentText
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += `,"commentCount":${input.commentCount}`;
         json += "}";
         break;
@@ -8413,7 +8486,9 @@ const $$LogPostEventResponse = {
     let json = "";
     json += "{";
     json += `"success":${input.success}`;
-    json += `,"message":"${input.message.replace(/[\n]/g, "\\n")}"`;
+    json += `,"message":"${input.message
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     return json;
   },
@@ -8647,33 +8722,37 @@ const $$UpdatePostParams = {
   serialize(input: UpdatePostParams): string {
     let json = "";
     json += "{";
-    json += `"postId":"${input.postId.replace(/[\n]/g, "\\n")}"`;
+    json += `"postId":"${input.postId
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += ',"data":{';
     let dataHasFields = false;
     if (typeof input.data.title !== "undefined") {
       if (dataHasFields) {
-        json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n")}"`;
+        json += `,"title":"${input.data.title
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
-        json += `"title":"${input.data.title.replace(/[\n]/g, "\\n")}"`;
+        json += `"title":"${input.data.title
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         dataHasFields = true;
       }
     }
     if (typeof input.data.description !== "undefined") {
       if (dataHasFields) {
         if (typeof input.data.description === "string") {
-          json += `,"description":"${input.data.description.replace(
-            /[\n]/g,
-            "\\n",
-          )}"`;
+          json += `,"description":"${input.data.description
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
         } else {
           json += ',"description":null';
         }
       } else {
         if (typeof input.data.description === "string") {
-          json += `"description":"${input.data.description.replace(
-            /[\n]/g,
-            "\\n",
-          )}"`;
+          json += `"description":"${input.data.description
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
         } else {
           json += '"description":null';
         }
@@ -8682,9 +8761,13 @@ const $$UpdatePostParams = {
     }
     if (typeof input.data.content !== "undefined") {
       if (dataHasFields) {
-        json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n")}"`;
+        json += `,"content":"${input.data.content
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
       } else {
-        json += `"content":"${input.data.content.replace(/[\n]/g, "\\n")}"`;
+        json += `"content":"${input.data.content
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         dataHasFields = true;
       }
     }
@@ -8696,7 +8779,9 @@ const $$UpdatePostParams = {
           if (i !== 0) {
             json += ",";
           }
-          json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n")}"`;
+          json += `"${inputDataTagsItem
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
         }
         json += "]";
       } else {
@@ -8706,7 +8791,9 @@ const $$UpdatePostParams = {
           if (i !== 0) {
             json += ",";
           }
-          json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n")}"`;
+          json += `"${inputDataTagsItem
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
         }
         json += "]";
         dataHasFields = true;
@@ -8802,8 +8889,10 @@ const $$AnnotationId = {
   serialize(input: AnnotationId): string {
     let json = "";
     json += "{";
-    json += `"id":"${input.id.replace(/[\n]/g, "\\n")}"`;
-    json += `,"version":"${input.version.replace(/[\n]/g, "\\n")}"`;
+    json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+    json += `,"version":"${input.version
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     return json;
   },
@@ -9238,15 +9327,18 @@ const $$Annotation = {
     let json = "";
     json += "{";
     json += '"annotation_id":{';
-    json += `"id":"${input.annotation_id.id.replace(/[\n]/g, "\\n")}"`;
-    json += `,"version":"${input.annotation_id.version.replace(
-      /[\n]/g,
-      "\\n",
-    )}"`;
+    json += `"id":"${input.annotation_id.id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
+    json += `,"version":"${input.annotation_id.version
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     json += ',"associated_id":{';
     json += `"entity_type":"${input.associated_id.entity_type}"`;
-    json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n")}"`;
+    json += `,"id":"${input.associated_id.id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += "}";
     json += `,"annotation_type":"${input.annotation_type}"`;
     json += `,"annotation_type_version":${input.annotation_type_version}`;
@@ -9748,29 +9840,28 @@ const $$UpdateAnnotationParams = {
   serialize(input: UpdateAnnotationParams): string {
     let json = "";
     json += "{";
-    json += `"annotation_id":"${input.annotation_id.replace(/[\n]/g, "\\n")}"`;
-    json += `,"annotation_id_version":"${input.annotation_id_version.replace(
-      /[\n]/g,
-      "\\n",
-    )}"`;
+    json += `"annotation_id":"${input.annotation_id
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
+    json += `,"annotation_id_version":"${input.annotation_id_version
+      .replace(/[\n]/g, "\\n")
+      .replace(/"/g, '\\"')}"`;
     json += ',"data":{';
     let dataHasFields = false;
     if (typeof input.data.associated_id !== "undefined") {
       if (dataHasFields) {
         json += ',"associated_id":{';
         json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-        json += `,"id":"${input.data.associated_id.id.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `,"id":"${input.data.associated_id.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += "}";
       } else {
         json += '"associated_id":{';
         json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-        json += `,"id":"${input.data.associated_id.id.replace(
-          /[\n]/g,
-          "\\n",
-        )}"`;
+        json += `,"id":"${input.data.associated_id.id
+          .replace(/[\n]/g, "\\n")
+          .replace(/"/g, '\\"')}"`;
         json += "}";
         dataHasFields = true;
       }

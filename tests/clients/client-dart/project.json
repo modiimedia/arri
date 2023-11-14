@@ -1,5 +1,6 @@
 {
     "name": "test-client-dart",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "targets": {
         "pub-get": {
             "executor": "nx:run-commands",

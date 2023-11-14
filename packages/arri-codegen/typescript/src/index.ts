@@ -169,8 +169,15 @@ export function tsRpcFromDefinition(
         parserPart = `$$${responseName}.parse`;
     }
     const paramsOutput = hasInput ? `params` : `params: undefined`;
-
-    return `${key}(${paramsInput}) {
+    /**
+     *
+     */
+    const description = schema.description
+        ? `/**
+    * ${schema.description}
+    */\n`
+        : "";
+    return `${description}${key}(${paramsInput}) {
         return arriRequest<${schema.response ?? "undefined"}, ${
             schema.params ?? "undefined"
         }>({

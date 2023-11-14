@@ -1,9 +1,17 @@
 import { existsSync, mkdirSync } from "fs";
-import { normalizeWhitespace } from "arri-codegen-utils";
+import {
+    type ServiceDefinition,
+    normalizeWhitespace,
+} from "arri-codegen-utils";
 import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
 import { a } from "arri-validate";
 import path from "pathe";
-import { createTypescriptClient, tsTypeFromJtdSchema } from "./index";
+import prettier from "prettier";
+import {
+    createTypescriptClient,
+    tsServiceFromDefinition,
+    tsTypeFromJtdSchema,
+} from "./index";
 
 const tempDir = path.resolve(__dirname, "../.temp");
 
@@ -11,6 +19,78 @@ beforeAll(() => {
     if (!existsSync(tempDir)) {
         mkdirSync(tempDir);
     }
+});
+
+describe("Service Creation", () => {
+    test("Basic Service", async () => {
+        const Service: ServiceDefinition = {
+            getUser: {
+                description: "Fetch a user by id",
+                path: "/get-user",
+                method: "get",
+                params: "GetUserParams",
+                response: "User",
+            },
+            updateUser: {
+                description: "Update a user",
+                path: "/update-user",
+                method: "post",
+                params: "UpdateUserParams",
+                response: "User",
+            },
+        };
+
+        const result = await prettier.format(
+            tsServiceFromDefinition("User", Service, {
+                clientName: "Client",
+                outputFile: "",
+                typesNeedingParser: [],
+                versionNumber: "1",
+            }),
+            { parser: "typescript" },
+        );
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(
+                await prettier.format(
+                    `export class UserService {
+            private readonly baseUrl: string;
+            private readonly headers: Record<string, string>;
+            constructor(options: ClientOptions = {}) {
+                this.baseUrl = options.baseUrl ?? "";
+                this.headers = { "client-version": "1", ...options.headers };
+            }
+            /**
+             * Fetch a user by id
+             */
+            getUser(params: GetUserParams) {
+                return arriRequest<User, GetUserParams>({
+                    url: \`\${this.baseUrl}/get-user\`,
+                    method: "get",
+                    headers: this.headers,
+                    params,
+                    parser: $$User.parse,
+                    serializer: $$GetUserParams.serialize,
+                });
+            }
+            /**
+             * Update a user
+             */
+            updateUser(params: UpdateUserParams) {
+                return arriRequest<User, UpdateUserParams>({
+                    url: \`\${this.baseUrl}/update-user\`,
+                    method: "post",
+                    headers: this.headers,
+                    params,
+                    parser: $$User.parse,
+                    serializer: $$UpdateUserParams.serialize,
+                });
+            }
+        }`,
+                    { parser: "typescript" },
+                ),
+            ),
+        );
+    });
 });
 
 describe("Model Creation", () => {

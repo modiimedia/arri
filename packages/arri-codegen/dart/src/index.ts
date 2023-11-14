@@ -250,7 +250,15 @@ export function dartRpcFromDefinition(
             )`;
             break;
     }
-    return `${returnType} ${key}(${paramsInput}) {
+    const descriptionParts = [];
+    if (def.description) {
+        const parts = def.description.split("\n");
+        for (const part of parts) {
+            descriptionParts.push(`/// ${part}`);
+        }
+    }
+    return `${descriptionParts.join("\n")}
+${returnType} ${key}(${paramsInput}) {
     return parsedArriRequest(
       "$_baseUrl${def.path}",
       method: HttpMethod.${def.method},
@@ -421,8 +429,16 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
     } else if (isException) {
         classNamePart += ` implements Exception`;
     }
-
-    let content = `${classNamePart} {
+    const descriptionParts: string[] = [];
+    if (def.metadata?.description) {
+        const parts = def.metadata.description.split("\n");
+        for (const part of parts) {
+            descriptionParts.push(`/// ${part}`);
+        }
+    }
+    const description = descriptionParts.join("\n");
+    let content = `${description}
+${classNamePart} {
     ${fieldParts.join(";\n  ")};
   const ${className}({
     ${constructorParts.join(",\n    ")},
@@ -478,11 +494,14 @@ ${subContentParts.join("\n")}
         additionalOptions.existingClassNames.push(className);
     }
     const isNullable = def.nullable ?? additionalOptions?.isOptional;
+    const typeName = isNullable ? `${className}?` : className;
     return {
-        typeName: className,
-        fieldTemplate: isNullable
-            ? `final ${className}? ${key}`
-            : `final ${className} ${key}`,
+        typeName,
+        fieldTemplate: fieldTemplateString(
+            typeName,
+            key,
+            def.metadata?.description,
+        ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
             : `required this.${key}`,
@@ -513,7 +532,11 @@ function dartDynamicFromAny(
     const key = camelCase(jsonKey);
     return {
         typeName: "dynamic",
-        fieldTemplate: `final dynamic ${key}`,
+        fieldTemplate: fieldTemplateString(
+            "dynamic",
+            key,
+            def.metadata?.description,
+        ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
             : `required this.${key}`,
@@ -521,6 +544,25 @@ function dartDynamicFromAny(
         toJsonTemplate: (input) => input,
         content: "",
     };
+}
+
+function fieldTemplateString(
+    typeName: string,
+    key: string,
+    description?: string,
+): string {
+    let result = "";
+    if (description) {
+        const parts = description.split("\n");
+        for (const part of parts) {
+            result += `/// ${part}\n`;
+        }
+    }
+    result += `final ${typeName} ${key}`;
+    if (description) {
+        console.log(result);
+    }
+    return result;
 }
 
 function dartArrayFromJtdSchema(
@@ -540,7 +582,11 @@ function dartArrayFromJtdSchema(
         : `List<${subtype.typeName}>`;
     return {
         typeName,
-        fieldTemplate: `final ${typeName} ${key}`,
+        fieldTemplate: fieldTemplateString(
+            typeName,
+            key,
+            def.metadata?.description,
+        ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
             : `required this.${key}`,
@@ -583,13 +629,18 @@ function dartScalarFromJtdScalar(
     const defaultInitializationTemplate = additionalOptions.isOptional
         ? `this.${key}`
         : `required this.${key}`;
+    const { description } = def.metadata ?? {};
     const defaultToJsonTemplate = (input: string) => input;
     switch (def.type) {
         case "boolean":
             if (isNullable) {
                 return {
                     typeName: "bool?",
-                    fieldTemplate: `final bool? ${key}`,
+                    fieldTemplate: fieldTemplateString(
+                        "bool?",
+                        key,
+                        description,
+                    ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
                         `nullableTypeFromDynamic<bool>(${input})`,
@@ -599,7 +650,7 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "bool",
-                fieldTemplate: `final bool ${key}`,
+                fieldTemplate: fieldTemplateString("bool", key, description),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `typeFromDynamic<bool>(${input}, false)`,
@@ -611,7 +662,11 @@ function dartScalarFromJtdScalar(
             if (isNullable) {
                 return {
                     typeName: "double?",
-                    fieldTemplate: `final double? ${key}`,
+                    fieldTemplate: fieldTemplateString(
+                        "double?",
+                        key,
+                        description,
+                    ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
                         `nullableDoubleFromDynamic(${input})`,
@@ -621,7 +676,7 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "double",
-                fieldTemplate: `final double ${key}`,
+                fieldTemplate: fieldTemplateString("double", key, description),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) => `doubleFromDynamic(${input}, 0)`,
                 toJsonTemplate: defaultToJsonTemplate,
@@ -636,7 +691,11 @@ function dartScalarFromJtdScalar(
             if (isNullable) {
                 return {
                     typeName: "int?",
-                    fieldTemplate: `final int? ${key}`,
+                    fieldTemplate: fieldTemplateString(
+                        "int?",
+                        key,
+                        description,
+                    ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
                         `nullableIntFromDynamic(${input})`,
@@ -646,7 +705,7 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "int",
-                fieldTemplate: `final int ${key}`,
+                fieldTemplate: fieldTemplateString(`int`, key, description),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) => `intFromDynamic(${input}, 0)`,
                 toJsonTemplate: defaultToJsonTemplate,
@@ -657,7 +716,11 @@ function dartScalarFromJtdScalar(
             if (isNullable) {
                 return {
                     typeName: "BigInt?",
-                    fieldTemplate: `final BigInt? ${key}`,
+                    fieldTemplate: fieldTemplateString(
+                        `BigInt?`,
+                        key,
+                        description,
+                    ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
                         `nullableBigIntFromDynamic(${input})`,
@@ -667,7 +730,7 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "BigInt",
-                fieldTemplate: `final BigInt ${key}`,
+                fieldTemplate: fieldTemplateString(`BigInt`, key, description),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `bigIntFromDynamic(${input}, BigInt.zero)`,
@@ -678,7 +741,11 @@ function dartScalarFromJtdScalar(
             if (isNullable) {
                 return {
                     typeName: "DateTime?",
-                    fieldTemplate: `final DateTime? ${key}`,
+                    fieldTemplate: fieldTemplateString(
+                        "DateTime?",
+                        key,
+                        description,
+                    ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
                         `nullableDateTimeFromDynamic(${input})`,
@@ -689,7 +756,11 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "DateTime",
-                fieldTemplate: `final DateTime ${key}`,
+                fieldTemplate: fieldTemplateString(
+                    "DateTime",
+                    key,
+                    description,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `dateTimeFromDynamic(
@@ -703,7 +774,11 @@ function dartScalarFromJtdScalar(
             if (isNullable) {
                 return {
                     typeName: "String?",
-                    fieldTemplate: `final String? ${key}`,
+                    fieldTemplate: fieldTemplateString(
+                        "String?",
+                        key,
+                        description,
+                    ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
                         `nullableTypeFromDynamic<String>(${input})`,
@@ -713,7 +788,7 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "String",
-                fieldTemplate: `final String ${key}`,
+                fieldTemplate: fieldTemplateString("String", key, description),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `typeFromDynamic<String>(${input}, "")`,
@@ -723,7 +798,7 @@ function dartScalarFromJtdScalar(
         default:
             return {
                 typeName: "dynamic",
-                fieldTemplate: `final dynamic ${key}`,
+                fieldTemplate: fieldTemplateString("dynamic", key, description),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) => input,
                 toJsonTemplate: defaultToJsonTemplate,
@@ -774,9 +849,11 @@ function dartEnumFromJtdSchema(
     }
     return {
         typeName: className,
-        fieldTemplate: isNullable
-            ? `final ${className}? ${key}`
-            : `final ${className} ${key}`,
+        fieldTemplate: fieldTemplateString(
+            isNullable ? `${className}?` : className,
+            key,
+            def.metadata?.description,
+        ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
             : `required this.${key}`,
@@ -803,13 +880,18 @@ function dartMapFromJtdSchema(
         existingClassNames: additionalOptions.existingClassNames,
         isOptional: false,
     });
+    const typeName = `Map<String, ${innerType.typeName}>${
+        isNullable ? "?" : ""
+    }`;
     return {
         typeName: isNullable
             ? `Map<String, ${innerType.typeName}>?`
             : `Map<String, ${innerType.typeName}>`,
-        fieldTemplate: `final Map<String, ${innerType.typeName}>${
-            isNullable ? "?" : ""
-        } ${key}`,
+        fieldTemplate: fieldTemplateString(
+            typeName,
+            key,
+            def.metadata?.description,
+        ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
             : `required this.${key}`,
@@ -866,7 +948,11 @@ function dartSealedClassFromJtdSchema(
         return ${child.typeName}.fromJson(json);`);
         childContentParts.push(child.content);
     });
-    const content = `sealed class ${className} {
+    const description = def.metadata?.description
+        ? `/// ${def.metadata.description}`
+        : "";
+    const content = `${description}
+sealed class ${className} {
   final String ${discriminatorKey};
   const ${className}({
     required this.${discriminatorKey},
@@ -887,9 +973,14 @@ function dartSealedClassFromJtdSchema(
   Map<String, dynamic> toJson();
 }
 ${childContentParts.join("\n")}`;
+    const typeName = `${className}${isNullable ? "?" : ""}`;
     return {
-        typeName: `${className}${isNullable ? "?" : ""}`,
-        fieldTemplate: `final ${className}${isNullable ? "?" : ""} ${key}`,
+        typeName,
+        fieldTemplate: fieldTemplateString(
+            typeName,
+            key,
+            def.metadata?.description,
+        ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
             : `required this.${key}`,

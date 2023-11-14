@@ -50,14 +50,14 @@ test("posts.updatePost", async () => {
         data: {
             title: "Hello world",
             description: null,
-            content: "Hello world 2.0",
+            content: `John said to Sarah, "Why are you here?"`,
             tags: ["1", "2", "3"],
         },
     });
     expect(result.id).toBe("1");
     expect(result.title).toBe("Hello world");
     expect(result.description).toBe(null);
-    expect(result.content).toBe("Hello world 2.0");
+    expect(result.content).toBe(`John said to Sarah, "Why are you here?"`);
     expect(result.tags.length).toBe(3);
     expect(result.tags[0]).toBe("1");
     expect(result.tags[1]).toBe("2");
