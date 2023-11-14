@@ -8,6 +8,11 @@ import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
 import { type ResolvedArriConfig } from "../config";
 
+export const DEFAULT_SERVER_ENTRY_FILE = "__default_arri_server.js";
+export const DEFAULT_CODEGEN_FILE = "__default_arri_codegen.js";
+export const SERVER_ENTRY_OUTPUT = "server.js";
+export const CODEGEN_OUTPUT = "codegen.js";
+
 export async function setupWorkingDir(config: ResolvedArriConfig) {
     const arriDir = path.resolve(config.rootDir, config.buildDir);
     const outDir = path.resolve(config.rootDir, ".output");

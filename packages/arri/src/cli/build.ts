@@ -9,7 +9,15 @@ import { build } from "esbuild";
 import path from "pathe";
 import prettier from "prettier";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
-import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
+import {
+    CODEGEN_OUTPUT,
+    createRoutesModule,
+    DEFAULT_CODEGEN_FILE,
+    DEFAULT_SERVER_ENTRY_FILE,
+    SERVER_ENTRY_OUTPUT,
+    setupWorkingDir,
+    transpileFiles,
+} from "./_common";
 
 export default defineCommand({
     args: {
@@ -50,7 +58,11 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     await bundleFiles(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
-    const codegenModule = path.resolve(config.rootDir, ".output", "codegen.js");
+    const codegenModule = path.resolve(
+        config.rootDir,
+        ".output",
+        CODEGEN_OUTPUT,
+    );
     if (clientCount > 0 && !skipCodeGen) {
         logger.log("Generating clients");
 
@@ -73,12 +85,9 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Cleaning up files");
     await fs.rm(codegenModule);
     logger.log(
-        `Build finished! You can start your server by running "node .output/server.js"`,
+        `Build finished! You can start your server by running "node .output/${SERVER_ENTRY_OUTPUT}"`,
     );
 }
-
-const BUILD_ENTRY_DEFAULT_FILE = "__default_arri_server.js";
-const CODEGEN_DEFAULT_FILE = "__default_arri_codegen.js";
 
 async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
     if (allowCodegen) {
@@ -88,7 +97,7 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
                 path.resolve(
                     config.rootDir,
                     config.buildDir,
-                    CODEGEN_DEFAULT_FILE,
+                    DEFAULT_CODEGEN_FILE,
                 ),
             ],
             platform: config.esbuild.platform ?? "node",
@@ -101,13 +110,13 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
                 js: `import { createRequire as topLevelCreateRequire } from 'module';
             const require = topLevelCreateRequire(import.meta.url);`,
             },
-            outfile: path.resolve(config.rootDir, ".output", "codegen.js"),
+            outfile: path.resolve(config.rootDir, ".output", CODEGEN_OUTPUT),
         });
     }
     let buildEntry = path.resolve(
         config.rootDir,
         config.buildDir,
-        BUILD_ENTRY_DEFAULT_FILE,
+        DEFAULT_SERVER_ENTRY_FILE,
     );
     if (config.buildEntry) {
         const parts = config.buildEntry.split(".");
@@ -130,7 +139,7 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
             const require = topLevelCreateRequire(import.meta.url);`,
         },
         allowOverwrite: true,
-        outfile: path.resolve(config.rootDir, ".output", "server.js"),
+        outfile: path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
     });
 }
 
@@ -164,7 +173,11 @@ void listen(toNodeListener(app.h3App), {
     public: true,
 });`;
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, BUILD_ENTRY_DEFAULT_FILE),
+        path.resolve(
+            config.rootDir,
+            config.buildDir,
+            DEFAULT_SERVER_ENTRY_FILE,
+        ),
         virtualEntry,
     );
 }
@@ -203,7 +216,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         { tabWidth: 4, parser: "typescript" },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, CODEGEN_DEFAULT_FILE),
+        path.resolve(config.rootDir, config.buildDir, DEFAULT_CODEGEN_FILE),
         virtualModule,
     );
 }

@@ -10,7 +10,13 @@ import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
 import { isResolvedArriConfig, type ResolvedArriConfig } from "../config";
-import { createRoutesModule, setupWorkingDir, transpileFiles } from "./_common";
+import {
+    createRoutesModule,
+    DEFAULT_SERVER_ENTRY_FILE,
+    SERVER_ENTRY_OUTPUT,
+    setupWorkingDir,
+    transpileFiles,
+} from "./_common";
 
 const logger = createConsola().withTag("arri");
 
@@ -40,20 +46,27 @@ export default defineCommand({
 });
 
 const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(path.resolve(config.rootDir, ".output", "server.js"), {
-        public: true,
-        port: config.port,
-        logger,
-        qr: showQr,
-    });
+    listenAndWatch(
+        path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
+        {
+            public: true,
+            port: config.port,
+            logger,
+            qr: showQr,
+        },
+    );
 
 async function bundleFilesContext(config: ResolvedArriConfig) {
     return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
-            path.resolve(config.rootDir, config.buildDir, "entry.js"),
+            path.resolve(
+                config.rootDir,
+                config.buildDir,
+                DEFAULT_SERVER_ENTRY_FILE,
+            ),
         ],
-        outfile: path.resolve(config.rootDir, ".output", "server.js"),
+        outfile: path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
         format: "esm",
         bundle: true,
         sourcemap: true,
@@ -182,7 +195,11 @@ for (const route of routes) {
 
 export default app.h3App;`;
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "entry.js"),
+        path.resolve(
+            config.rootDir,
+            config.buildDir,
+            DEFAULT_SERVER_ENTRY_FILE,
+        ),
         virtualEntry,
     );
 }
