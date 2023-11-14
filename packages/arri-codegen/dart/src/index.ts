@@ -559,9 +559,6 @@ function fieldTemplateString(
         }
     }
     result += `final ${typeName} ${key}`;
-    if (description) {
-        console.log(result);
-    }
     return result;
 }
 
