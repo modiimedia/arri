@@ -77,12 +77,19 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     );
 }
 
+const BUILD_ENTRY_DEFAULT_FILE = "__default_arri_server.js";
+const CODEGEN_DEFAULT_FILE = "__default_arri_codegen.js";
+
 async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
     if (allowCodegen) {
         await build({
             ...config.esbuild,
             entryPoints: [
-                path.resolve(config.rootDir, config.buildDir, "codegen.js"),
+                path.resolve(
+                    config.rootDir,
+                    config.buildDir,
+                    CODEGEN_DEFAULT_FILE,
+                ),
             ],
             platform: config.esbuild.platform ?? "node",
             target: config.esbuild.target ?? "node18",
@@ -94,14 +101,23 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
                 js: `import { createRequire as topLevelCreateRequire } from 'module';
             const require = topLevelCreateRequire(import.meta.url);`,
             },
-            outdir: path.resolve(config.rootDir, ".output"),
+            outfile: path.resolve(config.rootDir, ".output", "codegen.js"),
         });
+    }
+    let buildEntry = path.resolve(
+        config.rootDir,
+        config.buildDir,
+        BUILD_ENTRY_DEFAULT_FILE,
+    );
+    if (config.buildEntry) {
+        const parts = config.buildEntry.split(".");
+        parts.pop();
+        const mergedParts = `${parts.join(".")}.js`;
+        buildEntry = path.resolve(config.rootDir, config.buildDir, mergedParts);
     }
     await build({
         ...config.esbuild,
-        entryPoints: [
-            path.resolve(config.rootDir, config.buildDir, "server.js"),
-        ],
+        entryPoints: [buildEntry],
         platform: config.esbuild.platform ?? "node",
         target: config.esbuild.target ?? "node20",
         bundle: true,
@@ -114,11 +130,14 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
             const require = topLevelCreateRequire(import.meta.url);`,
         },
         allowOverwrite: true,
-        outdir: path.resolve(config.rootDir, ".output"),
+        outfile: path.resolve(config.rootDir, ".output", "server.js"),
     });
 }
 
 async function createBuildEntryModule(config: ResolvedArriConfig) {
+    if (config.buildEntry) {
+        return;
+    }
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
@@ -142,9 +161,10 @@ for (const route of routes) {
 
 void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
+    public: true,
 });`;
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "server.js"),
+        path.resolve(config.rootDir, config.buildDir, BUILD_ENTRY_DEFAULT_FILE),
         virtualEntry,
     );
 }
@@ -183,7 +203,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         { tabWidth: 4, parser: "typescript" },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "codegen.js"),
+        path.resolve(config.rootDir, config.buildDir, CODEGEN_DEFAULT_FILE),
         virtualModule,
     );
 }
