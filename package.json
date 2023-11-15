@@ -1,9 +1,17 @@
 {
     "name": "@arri/arri-source",
     "version": "0.12.4",
+    "author": {
+        "name": "joshmossas",
+        "url": "https://github.com/joshmossas"
+    },
     "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/modiimedia/arri/issues"
+    },
     "repository": {
-        "url": "https://github.com/modiimedia/arri"
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri.git"
     },
     "scripts": {
         "test": "nx run-many -t test",

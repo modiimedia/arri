@@ -78,9 +78,17 @@ function packageJsonTemplate(packageName: string) {
     return `{
     "name": "${packageName}",
     "type": "module",
+    "license": "MIT",
+    "author": {
+        "name": "joshmossas",
+        "url": "https://github.com/joshmossas"
+    },
+    "bugs": {
+        "url": "https://github.com/modiimedia/arri/issues"
+    },
     "repository": {
         "type": "git",
-        "url": "https://github.com/modiimedia/arri",
+        "url": "https://github.com/modiimedia/arri.git",
         "directory": "packages/${packageName}"
     },
     "main": "./dist/index.cjs",
