@@ -12,7 +12,6 @@
         "integration-test:start-server": "nx build test-server && node tests/server/.output/server --host",
         "integration-test:run-tests": "nx run-many -t integration-test",
         "scaffold": "jiti tools/scripts/scaffold-package.ts",
-        "publish-all": "jiti tools/scripts/publish.ts",
         "postversion": "jiti tools/scripts/version-sync.ts",
         "lint": "eslint . --ext ts",
         "lint:fix": "eslint . --ext ts --fix"
