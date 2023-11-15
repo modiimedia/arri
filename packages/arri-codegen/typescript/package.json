@@ -17,5 +17,5 @@
         "arri-validate": "workspace:*",
         "prettier": "^3.0.3"
     },
-    "version": "0.12.3"
+    "version": "0.12.4"
 }
