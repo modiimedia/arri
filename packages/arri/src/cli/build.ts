@@ -63,9 +63,8 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
         ".output",
         CODEGEN_OUTPUT,
     );
-    if (clientCount > 0 && !skipCodeGen) {
-        logger.log("Generating clients");
-
+    if (!skipCodeGen) {
+        logger.log("Generating Arri app definition (__definition.json)");
         execSync(`node ${codegenModule}`, { env: process.env });
         const defJson = path.resolve(
             config.rootDir,
@@ -73,18 +72,23 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
             "__definition.json",
         );
         const def = JSON.parse(readFileSync(defJson, { encoding: "utf-8" }));
-        if (isAppDefinition(def)) {
+        if (isAppDefinition(def) && clientCount > 0) {
+            logger.log(`Generating ${clientCount} clients`);
             await Promise.all(
                 config.clientGenerators.map((plugin) => plugin.generator(def)),
             );
+            logger.log(`${clientCount} clients generated`);
+        } else {
+            logger.warn(
+                "No client generators specified. Skipping client codegen.",
+            );
         }
-        logger.log(`${clientCount} clients generated`);
     } else {
-        logger.log("No client generators specified. Skipping codegen.");
+        logger.log("Skipping codegen");
     }
     logger.log("Cleaning up files");
     await fs.rm(codegenModule);
-    logger.log(
+    logger.success(
         `Build finished! You can start your server by running "node .output/${SERVER_ENTRY_OUTPUT}"`,
     );
 }

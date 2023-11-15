@@ -162,7 +162,7 @@ async function generateClients(config: ResolvedArriConfig) {
                 generator.generator(result),
             ),
         );
-        logger.log(
+        logger.success(
             `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,
         );
     } catch (err) {
