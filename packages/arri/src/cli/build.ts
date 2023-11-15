@@ -109,7 +109,7 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
             minifyWhitespace: false,
             banner: {
                 js: `import { createRequire as topLevelCreateRequire } from 'module';
-            const require = topLevelCreateRequire(import.meta.url);`,
+const require = topLevelCreateRequire(import.meta.url);`,
             },
             outfile: path.resolve(config.rootDir, ".output", CODEGEN_OUTPUT),
         });
@@ -137,7 +137,7 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
         minifyWhitespace: true,
         banner: {
             js: `import { createRequire as topLevelCreateRequire } from 'module';
-            const require = topLevelCreateRequire(import.meta.url);`,
+const require = topLevelCreateRequire(import.meta.url);`,
         },
         allowOverwrite: true,
         outfile: path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
