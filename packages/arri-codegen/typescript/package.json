@@ -2,13 +2,8 @@
     "name": "arri-codegen-ts",
     "type": "module",
     "license": "MIT",
-    "author": {
-        "name": "joshmossas",
-        "url": "https://github.com/joshmossas"
-    },
-    "bugs": {
-        "url": "https://github.com/modiimedia/arri/issues"
-    },
+    "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+    "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri.git",
@@ -17,9 +12,7 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "dependencies": {
         "ajv": "^8.12.0",
         "arri-client": "workspace:*",
@@ -27,5 +20,5 @@
         "arri-validate": "workspace:*",
         "prettier": "^3.0.3"
     },
-    "version": "0.12.4"
+    "version": "0.12.5"
 }
