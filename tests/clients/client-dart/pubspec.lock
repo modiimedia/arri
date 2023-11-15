@@ -31,7 +31,7 @@ packages:
       path: "../../../packages/arri-client-dart"
       relative: true
     source: path
-    version: "0.12.0"
+    version: "0.12.1"
   async:
     dependency: transitive
     description:

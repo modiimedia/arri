@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
 import { globby } from "globby";
@@ -45,6 +46,9 @@ async function main() {
         );
     });
     await Promise.all(tasks);
+
+    // sync test clients
+    execSync("nx pub-get test-client-dart");
 }
 
 void main();
