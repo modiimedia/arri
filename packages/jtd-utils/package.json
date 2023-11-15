@@ -13,5 +13,5 @@
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "files": ["dist"],
-    "version": "0.12.5"
+    "version": "0.12.6"
 }
