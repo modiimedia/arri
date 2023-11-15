@@ -66,7 +66,7 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     if (clientCount > 0 && !skipCodeGen) {
         logger.log("Generating clients");
 
-        execSync(`node ${codegenModule}`);
+        execSync(`node ${codegenModule}`, { env: process.env });
         const defJson = path.resolve(
             config.rootDir,
             ".output",
@@ -101,11 +101,11 @@ async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
                 ),
             ],
             platform: config.esbuild.platform ?? "node",
-            target: config.esbuild.target ?? "node18",
+            target: config.esbuild.target ?? "node20",
             bundle: true,
             format: "esm",
             sourcemap: false,
-            minifyWhitespace: true,
+            minifyWhitespace: false,
             banner: {
                 js: `import { createRequire as topLevelCreateRequire } from 'module';
             const require = topLevelCreateRequire(import.meta.url);`,
