@@ -459,7 +459,15 @@ const $$AdaptersTypeboxAdapterParams = {
       .replace(/[\n]/g, "\\n")
       .replace(/"/g, '\\"')}"`;
     json += `,"boolean":${input.boolean}`;
+
+    if (Number.isNaN(input.integer)) {
+      throw new Error("Expected number at /integer got NaN");
+    }
     json += `,"integer":${input.integer}`;
+
+    if (Number.isNaN(input.number)) {
+      throw new Error("Expected number at /number got NaN");
+    }
     json += `,"number":${input.number}`;
     json += `,"enumField":"${input.enumField}"`;
     json += ',"object":{';
@@ -1803,13 +1811,45 @@ const $$ObjectWithEveryType = {
       .replace(/[\n]/g, "\\n")
       .replace(/"/g, '\\"')}"`;
     json += `,"timestamp":"${input.timestamp.toISOString()}"`;
+
+    if (Number.isNaN(input.float32)) {
+      throw new Error("Expected number at /float32 got NaN");
+    }
     json += `,"float32":${input.float32}`;
+
+    if (Number.isNaN(input.float64)) {
+      throw new Error("Expected number at /float64 got NaN");
+    }
     json += `,"float64":${input.float64}`;
+
+    if (Number.isNaN(input.int8)) {
+      throw new Error("Expected number at /int8 got NaN");
+    }
     json += `,"int8":${input.int8}`;
+
+    if (Number.isNaN(input.uint8)) {
+      throw new Error("Expected number at /uint8 got NaN");
+    }
     json += `,"uint8":${input.uint8}`;
+
+    if (Number.isNaN(input.int16)) {
+      throw new Error("Expected number at /int16 got NaN");
+    }
     json += `,"int16":${input.int16}`;
+
+    if (Number.isNaN(input.uint16)) {
+      throw new Error("Expected number at /uint16 got NaN");
+    }
     json += `,"uint16":${input.uint16}`;
+
+    if (Number.isNaN(input.int32)) {
+      throw new Error("Expected number at /int32 got NaN");
+    }
     json += `,"int32":${input.int32}`;
+
+    if (Number.isNaN(input.uint32)) {
+      throw new Error("Expected number at /uint32 got NaN");
+    }
     json += `,"uint32":${input.uint32}`;
     json += `,"int64":"${input.int64.toString()}"`;
     json += `,"uint64":"${input.uint64.toString()}"`;
@@ -3572,41 +3612,65 @@ const $$ObjectWithEveryNullableType = {
       json += ',"timestamp":null';
     }
     if (typeof input.float32 === "number" && !Number.isNaN(input.float32)) {
+      if (Number.isNaN(input.float32)) {
+        throw new Error("Expected number at /float32 got NaN");
+      }
       json += `,"float32":${input.float32}`;
     } else {
       json += ',"float32":null';
     }
     if (typeof input.float64 === "number" && !Number.isNaN(input.float64)) {
+      if (Number.isNaN(input.float64)) {
+        throw new Error("Expected number at /float64 got NaN");
+      }
       json += `,"float64":${input.float64}`;
     } else {
       json += ',"float64":null';
     }
     if (typeof input.int8 === "number" && !Number.isNaN(input.int8)) {
+      if (Number.isNaN(input.int8)) {
+        throw new Error("Expected number at /int8 got NaN");
+      }
       json += `,"int8":${input.int8}`;
     } else {
       json += ',"int8":null';
     }
     if (typeof input.uint8 === "number" && !Number.isNaN(input.uint8)) {
+      if (Number.isNaN(input.uint8)) {
+        throw new Error("Expected number at /uint8 got NaN");
+      }
       json += `,"uint8":${input.uint8}`;
     } else {
       json += ',"uint8":null';
     }
     if (typeof input.int16 === "number" && !Number.isNaN(input.int16)) {
+      if (Number.isNaN(input.int16)) {
+        throw new Error("Expected number at /int16 got NaN");
+      }
       json += `,"int16":${input.int16}`;
     } else {
       json += ',"int16":null';
     }
     if (typeof input.uint16 === "number" && !Number.isNaN(input.uint16)) {
+      if (Number.isNaN(input.uint16)) {
+        throw new Error("Expected number at /uint16 got NaN");
+      }
       json += `,"uint16":${input.uint16}`;
     } else {
       json += ',"uint16":null';
     }
     if (typeof input.int32 === "number" && !Number.isNaN(input.int32)) {
+      if (Number.isNaN(input.int32)) {
+        throw new Error("Expected number at /int32 got NaN");
+      }
       json += `,"int32":${input.int32}`;
     } else {
       json += ',"int32":null';
     }
     if (typeof input.uint32 === "number" && !Number.isNaN(input.uint32)) {
+      if (Number.isNaN(input.uint32)) {
+        throw new Error("Expected number at /uint32 got NaN");
+      }
       json += `,"uint32":${input.uint32}`;
     } else {
       json += ',"uint32":null';
@@ -5363,64 +5427,112 @@ const $$ObjectWithEveryOptionalType = {
     }
     if (typeof input.float32 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.float32)) {
+          throw new Error("Expected number at /float32 got NaN");
+        }
         json += `,"float32":${input.float32}`;
       } else {
+        if (Number.isNaN(input.float32)) {
+          throw new Error("Expected number at /float32 got NaN");
+        }
         json += `"float32":${input.float32}`;
         inputHasFields = true;
       }
     }
     if (typeof input.float64 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.float64)) {
+          throw new Error("Expected number at /float64 got NaN");
+        }
         json += `,"float64":${input.float64}`;
       } else {
+        if (Number.isNaN(input.float64)) {
+          throw new Error("Expected number at /float64 got NaN");
+        }
         json += `"float64":${input.float64}`;
         inputHasFields = true;
       }
     }
     if (typeof input.int8 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.int8)) {
+          throw new Error("Expected number at /int8 got NaN");
+        }
         json += `,"int8":${input.int8}`;
       } else {
+        if (Number.isNaN(input.int8)) {
+          throw new Error("Expected number at /int8 got NaN");
+        }
         json += `"int8":${input.int8}`;
         inputHasFields = true;
       }
     }
     if (typeof input.uint8 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.uint8)) {
+          throw new Error("Expected number at /uint8 got NaN");
+        }
         json += `,"uint8":${input.uint8}`;
       } else {
+        if (Number.isNaN(input.uint8)) {
+          throw new Error("Expected number at /uint8 got NaN");
+        }
         json += `"uint8":${input.uint8}`;
         inputHasFields = true;
       }
     }
     if (typeof input.int16 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.int16)) {
+          throw new Error("Expected number at /int16 got NaN");
+        }
         json += `,"int16":${input.int16}`;
       } else {
+        if (Number.isNaN(input.int16)) {
+          throw new Error("Expected number at /int16 got NaN");
+        }
         json += `"int16":${input.int16}`;
         inputHasFields = true;
       }
     }
     if (typeof input.uint16 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.uint16)) {
+          throw new Error("Expected number at /uint16 got NaN");
+        }
         json += `,"uint16":${input.uint16}`;
       } else {
+        if (Number.isNaN(input.uint16)) {
+          throw new Error("Expected number at /uint16 got NaN");
+        }
         json += `"uint16":${input.uint16}`;
         inputHasFields = true;
       }
     }
     if (typeof input.int32 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.int32)) {
+          throw new Error("Expected number at /int32 got NaN");
+        }
         json += `,"int32":${input.int32}`;
       } else {
+        if (Number.isNaN(input.int32)) {
+          throw new Error("Expected number at /int32 got NaN");
+        }
         json += `"int32":${input.int32}`;
         inputHasFields = true;
       }
     }
     if (typeof input.uint32 !== "undefined") {
       if (inputHasFields) {
+        if (Number.isNaN(input.uint32)) {
+          throw new Error("Expected number at /uint32 got NaN");
+        }
         json += `,"uint32":${input.uint32}`;
       } else {
+        if (Number.isNaN(input.uint32)) {
+          throw new Error("Expected number at /uint32 got NaN");
+        }
         json += `"uint32":${input.uint32}`;
         inputHasFields = true;
       }
@@ -6401,6 +6513,10 @@ const $$PostListParams = {
   serialize(input: PostListParams): string {
     let json = "";
     json += "{";
+
+    if (Number.isNaN(input.limit)) {
+      throw new Error("Expected number at /limit got NaN");
+    }
     json += `"limit":${input.limit}`;
     if (typeof input.type !== "undefined") {
       json += `,"type":"${input.type}"`;
@@ -7044,6 +7160,10 @@ const $$PostListResponse = {
   serialize(input: PostListResponse): string {
     let json = "";
     json += "{";
+
+    if (Number.isNaN(input.total)) {
+      throw new Error("Expected number at /total got NaN");
+    }
     json += `"total":${input.total}`;
     json += ',"items":[';
     for (let i = 0; i < input.items.length; i++) {
@@ -8325,6 +8445,10 @@ const $$PostEvent = {
         json += `,"postLikeId":"${input.postLikeId
           .replace(/[\n]/g, "\\n")
           .replace(/"/g, '\\"')}"`;
+
+        if (Number.isNaN(input.postLikeCount)) {
+          throw new Error("Expected number at /postLikeCount got NaN");
+        }
         json += `,"postLikeCount":${input.postLikeCount}`;
         json += "}";
         break;
@@ -8342,6 +8466,10 @@ const $$PostEvent = {
         json += `,"commentText":"${input.commentText
           .replace(/[\n]/g, "\\n")
           .replace(/"/g, '\\"')}"`;
+
+        if (Number.isNaN(input.commentCount)) {
+          throw new Error("Expected number at /commentCount got NaN");
+        }
         json += `,"commentCount":${input.commentCount}`;
         json += "}";
         break;
@@ -9341,6 +9469,10 @@ const $$Annotation = {
       .replace(/"/g, '\\"')}"`;
     json += "}";
     json += `,"annotation_type":"${input.annotation_type}"`;
+
+    if (Number.isNaN(input.annotation_type_version)) {
+      throw new Error("Expected number at /annotation_type_version got NaN");
+    }
     json += `,"annotation_type_version":${input.annotation_type_version}`;
     if (typeof input.metadata !== "undefined") {
       json += ',"metadata":' + JSON.stringify(input.metadata);
@@ -9876,8 +10008,18 @@ const $$UpdateAnnotationParams = {
     }
     if (typeof input.data.annotation_type_version !== "undefined") {
       if (dataHasFields) {
+        if (Number.isNaN(input.data.annotation_type_version)) {
+          throw new Error(
+            "Expected number at /data/annotation_type_version got NaN",
+          );
+        }
         json += `,"annotation_type_version":${input.data.annotation_type_version}`;
       } else {
+        if (Number.isNaN(input.data.annotation_type_version)) {
+          throw new Error(
+            "Expected number at /data/annotation_type_version got NaN",
+          );
+        }
         json += `"annotation_type_version":${input.data.annotation_type_version}`;
         dataHasFields = true;
       }
