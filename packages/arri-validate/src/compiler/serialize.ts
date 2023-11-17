@@ -171,7 +171,11 @@ export function numberTemplate(
         }
         return `return \`\${${input.val}}\`;`;
     }
-    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix}\${${input.val}}\`;`;
+    const mainTemplate = `
+    if(Number.isNaN(${input.val})) {
+        throw new Error("Expected number at ${input.instancePath} got NaN");
+    }
+    ${input.targetVal} += \`${input.outputPrefix}\${${input.val}}\`;`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'number' && !Number.isNaN(${input.val})) {
             ${mainTemplate}

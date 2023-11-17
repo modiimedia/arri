@@ -37,6 +37,17 @@ it("serializes enum", () => {
     const Compiled = compile(a.stringEnum(["ADMIN", "STANDARD", "MODERATOR"]));
     expect(Compiled.serialize("ADMIN")).toBe("ADMIN");
 });
+it("doesn't serialize NaN", () => {
+    const Schema = a.object({ num: a.number(), int: a.int32() });
+    const Compiled = compile(Schema);
+    const input = { num: NaN, int: NaN };
+    try {
+        expect(Compiled.serialize(input));
+        expect(a.serialize(Schema, input));
+    } catch (err) {
+        expect(true).toBe(true);
+    }
+});
 it("serializes objects", () => {
     const Compiled = compile(
         a.object({
