@@ -2836,8 +2836,8 @@ class AssociatedId {
 
 enum AnnotationAssociatedIdEntityType
     implements Comparable<AnnotationAssociatedIdEntityType> {
-  mOVIEID("MOVIE_ID"),
-  sHOWID("SHOW_ID");
+  movieId("MOVIE_ID"),
+  showId("SHOW_ID");
 
   const AnnotationAssociatedIdEntityType(this.value);
   final String value;
@@ -2848,7 +2848,7 @@ enum AnnotationAssociatedIdEntityType
         return v;
       }
     }
-    return mOVIEID;
+    return movieId;
   }
 
   @override
@@ -2857,7 +2857,7 @@ enum AnnotationAssociatedIdEntityType
 }
 
 enum AnnotationAnnotationType implements Comparable<AnnotationAnnotationType> {
-  aNNOTATIONBOUNDINGBOX("ANNOTATION_BOUNDINGBOX");
+  annotationBoundingbox("ANNOTATION_BOUNDINGBOX");
 
   const AnnotationAnnotationType(this.value);
   final String value;
@@ -2868,7 +2868,7 @@ enum AnnotationAnnotationType implements Comparable<AnnotationAnnotationType> {
         return v;
       }
     }
-    return aNNOTATIONBOUNDINGBOX;
+    return annotationBoundingbox;
   }
 
   @override
@@ -3024,7 +3024,7 @@ class UpdateAnnotationData {
 
 enum UpdateAnnotationParamsDataAnnotationType
     implements Comparable<UpdateAnnotationParamsDataAnnotationType> {
-  aNNOTATIONBOUNDINGBOX("ANNOTATION_BOUNDINGBOX");
+  annotationBoundingbox("ANNOTATION_BOUNDINGBOX");
 
   const UpdateAnnotationParamsDataAnnotationType(this.value);
   final String value;
@@ -3035,7 +3035,7 @@ enum UpdateAnnotationParamsDataAnnotationType
         return v;
       }
     }
-    return aNNOTATIONBOUNDINGBOX;
+    return annotationBoundingbox;
   }
 
   @override

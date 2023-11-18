@@ -52,6 +52,10 @@
                 "{projectRoot}/vite.config.ts"
             ],
             "cache": true
+        },
+        "@nx/vite:test": {
+            "cache": true,
+            "inputs": ["default", "^default"]
         }
     },
     "nxCloudAccessToken": "OGQzN2UxNzYtMzdkOC00Y2FmLTlkNDQtMTA0OTRjNThiYWRhfHJlYWQtd3JpdGU="
