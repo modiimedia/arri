@@ -1,29 +1,20 @@
 {
     "name": "arri",
-    "version": "0.12.7",
+    "version": "0.12.8",
     "type": "module",
     "license": "MIT",
-    "author": {
-        "name": "joshmossas",
-        "url": "https://github.com/joshmossas"
-    },
+    "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
-    "bugs": {
-        "url": "https://github.com/modiimedia/arri/issues"
-    },
+    "files": ["dist"],
+    "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri.git",
         "directory": "packages/arri"
     },
-    "bin": {
-        "arri": "./dist/cli.mjs"
-    },
+    "bin": { "arri": "./dist/cli.mjs" },
     "dependencies": {
         "arri-codegen-dart": "workspace:*",
         "arri-codegen-ts": "workspace:*",
@@ -43,11 +34,6 @@
         "prettier": "^3.1.0",
         "scule": "^1.1.0"
     },
-    "peerDependencies": {
-        "listhen": "1.x"
-    },
-    "devDependencies": {
-        "@types/degit": "^2.8.6",
-        "bun-types": "^1.0.12"
-    }
+    "peerDependencies": { "listhen": "1.x" },
+    "devDependencies": { "@types/degit": "^2.8.6", "bun-types": "^1.0.12" }
 }

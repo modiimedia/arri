@@ -1,6 +1,6 @@
 {
     "name": "arri-codegen-kotlin",
-    "version": "0.12.7",
+    "version": "0.12.8",
     "type": "module",
     "license": "MIT",
     "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
