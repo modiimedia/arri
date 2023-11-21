@@ -8,7 +8,7 @@
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/dist"],
             "options": {
-                "command": "unbuild",
+                "command": "unbuild && jiti scripts/createVirtualModules.ts",
                 "cwd": "packages/arri"
             }
         },
