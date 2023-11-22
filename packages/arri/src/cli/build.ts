@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
-import { createConsola } from "consola";
+import consola, { createConsola } from "consola";
 import { build } from "esbuild";
 import path from "pathe";
 import prettier from "prettier";
@@ -18,6 +18,7 @@ import {
     setupWorkingDir,
     transpileFiles,
     GEN_APP_FILE,
+    esbuildCustomResolve,
 } from "./_common";
 
 export default defineCommand({
@@ -116,12 +117,18 @@ const require = topLevelCreateRequire(import.meta.url);`,
         config.buildDir,
         GEN_SERVER_ENTRY_FILE,
     );
+
     if (config.buildEntry) {
         const parts = config.buildEntry.split(".");
         parts.pop();
         const mergedParts = `${parts.join(".")}.js`;
         buildEntry = path.resolve(config.rootDir, config.buildDir, mergedParts);
     }
+    const appEntry = path.relative(
+        buildEntry,
+        path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
+    );
+    consola.info(`Using build entry from ${buildEntry}`);
     await build({
         ...config.esbuild,
         entryPoints: [buildEntry],
@@ -136,6 +143,9 @@ const require = topLevelCreateRequire(import.meta.url);`,
             js: `import { createRequire as topLevelCreateRequire } from 'module';
 const require = topLevelCreateRequire(import.meta.url);`,
         },
+        plugins: [
+            esbuildCustomResolve([["virtual:arri/app", appEntry]], config),
+        ],
         allowOverwrite: true,
         outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
     });

@@ -190,6 +190,7 @@ export async function transpileFiles(config: ResolvedArriConfig) {
 
 export function esbuildCustomResolve(
     entries: [from: string, to: string][],
+    config: ResolvedArriConfig,
 ): esbuild.Plugin {
     return {
         name: "custom-resolve",
@@ -201,7 +202,10 @@ export function esbuildCustomResolve(
                 if (!findEntries) {
                     return;
                 }
-                return await build.resolve(findEntries[1]);
+                return await build.resolve(findEntries[1], {
+                    kind: "import-statement",
+                    resolveDir: path.resolve(config.rootDir, config.buildDir),
+                });
             });
         },
     };
