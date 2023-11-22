@@ -18,7 +18,7 @@ export class TestClient {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = { "client-version": "9", ...options.headers };
+    this.headers = { "client-version": "10", ...options.headers };
     this.adapters = new TestClientAdaptersService(options);
     this.miscTests = new TestClientMiscTestsService(options);
     this.posts = new TestClientPostsService(options);
@@ -32,7 +32,7 @@ export class TestClientAdaptersService {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = { "client-version": "9", ...options.headers };
+    this.headers = { "client-version": "10", ...options.headers };
   }
   typeboxAdapter(params: AdaptersTypeboxAdapterParams) {
     return arriRequest<
@@ -55,7 +55,7 @@ export class TestClientMiscTestsService {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = { "client-version": "9", ...options.headers };
+    this.headers = { "client-version": "10", ...options.headers };
   }
   sendObject(params: ObjectWithEveryType) {
     return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
@@ -101,7 +101,7 @@ export class TestClientPostsService {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = { "client-version": "9", ...options.headers };
+    this.headers = { "client-version": "10", ...options.headers };
   }
   getPost(params: PostParams) {
     return arriRequest<Post, PostParams>({
@@ -151,7 +151,7 @@ export class TestClientVideosService {
 
   constructor(options: TestClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.headers = { "client-version": "9", ...options.headers };
+    this.headers = { "client-version": "10", ...options.headers };
   }
   getAnnotation(params: AnnotationId) {
     return arriRequest<Annotation, AnnotationId>({

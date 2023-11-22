@@ -8,10 +8,16 @@ import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
 import { type ResolvedArriConfig } from "../config";
 
-export const DEFAULT_SERVER_ENTRY_FILE = "__default_arri_server.js";
-export const DEFAULT_CODEGEN_FILE = "__default_arri_codegen.js";
-export const SERVER_ENTRY_OUTPUT = "server.js";
-export const CODEGEN_OUTPUT = "codegen.js";
+export const GEN_APP_FILE = "__arri_app.js";
+export const GEN_SERVER_ENTRY_FILE = "__arri_server.js";
+export const GEN_CODEGEN_FILE = "__arri_codegen.js";
+export const OUT_APP_FILE = "app.js";
+export const OUT_SERVER_ENTRY = "server.js";
+export const OUT_CODEGEN = "codegen.js";
+
+export const VIRTUAL_MODULES = {
+    APP: "virtual:arri/app",
+} as const;
 
 export async function setupWorkingDir(config: ResolvedArriConfig) {
     const arriDir = path.resolve(config.rootDir, config.buildDir);
@@ -32,12 +38,17 @@ interface RpcRoute {
     importPath: string;
 }
 
-export async function createRoutesModule(config: ResolvedArriConfig) {
+export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
+    const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
+    const appImportParts = path
+        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
+        .split(".");
+    appImportParts.pop();
     const routes: RpcRoute[] = [];
     const existingRoutes: string[] = [];
     await Promise.all(
         config.procedureGlobPatterns.map(async (pattern) => {
-            const results = await getVirtualRouteBatch(pattern, config);
+            const results = await getFsRouteBatch(pattern, config);
             for (const result of results) {
                 if (!existingRoutes.includes(result.name)) {
                     routes.push(result);
@@ -48,7 +59,8 @@ export async function createRoutesModule(config: ResolvedArriConfig) {
     );
     routes.sort((a, b) => (a.name < b.name ? -1 : 1));
     const module = await prettier.format(
-        `${routes
+        `import app from './${appImportParts.join(".")}';
+        ${routes
             .map(
                 (route) =>
                     `import ${route.importName} from '${route.importPath}';`,
@@ -61,16 +73,26 @@ export async function createRoutesModule(config: ResolvedArriConfig) {
             )
             .join(",\n")}
         ];
-        export default routes`,
+        for(const route of routes) {
+            app.rpc({
+                name: route.id,
+                method: route.route.method,
+                params: route.route.params,
+                response: route.route.response,
+                handler: route.route.handler,
+                postHandler: route.route.postHandler,
+            });
+        }
+        export default app`,
         { parser: "typescript", tabWidth: 4 },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, "routes.js"),
+        path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
         module,
     );
 }
 
-export async function getVirtualRouteBatch(
+export async function getFsRouteBatch(
     globPattern: string,
     config: ResolvedArriConfig,
 ): Promise<RpcRoute[]> {
@@ -164,4 +186,23 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         target: "node20",
         platform: "node",
     });
+}
+
+export function esbuildCustomResolve(
+    entries: [from: string, to: string][],
+): esbuild.Plugin {
+    return {
+        name: "custom-resolve",
+        setup(build) {
+            build.onResolve({ filter: /. */ }, async (args) => {
+                const findEntries = entries.find(
+                    (item) => item[0] === args.path,
+                );
+                if (!findEntries) {
+                    return;
+                }
+                return await build.resolve(findEntries[1]);
+            });
+        },
+    };
 }

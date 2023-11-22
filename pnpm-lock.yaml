@@ -340,6 +340,9 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arri-validate
     devDependencies:
+      '@types/node':
+        specifier: 20.9.3
+        version: 20.9.3
       arri-adapter-typebox:
         specifier: workspace:*
         version: link:../../packages/arri-adapter-typebox

@@ -1,5 +1,5 @@
+import { defineRpc } from "arri";
 import { a } from "arri-validate";
-import { defineRpc } from "packages/arri/src/procedures";
 import { Post } from "../../models";
 
 const PostEvent = a.discriminator(
