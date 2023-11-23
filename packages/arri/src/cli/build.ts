@@ -117,11 +117,11 @@ const require = topLevelCreateRequire(import.meta.url);`,
 }
 
 async function createServerEntryFile(config: ResolvedArriConfig) {
-    if (config.buildEntry) {
+    if (config.serverEntry) {
         const buildEntry = path.resolve(
             config.rootDir,
             config.srcDir,
-            config.buildEntry,
+            config.serverEntry,
         );
         await build({
             ...config.esbuild,
