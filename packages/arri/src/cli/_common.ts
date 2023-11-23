@@ -187,26 +187,3 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         platform: "node",
     });
 }
-
-export function esbuildCustomResolve(
-    entries: [from: string, to: string][],
-    config: ResolvedArriConfig,
-): esbuild.Plugin {
-    return {
-        name: "custom-resolve",
-        setup(build) {
-            build.onResolve({ filter: /. */ }, async (args) => {
-                const findEntries = entries.find(
-                    (item) => item[0] === args.path,
-                );
-                if (!findEntries) {
-                    return;
-                }
-                return await build.resolve(findEntries[1], {
-                    kind: "import-statement",
-                    resolveDir: path.resolve(config.rootDir, config.buildDir),
-                });
-            });
-        },
-    };
-}

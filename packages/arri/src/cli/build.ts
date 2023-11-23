@@ -4,21 +4,21 @@ import fs from "node:fs/promises";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
-import consola, { createConsola } from "consola";
+import { createConsola } from "consola";
 import { build } from "esbuild";
+import { replace } from "esbuild-plugin-replace";
 import path from "pathe";
 import prettier from "prettier";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
 import {
     OUT_CODEGEN,
     createAppWithRoutesModule,
-    GEN_CODEGEN_FILE,
     GEN_SERVER_ENTRY_FILE,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
     transpileFiles,
     GEN_APP_FILE,
-    esbuildCustomResolve,
+    OUT_APP_FILE,
 } from "./_common";
 
 export default defineCommand({
@@ -52,12 +52,12 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
     await setupWorkingDir(config);
     await Promise.all([
-        createBuildEntryModule(config),
-        createBuildCodegenModule(config),
         createAppWithRoutesModule(config),
+        createServerEntryFile(config),
+        createCodegenEntryFile(config),
         transpileFiles(config),
     ]);
-    await bundleFiles(config);
+    await bundleAppEntry(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
     const codegenModule = path.resolve(config.rootDir, ".output", OUT_CODEGEN);
@@ -91,47 +91,15 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     );
 }
 
-async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
-    if (allowCodegen) {
-        await build({
-            ...config.esbuild,
-            entryPoints: [
-                path.resolve(config.rootDir, config.buildDir, GEN_CODEGEN_FILE),
-            ],
-            platform: config.esbuild.platform ?? "node",
-            target: config.esbuild.target ?? "node20",
-            packages: "external",
-            bundle: true,
-            format: "esm",
-            sourcemap: false,
-            minifyWhitespace: false,
-            banner: {
-                js: `import { createRequire as topLevelCreateRequire } from 'module';
-const require = topLevelCreateRequire(import.meta.url);`,
-            },
-            outfile: path.resolve(config.rootDir, ".output", OUT_CODEGEN),
-        });
-    }
-    let buildEntry = path.resolve(
+async function bundleAppEntry(config: ResolvedArriConfig, allowCodegen = true) {
+    const appEntry = path.resolve(
         config.rootDir,
         config.buildDir,
-        GEN_SERVER_ENTRY_FILE,
+        GEN_APP_FILE,
     );
-
-    if (config.buildEntry) {
-        const parts = config.buildEntry.split(".");
-        parts.pop();
-        const mergedParts = `${parts.join(".")}.js`;
-        buildEntry = path.resolve(config.rootDir, config.buildDir, mergedParts);
-    }
-    const appEntry = path.relative(
-        buildEntry,
-        path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
-    );
-    consola.info(`Using build entry from ${buildEntry}`);
     await build({
         ...config.esbuild,
-        entryPoints: [buildEntry],
+        entryPoints: [appEntry],
         platform: config.esbuild.platform ?? "node",
         target: config.esbuild.target ?? "node20",
         bundle: true,
@@ -143,16 +111,36 @@ const require = topLevelCreateRequire(import.meta.url);`,
             js: `import { createRequire as topLevelCreateRequire } from 'module';
 const require = topLevelCreateRequire(import.meta.url);`,
         },
-        plugins: [
-            esbuildCustomResolve([["virtual:arri/app", appEntry]], config),
-        ],
         allowOverwrite: true,
-        outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
     });
 }
 
-async function createBuildEntryModule(config: ResolvedArriConfig) {
+async function createServerEntryFile(config: ResolvedArriConfig) {
     if (config.buildEntry) {
+        const buildEntry = path.resolve(
+            config.rootDir,
+            config.srcDir,
+            config.buildEntry,
+        );
+        await build({
+            ...config.esbuild,
+            entryPoints: [buildEntry],
+            platform: config.esbuild.platform ?? "node",
+            target: config.esbuild.target ?? "node20",
+            bundle: false,
+            packages: "external",
+            format: "esm",
+            sourcemap: true,
+            minifyWhitespace: true,
+            banner: {
+                js: `import { createRequire as topLevelCreateRequire } from 'module';
+const require = topLevelCreateRequire(import.meta.url);`,
+            },
+            plugins: [replace({ "virtual:arri/app": "./app.js" })],
+            allowOverwrite: true,
+            outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        });
         return;
     }
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
@@ -162,19 +150,19 @@ async function createBuildEntryModule(config: ResolvedArriConfig) {
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'arri';
 import { listen } from 'listhen';
-import app from './${GEN_APP_FILE}';
+import app from './${OUT_APP_FILE}';
 
 void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
     public: true,
 });`;
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, GEN_SERVER_ENTRY_FILE),
+        path.resolve(config.rootDir, ".output", GEN_SERVER_ENTRY_FILE),
         virtualEntry,
     );
 }
 
-async function createBuildCodegenModule(config: ResolvedArriConfig) {
+async function createCodegenEntryFile(config: ResolvedArriConfig) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
@@ -182,10 +170,9 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
     appImportParts.pop();
     const virtualModule = await prettier.format(
         `
-    
     import { writeFileSync } from 'node:fs';
     import path from 'pathe';
-    import app from './${GEN_APP_FILE}';
+    import app from './${OUT_APP_FILE}';
 
     const __dirname = new URL(".", import.meta.url).pathname;
     const def = app.getAppDefinition();
@@ -196,7 +183,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         { tabWidth: 4, parser: "typescript" },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, GEN_CODEGEN_FILE),
+        path.resolve(config.rootDir, ".output", OUT_CODEGEN),
         virtualModule,
     );
 }

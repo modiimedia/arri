@@ -14,6 +14,7 @@ import {
     createAppWithRoutesModule,
     GEN_APP_FILE,
     GEN_SERVER_ENTRY_FILE,
+    OUT_APP_FILE,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
     transpileFiles,
@@ -55,16 +56,19 @@ const startListener = (config: ResolvedArriConfig, showQr = false) =>
     });
 
 async function bundleFilesContext(config: ResolvedArriConfig) {
+    const serverContent = `import app from './${OUT_APP_FILE}';
+
+export default app.h3App;`;
+    await fs.writeFile(
+        path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        serverContent,
+    );
     return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
-            path.resolve(
-                config.rootDir,
-                config.buildDir,
-                GEN_SERVER_ENTRY_FILE,
-            ),
+            path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
         ],
-        outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
         format: "esm",
         bundle: true,
         sourcemap: true,
