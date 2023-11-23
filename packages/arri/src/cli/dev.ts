@@ -11,9 +11,11 @@ import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
 import { isResolvedArriConfig, type ResolvedArriConfig } from "../config";
 import {
-    createRoutesModule,
-    DEFAULT_SERVER_ENTRY_FILE,
-    SERVER_ENTRY_OUTPUT,
+    createAppWithRoutesModule,
+    GEN_APP_FILE,
+    GEN_SERVER_ENTRY_FILE,
+    OUT_APP_FILE,
+    OUT_SERVER_ENTRY,
     setupWorkingDir,
     transpileFiles,
 } from "./_common";
@@ -46,27 +48,27 @@ export default defineCommand({
 });
 
 const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(
-        path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
-        {
-            public: true,
-            port: config.port,
-            logger,
-            qr: showQr,
-        },
-    );
+    listenAndWatch(path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY), {
+        public: true,
+        port: config.port,
+        logger,
+        qr: showQr,
+    });
 
 async function bundleFilesContext(config: ResolvedArriConfig) {
+    const serverContent = `import app from './${OUT_APP_FILE}';
+
+export default app.h3App;`;
+    await fs.writeFile(
+        path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        serverContent,
+    );
     return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
-            path.resolve(
-                config.rootDir,
-                config.buildDir,
-                DEFAULT_SERVER_ENTRY_FILE,
-            ),
+            path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
         ],
-        outfile: path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
+        outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
         format: "esm",
         bundle: true,
         sourcemap: true,
@@ -79,8 +81,11 @@ async function bundleFilesContext(config: ResolvedArriConfig) {
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     let fileWatcher: chokidar.FSWatcher | undefined;
-    await Promise.all([createRoutesModule(config), createEntryModule(config)]);
-    await transpileFiles(config);
+    await Promise.all([
+        createEntryModule(config),
+        createAppWithRoutesModule(config),
+        transpileFiles(config),
+    ]);
     const bundleFiles = await bundleFilesContext(config);
     await bundleFiles.rebuild();
     const listener = await startListener(config, true);
@@ -118,7 +123,7 @@ async function startDevServer(config: ResolvedArriConfig) {
                 if (event === "add" || event === "addDir") {
                     return;
                 }
-                await createRoutesModule(config);
+                await createAppWithRoutesModule(config);
                 let bundleCreated = false;
                 try {
                     logger.log(
@@ -178,28 +183,11 @@ async function createEntryModule(config: ResolvedArriConfig) {
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'h3';
 import { listen } from 'listhen';
-import routes from './routes';
-import app from './${appImportParts.join(".")}';
-
-for (const route of routes) {
-    app.rpc({
-        name: route.id,
-        method: route.route.method,
-        path: route.route.path,
-        params: route.route.params,
-        response: route.route.response,
-        handler: route.route.handler,
-        postHandler: route.route.postHandler,
-    });
-}
+import app from './${GEN_APP_FILE}';
 
 export default app.h3App;`;
     await fs.writeFile(
-        path.resolve(
-            config.rootDir,
-            config.buildDir,
-            DEFAULT_SERVER_ENTRY_FILE,
-        ),
+        path.resolve(config.rootDir, config.buildDir, GEN_SERVER_ENTRY_FILE),
         virtualEntry,
     );
 }

@@ -6,17 +6,19 @@ import { loadConfig } from "c12";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
 import { build } from "esbuild";
+import { replace } from "esbuild-plugin-replace";
 import path from "pathe";
 import prettier from "prettier";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
 import {
-    CODEGEN_OUTPUT,
-    createRoutesModule,
-    DEFAULT_CODEGEN_FILE,
-    DEFAULT_SERVER_ENTRY_FILE,
-    SERVER_ENTRY_OUTPUT,
+    OUT_CODEGEN,
+    createAppWithRoutesModule,
+    GEN_SERVER_ENTRY_FILE,
+    OUT_SERVER_ENTRY,
     setupWorkingDir,
     transpileFiles,
+    GEN_APP_FILE,
+    OUT_APP_FILE,
 } from "./_common";
 
 export default defineCommand({
@@ -50,19 +52,15 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
     await setupWorkingDir(config);
     await Promise.all([
-        createRoutesModule(config),
-        createBuildEntryModule(config),
-        createBuildCodegenModule(config),
+        createAppWithRoutesModule(config),
+        createServerEntryFile(config),
+        createCodegenEntryFile(config),
+        transpileFiles(config),
     ]);
-    await transpileFiles(config);
-    await bundleFiles(config);
+    await bundleAppEntry(config);
     logger.log("Finished bundling");
     const clientCount = config.clientGenerators.length;
-    const codegenModule = path.resolve(
-        config.rootDir,
-        ".output",
-        CODEGEN_OUTPUT,
-    );
+    const codegenModule = path.resolve(config.rootDir, ".output", OUT_CODEGEN);
     if (!skipCodeGen) {
         logger.log("Generating Arri app definition (__definition.json)");
         execSync(`node ${codegenModule}`, { env: process.env });
@@ -89,49 +87,19 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Cleaning up files");
     await fs.rm(codegenModule);
     logger.success(
-        `Build finished! You can start your server by running "node .output/${SERVER_ENTRY_OUTPUT}"`,
+        `Build finished! You can start your server by running "node .output/${OUT_SERVER_ENTRY}"`,
     );
 }
 
-async function bundleFiles(config: ResolvedArriConfig, allowCodegen = true) {
-    if (allowCodegen) {
-        await build({
-            ...config.esbuild,
-            entryPoints: [
-                path.resolve(
-                    config.rootDir,
-                    config.buildDir,
-                    DEFAULT_CODEGEN_FILE,
-                ),
-            ],
-            platform: config.esbuild.platform ?? "node",
-            target: config.esbuild.target ?? "node20",
-            packages: "external",
-            bundle: true,
-            format: "esm",
-            sourcemap: false,
-            minifyWhitespace: false,
-            banner: {
-                js: `import { createRequire as topLevelCreateRequire } from 'module';
-const require = topLevelCreateRequire(import.meta.url);`,
-            },
-            outfile: path.resolve(config.rootDir, ".output", CODEGEN_OUTPUT),
-        });
-    }
-    let buildEntry = path.resolve(
+async function bundleAppEntry(config: ResolvedArriConfig, allowCodegen = true) {
+    const appEntry = path.resolve(
         config.rootDir,
         config.buildDir,
-        DEFAULT_SERVER_ENTRY_FILE,
+        GEN_APP_FILE,
     );
-    if (config.buildEntry) {
-        const parts = config.buildEntry.split(".");
-        parts.pop();
-        const mergedParts = `${parts.join(".")}.js`;
-        buildEntry = path.resolve(config.rootDir, config.buildDir, mergedParts);
-    }
     await build({
         ...config.esbuild,
-        entryPoints: [buildEntry],
+        entryPoints: [appEntry],
         platform: config.esbuild.platform ?? "node",
         target: config.esbuild.target ?? "node20",
         bundle: true,
@@ -144,12 +112,35 @@ const require = topLevelCreateRequire(import.meta.url);`,
 const require = topLevelCreateRequire(import.meta.url);`,
         },
         allowOverwrite: true,
-        outfile: path.resolve(config.rootDir, ".output", SERVER_ENTRY_OUTPUT),
+        outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
     });
 }
 
-async function createBuildEntryModule(config: ResolvedArriConfig) {
-    if (config.buildEntry) {
+async function createServerEntryFile(config: ResolvedArriConfig) {
+    if (config.serverEntry) {
+        const buildEntry = path.resolve(
+            config.rootDir,
+            config.srcDir,
+            config.serverEntry,
+        );
+        await build({
+            ...config.esbuild,
+            entryPoints: [buildEntry],
+            platform: config.esbuild.platform ?? "node",
+            target: config.esbuild.target ?? "node20",
+            bundle: false,
+            packages: "external",
+            format: "esm",
+            sourcemap: true,
+            minifyWhitespace: true,
+            banner: {
+                js: `import { createRequire as topLevelCreateRequire } from 'module';
+const require = topLevelCreateRequire(import.meta.url);`,
+            },
+            plugins: [replace({ "virtual:arri/app": "./app.js" })],
+            allowOverwrite: true,
+            outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
+        });
         return;
     }
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
@@ -159,35 +150,19 @@ async function createBuildEntryModule(config: ResolvedArriConfig) {
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'arri';
 import { listen } from 'listhen';
-import routes from './routes.js';
-import app from './${appImportParts.join(".")}.js';
-
-for (const route of routes) {
-    app.rpc({
-        name: route.id,
-        method: route.route.method,
-        params: route.route.params,
-        response: route.route.response,
-        handler: route.route.handler,
-        postHandler: route.route.postHandler,
-    });
-}
+import app from './${OUT_APP_FILE}';
 
 void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
     public: true,
 });`;
     await fs.writeFile(
-        path.resolve(
-            config.rootDir,
-            config.buildDir,
-            DEFAULT_SERVER_ENTRY_FILE,
-        ),
+        path.resolve(config.rootDir, ".output", GEN_SERVER_ENTRY_FILE),
         virtualEntry,
     );
 }
 
-async function createBuildCodegenModule(config: ResolvedArriConfig) {
+async function createCodegenEntryFile(config: ResolvedArriConfig) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
@@ -197,20 +172,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         `
     import { writeFileSync } from 'node:fs';
     import path from 'pathe';
-    import app from './${appImportParts.join(".")}.js';
-    import routes from './routes.js';
-
-    for (const route of routes) {
-        app.rpc({
-            name: route.id,
-            method: route.route.method,
-            path: route.route.path,
-            params: route.route.params,
-            response: route.route.response,
-            handler: route.route.handler,
-            postHandler: route.route.postHandler,
-        });
-    }
+    import app from './${OUT_APP_FILE}';
 
     const __dirname = new URL(".", import.meta.url).pathname;
     const def = app.getAppDefinition();
@@ -221,7 +183,7 @@ async function createBuildCodegenModule(config: ResolvedArriConfig) {
         { tabWidth: 4, parser: "typescript" },
     );
     await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, DEFAULT_CODEGEN_FILE),
+        path.resolve(config.rootDir, ".output", OUT_CODEGEN),
         virtualModule,
     );
 }

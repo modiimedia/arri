@@ -9,6 +9,7 @@ export default defineConfig({
     srcDir: "src",
     port: 2020,
     entry: "app.ts",
+    serverEntry: "server.ts",
     clientGenerators: [
         typescriptClientGenerator({
             clientName: "TestClient",

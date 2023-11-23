@@ -4,7 +4,7 @@ import usersRouter from "./routes/users";
 const app = new ArriApp({
     rpcRoutePrefix: "rpcs",
     appInfo: {
-        version: "9",
+        version: "10",
     },
 });
 

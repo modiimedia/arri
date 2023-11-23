@@ -9,7 +9,7 @@ class TestClient {
     String baseUrl = "",
     Map<String, String> headers = const {},
   }) : _baseUrl = baseUrl {
-    _headers = {"client-version": "9", ...headers};
+    _headers = {"client-version": "10", ...headers};
   }
 
   TestClientAdaptersService get adapters {
@@ -48,7 +48,7 @@ class TestClientAdaptersService {
     String baseUrl = "",
     Map<String, String> headers = const {},
   }) : _baseUrl = baseUrl {
-    _headers = {"client-version": "9", ...headers};
+    _headers = {"client-version": "10", ...headers};
   }
 
   Future<AdaptersTypeboxAdapterResponse> typeboxAdapter(
@@ -72,7 +72,7 @@ class TestClientMiscTestsService {
     String baseUrl = "",
     Map<String, String> headers = const {},
   }) : _baseUrl = baseUrl {
-    _headers = {"client-version": "9", ...headers};
+    _headers = {"client-version": "10", ...headers};
   }
 
   Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) {
@@ -121,7 +121,7 @@ class TestClientPostsService {
     String baseUrl = "",
     Map<String, String> headers = const {},
   }) : _baseUrl = baseUrl {
-    _headers = {"client-version": "9", ...headers};
+    _headers = {"client-version": "10", ...headers};
   }
 
   Future<Post> getPost(PostParams params) {
@@ -180,7 +180,7 @@ class TestClientVideosService {
     String baseUrl = "",
     Map<String, String> headers = const {},
   }) : _baseUrl = baseUrl {
-    _headers = {"client-version": "9", ...headers};
+    _headers = {"client-version": "10", ...headers};
   }
 
   Future<Annotation> getAnnotation(AnnotationId params) {

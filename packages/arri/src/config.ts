@@ -5,7 +5,7 @@ import { type BuildOptions } from "esbuild";
 export interface ArriConfig {
     port: number;
     entry: string;
-    buildEntry?: string;
+    serverEntry?: string;
     rootDir?: string;
     srcDir?: string;
     procedureDir?: string | false;
@@ -64,7 +64,7 @@ export const defaultConfig: Required<ArriConfig> = {
     procedureGlobPatterns: ["**/*.rpc.ts"],
     clientGenerators: [],
     buildDir: ".arri",
-    buildEntry: "",
+    serverEntry: "",
     esbuild: {},
 };
 
@@ -81,6 +81,6 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
             config.clientGenerators ?? defaultConfig.clientGenerators,
         buildDir: config.buildDir ?? defaultConfig.buildDir,
         esbuild: config.esbuild ?? defaultConfig.esbuild,
-        buildEntry: config.buildEntry ?? "",
+        serverEntry: config.serverEntry ?? "",
     };
 }
