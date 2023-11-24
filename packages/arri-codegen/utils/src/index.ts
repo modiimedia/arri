@@ -64,12 +64,20 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
     return true;
 }
 
-export interface RpcDefinition {
+export type RpcDefinition = HttpRpcDefinition | SseRpcDefinition;
+export interface RpcDefinitionBase {
     path: string;
     description?: string;
-    method: RpcHttpMethod;
     params: string | undefined;
     response: string | undefined;
+}
+export interface HttpRpcDefinition extends RpcDefinitionBase {
+    type: "http";
+    method: RpcHttpMethod;
+}
+export interface SseRpcDefinition extends RpcDefinitionBase {
+    type: "sse";
+    method: "get";
 }
 export function isRpcDefinition(input: unknown): input is RpcDefinition {
     if (typeof input !== "object") {
