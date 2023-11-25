@@ -108,14 +108,12 @@ export const TestAppDefinition: AppDefinition = {
     },
     procedures: {
         getStatus: {
-            type: "http",
             path: "/status",
             method: "get",
             params: undefined,
             response: "GetStatusResponse",
         },
         "users.getUser": {
-            type: "http",
             description: "Get a user by id",
             path: "/users/get-user",
             method: "get",
@@ -123,7 +121,6 @@ export const TestAppDefinition: AppDefinition = {
             response: "User",
         },
         "users.updateUser": {
-            type: "http",
             description: "Update a user",
             path: "/users/update-user",
             method: "post",
@@ -131,18 +128,17 @@ export const TestAppDefinition: AppDefinition = {
             response: "User",
         },
         "users.settings.getUserSettings": {
-            type: "http",
             path: "/users/settings/get-user-settings",
             method: "get",
             params: undefined,
             response: undefined,
         },
         "users.subscribeToNotifications": {
-            type: "sse",
             path: "/notifications/subscribe-to-notifications",
             method: "get",
             params: undefined,
             response: "UserNotification",
+            isEventStream: true,
         },
     },
     models: {

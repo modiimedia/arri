@@ -14,6 +14,34 @@ export interface ArriRequestOpts<
     ) => TParams extends undefined ? undefined : string;
 }
 
+export async function arriSseRequest<
+    TType,
+    TParams extends Record<any, any> | undefined = undefined,
+>(opts: ArriRequestOpts<TType, TParams>): Promise<TType> {
+    let url = opts.url;
+    let body: undefined | string;
+    let contentType: undefined | string;
+    switch (opts.method) {
+        case "get":
+        case "head":
+            if (
+                opts.params &&
+                typeof opts.params === "object" &&
+                opts.params !== null
+            ) {
+                const urlParts: string[] = [];
+                Object.keys(opts.params).forEach((key) => {
+                    urlParts.push(`${key}=${(opts.params as any)[key]}`);
+                });
+                url = `${opts.url}?${urlParts.join("&")}`;
+            }
+            break;
+        default:
+            break;
+    }
+    const headers = { ...opts.headers, "Content-Type": "text/event-stream" };
+}
+
 export async function arriRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
