@@ -1,4 +1,5 @@
-import { ofetch, FetchError, fetch } from "ofetch";
+import { fetchEventSource } from "@fortaine/fetch-event-source";
+import { ofetch, FetchError } from "ofetch";
 
 export interface ArriRequestOpts<
     TType,
@@ -107,10 +108,13 @@ export async function arriSafeRequest<
 export async function arriSseRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
->(opts: ArriRequestOpts<TType, TParams>): Promise<TType> {
+>(
+    opts: ArriRequestOpts<TType, TParams>,
+    onData: (data: TType) => any,
+    onError: (data: any) => any,
+) {
     let url = opts.url;
     let body: undefined | string;
-    const contentType = "text";
     switch (opts.method) {
         case "get":
         case "head":
@@ -133,7 +137,25 @@ export async function arriSseRequest<
             break;
     }
     const headers = { ...opts.headers, "Content-Type": "text/event-stream" };
+    function processInput(reader: ReadableStreamDefaultReader<string>) {}
     try {
+        const controller = new AbortController();
+        void fetchEventSource(url, {
+            method: opts.method.toUpperCase(),
+            headers,
+            body,
+            signal: controller.signal,
+            onmessage(ev) {
+                const json = JSON.parse(ev.data);
+                return onData(opts.parser(json));
+            },
+            onerror(err) {
+                console.error(err);
+                return err;
+            },
+            openWhenHidden: true,
+        });
+
         const result = await ofetch(url, {
             method: opts.method,
             body,
@@ -141,6 +163,15 @@ export async function arriSseRequest<
             keepalive: true,
             responseType: "stream",
         });
+        const reader = result.pipeThrough(new TextDecoderStream()).getReader();
+        processInput(reader);
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+                break;
+            }
+            console.log(`Received`, value);
+        }
     } catch (err) {}
 }
 
