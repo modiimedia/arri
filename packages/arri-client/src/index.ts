@@ -9,7 +9,7 @@ export interface ArriRequestOpts<
     method: string;
     headers?: any;
     params?: TParams;
-    parser: (input: Record<any, any>) => TType;
+    parser: (input: unknown) => TType;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
@@ -105,14 +105,19 @@ export async function arriSafeRequest<
     }
 }
 
-export async function arriSseRequest<
+interface SseHooks<TType = any> {
+    onData?: (data: TType) => any;
+    onError?: (error: ArriRequestError) => any;
+    onClose?: () => any;
+    onOpen?: (response: Response) => any;
+}
+
+class NonFatalError extends Error {}
+
+export function arriSseRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
->(
-    opts: ArriRequestOpts<TType, TParams>,
-    onData: (data: TType) => any,
-    onError: (data: any) => any,
-) {
+>(opts: ArriRequestOpts<TType, TParams>, hooks: SseHooks<TType>) {
     let url = opts.url;
     let body: undefined | string;
     switch (opts.method) {
@@ -137,7 +142,6 @@ export async function arriSseRequest<
             break;
     }
     const headers = { ...opts.headers, "Content-Type": "text/event-stream" };
-    function processInput(reader: ReadableStreamDefaultReader<string>) {}
     try {
         const controller = new AbortController();
         void fetchEventSource(url, {
@@ -145,34 +149,44 @@ export async function arriSseRequest<
             headers,
             body,
             signal: controller.signal,
-            onmessage(ev) {
-                const json = JSON.parse(ev.data);
-                return onData(opts.parser(json));
+            onmessage(event) {
+                if (event.event === "data") {
+                    hooks.onData?.(opts.parser(event.data));
+                    return;
+                }
+                if (event.event === "error") {
+                    hooks.onError?.(
+                        ArriRequestErrorInstance.fromJson(event.data),
+                    );
+                }
             },
-            onerror(err) {
-                console.error(err);
-                return err;
+            onerror(error) {
+                if (error instanceof NonFatalError) {
+                    // do nothing to automatically retry
+                    return;
+                }
+                if (isArriRequestError(error)) {
+                    hooks.onError?.(error);
+                    return;
+                }
+                const err = new ArriRequestErrorInstance({
+                    statusCode: 500,
+                    statusMessage: `Error connecting to ${opts.url}`,
+                    data: error,
+                });
+                hooks.onError?.(err);
             },
+            onclose() {
+                throw new NonFatalError();
+            },
+            onopen: hooks.onOpen,
             openWhenHidden: true,
         });
-
-        const result = await ofetch(url, {
-            method: opts.method,
-            body,
-            headers,
-            keepalive: true,
-            responseType: "stream",
-        });
-        const reader = result.pipeThrough(new TextDecoderStream()).getReader();
-        processInput(reader);
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) {
-                break;
-            }
-            console.log(`Received`, value);
-        }
-    } catch (err) {}
+        return controller;
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
 }
 
 export type SafeResponse<T> =

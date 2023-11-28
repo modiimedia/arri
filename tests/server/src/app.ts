@@ -2,10 +2,9 @@ import { randomUUID } from "node:crypto";
 import {
     ArriApp,
     defineError,
-    defineEventHandler,
     defineMiddleware,
     getHeader,
-    getRequestHeader,
+    sendStream,
     setHeaders,
     setResponseStatus,
 } from "arri";
@@ -16,10 +15,14 @@ const app = new ArriApp({
     appInfo: {
         version: "10",
     },
+    onRequest(event) {},
 });
 
 app.use(
     defineMiddleware((event) => {
+        if (event.path.includes("/event-stream")) {
+            return;
+        }
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&
@@ -43,49 +46,61 @@ app.route({
 
 app.use(usersRouter);
 
-app.h3Router.get(
-    "/event-stream",
-    defineEventHandler((event) => {
+app.route({
+    path: "/event-stream",
+    method: "get",
+    async handler(event) {
         setHeaders(event, {
+            "Transfer-Encoding": "chunked",
             "Content-Type": "text/event-stream",
             Connection: "keep-alive",
             "Cache-Control": "no-cache",
         });
         setResponseStatus(event, 200);
-        let session = getRequestHeader(event, "last-event-id");
-        if (!session) {
-            session = randomUUID();
+        let sessionId = getHeader(event, "Last-Event-ID");
+        if (!sessionId) {
+            sessionId = randomUUID();
         }
+        const { readable, writable } = new TransformStream();
+        const writer = writable.getWriter();
+        const encoder = new TextEncoder();
         let count = 0;
-        const sendResponse = (data: any) =>
-            event.node.res.write(`data: ${data}\n\n`);
-        sendResponse(
-            JSON.stringify({
-                id: count,
-                message: "hello world",
-            }),
-        );
-        const interval = setInterval(() => {
+        const interval = setInterval(async () => {
+            if (count >= 100) {
+                await cleanup();
+                return;
+            }
             count++;
-            sendResponse(
-                JSON.stringify({
-                    id: count,
-                    message: "hello world!!! " + count * 10,
-                }),
+            await writer.write(
+                encoder.encode(
+                    `id: ${sessionId}\nevent: data\ndata: ${JSON.stringify({
+                        count,
+                        message: "Hello world!",
+                    })}\n\n`,
+                ),
             );
-        }, 500);
+        }, 10);
+        async function cleanup() {
+            clearInterval(interval);
+            if (!writer.closed) {
+                await writer.close();
+            }
+            if (!event.node.res.closed) {
+                event.node.res.end();
+            }
+        }
         event.node.req
-            .on("end", () => {
-                clearInterval(interval);
-                console.log("REQUEST END");
+            .on("close", async () => {
+                console.log("CLOSED");
+                await cleanup();
             })
-            .on("close", () => {
-                console.log("REQUEST CLOSE");
-                clearInterval(interval);
+            .on("end", async () => {
+                console.log("ENDED");
+                await cleanup();
             });
-
         event._handled = true;
-    }),
-);
+        await sendStream(event, readable);
+    },
+});
 
 export default app;

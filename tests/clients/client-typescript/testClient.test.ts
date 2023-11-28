@@ -1,4 +1,4 @@
-import { ArriRequestErrorInstance } from "arri-client";
+import { ArriRequestErrorInstance, arriSseRequest } from "arri-client";
 import { ofetch } from "ofetch";
 import {
     TestClient,
@@ -338,5 +338,36 @@ describe("bigint requests", () => {
         expect(result.box_type_range.end_time_in_nano_sec).toBe(
             BigInt("1234567890"),
         );
+    });
+});
+
+test("SSE request", async () => {
+    const controller = arriSseRequest<any>(
+        {
+            method: "get",
+            url: "http://127.0.0.1:2020/event-stream",
+            parser: (_) => {},
+            serializer: (_) => {},
+        },
+        {
+            onData(data) {
+                console.log("DATA", data);
+            },
+            onError(error) {
+                console.error("ERROR", error);
+            },
+            onOpen(response) {
+                console.info("OPEN", response);
+            },
+            onClose() {
+                console.info("CLOSE");
+            },
+        },
+    );
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            controller.abort();
+            resolve(true);
+        }, 5000);
     });
 });
