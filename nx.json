@@ -24,7 +24,7 @@
     },
     "targetDefaults": {
         "build": {
-            "inputs": ["default", "^default"],
+            "inputs": ["default", "^default", "shared-globals"],
             "outputs": ["{projectRoot}/dist"],
             "dependsOn": ["^build", "prepare", "^prepare"],
             "cache": true
@@ -32,6 +32,7 @@
         "lint": {
             "inputs": [
                 "default",
+                "shared-globals",
                 "{projectRoot}/.eslintrc.json",
                 "{projectRoot}/.eslintrc.js",
                 "{workspaceRoot}/.eslintrc.json",
@@ -52,6 +53,9 @@
                 "{projectRoot}/vite.config.ts"
             ],
             "cache": true
+        },
+        "integration-test": {
+            "cache": false
         },
         "@nx/vite:test": {
             "cache": true,

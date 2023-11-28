@@ -11,18 +11,19 @@ import {
     setResponseStatus,
 } from "h3";
 import { defineError, handleH3Error } from "./errors";
+import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
 import { type MiddlewareEvent, type Middleware } from "./middleware";
+import { type ArriRoute, registerRoute } from "./route";
+import { ArriRouter, type ArriRouterBase } from "./router";
 import {
     createRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
     registerRpc,
-    type ArriNamedProcedure,
     isRpcParamSchema,
-} from "./procedures";
-import { ArriRouter, type ArriRouterBase } from "./router";
-import { type ArriRoute, registerRoute } from "./routes";
+    type NamedRpc,
+} from "./rpc";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/__definition`;
@@ -79,11 +80,6 @@ export class ArriApp implements ArriRouterBase {
                     if (this.onRequest) {
                         await this.onRequest(event);
                     }
-                    if (this.middlewares.length) {
-                        for (const m of this.middlewares) {
-                            await m(event);
-                        }
-                    }
                 } catch (err) {
                     await handleH3Error(err, event, this.onError);
                 }
@@ -115,9 +111,10 @@ export class ArriApp implements ArriRouterBase {
     }
 
     rpc<
-        TParams extends AObjectSchema<any, any> | undefined,
-        TResponse extends AObjectSchema<any, any> | undefined,
-    >(procedure: ArriNamedProcedure<TParams, TResponse>) {
+        TIsEventStream extends boolean = false,
+        TParams extends AObjectSchema<any, any> | undefined = undefined,
+        TResponse extends AObjectSchema<any, any> | undefined = undefined,
+    >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
         const path =
             procedure.path ?? getRpcPath(procedure.name, this.rpcRoutePrefix);
         this.procedures[procedure.name] = createRpcDefinition(
@@ -136,6 +133,16 @@ export class ArriApp implements ArriRouterBase {
             if (responseName) {
                 this.models[responseName] = procedure.response;
             }
+        }
+        if (isEventStreamRpc(procedure)) {
+            registerEventStreamRpc(this.h3Router, path, procedure, {
+                middleware: this.middlewares,
+                onRequest: this.onRequest,
+                onError: this.onError,
+                onAfterResponse: this.onAfterResponse,
+                onBeforeResponse: this.onBeforeResponse,
+            });
+            return;
         }
         registerRpc(this.h3Router, path, procedure, {
             middleware: this.middlewares,

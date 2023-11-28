@@ -28,8 +28,13 @@ import {
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 import { defineError, handleH3Error } from "./errors";
+import {
+    isEventStreamRpc,
+    type EventStreamRpc,
+    type EventStreamRpcHandler,
+} from "./eventStreamRpc";
 import { type MiddlewareEvent } from "./middleware";
-import { type RouteOptions } from "./routes";
+import { type RouteOptions } from "./route";
 
 export type RpcParamSchema<
     TObjectInner = any,
@@ -48,32 +53,51 @@ export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
     );
 }
 
-export interface ArriProcedure<
-    TParams extends RpcParamSchema | undefined,
-    TResponse extends RpcParamSchema | undefined,
-> {
-    description?: string;
-    method?: RpcHttpMethod;
-    path?: string;
-    params: TParams;
-    response: TResponse;
-    handler: ArriProcedureHandler<
-        TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        TResponse extends RpcParamSchema ? InferType<TResponse> : void
-    >;
-    postHandler?: ArriProcedurePostHandler<
-        TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-        TResponse extends RpcParamSchema ? InferType<TResponse> : undefined
-    >;
-}
-
-export interface ArriNamedProcedure<
-    TParams extends RpcParamSchema | undefined,
-    TResponse extends RpcParamSchema | undefined,
-> extends ArriProcedure<TParams, TResponse> {
+export interface NamedRpc<
+    TIsEventStream extends boolean = false,
+    TParams extends RpcParamSchema | undefined = undefined,
+    TResponse extends RpcParamSchema | undefined = undefined,
+> extends Rpc<TIsEventStream, TParams, TResponse> {
     name: string;
 }
+
+export interface Rpc<
+    TIsEventStream extends boolean = false,
+    TParams extends RpcParamSchema | undefined = undefined,
+    TResponse extends RpcParamSchema | undefined = undefined,
+> {
+    method?: RpcHttpMethod;
+    path?: string;
+    description?: string;
+    params: TParams;
+    response: TResponse;
+    isEventStream?: TIsEventStream;
+    pingInterval?: TIsEventStream extends true ? number : undefined;
+    handler: TIsEventStream extends true
+        ? EventStreamRpcHandler<
+              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
+              TResponse extends RpcParamSchema
+                  ? InferType<TResponse>
+                  : undefined
+          >
+        : RpcHandler<
+              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
+              // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+              TResponse extends RpcParamSchema ? InferType<TResponse> : void
+          >;
+    postHandler?: TIsEventStream extends true
+        ? undefined
+        : RpcPostHandler<
+              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
+              TResponse extends RpcParamSchema
+                  ? InferType<TResponse>
+                  : undefined
+          >;
+}
+export type HttpRpc<
+    TParams extends RpcParamSchema | undefined,
+    TResponse extends RpcParamSchema | undefined,
+> = Omit<Rpc<false, TParams, TResponse>, "isEventStream">;
 
 export type HandlerContext = Record<string, any>;
 
@@ -101,50 +125,52 @@ export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
     context: RpcPostHandlerContext<TParams, TResponse>;
 }
 
-export type ArriProcedureHandler<TParams, TResponse> = (
+export type RpcHandler<TParams, TResponse> = (
     context: RpcHandlerContext<TParams>,
     event: RpcEvent<TParams>,
 ) => TResponse | Promise<TResponse>;
 
-export type ArriProcedurePostHandler<TParams, TResponse> = (
+export type RpcPostHandler<TParams, TResponse> = (
     context: RpcPostHandlerContext<TParams, TResponse>,
     event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
-export function isRpc(input: any): input is ArriProcedure<any, any> {
-    if (typeof input !== "object" || input === null) {
-        return false;
-    }
-    const anyInput = input as Record<string, any>;
-    if (!isRpcHttpMethod(anyInput.method)) {
-        return false;
-    }
-    if (typeof anyInput.handler !== "function") {
-        return false;
-    }
-    return true;
+export function isRpc(input: unknown): input is Rpc<any, any> {
+    return (
+        typeof input === "object" &&
+        input !== null &&
+        "method" in input &&
+        isRpcHttpMethod(input.method) &&
+        "handler" in input &&
+        typeof input.handler === "function"
+    );
 }
 
 export function defineRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined | never = undefined,
->(
-    config: ArriProcedure<TParams, TResponse>,
-): ArriProcedure<TParams, TResponse> {
+>(config: HttpRpc<TParams, TResponse>): Rpc<false, TParams, TResponse> {
     return config;
 }
 
 export function createRpcDefinition(
     rpcName: string,
     httpPath: string,
-    procedure: ArriProcedure<any, any>,
+    procedure: Rpc<any, any, any>,
 ): RpcDefinition {
+    let method: RpcHttpMethod;
+    if (procedure.isEventStream === true) {
+        method = procedure.method ?? "get";
+    } else {
+        method = procedure.method ?? "post";
+    }
     return {
         description: procedure.description,
         path: httpPath,
-        method: procedure.method ?? "post",
+        method,
         params: getRpcParamName(rpcName, procedure),
         response: getRpcResponseDefinition(rpcName, procedure),
+        isEventStream: procedure.isEventStream === true ? true : undefined,
     };
 }
 
@@ -164,7 +190,7 @@ export function getRpcPath(rpcName: string, prefix = ""): string {
 
 export function getRpcParamName(
     rpcName: string,
-    procedure: ArriProcedure<any, any>,
+    procedure: Rpc<any, any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.params)) {
         return undefined;
@@ -182,7 +208,7 @@ export function getRpcParamName(
 
 export function getRpcResponseName(
     rpcName: string,
-    procedure: ArriProcedure<any, any>,
+    procedure: Rpc<any, any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -200,7 +226,7 @@ export function getRpcResponseName(
 
 function getRpcResponseDefinition(
     rpcName: string,
-    procedure: ArriProcedure<any, any>,
+    procedure: Rpc<any, any> | EventStreamRpc<any, any>,
 ): RpcDefinition["response"] {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -215,7 +241,7 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    procedure: ArriNamedProcedure<any, any>,
+    procedure: NamedRpc<any, any, any>,
     opts: RouteOptions,
 ) {
     let responseValidator: undefined | ReturnType<typeof a.compile>;
@@ -242,70 +268,11 @@ export function registerRpc(
                 }
             }
             if (isRpcParamSchema(procedure.params)) {
-                switch (httpMethod) {
-                    case "get": {
-                        const parsedParams = await getValidatedQuery(
-                            event,
-                            (input) => a.safeCoerce(procedure.params, input),
-                        );
-                        if (parsedParams.success) {
-                            event.context.params = parsedParams.value;
-                        } else {
-                            const errParts: string[] = [];
-                            for (const err of parsedParams.error.errors) {
-                                const errPath = err.instancePath.split("/");
-                                errPath.shift();
-                                const propName = errPath.join(".");
-                                if (!errParts.includes(propName)) {
-                                    errParts.push(propName);
-                                }
-                            }
-                            const message = `Missing or invalid url query parameters: [${errParts.join(
-                                ", ",
-                            )}]`;
-                            throw defineError(400, {
-                                statusMessage: message,
-                                data: parsedParams.error,
-                            });
-                        }
-                        break;
-                    }
-                    case "delete":
-                    case "patch":
-                    case "post":
-                    case "put": {
-                        const body = await readRawBody(event);
-                        if (!body) {
-                            throw defineError(400, {
-                                statusMessage: `Invalid request body. Expected object. Got undefined.`,
-                            });
-                        }
-                        const parsedParams = a.safeParse(
-                            procedure.params,
-                            body,
-                        );
-                        if (!parsedParams.success) {
-                            const errorParts: string[] = [];
-                            for (const err of parsedParams.error.errors) {
-                                const errPath = err.instancePath.split("/");
-                                errPath.shift();
-                                if (!errorParts.includes(errPath.join("."))) {
-                                    errorParts.push(errPath.join("."));
-                                }
-                            }
-                            throw defineError(400, {
-                                statusMessage: `Invalid request body. Affected properties [${errorParts.join(
-                                    ", ",
-                                )}]`,
-                                data: parsedParams.error,
-                            });
-                        }
-                        event.context.params = parsedParams.value;
-                        break;
-                    }
-                    default:
-                        break;
-                }
+                await validateRpcRequestInput(
+                    event,
+                    httpMethod,
+                    procedure.params,
+                );
             }
 
             const response = await procedure.handler(
@@ -354,6 +321,73 @@ export function registerRpc(
         case "post":
         default:
             router.post(path, handler);
+            break;
+    }
+}
+
+export async function validateRpcRequestInput(
+    event: H3Event,
+    httpMethod: RpcHttpMethod,
+    schema: ASchema,
+) {
+    switch (httpMethod) {
+        case "get": {
+            const parsedParams = await getValidatedQuery(event, (input) =>
+                a.safeCoerce(schema, input),
+            );
+            if (parsedParams.success) {
+                event.context.params = parsedParams.value;
+            } else {
+                const errParts: string[] = [];
+                for (const err of parsedParams.error.errors) {
+                    const errPath = err.instancePath.split("/");
+                    errPath.shift();
+                    const propName = errPath.join(".");
+                    if (!errParts.includes(propName)) {
+                        errParts.push(propName);
+                    }
+                }
+                const message = `Missing or invalid url query parameters: [${errParts.join(
+                    ", ",
+                )}]`;
+                throw defineError(400, {
+                    statusMessage: message,
+                    data: parsedParams.error,
+                });
+            }
+            break;
+        }
+        case "delete":
+        case "patch":
+        case "post":
+        case "put": {
+            const body = await readRawBody(event);
+            if (!body) {
+                throw defineError(400, {
+                    statusMessage: `Invalid request body. Expected object. Got undefined.`,
+                });
+            }
+            const parsedParams = a.safeParse(schema, body);
+            if (!parsedParams.success) {
+                const errorParts: string[] = [];
+                for (const err of parsedParams.error.errors) {
+                    const errPath = err.instancePath.split("/");
+                    errPath.shift();
+                    if (!errorParts.includes(errPath.join("."))) {
+                        errorParts.push(errPath.join("."));
+                    }
+                }
+                throw defineError(400, {
+                    statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                        ", ",
+                    )}]`,
+                    data: parsedParams.error,
+                });
+            }
+            event.context.params = parsedParams.value;
+            break;
+        }
+        default:
             break;
     }
 }

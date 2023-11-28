@@ -1,13 +1,14 @@
 import { type ASchema, type AObjectSchema } from "arri-validate";
-import { type ArriNamedProcedure } from "./procedures";
-import { type ArriRoute } from "./routes";
+import { type ArriRoute } from "./route";
+import { type NamedRpc } from "./rpc";
 
 export interface ArriRouterBase {
     rpc: <
+        TIsEventStream extends boolean,
         TParams extends AObjectSchema<any, any> | undefined,
         TResponse extends AObjectSchema<any, any> | undefined,
     >(
-        procedure: ArriNamedProcedure<TParams, TResponse>,
+        procedure: NamedRpc<TIsEventStream, TParams, TResponse>,
     ) => void;
     route: <
         TPath extends string,
@@ -20,13 +21,15 @@ export interface ArriRouterBase {
 }
 
 export class ArriRouter implements ArriRouterBase {
-    private readonly procedures: Array<ArriNamedProcedure<any, any>> = [];
+    private readonly procedures: Array<NamedRpc<any, any, any>> = [];
+
     private readonly routes: Array<ArriRoute<any>> = [];
 
     rpc<
-        TParams extends AObjectSchema<any, any> | undefined,
-        TResponse extends AObjectSchema<any, any> | undefined,
-    >(procedure: ArriNamedProcedure<TParams, TResponse>) {
+        TIsEventStream extends boolean = false,
+        TParams extends AObjectSchema<any, any> | undefined = undefined,
+        TResponse extends AObjectSchema<any, any> | undefined = undefined,
+    >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
         this.procedures.push(procedure);
     }
 

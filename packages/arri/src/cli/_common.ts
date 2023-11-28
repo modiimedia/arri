@@ -76,11 +76,7 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
         for(const route of routes) {
             app.rpc({
                 name: route.id,
-                method: route.route.method,
-                params: route.route.params,
-                response: route.route.response,
-                handler: route.route.handler,
-                postHandler: route.route.postHandler,
+                ...route.route,
             });
         }
         export default app`,

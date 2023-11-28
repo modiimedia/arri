@@ -142,51 +142,63 @@ export function arriSseRequest<
             break;
     }
     const headers = { ...opts.headers, "Content-Type": "text/event-stream" };
-    try {
-        const controller = new AbortController();
-        void fetchEventSource(url, {
-            method: opts.method.toUpperCase(),
-            headers,
-            body,
-            signal: controller.signal,
-            onmessage(event) {
-                if (event.event === "data") {
-                    hooks.onData?.(opts.parser(event.data));
-                    return;
-                }
-                if (event.event === "error") {
-                    hooks.onError?.(
-                        ArriRequestErrorInstance.fromJson(event.data),
-                    );
-                }
-            },
-            onerror(error) {
-                if (error instanceof NonFatalError) {
-                    // do nothing to automatically retry
-                    return;
-                }
-                if (isArriRequestError(error)) {
-                    hooks.onError?.(error);
-                    return;
-                }
-                const err = new ArriRequestErrorInstance({
-                    statusCode: 500,
-                    statusMessage: `Error connecting to ${opts.url}`,
-                    data: error,
-                });
-                hooks.onError?.(err);
-            },
-            onclose() {
-                throw new NonFatalError();
-            },
-            onopen: hooks.onOpen,
-            openWhenHidden: true,
-        });
-        return controller;
-    } catch (err) {
-        console.error(err);
-        throw err;
-    }
+    const controller = new AbortController();
+    let shouldAbort = false;
+    void fetchEventSource(url, {
+        method: opts.method.toUpperCase(),
+        headers,
+        body,
+        signal: controller.signal,
+        onmessage(event) {
+            if (event.event === "data") {
+                hooks.onData?.(opts.parser(event.data));
+                return;
+            }
+            if (event.event === "error") {
+                hooks.onError?.(ArriRequestErrorInstance.fromJson(event.data));
+            }
+        },
+        onerror(error) {
+            if (error instanceof NonFatalError) {
+                // do nothing to automatically retry
+                return;
+            }
+            if (shouldAbort) {
+                throw error;
+            }
+            if (isArriRequestError(error)) {
+                hooks.onError?.(error);
+                return;
+            }
+            const err = new ArriRequestErrorInstance({
+                statusCode: 500,
+                statusMessage: `Error connecting to ${opts.url}`,
+                data: error,
+            });
+            hooks.onError?.(err);
+        },
+        onclose() {
+            throw new NonFatalError();
+        },
+        async onopen(response) {
+            if (response.status >= 200 && response.status <= 299) {
+                hooks.onOpen?.(response);
+                return;
+            }
+            shouldAbort = true;
+            const json = await response.text();
+            if (json.includes("{") && json.includes("}")) {
+                throw ArriRequestErrorInstance.fromJson(json);
+            }
+            throw new ArriRequestErrorInstance({
+                statusCode: 500,
+                statusMessage: response.statusText,
+                data: json,
+            });
+        },
+        openWhenHidden: true,
+    });
+    return controller;
 }
 
 export type SafeResponse<T> =
@@ -236,27 +248,35 @@ export class ArriRequestErrorInstance
     }
 
     static fromJson(json: unknown) {
-        if (typeof json !== "object" || json === null) {
+        let parsedJson = json;
+        if (typeof parsedJson === "string") {
+            try {
+                parsedJson = JSON.parse(parsedJson);
+            } catch (_) {}
+        }
+        if (typeof parsedJson !== "object" || parsedJson === null) {
             return new ArriRequestErrorInstance({
                 statusCode: 500,
                 statusMessage: "Unknown error",
+                data: parsedJson,
             });
         }
         return new ArriRequestErrorInstance({
             statusCode:
-                "statusCode" in json && typeof json.statusCode === "number"
-                    ? json.statusCode
+                "statusCode" in parsedJson &&
+                typeof parsedJson.statusCode === "number"
+                    ? parsedJson.statusCode
                     : 500,
             statusMessage:
-                "statusMessage" in json &&
-                typeof json.statusMessage === "string"
-                    ? json.statusMessage
+                "statusMessage" in parsedJson &&
+                typeof parsedJson.statusMessage === "string"
+                    ? parsedJson.statusMessage
                     : "",
             stack:
-                "stack" in json && typeof json.stack === "string"
-                    ? json.stack
+                "stack" in parsedJson && typeof parsedJson.stack === "string"
+                    ? parsedJson.stack
                     : undefined,
-            data: "data" in json ? json.data : undefined,
+            data: "data" in parsedJson ? parsedJson.data : undefined,
         });
     }
 }

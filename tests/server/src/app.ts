@@ -4,6 +4,7 @@ import {
     defineError,
     defineMiddleware,
     getHeader,
+    handleCors,
     sendStream,
     setHeaders,
     setResponseStatus,
@@ -15,12 +16,16 @@ const app = new ArriApp({
     appInfo: {
         version: "10",
     },
-    onRequest(event) {},
+    onRequest(event) {
+        handleCors(event, {
+            origin: "*",
+        });
+    },
 });
 
 app.use(
     defineMiddleware((event) => {
-        if (event.path.includes("/event-stream")) {
+        if (event.path.includes("/send-object-stream")) {
             return;
         }
         const authHeader = getHeader(event, "x-test-header");

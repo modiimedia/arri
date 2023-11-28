@@ -345,6 +345,9 @@ test("SSE request", async () => {
     const controller = arriSseRequest<any>(
         {
             method: "get",
+            headers: {
+                "x-test-header": "test",
+            },
             url: "http://127.0.0.1:2020/event-stream",
             parser: (_) => {},
             serializer: (_) => {},
@@ -357,7 +360,8 @@ test("SSE request", async () => {
                 console.error("ERROR", error);
             },
             onOpen(response) {
-                console.info("OPEN", response);
+                console.log(response.status, response.statusText);
+                console.info("OPEN");
             },
             onClose() {
                 console.info("CLOSE");
