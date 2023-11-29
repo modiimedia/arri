@@ -87,14 +87,13 @@ class TestClientMiscTestsService {
     );
   }
 
-  Future<MiscTestsSendObjectStreamResponse> sendObjectStream(
-      MiscTestsSendObjectStreamParams params) {
+  Future<ChatMessage> sendObjectStream(MiscTestsSendObjectStreamParams params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/misc-tests/send-object-stream",
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => MiscTestsSendObjectStreamResponse.fromJson(
+      parser: (body) => ChatMessage.fromJson(
         json.decode(body),
       ),
     );
@@ -920,35 +919,33 @@ class MiscTestsSendObjectStreamParams {
   }
 }
 
-sealed class MiscTestsSendObjectStreamResponse {
+sealed class ChatMessage {
   final String messageType;
-  const MiscTestsSendObjectStreamResponse({
+  const ChatMessage({
     required this.messageType,
   });
-  factory MiscTestsSendObjectStreamResponse.fromJson(
-      Map<String, dynamic> json) {
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
     if (json["messageType"] is! String) {
       throw Exception(
-        "Unable to decode MiscTestsSendObjectStreamResponse. Expected String from \"messageType\". Received ${json["messageType"]}}",
+        "Unable to decode ChatMessage. Expected String from \"messageType\". Received ${json["messageType"]}}",
       );
     }
     switch (json["messageType"]) {
       case "TEXT":
-        return MiscTestsSendObjectStreamResponseText.fromJson(json);
+        return ChatMessageText.fromJson(json);
       case "IMAGE":
-        return MiscTestsSendObjectStreamResponseImage.fromJson(json);
+        return ChatMessageImage.fromJson(json);
       case "URL":
-        return MiscTestsSendObjectStreamResponseUrl.fromJson(json);
+        return ChatMessageUrl.fromJson(json);
     }
     throw Exception(
-      "Unable to decode MiscTestsSendObjectStreamResponse. \"${json["messageType"]}\" doesn't match any of the accepted discriminator values.",
+      "Unable to decode ChatMessage. \"${json["messageType"]}\" doesn't match any of the accepted discriminator values.",
     );
   }
   Map<String, dynamic> toJson();
 }
 
-class MiscTestsSendObjectStreamResponseText
-    implements MiscTestsSendObjectStreamResponse {
+class ChatMessageText implements ChatMessage {
   @override
   final String messageType = "TEXT";
   final String id;
@@ -956,16 +953,15 @@ class MiscTestsSendObjectStreamResponseText
   final String userId;
   final DateTime date;
   final String text;
-  const MiscTestsSendObjectStreamResponseText({
+  const ChatMessageText({
     required this.id,
     required this.channelId,
     required this.userId,
     required this.date,
     required this.text,
   });
-  factory MiscTestsSendObjectStreamResponseText.fromJson(
-      Map<String, dynamic> json) {
-    return MiscTestsSendObjectStreamResponseText(
+  factory ChatMessageText.fromJson(Map<String, dynamic> json) {
+    return ChatMessageText(
       id: typeFromDynamic<String>(json["id"], ""),
       channelId: typeFromDynamic<String>(json["channelId"], ""),
       userId: typeFromDynamic<String>(json["userId"], ""),
@@ -990,14 +986,14 @@ class MiscTestsSendObjectStreamResponseText
     return result;
   }
 
-  MiscTestsSendObjectStreamResponseText copyWith({
+  ChatMessageText copyWith({
     String? id,
     String? channelId,
     String? userId,
     DateTime? date,
     String? text,
   }) {
-    return MiscTestsSendObjectStreamResponseText(
+    return ChatMessageText(
       id: id ?? this.id,
       channelId: channelId ?? this.channelId,
       userId: userId ?? this.userId,
@@ -1007,8 +1003,7 @@ class MiscTestsSendObjectStreamResponseText
   }
 }
 
-class MiscTestsSendObjectStreamResponseImage
-    implements MiscTestsSendObjectStreamResponse {
+class ChatMessageImage implements ChatMessage {
   @override
   final String messageType = "IMAGE";
   final String id;
@@ -1016,16 +1011,15 @@ class MiscTestsSendObjectStreamResponseImage
   final String userId;
   final DateTime date;
   final String image;
-  const MiscTestsSendObjectStreamResponseImage({
+  const ChatMessageImage({
     required this.id,
     required this.channelId,
     required this.userId,
     required this.date,
     required this.image,
   });
-  factory MiscTestsSendObjectStreamResponseImage.fromJson(
-      Map<String, dynamic> json) {
-    return MiscTestsSendObjectStreamResponseImage(
+  factory ChatMessageImage.fromJson(Map<String, dynamic> json) {
+    return ChatMessageImage(
       id: typeFromDynamic<String>(json["id"], ""),
       channelId: typeFromDynamic<String>(json["channelId"], ""),
       userId: typeFromDynamic<String>(json["userId"], ""),
@@ -1050,14 +1044,14 @@ class MiscTestsSendObjectStreamResponseImage
     return result;
   }
 
-  MiscTestsSendObjectStreamResponseImage copyWith({
+  ChatMessageImage copyWith({
     String? id,
     String? channelId,
     String? userId,
     DateTime? date,
     String? image,
   }) {
-    return MiscTestsSendObjectStreamResponseImage(
+    return ChatMessageImage(
       id: id ?? this.id,
       channelId: channelId ?? this.channelId,
       userId: userId ?? this.userId,
@@ -1067,8 +1061,7 @@ class MiscTestsSendObjectStreamResponseImage
   }
 }
 
-class MiscTestsSendObjectStreamResponseUrl
-    implements MiscTestsSendObjectStreamResponse {
+class ChatMessageUrl implements ChatMessage {
   @override
   final String messageType = "URL";
   final String id;
@@ -1076,16 +1069,15 @@ class MiscTestsSendObjectStreamResponseUrl
   final String userId;
   final DateTime date;
   final String url;
-  const MiscTestsSendObjectStreamResponseUrl({
+  const ChatMessageUrl({
     required this.id,
     required this.channelId,
     required this.userId,
     required this.date,
     required this.url,
   });
-  factory MiscTestsSendObjectStreamResponseUrl.fromJson(
-      Map<String, dynamic> json) {
-    return MiscTestsSendObjectStreamResponseUrl(
+  factory ChatMessageUrl.fromJson(Map<String, dynamic> json) {
+    return ChatMessageUrl(
       id: typeFromDynamic<String>(json["id"], ""),
       channelId: typeFromDynamic<String>(json["channelId"], ""),
       userId: typeFromDynamic<String>(json["userId"], ""),
@@ -1110,14 +1102,14 @@ class MiscTestsSendObjectStreamResponseUrl
     return result;
   }
 
-  MiscTestsSendObjectStreamResponseUrl copyWith({
+  ChatMessageUrl copyWith({
     String? id,
     String? channelId,
     String? userId,
     DateTime? date,
     String? url,
   }) {
-    return MiscTestsSendObjectStreamResponseUrl(
+    return ChatMessageUrl(
       id: id ?? this.id,
       channelId: channelId ?? this.channelId,
       userId: userId ?? this.userId,

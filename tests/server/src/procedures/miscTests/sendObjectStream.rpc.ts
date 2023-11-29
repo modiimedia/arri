@@ -41,26 +41,7 @@ export default defineEventStreamRpc({
     params: a.object({
         channelId: a.string(),
     }),
-    response: a.discriminator("messageType", {
-        TEXT: a.extend(
-            ChatMessageBase,
-            a.object({
-                text: a.string(),
-            }),
-        ),
-        IMAGE: a.extend(
-            ChatMessageBase,
-            a.object({
-                image: a.string(),
-            }),
-        ),
-        URL: a.extend(
-            ChatMessageBase,
-            a.object({
-                url: a.string(),
-            }),
-        ),
-    }),
+    response: ChatMessage,
     handler({ params, connection }) {
         const randomItem = (): ChatMessage => {
             const userId = randomUUID();

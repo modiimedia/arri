@@ -1,9 +1,16 @@
+import { readFileSync } from "fs";
 import path from "path";
 import { defineConfig } from "arri";
 import {
     typescriptClientGenerator,
     dartClientGenerator,
 } from "arri/dist/codegen";
+
+const prettierConfig = JSON.parse(
+    readFileSync(path.resolve(__dirname, "../../.prettierrc"), {
+        encoding: "utf-8",
+    }),
+);
 
 export default defineConfig({
     srcDir: "src",
@@ -17,6 +24,7 @@ export default defineConfig({
                 __dirname,
                 "../clients/client-typescript/testClient.rpc.ts",
             ),
+            prettierOptions: prettierConfig,
         }),
         dartClientGenerator({
             clientName: "TestClient",
