@@ -1,4 +1,4 @@
-import { ArriRequestErrorInstance, arriSseRequest } from "arri-client";
+import { type ArriRequestError, ArriRequestErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import {
     TestClient,
@@ -342,36 +342,70 @@ describe("bigint requests", () => {
 });
 
 test("SSE request", async () => {
-    const controller = arriSseRequest<any>(
-        {
-            method: "get",
-            headers: {
-                "x-test-header": "test",
-            },
-            url: "http://127.0.0.1:2020/event-stream",
-            parser: (_) => {},
-            serializer: (_) => {},
-        },
+    let wasConnected = false;
+    let receivedMessageCount = 0;
+    const connection = client.miscTests.sendObjectStream(
+        { channelId: "1" },
         {
             onData(data) {
-                console.log("DATA", data);
-            },
-            onError(error) {
-                console.error("ERROR", error);
+                receivedMessageCount++;
+                expect(data.channelId).toBe("1");
+                switch (data.messageType) {
+                    case "IMAGE":
+                        expect(data.date instanceof Date).toBe(true);
+                        expect(typeof data.image).toBe("string");
+                        break;
+                    case "TEXT":
+                        expect(data.date instanceof Date).toBe(true);
+                        expect(typeof data.text).toBe("string");
+                        break;
+                    case "URL":
+                        expect(data.date instanceof Date).toBe(true);
+                        expect(typeof data.url).toBe("url");
+                        break;
+                }
             },
             onOpen(response) {
-                console.log(response.status, response.statusText);
-                console.info("OPEN");
-            },
-            onClose() {
-                console.info("CLOSE");
+                wasConnected = response.status === 200;
             },
         },
     );
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
         setTimeout(() => {
-            controller.abort();
+            connection.abort();
             resolve(true);
         }, 5000);
     });
+    expect(receivedMessageCount > 0).toBe(true);
+    expect(wasConnected).toBe(true);
+});
+
+test("SSE Request with errors", async () => {
+    let timesConnected = 0;
+    let messageCount = 0;
+    let errorReceived: ArriRequestError | undefined;
+    const connection = client.miscTests.sendStreamWithErrors({
+        onData(_) {
+            messageCount++;
+        },
+        onError(error) {
+            errorReceived = error;
+            connection.abort();
+        },
+        onEvent(event) {
+            console.log(event);
+        },
+        onOpen() {
+            timesConnected++;
+        },
+    });
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 5000);
+    });
+    expect(errorReceived?.statusCode).toBe(400);
+    expect(connection.signal.aborted).toBe(true);
+    expect(timesConnected).toBe(1);
+    expect(messageCount).toBe(10);
 });

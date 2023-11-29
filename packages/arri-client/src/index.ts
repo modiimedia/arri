@@ -105,8 +105,9 @@ export async function arriSafeRequest<
     }
 }
 
-interface SseHooks<TType = any> {
+export interface SseHooks<TType = any> {
     onData?: (data: TType) => any;
+    onEvent?: (event: { id?: string; event?: string; data: string }) => any;
     onError?: (error: ArriRequestError) => any;
     onClose?: () => any;
     onOpen?: (response: Response) => any;
@@ -150,7 +151,8 @@ export function arriSseRequest<
         body,
         signal: controller.signal,
         onmessage(event) {
-            if (event.event === "data") {
+            hooks.onEvent?.(event);
+            if (event.event === "message") {
                 hooks.onData?.(opts.parser(event.data));
                 return;
             }

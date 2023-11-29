@@ -125,6 +125,18 @@ class TestClientMiscTestsService {
       ),
     );
   }
+
+  Future<MiscTestsSendStreamWithErrorsResponse> sendStreamWithErrors() {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/misc-tests/send-stream-with-errors",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => MiscTestsSendStreamWithErrorsResponse.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
 }
 
 class TestClientPostsService {
@@ -2170,6 +2182,35 @@ class ObjectWithEveryOptionalTypeNestedArrayItemItem {
     return ObjectWithEveryOptionalTypeNestedArrayItemItem(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class MiscTestsSendStreamWithErrorsResponse {
+  final String message;
+  const MiscTestsSendStreamWithErrorsResponse({
+    required this.message,
+  });
+  factory MiscTestsSendStreamWithErrorsResponse.fromJson(
+      Map<String, dynamic> json) {
+    return MiscTestsSendStreamWithErrorsResponse(
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "message": message,
+    };
+
+    return result;
+  }
+
+  MiscTestsSendStreamWithErrorsResponse copyWith({
+    String? message,
+  }) {
+    return MiscTestsSendStreamWithErrorsResponse(
+      message: message ?? this.message,
     );
   }
 }

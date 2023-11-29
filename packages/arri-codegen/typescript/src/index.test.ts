@@ -38,6 +38,14 @@ describe("Service Creation", () => {
                 params: "UpdateUserParams",
                 response: "User",
             },
+            watchUser: {
+                description: "Watch a user",
+                path: "/watch-user",
+                method: "get",
+                params: "GetUserParams",
+                response: "User",
+                isEventStream: true,
+            },
         };
 
         const result = await prettier.format(
@@ -46,6 +54,7 @@ describe("Service Creation", () => {
                 outputFile: "",
                 typesNeedingParser: [],
                 versionNumber: "1",
+                hasSseProcedures: true,
             }),
             { parser: "typescript" },
         );
@@ -85,6 +94,19 @@ describe("Service Creation", () => {
                     serializer: $$UpdateUserParams.serialize,
                 });
             }
+            /**
+             * Watch a user
+             */
+            watchUser(params: GetUserParams, hooks: SseHooks<User>) {
+                return arriSseRequest<User, GetUserParams>({
+                    url: \`\${this.baseUrl}/watch-user\`,
+                    method: "get",
+                    headers: this.headers,
+                    params,
+                    parser: $$User.parse,
+                    serializer: $$GetUserParams.serialize,
+                }, hooks);
+            }
         }`,
                     { parser: "typescript" },
                 ),
@@ -114,6 +136,7 @@ describe("Model Creation", () => {
                 outputFile: "",
                 versionNumber: "",
                 typesNeedingParser: ["User", "user"],
+                hasSseProcedures: false,
             },
             { existingTypeNames: [], isOptional: false },
         );
@@ -156,6 +179,7 @@ describe("Model Creation", () => {
                 outputFile: "",
                 versionNumber: "",
                 typesNeedingParser: ["User", "PartialUser"],
+                hasSseProcedures: false,
             },
             {
                 existingTypeNames: [],

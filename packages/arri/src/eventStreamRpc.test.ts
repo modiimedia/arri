@@ -3,6 +3,8 @@ import {
     type EventStreamConnection,
     defineEventStreamRpc,
     isEventStreamRpc,
+    type SseEvent,
+    formatSseEvent,
 } from "./eventStreamRpc";
 
 test("type inference", () => {
@@ -35,4 +37,19 @@ test("isEventStreamRpc()", () => {
         handler() {},
     });
     expect(isEventStreamRpc(rpc)).toBe(true);
+});
+
+test("formatSseEvent()", () => {
+    const event: SseEvent = {
+        data: "hello world",
+    };
+    const event2: SseEvent = {
+        id: "1",
+        event: "message",
+        data: "hello world",
+    };
+    expect(formatSseEvent(event)).toBe(`data: hello world\n\n`);
+    expect(formatSseEvent(event2)).toBe(
+        `id: 1\nevent: message\ndata: hello world\n\n`,
+    );
 });

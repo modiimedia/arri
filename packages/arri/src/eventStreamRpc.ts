@@ -9,7 +9,6 @@ import {
     eventHandler,
     isPreflightRequest,
 } from "h3";
-import { randomUUID } from "uncrypto";
 import { handleH3Error, type ErrorResponse } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
@@ -84,8 +83,35 @@ export interface EventStreamConnectionOptions<TType> {
     pingInterval?: number;
 }
 
+export interface SseEvent {
+    id?: string;
+    event?: string;
+    data: string;
+}
+
+export function formatSseEvent({ id, data, event }: SseEvent): string {
+    const parts: string[] = [];
+    if (id) {
+        parts.push(`id: ${id}`);
+    }
+    if (event) {
+        parts.push(`event: ${event}`);
+    }
+    parts.push(`data: ${data}`);
+    const payload = `${parts.join("\n")}\n\n`;
+    return payload;
+}
+
+export function formatSseEvents(events: SseEvent[]): string {
+    let output = "";
+    for (const event of events) {
+        output += formatSseEvent(event);
+    }
+    return output;
+}
+
 export class EventStreamConnection<TType> {
-    sessionId: string;
+    lastEventId: string | undefined;
     private readonly writable: WritableStream;
     private readonly readable: ReadableStream;
     private readonly writer: WritableStreamDefaultWriter;
@@ -100,7 +126,7 @@ export class EventStreamConnection<TType> {
         setSseHeaders(this.h3Event);
         setResponseStatus(this.h3Event, 200);
         const id = getHeader(event, "Last-Event-ID");
-        this.sessionId = id?.length ? id : randomUUID();
+        this.lastEventId = id;
 
         const { readable, writable } = new TransformStream();
         this.writable = writable;
@@ -112,52 +138,78 @@ export class EventStreamConnection<TType> {
         this.serializer = opts.serializer;
     }
 
-    startStream() {
+    start() {
         this.h3Event._handled = true;
         void sendStream(this.h3Event, this.readable);
         this.pingInterval = setInterval(async () => {
-            await this.pushRawEvent({
-                id: this.sessionId,
+            await this.publishEvent({
+                id: this.lastEventId,
                 event: "ping",
                 data: "",
             });
         }, this.pingIntervalMs);
     }
 
-    async push(data: TType) {
-        await this.pushRawEvent({
-            id: this.sessionId,
+    /**
+     * Publish a new event. Events published with this hook will trigger the `onData()` hooks of any connected clients.
+     */
+    async push(data: TType[], eventId?: string): Promise<void>;
+    async push(data: TType, eventId?: string): Promise<void>;
+    async push(data: TType | TType[], eventId?: string) {
+        if (Array.isArray(data)) {
+            const events: SseEvent[] = [];
+            for (const item of data) {
+                events.push({
+                    id: eventId,
+                    event: "message",
+                    data: this.serializer(item),
+                });
+            }
+            await this.publishEvents(events);
+            return;
+        }
+        await this.publishEvent({
+            id: eventId,
             event: "message",
             data: this.serializer(data),
         });
     }
 
-    async pushError(error: ErrorResponse) {
-        await this.pushRawEvent({
-            id: this.sessionId,
+    /**
+     * Push a custom event. These events will need to be parsed manually using the `onEvent` hooks of any generated clients.
+     * Note events with the name "error" or "message" cannot be used for custom events.
+     */
+    async pushCustomEvent(event: SseEvent): Promise<void> {
+        if (event.event === "message") {
+            throw new Error(
+                `Event type "message" is the default event type. Therefore it cannot be used when pushing custom events.`,
+            );
+        }
+        if (event.event === "error") {
+            throw new Error(
+                `Event type "error" is reserved for the pushError() method. Therefore it cannot be used when pushing custom events.`,
+            );
+        }
+    }
+
+    /**
+     * Publish an error event. This will trigger the `onError` hooks of any connected clients.
+     */
+    async pushError(error: ErrorResponse, eventId?: string) {
+        await this.publishEvent({
+            id: eventId,
             event: "error",
             data: JSON.stringify(error),
         });
     }
 
-    private async pushRawEvent({
-        id,
-        data,
-        event,
-    }: {
-        id?: string;
-        data: string;
-        event?: string;
-    }) {
-        const parts: string[] = [];
-        if (id) {
-            parts.push(`id: ${id}`);
-        }
-        if (event) {
-            parts.push(`event: ${event}`);
-        }
-        parts.push(`data: ${data}`);
-        const payload = `${parts.join("\n")}\n\n`;
+    private async publishEvents(events: SseEvent[]) {
+        const payload = formatSseEvents(events);
+        await this.writer.write(this.encoder.encode(payload));
+    }
+
+    private async publishEvent(event: SseEvent) {
+        const payload = formatSseEvent(event);
         await this.writer.write(this.encoder.encode(payload));
     }
 
@@ -175,6 +227,8 @@ export class EventStreamConnection<TType> {
         await this.cleanup();
     }
 
+    on(event: "disconnect", callback: () => any): void;
+    on(event: "close", callback: () => any): void;
     on(event: "disconnect" | "close", callback: () => any) {
         switch (event) {
             case "disconnect":

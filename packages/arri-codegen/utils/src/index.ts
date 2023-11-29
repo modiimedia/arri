@@ -83,7 +83,9 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
         (typeof inputObj.params === "string" ||
             typeof inputObj.params === "undefined") &&
         (typeof inputObj.response === "string" ||
-            typeof inputObj.response === "undefined")
+            typeof inputObj.response === "undefined") &&
+        (typeof inputObj.isEventStream === "boolean" ||
+            typeof inputObj.isEventStream === "undefined")
     );
 }
 

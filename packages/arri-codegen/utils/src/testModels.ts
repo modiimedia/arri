@@ -77,28 +77,6 @@ export const TestErrorResponse = a.object({
     stack: a.nullable(a.string()),
 });
 
-export const TestUserNotification = a.discriminator(
-    "type",
-    {
-        USER_CREATED: a.object({
-            userId: a.string(),
-            createdAt: a.timestamp(),
-        }),
-        USER_DELETED: a.object({
-            userId: a.string(),
-            createdAt: a.timestamp(),
-            deletedAt: a.timestamp(),
-            deletionReason: a.string(),
-        }),
-        USER_UPDATED: a.object({
-            userId: a.string(),
-            createdAt: a.timestamp(),
-            updatedAt: a.timestamp(),
-        }),
-    },
-    { id: "UserNotification" },
-);
-
 export const TestAppDefinition: AppDefinition = {
     arriSchemaVersion: "0.0.2",
     info: {
@@ -133,11 +111,12 @@ export const TestAppDefinition: AppDefinition = {
             params: undefined,
             response: undefined,
         },
-        "users.subscribeToNotifications": {
+        "users.watchUser": {
+            description: "Watch a user",
             path: "/notifications/subscribe-to-notifications",
             method: "get",
-            params: undefined,
-            response: "UserNotification",
+            params: "UserParams",
+            response: "User",
             isEventStream: true,
         },
     },
@@ -148,6 +127,5 @@ export const TestAppDefinition: AppDefinition = {
         User: TestUserSchema,
         UserParams: TestUserParams,
         UpdateUserParams: TestUpdateUserParams,
-        UserNotification: TestUserNotification,
     },
 };
