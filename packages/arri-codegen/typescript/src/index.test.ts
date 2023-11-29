@@ -97,7 +97,7 @@ describe("Service Creation", () => {
             /**
              * Watch a user
              */
-            watchUser(params: GetUserParams, hooks: SseHooks<User>) {
+            watchUser(params: GetUserParams, hooks: SseOptions<User>) {
                 return arriSseRequest<User, GetUserParams>({
                     url: \`\${this.baseUrl}/watch-user\`,
                     method: "get",

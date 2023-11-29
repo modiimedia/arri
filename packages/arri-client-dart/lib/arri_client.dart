@@ -4,7 +4,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 /// Enum of available HTTP methods
-enum HttpMethod { get, post, put, patch, head, delete }
+enum HttpMethod implements Comparable<HttpMethod> {
+  get("GET"),
+  post("POST"),
+  put("PUT"),
+  patch("PATCH"),
+  head("HEAD"),
+  delete("DELETE");
+
+  const HttpMethod(this.value);
+  final String value;
+
+  @override
+  compareTo(HttpMethod other) => value.compareTo(other.value);
+}
 
 /// Perform a raw http request
 Future<http.Response> arriRequest(
@@ -174,6 +187,7 @@ class ArriRequestError implements Exception {
       return ArriRequestError.unknown();
     }
   }
+
   factory ArriRequestError.unknown() {
     return ArriRequestError(
       statusCode: 400,

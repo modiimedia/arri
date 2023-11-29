@@ -112,7 +112,7 @@ export async function createTypescriptClient(
     const importParts: string[] = ["arriRequest"];
     if (rpcOptions.hasSseProcedures) {
         importParts.push("arriSseRequest");
-        importParts.push("type SseHooks");
+        importParts.push("type SseOptions");
     }
     const result = `/* eslint-disable */
 // @ts-nocheck
@@ -181,7 +181,7 @@ export function tsRpcFromDefinition(
         options.hasSseProcedures = true;
         return `${description}${key}(${
             paramsInput.length ? `${paramsInput}, ` : ""
-        }hooks: SseHooks<${schema.response ?? "undefined"}>) {
+        }options: SseOptions<${schema.response ?? "undefined"}>) {
             return arriSseRequest<${schema.response ?? "undefined"}, ${
                 schema.params ?? "undefined"
             }>({
@@ -191,7 +191,7 @@ export function tsRpcFromDefinition(
                 ${paramsOutput},
                 parser: ${parserPart},
                 serializer: ${serializerPart},
-            }, hooks);
+            }, options);
         }`;
     }
     return `${description}${key}(${paramsInput}) {

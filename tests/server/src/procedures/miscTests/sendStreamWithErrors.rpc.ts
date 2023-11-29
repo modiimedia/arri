@@ -21,6 +21,7 @@ export default defineEventStreamRpc({
             messageCount++;
         }, 100);
         async function cleanup() {
+            console.log("CLEANING UP");
             clearInterval(interval);
             await connection.close();
         }

@@ -344,7 +344,7 @@ describe("bigint requests", () => {
 test("SSE request", async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
-    const connection = client.miscTests.sendObjectStream(
+    const controller = client.miscTests.sendObjectStream(
         { channelId: "1" },
         {
             onData(data) {
@@ -361,7 +361,7 @@ test("SSE request", async () => {
                         break;
                     case "URL":
                         expect(data.date instanceof Date).toBe(true);
-                        expect(typeof data.url).toBe("url");
+                        expect(typeof data.url).toBe("string");
                         break;
                 }
             },
@@ -372,28 +372,25 @@ test("SSE request", async () => {
     );
     await new Promise((resolve, reject) => {
         setTimeout(() => {
-            connection.abort();
+            controller.abort();
             resolve(true);
         }, 5000);
     });
     expect(receivedMessageCount > 0).toBe(true);
     expect(wasConnected).toBe(true);
-});
+}, 30000);
 
 test("SSE Request with errors", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriRequestError | undefined;
-    const connection = client.miscTests.sendStreamWithErrors({
+    const controller = client.miscTests.sendStreamWithErrors({
         onData(_) {
             messageCount++;
         },
         onError(error) {
             errorReceived = error;
-            connection.abort();
-        },
-        onEvent(event) {
-            console.log(event);
+            controller.abort();
         },
         onOpen() {
             timesConnected++;
@@ -405,7 +402,7 @@ test("SSE Request with errors", async () => {
         }, 5000);
     });
     expect(errorReceived?.statusCode).toBe(400);
-    expect(connection.signal.aborted).toBe(true);
+    expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
-});
+}, 30000);
