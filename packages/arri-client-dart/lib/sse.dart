@@ -9,8 +9,8 @@ EventSource<T> parsedArriSseRequest<T>(
   String url, {
   required HttpMethod method,
   required T Function(String data) parser,
-  Map<String, dynamic> params = const {},
-  Map<String, String> headers = const {},
+  Map<String, dynamic>? params,
+  Map<String, String>? headers,
   Duration? retryDelay,
   int? maxRetryCount,
 }) {
@@ -19,7 +19,7 @@ EventSource<T> parsedArriSseRequest<T>(
     method: method,
     parser: parser,
     params: params,
-    headers: headers,
+    headers: headers ?? {},
     retryDelay: retryDelay ?? Duration.zero,
     maxRetryCount: maxRetryCount,
   );
@@ -29,7 +29,7 @@ class EventSource<TData> {
   late final http.Client httpClient;
   final String url;
   final HttpMethod method;
-  final Map<String, dynamic> params;
+  final Map<String, dynamic>? params;
   final Map<String, String> headers;
   String? lastEventId;
   late final StreamController<TData> _streamController;
@@ -43,7 +43,7 @@ class EventSource<TData> {
     required this.parser,
     http.Client? httpClient,
     this.method = HttpMethod.get,
-    this.params = const {},
+    this.params,
     this.headers = const {},
     this.retryDelay = Duration.zero,
     this.maxRetryCount,
@@ -56,21 +56,28 @@ class EventSource<TData> {
 
   _connect() async {
     String parsedUrl = url;
-    switch (method) {
-      case HttpMethod.get:
-      case HttpMethod.head:
-        final queryParts = <String>[];
-        params.forEach((key, value) {
-          queryParts.add("$key=$value");
-        });
-        parsedUrl += "?${queryParts.join("&")}";
-        break;
-      default:
-        break;
+    String body = "";
+    if (params != null) {
+      switch (method) {
+        case HttpMethod.get:
+        case HttpMethod.head:
+          final queryParts = <String>[];
+          params?.forEach((key, value) {
+            queryParts.add("$key=$value");
+          });
+          parsedUrl += "?${queryParts.join("&")}";
+          break;
+        default:
+          body = json.encode(params);
+          break;
+      }
     }
     final uri = Uri.parse(parsedUrl);
     final request = http.Request(method.value, uri);
     request.headers["Content-Type"] = "text/event-stream";
+    if (body.isNotEmpty) {
+      request.body = body;
+    }
     headers.forEach((key, value) {
       request.headers[key] = value;
     });
