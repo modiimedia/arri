@@ -206,11 +206,17 @@ export function dartRpcFromDefinition(
         | "Future<int>"
         | "Future<number>"
         | "Future<void>"
-        | `Future<${string}>` = `Future<String>`;
+        | `Future<${string}>`
+        | `EventSource<${string}>` = `Future<String>`;
     let returnTypeName = "String";
     if (def.response) {
-        returnType = `Future<${pascalCase(def.response)}>`;
         returnTypeName = pascalCase(def.response);
+
+        if (def.isEventStream) {
+            returnType = `EventSource<${returnTypeName}>`;
+        } else {
+            returnType = `Future<${returnTypeName}>`;
+        }
     } else {
         returnType = "Future<void>";
     }
@@ -257,9 +263,12 @@ export function dartRpcFromDefinition(
             descriptionParts.push(`/// ${part}`);
         }
     }
+    const functionName = def.isEventStream
+        ? `parsedArriSseRequest<${returnTypeName}>`
+        : `parsedArriRequest`;
     return `${descriptionParts.join("\n")}
 ${returnType} ${key}(${paramsInput}) {
-    return parsedArriRequest(
+    return ${functionName}(
       "$_baseUrl${def.path}",
       method: HttpMethod.${def.method},
       headers: _headers,

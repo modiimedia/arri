@@ -74,6 +74,19 @@ class TestClientUsersService {
       ),
     );
   }
+
+  /// Watch a user
+  EventSource<User> watchUser(UserParams params) {
+    return parsedArriSseRequest<User>(
+      "$_baseUrl/users/watch-user",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => User.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
 }
 
 class TestClientUsersSettingsService {

@@ -5,8 +5,8 @@ import 'package:arri_client/errors.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
-EventSource<T> parsedArriSseRequest<T>({
-  required String url,
+EventSource<T> parsedArriSseRequest<T>(
+  String url, {
   required HttpMethod method,
   required T Function(String data) parser,
   Map<String, dynamic> params = const {},

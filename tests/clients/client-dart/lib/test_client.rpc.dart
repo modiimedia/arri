@@ -87,8 +87,9 @@ class TestClientMiscTestsService {
     );
   }
 
-  Future<ChatMessage> sendObjectStream(MiscTestsSendObjectStreamParams params) {
-    return parsedArriRequest(
+  EventSource<ChatMessage> sendObjectStream(
+      MiscTestsSendObjectStreamParams params) {
+    return parsedArriSseRequest<ChatMessage>(
       "$_baseUrl/rpcs/misc-tests/send-object-stream",
       method: HttpMethod.get,
       headers: _headers,
@@ -125,8 +126,8 @@ class TestClientMiscTestsService {
     );
   }
 
-  Future<MiscTestsSendStreamWithErrorsResponse> sendStreamWithErrors() {
-    return parsedArriRequest(
+  EventSource<MiscTestsSendStreamWithErrorsResponse> sendStreamWithErrors() {
+    return parsedArriSseRequest<MiscTestsSendStreamWithErrorsResponse>(
       "$_baseUrl/rpcs/misc-tests/send-stream-with-errors",
       method: HttpMethod.get,
       headers: _headers,
