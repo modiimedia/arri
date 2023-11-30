@@ -1,39 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:arri_client/arri_client.dart';
+import 'package:arri_client/errors.dart';
+import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
-class SseEvent {
-  final String? id;
-  final String? event;
-  final String data;
-  const SseEvent({this.id, this.event, required this.data});
-
-  factory SseEvent.fromString(String input) {
-    final lines = input.split("\n");
-    String? id;
-    String? event;
-    String data = '';
-    for (final line in lines) {
-      if (line.startsWith("id:")) {
-        id = line.replaceFirst("id:", "").trim();
-        continue;
-      }
-      if (line.startsWith("event:")) {
-        event = line.replaceFirst("event:", "").trim();
-        continue;
-      }
-      if (line.startsWith("data:")) {
-        data = line.replaceFirst("data:", "").trim();
-        continue;
-      }
-    }
-    return SseEvent(id: id, event: event, data: data);
-  }
+EventSource<T> parsedArriSseRequest<T>({
+  required String url,
+  required HttpMethod method,
+  required T Function(String data) parser,
+  Map<String, dynamic> params = const {},
+  Map<String, String> headers = const {},
+  Duration? retryDelay,
+  int? maxRetryCount,
+}) {
+  return EventSource(
+    url: url,
+    method: method,
+    parser: parser,
+    params: params,
+    headers: headers,
+    retryDelay: retryDelay ?? Duration.zero,
+    maxRetryCount: maxRetryCount,
+  );
 }
-
-sealed class SseEventPayload {}
 
 class EventSource<TData> {
   late final http.Client httpClient;
@@ -105,8 +95,40 @@ class EventSource<TData> {
         );
       }
       response.stream.listen((value) {
+        final input = utf8.decode(value);
         print("---NEW_DATA---\n$value");
-      }, onError: (err, s) {}, onDone: () {});
+        final events = parseSseEvents(input, parser);
+        for (final event in events) {
+          if (event.id != null) {
+            lastEventId = event.id;
+          }
+          switch (event) {
+            case SseRawEvent<TData>():
+              break;
+            case SseMessageEvent<TData>():
+              _streamController.add(event.data);
+              break;
+            case SseErrorEvent<TData>():
+              _streamController.addError(event.data);
+              break;
+          }
+        }
+      }, onError: (err, s) {
+        print("---NEW_ERROR---");
+        print(err);
+        print(s);
+        if (maxRetryCount != null && maxRetryCount! <= retryCount) {
+          throw err;
+        }
+        Timer(retryDelay, () => _connect());
+      }, onDone: () async {
+        if (maxRetryCount != null && maxRetryCount! <= retryCount) {
+          await _streamController.close();
+          httpClient.close();
+          return;
+        }
+        Timer(retryDelay, () => _connect());
+      });
     } catch (err) {
       if (maxRetryCount != null && maxRetryCount! <= retryCount) {
         rethrow;
@@ -120,12 +142,92 @@ class EventSource<TData> {
   }
 }
 
-main() async {
-  final event = EventSource<SseEvent>(
-    url: 'http://hello-world',
-    parser: (data) {
-      return json.decode(data);
-    },
-  );
-  final listener = event.stream.listen((event) {});
+List<SseEvent<T>> parseSseEvents<T>(
+  String input,
+  T Function(String) dataParser,
+) {
+  final stringParts = input.split("\n\n");
+  final result = <SseEvent<T>>[];
+  for (final part in stringParts) {
+    result.add(SseEvent<T>.fromString(part, dataParser));
+  }
+  return result;
+}
+
+sealed class SseEvent<TData> {
+  final String? id;
+  final String? event;
+  const SseEvent({
+    this.id,
+    this.event,
+  });
+
+  factory SseEvent.fromString(
+    String input,
+    TData Function(String) parser,
+  ) {
+    final sse = SseRawEvent<TData>.fromString(input);
+    switch (sse.event) {
+      case "message":
+        return SseMessageEvent.fromRawSseEvent(sse, parser);
+      case "error":
+        return SseErrorEvent.fromRawSseEvent(sse);
+      default:
+        return sse;
+    }
+  }
+}
+
+class SseRawEvent<TData> extends SseEvent<TData> {
+  final String data;
+  const SseRawEvent({super.id, super.event, required this.data});
+
+  factory SseRawEvent.fromString(String input) {
+    final lines = input.split("\n");
+    String? id;
+    String? event;
+    String data = '';
+    for (final line in lines) {
+      if (line.startsWith("id:")) {
+        id = line.replaceFirst("id:", "").trim();
+        continue;
+      }
+      if (line.startsWith("event:")) {
+        event = line.replaceFirst("event:", "").trim();
+        continue;
+      }
+      if (line.startsWith("data:")) {
+        data = line.replaceFirst("data:", "").trim();
+        continue;
+      }
+    }
+    return SseRawEvent(id: id, event: event, data: data);
+  }
+}
+
+class SseMessageEvent<TData> extends SseEvent<TData> {
+  final TData data;
+  const SseMessageEvent({super.id, super.event, required this.data});
+
+  factory SseMessageEvent.fromRawSseEvent(
+      SseRawEvent event, TData Function(String) parser) {
+    return SseMessageEvent(
+      id: event.id,
+      event: event.event,
+      data: parser(event.data),
+    );
+  }
+}
+
+class SseErrorEvent<TData> extends SseEvent<TData> {
+  final ArriRequestError data;
+  const SseErrorEvent({super.id, super.event, required this.data});
+
+  factory SseErrorEvent.fromRawSseEvent(SseRawEvent event) {
+    return SseErrorEvent(
+      id: event.id,
+      event: event.event,
+      data: ArriRequestError.fromString(event.data),
+    );
+  }
 }
