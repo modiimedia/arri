@@ -344,7 +344,7 @@ describe("bigint requests", () => {
 test("SSE request", async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
-    const controller = client.miscTests.sendObjectStream(
+    const controller = client.miscTests.streamMessages(
         { channelId: "1" },
         {
             onData(data) {
@@ -384,7 +384,7 @@ test("SSE Request with errors", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriRequestError | undefined;
-    const controller = client.miscTests.sendStreamWithErrors({
+    const controller = client.miscTests.streamTenEventsThenError({
         onData(_) {
             messageCount++;
         },

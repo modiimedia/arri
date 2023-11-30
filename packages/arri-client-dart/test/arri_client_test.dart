@@ -8,7 +8,6 @@ main() {
     final response =
         await parsedArriRequestSafe(nonExistentUrl, parser: (data) {});
     if (response.error != null) {
-      print(response.error);
       expect(response.error!.statusCode, equals(500));
     }
   });

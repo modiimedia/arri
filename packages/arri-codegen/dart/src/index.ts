@@ -272,7 +272,9 @@ export function dartRpcFromDefinition(
             `SseHookOnClose<${returnTypeName}>? onClose`,
         ];
         return `${descriptionParts.join("\n")}
-        ${returnType} ${key}(${paramsInput}, {${hookParts.join(", ")},}) {
+        ${returnType} ${key}(${
+            paramsInput.length ? `${paramsInput}, ` : ""
+        }{${hookParts.join(", ")},}) {
             return parsedArriSseRequest<${returnTypeName}>(
                 "$_baseUrl${def.path}",
                 method: HttpMethod.${def.method},

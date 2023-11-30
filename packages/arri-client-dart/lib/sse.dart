@@ -5,14 +5,14 @@ import 'package:arri_client/errors.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
-typedef SseHookOnData<T> = void Function(T data, EventSource<T> event);
+typedef SseHookOnData<T> = void Function(T data, EventSource<T> connection);
 typedef SseHookOnError<T> = void Function(
-    ArriRequestError error, EventSource<T> event);
+    ArriRequestError error, EventSource<T> connection);
 typedef SseHookOnConnectionError<T> = void Function(
-    ArriRequestError error, EventSource<T> event);
+    ArriRequestError error, EventSource<T> connection);
 typedef SseHookOnOpen<T> = void Function(
-    http.StreamedResponse response, EventSource<T> event);
-typedef SseHookOnClose<T> = void Function(EventSource<T> event);
+    http.StreamedResponse response, EventSource<T> connection);
+typedef SseHookOnClose<T> = void Function(EventSource<T> connection);
 
 EventSource<T> parsedArriSseRequest<T>(
   String url, {
@@ -222,6 +222,10 @@ class EventSource<T> {
     _closedByClient = true;
     _httpClient.close();
     _onClose();
+  }
+
+  bool get isClosed {
+    return _closedByClient;
   }
 
   Stream<T> toStream() {

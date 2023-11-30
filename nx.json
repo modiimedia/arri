@@ -15,7 +15,8 @@
             "{projectRoot}/project.json",
             "{projectRoot}/tsconfig.json",
             "{projectRoot}/build.config.ts",
-            "{projectRoot}/src/**/*"
+            "{projectRoot}/src/**/*",
+            "{projectRoot}/node_modules"
         ],
         "shared-globals": [
             "{workspaceRoot}/pnpm-lock.yaml",
