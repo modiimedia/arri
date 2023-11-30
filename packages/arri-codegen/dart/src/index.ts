@@ -263,12 +263,33 @@ export function dartRpcFromDefinition(
             descriptionParts.push(`/// ${part}`);
         }
     }
-    const functionName = def.isEventStream
-        ? `parsedArriSseRequest<${returnTypeName}>`
-        : `parsedArriRequest`;
+    if (def.isEventStream) {
+        const hookParts: string[] = [
+            `SseHookOnData<${returnTypeName}>? onData`,
+            `SseHookOnError<${returnTypeName}>? onError`,
+            `SseHookOnConnectionError<${returnTypeName}>? onConnectionError`,
+            `SseHookOnOpen<${returnTypeName}>? onOpen`,
+            `SseHookOnClose<${returnTypeName}>? onClose`,
+        ];
+        return `${descriptionParts.join("\n")}
+        ${returnType} ${key}(${paramsInput}, {${hookParts.join(", ")},}) {
+            return parsedArriSseRequest<${returnTypeName}>(
+                "$_baseUrl${def.path}",
+                method: HttpMethod.${def.method},
+                headers: _headers,
+                params: ${paramsInput.length ? `params.toJson()` : "null"},
+                parser: ${responseParser},
+                onData: onData,
+                onError: onError,
+                onConnectionError: onConnectionError,
+                onOpen: onOpen,
+                onClose: onClose,
+            );
+        }`;
+    }
     return `${descriptionParts.join("\n")}
 ${returnType} ${key}(${paramsInput}) {
-    return ${functionName}(
+    return parsedArriRequest(
       "$_baseUrl${def.path}",
       method: HttpMethod.${def.method},
       headers: _headers,

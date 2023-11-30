@@ -1,11 +1,11 @@
+import { randomUUID } from "crypto";
 import { defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
+import { ChatMessage } from "./streamMessages.rpc";
 
 export default defineEventStreamRpc({
+    method: "post",
     params: undefined,
-    response: a.object({
-        message: a.string(),
-    }),
+    response: ChatMessage,
     handler({ connection }) {
         let messageCount = 0;
         const interval = setInterval(async () => {
@@ -17,7 +17,14 @@ export default defineEventStreamRpc({
                 await cleanup();
                 return;
             }
-            await connection.push({ message: "hello world" });
+            await connection.push({
+                id: randomUUID(),
+                channelId: "1",
+                date: new Date(),
+                messageType: "TEXT",
+                text: "hello world",
+                userId: randomUUID(),
+            });
             messageCount++;
         }, 100);
         async function cleanup() {

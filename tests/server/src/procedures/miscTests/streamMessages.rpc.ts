@@ -3,6 +3,13 @@ import { faker } from "@faker-js/faker";
 import { defineEventStreamRpc } from "arri";
 import { a } from "arri-validate";
 
+export const ChatMessageParams = a.object(
+    {
+        channelId: a.string(),
+    },
+    { id: "ChatMessageParams" },
+);
+
 const ChatMessageBase = a.object({
     id: a.string(),
     channelId: a.string(),
@@ -10,7 +17,7 @@ const ChatMessageBase = a.object({
     date: a.timestamp(),
 });
 
-const ChatMessage = a.discriminator(
+export const ChatMessage = a.discriminator(
     "messageType",
     {
         TEXT: a.extend(
@@ -35,12 +42,10 @@ const ChatMessage = a.discriminator(
     { id: "ChatMessage" },
 );
 
-type ChatMessage = a.infer<typeof ChatMessage>;
+export type ChatMessage = a.infer<typeof ChatMessage>;
 
 export default defineEventStreamRpc({
-    params: a.object({
-        channelId: a.string(),
-    }),
+    params: ChatMessageParams,
     response: ChatMessage,
     handler({ params, connection }) {
         const randomItem = (): ChatMessage => {

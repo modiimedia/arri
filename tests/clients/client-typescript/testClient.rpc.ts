@@ -67,22 +67,6 @@ export class TestClientMiscTestsService {
             serializer: $$ObjectWithEveryType.serialize,
         });
     }
-    sendObjectStream(
-        params: MiscTestsSendObjectStreamParams,
-        options: SseOptions<ChatMessage>,
-    ) {
-        return arriSseRequest<ChatMessage, MiscTestsSendObjectStreamParams>(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/send-object-stream`,
-                method: "get",
-                headers: this.headers,
-                params,
-                parser: $$ChatMessage.parse,
-                serializer: $$MiscTestsSendObjectStreamParams.serialize,
-            },
-            options,
-        );
-    }
     sendObjectWithNullableFields(params: ObjectWithEveryNullableType) {
         return arriRequest<
             ObjectWithEveryNullableType,
@@ -109,16 +93,30 @@ export class TestClientMiscTestsService {
             serializer: $$ObjectWithEveryOptionalType.serialize,
         });
     }
-    sendStreamWithErrors(
-        options: SseOptions<MiscTestsSendStreamWithErrorsResponse>,
+    streamMessages(
+        params: ChatMessageParams,
+        options: SseOptions<ChatMessage>,
     ) {
-        return arriSseRequest<MiscTestsSendStreamWithErrorsResponse, undefined>(
+        return arriSseRequest<ChatMessage, ChatMessageParams>(
             {
-                url: `${this.baseUrl}/rpcs/misc-tests/send-stream-with-errors`,
+                url: `${this.baseUrl}/rpcs/misc-tests/stream-messages`,
                 method: "get",
                 headers: this.headers,
+                params,
+                parser: $$ChatMessage.parse,
+                serializer: $$ChatMessageParams.serialize,
+            },
+            options,
+        );
+    }
+    streamTenEventsThenError(options: SseOptions<ChatMessage>) {
+        return arriSseRequest<ChatMessage, undefined>(
+            {
+                url: `${this.baseUrl}/rpcs/misc-tests/stream-ten-events-then-error`,
+                method: "post",
+                headers: this.headers,
                 params: undefined,
-                parser: $$MiscTestsSendStreamWithErrorsResponse.parse,
+                parser: $$ChatMessage.parse,
                 serializer: (_) => {},
             },
             options,
@@ -2131,590 +2129,6 @@ export interface ObjectWithEveryTypeNestedObjectDataData {
 export interface ObjectWithEveryTypeNestedArrayItemItem {
     id: string;
     timestamp: Date;
-}
-
-export interface MiscTestsSendObjectStreamParams {
-    channelId: string;
-}
-const $$MiscTestsSendObjectStreamParams = {
-    parse(input: Record<any, any>): MiscTestsSendObjectStreamParams {
-        class $ValidationErrorMiscTestsSendObjectStreamParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorMiscTestsSendObjectStreamParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.channelId === "string") {
-                    jsonInnerVal.channelId = json.channelId;
-                } else {
-                    $fallback(
-                        "/channelId",
-                        "/properties/channelId/type",
-                        "Expected string at /channelId",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.channelId === "string") {
-                inputInnerVal.channelId = input.channelId;
-            } else {
-                $fallback(
-                    "/channelId",
-                    "/properties/channelId/type",
-                    "Expected string at /channelId",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: MiscTestsSendObjectStreamParams): string {
-        let json = "";
-        json += "{";
-        json += `"channelId":"${input.channelId
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
-        json += "}";
-        return json;
-    },
-};
-
-export type ChatMessage = ChatMessageText | ChatMessageImage | ChatMessageUrl;
-const $$ChatMessage = {
-    parse(input: Record<any, any>): ChatMessage {
-        class $ValidationErrorChatMessage extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorChatMessage({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                switch (json.messageType) {
-                    case "TEXT": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "TEXT";
-                            if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
-                            } else {
-                                $fallback(
-                                    "/id",
-                                    "/mapping/properties/id/type",
-                                    "Expected string at /id",
-                                );
-                            }
-                            if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
-                            } else {
-                                $fallback(
-                                    "/channelId",
-                                    "/mapping/properties/channelId/type",
-                                    "Expected string at /channelId",
-                                );
-                            }
-                            if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
-                            } else {
-                                $fallback(
-                                    "/userId",
-                                    "/mapping/properties/userId/type",
-                                    "Expected string at /userId",
-                                );
-                            }
-                            if (
-                                typeof json.date === "object" &&
-                                json.date instanceof Date
-                            ) {
-                                jsonInnerVal.date = json.date;
-                            } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
-                            } else {
-                                $fallback(
-                                    "/date",
-                                    "/mapping/properties/date",
-                                    "Expected instanceof Date or ISO Date string at /date",
-                                );
-                            }
-                            if (typeof json.text === "string") {
-                                jsonInnerVal.text = json.text;
-                            } else {
-                                $fallback(
-                                    "/text",
-                                    "/mapping/properties/text/type",
-                                    "Expected string at /text",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "IMAGE": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "IMAGE";
-                            if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
-                            } else {
-                                $fallback(
-                                    "/id",
-                                    "/mapping/properties/id/type",
-                                    "Expected string at /id",
-                                );
-                            }
-                            if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
-                            } else {
-                                $fallback(
-                                    "/channelId",
-                                    "/mapping/properties/channelId/type",
-                                    "Expected string at /channelId",
-                                );
-                            }
-                            if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
-                            } else {
-                                $fallback(
-                                    "/userId",
-                                    "/mapping/properties/userId/type",
-                                    "Expected string at /userId",
-                                );
-                            }
-                            if (
-                                typeof json.date === "object" &&
-                                json.date instanceof Date
-                            ) {
-                                jsonInnerVal.date = json.date;
-                            } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
-                            } else {
-                                $fallback(
-                                    "/date",
-                                    "/mapping/properties/date",
-                                    "Expected instanceof Date or ISO Date string at /date",
-                                );
-                            }
-                            if (typeof json.image === "string") {
-                                jsonInnerVal.image = json.image;
-                            } else {
-                                $fallback(
-                                    "/image",
-                                    "/mapping/properties/image/type",
-                                    "Expected string at /image",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "URL": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "URL";
-                            if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
-                            } else {
-                                $fallback(
-                                    "/id",
-                                    "/mapping/properties/id/type",
-                                    "Expected string at /id",
-                                );
-                            }
-                            if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
-                            } else {
-                                $fallback(
-                                    "/channelId",
-                                    "/mapping/properties/channelId/type",
-                                    "Expected string at /channelId",
-                                );
-                            }
-                            if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
-                            } else {
-                                $fallback(
-                                    "/userId",
-                                    "/mapping/properties/userId/type",
-                                    "Expected string at /userId",
-                                );
-                            }
-                            if (
-                                typeof json.date === "object" &&
-                                json.date instanceof Date
-                            ) {
-                                jsonInnerVal.date = json.date;
-                            } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
-                            } else {
-                                $fallback(
-                                    "/date",
-                                    "/mapping/properties/date",
-                                    "Expected instanceof Date or ISO Date string at /date",
-                                );
-                            }
-                            if (typeof json.url === "string") {
-                                jsonInnerVal.url = json.url;
-                            } else {
-                                $fallback(
-                                    "/url",
-                                    "/mapping/properties/url/type",
-                                    "Expected string at /url",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    default:
-                        $fallback(
-                            "",
-                            "/mapping",
-                            "json.messageType did not match one of the specified values",
-                        );
-                        break;
-                }
-            } else {
-                $fallback("", "", "Expected Object.");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            switch (input.messageType) {
-                case "TEXT": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "TEXT";
-                        if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
-                        } else {
-                            $fallback(
-                                "/id",
-                                "/mapping/properties/id/type",
-                                "Expected string at /id",
-                            );
-                        }
-                        if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
-                        } else {
-                            $fallback(
-                                "/channelId",
-                                "/mapping/properties/channelId/type",
-                                "Expected string at /channelId",
-                            );
-                        }
-                        if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
-                        } else {
-                            $fallback(
-                                "/userId",
-                                "/mapping/properties/userId/type",
-                                "Expected string at /userId",
-                            );
-                        }
-                        if (
-                            typeof input.date === "object" &&
-                            input.date instanceof Date
-                        ) {
-                            inputInnerVal.date = input.date;
-                        } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
-                        } else {
-                            $fallback(
-                                "/date",
-                                "/mapping/properties/date",
-                                "Expected instanceof Date or ISO Date string at /date",
-                            );
-                        }
-                        if (typeof input.text === "string") {
-                            inputInnerVal.text = input.text;
-                        } else {
-                            $fallback(
-                                "/text",
-                                "/mapping/properties/text/type",
-                                "Expected string at /text",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "IMAGE": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "IMAGE";
-                        if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
-                        } else {
-                            $fallback(
-                                "/id",
-                                "/mapping/properties/id/type",
-                                "Expected string at /id",
-                            );
-                        }
-                        if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
-                        } else {
-                            $fallback(
-                                "/channelId",
-                                "/mapping/properties/channelId/type",
-                                "Expected string at /channelId",
-                            );
-                        }
-                        if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
-                        } else {
-                            $fallback(
-                                "/userId",
-                                "/mapping/properties/userId/type",
-                                "Expected string at /userId",
-                            );
-                        }
-                        if (
-                            typeof input.date === "object" &&
-                            input.date instanceof Date
-                        ) {
-                            inputInnerVal.date = input.date;
-                        } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
-                        } else {
-                            $fallback(
-                                "/date",
-                                "/mapping/properties/date",
-                                "Expected instanceof Date or ISO Date string at /date",
-                            );
-                        }
-                        if (typeof input.image === "string") {
-                            inputInnerVal.image = input.image;
-                        } else {
-                            $fallback(
-                                "/image",
-                                "/mapping/properties/image/type",
-                                "Expected string at /image",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "URL": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "URL";
-                        if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
-                        } else {
-                            $fallback(
-                                "/id",
-                                "/mapping/properties/id/type",
-                                "Expected string at /id",
-                            );
-                        }
-                        if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
-                        } else {
-                            $fallback(
-                                "/channelId",
-                                "/mapping/properties/channelId/type",
-                                "Expected string at /channelId",
-                            );
-                        }
-                        if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
-                        } else {
-                            $fallback(
-                                "/userId",
-                                "/mapping/properties/userId/type",
-                                "Expected string at /userId",
-                            );
-                        }
-                        if (
-                            typeof input.date === "object" &&
-                            input.date instanceof Date
-                        ) {
-                            inputInnerVal.date = input.date;
-                        } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
-                        } else {
-                            $fallback(
-                                "/date",
-                                "/mapping/properties/date",
-                                "Expected instanceof Date or ISO Date string at /date",
-                            );
-                        }
-                        if (typeof input.url === "string") {
-                            inputInnerVal.url = input.url;
-                        } else {
-                            $fallback(
-                                "/url",
-                                "/mapping/properties/url/type",
-                                "Expected string at /url",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                default:
-                    $fallback(
-                        "",
-                        "/mapping",
-                        "input.messageType did not match one of the specified values",
-                    );
-                    break;
-            }
-        } else {
-            $fallback("", "", "Expected Object.");
-        }
-        return result;
-    },
-    serialize(input: ChatMessage): string {
-        let json = "";
-        switch (input.messageType) {
-            case "TEXT": {
-                json += "{";
-                json += `"messageType":"TEXT"`;
-                json += `,"id":"${input.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"text":"${input.text
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += "}";
-                break;
-            }
-            case "IMAGE": {
-                json += "{";
-                json += `"messageType":"IMAGE"`;
-                json += `,"id":"${input.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"image":"${input.image
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += "}";
-                break;
-            }
-            case "URL": {
-                json += "{";
-                json += `"messageType":"URL"`;
-                json += `,"id":"${input.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"url":"${input.url
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += "}";
-                break;
-            }
-        }
-        return json;
-    },
-};
-export interface ChatMessageText {
-    messageType: "TEXT";
-    id: string;
-    channelId: string;
-    userId: string;
-    date: Date;
-    text: string;
-}
-
-export interface ChatMessageImage {
-    messageType: "IMAGE";
-    id: string;
-    channelId: string;
-    userId: string;
-    date: Date;
-    image: string;
-}
-
-export interface ChatMessageUrl {
-    messageType: "URL";
-    id: string;
-    channelId: string;
-    userId: string;
-    date: Date;
-    url: string;
 }
 
 export interface ObjectWithEveryNullableType {
@@ -6840,12 +6254,12 @@ export interface ObjectWithEveryOptionalTypeNestedArrayItemItem {
     timestamp: Date;
 }
 
-export interface MiscTestsSendStreamWithErrorsResponse {
-    message: string;
+export interface ChatMessageParams {
+    channelId: string;
 }
-const $$MiscTestsSendStreamWithErrorsResponse = {
-    parse(input: Record<any, any>): MiscTestsSendStreamWithErrorsResponse {
-        class $ValidationErrorMiscTestsSendStreamWithErrorsResponse extends Error {
+const $$ChatMessageParams = {
+    parse(input: Record<any, any>): ChatMessageParams {
+        class $ValidationErrorChatMessageParams extends Error {
             errors;
             constructor(input) {
                 super(input.message);
@@ -6854,7 +6268,7 @@ const $$MiscTestsSendStreamWithErrorsResponse = {
         }
 
         function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorMiscTestsSendStreamWithErrorsResponse({
+            throw new $ValidationErrorChatMessageParams({
                 message: message,
                 errors: [
                     {
@@ -6871,13 +6285,13 @@ const $$MiscTestsSendStreamWithErrorsResponse = {
             let result = {};
             if (typeof json === "object" && json !== null) {
                 const jsonInnerVal = {};
-                if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                if (typeof json.channelId === "string") {
+                    jsonInnerVal.channelId = json.channelId;
                 } else {
                     $fallback(
-                        "/message",
-                        "/properties/message/type",
-                        "Expected string at /message",
+                        "/channelId",
+                        "/properties/channelId/type",
+                        "Expected string at /channelId",
                     );
                 }
                 result = jsonInnerVal;
@@ -6889,13 +6303,13 @@ const $$MiscTestsSendStreamWithErrorsResponse = {
         let result = {};
         if (typeof input === "object" && input !== null) {
             const inputInnerVal = {};
-            if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+            if (typeof input.channelId === "string") {
+                inputInnerVal.channelId = input.channelId;
             } else {
                 $fallback(
-                    "/message",
-                    "/properties/message/type",
-                    "Expected string at /message",
+                    "/channelId",
+                    "/properties/channelId/type",
+                    "Expected string at /channelId",
                 );
             }
             result = inputInnerVal;
@@ -6904,16 +6318,525 @@ const $$MiscTestsSendStreamWithErrorsResponse = {
         }
         return result;
     },
-    serialize(input: MiscTestsSendStreamWithErrorsResponse): string {
+    serialize(input: ChatMessageParams): string {
         let json = "";
         json += "{";
-        json += `"message":"${input.message
+        json += `"channelId":"${input.channelId
             .replace(/[\n]/g, "\\n")
             .replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
 };
+
+export type ChatMessage = ChatMessageText | ChatMessageImage | ChatMessageUrl;
+const $$ChatMessage = {
+    parse(input: Record<any, any>): ChatMessage {
+        class $ValidationErrorChatMessage extends Error {
+            errors;
+            constructor(input) {
+                super(input.message);
+                this.errors = input.errors;
+            }
+        }
+
+        function $fallback(instancePath, schemaPath, message) {
+            throw new $ValidationErrorChatMessage({
+                message: message,
+                errors: [
+                    {
+                        instancePath: instancePath,
+                        schemaPath: schemaPath,
+                        message: message,
+                    },
+                ],
+            });
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                switch (json.messageType) {
+                    case "TEXT": {
+                        if (typeof json === "object" && json !== null) {
+                            const jsonInnerVal = {};
+                            jsonInnerVal.messageType = "TEXT";
+                            if (typeof json.id === "string") {
+                                jsonInnerVal.id = json.id;
+                            } else {
+                                $fallback(
+                                    "/id",
+                                    "/mapping/properties/id/type",
+                                    "Expected string at /id",
+                                );
+                            }
+                            if (typeof json.channelId === "string") {
+                                jsonInnerVal.channelId = json.channelId;
+                            } else {
+                                $fallback(
+                                    "/channelId",
+                                    "/mapping/properties/channelId/type",
+                                    "Expected string at /channelId",
+                                );
+                            }
+                            if (typeof json.userId === "string") {
+                                jsonInnerVal.userId = json.userId;
+                            } else {
+                                $fallback(
+                                    "/userId",
+                                    "/mapping/properties/userId/type",
+                                    "Expected string at /userId",
+                                );
+                            }
+                            if (
+                                typeof json.date === "object" &&
+                                json.date instanceof Date
+                            ) {
+                                jsonInnerVal.date = json.date;
+                            } else if (typeof json.date === "string") {
+                                jsonInnerVal.date = new Date(json.date);
+                            } else {
+                                $fallback(
+                                    "/date",
+                                    "/mapping/properties/date",
+                                    "Expected instanceof Date or ISO Date string at /date",
+                                );
+                            }
+                            if (typeof json.text === "string") {
+                                jsonInnerVal.text = json.text;
+                            } else {
+                                $fallback(
+                                    "/text",
+                                    "/mapping/properties/text/type",
+                                    "Expected string at /text",
+                                );
+                            }
+                            result = jsonInnerVal;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "IMAGE": {
+                        if (typeof json === "object" && json !== null) {
+                            const jsonInnerVal = {};
+                            jsonInnerVal.messageType = "IMAGE";
+                            if (typeof json.id === "string") {
+                                jsonInnerVal.id = json.id;
+                            } else {
+                                $fallback(
+                                    "/id",
+                                    "/mapping/properties/id/type",
+                                    "Expected string at /id",
+                                );
+                            }
+                            if (typeof json.channelId === "string") {
+                                jsonInnerVal.channelId = json.channelId;
+                            } else {
+                                $fallback(
+                                    "/channelId",
+                                    "/mapping/properties/channelId/type",
+                                    "Expected string at /channelId",
+                                );
+                            }
+                            if (typeof json.userId === "string") {
+                                jsonInnerVal.userId = json.userId;
+                            } else {
+                                $fallback(
+                                    "/userId",
+                                    "/mapping/properties/userId/type",
+                                    "Expected string at /userId",
+                                );
+                            }
+                            if (
+                                typeof json.date === "object" &&
+                                json.date instanceof Date
+                            ) {
+                                jsonInnerVal.date = json.date;
+                            } else if (typeof json.date === "string") {
+                                jsonInnerVal.date = new Date(json.date);
+                            } else {
+                                $fallback(
+                                    "/date",
+                                    "/mapping/properties/date",
+                                    "Expected instanceof Date or ISO Date string at /date",
+                                );
+                            }
+                            if (typeof json.image === "string") {
+                                jsonInnerVal.image = json.image;
+                            } else {
+                                $fallback(
+                                    "/image",
+                                    "/mapping/properties/image/type",
+                                    "Expected string at /image",
+                                );
+                            }
+                            result = jsonInnerVal;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "URL": {
+                        if (typeof json === "object" && json !== null) {
+                            const jsonInnerVal = {};
+                            jsonInnerVal.messageType = "URL";
+                            if (typeof json.id === "string") {
+                                jsonInnerVal.id = json.id;
+                            } else {
+                                $fallback(
+                                    "/id",
+                                    "/mapping/properties/id/type",
+                                    "Expected string at /id",
+                                );
+                            }
+                            if (typeof json.channelId === "string") {
+                                jsonInnerVal.channelId = json.channelId;
+                            } else {
+                                $fallback(
+                                    "/channelId",
+                                    "/mapping/properties/channelId/type",
+                                    "Expected string at /channelId",
+                                );
+                            }
+                            if (typeof json.userId === "string") {
+                                jsonInnerVal.userId = json.userId;
+                            } else {
+                                $fallback(
+                                    "/userId",
+                                    "/mapping/properties/userId/type",
+                                    "Expected string at /userId",
+                                );
+                            }
+                            if (
+                                typeof json.date === "object" &&
+                                json.date instanceof Date
+                            ) {
+                                jsonInnerVal.date = json.date;
+                            } else if (typeof json.date === "string") {
+                                jsonInnerVal.date = new Date(json.date);
+                            } else {
+                                $fallback(
+                                    "/date",
+                                    "/mapping/properties/date",
+                                    "Expected instanceof Date or ISO Date string at /date",
+                                );
+                            }
+                            if (typeof json.url === "string") {
+                                jsonInnerVal.url = json.url;
+                            } else {
+                                $fallback(
+                                    "/url",
+                                    "/mapping/properties/url/type",
+                                    "Expected string at /url",
+                                );
+                            }
+                            result = jsonInnerVal;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    default:
+                        $fallback(
+                            "",
+                            "/mapping",
+                            "json.messageType did not match one of the specified values",
+                        );
+                        break;
+                }
+            } else {
+                $fallback("", "", "Expected Object.");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            switch (input.messageType) {
+                case "TEXT": {
+                    if (typeof input === "object" && input !== null) {
+                        const inputInnerVal = {};
+                        inputInnerVal.messageType = "TEXT";
+                        if (typeof input.id === "string") {
+                            inputInnerVal.id = input.id;
+                        } else {
+                            $fallback(
+                                "/id",
+                                "/mapping/properties/id/type",
+                                "Expected string at /id",
+                            );
+                        }
+                        if (typeof input.channelId === "string") {
+                            inputInnerVal.channelId = input.channelId;
+                        } else {
+                            $fallback(
+                                "/channelId",
+                                "/mapping/properties/channelId/type",
+                                "Expected string at /channelId",
+                            );
+                        }
+                        if (typeof input.userId === "string") {
+                            inputInnerVal.userId = input.userId;
+                        } else {
+                            $fallback(
+                                "/userId",
+                                "/mapping/properties/userId/type",
+                                "Expected string at /userId",
+                            );
+                        }
+                        if (
+                            typeof input.date === "object" &&
+                            input.date instanceof Date
+                        ) {
+                            inputInnerVal.date = input.date;
+                        } else if (typeof input.date === "string") {
+                            inputInnerVal.date = new Date(input.date);
+                        } else {
+                            $fallback(
+                                "/date",
+                                "/mapping/properties/date",
+                                "Expected instanceof Date or ISO Date string at /date",
+                            );
+                        }
+                        if (typeof input.text === "string") {
+                            inputInnerVal.text = input.text;
+                        } else {
+                            $fallback(
+                                "/text",
+                                "/mapping/properties/text/type",
+                                "Expected string at /text",
+                            );
+                        }
+                        result = inputInnerVal;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                case "IMAGE": {
+                    if (typeof input === "object" && input !== null) {
+                        const inputInnerVal = {};
+                        inputInnerVal.messageType = "IMAGE";
+                        if (typeof input.id === "string") {
+                            inputInnerVal.id = input.id;
+                        } else {
+                            $fallback(
+                                "/id",
+                                "/mapping/properties/id/type",
+                                "Expected string at /id",
+                            );
+                        }
+                        if (typeof input.channelId === "string") {
+                            inputInnerVal.channelId = input.channelId;
+                        } else {
+                            $fallback(
+                                "/channelId",
+                                "/mapping/properties/channelId/type",
+                                "Expected string at /channelId",
+                            );
+                        }
+                        if (typeof input.userId === "string") {
+                            inputInnerVal.userId = input.userId;
+                        } else {
+                            $fallback(
+                                "/userId",
+                                "/mapping/properties/userId/type",
+                                "Expected string at /userId",
+                            );
+                        }
+                        if (
+                            typeof input.date === "object" &&
+                            input.date instanceof Date
+                        ) {
+                            inputInnerVal.date = input.date;
+                        } else if (typeof input.date === "string") {
+                            inputInnerVal.date = new Date(input.date);
+                        } else {
+                            $fallback(
+                                "/date",
+                                "/mapping/properties/date",
+                                "Expected instanceof Date or ISO Date string at /date",
+                            );
+                        }
+                        if (typeof input.image === "string") {
+                            inputInnerVal.image = input.image;
+                        } else {
+                            $fallback(
+                                "/image",
+                                "/mapping/properties/image/type",
+                                "Expected string at /image",
+                            );
+                        }
+                        result = inputInnerVal;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                case "URL": {
+                    if (typeof input === "object" && input !== null) {
+                        const inputInnerVal = {};
+                        inputInnerVal.messageType = "URL";
+                        if (typeof input.id === "string") {
+                            inputInnerVal.id = input.id;
+                        } else {
+                            $fallback(
+                                "/id",
+                                "/mapping/properties/id/type",
+                                "Expected string at /id",
+                            );
+                        }
+                        if (typeof input.channelId === "string") {
+                            inputInnerVal.channelId = input.channelId;
+                        } else {
+                            $fallback(
+                                "/channelId",
+                                "/mapping/properties/channelId/type",
+                                "Expected string at /channelId",
+                            );
+                        }
+                        if (typeof input.userId === "string") {
+                            inputInnerVal.userId = input.userId;
+                        } else {
+                            $fallback(
+                                "/userId",
+                                "/mapping/properties/userId/type",
+                                "Expected string at /userId",
+                            );
+                        }
+                        if (
+                            typeof input.date === "object" &&
+                            input.date instanceof Date
+                        ) {
+                            inputInnerVal.date = input.date;
+                        } else if (typeof input.date === "string") {
+                            inputInnerVal.date = new Date(input.date);
+                        } else {
+                            $fallback(
+                                "/date",
+                                "/mapping/properties/date",
+                                "Expected instanceof Date or ISO Date string at /date",
+                            );
+                        }
+                        if (typeof input.url === "string") {
+                            inputInnerVal.url = input.url;
+                        } else {
+                            $fallback(
+                                "/url",
+                                "/mapping/properties/url/type",
+                                "Expected string at /url",
+                            );
+                        }
+                        result = inputInnerVal;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                default:
+                    $fallback(
+                        "",
+                        "/mapping",
+                        "input.messageType did not match one of the specified values",
+                    );
+                    break;
+            }
+        } else {
+            $fallback("", "", "Expected Object.");
+        }
+        return result;
+    },
+    serialize(input: ChatMessage): string {
+        let json = "";
+        switch (input.messageType) {
+            case "TEXT": {
+                json += "{";
+                json += `"messageType":"TEXT"`;
+                json += `,"id":"${input.id
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"channelId":"${input.channelId
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"userId":"${input.userId
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"date":"${input.date.toISOString()}"`;
+                json += `,"text":"${input.text
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += "}";
+                break;
+            }
+            case "IMAGE": {
+                json += "{";
+                json += `"messageType":"IMAGE"`;
+                json += `,"id":"${input.id
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"channelId":"${input.channelId
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"userId":"${input.userId
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"date":"${input.date.toISOString()}"`;
+                json += `,"image":"${input.image
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += "}";
+                break;
+            }
+            case "URL": {
+                json += "{";
+                json += `"messageType":"URL"`;
+                json += `,"id":"${input.id
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"channelId":"${input.channelId
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"userId":"${input.userId
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += `,"date":"${input.date.toISOString()}"`;
+                json += `,"url":"${input.url
+                    .replace(/[\n]/g, "\\n")
+                    .replace(/"/g, '\\"')}"`;
+                json += "}";
+                break;
+            }
+        }
+        return json;
+    },
+};
+export interface ChatMessageText {
+    messageType: "TEXT";
+    id: string;
+    channelId: string;
+    userId: string;
+    date: Date;
+    text: string;
+}
+
+export interface ChatMessageImage {
+    messageType: "IMAGE";
+    id: string;
+    channelId: string;
+    userId: string;
+    date: Date;
+    image: string;
+}
+
+export interface ChatMessageUrl {
+    messageType: "URL";
+    id: string;
+    channelId: string;
+    userId: string;
+    date: Date;
+    url: string;
+}
 
 export interface PostParams {
     postId: string;

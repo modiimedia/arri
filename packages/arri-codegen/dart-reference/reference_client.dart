@@ -76,7 +76,14 @@ class TestClientUsersService {
   }
 
   /// Watch a user
-  EventSource<User> watchUser(UserParams params) {
+  EventSource<User> watchUser(
+    UserParams params, {
+    SseHookOnData<User>? onData,
+    SseHookOnError<User>? onError,
+    SseHookOnConnectionError<User>? onConnectionError,
+    SseHookOnOpen<User>? onOpen,
+    SseHookOnClose<User>? onClose,
+  }) {
     return parsedArriSseRequest<User>(
       "$_baseUrl/users/watch-user",
       method: HttpMethod.get,
@@ -85,6 +92,11 @@ class TestClientUsersService {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
     );
   }
 }

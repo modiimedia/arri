@@ -5,6 +5,15 @@ import 'package:arri_client/errors.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
+typedef SseHookOnData<T> = void Function(T data, EventSource<T> event);
+typedef SseHookOnError<T> = void Function(
+    ArriRequestError error, EventSource<T> event);
+typedef SseHookOnConnectionError<T> = void Function(
+    ArriRequestError error, EventSource<T> event);
+typedef SseHookOnOpen<T> = void Function(
+    http.StreamedResponse response, EventSource<T> event);
+typedef SseHookOnClose<T> = void Function(EventSource<T> event);
+
 EventSource<T> parsedArriSseRequest<T>(
   String url, {
   required HttpMethod method,
@@ -13,6 +22,11 @@ EventSource<T> parsedArriSseRequest<T>(
   Map<String, String>? headers,
   Duration? retryDelay,
   int? maxRetryCount,
+  SseHookOnData<T>? onData,
+  SseHookOnError<T>? onError,
+  SseHookOnConnectionError<T>? onConnectionError,
+  SseHookOnOpen<T>? onOpen,
+  SseHookOnClose<T>? onClose,
 }) {
   return EventSource(
     url: url,
@@ -22,53 +36,96 @@ EventSource<T> parsedArriSseRequest<T>(
     headers: headers ?? {},
     retryDelay: retryDelay ?? Duration.zero,
     maxRetryCount: maxRetryCount,
+    onData: onData,
+    onError: onError,
+    onConnectionError: onConnectionError,
+    onClose: onClose,
+    onOpen: onOpen,
   );
 }
 
-class EventSource<TData> {
-  late final http.Client httpClient;
+class EventSource<T> {
+  late final http.Client _httpClient;
   final String url;
   final HttpMethod method;
-  final Map<String, dynamic>? params;
-  final Map<String, String> headers;
+  final Map<String, dynamic>? _params;
+  final Map<String, String> _headers;
   String? lastEventId;
-  late final StreamController<TData> _streamController;
-  final Duration retryDelay;
-  final int? maxRetryCount;
-  int retryCount = 0;
-  TData Function(String data) parser;
+  StreamController<T>? _streamController;
+  final Duration _retryDelay;
+  final int? _maxRetryCount;
+  int _retryCount = 0;
+  T Function(String data) parser;
+  bool _closedByClient = false;
+
+  // hooks
+  late final void Function(T data) _onData;
+  late final void Function(ArriRequestError error) _onError;
+  late final void Function(ArriRequestError error) _onConnectionError;
+  late final void Function(http.StreamedResponse response) _onOpen;
+  late final void Function() _onClose;
 
   EventSource({
     required this.url,
     required this.parser,
     http.Client? httpClient,
     this.method = HttpMethod.get,
-    this.params,
-    this.headers = const {},
-    this.retryDelay = Duration.zero,
-    this.maxRetryCount,
-  }) {
-    this.httpClient = httpClient ?? http.Client();
-    this._streamController =
-        StreamController<TData>(onCancel: () => this.httpClient.close());
+    Map<String, dynamic>? params,
+    Map<String, String> headers = const {},
+    Duration retryDelay = Duration.zero,
+    int? maxRetryCount,
+    // hooks
+    SseHookOnData<T>? onData,
+    SseHookOnError<T>? onError,
+    SseHookOnConnectionError<T>? onConnectionError,
+    SseHookOnClose<T>? onClose,
+    SseHookOnOpen<T>? onOpen,
+  })  : _headers = headers,
+        _params = params,
+        _retryDelay = retryDelay,
+        _maxRetryCount = maxRetryCount {
+    this._httpClient = httpClient ?? http.Client();
+
+    // set hooks
+    _onData = (data) {
+      onData?.call(data, this);
+      _streamController?.add(data);
+    };
+    _onError = (err) {
+      onError?.call(err, this);
+      _streamController?.addError(err);
+    };
+    _onConnectionError = (err) {
+      onConnectionError?.call(err, this);
+      _streamController?.addError(err);
+    };
+    _onOpen = (response) {
+      onOpen?.call(response, this);
+    };
+    _onClose = () {
+      onClose?.call(this);
+    };
     _connect();
   }
 
-  _connect() async {
+  Future<void> _connect({bool isRetry = false}) async {
+    if (isRetry) {
+      _retryCount++;
+    }
     String parsedUrl = url;
     String body = "";
-    if (params != null) {
+    if (_params != null) {
       switch (method) {
         case HttpMethod.get:
         case HttpMethod.head:
           final queryParts = <String>[];
-          params?.forEach((key, value) {
+          _params?.forEach((key, value) {
             queryParts.add("$key=$value");
           });
           parsedUrl += "?${queryParts.join("&")}";
           break;
         default:
-          body = json.encode(params);
+          body = json.encode(_params);
           break;
       }
     }
@@ -78,74 +135,100 @@ class EventSource<TData> {
     if (body.isNotEmpty) {
       request.body = body;
     }
-    headers.forEach((key, value) {
+    _headers.forEach((key, value) {
       request.headers[key] = value;
     });
     if (lastEventId != null) {
       request.headers["Last-Event-ID"] = lastEventId!;
     }
     try {
-      final response = await httpClient.send(request);
+      final response = await _httpClient.send(request);
+      _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
         throw ArriRequestError(
           statusCode: response.statusCode,
           statusMessage:
-              response.reasonPhrase ?? "Unknown error connecting to $url",
-          data: response.toString(),
+              response.reasonPhrase ?? "Unknown error connection to $url",
         );
       }
       if (response.statusCode != 200) {
-        throw ArriRequestError(
-          statusCode: 500,
-          statusMessage:
-              "Server must return statusCode 200. Instead got ${response.statusCode}",
+        throw http.ClientException(
+          "Server must return statusCode 200. Instead got ${response.statusCode}",
         );
       }
-      response.stream.listen((value) {
-        final input = utf8.decode(value);
-        print("---NEW_DATA---\n$value");
-        final events = parseSseEvents(input, parser);
-        for (final event in events) {
-          if (event.id != null) {
-            lastEventId = event.id;
+      response.stream.listen(
+        (value) {
+          final input = utf8.decode(value);
+          final events = parseSseEvents(input, parser);
+          for (final event in events) {
+            if (event.id != null) {
+              lastEventId = event.id;
+            }
+            switch (event) {
+              case SseRawEvent<T>():
+                break;
+              case SseMessageEvent<T>():
+                _onData(event.data);
+                break;
+              case SseErrorEvent<T>():
+                _onError(event.data);
+                break;
+            }
           }
-          switch (event) {
-            case SseRawEvent<TData>():
-              break;
-            case SseMessageEvent<TData>():
-              _streamController.add(event.data);
-              break;
-            case SseErrorEvent<TData>():
-              _streamController.addError(event.data);
-              break;
+        },
+        onError: _handleError,
+        onDone: () async {
+          if (_maxRetryCount != null && _maxRetryCount! <= _retryCount) {
+            _httpClient.close();
+            _onClose();
+            return;
           }
-        }
-      }, onError: (err, s) {
-        print("---NEW_ERROR---");
-        print(err);
-        print(s);
-        if (maxRetryCount != null && maxRetryCount! <= retryCount) {
-          throw err;
-        }
-        Timer(retryDelay, () => _connect());
-      }, onDone: () async {
-        if (maxRetryCount != null && maxRetryCount! <= retryCount) {
-          await _streamController.close();
-          httpClient.close();
-          return;
-        }
-        Timer(retryDelay, () => _connect());
-      });
+          Timer(_retryDelay, () => _connect(isRetry: true));
+        },
+      );
     } catch (err) {
-      if (maxRetryCount != null && maxRetryCount! <= retryCount) {
-        rethrow;
-      }
-      Timer(retryDelay, () => _connect());
+      _handleError(err);
     }
   }
 
-  Stream<TData> get stream {
-    return this._streamController.stream;
+  void _handleError(dynamic err) {
+    if (_closedByClient) {
+      return;
+    }
+    if (err is ArriRequestError) {
+      _onConnectionError.call(err);
+    } else if (err is http.ClientException) {
+      _onConnectionError(
+        ArriRequestError(
+          statusCode: 0,
+          statusMessage: err.message,
+          data: err,
+        ),
+      );
+    } else {
+      _onConnectionError.call(
+        ArriRequestError(
+            statusCode: 0, statusMessage: "Unknown error connecting to $url"),
+      );
+    }
+    if (_maxRetryCount != null && _maxRetryCount! <= _retryCount) {
+      close();
+      return;
+    }
+    Timer(_retryDelay, () => _connect(isRetry: true));
+  }
+
+  void close() {
+    _closedByClient = true;
+    _httpClient.close();
+    _onClose();
+  }
+
+  Stream<T> toStream() {
+    _streamController ??= StreamController<T>(onCancel: () {
+      close();
+    });
+    return _streamController!.stream;
   }
 }
 
