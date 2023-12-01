@@ -28,7 +28,7 @@ import { a } from "arri-validate";
 
 function camelCaseWrapper(input: string) {
     if (input.includes("_")) {
-        return camelCase(input.toLowerCase());
+        return camelCase(input, { normalize: true });
     }
     return camelCase(input);
 }
