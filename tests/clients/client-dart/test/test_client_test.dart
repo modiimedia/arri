@@ -43,11 +43,6 @@ Future<void> main() async {
       expect(result.tags[1], equals('2'));
       expect(result.tags[2], equals('3'));
     } catch (err) {
-      if (err is ArriRequestError) {
-        print("${err.statusCode} ${err.statusMessage}");
-      } else {
-        print(err.toString());
-      }
       expect(false, equals(true));
     }
   });
@@ -222,6 +217,80 @@ Future<void> main() async {
           equals(BigInt.parse("123456789")));
       expect(result.boxTypeRange.endTimeInNanoSec,
           equals(BigInt.parse("1234567890")));
+    });
+  });
+
+  group("stream requests", () {
+    test("basic subscription", () async {
+      int messageCount = 0;
+      final eventSource = client.miscTests.streamMessages(
+        ChatMessageParams(channelId: "12345"),
+        onData: (data, _) {
+          messageCount++;
+          switch (data) {
+            case ChatMessageText():
+              expect(data.channelId, equals('12345'));
+              expect(data.messageType, equals("TEXT"));
+              break;
+            case ChatMessageImage():
+              expect(data.channelId, equals("12345"));
+              expect(data.messageType, equals("IMAGE"));
+              break;
+            case ChatMessageUrl():
+              expect(data.channelId, equals("12345"));
+              expect(data.messageType, equals("URL"));
+              break;
+          }
+        },
+      );
+      await Future.delayed(Duration(seconds: 2));
+      eventSource.close();
+      expect(messageCount > 0, equals(true));
+      expect(eventSource.isClosed, equals(true));
+    });
+    test("basic subscription with dart streams", () async {
+      int messageCount = 0;
+      final eventSource = client.miscTests
+          .streamMessages(ChatMessageParams(channelId: "12345"));
+      final listener = eventSource.toStream().listen((message) {
+        messageCount++;
+        switch (message) {
+          case ChatMessageText():
+            expect(message.channelId, equals('12345'));
+            expect(message.messageType, equals("TEXT"));
+            break;
+          case ChatMessageImage():
+            expect(message.channelId, equals("12345"));
+            expect(message.messageType, equals("IMAGE"));
+            break;
+          case ChatMessageUrl():
+            expect(message.channelId, equals("12345"));
+            expect(message.messageType, equals("URL"));
+            break;
+        }
+      });
+      await Future.delayed(Duration(seconds: 3));
+      await listener.cancel();
+      expect(messageCount >= 1, equals(true));
+      expect(eventSource.isClosed, equals(true));
+    });
+    test("subscription with errors", () async {
+      int messageCount = 0;
+      int errorCount = 0;
+      final eventSource = client.miscTests.streamTenEventsThenError(
+        onData: (data, connection) {
+          messageCount++;
+          expect(data.messageType.isNotEmpty, equals(true));
+        },
+        onError: (error, connection) {
+          errorCount++;
+          connection.close();
+        },
+      );
+      await Future.delayed(Duration(seconds: 3));
+      expect(messageCount, equals(10));
+      expect(errorCount, equals(1));
+      expect(eventSource.isClosed, equals(true));
     });
   });
 }

@@ -66,10 +66,11 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
 
 export interface RpcDefinition {
     path: string;
-    description?: string;
     method: RpcHttpMethod;
-    params: string | undefined;
-    response: string | undefined;
+    params?: string;
+    response?: string;
+    description?: string;
+    isEventStream?: boolean;
 }
 export function isRpcDefinition(input: unknown): input is RpcDefinition {
     if (typeof input !== "object") {
@@ -82,7 +83,9 @@ export function isRpcDefinition(input: unknown): input is RpcDefinition {
         (typeof inputObj.params === "string" ||
             typeof inputObj.params === "undefined") &&
         (typeof inputObj.response === "string" ||
-            typeof inputObj.response === "undefined")
+            typeof inputObj.response === "undefined") &&
+        (typeof inputObj.isEventStream === "boolean" ||
+            typeof inputObj.isEventStream === "undefined")
     );
 }
 

@@ -16,6 +16,20 @@
                 "command": "dart test",
                 "cwd": "packages/arri-client-dart"
             }
+        },
+        "pub": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "dart pub",
+                "cwd": "packages/arri-client-dart"
+            }
+        },
+        "dart": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "dart",
+                "cwd": "packages/arri-client-dart"
+            }
         }
     }
 }

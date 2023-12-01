@@ -74,6 +74,33 @@ class TestClientUsersService {
       ),
     );
   }
+
+  /// Watch a user
+  EventSource<User> watchUser(
+    UserParams params, {
+    SseHookOnData<User>? onData,
+    SseHookOnError<User>? onError,
+    SseHookOnConnectionError<User>? onConnectionError,
+    SseHookOnOpen<User>? onOpen,
+    SseHookOnClose<User>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<User>(
+      "$_baseUrl/users/watch-user",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => User.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
 }
 
 class TestClientUsersSettingsService {

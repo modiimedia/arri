@@ -15,7 +15,6 @@ import {
     type SchemaFormEmpty,
 } from "jtd-utils";
 import { camelCase, pascalCase } from "scule";
-import { randomUUID } from "uncrypto";
 import {
     int16Max,
     int16Min,
@@ -34,7 +33,7 @@ import { type TemplateInput } from "./common";
 
 export function createParsingTemplate(input: string, schema: Schema): string {
     const validationErrorName = `$ValidationError${pascalCase(
-        schema.metadata?.id ?? randomUUID(),
+        schema.metadata?.id ?? input,
     )}`;
     const fallbackTemplate = `    class ${validationErrorName} extends Error {
         errors;

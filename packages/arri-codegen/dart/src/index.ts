@@ -206,11 +206,17 @@ export function dartRpcFromDefinition(
         | "Future<int>"
         | "Future<number>"
         | "Future<void>"
-        | `Future<${string}>` = `Future<String>`;
+        | `Future<${string}>`
+        | `EventSource<${string}>` = `Future<String>`;
     let returnTypeName = "String";
     if (def.response) {
-        returnType = `Future<${pascalCase(def.response)}>`;
         returnTypeName = pascalCase(def.response);
+
+        if (def.isEventStream) {
+            returnType = `EventSource<${returnTypeName}>`;
+        } else {
+            returnType = `Future<${returnTypeName}>`;
+        }
     } else {
         returnType = "Future<void>";
     }
@@ -256,6 +262,34 @@ export function dartRpcFromDefinition(
         for (const part of parts) {
             descriptionParts.push(`/// ${part}`);
         }
+    }
+    if (def.isEventStream) {
+        const hookParts: string[] = [
+            `SseHookOnData<${returnTypeName}>? onData`,
+            `SseHookOnError<${returnTypeName}>? onError`,
+            `SseHookOnConnectionError<${returnTypeName}>? onConnectionError`,
+            `SseHookOnOpen<${returnTypeName}>? onOpen`,
+            `SseHookOnClose<${returnTypeName}>? onClose`,
+            `String? lastEventId`,
+        ];
+        return `${descriptionParts.join("\n")}
+        ${returnType} ${key}(${
+            paramsInput.length ? `${paramsInput}, ` : ""
+        }{${hookParts.join(", ")},}) {
+            return parsedArriSseRequest<${returnTypeName}>(
+                "$_baseUrl${def.path}",
+                method: HttpMethod.${def.method},
+                headers: _headers,
+                params: ${paramsInput.length ? `params.toJson()` : "null"},
+                parser: ${responseParser},
+                onData: onData,
+                onError: onError,
+                onConnectionError: onConnectionError,
+                onOpen: onOpen,
+                onClose: onClose,
+                lastEventId: lastEventId,
+            );
+        }`;
     }
     return `${descriptionParts.join("\n")}
 ${returnType} ${key}(${paramsInput}) {

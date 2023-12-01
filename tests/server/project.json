@@ -16,7 +16,8 @@
             "options": {
                 "command": "arri build",
                 "cwd": "tests/server"
-            }
+            },
+            "cache": false
         },
         "serve": {
             "dependsOn": ["build"],

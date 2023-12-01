@@ -1,5 +1,5 @@
 import { a } from "arri-validate";
-import { defineRoute } from "./routes";
+import { defineRoute } from "./route";
 
 test("type inference", () => {
     const QuerySchema = a.object({

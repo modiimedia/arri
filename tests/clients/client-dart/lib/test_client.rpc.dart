@@ -112,6 +112,57 @@ class TestClientMiscTestsService {
       ),
     );
   }
+
+  EventSource<ChatMessage> streamMessages(
+    ChatMessageParams params, {
+    SseHookOnData<ChatMessage>? onData,
+    SseHookOnError<ChatMessage>? onError,
+    SseHookOnConnectionError<ChatMessage>? onConnectionError,
+    SseHookOnOpen<ChatMessage>? onOpen,
+    SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<ChatMessage>(
+      "$_baseUrl/rpcs/misc-tests/stream-messages",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ChatMessage.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
+  EventSource<ChatMessage> streamTenEventsThenError({
+    SseHookOnData<ChatMessage>? onData,
+    SseHookOnError<ChatMessage>? onError,
+    SseHookOnConnectionError<ChatMessage>? onConnectionError,
+    SseHookOnOpen<ChatMessage>? onOpen,
+    SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<ChatMessage>(
+      "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-error",
+      method: HttpMethod.post,
+      headers: _headers,
+      params: null,
+      parser: (body) => ChatMessage.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
 }
 
 class TestClientPostsService {
@@ -1922,6 +1973,234 @@ class ObjectWithEveryOptionalTypeNestedArrayItemItem {
     return ObjectWithEveryOptionalTypeNestedArrayItemItem(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class ChatMessageParams {
+  final String channelId;
+  const ChatMessageParams({
+    required this.channelId,
+  });
+  factory ChatMessageParams.fromJson(Map<String, dynamic> json) {
+    return ChatMessageParams(
+      channelId: typeFromDynamic<String>(json["channelId"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "channelId": channelId,
+    };
+
+    return result;
+  }
+
+  ChatMessageParams copyWith({
+    String? channelId,
+  }) {
+    return ChatMessageParams(
+      channelId: channelId ?? this.channelId,
+    );
+  }
+}
+
+sealed class ChatMessage {
+  final String messageType;
+  const ChatMessage({
+    required this.messageType,
+  });
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    if (json["messageType"] is! String) {
+      throw Exception(
+        "Unable to decode ChatMessage. Expected String from \"messageType\". Received ${json["messageType"]}}",
+      );
+    }
+    switch (json["messageType"]) {
+      case "TEXT":
+        return ChatMessageText.fromJson(json);
+      case "IMAGE":
+        return ChatMessageImage.fromJson(json);
+      case "URL":
+        return ChatMessageUrl.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode ChatMessage. \"${json["messageType"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class ChatMessageText implements ChatMessage {
+  @override
+  final String messageType = "TEXT";
+  final String id;
+  final String channelId;
+  final String userId;
+  final DateTime date;
+  final String text;
+  const ChatMessageText({
+    required this.id,
+    required this.channelId,
+    required this.userId,
+    required this.date,
+    required this.text,
+  });
+  factory ChatMessageText.fromJson(Map<String, dynamic> json) {
+    return ChatMessageText(
+      id: typeFromDynamic<String>(json["id"], ""),
+      channelId: typeFromDynamic<String>(json["channelId"], ""),
+      userId: typeFromDynamic<String>(json["userId"], ""),
+      date: dateTimeFromDynamic(
+        json["date"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      text: typeFromDynamic<String>(json["text"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "messageType": messageType,
+      "id": id,
+      "channelId": channelId,
+      "userId": userId,
+      "date": date.toUtc().toIso8601String(),
+      "text": text,
+    };
+
+    return result;
+  }
+
+  ChatMessageText copyWith({
+    String? id,
+    String? channelId,
+    String? userId,
+    DateTime? date,
+    String? text,
+  }) {
+    return ChatMessageText(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      text: text ?? this.text,
+    );
+  }
+}
+
+class ChatMessageImage implements ChatMessage {
+  @override
+  final String messageType = "IMAGE";
+  final String id;
+  final String channelId;
+  final String userId;
+  final DateTime date;
+  final String image;
+  const ChatMessageImage({
+    required this.id,
+    required this.channelId,
+    required this.userId,
+    required this.date,
+    required this.image,
+  });
+  factory ChatMessageImage.fromJson(Map<String, dynamic> json) {
+    return ChatMessageImage(
+      id: typeFromDynamic<String>(json["id"], ""),
+      channelId: typeFromDynamic<String>(json["channelId"], ""),
+      userId: typeFromDynamic<String>(json["userId"], ""),
+      date: dateTimeFromDynamic(
+        json["date"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      image: typeFromDynamic<String>(json["image"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "messageType": messageType,
+      "id": id,
+      "channelId": channelId,
+      "userId": userId,
+      "date": date.toUtc().toIso8601String(),
+      "image": image,
+    };
+
+    return result;
+  }
+
+  ChatMessageImage copyWith({
+    String? id,
+    String? channelId,
+    String? userId,
+    DateTime? date,
+    String? image,
+  }) {
+    return ChatMessageImage(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      image: image ?? this.image,
+    );
+  }
+}
+
+class ChatMessageUrl implements ChatMessage {
+  @override
+  final String messageType = "URL";
+  final String id;
+  final String channelId;
+  final String userId;
+  final DateTime date;
+  final String url;
+  const ChatMessageUrl({
+    required this.id,
+    required this.channelId,
+    required this.userId,
+    required this.date,
+    required this.url,
+  });
+  factory ChatMessageUrl.fromJson(Map<String, dynamic> json) {
+    return ChatMessageUrl(
+      id: typeFromDynamic<String>(json["id"], ""),
+      channelId: typeFromDynamic<String>(json["channelId"], ""),
+      userId: typeFromDynamic<String>(json["userId"], ""),
+      date: dateTimeFromDynamic(
+        json["date"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      url: typeFromDynamic<String>(json["url"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "messageType": messageType,
+      "id": id,
+      "channelId": channelId,
+      "userId": userId,
+      "date": date.toUtc().toIso8601String(),
+      "url": url,
+    };
+
+    return result;
+  }
+
+  ChatMessageUrl copyWith({
+    String? id,
+    String? channelId,
+    String? userId,
+    DateTime? date,
+    String? url,
+  }) {
+    return ChatMessageUrl(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      url: url ?? this.url,
     );
   }
 }

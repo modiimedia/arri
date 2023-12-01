@@ -105,6 +105,14 @@ export const TestAppDefinition: AppDefinition = {
             params: "UpdateUserParams",
             response: "User",
         },
+        "users.watchUser": {
+            description: "Watch a user",
+            path: "/users/watch-user",
+            method: "get",
+            params: "UserParams",
+            response: "User",
+            isEventStream: true,
+        },
         "users.settings.getUserSettings": {
             path: "/users/settings/get-user-settings",
             method: "get",

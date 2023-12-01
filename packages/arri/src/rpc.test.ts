@@ -1,5 +1,6 @@
 import { a } from "arri-validate";
-import { defineRpc } from "./procedures";
+import { defineEventStreamRpc } from "./eventStreamRpc";
+import { createRpcDefinition, defineRpc } from "./rpc";
 describe("Type Inference", () => {
     it("infers types properly", async () => {
         const Params = a.object({
@@ -31,4 +32,27 @@ describe("Type Inference", () => {
         );
         assertType<Response>(result);
     });
+});
+
+test("create rpc definition", () => {
+    const rpc = defineRpc({
+        params: undefined,
+        response: undefined,
+        handler() {},
+    });
+    const rpcDef = createRpcDefinition("hello.world", "/hello/world", rpc);
+    expect(rpcDef.method).toBe("post");
+    expect(rpcDef.isEventStream).toBe(undefined);
+    const eventStreamRpc = defineEventStreamRpc({
+        params: undefined,
+        response: undefined,
+        handler() {},
+    });
+    const eventStreamDef = createRpcDefinition(
+        "hello.world",
+        "/hello/world",
+        eventStreamRpc,
+    );
+    expect(eventStreamDef.method).toBe("get");
+    expect(eventStreamDef.isEventStream).toBe(true);
 });

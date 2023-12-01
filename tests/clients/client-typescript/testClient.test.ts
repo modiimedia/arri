@@ -1,4 +1,4 @@
-import { ArriRequestErrorInstance } from "arri-client";
+import { type ArriRequestError, ArriRequestErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import {
     TestClient,
@@ -340,3 +340,69 @@ describe("bigint requests", () => {
         );
     });
 });
+
+test("SSE request", async () => {
+    let wasConnected = false;
+    let receivedMessageCount = 0;
+    const controller = client.miscTests.streamMessages(
+        { channelId: "1" },
+        {
+            onData(data) {
+                receivedMessageCount++;
+                expect(data.channelId).toBe("1");
+                switch (data.messageType) {
+                    case "IMAGE":
+                        expect(data.date instanceof Date).toBe(true);
+                        expect(typeof data.image).toBe("string");
+                        break;
+                    case "TEXT":
+                        expect(data.date instanceof Date).toBe(true);
+                        expect(typeof data.text).toBe("string");
+                        break;
+                    case "URL":
+                        expect(data.date instanceof Date).toBe(true);
+                        expect(typeof data.url).toBe("string");
+                        break;
+                }
+            },
+            onOpen(response) {
+                wasConnected = response.status === 200;
+            },
+        },
+    );
+    await new Promise((resolve, reject) => {
+        setTimeout(() => {
+            controller.abort();
+            resolve(true);
+        }, 5000);
+    });
+    expect(receivedMessageCount > 0).toBe(true);
+    expect(wasConnected).toBe(true);
+}, 30000);
+
+test("SSE Request with errors", async () => {
+    let timesConnected = 0;
+    let messageCount = 0;
+    let errorReceived: ArriRequestError | undefined;
+    const controller = client.miscTests.streamTenEventsThenError({
+        onData(_) {
+            messageCount++;
+        },
+        onError(error) {
+            errorReceived = error;
+            controller.abort();
+        },
+        onOpen() {
+            timesConnected++;
+        },
+    });
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 5000);
+    });
+    expect(errorReceived?.statusCode).toBe(400);
+    expect(controller.signal.aborted).toBe(true);
+    expect(timesConnected).toBe(1);
+    expect(messageCount).toBe(10);
+}, 30000);

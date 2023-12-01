@@ -1,4 +1,4 @@
-import { arriSafeRequest, isArriRequestError } from "./index";
+import { arriSafeRequest, isArriRequestError } from "./_index";
 
 test("error messages", async () => {
     const request = await arriSafeRequest({
