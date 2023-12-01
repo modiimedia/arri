@@ -138,6 +138,9 @@ export class EventStreamConnection<TType> {
         this.serializer = opts.serializer;
     }
 
+    /**
+     * Start sending the event stream to the client
+     */
     start() {
         this.h3Event._handled = true;
         void sendStream(this.h3Event, this.readable);
@@ -175,22 +178,22 @@ export class EventStreamConnection<TType> {
         });
     }
 
-    /**
-     * Push a custom event. These events will need to be parsed manually using the `onEvent` hooks of any generated clients.
-     * Note events with the name "error" or "message" cannot be used for custom events.
-     */
-    async pushCustomEvent(event: SseEvent): Promise<void> {
-        if (event.event === "message") {
-            throw new Error(
-                `Event type "message" is the default event type. Therefore it cannot be used when pushing custom events.`,
-            );
-        }
-        if (event.event === "error") {
-            throw new Error(
-                `Event type "error" is reserved for the pushError() method. Therefore it cannot be used when pushing custom events.`,
-            );
-        }
-    }
+    // /**
+    //  * Push a custom event. These events will need to be parsed manually using the `onEvent` hooks of any generated clients.
+    //  * Note events with the name "error" or "message" cannot be used for custom events.
+    //  */
+    // async pushCustomEvent(event: SseEvent): Promise<void> {
+    //     if (event.event === "message") {
+    //         throw new Error(
+    //             `Event type "message" is the default event type. Therefore it cannot be used when pushing custom events.`,
+    //         );
+    //     }
+    //     if (event.event === "error") {
+    //         throw new Error(
+    //             `Event type "error" is reserved for the pushError() method. Therefore it cannot be used when pushing custom events.`,
+    //         );
+    //     }
+    // }
 
     /**
      * Publish an error event. This will trigger the `onError` hooks of any connected clients.
@@ -222,6 +225,9 @@ export class EventStreamConnection<TType> {
         } catch (_) {}
     }
 
+    /**
+     * Close the connection
+     */
     async close() {
         this.h3Event.node.res.end();
         await this.cleanup();

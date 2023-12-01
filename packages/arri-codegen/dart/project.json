@@ -3,6 +3,7 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/arri-codegen/dart/src",
     "projectType": "library",
+    "implicitDependencies": ["arri-codegen-dart-reference"],
     "targets": {
         "build": {
             "executor": "nx:run-commands",

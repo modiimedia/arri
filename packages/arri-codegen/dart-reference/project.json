@@ -1,0 +1,6 @@
+{
+    "name": "arri-codegen-dart-reference",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "type": "library",
+    "sourceRoot": "packages/arri-codegen/dart-reference"
+}

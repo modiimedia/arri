@@ -120,6 +120,7 @@ class TestClientMiscTestsService {
     SseHookOnConnectionError<ChatMessage>? onConnectionError,
     SseHookOnOpen<ChatMessage>? onOpen,
     SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
   }) {
     return parsedArriSseRequest<ChatMessage>(
       "$_baseUrl/rpcs/misc-tests/stream-messages",
@@ -134,6 +135,7 @@ class TestClientMiscTestsService {
       onConnectionError: onConnectionError,
       onOpen: onOpen,
       onClose: onClose,
+      lastEventId: lastEventId,
     );
   }
 
@@ -143,6 +145,7 @@ class TestClientMiscTestsService {
     SseHookOnConnectionError<ChatMessage>? onConnectionError,
     SseHookOnOpen<ChatMessage>? onOpen,
     SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
   }) {
     return parsedArriSseRequest<ChatMessage>(
       "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-error",
@@ -157,6 +160,7 @@ class TestClientMiscTestsService {
       onConnectionError: onConnectionError,
       onOpen: onOpen,
       onClose: onClose,
+      lastEventId: lastEventId,
     );
   }
 }

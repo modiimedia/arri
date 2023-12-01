@@ -27,6 +27,7 @@ EventSource<T> parsedArriSseRequest<T>(
   SseHookOnConnectionError<T>? onConnectionError,
   SseHookOnOpen<T>? onOpen,
   SseHookOnClose<T>? onClose,
+  String? lastEventId,
 }) {
   return EventSource(
     url: url,
@@ -41,6 +42,7 @@ EventSource<T> parsedArriSseRequest<T>(
     onConnectionError: onConnectionError,
     onClose: onClose,
     onOpen: onOpen,
+    lastEventId: lastEventId,
   );
 }
 
@@ -80,6 +82,7 @@ class EventSource<T> {
     SseHookOnConnectionError<T>? onConnectionError,
     SseHookOnClose<T>? onClose,
     SseHookOnOpen<T>? onOpen,
+    this.lastEventId,
   })  : _headers = headers,
         _params = params,
         _retryDelay = retryDelay,
@@ -132,6 +135,9 @@ class EventSource<T> {
     final uri = Uri.parse(parsedUrl);
     final request = http.Request(method.value, uri);
     request.headers["Content-Type"] = "text/event-stream";
+    if (lastEventId != null) {
+      request.headers["Last-Event-ID"] = lastEventId!;
+    }
     if (body.isNotEmpty) {
       request.body = body;
     }

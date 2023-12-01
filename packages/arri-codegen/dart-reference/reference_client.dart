@@ -83,6 +83,7 @@ class TestClientUsersService {
     SseHookOnConnectionError<User>? onConnectionError,
     SseHookOnOpen<User>? onOpen,
     SseHookOnClose<User>? onClose,
+    String? lastEventId,
   }) {
     return parsedArriSseRequest<User>(
       "$_baseUrl/users/watch-user",
@@ -97,6 +98,7 @@ class TestClientUsersService {
       onConnectionError: onConnectionError,
       onOpen: onOpen,
       onClose: onClose,
+      lastEventId: lastEventId,
     );
   }
 }

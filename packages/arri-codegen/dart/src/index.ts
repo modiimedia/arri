@@ -270,6 +270,7 @@ export function dartRpcFromDefinition(
             `SseHookOnConnectionError<${returnTypeName}>? onConnectionError`,
             `SseHookOnOpen<${returnTypeName}>? onOpen`,
             `SseHookOnClose<${returnTypeName}>? onClose`,
+            `String? lastEventId`,
         ];
         return `${descriptionParts.join("\n")}
         ${returnType} ${key}(${
@@ -286,6 +287,7 @@ export function dartRpcFromDefinition(
                 onConnectionError: onConnectionError,
                 onOpen: onOpen,
                 onClose: onClose,
+                lastEventId: lastEventId,
             );
         }`;
     }
