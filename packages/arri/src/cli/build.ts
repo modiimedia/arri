@@ -170,7 +170,7 @@ void listen(toNodeListener(app.h3App), {
     ${httpsString}
 });`;
     await fs.writeFile(
-        path.resolve(config.rootDir, ".output", GEN_SERVER_ENTRY_FILE),
+        path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
         virtualEntry,
     );
 }
