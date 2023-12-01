@@ -19,6 +19,13 @@ export interface ArriConfig {
         BuildOptions,
         "outfile" | "outdir" | "entryNames" | "entryPoints"
     >;
+    https?:
+        | {
+              cert: string;
+              key: string;
+              passphrase?: string;
+          }
+        | boolean;
 }
 
 export function isArriConfig(input: unknown): input is ArriConfig {
@@ -66,6 +73,7 @@ export const defaultConfig: Required<ArriConfig> = {
     buildDir: ".arri",
     serverEntry: "",
     esbuild: {},
+    https: false,
 };
 
 export function defineConfig(config: ArriConfig): ResolvedArriConfig {
@@ -82,5 +90,6 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
         buildDir: config.buildDir ?? defaultConfig.buildDir,
         esbuild: config.esbuild ?? defaultConfig.esbuild,
         serverEntry: config.serverEntry ?? "",
+        https: config.https ?? false,
     };
 }

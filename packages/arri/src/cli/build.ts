@@ -148,6 +148,18 @@ const require = topLevelCreateRequire(import.meta.url);`,
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
+    let httpsString = ``;
+    if (config.https === true) {
+        httpsString = `https: true,`;
+    } else if (typeof config.https === "object") {
+        httpsString = `https: { cert: '${config.https.cert}', key: '${
+            config.https.key
+        }', passphrase: ${
+            config.https.passphrase
+                ? `'${config.https.passphrase}'`
+                : "undefined"
+        }},`;
+    }
     const virtualEntry = `import { toNodeListener } from 'arri';
 import { listen } from 'listhen';
 import app from './${OUT_APP_FILE}';
@@ -155,6 +167,7 @@ import app from './${OUT_APP_FILE}';
 void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
     public: true,
+    ${httpsString}
 });`;
     await fs.writeFile(
         path.resolve(config.rootDir, ".output", GEN_SERVER_ENTRY_FILE),

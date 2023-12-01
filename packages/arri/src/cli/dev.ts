@@ -53,6 +53,7 @@ const startListener = (config: ResolvedArriConfig, showQr = false) =>
         port: config.port,
         logger,
         qr: showQr,
+        https: config.https,
     });
 
 async function bundleFilesContext(config: ResolvedArriConfig) {
@@ -154,8 +155,15 @@ export interface ArriServiceConfig {
 
 async function generateClients(config: ResolvedArriConfig) {
     try {
+        const protocol =
+            config.https === true || typeof config.https === "object"
+                ? "https"
+                : "http";
+        if (protocol === "https") {
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+        }
         const result = await ofetch(
-            `http://127.0.0.1:${config.port}${DEV_DEFINITION_ENDPOINT}`,
+            `${protocol}://127.0.0.1:${config.port}${DEV_DEFINITION_ENDPOINT}`,
         );
         if (!isAppDefinition(result)) {
             return;
