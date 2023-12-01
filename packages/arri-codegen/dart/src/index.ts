@@ -26,6 +26,13 @@ import {
 } from "arri-codegen-utils";
 import { a } from "arri-validate";
 
+function camelCaseWrapper(input: string) {
+    if (input.includes("_")) {
+        return camelCase(input.toLowerCase());
+    }
+    return camelCase(input);
+}
+
 export interface DartClientGeneratorOptions {
     clientName: string;
     outputFile: string;
@@ -352,7 +359,7 @@ export function dartClassFromJtdSchema(
     const isDiscriminatorChild =
         (discOptions?.discriminatorKey.length ?? 0) > 0;
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     let className = def.metadata?.id ? pascalCase(def.metadata.id) : undefined;
     if (!className) {
         className = pascalCase(nodePath.split(".").join("_"));
@@ -407,7 +414,7 @@ export function dartClassFromJtdSchema(
     const copyWithInitParts: string[] = [];
     if (discOptions) {
         fieldParts.push(`@override
-final String ${camelCase(discOptions.discriminatorKey)} = "${
+final String ${camelCaseWrapper(discOptions.discriminatorKey)} = "${
             discOptions.discriminatorValue
         }"`);
     }
@@ -415,7 +422,7 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
         fieldParts.push(prop.templates.fieldTemplate);
         constructorParts.push(prop.templates.constructorTemplate);
         const subJsonKey = prop.key;
-        const subKey = camelCase(prop.key);
+        const subKey = camelCaseWrapper(prop.key);
         fromJsonParts.push(
             `${subKey}: ${prop.templates.fromJsonTemplate(
                 `json["${subJsonKey}"]`,
@@ -437,7 +444,7 @@ final String ${camelCase(discOptions.discriminatorKey)} = "${
     for (const prop of optionalProperties) {
         fieldParts.push(prop.templates.fieldTemplate);
         constructorParts.push(prop.templates.constructorTemplate);
-        const subKey = camelCase(prop.key);
+        const subKey = camelCaseWrapper(prop.key);
         const subJsonKey = prop.key;
         fromJsonParts.push(
             `${subKey}: ${prop.templates.fromJsonTemplate(
@@ -486,7 +493,7 @@ ${classNamePart} {
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{${
         isDiscriminatorChild
-            ? `\n      "${discOptions?.discriminatorKey}": ${camelCase(
+            ? `\n      "${discOptions?.discriminatorKey}": ${camelCaseWrapper(
                   discOptions?.discriminatorKey ?? "",
               )},`
             : ""
@@ -495,16 +502,16 @@ ${classNamePart} {
           .map(
               (prop) =>
                   `"${prop.key}": ${prop.templates.toJsonTemplate(
-                      camelCase(prop.key),
+                      camelCaseWrapper(prop.key),
                   )}`,
           )
           .join(",\n      ")}${properties.length ? "," : ""}
     };
     ${optionalProperties
         .map(
-            (prop) => `if (${camelCase(prop.key)} != null) {
+            (prop) => `if (${camelCaseWrapper(prop.key)} != null) {
       result["${prop.key}"] = ${prop.templates.toJsonTemplate(
-          camelCase(prop.key),
+          camelCaseWrapper(prop.key),
       )};
     }`,
         )
@@ -563,7 +570,7 @@ function dartDynamicFromAny(
     additionalOptions: ConversionAdditionalOptions,
 ): DartProperty {
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     return {
         typeName: "dynamic",
         fieldTemplate: fieldTemplateString(
@@ -603,7 +610,7 @@ function dartArrayFromJtdSchema(
 ): DartProperty {
     const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     const subtype = dartTypeFromJtdSchema(`${nodePath}.Item`, def.elements, {
         existingClassNames: additionalOptions.existingClassNames,
         isOptional: false,
@@ -656,7 +663,7 @@ function dartScalarFromJtdScalar(
 ): DartProperty {
     const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     const defaultInitializationTemplate = additionalOptions.isOptional
         ? `this.${key}`
         : `required this.${key}`;
@@ -845,7 +852,7 @@ function dartEnumFromJtdSchema(
 ): DartProperty {
     const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     let className = def.metadata?.id ? pascalCase(def.metadata.id) : undefined;
     if (!className) {
         className = pascalCase(nodePath.split(".").join("_"));
@@ -853,8 +860,8 @@ function dartEnumFromJtdSchema(
     const valNames: string[] = [];
     const fieldParts: string[] = [];
     for (const val of def.enum) {
-        valNames.push(`${camelCase(val)}`);
-        fieldParts.push(`${camelCase(val)}("${val}")`);
+        valNames.push(`${camelCaseWrapper(val)}`);
+        fieldParts.push(`${camelCaseWrapper(val)}("${val}")`);
     }
     let content = `enum ${className} implements Comparable<${className}> {
   ${fieldParts.join(",\n  ")};
@@ -906,7 +913,7 @@ function dartMapFromJtdSchema(
 ): DartProperty {
     const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     const innerType = dartTypeFromJtdSchema(`${nodePath}.Value`, def.values, {
         existingClassNames: additionalOptions.existingClassNames,
         isOptional: false,
@@ -952,9 +959,9 @@ function dartSealedClassFromJtdSchema(
         : pascalCase(nodePath.split(".").join("_"));
     const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
     const jsonKey = nodePath.split(".").pop() ?? "";
-    const key = camelCase(jsonKey);
+    const key = camelCaseWrapper(jsonKey);
     const discriminatorJsonKey = def.discriminator;
-    const discriminatorKey = camelCase(def.discriminator);
+    const discriminatorKey = camelCaseWrapper(def.discriminator);
     const fromJsonCaseParts: string[] = [];
     const childContentParts: string[] = [];
     Object.keys(def.mapping).forEach((discKeyValue) => {
@@ -963,7 +970,7 @@ function dartSealedClassFromJtdSchema(
             return;
         }
         const child = dartClassFromJtdSchema(
-            `${nodePath}.${camelCase(discKeyValue.toLowerCase())}`,
+            `${nodePath}.${camelCaseWrapper(discKeyValue.toLowerCase())}`,
             childDef,
             {
                 isOptional: false,
