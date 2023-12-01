@@ -139,6 +139,31 @@ class TestClientMiscTestsService {
     );
   }
 
+  EventSource<ChatMessage> streamTenEventsThenEnd({
+    SseHookOnData<ChatMessage>? onData,
+    SseHookOnError<ChatMessage>? onError,
+    SseHookOnConnectionError<ChatMessage>? onConnectionError,
+    SseHookOnOpen<ChatMessage>? onOpen,
+    SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<ChatMessage>(
+      "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-end",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => ChatMessage.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
   EventSource<ChatMessage> streamTenEventsThenError({
     SseHookOnData<ChatMessage>? onData,
     SseHookOnError<ChatMessage>? onError,

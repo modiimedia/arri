@@ -179,6 +179,9 @@ class EventSource<T> {
               case SseErrorEvent<T>():
                 _onError(event.data);
                 break;
+              case SseDoneEvent<T>():
+                close();
+                break;
             }
           }
         },
@@ -249,9 +252,20 @@ List<SseEvent<T>> parseSseEvents<T>(
   final stringParts = input.split("\n\n");
   final result = <SseEvent<T>>[];
   for (final part in stringParts) {
-    result.add(SseEvent<T>.fromString(part, dataParser));
+    final event = parseSseEvent(part);
+    if (event != null) {
+      result.add(SseEvent<T>.fromString(part, dataParser));
+    }
   }
   return result;
+}
+
+SseRawEvent<TData>? parseSseEvent<TData>(String input) {
+  try {
+    return SseRawEvent.fromString(input);
+  } catch (_) {
+    return null;
+  }
 }
 
 sealed class SseEvent<TData> {
@@ -272,6 +286,8 @@ sealed class SseEvent<TData> {
         return SseMessageEvent.fromRawSseEvent(sse, parser);
       case "error":
         return SseErrorEvent.fromRawSseEvent(sse);
+      case "done":
+        return SseDoneEvent.fromRawSseEvent(sse);
       default:
         return sse;
     }
@@ -313,7 +329,7 @@ class SseMessageEvent<TData> extends SseEvent<TData> {
       SseRawEvent event, TData Function(String) parser) {
     return SseMessageEvent(
       id: event.id,
-      event: event.event,
+      event: "message",
       data: parser(event.data),
     );
   }
@@ -328,6 +344,17 @@ class SseErrorEvent<TData> extends SseEvent<TData> {
       id: event.id,
       event: event.event,
       data: ArriRequestError.fromString(event.data),
+    );
+  }
+}
+
+class SseDoneEvent<TData> extends SseEvent<TData> {
+  final String data = "";
+  const SseDoneEvent({super.id, super.event});
+  factory SseDoneEvent.fromRawSseEvent(SseRawEvent event) {
+    return SseDoneEvent(
+      id: event.id,
+      event: "done",
     );
   }
 }

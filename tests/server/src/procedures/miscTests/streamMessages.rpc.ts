@@ -92,7 +92,6 @@ export default defineEventStreamRpc({
 
         connection.on("disconnect", async () => {
             clearInterval(interval);
-            await connection.close();
         });
         connection.start();
     },

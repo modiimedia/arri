@@ -292,5 +292,19 @@ Future<void> main() async {
       expect(errorCount, equals(1));
       expect(eventSource.isClosed, equals(true));
     });
+    test("subscription closed by server", () async {
+      int messageCount = 0;
+      int errorCount = 0;
+      final eventSource =
+          client.miscTests.streamTenEventsThenEnd(onData: (data, connection) {
+        messageCount++;
+      }, onError: (_, __) {
+        errorCount++;
+      });
+      await Future.delayed(Duration(seconds: 3));
+      expect(messageCount, equals(10));
+      expect(errorCount, equals(0));
+      expect(eventSource.isClosed, equals(true));
+    });
   });
 }

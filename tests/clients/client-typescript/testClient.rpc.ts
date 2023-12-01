@@ -109,6 +109,19 @@ export class TestClientMiscTestsService {
             options,
         );
     }
+    streamTenEventsThenEnd(options: SseOptions<ChatMessage>) {
+        return arriSseRequest<ChatMessage, undefined>(
+            {
+                url: `${this.baseUrl}/rpcs/misc-tests/stream-ten-events-then-end`,
+                method: "get",
+                headers: this.headers,
+                params: undefined,
+                parser: $$ChatMessage.parse,
+                serializer: (_) => {},
+            },
+            options,
+        );
+    }
     streamTenEventsThenError(options: SseOptions<ChatMessage>) {
         return arriSseRequest<ChatMessage, undefined>(
             {

@@ -3,7 +3,6 @@ import { defineEventStreamRpc } from "arri";
 import { ChatMessage } from "./streamMessages.rpc";
 
 export default defineEventStreamRpc({
-    method: "post",
     params: undefined,
     response: ChatMessage,
     handler({ connection }) {
@@ -24,10 +23,7 @@ export default defineEventStreamRpc({
                 );
             }
             if (messageCount === 10) {
-                await connection.pushError({
-                    statusCode: 400,
-                    statusMessage: "Too many requests",
-                });
+                await connection.end();
                 await cleanup();
             }
         }, 100);

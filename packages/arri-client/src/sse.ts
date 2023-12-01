@@ -60,7 +60,11 @@ export function arriSseRequest<
         body,
         signal: controller.signal,
         onmessage(event) {
-            if (event.event === "message") {
+            if (
+                event.event === "message" ||
+                event.event === undefined ||
+                event.event === ""
+            ) {
                 options.onData?.(opts.parser(event.data));
                 return;
             }
@@ -68,6 +72,10 @@ export function arriSseRequest<
                 options.onError?.(
                     ArriRequestErrorInstance.fromJson(event.data),
                 );
+                return;
+            }
+            if (event.event === "done") {
+                controller.abort();
             }
         },
         onerror(error) {

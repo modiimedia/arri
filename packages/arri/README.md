@@ -149,7 +149,9 @@ Setup your npm scripts:
 
 ## Usage
 
-### File Based Routing
+### Creating Procedures
+
+#### File Based Routing
 
 Arri RPC comes with an optional file based router that will automatically register functions in the `./procedures` directory that end with the `.rpc.ts` file extension.
 
@@ -184,7 +186,7 @@ export default defineRpc({
 });
 ```
 
-#### Customizing the File Based Router
+##### Customizing the File Based Router
 
 ```ts
 export default defineConfig({
@@ -194,7 +196,7 @@ export default defineConfig({
 });
 ```
 
-### Manual Routing
+#### Manual Routing
 
 ```ts
 // using the app instance
@@ -206,6 +208,76 @@ const app = new ArriApp();
 const router = new ArriRoute();
 router.rpc('sayHello', {...})
 app.use(router)
+```
+
+#### Creating Event Stream Procedures
+
+Event stream procedures make use of [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) to stream events to clients.
+
+Normal events will have the event type `message`. Error events will have the event type `error`, and a `done` event will be sent when closing the connection. Additionally the `EventStreamConnection` will periodically since a `ping` event to keep the connection alive
+
+```ts
+/// standard event ///
+id: string | undefined;
+event: "message";
+data: Response; // whatever you have specified as the response serialized to json
+
+/// error event ///
+id: string | undefined;
+event: "error";
+data: ArriRequestError; // serialized to json
+
+/// done event ///
+event: "done";
+data: "this stream has ended";
+
+/// ping event ///
+event: "ping";
+data: "";
+```
+
+##### Example Usage:
+
+```ts
+// procedures/users/watchUser.rpc.ts
+export default defineEventStreamRpc({
+    params: a.object({
+        userId: a.string(),
+    }),
+    response: a.object({
+        id: a.string(),
+        name: a.string(),
+        createdAt: a.timestamp(),
+        updatedAt: a.timestamp(),
+    }),
+    handler({ params, connection }) {
+        // send a message every second
+        const interval = setInterval(async () => {
+            await connection.push({
+                id: "1",
+                name: "John Doe",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+        }, 1000);
+        // cleanup when the client disconnects
+        connection.on("disconnect", () => {
+            clearInterval(interval);
+        });
+        // start streaming events to the client
+        connection.start();
+    },
+});
+```
+
+#### EventStreamConnection methods
+
+```ts
+connection.push(data: Data, eventId?: string)
+connection.pushError(error: ArriRequestError, eventId?: string)
+connection.start()
+connection.end()
+connection.on(e: 'disconnect' | 'end', callback: () => any)
 ```
 
 ### Adding Non-RPC Routes

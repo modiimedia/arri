@@ -406,3 +406,30 @@ test("SSE Request with errors", async () => {
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
 }, 30000);
+
+test("SSE Request with done event", async () => {
+    let timesConnected = 0;
+    let messageCount = 0;
+    let errorReceived: ArriRequestError | undefined;
+    const controller = client.miscTests.streamTenEventsThenEnd({
+        onData(_) {
+            messageCount++;
+        },
+        onError(error) {
+            console.log(error);
+            errorReceived = error;
+        },
+        onOpen() {
+            timesConnected++;
+        },
+    });
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 5000);
+    });
+    expect(errorReceived).toBe(undefined);
+    expect(controller.signal.aborted).toBe(true);
+    expect(timesConnected).toBe(1);
+    expect(messageCount).toBe(10);
+});

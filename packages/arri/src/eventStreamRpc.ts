@@ -78,18 +78,21 @@ export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
     connection: EventStreamConnection<TResponse>;
 }
 
-export interface EventStreamConnectionOptions<TType> {
-    serializer: (input: TType) => string;
+export interface EventStreamConnectionOptions<TData> {
+    serializer: (input: TData) => string;
     pingInterval?: number;
 }
 
-export interface SseEvent {
+/**
+ * A server sent event
+ */
+export interface Sse {
     id?: string;
     event?: string;
     data: string;
 }
 
-export function formatSseEvent({ id, data, event }: SseEvent): string {
+export function formatSse({ id, data, event }: Sse): string {
     const parts: string[] = [];
     if (id) {
         parts.push(`id: ${id}`);
@@ -102,26 +105,26 @@ export function formatSseEvent({ id, data, event }: SseEvent): string {
     return payload;
 }
 
-export function formatSseEvents(events: SseEvent[]): string {
+export function formatSseList(events: Sse[]): string {
     let output = "";
     for (const event of events) {
-        output += formatSseEvent(event);
+        output += formatSse(event);
     }
     return output;
 }
 
-export class EventStreamConnection<TType> {
+export class EventStreamConnection<TData> {
     lastEventId: string | undefined;
     private readonly writable: WritableStream;
     private readonly readable: ReadableStream;
     private readonly writer: WritableStreamDefaultWriter;
     private readonly encoder: TextEncoder;
-    private readonly serializer: (input: TType) => string;
+    private readonly serializer: (input: TData) => string;
     private readonly h3Event: H3Event;
     private pingInterval: NodeJS.Timeout | undefined = undefined;
     private readonly pingIntervalMs: number;
 
-    constructor(event: H3Event, opts: EventStreamConnectionOptions<TType>) {
+    constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.h3Event = event;
         setSseHeaders(this.h3Event);
         setResponseStatus(this.h3Event, 200);
@@ -156,11 +159,11 @@ export class EventStreamConnection<TType> {
     /**
      * Publish a new event. Events published with this hook will trigger the `onData()` hooks of any connected clients.
      */
-    async push(data: TType[], eventId?: string): Promise<void>;
-    async push(data: TType, eventId?: string): Promise<void>;
-    async push(data: TType | TType[], eventId?: string) {
+    async push(data: TData[], eventId?: string): Promise<void>;
+    async push(data: TData, eventId?: string): Promise<void>;
+    async push(data: TData | TData[], eventId?: string) {
         if (Array.isArray(data)) {
-            const events: SseEvent[] = [];
+            const events: Sse[] = [];
             for (const item of data) {
                 events.push({
                     id: eventId,
@@ -206,13 +209,13 @@ export class EventStreamConnection<TType> {
         });
     }
 
-    private async publishEvents(events: SseEvent[]) {
-        const payload = formatSseEvents(events);
+    private async publishEvents(events: Sse[]) {
+        const payload = formatSseList(events);
         await this.writer.write(this.encoder.encode(payload));
     }
 
-    private async publishEvent(event: SseEvent) {
-        const payload = formatSseEvent(event);
+    private async publishEvent(event: Sse) {
+        const payload = formatSse(event);
         await this.writer.write(this.encoder.encode(payload));
     }
 
@@ -226,21 +229,28 @@ export class EventStreamConnection<TType> {
     }
 
     /**
-     * Close the connection
+     * Tell clients that the stream has ended and close the connection.
      */
-    async close() {
+    async end() {
+        await this.publishEvent({
+            event: "done",
+            data: "this stream has ended",
+        }).catch();
         this.h3Event.node.res.end();
         await this.cleanup();
     }
 
     on(event: "disconnect", callback: () => any): void;
-    on(event: "close", callback: () => any): void;
-    on(event: "disconnect" | "close", callback: () => any) {
+    on(event: "end", callback: () => any): void;
+    on(event: "disconnect" | "end", callback: () => any) {
         switch (event) {
             case "disconnect":
-                this.h3Event.node.req.on("close", callback);
+                this.h3Event.node.req.on("close", async () => {
+                    await callback();
+                    await this.cleanup();
+                });
                 break;
-            case "close":
+            case "end":
                 this.h3Event.node.req.on("end", callback);
                 break;
         }
