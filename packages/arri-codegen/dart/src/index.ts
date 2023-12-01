@@ -27,7 +27,7 @@ import {
 import { a } from "arri-validate";
 
 function camelCaseWrapper(input: string) {
-    if (input.includes("_")) {
+    if (input.toUpperCase() === input) {
         return camelCase(input, { normalize: true });
     }
     return camelCase(input);
