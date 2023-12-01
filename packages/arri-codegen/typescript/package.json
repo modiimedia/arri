@@ -20,5 +20,5 @@
         "arri-validate": "workspace:*",
         "prettier": "^3.1.0"
     },
-    "version": "0.16.0"
+    "version": "0.16.1"
 }
