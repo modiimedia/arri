@@ -1,4 +1,10 @@
-import { type AppDefinition, type RpcDefinition } from "arri-codegen-utils";
+import {
+    type SchemaFormDiscriminator,
+    type SchemaFormProperties,
+    type SchemaFormValues,
+    type AppDefinition,
+    type RpcDefinition,
+} from "arri-codegen-utils";
 import { type AObjectSchema, type ASchema } from "arri-validate";
 import {
     type App,
@@ -28,6 +34,11 @@ import {
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/__definition`;
 
+export type ModelMap = Record<
+    string,
+    SchemaFormProperties | SchemaFormDiscriminator | SchemaFormValues
+>;
+
 export class ArriApp implements ArriRouterBase {
     __isArri__ = true;
     readonly h3App: App;
@@ -36,7 +47,7 @@ export class ArriApp implements ArriRouterBase {
     private readonly rpcRoutePrefix: string;
     appInfo: AppDefinition["info"];
     private procedures: Record<string, RpcDefinition> = {};
-    private models: Record<string, ASchema> = {};
+    private models: ModelMap = {};
     private readonly middlewares: Middleware[] = [];
     private readonly onRequest: ArriOptions["onRequest"];
     private readonly onAfterResponse: ArriOptions["onAfterResponse"];
@@ -105,6 +116,7 @@ export class ArriApp implements ArriRouterBase {
             for (const rpc of input.getProcedures()) {
                 this.rpc(rpc);
             }
+            this.registerModels(input.getModels());
             return;
         }
         this.middlewares.push(input);
@@ -166,6 +178,12 @@ export class ArriApp implements ArriRouterBase {
             onAfterResponse: this.onAfterResponse,
             onBeforeResponse: this.onBeforeResponse,
         });
+    }
+
+    registerModels(models: ModelMap) {
+        for (const key of Object.keys(models)) {
+            this.models[key] = models[key];
+        }
     }
 
     getAppDefinition(): AppDefinition {

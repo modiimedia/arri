@@ -204,6 +204,81 @@ export class TestClientVideosService {
     }
 }
 
+export interface ManuallyAddedModel {
+    hello: string;
+}
+const $$ManuallyAddedModel = {
+    parse(input: Record<any, any>): ManuallyAddedModel {
+        class $ValidationErrorManuallyAddedModel extends Error {
+            errors;
+            constructor(input) {
+                super(input.message);
+                this.errors = input.errors;
+            }
+        }
+
+        function $fallback(instancePath, schemaPath, message) {
+            throw new $ValidationErrorManuallyAddedModel({
+                message: message,
+                errors: [
+                    {
+                        instancePath: instancePath,
+                        schemaPath: schemaPath,
+                        message: message,
+                    },
+                ],
+            });
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (typeof json.hello === "string") {
+                    jsonInnerVal.hello = json.hello;
+                } else {
+                    $fallback(
+                        "/hello",
+                        "/properties/hello/type",
+                        "Expected string at /hello",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (typeof input.hello === "string") {
+                inputInnerVal.hello = input.hello;
+            } else {
+                $fallback(
+                    "/hello",
+                    "/properties/hello/type",
+                    "Expected string at /hello",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: ManuallyAddedModel): string {
+        let json = "";
+        json += "{";
+        json += `"hello":"${input.hello
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
+        json += "}";
+        return json;
+    },
+};
+
 export interface AdaptersTypeboxAdapterParams {
     string: string;
     boolean: boolean;

@@ -1,4 +1,5 @@
 import { type ASchema, type AObjectSchema } from "arri-validate";
+import { type ModelMap } from "./app";
 import { type ArriRoute } from "./route";
 import { type NamedRpc } from "./rpc";
 
@@ -18,12 +19,16 @@ export interface ArriRouterBase {
     >(
         route: ArriRoute<TPath, TQuery, TBody, TResponse>,
     ) => void;
+
+    registerModels: (models: ModelMap) => void;
 }
 
 export class ArriRouter implements ArriRouterBase {
     private readonly procedures: Array<NamedRpc<any, any, any>> = [];
 
     private readonly routes: Array<ArriRoute<any>> = [];
+
+    private readonly models: ModelMap = {};
 
     rpc<
         TIsEventStream extends boolean = false,
@@ -42,11 +47,21 @@ export class ArriRouter implements ArriRouterBase {
         this.routes.push(route);
     }
 
+    registerModels(models: ModelMap) {
+        for (const key of Object.keys(models)) {
+            this.models[key] = models[key];
+        }
+    }
+
     getProcedures() {
         return this.procedures;
     }
 
     getRoutes() {
         return this.routes;
+    }
+
+    getModels() {
+        return this.models;
     }
 }

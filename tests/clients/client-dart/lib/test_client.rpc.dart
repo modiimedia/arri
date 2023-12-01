@@ -259,6 +259,34 @@ class TestClientVideosService {
   }
 }
 
+class ManuallyAddedModel {
+  final String hello;
+  const ManuallyAddedModel({
+    required this.hello,
+  });
+  factory ManuallyAddedModel.fromJson(Map<String, dynamic> json) {
+    return ManuallyAddedModel(
+      hello: typeFromDynamic<String>(json["hello"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "hello": hello,
+    };
+
+    return result;
+  }
+
+  ManuallyAddedModel copyWith({
+    String? hello,
+  }) {
+    return ManuallyAddedModel(
+      hello: hello ?? this.hello,
+    );
+  }
+}
+
 class AdaptersTypeboxAdapterParams {
   final String string;
   final bool boolean;
