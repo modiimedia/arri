@@ -433,3 +433,36 @@ test("SSE Request with done event", async () => {
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
 });
+
+test("SSE Requests Auto-Reconnect", async () => {
+    let connectionCount = 0;
+    let errorCount = 0;
+    let messageCount = 0;
+    const controller = client.miscTests.streamAutoReconnect(
+        {
+            messageCount: 10,
+        },
+        {
+            onOpen() {
+                connectionCount++;
+            },
+            onData(data) {
+                console.log(data);
+                messageCount++;
+                expect(data.count > 0).toBe(true);
+            },
+            onError(_) {
+                errorCount++;
+            },
+        },
+    );
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 2000);
+    });
+    expect(messageCount > 10).toBe(true);
+    expect(connectionCount > 0).toBe(true);
+    expect(errorCount).toBe(0);
+    controller.abort();
+});

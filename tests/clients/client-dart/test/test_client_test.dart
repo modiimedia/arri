@@ -306,5 +306,28 @@ Future<void> main() async {
       expect(errorCount, equals(0));
       expect(eventSource.isClosed, equals(true));
     });
+    test("subscriptions auto-reconnect", () async {
+      int connectionCount = 0;
+      int messageCount = 0;
+      int errorCount = 0;
+      final eventSource = client.miscTests.streamAutoReconnect(
+        AutoReconnectParams(messageCount: 10),
+        onOpen: (_, __) {
+          connectionCount++;
+        },
+        onData: (data, _) {
+          messageCount++;
+          expect(data.count > 0, equals(true));
+        },
+        onError: (_, __) {
+          errorCount++;
+        },
+      );
+      await Future.delayed(Duration(seconds: 3));
+      eventSource.close();
+      expect(connectionCount > 0, equals(true));
+      expect(messageCount > 10, equals(true));
+      expect(errorCount, equals(0));
+    });
   });
 }

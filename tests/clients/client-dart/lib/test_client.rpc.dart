@@ -113,6 +113,32 @@ class TestClientMiscTestsService {
     );
   }
 
+  EventSource<AutoReconnectResponse> streamAutoReconnect(
+    AutoReconnectParams params, {
+    SseHookOnData<AutoReconnectResponse>? onData,
+    SseHookOnError<AutoReconnectResponse>? onError,
+    SseHookOnConnectionError<AutoReconnectResponse>? onConnectionError,
+    SseHookOnOpen<AutoReconnectResponse>? onOpen,
+    SseHookOnClose<AutoReconnectResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<AutoReconnectResponse>(
+      "$_baseUrl/rpcs/misc-tests/stream-auto-reconnect",
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => AutoReconnectResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
   EventSource<ChatMessage> streamMessages(
     ChatMessageParams params, {
     SseHookOnData<ChatMessage>? onData,
@@ -2026,6 +2052,68 @@ class ObjectWithEveryOptionalTypeNestedArrayItemItem {
     return ObjectWithEveryOptionalTypeNestedArrayItemItem(
       id: id ?? this.id,
       timestamp: timestamp ?? this.timestamp,
+    );
+  }
+}
+
+class AutoReconnectParams {
+  final int messageCount;
+  const AutoReconnectParams({
+    required this.messageCount,
+  });
+  factory AutoReconnectParams.fromJson(Map<String, dynamic> json) {
+    return AutoReconnectParams(
+      messageCount: intFromDynamic(json["messageCount"], 0),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "messageCount": messageCount,
+    };
+
+    return result;
+  }
+
+  AutoReconnectParams copyWith({
+    int? messageCount,
+  }) {
+    return AutoReconnectParams(
+      messageCount: messageCount ?? this.messageCount,
+    );
+  }
+}
+
+class AutoReconnectResponse {
+  final int count;
+  final String message;
+  const AutoReconnectResponse({
+    required this.count,
+    required this.message,
+  });
+  factory AutoReconnectResponse.fromJson(Map<String, dynamic> json) {
+    return AutoReconnectResponse(
+      count: intFromDynamic(json["count"], 0),
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "count": count,
+      "message": message,
+    };
+
+    return result;
+  }
+
+  AutoReconnectResponse copyWith({
+    int? count,
+    String? message,
+  }) {
+    return AutoReconnectResponse(
+      count: count ?? this.count,
+      message: message ?? this.message,
     );
   }
 }

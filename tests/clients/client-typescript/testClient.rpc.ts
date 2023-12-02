@@ -93,6 +93,22 @@ export class TestClientMiscTestsService {
             serializer: $$ObjectWithEveryOptionalType.serialize,
         });
     }
+    streamAutoReconnect(
+        params: AutoReconnectParams,
+        options: SseOptions<AutoReconnectResponse>,
+    ) {
+        return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
+            {
+                url: `${this.baseUrl}/rpcs/misc-tests/stream-auto-reconnect`,
+                method: "get",
+                headers: this.headers,
+                params,
+                parser: $$AutoReconnectResponse.parse,
+                serializer: $$AutoReconnectParams.serialize,
+            },
+            options,
+        );
+    }
     streamMessages(
         params: ChatMessageParams,
         options: SseOptions<ChatMessage>,
@@ -6341,6 +6357,202 @@ export interface ObjectWithEveryOptionalTypeNestedArrayItemItem {
     id: string;
     timestamp: Date;
 }
+
+export interface AutoReconnectParams {
+    messageCount: number;
+}
+const $$AutoReconnectParams = {
+    parse(input: Record<any, any>): AutoReconnectParams {
+        class $ValidationErrorAutoReconnectParams extends Error {
+            errors;
+            constructor(input) {
+                super(input.message);
+                this.errors = input.errors;
+            }
+        }
+
+        function $fallback(instancePath, schemaPath, message) {
+            throw new $ValidationErrorAutoReconnectParams({
+                message: message,
+                errors: [
+                    {
+                        instancePath: instancePath,
+                        schemaPath: schemaPath,
+                        message: message,
+                    },
+                ],
+            });
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (
+                    typeof json.messageCount === "number" &&
+                    Number.isInteger(json.messageCount) &&
+                    json.messageCount >= 0 &&
+                    json.messageCount <= 255
+                ) {
+                    jsonInnerVal.messageCount = json.messageCount;
+                } else {
+                    $fallback(
+                        "/messageCount",
+                        "/properties/messageCount",
+                        "Expected valid integer between 0 and 255",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (
+                typeof input.messageCount === "number" &&
+                Number.isInteger(input.messageCount) &&
+                input.messageCount >= 0 &&
+                input.messageCount <= 255
+            ) {
+                inputInnerVal.messageCount = input.messageCount;
+            } else {
+                $fallback(
+                    "/messageCount",
+                    "/properties/messageCount",
+                    "Expected valid integer between 0 and 255",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: AutoReconnectParams): string {
+        let json = "";
+        json += "{";
+
+        if (Number.isNaN(input.messageCount)) {
+            throw new Error("Expected number at /messageCount got NaN");
+        }
+        json += `"messageCount":${input.messageCount}`;
+        json += "}";
+        return json;
+    },
+};
+
+export interface AutoReconnectResponse {
+    count: number;
+    message: string;
+}
+const $$AutoReconnectResponse = {
+    parse(input: Record<any, any>): AutoReconnectResponse {
+        class $ValidationErrorAutoReconnectResponse extends Error {
+            errors;
+            constructor(input) {
+                super(input.message);
+                this.errors = input.errors;
+            }
+        }
+
+        function $fallback(instancePath, schemaPath, message) {
+            throw new $ValidationErrorAutoReconnectResponse({
+                message: message,
+                errors: [
+                    {
+                        instancePath: instancePath,
+                        schemaPath: schemaPath,
+                        message: message,
+                    },
+                ],
+            });
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (
+                    typeof json.count === "number" &&
+                    Number.isInteger(json.count) &&
+                    json.count >= 0 &&
+                    json.count <= 255
+                ) {
+                    jsonInnerVal.count = json.count;
+                } else {
+                    $fallback(
+                        "/count",
+                        "/properties/count",
+                        "Expected valid integer between 0 and 255",
+                    );
+                }
+                if (typeof json.message === "string") {
+                    jsonInnerVal.message = json.message;
+                } else {
+                    $fallback(
+                        "/message",
+                        "/properties/message/type",
+                        "Expected string at /message",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (
+                typeof input.count === "number" &&
+                Number.isInteger(input.count) &&
+                input.count >= 0 &&
+                input.count <= 255
+            ) {
+                inputInnerVal.count = input.count;
+            } else {
+                $fallback(
+                    "/count",
+                    "/properties/count",
+                    "Expected valid integer between 0 and 255",
+                );
+            }
+            if (typeof input.message === "string") {
+                inputInnerVal.message = input.message;
+            } else {
+                $fallback(
+                    "/message",
+                    "/properties/message/type",
+                    "Expected string at /message",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: AutoReconnectResponse): string {
+        let json = "";
+        json += "{";
+
+        if (Number.isNaN(input.count)) {
+            throw new Error("Expected number at /count got NaN");
+        }
+        json += `"count":${input.count}`;
+        json += `,"message":"${input.message
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
+        json += "}";
+        return json;
+    },
+};
 
 export interface ChatMessageParams {
     channelId: string;
