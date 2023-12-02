@@ -9,8 +9,10 @@ Typescript implementation of Arri RPC. It's built on top of [H3](https://github.
     -   [Install Dependencies](#install-dependencies)
     -   [Scaffold Your Project](#scaffold-your-project)
 -   [Usage](#usage)
-    -   [File-Based Routing](#file-based-routing)
-    -   [Manual Routing](#manual-routing)
+    -   [Creating Procedures](#creating-procedures)
+        -   [File-Based Routing](#file-based-routing)
+        -   [Manual Routing](#manual-routing)
+        -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
     -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
     -   [Adding Middleware](#adding-middleware)
 -   [Key Concepts](#key-concepts)
@@ -151,7 +153,7 @@ Setup your npm scripts:
 
 ### Creating Procedures
 
-#### File Based Routing
+#### File Based Router
 
 Arri RPC comes with an optional file based router that will automatically register functions in the `./procedures` directory that end with the `.rpc.ts` file extension.
 
@@ -198,6 +200,8 @@ export default defineConfig({
 
 #### Manual Routing
 
+For those that want to opt out of the file-based routing system you can manually register procedures like so.
+
 ```ts
 // using the app instance
 const app = new ArriApp()
@@ -214,10 +218,15 @@ app.use(router)
 
 Event stream procedures make use of [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) to stream events to clients.
 
-Normal events will have the event type `message`. Error events will have the event type `error`, and a `done` event will be sent when closing the connection. Additionally the `EventStreamConnection` will periodically since a `ping` event to keep the connection alive
+Arri Event streams sent the following event types:
+
+-   `message` - A standard message with the response data serialized as JSON
+-   `error` - An error message with an `ArriRequestError` sent as JSON
+-   `done` - A message to tell clients that there will be no more events
+-   `ping` - A message periodically sent by the server to keep the connection alive.
 
 ```ts
-/// standard event ///
+/// message event ///
 id: string | undefined;
 event: "message";
 data: Response; // whatever you have specified as the response serialized to json
