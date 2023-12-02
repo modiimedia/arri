@@ -416,7 +416,6 @@ test("SSE Request with done event", async () => {
             messageCount++;
         },
         onError(error) {
-            console.log(error);
             errorReceived = error;
         },
         onOpen() {
@@ -447,7 +446,6 @@ test("SSE Requests Auto-Reconnect", async () => {
                 connectionCount++;
             },
             onData(data) {
-                console.log(data);
                 messageCount++;
                 expect(data.count > 0).toBe(true);
             },
