@@ -1,0 +1,34 @@
+{
+    "name": "arri-codegen-python-reference",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/arri-codegen/python-reference/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/dist"],
+            "options": {
+                "command": "unbuild",
+                "cwd": "packages/arri-codegen/python-reference"
+            }
+        },
+        "publish": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "pnpm publish",
+                "cwd": "packages/arri-codegen/python-reference"
+            },
+            "dependsOn": ["build"]
+        },
+        "lint": {
+            "executor": "@nx/eslint:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "packages/arri-codegen/python-reference/**/*.py"
+                ]
+            }
+        }
+    },
+    "tags": []
+}

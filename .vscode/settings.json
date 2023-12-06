@@ -3,6 +3,11 @@
     "editor.codeActionsOnSave": {
         "source.fixAll": true
     },
+    "[python]": {
+        "editor.formatOnType": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.vscode-pylance"
+    },
     "cSpell.words": [
         "Arri",
         "autoroutes",
