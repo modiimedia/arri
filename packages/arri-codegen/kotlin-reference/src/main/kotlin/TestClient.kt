@@ -10,12 +10,19 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.headers
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
+import java.time.Instant
 
 enum class HttpMethod { GET, HEAD, POST, PUT, PATCH, DELETE }
 
@@ -92,13 +99,52 @@ data class User(
     val id: String,
     val role: UserRole,
     val photo: UserPhoto?,
-    val createdAt: String,
+    @Serializable(with = InstantAsStringSerializer::class)
+    val createdAt: Instant,
     val numFollowers: Int,
     val settings: UserSettings,
     val recentNotifications: List<UserRecentNotificationsItem>,
     val bookmarks: Map<String, UserBookmarksValue>,
-    val bio: String?
-)
+    val bio: String?,
+    val metadata: Map<String, Unit>,
+    val randomList: Array<Unit>
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as User
+
+        if (id != other.id) return false
+        if (role != other.role) return false
+        if (photo != other.photo) return false
+        if (createdAt != other.createdAt) return false
+        if (numFollowers != other.numFollowers) return false
+        if (settings != other.settings) return false
+        if (recentNotifications != other.recentNotifications) return false
+        if (bookmarks != other.bookmarks) return false
+        if (bio != other.bio) return false
+        if (metadata != other.metadata) return false
+        if (!randomList.contentEquals(other.randomList)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + role.hashCode()
+        result = 31 * result + (photo?.hashCode() ?: 0)
+        result = 31 * result + createdAt.hashCode()
+        result = 31 * result + numFollowers
+        result = 31 * result + settings.hashCode()
+        result = 31 * result + recentNotifications.hashCode()
+        result = 31 * result + bookmarks.hashCode()
+        result = 31 * result + (bio?.hashCode() ?: 0)
+        result = 31 * result + metadata.hashCode()
+        result = 31 * result + randomList.contentHashCode()
+        return result
+    }
+}
 
 enum class UserRole() {
     @SerialName("standard")
@@ -113,6 +159,8 @@ data class UserPhoto(
     val url: String,
     val width: Double,
     val height: Double,
+    val bytes: Long,
+    val nanoseconds: ULong,
 )
 
 @Serializable
@@ -174,6 +222,21 @@ data class TestClientError(
     val data: Dynamic,
     val stack: String?
 )
+
+
+object InstantAsStringSerializer: KSerializer<Instant> {
+    override val descriptor: SerialDescriptor
+        get() = PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Instant {
+        return Instant.parse(decoder.decodeString())
+    }
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        return encoder.encodeString(value.toString())
+    }
+}
+
 
 private suspend fun handleRequest(
     client: HttpClient,
