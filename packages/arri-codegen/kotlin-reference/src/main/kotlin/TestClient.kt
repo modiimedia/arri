@@ -8,9 +8,13 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.*
 import io.ktor.http.headers
 import kotlinx.serialization.KSerializer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -72,6 +76,28 @@ class TestClientUsersService(
             headers = headers,
         )
         return Json.decodeFromString<User>(result.body())
+    }
+
+    suspend fun watchUser(
+        params: UserParams,
+        onData: ((data: User) -> Unit)?,
+        onError: ((error: TestClientError) -> Unit)?,
+        onConnectionError: ((error: TestClientError) -> Unit)?,
+        onOpen: ((response: HttpResponse) -> Unit)?,
+        onClose: (() -> Unit)?,
+    ) {
+        val finalHeaders = mutableMapOf<String, String>()
+        for(item in headers.entries) {
+            finalHeaders[item.key] = item.value
+        }
+        finalHeaders["Accept"] = "application/json, text/event-stream"
+        val result = handleRequest(
+            client = httpClient,
+            url = "${baseUrl}/users/watch-user",
+            method = HttpMethod.POST,
+            params = Json.encodeToJsonElement(params),
+            headers = finalHeaders,
+        )
     }
 }
 
@@ -246,6 +272,10 @@ private suspend fun handleRequest(
     headers: Map<String, String>?,
 ): HttpResponse {
     var finalUrl = url;
+private class RequestPayload(val url: String, val method: HttpMethod, val body: String)
+
+private fun getRequestPayload(url: String, method: HttpMethod, params: JsonElement?): RequestPayload {
+    var finalUrl = url
     var finalBody = ""
     when (method) {
         HttpMethod.GET, HttpMethod.HEAD -> {
@@ -260,8 +290,19 @@ private suspend fun handleRequest(
             finalBody = params?.toString() ?: ""
         }
     }
+    return RequestPayload(finalUrl, method, finalBody)
+}
+
+private suspend fun handleRequest(
+    client: HttpClient,
+    url: String,
+    method: HttpMethod,
+    params: JsonElement?,
+    headers: Map<String, String>?,
+): HttpResponse {
+    val payload = getRequestPayload(url, method, params)
     return when (method) {
-        HttpMethod.GET -> client.get(finalUrl) {
+        HttpMethod.GET -> client.get(payload.url) {
             headers {
                 headers?.entries?.forEach {
                     append(it.key, it.value)
@@ -269,7 +310,7 @@ private suspend fun handleRequest(
             }
         }
 
-        HttpMethod.HEAD -> client.head(finalUrl) {
+        HttpMethod.HEAD -> client.head(payload.url) {
             headers {
                 headers?.entries?.forEach {
                     append(it.key, it.value)
@@ -277,41 +318,42 @@ private suspend fun handleRequest(
             }
         }
 
-        HttpMethod.POST -> client.post(finalUrl) {
+        HttpMethod.POST -> client.post(payload.url) {
             headers {
                 headers?.entries?.forEach {
                     append(it.key, it.value)
                 }
             }
-            setBody(finalBody)
+            setBody(payload.body)
         }
 
-        HttpMethod.PUT -> client.put(finalUrl) {
+        HttpMethod.PUT -> client.put(payload.url) {
             headers {
                 headers?.entries?.forEach {
                     append(it.key, it.value)
                 }
             }
-            setBody(finalBody)
+            setBody(payload.body)
         }
 
-        HttpMethod.PATCH -> client.patch(finalUrl) {
+        HttpMethod.PATCH -> client.patch(payload.url) {
             headers {
                 headers?.entries?.forEach {
                     append(it.key, it.value)
                 }
             }
-            setBody(finalBody)
+            setBody(payload.body)
         }
 
-        HttpMethod.DELETE -> client.delete(finalUrl) {
+        HttpMethod.DELETE -> client.delete(payload.url) {
             headers {
                 headers?.entries?.forEach {
                     append(it.key, it.value)
                 }
             }
-            setBody(finalBody)
+            setBody(payload.body)
         }
     }
 }
+
 
