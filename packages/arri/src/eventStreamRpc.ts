@@ -4,7 +4,7 @@ import {
     setHeaders,
     getHeader,
     setResponseStatus,
-    sendStream,
+    // sendStream,
     type Router,
     eventHandler,
     isPreflightRequest,
@@ -146,7 +146,7 @@ export class EventStreamConnection<TData> {
      */
     start() {
         this.h3Event._handled = true;
-        void sendStream(this.h3Event, this.readable);
+        // void sendStream(this.h3Event, this.readable);
         this.pingInterval = setInterval(async () => {
             await this.publishEvent({
                 id: this.lastEventId,
@@ -211,12 +211,14 @@ export class EventStreamConnection<TData> {
 
     private async publishEvents(events: Sse[]) {
         const payload = formatSseList(events);
-        await this.writer.write(this.encoder.encode(payload));
+        this.h3Event.node.res.write(payload);
+        // await this.writer.write(this.encoder.encode(payload));
     }
 
     private async publishEvent(event: Sse) {
         const payload = formatSse(event);
-        await this.writer.write(this.encoder.encode(payload));
+        this.h3Event.node.res.write(payload);
+        // await this.writer.write(this.encoder.encode(payload));
     }
 
     private async cleanup() {
