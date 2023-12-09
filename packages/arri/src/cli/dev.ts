@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
+import { listenAndWatch } from "@joshmossas/listhen";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import chokidar from "chokidar";
 import { defineCommand } from "citty";
 import { createConsola } from "consola";
 import * as esbuild from "esbuild";
-import { listenAndWatch } from "listhen";
 import { ofetch } from "ofetch";
 import path from "pathe";
 import { DEV_DEFINITION_ENDPOINT } from "../app";
@@ -190,7 +190,7 @@ async function createEntryModule(config: ResolvedArriConfig) {
         .split(".");
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'h3';
-import { listen } from 'listhen';
+import { listen } from '@joshmossas/listhen';
 import app from './${GEN_APP_FILE}';
 
 export default app.h3App;`;

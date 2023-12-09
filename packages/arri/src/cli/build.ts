@@ -13,7 +13,6 @@ import { defaultConfig, type ResolvedArriConfig } from "../config";
 import {
     OUT_CODEGEN,
     createAppWithRoutesModule,
-    GEN_SERVER_ENTRY_FILE,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
     transpileFiles,
@@ -161,7 +160,7 @@ const require = topLevelCreateRequire(import.meta.url);`,
         }},`;
     }
     const virtualEntry = `import { toNodeListener } from 'arri';
-import { listen } from 'listhen';
+import { listen } from '@joshmossas/listhen';
 import app from './${OUT_APP_FILE}';
 
 void listen(toNodeListener(app.h3App), {
