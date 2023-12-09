@@ -1,6 +1,6 @@
 {
     "name": "arri",
-    "version": "0.16.3",
+    "version": "0.16.4",
     "type": "module",
     "license": "MIT",
     "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
