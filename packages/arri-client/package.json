@@ -1,6 +1,6 @@
 {
     "name": "arri-client",
-    "version": "0.17.0",
+    "version": "0.18.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
