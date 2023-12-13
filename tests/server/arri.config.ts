@@ -18,7 +18,6 @@ export default defineConfig({
     entry: "app.ts",
     serverEntry: "server.ts",
     http2: true,
-    https: false,
     clientGenerators: [
         typescriptClientGenerator({
             clientName: "TestClient",
