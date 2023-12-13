@@ -26,6 +26,7 @@ export interface ArriConfig {
               passphrase?: string;
           }
         | boolean;
+    http2?: boolean;
 }
 
 export function isArriConfig(input: unknown): input is ArriConfig {
@@ -74,6 +75,7 @@ export const defaultConfig: Required<ArriConfig> = {
     serverEntry: "",
     esbuild: {},
     https: false,
+    http2: false,
 };
 
 export function defineConfig(config: ArriConfig): ResolvedArriConfig {
@@ -91,5 +93,6 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
         esbuild: config.esbuild ?? defaultConfig.esbuild,
         serverEntry: config.serverEntry ?? "",
         https: config.https ?? false,
+        http2: config.http2 ?? false,
     };
 }
