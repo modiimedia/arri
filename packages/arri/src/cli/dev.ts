@@ -54,6 +54,7 @@ const startListener = (config: ResolvedArriConfig, showQr = false) =>
         logger,
         qr: showQr,
         https: config.https,
+        http2: config.http2,
     });
 
 async function bundleFilesContext(config: ResolvedArriConfig) {
@@ -190,7 +191,6 @@ async function createEntryModule(config: ResolvedArriConfig) {
         .split(".");
     appImportParts.pop();
     const virtualEntry = `import { toNodeListener } from 'h3';
-import { listen } from '@joshmossas/listhen';
 import app from './${GEN_APP_FILE}';
 
 export default app.h3App;`;
