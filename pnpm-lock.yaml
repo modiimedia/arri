@@ -150,8 +150,8 @@ importers:
   packages/arri:
     dependencies:
       '@joshmossas/listhen':
-        specifier: 1.5.12
-        version: 1.5.12
+        specifier: 1.5.13
+        version: 1.5.13
       arri-codegen-dart:
         specifier: workspace:*
         version: link:../arri-codegen/dart
@@ -2574,8 +2574,8 @@ packages:
       chalk: 4.1.2
     dev: true
 
-  /@joshmossas/listhen@1.5.12:
-    resolution: {integrity: sha512-NpclDMBcufpvXHAuUeOH+kySW3UiaGS89qAQyvOWM1nNPANJyxoeZ9YV1HQafYEbyCsw7hLUc3b/sTB/WoywVg==}
+  /@joshmossas/listhen@1.5.13:
+    resolution: {integrity: sha512-unn3ggqjv5JBBLWhoO/uWvrahrg0sgS+pxL9YdJGyps3Fw/NZsR5Gzyaym49VEG/Ws3nGjWcThxNCK5SBn2y7w==}
     hasBin: true
     dependencies:
       '@parcel/watcher': 2.3.0
