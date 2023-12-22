@@ -216,7 +216,11 @@ export class EventStreamConnection<TData> {
     private async publishEvents(events: Sse[]) {
         const payload = formatSseList(events);
         if (this.writerIsClosed) {
-            await this.cleanup();
+            try {
+                this.h3Event.node.res.end();
+            } catch (_) {
+                await this.cleanup();
+            }
             return;
         }
         await this.writer.write(this.encoder.encode(payload));
@@ -225,7 +229,11 @@ export class EventStreamConnection<TData> {
     private async publishEvent(event: Sse) {
         const payload = formatSse(event);
         if (this.writerIsClosed) {
-            await this.cleanup();
+            try {
+                this.h3Event.node.res.end();
+            } catch (_) {
+                await this.cleanup();
+            }
             return;
         }
         await this.writer.write(this.encoder.encode(payload));
