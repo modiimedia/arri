@@ -13,9 +13,10 @@ Future<void> main() async {
       HttpClient(context: SecurityContext(withTrustedRoots: true));
   final ioClient = IOClient(httpClient);
   final clientWCustomHttpClient = TestClient(
-      baseUrl: "http://127.0.0.1:2020",
-      httpClient: ioClient,
-      headers: {"x-test-header": 'test'});
+    baseUrl: "http://127.0.0.1:2020",
+    httpClient: ioClient,
+    headers: {"x-test-header": 'test'},
+  );
   test("getPost()", () async {
     final result = await client.posts.getPost(PostParams(postId: "12345"));
     expect(result.id, equals("12345"));
