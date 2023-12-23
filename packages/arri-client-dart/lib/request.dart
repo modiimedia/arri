@@ -22,6 +22,7 @@ enum HttpMethod implements Comparable<HttpMethod> {
 /// Perform a raw http request
 Future<http.Response> arriRequest(
   String url, {
+  http.Client? httpClient,
   HttpMethod method = HttpMethod.get,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
@@ -37,6 +38,7 @@ Future<http.Response> arriRequest(
     400,
   );
   final finalHeaders = {...headers ?? {}};
+  final client = httpClient ?? http.Client();
   String? bodyInput;
   if (method != HttpMethod.get && method != HttpMethod.head && params != null) {
     finalHeaders["Content-Type"] = "application/json";
@@ -51,14 +53,14 @@ Future<http.Response> arriRequest(
           queryParts.add("${entry.key}=${entry.value.toString()}");
         }
         final uri = Uri.parse("$url?${queryParts.join("&")}");
-        result = await http.get(
+        result = await client.get(
           uri,
           headers: finalHeaders,
         );
       }
       break;
     case HttpMethod.patch:
-      result = await http.patch(
+      result = await client.patch(
         Uri.parse(url),
         headers: finalHeaders,
         body: bodyInput,
@@ -66,7 +68,7 @@ Future<http.Response> arriRequest(
       );
       break;
     case HttpMethod.put:
-      result = await http.put(
+      result = await client.put(
         Uri.parse(url),
         headers: finalHeaders,
         body: bodyInput,
@@ -74,7 +76,7 @@ Future<http.Response> arriRequest(
       );
       break;
     case HttpMethod.post:
-      result = await http.post(
+      result = await client.post(
         Uri.parse(url),
         headers: finalHeaders,
         body: bodyInput,
@@ -89,14 +91,14 @@ Future<http.Response> arriRequest(
           queryParts.add("${entry.key}=${entry.value.toString()}");
         }
         final uri = Uri.parse("$url?${queryParts.join("&")}");
-        result = await http.head(
+        result = await client.head(
           uri,
           headers: finalHeaders,
         );
       }
       break;
     case HttpMethod.delete:
-      result = await http.delete(Uri.parse(url),
+      result = await client.delete(Uri.parse(url),
           headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
     default:
@@ -109,13 +111,14 @@ Future<http.Response> arriRequest(
 /// This function will throw an ArriRequestError if it fails
 Future<T> parsedArriRequest<T, E extends Exception>(
   String url, {
+  http.Client? httpClient,
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
   Map<String, String>? headers,
   required T Function(String) parser,
 }) async {
-  final result =
-      await arriRequest(url, method: method, params: params, headers: headers);
+  final result = await arriRequest(url,
+      httpClient: httpClient, method: method, params: params, headers: headers);
   if (result.statusCode >= 200 && result.statusCode <= 299) {
     return parser(result.body);
   }

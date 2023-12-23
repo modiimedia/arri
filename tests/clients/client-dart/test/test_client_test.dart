@@ -1,14 +1,29 @@
+import 'dart:io';
+
 import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
 import 'package:test_client_dart/test_client.rpc.dart';
+import 'package:http/io_client.dart';
 
 Future<void> main() async {
   final client = TestClient(
       baseUrl: "http://127.0.0.1:2020", headers: {"x-test-header": 'test'});
   final unauthenticatedClient = TestClient(baseUrl: "http://127.0.0.1:2020");
+  final httpClient =
+      HttpClient(context: SecurityContext(withTrustedRoots: true));
+  final ioClient = IOClient(httpClient);
+  final clientWCustomHttpClient = TestClient(
+      baseUrl: "http://127.0.0.1:2020",
+      httpClient: ioClient,
+      headers: {"x-test-header": 'test'});
   test("getPost()", () async {
     final result = await client.posts.getPost(PostParams(postId: "12345"));
     expect(result.id, equals("12345"));
+  });
+  test("getPost() with custom HTTP client", () async {
+    final result =
+        await clientWCustomHttpClient.posts.getPost(PostParams(postId: "123"));
+    expect(result.id, equals("123"));
   });
   test("getPosts()", () async {
     final result1 = await client.posts.getPosts(PostListParams(limit: 100));
