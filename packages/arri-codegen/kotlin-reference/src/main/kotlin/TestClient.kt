@@ -1,20 +1,12 @@
-import com.sun.tools.javac.jvm.PoolConstant.Dynamic
 import io.ktor.client.HttpClient
 import io.ktor.client.call.*
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.head
-import io.ktor.client.request.patch
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.headers
+import io.ktor.http.*
+import io.ktor.utils.io.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.KSerializer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -26,9 +18,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
+import java.nio.ByteBuffer
 import java.time.Instant
 
-enum class HttpMethod { GET, HEAD, POST, PUT, PATCH, DELETE }
 
 class TestClient(
     private val httpClient: HttpClient,
@@ -38,14 +30,14 @@ class TestClient(
     val users = TestClientUsersService(httpClient, baseUrl, headers)
 
     suspend fun getStatus(): GetStatusResponse {
-        val result = handleRequest(
+        val response = prepareRequest(
             client = this.httpClient,
             url = "${this.baseUrl}/status",
-            method = HttpMethod.GET,
+            method = HttpMethod.Get,
             params = null,
             headers = this.headers,
-        )
-        return Json.decodeFromString<GetStatusResponse>(result.body())
+        ).execute()
+        return JsonInstance.decodeFromString<GetStatusResponse>(response.body())
     }
 }
 
@@ -57,47 +49,83 @@ class TestClientUsersService(
     val settings = TestClientUsersSettingsService(httpClient, baseUrl, headers)
 
     suspend fun getUser(params: UserParams): User {
-        val result = handleRequest(
+        val response = prepareRequest(
             client = httpClient,
             url = "${baseUrl}/users/get-user",
-            method = HttpMethod.GET,
-            params = Json.encodeToJsonElement<UserParams>(params),
+            method = HttpMethod.Get,
+            params = JsonInstance.encodeToJsonElement<UserParams>(params),
             headers = headers,
-        )
-        return Json.decodeFromString<User>(result.body())
+        ).execute()
+        return JsonInstance.decodeFromString<User>(response.body())
     }
 
     suspend fun updateUser(params: UpdateUserParams): User {
-        val result = handleRequest(
+        val response = prepareRequest(
             client = httpClient,
             url = "${baseUrl}/users/update-user",
-            method = HttpMethod.POST,
-            params = Json.encodeToJsonElement(params),
+            method = HttpMethod.Post,
+            params = JsonInstance.encodeToJsonElement(params),
             headers = headers,
-        )
-        return Json.decodeFromString<User>(result.body())
+        ).execute()
+        return JsonInstance.decodeFromString<User>(response.body())
     }
 
     suspend fun watchUser(
         params: UserParams,
-        onData: ((data: User) -> Unit)?,
-        onError: ((error: TestClientError) -> Unit)?,
-        onConnectionError: ((error: TestClientError) -> Unit)?,
-        onOpen: ((response: HttpResponse) -> Unit)?,
-        onClose: (() -> Unit)?,
+        onData: ((data: User) -> Unit)? = null,
+        onError: ((error: TestClientError) -> Unit)? = null,
+        onConnectionError: ((error: TestClientError) -> Unit)? = null,
+        onOpen: ((response: HttpResponse) -> Unit)? = null,
+        onClose: (() -> Unit)? = null,
+        bufferCapacity: Int = 1024
     ) {
         val finalHeaders = mutableMapOf<String, String>()
-        for(item in headers.entries) {
+        for (item in headers.entries) {
             finalHeaders[item.key] = item.value
         }
         finalHeaders["Accept"] = "application/json, text/event-stream"
-        val result = handleRequest(
+        val request = prepareRequest(
             client = httpClient,
-            url = "${baseUrl}/users/watch-user",
-            method = HttpMethod.POST,
-            params = Json.encodeToJsonElement(params),
+            url = "${baseUrl}/rpcs/users/watch-user",
+            method = HttpMethod.Get,
+            params = JsonInstance.encodeToJsonElement(params),
             headers = finalHeaders,
         )
+        request.execute { httpResponse ->
+            val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            while (!channel.isClosedForRead) {
+                val buffer = ByteBuffer.allocateDirect(bufferCapacity)
+                val read = channel.readAvailable(buffer)
+                if (read == -1) break;
+                buffer.flip()
+                val input = Charsets.UTF_8.decode(buffer).toString()
+                val events = parseSseEvents(input)
+                for (event in events) {
+                    when (event.event) {
+                        "message" -> {
+                            val data = JsonInstance.decodeFromString<User>(event.data)
+                            if (onData != null) {
+                                onData(data)
+                            }
+                        }
+
+                        "done" -> {
+
+                        }
+
+                        "error" -> {
+                            val error =
+                                JsonInstance.decodeFromString<TestClientError>(event.data)
+                            if (onError != null) {
+                                onError(error)
+                            }
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -107,13 +135,13 @@ class TestClientUsersSettingsService(
     private val headers: Map<String, String> = mutableMapOf(),
 ) {
     suspend fun getUserSettings(): Unit {
-        handleRequest(
+        prepareRequest(
             client = httpClient,
             url = "${baseUrl}/users/settings/get-user-settings",
-            method = HttpMethod.GET,
+            method = HttpMethod.Get,
             params = null,
             headers = headers,
-        )
+        ).execute()
     }
 }
 
@@ -245,12 +273,26 @@ data class UpdateUserParams(
 data class TestClientError(
     val statusCode: Int,
     val statusMessage: String,
-    val data: Dynamic,
+    @Serializable(with = AnyAsStringSerializer::class)
+    val data: Any,
     val stack: String?
 )
 
+object AnyAsStringSerializer : KSerializer<Any> {
+    override val descriptor: SerialDescriptor
+        get() = PrimitiveSerialDescriptor("Any", PrimitiveKind.STRING)
 
-object InstantAsStringSerializer: KSerializer<Instant> {
+    override fun deserialize(decoder: Decoder): Any {
+        TODO("Not yet implemented")
+    }
+
+    override fun serialize(encoder: Encoder, value: Any) {
+        TODO("Not yet implemented")
+    }
+
+}
+
+object InstantAsStringSerializer : KSerializer<Instant> {
     override val descriptor: SerialDescriptor
         get() = PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
@@ -264,96 +306,85 @@ object InstantAsStringSerializer: KSerializer<Instant> {
 }
 
 
-private suspend fun handleRequest(
-    client: HttpClient,
-    url: String,
-    method: HttpMethod,
-    params: JsonElement?,
-    headers: Map<String, String>?,
-): HttpResponse {
-    var finalUrl = url;
 private class RequestPayload(val url: String, val method: HttpMethod, val body: String)
 
 private fun getRequestPayload(url: String, method: HttpMethod, params: JsonElement?): RequestPayload {
     var finalUrl = url
     var finalBody = ""
     when (method) {
-        HttpMethod.GET, HttpMethod.HEAD -> {
+        HttpMethod.Get, HttpMethod.Head -> {
             val queryParts = mutableListOf<String>()
             params?.jsonObject?.entries?.forEach {
-                queryParts.add("${it.key}=${it.value.toString()}")
+                queryParts.add("${it.key}=${it.value}")
             }
             finalUrl = "$finalUrl?${queryParts.joinToString("&")}"
         }
 
-        HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE -> {
+        HttpMethod.Post, HttpMethod.Put, HttpMethod.Patch, HttpMethod.Delete -> {
             finalBody = params?.toString() ?: ""
         }
     }
     return RequestPayload(finalUrl, method, finalBody)
 }
 
-private suspend fun handleRequest(
+private suspend fun prepareRequest(
     client: HttpClient,
     url: String,
     method: HttpMethod,
     params: JsonElement?,
     headers: Map<String, String>?,
-): HttpResponse {
-    val payload = getRequestPayload(url, method, params)
-    return when (method) {
-        HttpMethod.GET -> client.get(payload.url) {
-            headers {
-                headers?.entries?.forEach {
-                    append(it.key, it.value)
-                }
-            }
-        }
-
-        HttpMethod.HEAD -> client.head(payload.url) {
-            headers {
-                headers?.entries?.forEach {
-                    append(it.key, it.value)
-                }
-            }
-        }
-
-        HttpMethod.POST -> client.post(payload.url) {
-            headers {
-                headers?.entries?.forEach {
-                    append(it.key, it.value)
-                }
-            }
-            setBody(payload.body)
-        }
-
-        HttpMethod.PUT -> client.put(payload.url) {
-            headers {
-                headers?.entries?.forEach {
-                    append(it.key, it.value)
-                }
-            }
-            setBody(payload.body)
-        }
-
-        HttpMethod.PATCH -> client.patch(payload.url) {
-            headers {
-                headers?.entries?.forEach {
-                    append(it.key, it.value)
-                }
-            }
-            setBody(payload.body)
-        }
-
-        HttpMethod.DELETE -> client.delete(payload.url) {
-            headers {
-                headers?.entries?.forEach {
-                    append(it.key, it.value)
-                }
-            }
-            setBody(payload.body)
+): HttpStatement {
+    val payload = getRequestPayload(url = url, method = method, params = params)
+    val builder = HttpRequestBuilder(payload.url)
+    builder.method = method
+    builder.url(payload.url)
+    builder.timeout {
+        requestTimeoutMillis = 10 * 60 * 1000
+    }
+    if (headers != null) {
+        for (entry in headers.entries) {
+            builder.headers[entry.key] = entry.value
         }
     }
+    if (method != HttpMethod.Get && method != HttpMethod.Head) {
+        builder.setBody(payload.body)
+    }
+    return client.prepareRequest(builder)
 }
 
+private fun parseSseEvent(input: String): SseEvent {
+    val lines = input.split("\n")
+    var id: String? = null
+    var event: String? = null
+    var data: String = ""
+    for (line in lines) {
+        if (line.startsWith("id: ")) {
+            id = line.substring(3).trim()
+            continue
+        }
+        if (line.startsWith("event: ")) {
+            event = line.substring(6).trim()
+            continue
+        }
+        if (line.startsWith("data: ")) {
+            data = line.substring(5).trim()
+            continue
+        }
+    }
+    return SseEvent(id, event, data)
+}
 
+private fun parseSseEvents(input: String): List<SseEvent> {
+    val inputs = input.split("\n\n")
+    val events = mutableListOf<SseEvent>()
+    for (item in inputs) {
+        if (item.contains("data: ")) {
+            events.add(parseSseEvent(item))
+        }
+    }
+    return events
+}
+
+val JsonInstance = Json { ignoreUnknownKeys = true }
+
+private class SseEvent(val id: String? = null, val event: String? = null, val data: String)
