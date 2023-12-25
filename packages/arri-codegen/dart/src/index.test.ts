@@ -42,15 +42,19 @@ describe("Service Generation", () => {
         );
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class UserService {
+  final http.Client? _httpClient;
   final String _baseUrl;
   late final Map<String, String> _headers;
   UserService({
+    http.Client? httpClient,
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl
+  })  : _httpClient = httpClient,
+      _baseUrl = baseUrl
   { _headers = { "client-version": "", ...headers }; }
   UserSettingsService get settings {
     return UserSettingsService(
+      httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
     );
@@ -58,6 +62,7 @@ describe("Service Generation", () => {
   Future<User> getUser(UsersGetUserParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/get-user",
+      httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
@@ -69,6 +74,7 @@ describe("Service Generation", () => {
   Future<User> updateUser(UserUpdateData params) {
     return parsedArriRequest(
       "$_baseUrl/users/update-user",
+      httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
       params: params.toJson(),
@@ -79,16 +85,20 @@ describe("Service Generation", () => {
   }
 }
 class UserSettingsService {
+  final http.Client? _httpClient;
   final String _baseUrl;
   late final Map<String, String> _headers;
   UserSettingsService({
+    http.Client? httpClient,
     String baseUrl = "",
     Map<String, String> headers = const {},
-  })  : _baseUrl = baseUrl
+  })  : _httpClient = httpClient,
+      _baseUrl = baseUrl
   { _headers = { "client-version": "", ...headers }; }
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/settings/get-user-settings",
+      httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
       params: params.toJson(),
@@ -116,17 +126,21 @@ class UserSettingsService {
         );
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class PostsService {
+        final http.Client? _httpClient;
         final String _baseUrl;
         late final Map<String, String> _headers;
         PostsService({
+          http.Client? httpClient,
           String baseUrl = "",
           Map<String, String> headers = const {},
-        })  : _baseUrl = baseUrl
+        })  : _httpClient = httpClient,
+            _baseUrl = baseUrl
             { _headers = { "client-version": "", ...headers }; }
 
         Future<void> getPost() {
           return parsedArriRequest(
             "$_baseUrl/posts/get-post",
+            httpClient: _httpClient,
             method: HttpMethod.get,
             headers: _headers,
             params: null,

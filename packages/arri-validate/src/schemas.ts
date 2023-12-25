@@ -88,7 +88,9 @@ export function isAScalarSchema(input: unknown): input is AScalarSchema {
     return (
         isASchema(input) &&
         "type" in input &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         (TypeValues.includes(input.type as any) ||
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             NumberTypeValues.includes(input.type as any))
     );
 }

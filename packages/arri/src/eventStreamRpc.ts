@@ -1,3 +1,4 @@
+import { nextTick } from "node:process";
 import { type InferType, a } from "arri-validate";
 import {
     type H3Event,
@@ -24,7 +25,6 @@ import {
 
 export function setSseHeaders(event: H3Event) {
     setHeaders(event, {
-        "Transfer-Encoding": "chunked",
         "Content-Type": "text/event-stream",
         Connection: "keep-alive",
         "Cache-Control": "no-cache",
@@ -118,6 +118,7 @@ export class EventStreamConnection<TData> {
     private readonly writable: WritableStream;
     private readonly readable: ReadableStream;
     private readonly writer: WritableStreamDefaultWriter;
+    private writerIsClosed: boolean = false;
     private readonly encoder: TextEncoder;
     private readonly serializer: (input: TData) => string;
     private readonly h3Event: H3Event;
@@ -139,6 +140,9 @@ export class EventStreamConnection<TData> {
         this.pingIntervalMs = opts.pingInterval ?? 60000;
 
         this.serializer = opts.serializer;
+        void this.writer.closed.then(() => {
+            this.writerIsClosed = true;
+        });
     }
 
     /**
@@ -211,11 +215,27 @@ export class EventStreamConnection<TData> {
 
     private async publishEvents(events: Sse[]) {
         const payload = formatSseList(events);
+        if (this.writerIsClosed) {
+            try {
+                this.h3Event.node.res.end();
+            } catch (_) {
+                await this.cleanup();
+            }
+            return;
+        }
         await this.writer.write(this.encoder.encode(payload));
     }
 
     private async publishEvent(event: Sse) {
         const payload = formatSse(event);
+        if (this.writerIsClosed) {
+            try {
+                this.h3Event.node.res.end();
+            } catch (_) {
+                await this.cleanup();
+            }
+            return;
+        }
         await this.writer.write(this.encoder.encode(payload));
     }
 
@@ -223,9 +243,11 @@ export class EventStreamConnection<TData> {
         if (this.pingInterval) {
             clearInterval(this.pingInterval);
         }
-        try {
-            await this.writer.close();
-        } catch (_) {}
+        if (!this.writerIsClosed) {
+            try {
+                await this.writer.close();
+            } catch (_) {}
+        }
     }
 
     /**
@@ -236,8 +258,16 @@ export class EventStreamConnection<TData> {
             event: "done",
             data: "this stream has ended",
         }).catch();
-        this.h3Event.node.res.end();
-        await this.cleanup();
+        await new Promise((resolve, reject) => {
+            nextTick(() => {
+                try {
+                    this.h3Event.node.res.end();
+                    resolve(true);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        });
     }
 
     on(event: "disconnect", callback: () => any): void;
@@ -251,7 +281,10 @@ export class EventStreamConnection<TData> {
                 });
                 break;
             case "end":
-                this.h3Event.node.req.on("end", callback);
+                this.h3Event.node.req.on("end", async () => {
+                    await callback();
+                    await this.cleanup();
+                });
                 break;
         }
     }
@@ -302,7 +335,10 @@ export function registerEventStreamRpc(
                     },
             });
             event.context.connection = connection;
-            await procedure.handler(event.context as any, event as any);
+            await procedure.handler(
+                event.context as EventStreamRpcHandlerContext,
+                event as EventStreamRpcEvent<any, any>,
+            );
         } catch (err) {
             await handleH3Error(err, event, opts.onError);
         }

@@ -745,7 +745,10 @@ export function tsDiscriminatedUnionFromJtdSchema(
     let validatorPart = "";
     if (options.typesNeedingParser.includes(typeName)) {
         const modifiedDef = { ...def, nullable: false };
-        const parsingCode = getSchemaParsingCode("input", modifiedDef as any);
+        const parsingCode = getSchemaParsingCode(
+            "input",
+            modifiedDef as Schema,
+        );
         const serializationCode = getSchemaSerializationCode(
             "input",
             modifiedDef,
@@ -814,11 +817,11 @@ export function tsRecordFromJtdSchema(
             const modifiedDef = { ...def, nullable: false };
             const parsingCode = getSchemaParsingCode(
                 "input",
-                modifiedDef as any,
+                modifiedDef as Schema,
             );
             const serializationCode = getSchemaSerializationCode(
                 "input",
-                modifiedDef as any,
+                modifiedDef as Schema,
             );
             validatorPart = `const $$${typeName} = {
     parse(input: Record<any, any>): ${typeName} {

@@ -16,6 +16,7 @@ typedef SseHookOnClose<T> = void Function(EventSource<T> connection);
 
 EventSource<T> parsedArriSseRequest<T>(
   String url, {
+  http.Client? httpClient,
   required HttpMethod method,
   required T Function(String data) parser,
   Map<String, dynamic>? params,
@@ -30,6 +31,7 @@ EventSource<T> parsedArriSseRequest<T>(
   String? lastEventId,
 }) {
   return EventSource(
+    httpClient: httpClient,
     url: url,
     method: method,
     parser: parser,

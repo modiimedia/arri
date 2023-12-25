@@ -2,6 +2,7 @@ import { existsSync, mkdirSync } from "fs";
 import {
     type ServiceDefinition,
     normalizeWhitespace,
+    type Schema,
 } from "arri-codegen-utils";
 import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
 import { a } from "arri-validate";
@@ -130,7 +131,7 @@ describe("Model Creation", () => {
         );
         const result = tsTypeFromJtdSchema(
             "",
-            JSON.parse(JSON.stringify(User)),
+            JSON.parse(JSON.stringify(User)) as Schema,
             {
                 clientName: "TestClient",
                 outputFile: "",

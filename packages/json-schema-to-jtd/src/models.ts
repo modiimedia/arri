@@ -34,27 +34,29 @@ export interface JsonSchemaScalarType extends JsonSchemaTypeBase {
     type: (typeof JsonSchemaScalarTypeValues)[number];
 }
 export function isJsonSchemaScalarType(
-    input: any,
+    input: unknown,
 ): input is JsonSchemaScalarType {
-    if (typeof input !== "object") {
+    if (typeof input !== "object" || input === null) {
         return false;
     }
     if (!("type" in input)) {
         return false;
     }
-    return JsonSchemaScalarTypeValues.includes(input.type);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    return JsonSchemaScalarTypeValues.includes(input.type as any);
 }
 
 export interface JsonSchemaNullType extends JsonSchemaTypeBase {
     type: (typeof JsonSchemaNullTypeValues)[number];
 }
 export function isJsonSchemaNullType(input: any): input is JsonSchemaNullType {
-    if (typeof input !== "object") {
+    if (typeof input !== "object" || input === null) {
         return false;
     }
     if (!("type" in input)) {
         return false;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return JsonSchemaNullTypeValues.includes(input.type);
 }
 
