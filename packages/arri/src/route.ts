@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { type HttpMethod } from "arri-codegen-utils";
 import {
     type InferType,
@@ -133,7 +134,7 @@ export function handleRoute(
             }
             if (route.query) {
                 const query = getQuery(event);
-                const parsedQuery = a.safeCoerce(route.query, query);
+                const parsedQuery = a.safeCoerce(route.query as ASchema, query);
                 if (!parsedQuery.success) {
                     const errParts: string[] = [];
                     for (const err of parsedQuery.error.errors) {
@@ -161,7 +162,7 @@ export function handleRoute(
             ];
             if (route.body && !notAllowedBodyMethods.includes(event.method)) {
                 const body = await readRawBody(event);
-                const parsedBody = a.safeParse(route.body, body);
+                const parsedBody = a.safeParse(route.body as ASchema, body);
                 if (!parsedBody.success) {
                     const errorParts: string[] = [];
                     for (const err of parsedBody.error.errors) {
@@ -180,7 +181,7 @@ export function handleRoute(
                 }
                 event.context.body = parsedBody.value;
             }
-            const response = await route.handler(event as any);
+            const response = await route.handler(event as RouteEvent<string>);
             event.context.response = response;
             if (!event.handled) {
                 if (opts.onBeforeResponse) {
@@ -197,7 +198,7 @@ export function handleRoute(
                 await opts.onAfterResponse(event);
             }
             if (route.postHandler) {
-                await route.postHandler(event as any);
+                await route.postHandler(event as PostRouteEvent<string>);
             }
         } catch (err) {
             await handleH3Error(err, event, opts.onError);

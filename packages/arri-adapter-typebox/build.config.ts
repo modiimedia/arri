@@ -8,7 +8,7 @@ const packageJson = JSON.parse(
     }),
 );
 
-const deps = Object.keys(packageJson.dependencies);
+const deps = Object.keys(packageJson.dependencies as Record<string, string>);
 
 export default defineBuildConfig({
     entries: ["./src/index"],

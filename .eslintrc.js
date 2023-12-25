@@ -40,6 +40,7 @@ module.exports = {
         project: "./tsconfig.base.json",
     },
     rules: {
+        "@typescript-eslint/non-nullable-type-assertion-style": 0,
         "@typescript-eslint/triple-slash-reference": 0,
         "@typescript-eslint/strict-boolean-expressions": 0,
         "@typescript-eslint/promise-function-async": 0,

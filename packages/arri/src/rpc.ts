@@ -29,7 +29,6 @@ import {
 import { kebabCase, pascalCase } from "scule";
 import { defineError, handleH3Error } from "./errors";
 import {
-    isEventStreamRpc,
     type EventStreamRpc,
     type EventStreamRpcHandler,
 } from "./eventStreamRpc";
@@ -276,7 +275,9 @@ export function registerRpc(
             }
 
             const response = await procedure.handler(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 event.context as any,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 event as any,
             );
             event.context.response = response;
@@ -298,7 +299,10 @@ export function registerRpc(
                 await opts.onAfterResponse(event);
             }
             if (procedure.postHandler) {
-                await procedure.postHandler(event.context as any, event as any);
+                await procedure.postHandler(
+                    event.context as RpcPostHandlerContext,
+                    event as RpcPostEvent,
+                );
             }
         } catch (err) {
             await handleH3Error(err, event, opts.onError);

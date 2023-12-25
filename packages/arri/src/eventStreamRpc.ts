@@ -335,7 +335,10 @@ export function registerEventStreamRpc(
                     },
             });
             event.context.connection = connection;
-            await procedure.handler(event.context as any, event as any);
+            await procedure.handler(
+                event.context as EventStreamRpcHandlerContext,
+                event as EventStreamRpcEvent<any, any>,
+            );
         } catch (err) {
             await handleH3Error(err, event, opts.onError);
         }

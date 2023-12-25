@@ -8,7 +8,9 @@ const packageJson = JSON.parse(
     }),
 );
 
-const deps = Object.keys(packageJson.dependencies).map((key) => key);
+const deps = Object.keys(
+    packageJson.dependencies as Record<string, string>,
+).map((key) => key);
 
 export default defineBuildConfig({
     rootDir: __dirname,
