@@ -5,7 +5,10 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -72,6 +75,7 @@ class TestClientUsersService(
 
     suspend fun watchUser(
         params: UserParams,
+        lastEventId: String? = null,
         onData: ((data: User) -> Unit)? = null,
         onError: ((error: TestClientError) -> Unit)? = null,
         onConnectionError: ((error: TestClientError) -> Unit)? = null,
@@ -79,54 +83,88 @@ class TestClientUsersService(
         onClose: (() -> Unit)? = null,
         bufferCapacity: Int = 1024
     ) {
+        var lastId = lastEventId
         val finalHeaders = mutableMapOf<String, String>()
         for (item in headers.entries) {
             finalHeaders[item.key] = item.value
         }
         finalHeaders["Accept"] = "application/json, text/event-stream"
-        val request = prepareRequest(
-            client = httpClient,
-            url = "${baseUrl}/rpcs/users/watch-user",
-            method = HttpMethod.Get,
-            params = JsonInstance.encodeToJsonElement(params),
-            headers = finalHeaders,
-        )
-        request.execute { httpResponse ->
-            val channel: ByteReadChannel = httpResponse.bodyAsChannel()
-            while (!channel.isClosedForRead) {
-                val buffer = ByteBuffer.allocateDirect(bufferCapacity)
-                val read = channel.readAvailable(buffer)
-                if (read == -1) break;
-                buffer.flip()
-                val input = Charsets.UTF_8.decode(buffer).toString()
-                val events = parseSseEvents(input)
-                for (event in events) {
-                    when (event.event) {
-                        "message" -> {
-                            val data = JsonInstance.decodeFromString<User>(event.data)
-                            if (onData != null) {
-                                onData(data)
+        suspend fun handleSseRequest() {
+            if(lastId != null) {
+                finalHeaders["Last-Event-ID"] = lastId.toString()
+            }
+            val request = prepareRequest(
+                client = httpClient,
+                url = "${baseUrl}/rpcs/users/watch-user",
+                method = HttpMethod.Get,
+                params = JsonInstance.encodeToJsonElement(params),
+                headers = finalHeaders,
+            )
+            try {
+                request.execute { httpResponse ->
+                    if (onOpen != null) {
+                        onOpen(httpResponse)
+                    }
+                    if (httpResponse.status.value != 200) {
+                        if (onConnectionError != null) {
+                            onConnectionError(
+                                TestClientError(
+                                    statusCode = httpResponse.status.value,
+                                    statusMessage = "Error fetching stream",
+                                    data = httpResponse.toString(),
+                                    stack = ""
+                                )
+                            )
+                        }
+                        handleSseRequest()
+                        return@execute
+                    }
+                    val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+                    while (!channel.isClosedForRead) {
+                        val buffer = ByteBuffer.allocateDirect(bufferCapacity)
+                        val read = channel.readAvailable(buffer)
+                        if (read == -1) break;
+                        buffer.flip()
+                        val input = Charsets.UTF_8.decode(buffer).toString()
+                        val events = parseSseEvents(input)
+                        for (event in events) {
+                            if(event.id != null) {
+                                lastId = event.id
+                            }
+                            when (event.event) {
+                                "message" -> {
+                                    val data = JsonInstance.decodeFromString<User>(event.data)
+                                    if (onData != null) {
+                                        onData(data)
+                                    }
+                                }
+
+                                "done" -> {
+                                    if (onClose != null) {
+                                        onClose()
+                                    }
+//                                    httpResponse.cancel()
+                                    return@execute
+                                }
+
+                                "error" -> {
+                                    val error = JsonInstance.decodeFromString<TestClientError>(event.data)
+                                    if (onError != null) {
+                                        onError(error)
+                                    }
+                                }
+                                else -> {}
                             }
                         }
-
-                        "done" -> {
-
-                        }
-
-                        "error" -> {
-                            val error =
-                                JsonInstance.decodeFromString<TestClientError>(event.data)
-                            if (onError != null) {
-                                onError(error)
-                            }
-                        }
-
-                        else -> {}
                     }
                 }
+            } catch(e: Exception) {
+                handleSseRequest()
             }
         }
+        handleSseRequest()
     }
+
 }
 
 class TestClientUsersSettingsService(
@@ -153,8 +191,7 @@ data class User(
     val id: String,
     val role: UserRole,
     val photo: UserPhoto?,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val createdAt: Instant,
+    @Serializable(with = InstantAsStringSerializer::class) val createdAt: Instant,
     val numFollowers: Int,
     val settings: UserSettings,
     val recentNotifications: List<UserRecentNotificationsItem>,
@@ -248,8 +285,7 @@ data class UserRecentNotificationsItemPostComment(
     val postId: String,
     val userId: String,
     val commentText: String,
-) :
-    UserRecentNotificationsItem("POST_COMMENT")
+) : UserRecentNotificationsItem("POST_COMMENT")
 
 @Serializable
 data class UserBookmarksValue(
@@ -264,17 +300,14 @@ data class UserParams(
 
 @Serializable
 data class UpdateUserParams(
-    val id: String,
-    val photo: UserPhoto?,
-    val bio: String?
+    val id: String, val photo: UserPhoto?, val bio: String?
 )
 
 @Serializable
 data class TestClientError(
     val statusCode: Int,
     val statusMessage: String,
-    @Serializable(with = AnyAsStringSerializer::class)
-    val data: Any,
+    @Serializable(with = AnyAsStringSerializer::class) val data: Any,
     val stack: String?
 )
 

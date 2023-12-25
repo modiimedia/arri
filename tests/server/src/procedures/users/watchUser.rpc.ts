@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { defineEventStreamRpc } from "arri";
 import { a } from "arri-validate";
 
@@ -75,16 +76,17 @@ export default defineEventStreamRpc({
             metadata: {},
             randomList: [],
         };
-        await connection.push(user);
+        await connection.push(user, randomUUID());
         let count = 1;
 
         const interval = setInterval(async () => {
-            await connection.push(user);
+            await connection.push(user, randomUUID());
             count++;
-            if (count === 100) {
+            console.log(`sent ${count} users`);
+            if (count >= 10) {
                 await connection.end();
             }
-        }, 1000);
+        }, 500);
         connection.on("disconnect", () => {
             clearInterval(interval);
         });
