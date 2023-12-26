@@ -1,4 +1,4 @@
-import { camelCase, pascalCase } from "arri-codegen-utils";
+import { type RpcDefinition, camelCase, pascalCase } from "arri-codegen-utils";
 import {
     isSchemaFormEnum,
     isSchemaFormType,
@@ -6,9 +6,62 @@ import {
     type Schema,
     isSchemaFormProperties,
     type SchemaFormProperties,
+    isSchemaFormElements,
+    type SchemaFormElements,
+    type SchemaFormDiscriminator,
+    type SchemaFormValues,
+    isSchemaFormValues,
 } from "jtd-utils";
 
-export interface Context {
+export interface ServiceContext {
+    clientName: string;
+    modelPrefix?: string;
+}
+
+// RPC GENERATION
+export function kotlinRpcFromDef(
+    name: string,
+    def: RpcDefinition,
+    context: ServiceContext,
+): string {
+    const paramType = def.params
+        ? (pascalCase(`${context.modelPrefix}_${def.params}`, {
+              normalize: true,
+          }) as string)
+        : undefined;
+    const returnType = def.response
+        ? pascalCase(`${context.modelPrefix}_${def.params}`, {
+              normalize: true,
+          })
+        : undefined;
+
+    if (def.isEventStream) {
+        return ``;
+    }
+
+    return `    suspend fun ${name}(${
+        paramType ? `params: ${paramType}` : ""
+    }): ${returnType ?? "Unit"} {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl${def.path}",
+            method = HttpMethod.${pascalCase(def.method)},
+            params = ${
+                paramType ? `JsonInstance.encodeToJsonElements(params)` : "null"
+            },
+            headers = headers,
+        ).execute()
+        ${
+            returnType
+                ? `return JsonInstance.decodeFromString<${returnType}>(response.body())`
+                : ""
+        }
+    }`;
+}
+
+// MODEL GENERATION
+
+export interface ModelContext {
     generatedTypes: string[];
     instancePath: string;
     schemaPath: string;
@@ -21,15 +74,23 @@ export interface KotlinProperty {
     annotation?: string;
     content?: string;
     comparisonTemplate: (key: string) => string;
+    hashTemplate: (key: string, nullable: boolean) => string;
 }
 
 function defaultComparisonTemplate(key: string) {
-    return `        if (${key} != other?.${key}) return false`;
+    return `        if (${key} != other.${key}) return false`;
+}
+
+function defaultHashTemplate(key: string, nullable: boolean) {
+    if (nullable) {
+        return `(${key}?.hashCode() ?: 0)`;
+    }
+    return `${key}.hashCode()`;
 }
 
 export function kotlinPropertyFromSchema(
     schema: Schema,
-    options: Context,
+    context: ModelContext,
 ): KotlinProperty {
     if (isSchemaFormType(schema)) {
         let dataType = "";
@@ -81,29 +142,39 @@ export function kotlinPropertyFromSchema(
             dataType: `${dataType}${schema.nullable ? "?" : ""}`,
             annotation,
             comparisonTemplate: defaultComparisonTemplate,
+            hashTemplate: defaultHashTemplate,
         };
     }
 
     if (isSchemaFormEnum(schema)) {
-        return kotlinEnumFromSchema(schema, options);
+        return kotlinEnumFromSchema(schema, context);
     }
 
     if (isSchemaFormProperties(schema)) {
-        return kotlinClassFromSchema(schema, options);
+        return kotlinClassFromSchema(schema, context);
+    }
+
+    if (isSchemaFormElements(schema)) {
+        return kotlinArrayFromSchema(schema, context);
+    }
+
+    if (isSchemaFormValues(schema)) {
+        return kotlinMapFromSchema(schema, context);
     }
 
     return {
         dataType: `JsonElement${schema.nullable ? "?" : ""}`,
         comparisonTemplate: defaultComparisonTemplate,
+        hashTemplate: defaultHashTemplate,
     };
 }
 
 export function kotlinEnumFromSchema(
     schema: SchemaFormEnum,
-    options: Context,
+    context: ModelContext,
 ): KotlinProperty {
     const name = pascalCase(
-        schema.metadata?.id ?? options.instancePath.split(".").join("_"),
+        schema.metadata?.id ?? context.instancePath.split("/").join("_"),
     );
     const parts: string[] = [];
     for (const opt of schema.enum) {
@@ -114,30 +185,48 @@ export function kotlinEnumFromSchema(
         );
     }
     let content: string | undefined;
-    if (!options.generatedTypes.includes(name)) {
+    if (!context.generatedTypes.includes(name)) {
         content = `enum class ${name}() {
 ${parts.join("\n")}
 }`;
-        options.generatedTypes.push(name);
+        context.generatedTypes.push(name);
     }
 
     return {
         dataType: name,
         content,
         comparisonTemplate: defaultComparisonTemplate,
+        hashTemplate: defaultHashTemplate,
     };
 }
 
 export function kotlinClassFromSchema(
     schema: SchemaFormProperties,
-    options: Context,
+    options: ModelContext,
 ): KotlinProperty {
-    const name = pascalCase(
-        schema.metadata?.id ?? options.instancePath.split(".").join("_"),
+    let name = pascalCase(
+        schema.metadata?.id ?? options.instancePath.split("/").join("_"),
+        {
+            normalize: true,
+        },
     );
+    const annotationParts = ["@Serializable"];
+    if (options.discriminatorKey && options.discriminatorValue) {
+        annotationParts.push(`@SerialName("${options.discriminatorValue}")`);
+        name = pascalCase(
+            schema.metadata?.id ??
+                `${options.instancePath.split("/").join("_")}_${
+                    options.discriminatorValue
+                }`,
+            {
+                normalize: true,
+            },
+        );
+    }
     const subContentParts: string[] = [];
     const constructorParts: string[] = [];
     const equalsFnParts: string[] = [];
+    const hashParts: string[] = [];
     for (const key of Object.keys(schema.properties)) {
         const camelCaseKey = camelCase(key);
         const propSchema = schema.properties[key];
@@ -163,6 +252,21 @@ export function kotlinClassFromSchema(
             constructorParts.push(`    val ${camelCaseKey}: ${prop.dataType},`);
         }
         equalsFnParts.push(prop.comparisonTemplate(camelCaseKey));
+        if (hashParts.length) {
+            hashParts.push(
+                `        result = 31 * result + ${prop.hashTemplate(
+                    camelCaseKey,
+                    propSchema.nullable ?? false,
+                )}`,
+            );
+        } else {
+            hashParts.push(
+                `        var result = ${prop.hashTemplate(
+                    camelCaseKey,
+                    propSchema.nullable ?? false,
+                )}`,
+            );
+        }
         if (prop.content) {
             subContentParts.push(prop.content);
         }
@@ -205,7 +309,7 @@ export function kotlinClassFromSchema(
     }
     let content: string | undefined;
     if (!options.generatedTypes.includes(name)) {
-        content = `@Serializable
+        content = `${annotationParts.join("\n")}
 data class ${name}(
 ${constructorParts.join("\n")}
 ) {
@@ -219,6 +323,11 @@ ${equalsFnParts.join("\n")}
 
         return true
     }
+
+    override fun hashCode(): Int {
+${hashParts.join("\n")}
+        return result
+    }
 }
 
 ${subContentParts.join("\n")}`;
@@ -228,5 +337,94 @@ ${subContentParts.join("\n")}`;
         dataType: name,
         content,
         comparisonTemplate: defaultComparisonTemplate,
+        hashTemplate: defaultHashTemplate,
+    };
+}
+
+export function kotlinArrayFromSchema(
+    schema: SchemaFormElements,
+    context: ModelContext,
+): KotlinProperty {
+    const subType = kotlinPropertyFromSchema(schema.elements, {
+        instancePath: `${context.instancePath}/Item`,
+        schemaPath: `${context.schemaPath}/elements`,
+        generatedTypes: context.generatedTypes,
+    });
+    const dataType = schema.nullable
+        ? `Array<${subType.dataType}>?`
+        : `Array<${subType.dataType}>`;
+    return {
+        dataType,
+        content: subType.content,
+        comparisonTemplate(key) {
+            if (schema.nullable) {
+                return `        if (${key}?.contentEquals(other.${key}) != true) return false`;
+            }
+            return `        if (!${key}.contentEquals(other.${key})) return false`;
+        },
+        hashTemplate(key, nullable) {
+            if (nullable) {
+                return `(${key}?.contentHashCode() ?: 0)`;
+            }
+            return `${key}.contentHashCode()`;
+        },
+    };
+}
+
+export function kotlinSealedClassedFromSchema(
+    schema: SchemaFormDiscriminator,
+    context: ModelContext,
+): KotlinProperty {
+    const name = pascalCase(
+        schema.metadata?.id ?? context.instancePath.split("/").join("_"),
+    );
+    const subContentParts: string[] = [];
+    for (const discriminatorVal of Object.keys(schema.mapping)) {
+        const mappingSchema = schema.mapping[discriminatorVal];
+        const mapping = kotlinClassFromSchema(mappingSchema, {
+            generatedTypes: context.generatedTypes,
+            instancePath: `${context.instancePath}`,
+            schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
+            discriminatorValue: discriminatorVal,
+            discriminatorKey: schema.discriminator,
+        });
+        if (mapping.content) {
+            subContentParts.push(mapping.content);
+        }
+    }
+
+    let content: string | undefined;
+    if (!context.generatedTypes.includes(name)) {
+        content = `@Serializable
+sealed class ${name}()
+
+${subContentParts.join("\n\n")}`;
+    }
+
+    return {
+        dataType: name,
+        content,
+        comparisonTemplate: defaultComparisonTemplate,
+        hashTemplate: defaultHashTemplate,
+    };
+}
+
+export function kotlinMapFromSchema(
+    schema: SchemaFormValues,
+    context: ModelContext,
+): KotlinProperty {
+    const subType = kotlinPropertyFromSchema(schema.values, {
+        instancePath: `${context.instancePath}/Value`,
+        schemaPath: `${context.schemaPath}/values`,
+        generatedTypes: context.generatedTypes,
+    });
+    const dataType = `Map<String, ${subType.dataType}>${
+        schema.nullable ? "?" : ""
+    }`;
+    return {
+        dataType,
+        comparisonTemplate: defaultComparisonTemplate,
+        hashTemplate: defaultHashTemplate,
+        content: subType.content,
     };
 }

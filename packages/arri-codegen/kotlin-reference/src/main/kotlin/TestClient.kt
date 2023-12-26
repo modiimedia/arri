@@ -78,8 +78,8 @@ class TestClientUsersService(
         onData: ((data: User) -> Unit) = {},
         onError: ((error: TestClientError) -> Unit) = {},
         onConnectionError: ((error: TestClientError) -> Unit) = {},
-        onOpen: ((response: HttpResponse) -> Unit) = {  },
-        onClose: (() -> Unit) = {  },
+        onOpen: ((response: HttpResponse) -> Unit) = { },
+        onClose: (() -> Unit) = { },
         bufferCapacity: Int = 1024
     ): Job {
         val finalHeaders = mutableMapOf<String, String>()
@@ -102,7 +102,7 @@ class TestClientUsersService(
                 onOpen = onOpen,
                 onClose = onClose,
                 onError = onError,
-                onConnectionError =  onConnectionError,
+                onConnectionError = onConnectionError,
                 onData = { str ->
                     val user = JsonInstance.decodeFromString<User>(str)
                     onData(user)
@@ -135,11 +135,8 @@ data class GetStatusResponse(val message: String)
 
 @Serializable
 data class User(
-    @SerialName("id")
-    val id: String,
-    @SerialName("role")
+    val id: String?,
     val role: UserRole,
-    @SerialName("photo")
     val photo: UserPhoto?,
     @Serializable(with = InstantAsStringSerializer::class) val createdAt: Instant,
     val numFollowers: Int,
@@ -173,7 +170,7 @@ data class User(
     }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
+        var result = id?.hashCode() ?: 0
         result = 31 * result + role.hashCode()
         result = 31 * result + (photo?.hashCode() ?: 0)
         result = 31 * result + createdAt.hashCode()
@@ -223,20 +220,22 @@ enum class UserSettingsPreferredTheme() {
 }
 
 @Serializable
-sealed class UserRecentNotificationsItem(val notificationType: String) {}
+sealed class UserRecentNotificationsItem()
 
 @Serializable
+@SerialName("POST_LIKE")
 data class UserRecentNotificationsItemPostList(
     val postId: String,
     val userId: String,
-) : UserRecentNotificationsItem("POST_LIKE")
+) : UserRecentNotificationsItem()
 
 @Serializable
+@SerialName("POST_COMMENT")
 data class UserRecentNotificationsItemPostComment(
     val postId: String,
     val userId: String,
     val commentText: String,
-) : UserRecentNotificationsItem("POST_COMMENT")
+) : UserRecentNotificationsItem()
 
 @Serializable
 data class UserBookmarksValue(
@@ -370,7 +369,6 @@ private fun parseSseEvents(input: String): List<SseEvent> {
     }
     return events
 }
-
 
 
 private suspend fun handleSseRequest(
