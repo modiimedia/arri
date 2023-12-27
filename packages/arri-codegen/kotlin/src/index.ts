@@ -1,4 +1,11 @@
-import { type RpcDefinition, camelCase, pascalCase } from "arri-codegen-utils";
+import {
+    type RpcDefinition,
+    camelCase,
+    pascalCase,
+    type ServiceDefinition,
+    isServiceDefinition,
+    isRpcDefinition,
+} from "arri-codegen-utils";
 import {
     isSchemaFormEnum,
     isSchemaFormType,
@@ -16,6 +23,40 @@ import {
 export interface ServiceContext {
     clientName: string;
     modelPrefix?: string;
+}
+
+// SERVICE GENERATION
+export function kotlinServiceFromDef(
+    name: string,
+    def: ServiceDefinition,
+    context: ServiceContext,
+): string {
+    const subServiceNames: string[] = [];
+    const subServiceParts: string[] = [];
+    const rpcParts: string[] = [];
+    for (const key of Object.keys(def)) {
+        const subDef = def[key];
+        if (isServiceDefinition(subDef)) {
+            const subServiceName = pascalCase(`${name}_${key}`);
+            subServiceNames.push(subServiceName);
+            subServiceParts.push(
+                kotlinServiceFromDef(subServiceName, subDef, context),
+            );
+            continue;
+        }
+        if (isRpcDefinition(subDef)) {
+            rpcParts.push(
+                kotlinRpcFromDef(
+                    camelCase(key, { normalize: true }),
+                    subDef,
+                    context,
+                ),
+            );
+            continue;
+        }
+    }
+
+    const finalName = pascalCase(`${name}_service`, { normalize: true });
 }
 
 // RPC GENERATION
