@@ -5,6 +5,8 @@ import {
     type ServiceDefinition,
     isServiceDefinition,
     isRpcDefinition,
+    type AppDefinition,
+    unflattenProcedures,
 } from "arri-codegen-utils";
 import {
     isSchemaFormEnum,
@@ -25,23 +27,78 @@ export interface ServiceContext {
     modelPrefix?: string;
 }
 
+export interface Options {
+    clientName?: string;
+    modelPrefix?: string;
+}
+
+// CLIENT GENERATION
+export function kotlinClientFromDef(def: AppDefinition, options: Options) {
+    const clientName = options.clientName ?? "Client";
+    const modelPrefix = options.modelPrefix ?? "";
+    const serviceDefs = unflattenProcedures(def.procedures);
+    const services: { key: string; name: string; content: string }[] = [];
+    const rpcParts: string[] = [];
+    for (const key of Object.keys(serviceDefs)) {
+        const subDef = serviceDefs[key];
+        if (isServiceDefinition(subDef)) {
+            const service = kotlinServiceFromDef(key, subDef, {
+                clientName,
+                modelPrefix,
+            });
+            services.push({
+                key: camelCase(key, { normalize: true }),
+                name: pascalCase(key, { normalize: true }),
+                content: service,
+            });
+            continue;
+        }
+        if (isRpcDefinition(subDef)) {
+            const rpcName = camelCase(key, { normalize: true });
+            const rpc = kotlinRpcFromDef(rpcName, subDef, {
+                clientName,
+                modelPrefix,
+            });
+            rpcParts.push(rpc);
+        }
+    }
+    return `class ${clientName}(
+    private val httpClient: HttpClient,
+    private val baseUrl: String = "",
+    private val headers: Map<String, String> = mutableMapOf(),
+) {
+${services
+    .map(
+        (service) =>
+            `    val ${service.key} = ${pascalCase(
+                `${clientName}_${service.name}_service`,
+                { normalize: true },
+            )}(httpClient, baseUrl, headers)`,
+    )
+    .join("\n")}
+${rpcParts.join("\n")}
+}
+
+${services.map((service) => service.content).join("\n\n")}`;
+}
+
 // SERVICE GENERATION
 export function kotlinServiceFromDef(
     name: string,
     def: ServiceDefinition,
     context: ServiceContext,
 ): string {
-    const subServiceNames: string[] = [];
-    const subServiceParts: string[] = [];
+    const subServices: { key: string; name: string; content: string }[] = [];
     const rpcParts: string[] = [];
     for (const key of Object.keys(def)) {
         const subDef = def[key];
         if (isServiceDefinition(subDef)) {
             const subServiceName = pascalCase(`${name}_${key}`);
-            subServiceNames.push(subServiceName);
-            subServiceParts.push(
-                kotlinServiceFromDef(subServiceName, subDef, context),
-            );
+            subServices.push({
+                key: camelCase(key, { normalize: true }),
+                name: subServiceName,
+                content: kotlinServiceFromDef(subServiceName, subDef, context),
+            });
             continue;
         }
         if (isRpcDefinition(subDef)) {
@@ -56,7 +113,27 @@ export function kotlinServiceFromDef(
         }
     }
 
-    const finalName = pascalCase(`${name}_service`, { normalize: true });
+    const finalName = pascalCase(`${context.clientName}_${name}_service`, {
+        normalize: true,
+    });
+    return `class ${finalName}(
+    private val httpClient: HttpClient,
+    private val baseUrl: String = "",
+    private val headers: Map<String, String> = mutableMapOf(),
+) {
+${subServices
+    .map((service) => {
+        const subServiceName = pascalCase(
+            `${context.clientName}_${service.name}_Service`,
+            { normalize: true },
+        );
+        return `    val ${service.key} = ${subServiceName}(httpClient, baseUrl, headers)`;
+    })
+    .join("\n")}
+${rpcParts.join("\n")}
+}
+
+${subServices.map((service) => service.content).join("\n\n")}`;
 }
 
 // RPC GENERATION
@@ -65,30 +142,82 @@ export function kotlinRpcFromDef(
     def: RpcDefinition,
     context: ServiceContext,
 ): string {
-    const paramType = def.params
-        ? (pascalCase(`${context.modelPrefix}_${def.params}`, {
+    const paramType: string | undefined = def.params
+        ? (pascalCase(`${context.modelPrefix ?? ""}_${def.params}`, {
               normalize: true,
           }) as string)
         : undefined;
-    const returnType = def.response
-        ? pascalCase(`${context.modelPrefix}_${def.params}`, {
+    const returnType: string | undefined = def.response
+        ? (pascalCase(`${context.modelPrefix ?? ""}_${def.response}`, {
               normalize: true,
-          })
+          }) as string)
         : undefined;
 
     if (def.isEventStream) {
-        return ``;
+        return `    fun ${name}(
+        scope: CoroutineScope,${
+            paramType ? `\n        params: ${paramType},` : ""
+        }
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onError: ((error: ${context.clientName}Error) -> Unit) = {},
+        onConnectionError: ((error: ${context.clientName}Error) -> Unit) = {},
+        onData: ((data: ${returnType ?? "null"}) -> Unit) = {},
+    ): Job {
+        val finalHeaders = mutableMapOf<String, String>()
+        for (item in headers.entries) {
+            finalHeaders[item.key] = item.value
+        }
+        finalHeaders["Accept"] = "application/json, text/event-stream"
+        val job = scope.launch {
+            handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = "$baseUrl${def.path}",
+                method = HttpMethod.${pascalCase(def.method, {
+                    normalize: true,
+                })},
+                params = ${
+                    paramType
+                        ? `JsonInstance.encodeToJsonElement<${paramType}>(params)`
+                        : "null"
+                },
+                headers = finalHeaders,
+                backoffTime = 0,
+                maxBackoffTime = 32000,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onConnectionError = onConnectionError,
+                onData = { str -> 
+                    val data = ${
+                        returnType
+                            ? `JsonInstance.decodeFromString<${returnType}>(str)`
+                            : `null`
+                    }
+                    onData(data)
+                },
+            )
+        }
+        return job
+    }`;
     }
 
     return `    suspend fun ${name}(${
         paramType ? `params: ${paramType}` : ""
     }): ${returnType ?? "Unit"} {
-        val response = prepareRequest(
+        ${returnType ? "val response = " : ""}prepareRequest(
             client = httpClient,
             url = "$baseUrl${def.path}",
             method = HttpMethod.${pascalCase(def.method)},
             params = ${
-                paramType ? `JsonInstance.encodeToJsonElements(params)` : "null"
+                paramType
+                    ? `JsonInstance.encodeToJsonElement<${paramType}>(params)`
+                    : "null"
             },
             headers = headers,
         ).execute()
@@ -103,6 +232,7 @@ export function kotlinRpcFromDef(
 // MODEL GENERATION
 
 export interface ModelContext {
+    modelPrefix: string;
     generatedTypes: string[];
     instancePath: string;
     schemaPath: string;
@@ -243,22 +373,26 @@ ${parts.join("\n")}
 
 export function kotlinClassFromSchema(
     schema: SchemaFormProperties,
-    options: ModelContext,
+    context: ModelContext,
 ): KotlinProperty {
     let name = pascalCase(
-        schema.metadata?.id ?? options.instancePath.split("/").join("_"),
+        `${context.modelPrefix}_${
+            schema.metadata?.id ?? context.instancePath.split("/").join("_")
+        }`,
         {
             normalize: true,
         },
-    );
+    ) as string;
     const annotationParts = ["@Serializable"];
-    if (options.discriminatorKey && options.discriminatorValue) {
-        annotationParts.push(`@SerialName("${options.discriminatorValue}")`);
+    if (context.discriminatorKey && context.discriminatorValue) {
+        annotationParts.push(`@SerialName("${context.discriminatorValue}")`);
         name = pascalCase(
-            schema.metadata?.id ??
-                `${options.instancePath.split("/").join("_")}_${
-                    options.discriminatorValue
-                }`,
+            `${context.modelPrefix}_${
+                schema.metadata?.id ??
+                `${context.instancePath.split("/").join("_")}_${
+                    context.discriminatorValue
+                }`
+            }`,
             {
                 normalize: true,
             },
@@ -272,9 +406,10 @@ export function kotlinClassFromSchema(
         const camelCaseKey = camelCase(key);
         const propSchema = schema.properties[key];
         const prop = kotlinPropertyFromSchema(propSchema, {
-            instancePath: `${options.instancePath}/${key}`,
-            schemaPath: `${options.schemaPath}/properties/${key}`,
-            generatedTypes: options.generatedTypes,
+            instancePath: `${context.instancePath}/${key}`,
+            schemaPath: `${context.schemaPath}/properties/${key}`,
+            generatedTypes: context.generatedTypes,
+            modelPrefix: context.modelPrefix,
         });
         const annotations: string[] = [];
         if (prop.annotation) {
@@ -317,9 +452,10 @@ export function kotlinClassFromSchema(
             const camelCaseKey = camelCase(key);
             const propSchema = schema.optionalProperties[key];
             const prop = kotlinPropertyFromSchema(propSchema, {
-                instancePath: `${options.instancePath}/${key}`,
-                schemaPath: `${options.schemaPath}/properties/${key}`,
-                generatedTypes: options.generatedTypes,
+                instancePath: `${context.instancePath}/${key}`,
+                schemaPath: `${context.schemaPath}/properties/${key}`,
+                generatedTypes: context.generatedTypes,
+                modelPrefix: context.modelPrefix,
             });
             const annotations: string[] = [];
             if (prop.annotation) {
@@ -349,7 +485,7 @@ export function kotlinClassFromSchema(
         }
     }
     let content: string | undefined;
-    if (!options.generatedTypes.includes(name)) {
+    if (!context.generatedTypes.includes(name)) {
         content = `${annotationParts.join("\n")}
 data class ${name}(
 ${constructorParts.join("\n")}
@@ -390,6 +526,7 @@ export function kotlinArrayFromSchema(
         instancePath: `${context.instancePath}/Item`,
         schemaPath: `${context.schemaPath}/elements`,
         generatedTypes: context.generatedTypes,
+        modelPrefix: context.modelPrefix,
     });
     const dataType = schema.nullable
         ? `Array<${subType.dataType}>?`
@@ -417,8 +554,10 @@ export function kotlinSealedClassedFromSchema(
     context: ModelContext,
 ): KotlinProperty {
     const name = pascalCase(
-        schema.metadata?.id ?? context.instancePath.split("/").join("_"),
-    );
+        `${context.modelPrefix}_${
+            schema.metadata?.id ?? context.instancePath.split("/").join("_")
+        }`,
+    ) as string;
     const subContentParts: string[] = [];
     for (const discriminatorVal of Object.keys(schema.mapping)) {
         const mappingSchema = schema.mapping[discriminatorVal];
@@ -428,6 +567,7 @@ export function kotlinSealedClassedFromSchema(
             schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
             discriminatorValue: discriminatorVal,
             discriminatorKey: schema.discriminator,
+            modelPrefix: context.modelPrefix,
         });
         if (mapping.content) {
             subContentParts.push(mapping.content);
@@ -458,6 +598,7 @@ export function kotlinMapFromSchema(
         instancePath: `${context.instancePath}/Value`,
         schemaPath: `${context.schemaPath}/values`,
         generatedTypes: context.generatedTypes,
+        modelPrefix: context.modelPrefix,
     });
     const dataType = `Map<String, ${subType.dataType}>${
         schema.nullable ? "?" : ""

@@ -1,9 +1,15 @@
-import { normalizeWhitespace } from "arri-codegen-utils";
+import {
+    type RpcDefinition,
+    normalizeWhitespace,
+    type ServiceDefinition,
+} from "arri-codegen-utils";
 import { a } from "arri-validate";
 import {
     kotlinClassFromSchema,
     kotlinPropertyFromSchema,
+    kotlinRpcFromDef,
     kotlinSealedClassedFromSchema,
+    kotlinServiceFromDef,
 } from "./index";
 
 describe("Model Generation", () => {
@@ -33,6 +39,7 @@ describe("Model Generation", () => {
             instancePath: "User",
             schemaPath: "",
             generatedTypes: [],
+            modelPrefix: "",
         });
         expect(result.content).toBe(`@Serializable
 data class User(
@@ -111,6 +118,7 @@ enum class UserEnum() {
             generatedTypes: [],
             instancePath: "Schema",
             schemaPath: "",
+            modelPrefix: "",
         });
         expect(result.content).toBe(`@Serializable
 data class Schema(
@@ -158,6 +166,7 @@ data class Schema(
             generatedTypes: ["User"],
             instancePath: "Schema",
             schemaPath: "",
+            modelPrefix: "",
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -215,6 +224,7 @@ data class Schema(
             generatedTypes: [],
             instancePath: "message",
             schemaPath: "",
+            modelPrefix: "",
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -297,6 +307,7 @@ data class MessageImage(
             generatedTypes: ["User"],
             instancePath: "Schema",
             schemaPath: "",
+            modelPrefix: "",
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -322,6 +333,201 @@ data class Schema(
         return result
     }
 }`),
+        );
+    });
+});
+
+describe("procedures", () => {
+    it("handles standard procedures", () => {
+        const input: RpcDefinition = {
+            method: "post",
+            path: "/say-hello",
+            params: "SayHelloParams",
+            response: "SayHelloResponse",
+        };
+        const result = kotlinRpcFromDef("sayHello", input, {
+            clientName: "Client",
+        });
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`suspend fun sayHello(params: SayHelloParams): SayHelloResponse {
+            val response = prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/say-hello",
+                method = HttpMethod.Post,
+                params = JsonInstance.encodeToJsonElement<SayHelloParams>(params),
+                headers = headers,
+            ).execute()
+            return JsonInstance.decodeFromString<SayHelloResponse>(response.body())
+        }`),
+        );
+    });
+    it("handles standard procedures with undefined params", () => {
+        const input: RpcDefinition = {
+            method: "get",
+            path: "/get-status",
+            params: undefined,
+            response: "Status",
+        };
+        const result = kotlinRpcFromDef("getStatus", input, {
+            clientName: "Client",
+        });
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`suspend fun getStatus(): Status {
+            val response = prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/get-status",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers,
+            ).execute()
+            return JsonInstance.decodeFromString<Status>(response.body())
+        }`),
+        );
+    });
+    it("handles standard procedures with undefined response", () => {
+        const input: RpcDefinition = {
+            method: "put",
+            path: "/create-user",
+            params: "CreateUserParams",
+            response: undefined,
+        };
+        const result = kotlinRpcFromDef("createUser", input, {
+            clientName: "TestClient",
+        });
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`suspend fun createUser(params: CreateUserParams): Unit {
+            prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/create-user",
+                method = HttpMethod.Put,
+                params = JsonInstance.encodeToJsonElement<CreateUserParams>(params),
+                headers = headers,
+            ).execute()
+        }`),
+        );
+    });
+    it("handles event stream procedures", () => {});
+});
+
+describe("services", () => {
+    it("handles nested services", () => {
+        const input: ServiceDefinition = {
+            getUser: {
+                method: "get",
+                path: "/users/get-user",
+                params: "UserParams",
+                response: "User",
+            },
+            updateUser: {
+                method: "patch",
+                path: "/users/update-user",
+                params: "UpdateUserParams",
+                response: undefined,
+            },
+            watchUser: {
+                method: "get",
+                path: "/users/watch-user",
+                params: "UserParams",
+                response: "User",
+                isEventStream: true,
+            },
+            settings: {
+                getSettings: {
+                    method: "get",
+                    path: "/users/settings/get-settings",
+                    params: "UserSettingsParams",
+                    response: "UserSettings",
+                },
+            },
+        };
+        const result = kotlinServiceFromDef("Users", input, {
+            clientName: "ArriClient",
+        });
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`class ArriClientUsersService(
+            private val httpClient: HttpClient,
+            private val baseUrl: String = "",
+            private val headers: Map<String, String> = mutableMapOf(),
+        ) {
+            val settings = ArriClientUsersSettingsService(httpClient, baseUrl, headers)
+
+            suspend fun getUser(params: UserParams): User {
+                val response = prepareRequest(
+                    client = httpClient,
+                    url = "$baseUrl/users/get-user",
+                    method = HttpMethod.Get,
+                    params = JsonInstance.encodeToJsonElement<UserParams>(params),
+                    headers = headers,
+                ).execute()
+                return JsonInstance.decodeFromString<User>(response.body())
+            }
+            suspend fun updateUser(params: UpdateUserParams): Unit {
+                prepareRequest(
+                    client = httpClient,
+                    url = "$baseUrl/users/update-user",
+                    method = HttpMethod.Patch,
+                    params = JsonInstance.encodeToJsonElement<UpdateUserParams>(params),
+                    headers = headers,
+                ).execute()
+            }
+            fun watchUser(
+                scope: CoroutineScope,
+                params: UserParams,
+                lastEventId: String? = null,
+                bufferCapacity: Int = 1024,
+                onOpen: ((response: HttpResponse) -> Unit) = {},
+                onClose: (() -> Unit) = {},
+                onError: ((error: ArriClientError) -> Unit) = {},
+                onConnectionError: ((error: ArriClientError) -> Unit) = {},
+                onData: ((data: User) -> Unit) = {},
+            ): Job {
+                val finalHeaders = mutableMapOf<String, String>()
+                for (item in headers.entries) {
+                    finalHeaders[item.key] = item.value
+                }
+                finalHeaders["Accept"] = "application/json, text/event-stream"
+                val job = scope.launch {
+                    handleSseRequest(
+                        scope = scope,
+                        httpClient = httpClient,
+                        url = "$baseUrl/users/watch-user",
+                        method = HttpMethod.Get,
+                        params = JsonInstance.encodeToJsonElement<UserParams>(params),
+                        headers = finalHeaders,
+                        backoffTime = 0,
+                        maxBackoffTime = 32000,
+                        lastEventId = lastEventId,
+                        bufferCapacity = bufferCapacity,
+                        onOpen = onOpen,
+                        onClose = onClose,
+                        onError = onError,
+                        onConnectionError = onConnectionError,
+                        onData = { str ->
+                            val data = JsonInstance.decodeFromString<User>(str)
+                            onData(data)
+                        },
+                    )
+                }
+                return job
+            }
+        }
+        
+        class ArriClientUsersSettingsService(
+            private val httpClient: HttpClient,
+            private val baseUrl: String = "",
+            private val headers: Map<String, String> = mutableMapOf(),
+        ) {
+            suspend fun getSettings(params: UserSettingsParams): UserSettings {
+                val response = prepareRequest(
+                    client = httpClient,
+                    url = "$baseUrl/users/settings/get-settings",
+                    method = HttpMethod.Get,
+                    params = JsonInstance.encodeToJsonElement<UserSettingsParams>(params),
+                    headers = headers,
+                ).execute()
+                return JsonInstance.decodeFromString<UserSettings>(response.body())
+            }
+        }`),
         );
     });
 });

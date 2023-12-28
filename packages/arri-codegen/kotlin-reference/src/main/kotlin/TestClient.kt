@@ -45,7 +45,7 @@ class TestClient(
 class TestClientUsersService(
     private val httpClient: HttpClient,
     private val baseUrl: String = "",
-    private val headers: Map<String, String> = mutableMapOf()
+    private val headers: Map<String, String> = mutableMapOf(),
 ) {
     val settings = TestClientUsersSettingsService(httpClient, baseUrl, headers)
 
