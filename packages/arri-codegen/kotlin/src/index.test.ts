@@ -1,11 +1,15 @@
+import fs from "node:fs";
 import {
     type RpcDefinition,
     normalizeWhitespace,
     type ServiceDefinition,
 } from "arri-codegen-utils";
+import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
 import { a } from "arri-validate";
+import path from "pathe";
 import {
     kotlinClassFromSchema,
+    kotlinClientFromDef,
     kotlinPropertyFromSchema,
     kotlinRpcFromDef,
     kotlinSealedClassedFromSchema,
@@ -529,5 +533,23 @@ describe("services", () => {
             }
         }`),
         );
+    });
+});
+
+describe("client", () => {
+    it("it matches the reference client", () => {
+        const result = kotlinClientFromDef(TestAppDefinition, {
+            clientName: "TestClient",
+        });
+        const expectedResult = fs.readFileSync(
+            path.resolve(
+                __dirname,
+                "../../kotlin-reference/src/main/kotlin/TestClient.kt",
+            ),
+            {
+                encoding: "utf8",
+            },
+        );
+        expect(result).toEqual(expectedResult);
     });
 });

@@ -26,7 +26,7 @@ val JsonInstance = Json { ignoreUnknownKeys = true }
 class TestClient(
     private val httpClient: HttpClient,
     private val baseUrl: String = "",
-    private val headers: Map<String, String> = mutableMapOf()
+    private val headers: Map<String, String> = mutableMapOf(),
 ) {
     val users = TestClientUsersService(httpClient, baseUrl, headers)
 
@@ -135,18 +135,18 @@ data class GetStatusResponse(val message: String)
 
 @Serializable
 data class User(
-    val id: String?,
+    val id: String,
     val role: UserRole,
     val photo: UserPhoto?,
-    @Serializable(with = InstantAsStringSerializer::class) val createdAt: Instant,
+    @Serializable(with = InstantAsStringSerializer::class)
+    val createdAt: Instant,
     val numFollowers: Int,
     val settings: UserSettings,
     val recentNotifications: List<UserRecentNotificationsItem>,
     val bookmarks: Map<String, UserBookmarksValue>,
-    val bio: String?,
+    val bio: String? = null,
     val metadata: Map<String, JsonElement>,
     val randomList: Array<JsonElement>,
-    val blah: Float,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -170,11 +170,11 @@ data class User(
     }
 
     override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
+        var result = id.hashCode()
         result = 31 * result + role.hashCode()
         result = 31 * result + (photo?.hashCode() ?: 0)
         result = 31 * result + createdAt.hashCode()
-        result = 31 * result + numFollowers
+        result = 31 * result + numFollowers.hashCode()
         result = 31 * result + settings.hashCode()
         result = 31 * result + recentNotifications.hashCode()
         result = 31 * result + bookmarks.hashCode()
@@ -250,7 +250,7 @@ data class UserParams(
 
 @Serializable
 data class UpdateUserParams(
-    val id: String, val photo: UserPhoto?, val bio: String?
+    val id: String,
 )
 
 @Serializable
@@ -272,28 +272,6 @@ object InstantAsStringSerializer : KSerializer<Instant> {
     override fun serialize(encoder: Encoder, value: Instant) {
         return encoder.encodeString(value.toString())
     }
-}
-
-
-private class RequestPayload(val url: String, val method: HttpMethod, val body: String)
-
-private fun getRequestPayload(url: String, method: HttpMethod, params: JsonElement?): RequestPayload {
-    var finalUrl = url
-    var finalBody = ""
-    when (method) {
-        HttpMethod.Get, HttpMethod.Head -> {
-            val queryParts = mutableListOf<String>()
-            params?.jsonObject?.entries?.forEach {
-                queryParts.add("${it.key}=${it.value}")
-            }
-            finalUrl = "$finalUrl?${queryParts.joinToString("&")}"
-        }
-
-        HttpMethod.Post, HttpMethod.Put, HttpMethod.Patch, HttpMethod.Delete -> {
-            finalBody = params?.toString() ?: ""
-        }
-    }
-    return RequestPayload(finalUrl, method, finalBody)
 }
 
 private suspend fun prepareRequest(
@@ -324,6 +302,7 @@ private suspend fun prepareRequest(
     builder.timeout {
         requestTimeoutMillis = 10 * 60 * 1000
     }
+    builder.headers["client-version"] = "11"
     if (headers != null) {
         for (entry in headers.entries) {
             builder.headers[entry.key] = entry.value
