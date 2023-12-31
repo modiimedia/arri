@@ -4,6 +4,7 @@ import { defineConfig } from "arri";
 import {
     typescriptClientGenerator,
     dartClientGenerator,
+    kotlinClientGenerator,
 } from "arri/dist/codegen";
 
 const prettierConfig = JSON.parse(
@@ -23,7 +24,7 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/client-typescript/testClient.rpc.ts",
+                "../clients/typescript/testClient.rpc.ts",
             ),
             prettierOptions: prettierConfig,
         }),
@@ -31,7 +32,14 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/client-dart/lib/test_client.rpc.dart",
+                "../clients/dart/lib/test_client.rpc.dart",
+            ),
+        }),
+        kotlinClientGenerator({
+            clientName: "TestClient",
+            outputFile: path.resolve(
+                __dirname,
+                "../clients/kotlin/TestClient.rpc.kt",
             ),
         }),
     ],

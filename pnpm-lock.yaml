@@ -323,7 +323,7 @@ importers:
 
   packages/jtd-utils: {}
 
-  tests/clients/client-typescript:
+  tests/clients/typescript:
     dependencies:
       arri-client:
         specifier: workspace:*
@@ -331,9 +331,6 @@ importers:
       arri-validate:
         specifier: workspace:*
         version: link:../../../packages/arri-validate
-      ofetch:
-        specifier: ^1.3.3
-        version: 1.3.3
 
   tests/server:
     dependencies:
