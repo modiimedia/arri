@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import {
     type RpcDefinition,
     camelCase,
@@ -7,6 +8,7 @@ import {
     isRpcDefinition,
     type AppDefinition,
     unflattenProcedures,
+    defineClientGeneratorPlugin,
 } from "arri-codegen-utils";
 import {
     isSchemaFormEnum,
@@ -20,6 +22,7 @@ import {
     type SchemaFormDiscriminator,
     type SchemaFormValues,
     isSchemaFormValues,
+    isSchemaFormDiscriminator,
 } from "jtd-utils";
 
 export interface ServiceContext {
@@ -27,13 +30,29 @@ export interface ServiceContext {
     modelPrefix?: string;
 }
 
-export interface Options {
+export interface KotlinClientOptions {
     clientName?: string;
     modelPrefix?: string;
+    outputFile: string;
 }
 
+export const kotlinClientGenerator = defineClientGeneratorPlugin(
+    (options: KotlinClientOptions) => {
+        return {
+            generator(def) {
+                const client = kotlinClientFromDef(def, options);
+                fs.writeFileSync(options.outputFile, client);
+            },
+            options,
+        };
+    },
+);
+
 // CLIENT GENERATION
-export function kotlinClientFromDef(def: AppDefinition, options: Options) {
+export function kotlinClientFromDef(
+    def: AppDefinition,
+    options: KotlinClientOptions,
+) {
     const clientName = options.clientName ?? "Client";
     const modelPrefix = options.modelPrefix ?? "";
     const serviceDefs = unflattenProcedures(def.procedures);
@@ -102,7 +121,7 @@ ${rpcParts.join("\n")}
 
 ${services.map((service) => service.content).join("\n\n")}
 
-${modelParts.join("\n\n")}
+${modelParts.join("\n")}
 
 ${utilityFunctionParts(def.info?.version)}`;
 }
@@ -263,6 +282,7 @@ export interface ModelContext {
     schemaPath: string;
     discriminatorKey?: string;
     discriminatorValue?: string;
+    discriminatorParent?: string;
 }
 
 export interface KotlinProperty {
@@ -348,6 +368,10 @@ export function kotlinPropertyFromSchema(
 
     if (isSchemaFormProperties(schema)) {
         return kotlinClassFromSchema(schema, context);
+    }
+
+    if (isSchemaFormDiscriminator(schema)) {
+        return kotlinSealedClassedFromSchema(schema, context);
     }
 
     if (isSchemaFormElements(schema)) {
@@ -515,6 +539,12 @@ export function kotlinClassFromSchema(
                 );
             }
             equalsFnParts.push(prop.comparisonTemplate(camelCaseKey));
+            hashParts.push(
+                `result = 31 * result + ${prop.hashTemplate(
+                    camelCaseKey,
+                    true,
+                )}`,
+            );
             if (prop.content) {
                 subContentParts.push(prop.content);
             }
@@ -540,9 +570,9 @@ ${hashParts.join("\n")}
         content = `${annotationParts.join("\n")}
 data class ${name}(
 ${constructorParts.join("\n")}
-)${
+)${context.discriminatorParent ? ` : ${context.discriminatorParent}()` : ""}${
             needsAdditionalMethods
-                ? `{
+                ? ` {
 ${equalsFn}
 
 ${hashFn}
@@ -551,10 +581,11 @@ ${hashFn}
         }
 
 ${subContentParts.join("\n")}`;
+        context.generatedTypes.push(name);
     }
 
     return {
-        dataType: name,
+        dataType: schema.nullable ? `${name}?` : name,
         content,
         comparisonTemplate: defaultComparisonTemplate,
         hashTemplate: defaultHashTemplate,
@@ -572,28 +603,13 @@ export function kotlinArrayFromSchema(
         modelPrefix: context.modelPrefix,
     });
     const dataType = schema.nullable
-        ? `Array<${subType.dataType}>?`
-        : `Array<${subType.dataType}>`;
+        ? `List<${subType.dataType}>?`
+        : `List<${subType.dataType}>`;
     return {
         dataType,
         content: subType.content,
-        comparisonTemplate(key) {
-            if (schema.nullable) {
-                return `        if (${key}?.contentEquals(other.${key}) != true) return false`;
-            }
-            return `        if (!${key}.contentEquals(other.${key})) return false`;
-        },
+        comparisonTemplate: defaultComparisonTemplate,
         hashTemplate(key, nullable) {
-            if (
-                subType.dataType === "JsonElement" ||
-                subType.dataType === "JsonElement?"
-            ) {
-                console.log(schema);
-                if (nullable) {
-                    return `(${key}?.contentHashCode() ?: 0)`;
-                }
-                return `${key}.contentHashCode()`;
-            }
             if (nullable) {
                 return `(${key}?.hashCode() ?: 0)`;
             }
@@ -620,6 +636,7 @@ export function kotlinSealedClassedFromSchema(
             schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
             discriminatorValue: discriminatorVal,
             discriminatorKey: schema.discriminator,
+            discriminatorParent: name,
             modelPrefix: context.modelPrefix,
         });
         if (mapping.content) {
@@ -633,10 +650,11 @@ export function kotlinSealedClassedFromSchema(
 sealed class ${name}()
 
 ${subContentParts.join("\n\n")}`;
+        context.generatedTypes.push(name);
     }
 
     return {
-        dataType: name,
+        dataType: schema.nullable ? `${name}?` : name,
         content,
         comparisonTemplate: defaultComparisonTemplate,
         hashTemplate: defaultHashTemplate,
@@ -821,7 +839,7 @@ private suspend fun handleSseRequest(
         client = httpClient,
         url = url,
         method = HttpMethod.Get,
-        params = JsonInstance.encodeToJsonElement(params),
+        params = params,
         headers = finalHeaders,
     )
     try {

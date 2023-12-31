@@ -124,30 +124,13 @@ enum class UserEnum() {
             schemaPath: "",
             modelPrefix: "",
         });
-        expect(result.content).toBe(`@Serializable
+        expect(normalizeWhitespace(result.content ?? "")).toBe(
+            normalizeWhitespace(`@Serializable
 data class Schema(
     val message: String?,
     val messageId: String? = null,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Schema
-
-        if (message != other.message) return false
-        if (messageId != other.messageId) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = (message?.hashCode() ?: 0)
-        return result
-    }
-}
-
-`);
+)`),
+        );
     });
 
     it("handle arrays and nested arrays", () => {
@@ -175,35 +158,11 @@ data class Schema(
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
 data class Schema(
-    val messages: Array<String>,
-    val favoriteMessages: Array<String>?,
-    val users: Array<User>,
-    val positions: Array<Array<Double>>,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        
-        other as Schema
-
-        if (!messages.contentEquals(other.messages)) return false
-        if (favoriteMessages?.contentEquals(other.favoriteMessages) != true) return false
-        if (!users.contentEquals(other.users)) return false
-        if (!positions.contentEquals(other.positions)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = messages.contentHashCode()
-        result = 31 * result + (favoriteMessages?.contentHashCode() ?: 0)
-        result = 31 * result + users.contentHashCode()
-        result = 31 * result + positions.contentHashCode()
-        return result
-    }
-}
-
-`),
+    val messages: List<String>,
+    val favoriteMessages: List<String>?,
+    val users: List<User>,
+    val positions: List<List<Double>>,
+)`),
         );
     });
 
@@ -240,27 +199,7 @@ data class MessageText(
     val id: String,
     val userId: String,
     val content: String,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MessageText
-
-        if (id != other.id) return false
-        if (userId != other.userId) return false
-        if (content != other.content) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + userId.hashCode()
-        result = 31 * result + content.hashCode()
-        return result
-    }
-}
+) : Message()
 
 @Serializable
 @SerialName("IMAGE")
@@ -268,27 +207,7 @@ data class MessageImage(
     val id: String,
     val userId: String,
     val imageUrl: String,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        
-        other as MessageImage
-
-        if (id != other.id) return false
-        if (userId != other.userId) return false
-        if (imageUrl != other.imageUrl) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + userId.hashCode()
-        result = 31 * result + imageUrl.hashCode()
-        return result
-    }
-}`),
+) : Message()`),
         );
     });
 
@@ -318,25 +237,7 @@ data class MessageImage(
 data class Schema(
     val postIds: Map<String, String>,
     val users: Map<String, User>,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        
-        other as Schema
-
-        if (postIds != other.postIds) return false
-        if (users != other.users) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = postIds.hashCode()
-        result = 31 * result + users.hashCode()
-        return result
-    }
-}`),
+)`),
         );
     });
 });
@@ -540,6 +441,7 @@ describe("client", () => {
     it("it matches the reference client", () => {
         const result = kotlinClientFromDef(TestAppDefinition, {
             clientName: "TestClient",
+            outputFile: "",
         });
         const expectedResult = fs.readFileSync(
             path.resolve(
@@ -550,6 +452,8 @@ describe("client", () => {
                 encoding: "utf8",
             },
         );
-        expect(result).toEqual(expectedResult);
+        expect(normalizeWhitespace(result)).toEqual(
+            normalizeWhitespace(expectedResult),
+        );
     });
 });

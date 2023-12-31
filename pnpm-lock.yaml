@@ -152,6 +152,9 @@ importers:
       arri-codegen-dart:
         specifier: workspace:*
         version: link:../arri-codegen/dart
+      arri-codegen-kotlin:
+        specifier: workspace:*
+        version: link:../arri-codegen/kotlin
       arri-codegen-ts:
         specifier: workspace:*
         version: link:../arri-codegen/typescript
