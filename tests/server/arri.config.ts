@@ -39,7 +39,7 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/kotlin/TestClient.rpc.kt",
+                "../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
             ),
         }),
     ],
