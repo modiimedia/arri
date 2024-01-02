@@ -399,7 +399,8 @@ data class AdaptersTypeboxAdapterParams(
     val integer: Int,
     val number: Double,
     val enumField: AdaptersTypeboxAdapterParamsEnumField,
-    val object: AdaptersTypeboxAdapterParamsObject,
+    @SerialName("object")
+    val _object: AdaptersTypeboxAdapterParamsObject,
     val array: List<Boolean>,
     val optionalString: String? = null,
 )
@@ -443,7 +444,8 @@ data class ObjectWithEveryType(
     val uint64: ULong,
     val enumerator: ObjectWithEveryTypeEnumerator,
     val array: List<Boolean>,
-    val object: ObjectWithEveryTypeObject,
+    @SerialName("object")
+    val _object: ObjectWithEveryTypeObject,
     val record: Map<String, Boolean>,
     val discriminator: ObjectWithEveryTypeDiscriminator,
     val nestedObject: ObjectWithEveryTypeNestedObject,
@@ -471,7 +473,7 @@ data class ObjectWithEveryType(
         if (uint64 != other.uint64) return false
         if (enumerator != other.enumerator) return false
         if (array != other.array) return false
-        if (object != other.object) return false
+        if (_object != other._object) return false
         if (record != other.record) return false
         if (discriminator != other.discriminator) return false
         if (nestedObject != other.nestedObject) return false
@@ -497,7 +499,7 @@ data class ObjectWithEveryType(
         result = 31 * result + uint64.hashCode()
         result = 31 * result + enumerator.hashCode()
         result = 31 * result + array.hashCode()
-        result = 31 * result + object.hashCode()
+        result = 31 * result + _object.hashCode()
         result = 31 * result + record.hashCode()
         result = 31 * result + discriminator.hashCode()
         result = 31 * result + nestedObject.hashCode()
@@ -689,7 +691,8 @@ data class ObjectWithEveryNullableType(
     val uint64: ULong?,
     val enumerator: ObjectWithEveryNullableTypeEnumerator,
     val array: List<Boolean?>?,
-    val object: ObjectWithEveryNullableTypeObject?,
+    @SerialName("object")
+    val _object: ObjectWithEveryNullableTypeObject?,
     val record: Map<String, Boolean?>?,
     val discriminator: ObjectWithEveryNullableTypeDiscriminator?,
     val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
@@ -717,7 +720,7 @@ data class ObjectWithEveryNullableType(
         if (uint64 != other.uint64) return false
         if (enumerator != other.enumerator) return false
         if (array != other.array) return false
-        if (object != other.object) return false
+        if (_object != other._object) return false
         if (record != other.record) return false
         if (discriminator != other.discriminator) return false
         if (nestedObject != other.nestedObject) return false
@@ -743,7 +746,7 @@ data class ObjectWithEveryNullableType(
         result = 31 * result + (uint64?.hashCode() ?: 0)
         result = 31 * result + (enumerator?.hashCode() ?: 0)
         result = 31 * result + (array?.hashCode() ?: 0)
-        result = 31 * result + (object?.hashCode() ?: 0)
+        result = 31 * result + (_object?.hashCode() ?: 0)
         result = 31 * result + (record?.hashCode() ?: 0)
         result = 31 * result + (discriminator?.hashCode() ?: 0)
         result = 31 * result + (nestedObject?.hashCode() ?: 0)
@@ -935,7 +938,8 @@ data class ObjectWithEveryOptionalType(
     val uint64: ULong? = null,
     val enumerator: ObjectWithEveryOptionalTypeEnumerator? = null,
     val array: List<Boolean>? = null,
-    val object: ObjectWithEveryOptionalTypeObject? = null,
+    @SerialName("object")
+    val _object: ObjectWithEveryOptionalTypeObject? = null,
     val record: Map<String, Boolean>? = null,
     val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = null,
     val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
@@ -963,7 +967,7 @@ data class ObjectWithEveryOptionalType(
         if (uint64 != other.uint64) return false
         if (enumerator != other.enumerator) return false
         if (array != other.array) return false
-        if (object != other.object) return false
+        if (_object != other._object) return false
         if (record != other.record) return false
         if (discriminator != other.discriminator) return false
         if (nestedObject != other.nestedObject) return false
@@ -973,27 +977,27 @@ data class ObjectWithEveryOptionalType(
     }
 
     override fun hashCode(): Int {
-result = 31 * result + (any?.hashCode() ?: 0)
-result = 31 * result + (boolean?.hashCode() ?: 0)
-result = 31 * result + (string?.hashCode() ?: 0)
-result = 31 * result + (timestamp?.hashCode() ?: 0)
-result = 31 * result + (float32?.hashCode() ?: 0)
-result = 31 * result + (float64?.hashCode() ?: 0)
-result = 31 * result + (int8?.hashCode() ?: 0)
-result = 31 * result + (uint8?.hashCode() ?: 0)
-result = 31 * result + (int16?.hashCode() ?: 0)
-result = 31 * result + (uint16?.hashCode() ?: 0)
-result = 31 * result + (int32?.hashCode() ?: 0)
-result = 31 * result + (uint32?.hashCode() ?: 0)
-result = 31 * result + (int64?.hashCode() ?: 0)
-result = 31 * result + (uint64?.hashCode() ?: 0)
-result = 31 * result + (enumerator?.hashCode() ?: 0)
-result = 31 * result + (array?.hashCode() ?: 0)
-result = 31 * result + (object?.hashCode() ?: 0)
-result = 31 * result + (record?.hashCode() ?: 0)
-result = 31 * result + (discriminator?.hashCode() ?: 0)
-result = 31 * result + (nestedObject?.hashCode() ?: 0)
-result = 31 * result + (nestedArray?.hashCode() ?: 0)
+        var result = (any?.hashCode() ?: 0)
+        result = 31 * result + (boolean?.hashCode() ?: 0)
+        result = 31 * result + (string?.hashCode() ?: 0)
+        result = 31 * result + (timestamp?.hashCode() ?: 0)
+        result = 31 * result + (float32?.hashCode() ?: 0)
+        result = 31 * result + (float64?.hashCode() ?: 0)
+        result = 31 * result + (int8?.hashCode() ?: 0)
+        result = 31 * result + (uint8?.hashCode() ?: 0)
+        result = 31 * result + (int16?.hashCode() ?: 0)
+        result = 31 * result + (uint16?.hashCode() ?: 0)
+        result = 31 * result + (int32?.hashCode() ?: 0)
+        result = 31 * result + (uint32?.hashCode() ?: 0)
+        result = 31 * result + (int64?.hashCode() ?: 0)
+        result = 31 * result + (uint64?.hashCode() ?: 0)
+        result = 31 * result + (enumerator?.hashCode() ?: 0)
+        result = 31 * result + (array?.hashCode() ?: 0)
+        result = 31 * result + (_object?.hashCode() ?: 0)
+        result = 31 * result + (record?.hashCode() ?: 0)
+        result = 31 * result + (discriminator?.hashCode() ?: 0)
+        result = 31 * result + (nestedObject?.hashCode() ?: 0)
+        result = 31 * result + (nestedArray?.hashCode() ?: 0)
         return result
     }
 }
@@ -1532,16 +1536,16 @@ data class PostEventData(
     }
 
     override fun hashCode(): Int {
-result = 31 * result + (id?.hashCode() ?: 0)
-result = 31 * result + (title?.hashCode() ?: 0)
-result = 31 * result + (type?.hashCode() ?: 0)
-result = 31 * result + (description?.hashCode() ?: 0)
-result = 31 * result + (content?.hashCode() ?: 0)
-result = 31 * result + (tags?.hashCode() ?: 0)
-result = 31 * result + (authorId?.hashCode() ?: 0)
-result = 31 * result + (author?.hashCode() ?: 0)
-result = 31 * result + (createdAt?.hashCode() ?: 0)
-result = 31 * result + (updatedAt?.hashCode() ?: 0)
+        var result = (id?.hashCode() ?: 0)
+        result = 31 * result + (title?.hashCode() ?: 0)
+        result = 31 * result + (type?.hashCode() ?: 0)
+        result = 31 * result + (description?.hashCode() ?: 0)
+        result = 31 * result + (content?.hashCode() ?: 0)
+        result = 31 * result + (tags?.hashCode() ?: 0)
+        result = 31 * result + (authorId?.hashCode() ?: 0)
+        result = 31 * result + (author?.hashCode() ?: 0)
+        result = 31 * result + (createdAt?.hashCode() ?: 0)
+        result = 31 * result + (updatedAt?.hashCode() ?: 0)
         return result
     }
 }
@@ -1693,7 +1697,7 @@ data class UsersWatchUserResponse(
         result = 31 * result + bookmarks.hashCode()
         result = 31 * result + metadata.hashCode()
         result = 31 * result + randomList.hashCode()
-result = 31 * result + (bio?.hashCode() ?: 0)
+        result = 31 * result + (bio?.hashCode() ?: 0)
         return result
     }
 }

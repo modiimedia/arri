@@ -453,7 +453,11 @@ export function kotlinClassFromSchema(
     const hashParts: string[] = [];
     let needsAdditionalMethods = false;
     for (const key of Object.keys(schema.properties)) {
-        const camelCaseKey = camelCase(key);
+        let camelCaseKey = camelCase(key);
+        // object is a reserved keyword
+        if (camelCaseKey === "object") {
+            camelCaseKey = `_object`;
+        }
         const propSchema = schema.properties[key];
         const prop = kotlinPropertyFromSchema(propSchema, {
             instancePath: `${context.instancePath}/${key}`,
@@ -502,7 +506,11 @@ export function kotlinClassFromSchema(
     }
     if (schema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
-            const camelCaseKey = camelCase(key);
+            let camelCaseKey = camelCase(key);
+            // object is a reserved keyword
+            if (camelCaseKey === "object") {
+                camelCaseKey = "_object";
+            }
             const propSchema = schema.optionalProperties[key];
             const prop = kotlinPropertyFromSchema(propSchema, {
                 instancePath: `${context.instancePath}/${key}`,
@@ -539,12 +547,21 @@ export function kotlinClassFromSchema(
                 );
             }
             equalsFnParts.push(prop.comparisonTemplate(camelCaseKey));
-            hashParts.push(
-                `result = 31 * result + ${prop.hashTemplate(
-                    camelCaseKey,
-                    true,
-                )}`,
-            );
+            if (hashParts.length) {
+                hashParts.push(
+                    `        result = 31 * result + ${prop.hashTemplate(
+                        camelCaseKey,
+                        true,
+                    )}`,
+                );
+            } else {
+                hashParts.push(
+                    `        var result = ${prop.hashTemplate(
+                        camelCaseKey,
+                        true,
+                    )}`,
+                );
+            }
             if (prop.content) {
                 subContentParts.push(prop.content);
             }
