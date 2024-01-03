@@ -1,6 +1,11 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
+    application
+}
+
+application {
+    mainClass = "main.kotlin.App"
 }
 
 val ktorVersion: String by project
@@ -23,6 +28,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
 
 kotlin {
     jvmToolchain(20)

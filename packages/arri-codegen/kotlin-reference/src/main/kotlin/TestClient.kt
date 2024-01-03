@@ -223,6 +223,8 @@ enum class UserSettingsPreferredTheme() {
     System,
 }
 
+// TODO: Add custom JSONInstance
+
 @Serializable
 sealed class UserRecentNotificationsItem()
 
@@ -293,7 +295,11 @@ private suspend fun prepareRequest(
         HttpMethod.Get, HttpMethod.Head -> {
             val queryParts = mutableListOf<String>()
             params?.jsonObject?.entries?.forEach {
-                queryParts.add("${it.key}=${it.value}")
+                var finalVal = it.value.toString()
+                if(finalVal.startsWith("\"") && finalVal.endsWith("\"")) {
+                    finalVal = finalVal.substring(1, finalVal.length - 1)
+                }
+                queryParts.add("${it.key}=${finalVal}")
             }
             finalUrl = "$finalUrl?${queryParts.joinToString("&")}"
         }

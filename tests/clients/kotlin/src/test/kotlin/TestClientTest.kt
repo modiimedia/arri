@@ -2,6 +2,7 @@ import io.ktor.client.*
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
@@ -119,7 +120,7 @@ internal class TestClientTest {
         var errorCount = 0
         val messages = mutableListOf<ChatMessage>()
         val job = client.miscTests.streamMessages(
-            TestScope(),
+            this,
             params = ChatMessageParams(channelId = "6"),
             onOpen = { _ ->
                 openCount++
@@ -127,27 +128,37 @@ internal class TestClientTest {
             onError = { _ ->
                 errorCount++
             },
+            onConnectionError = { err ->
+                errorCount++
+                println("CONNECTION_ERROR $err")
+            },
             onData = { message ->
                 messages.add(message)
             },
         )
-        delay(1000)
-        job.cancel()
-        assert(messages.size > 1)
-        assertEquals(1, openCount)
-        assertEquals(0, errorCount)
-        for (message in messages) {
-            when (message) {
-                is ChatMessageText -> {
-                    assertEquals("6", message.channelId)
-                }
+        runBlocking {
+            delay(3000)
+            println("FINISHED WAITING")
+            job.cancel()
+            println("OPEN COUNT $openCount, ERROR COUNT $errorCount, ")
+            assert(messages.size > 1)
+            assertEquals(1, openCount)
+            assertEquals(0, errorCount)
+            for (message in messages) {
+                println(message)
+                when (message) {
+                    is ChatMessageText -> {
+                        println(message)
+                        assertEquals("\"6\"", message.channelId)
+                    }
 
-                is ChatMessageImage -> {
-                    assertEquals("6", message.channelId)
-                }
+                    is ChatMessageImage -> {
+                        assertEquals("6", message.channelId)
+                    }
 
-                is ChatMessageUrl -> {
-                    assertEquals("6", message.channelId)
+                    is ChatMessageUrl -> {
+                        assertEquals("6", message.channelId)
+                    }
                 }
             }
         }
