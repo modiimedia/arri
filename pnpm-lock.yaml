@@ -60,8 +60,8 @@ importers:
         specifier: ^3.7.1
         version: 3.7.1
       bun-types:
-        specifier: ^1.0.20
-        version: 1.0.20
+        specifier: ^1.0.21
+        version: 1.0.21
       citty:
         specifier: ^0.1.5
         version: 0.1.5
@@ -4735,6 +4735,14 @@ packages:
 
   /bun-types@1.0.20:
     resolution: {integrity: sha512-MB9OwwwNDdolaPBX9TSEq/9WlexEH1n2d5G/fnre/sz0NAzoxYaOgd3cpxNmNGsExMbgxkccSLNcVPV0rrfunA==}
+    dependencies:
+      '@types/node': 20.10.6
+      '@types/ws': 8.5.10
+      undici-types: 5.28.2
+    dev: true
+
+  /bun-types@1.0.21:
+    resolution: {integrity: sha512-Ugagjf+XZUXDvxDRa3EnhLeMzm2g8ZYFleBF55Ac3GZSzPqdMLAdK9kvZB6M1H4nAFvrEHdV2PHqkzIoNs+3wQ==}
     dependencies:
       '@types/node': 20.10.6
       '@types/ws': 8.5.10
