@@ -3,6 +3,7 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/arri-codegen/kotlin/src",
     "projectType": "library",
+    "implicitDependencies": ["arri-codegen-kotlin-reference"],
     "targets": {
         "build": {
             "executor": "nx:run-commands",
@@ -25,13 +26,14 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "@nx/vite:test",
-            "outputs": [
-                "{workspaceRoot}/coverage/packages/arri-codegen/kotlin"
-            ],
+            "executor": "nx:run-commands",
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../../coverage/packages/arri-codegen/kotlin"
+                "command": "vitest run packages/arri-codegen/kotlin --globals --passWithNoTests"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest dev packages/arri-codegen/kotlin --globals --passWithNoTests"
+                }
             }
         }
     },

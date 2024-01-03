@@ -8,6 +8,8 @@
         "autoroutes",
         "codegen",
         "Consola",
+        "kotlinx",
+        "ktor",
         "middlewares",
         "modii",
         "nitropack",

@@ -14,6 +14,7 @@ export class TestClient {
     adapters: TestClientAdaptersService;
     miscTests: TestClientMiscTestsService;
     posts: TestClientPostsService;
+    users: TestClientUsersService;
     videos: TestClientVideosService;
 
     constructor(options: TestClientOptions = {}) {
@@ -22,6 +23,7 @@ export class TestClient {
         this.adapters = new TestClientAdaptersService(options);
         this.miscTests = new TestClientMiscTestsService(options);
         this.posts = new TestClientPostsService(options);
+        this.users = new TestClientUsersService(options);
         this.videos = new TestClientVideosService(options);
     }
 }
@@ -200,6 +202,32 @@ export class TestClientPostsService {
             parser: $$Post.parse,
             serializer: $$UpdatePostParams.serialize,
         });
+    }
+}
+
+export class TestClientUsersService {
+    private readonly baseUrl: string;
+    private readonly headers: Record<string, string>;
+
+    constructor(options: TestClientOptions = {}) {
+        this.baseUrl = options.baseUrl ?? "";
+        this.headers = { "client-version": "10", ...options.headers };
+    }
+    watchUser(
+        params: UsersWatchUserParams,
+        options: SseOptions<UsersWatchUserResponse>,
+    ) {
+        return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
+            {
+                url: `${this.baseUrl}/rpcs/users/watch-user`,
+                method: "get",
+                headers: this.headers,
+                params,
+                parser: $$UsersWatchUserResponse.parse,
+                serializer: $$UsersWatchUserParams.serialize,
+            },
+            options,
+        );
     }
 }
 
@@ -10486,6 +10514,1242 @@ export interface UpdatePostParamsData {
     content?: string;
     tags?: Array<string>;
 }
+
+export interface UsersWatchUserParams {
+    userId: string;
+}
+const $$UsersWatchUserParams = {
+    parse(input: Record<any, any>): UsersWatchUserParams {
+        class $ValidationErrorUsersWatchUserParams extends Error {
+            errors;
+            constructor(input) {
+                super(input.message);
+                this.errors = input.errors;
+            }
+        }
+
+        function $fallback(instancePath, schemaPath, message) {
+            throw new $ValidationErrorUsersWatchUserParams({
+                message: message,
+                errors: [
+                    {
+                        instancePath: instancePath,
+                        schemaPath: schemaPath,
+                        message: message,
+                    },
+                ],
+            });
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (typeof json.userId === "string") {
+                    jsonInnerVal.userId = json.userId;
+                } else {
+                    $fallback(
+                        "/userId",
+                        "/properties/userId/type",
+                        "Expected string at /userId",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (typeof input.userId === "string") {
+                inputInnerVal.userId = input.userId;
+            } else {
+                $fallback(
+                    "/userId",
+                    "/properties/userId/type",
+                    "Expected string at /userId",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: UsersWatchUserParams): string {
+        let json = "";
+        json += "{";
+        json += `"userId":"${input.userId
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
+        json += "}";
+        return json;
+    },
+};
+
+export interface UsersWatchUserResponse {
+    id: string;
+    role: UsersWatchUserResponseRole;
+    photo: UserPhoto | null;
+    createdAt: Date;
+    numFollowers: number;
+    settings: UserSettings;
+    recentNotifications: Array<UsersWatchUserResponseRecentNotificationsItem>;
+    bookmarks: UsersWatchUserResponseBookmarks;
+    metadata: UsersWatchUserResponseMetadata;
+    randomList: Array<any>;
+    bio?: string;
+}
+const $$UsersWatchUserResponse = {
+    parse(input: Record<any, any>): UsersWatchUserResponse {
+        class $ValidationErrorUsersWatchUserResponse extends Error {
+            errors;
+            constructor(input) {
+                super(input.message);
+                this.errors = input.errors;
+            }
+        }
+
+        function $fallback(instancePath, schemaPath, message) {
+            throw new $ValidationErrorUsersWatchUserResponse({
+                message: message,
+                errors: [
+                    {
+                        instancePath: instancePath,
+                        schemaPath: schemaPath,
+                        message: message,
+                    },
+                ],
+            });
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (typeof json.id === "string") {
+                    jsonInnerVal.id = json.id;
+                } else {
+                    $fallback(
+                        "/id",
+                        "/properties/id/type",
+                        "Expected string at /id",
+                    );
+                }
+                if (typeof json.role === "string") {
+                    if (json.role === "standard" || json.role === "admin") {
+                        jsonInnerVal.role = json.role;
+                    } else {
+                        $fallback(
+                            "/role",
+                            "/properties/role",
+                            "Expected one of the following values: [standard, admin] at /role.",
+                        );
+                    }
+                } else {
+                    $fallback(
+                        "/role",
+                        "/properties/role",
+                        "Expected one of the following values: [standard, admin] at /role.",
+                    );
+                }
+                if (json.photo === null) {
+                    jsonInnerVal.photo = null;
+                } else {
+                    if (typeof json.photo === "object" && json.photo !== null) {
+                        const jsonPhotoInnerVal = {};
+                        if (typeof json.photo.url === "string") {
+                            jsonPhotoInnerVal.url = json.photo.url;
+                        } else {
+                            $fallback(
+                                "/photo/url",
+                                "/properties/photo/properties/url/type",
+                                "Expected string at /photo/url",
+                            );
+                        }
+                        if (
+                            typeof json.photo.width === "number" &&
+                            !Number.isNaN(json.photo.width)
+                        ) {
+                            jsonPhotoInnerVal.width = json.photo.width;
+                        } else {
+                            $fallback(
+                                "/photo/width",
+                                "/properties/photo/properties/width/type",
+                                "Expected number at /photo/width",
+                            );
+                        }
+                        if (
+                            typeof json.photo.height === "number" &&
+                            !Number.isNaN(json.photo.height)
+                        ) {
+                            jsonPhotoInnerVal.height = json.photo.height;
+                        } else {
+                            $fallback(
+                                "/photo/height",
+                                "/properties/photo/properties/height/type",
+                                "Expected number at /photo/height",
+                            );
+                        }
+                        if (
+                            typeof json.photo.bytes === "string" ||
+                            typeof json.photo.bytes === "number"
+                        ) {
+                            try {
+                                const val = BigInt(json.photo.bytes);
+                                jsonPhotoInnerVal.bytes = val;
+                            } catch (err) {
+                                $fallback(
+                                    "/photo/bytes",
+                                    "/properties/photo/properties/bytes",
+                                    "Unable to parse BigInt from json.photo.bytes.",
+                                );
+                            }
+                        } else if (typeof json.photo.bytes === "bigint") {
+                            jsonPhotoInnerVal.bytes = json.photo.bytes;
+                        } else {
+                            $fallback(
+                                "/photo/bytes",
+                                "/properties/photo/properties/bytes",
+                                "Expected BigInt or Integer string. Got ${json.photo.bytes}",
+                            );
+                        }
+                        if (
+                            typeof json.photo.nanoseconds === "string" ||
+                            typeof json.photo.nanoseconds === "number"
+                        ) {
+                            try {
+                                const val = BigInt(json.photo.nanoseconds);
+                                if (val >= BigInt("0")) {
+                                    jsonPhotoInnerVal.nanoseconds = val;
+                                } else {
+                                    $fallback(
+                                        "/photo/nanoseconds",
+                                        "/properties/photo/properties/nanoseconds",
+                                        "Unsigned int must be greater than or equal to 0.",
+                                    );
+                                }
+                            } catch (err) {
+                                $fallback(
+                                    "/photo/nanoseconds",
+                                    "/properties/photo/properties/nanoseconds",
+                                    "Unable to parse BigInt from json.photo.nanoseconds.",
+                                );
+                            }
+                        } else if (typeof json.photo.nanoseconds === "bigint") {
+                            if (json.photo.nanoseconds >= BigInt("0")) {
+                                jsonPhotoInnerVal.nanoseconds =
+                                    json.photo.nanoseconds;
+                            } else {
+                                $fallback(
+                                    "/photo/nanoseconds",
+                                    "/properties/photo/properties/nanoseconds",
+                                    "Unsigned int must be greater than or equal to 0.",
+                                );
+                            }
+                        } else {
+                            $fallback(
+                                "/photo/nanoseconds",
+                                "/properties/photo/properties/nanoseconds",
+                                "Expected BigInt or Integer string. Got ${json.photo.nanoseconds}",
+                            );
+                        }
+                        jsonInnerVal.photo = jsonPhotoInnerVal;
+                    } else {
+                        $fallback(
+                            "/photo",
+                            "/properties/photo",
+                            "Expected object",
+                        );
+                    }
+                }
+                if (
+                    typeof json.createdAt === "object" &&
+                    json.createdAt instanceof Date
+                ) {
+                    jsonInnerVal.createdAt = json.createdAt;
+                } else if (typeof json.createdAt === "string") {
+                    jsonInnerVal.createdAt = new Date(json.createdAt);
+                } else {
+                    $fallback(
+                        "/createdAt",
+                        "/properties/createdAt",
+                        "Expected instanceof Date or ISO Date string at /createdAt",
+                    );
+                }
+                if (
+                    typeof json.numFollowers === "number" &&
+                    Number.isInteger(json.numFollowers) &&
+                    json.numFollowers >= -2147483648 &&
+                    json.numFollowers <= 2147483647
+                ) {
+                    jsonInnerVal.numFollowers = json.numFollowers;
+                } else {
+                    $fallback(
+                        "/numFollowers",
+                        "/properties/numFollowers",
+                        "Expected valid integer between -2147483648 and 2147483647",
+                    );
+                }
+                if (
+                    typeof json.settings === "object" &&
+                    json.settings !== null
+                ) {
+                    const jsonSettingsInnerVal = {};
+                    if (
+                        typeof json.settings.notificationsEnabled === "boolean"
+                    ) {
+                        jsonSettingsInnerVal.notificationsEnabled =
+                            json.settings.notificationsEnabled;
+                    } else {
+                        $fallback(
+                            "/settings/notificationsEnabled",
+                            "/properties/settings/properties/notificationsEnabled/type",
+                            "Expected boolean for /settings/notificationsEnabled",
+                        );
+                    }
+                    if (typeof json.settings.preferredTheme === "string") {
+                        if (
+                            json.settings.preferredTheme === "dark-mode" ||
+                            json.settings.preferredTheme === "light-mode" ||
+                            json.settings.preferredTheme === "system"
+                        ) {
+                            jsonSettingsInnerVal.preferredTheme =
+                                json.settings.preferredTheme;
+                        } else {
+                            $fallback(
+                                "/settings/preferredTheme",
+                                "/properties/settings/properties/preferredTheme",
+                                "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
+                            );
+                        }
+                    } else {
+                        $fallback(
+                            "/settings/preferredTheme",
+                            "/properties/settings/properties/preferredTheme",
+                            "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
+                        );
+                    }
+                    jsonInnerVal.settings = jsonSettingsInnerVal;
+                } else {
+                    $fallback(
+                        "/settings",
+                        "/properties/settings",
+                        "Expected object",
+                    );
+                }
+                if (Array.isArray(json.recentNotifications)) {
+                    const jsonInnerValRecentNotificationsInnerResult = [];
+                    for (const jsonInnerValRecentNotificationsInnerResultItem of json.recentNotifications) {
+                        let jsonInnerValRecentNotificationsInnerResultItemResult;
+                        if (
+                            typeof jsonInnerValRecentNotificationsInnerResultItem ===
+                                "object" &&
+                            jsonInnerValRecentNotificationsInnerResultItem !==
+                                null
+                        ) {
+                            switch (
+                                jsonInnerValRecentNotificationsInnerResultItem.notificationType
+                            ) {
+                                case "POST_LIKE": {
+                                    if (
+                                        typeof jsonInnerValRecentNotificationsInnerResultItem ===
+                                            "object" &&
+                                        jsonInnerValRecentNotificationsInnerResultItem !==
+                                            null
+                                    ) {
+                                        const jsonInnerValRecentNotificationsInnerResultItemInnerVal =
+                                            {};
+                                        jsonInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
+                                            "POST_LIKE";
+                                        if (
+                                            typeof jsonInnerValRecentNotificationsInnerResultItem.postId ===
+                                            "string"
+                                        ) {
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.postId =
+                                                jsonInnerValRecentNotificationsInnerResultItem.postId;
+                                        } else {
+                                            $fallback(
+                                                "/recentNotifications/[0]/postId",
+                                                "/properties/recentNotifications/elements/mapping/properties/postId/type",
+                                                "Expected string at /recentNotifications/[0]/postId",
+                                            );
+                                        }
+                                        if (
+                                            typeof jsonInnerValRecentNotificationsInnerResultItem.userId ===
+                                            "string"
+                                        ) {
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.userId =
+                                                jsonInnerValRecentNotificationsInnerResultItem.userId;
+                                        } else {
+                                            $fallback(
+                                                "/recentNotifications/[0]/userId",
+                                                "/properties/recentNotifications/elements/mapping/properties/userId/type",
+                                                "Expected string at /recentNotifications/[0]/userId",
+                                            );
+                                        }
+                                        jsonInnerValRecentNotificationsInnerResultItemResult =
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]",
+                                            "/properties/recentNotifications/elements/mapping",
+                                            "Expected object",
+                                        );
+                                    }
+                                    break;
+                                }
+                                case "POST_COMMENT": {
+                                    if (
+                                        typeof jsonInnerValRecentNotificationsInnerResultItem ===
+                                            "object" &&
+                                        jsonInnerValRecentNotificationsInnerResultItem !==
+                                            null
+                                    ) {
+                                        const jsonInnerValRecentNotificationsInnerResultItemInnerVal =
+                                            {};
+                                        jsonInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
+                                            "POST_COMMENT";
+                                        if (
+                                            typeof jsonInnerValRecentNotificationsInnerResultItem.postId ===
+                                            "string"
+                                        ) {
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.postId =
+                                                jsonInnerValRecentNotificationsInnerResultItem.postId;
+                                        } else {
+                                            $fallback(
+                                                "/recentNotifications/[0]/postId",
+                                                "/properties/recentNotifications/elements/mapping/properties/postId/type",
+                                                "Expected string at /recentNotifications/[0]/postId",
+                                            );
+                                        }
+                                        if (
+                                            typeof jsonInnerValRecentNotificationsInnerResultItem.userId ===
+                                            "string"
+                                        ) {
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.userId =
+                                                jsonInnerValRecentNotificationsInnerResultItem.userId;
+                                        } else {
+                                            $fallback(
+                                                "/recentNotifications/[0]/userId",
+                                                "/properties/recentNotifications/elements/mapping/properties/userId/type",
+                                                "Expected string at /recentNotifications/[0]/userId",
+                                            );
+                                        }
+                                        if (
+                                            typeof jsonInnerValRecentNotificationsInnerResultItem.commentText ===
+                                            "string"
+                                        ) {
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.commentText =
+                                                jsonInnerValRecentNotificationsInnerResultItem.commentText;
+                                        } else {
+                                            $fallback(
+                                                "/recentNotifications/[0]/commentText",
+                                                "/properties/recentNotifications/elements/mapping/properties/commentText/type",
+                                                "Expected string at /recentNotifications/[0]/commentText",
+                                            );
+                                        }
+                                        jsonInnerValRecentNotificationsInnerResultItemResult =
+                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]",
+                                            "/properties/recentNotifications/elements/mapping",
+                                            "Expected object",
+                                        );
+                                    }
+                                    break;
+                                }
+                                default:
+                                    $fallback(
+                                        "/recentNotifications/[0]",
+                                        "/properties/recentNotifications/elements/mapping",
+                                        "jsonInnerValRecentNotificationsInnerResultItem.notificationType did not match one of the specified values",
+                                    );
+                                    break;
+                            }
+                        } else {
+                            $fallback(
+                                "/recentNotifications/[0]",
+                                "/properties/recentNotifications/elements",
+                                "Expected Object.",
+                            );
+                        }
+                        jsonInnerValRecentNotificationsInnerResult.push(
+                            jsonInnerValRecentNotificationsInnerResultItemResult,
+                        );
+                    }
+                    jsonInnerVal.recentNotifications =
+                        jsonInnerValRecentNotificationsInnerResult;
+                } else {
+                    $fallback(
+                        "/recentNotifications",
+                        "/properties/recentNotifications",
+                        "Expected Array",
+                    );
+                }
+                if (
+                    typeof json.bookmarks === "object" &&
+                    json.bookmarks !== null
+                ) {
+                    const jsonBookmarksResult = {};
+                    for (const jsonBookmarksKey of Object.keys(
+                        json.bookmarks,
+                    )) {
+                        let jsonBookmarksKeyVal;
+                        if (
+                            typeof json.bookmarks[jsonBookmarksKey] ===
+                                "object" &&
+                            json.bookmarks[jsonBookmarksKey] !== null
+                        ) {
+                            const jsonBookmarksJsonBookmarksKeyInnerVal = {};
+                            if (
+                                typeof json.bookmarks[jsonBookmarksKey]
+                                    .postId === "string"
+                            ) {
+                                jsonBookmarksJsonBookmarksKeyInnerVal.postId =
+                                    json.bookmarks[jsonBookmarksKey].postId;
+                            } else {
+                                $fallback(
+                                    "/bookmarks/[key]/postId",
+                                    "/properties/bookmarks/values/properties/postId/type",
+                                    "Expected string at /bookmarks/[key]/postId",
+                                );
+                            }
+                            if (
+                                typeof json.bookmarks[jsonBookmarksKey]
+                                    .userId === "string"
+                            ) {
+                                jsonBookmarksJsonBookmarksKeyInnerVal.userId =
+                                    json.bookmarks[jsonBookmarksKey].userId;
+                            } else {
+                                $fallback(
+                                    "/bookmarks/[key]/userId",
+                                    "/properties/bookmarks/values/properties/userId/type",
+                                    "Expected string at /bookmarks/[key]/userId",
+                                );
+                            }
+                            jsonBookmarksKeyVal =
+                                jsonBookmarksJsonBookmarksKeyInnerVal;
+                        } else {
+                            $fallback(
+                                "/bookmarks/[key]",
+                                "/properties/bookmarks/values",
+                                "Expected object",
+                            );
+                        }
+                        jsonBookmarksResult[jsonBookmarksKey] =
+                            jsonBookmarksKeyVal;
+                    }
+                    jsonInnerVal.bookmarks = jsonBookmarksResult;
+                } else {
+                    $fallback(
+                        "/bookmarks",
+                        "/properties/bookmarks",
+                        "Expected object.",
+                    );
+                }
+                if (
+                    typeof json.metadata === "object" &&
+                    json.metadata !== null
+                ) {
+                    const jsonMetadataResult = {};
+                    for (const jsonMetadataKey of Object.keys(json.metadata)) {
+                        let jsonMetadataKeyVal;
+                        jsonMetadataKeyVal = json.metadata[jsonMetadataKey];
+                        jsonMetadataResult[jsonMetadataKey] =
+                            jsonMetadataKeyVal;
+                    }
+                    jsonInnerVal.metadata = jsonMetadataResult;
+                } else {
+                    $fallback(
+                        "/metadata",
+                        "/properties/metadata",
+                        "Expected object.",
+                    );
+                }
+                if (Array.isArray(json.randomList)) {
+                    const jsonInnerValRandomListInnerResult = [];
+                    for (const jsonInnerValRandomListInnerResultItem of json.randomList) {
+                        let jsonInnerValRandomListInnerResultItemResult;
+                        jsonInnerValRandomListInnerResultItemResult =
+                            jsonInnerValRandomListInnerResultItem;
+                        jsonInnerValRandomListInnerResult.push(
+                            jsonInnerValRandomListInnerResultItemResult,
+                        );
+                    }
+                    jsonInnerVal.randomList = jsonInnerValRandomListInnerResult;
+                } else {
+                    $fallback(
+                        "/randomList",
+                        "/properties/randomList",
+                        "Expected Array",
+                    );
+                }
+                if (typeof json.bio === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (typeof json.bio === "string") {
+                        jsonInnerVal.bio = json.bio;
+                    } else {
+                        $fallback(
+                            "/bio",
+                            "/optionalProperties/bio/type",
+                            "Expected string at /bio",
+                        );
+                    }
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (typeof input.id === "string") {
+                inputInnerVal.id = input.id;
+            } else {
+                $fallback(
+                    "/id",
+                    "/properties/id/type",
+                    "Expected string at /id",
+                );
+            }
+            if (typeof input.role === "string") {
+                if (input.role === "standard" || input.role === "admin") {
+                    inputInnerVal.role = input.role;
+                } else {
+                    $fallback(
+                        "/role",
+                        "/properties/role",
+                        "Expected one of the following values: [standard, admin] at /role.",
+                    );
+                }
+            } else {
+                $fallback(
+                    "/role",
+                    "/properties/role",
+                    "Expected one of the following values: [standard, admin] at /role.",
+                );
+            }
+            if (input.photo === null) {
+                inputInnerVal.photo = null;
+            } else {
+                if (typeof input.photo === "object" && input.photo !== null) {
+                    const inputPhotoInnerVal = {};
+                    if (typeof input.photo.url === "string") {
+                        inputPhotoInnerVal.url = input.photo.url;
+                    } else {
+                        $fallback(
+                            "/photo/url",
+                            "/properties/photo/properties/url/type",
+                            "Expected string at /photo/url",
+                        );
+                    }
+                    if (
+                        typeof input.photo.width === "number" &&
+                        !Number.isNaN(input.photo.width)
+                    ) {
+                        inputPhotoInnerVal.width = input.photo.width;
+                    } else {
+                        $fallback(
+                            "/photo/width",
+                            "/properties/photo/properties/width/type",
+                            "Expected number at /photo/width",
+                        );
+                    }
+                    if (
+                        typeof input.photo.height === "number" &&
+                        !Number.isNaN(input.photo.height)
+                    ) {
+                        inputPhotoInnerVal.height = input.photo.height;
+                    } else {
+                        $fallback(
+                            "/photo/height",
+                            "/properties/photo/properties/height/type",
+                            "Expected number at /photo/height",
+                        );
+                    }
+                    if (
+                        typeof input.photo.bytes === "string" ||
+                        typeof input.photo.bytes === "number"
+                    ) {
+                        try {
+                            const val = BigInt(input.photo.bytes);
+                            inputPhotoInnerVal.bytes = val;
+                        } catch (err) {
+                            $fallback(
+                                "/photo/bytes",
+                                "/properties/photo/properties/bytes",
+                                "Unable to parse BigInt from input.photo.bytes.",
+                            );
+                        }
+                    } else if (typeof input.photo.bytes === "bigint") {
+                        inputPhotoInnerVal.bytes = input.photo.bytes;
+                    } else {
+                        $fallback(
+                            "/photo/bytes",
+                            "/properties/photo/properties/bytes",
+                            "Expected BigInt or Integer string. Got ${input.photo.bytes}",
+                        );
+                    }
+                    if (
+                        typeof input.photo.nanoseconds === "string" ||
+                        typeof input.photo.nanoseconds === "number"
+                    ) {
+                        try {
+                            const val = BigInt(input.photo.nanoseconds);
+                            if (val >= BigInt("0")) {
+                                inputPhotoInnerVal.nanoseconds = val;
+                            } else {
+                                $fallback(
+                                    "/photo/nanoseconds",
+                                    "/properties/photo/properties/nanoseconds",
+                                    "Unsigned int must be greater than or equal to 0.",
+                                );
+                            }
+                        } catch (err) {
+                            $fallback(
+                                "/photo/nanoseconds",
+                                "/properties/photo/properties/nanoseconds",
+                                "Unable to parse BigInt from input.photo.nanoseconds.",
+                            );
+                        }
+                    } else if (typeof input.photo.nanoseconds === "bigint") {
+                        if (input.photo.nanoseconds >= BigInt("0")) {
+                            inputPhotoInnerVal.nanoseconds =
+                                input.photo.nanoseconds;
+                        } else {
+                            $fallback(
+                                "/photo/nanoseconds",
+                                "/properties/photo/properties/nanoseconds",
+                                "Unsigned int must be greater than or equal to 0.",
+                            );
+                        }
+                    } else {
+                        $fallback(
+                            "/photo/nanoseconds",
+                            "/properties/photo/properties/nanoseconds",
+                            "Expected BigInt or Integer string. Got ${input.photo.nanoseconds}",
+                        );
+                    }
+                    inputInnerVal.photo = inputPhotoInnerVal;
+                } else {
+                    $fallback("/photo", "/properties/photo", "Expected object");
+                }
+            }
+            if (
+                typeof input.createdAt === "object" &&
+                input.createdAt instanceof Date
+            ) {
+                inputInnerVal.createdAt = input.createdAt;
+            } else if (typeof input.createdAt === "string") {
+                inputInnerVal.createdAt = new Date(input.createdAt);
+            } else {
+                $fallback(
+                    "/createdAt",
+                    "/properties/createdAt",
+                    "Expected instanceof Date or ISO Date string at /createdAt",
+                );
+            }
+            if (
+                typeof input.numFollowers === "number" &&
+                Number.isInteger(input.numFollowers) &&
+                input.numFollowers >= -2147483648 &&
+                input.numFollowers <= 2147483647
+            ) {
+                inputInnerVal.numFollowers = input.numFollowers;
+            } else {
+                $fallback(
+                    "/numFollowers",
+                    "/properties/numFollowers",
+                    "Expected valid integer between -2147483648 and 2147483647",
+                );
+            }
+            if (typeof input.settings === "object" && input.settings !== null) {
+                const inputSettingsInnerVal = {};
+                if (typeof input.settings.notificationsEnabled === "boolean") {
+                    inputSettingsInnerVal.notificationsEnabled =
+                        input.settings.notificationsEnabled;
+                } else {
+                    $fallback(
+                        "/settings/notificationsEnabled",
+                        "/properties/settings/properties/notificationsEnabled/type",
+                        "Expected boolean for /settings/notificationsEnabled",
+                    );
+                }
+                if (typeof input.settings.preferredTheme === "string") {
+                    if (
+                        input.settings.preferredTheme === "dark-mode" ||
+                        input.settings.preferredTheme === "light-mode" ||
+                        input.settings.preferredTheme === "system"
+                    ) {
+                        inputSettingsInnerVal.preferredTheme =
+                            input.settings.preferredTheme;
+                    } else {
+                        $fallback(
+                            "/settings/preferredTheme",
+                            "/properties/settings/properties/preferredTheme",
+                            "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
+                        );
+                    }
+                } else {
+                    $fallback(
+                        "/settings/preferredTheme",
+                        "/properties/settings/properties/preferredTheme",
+                        "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
+                    );
+                }
+                inputInnerVal.settings = inputSettingsInnerVal;
+            } else {
+                $fallback(
+                    "/settings",
+                    "/properties/settings",
+                    "Expected object",
+                );
+            }
+            if (Array.isArray(input.recentNotifications)) {
+                const inputInnerValRecentNotificationsInnerResult = [];
+                for (const inputInnerValRecentNotificationsInnerResultItem of input.recentNotifications) {
+                    let inputInnerValRecentNotificationsInnerResultItemResult;
+                    if (
+                        typeof inputInnerValRecentNotificationsInnerResultItem ===
+                            "object" &&
+                        inputInnerValRecentNotificationsInnerResultItem !== null
+                    ) {
+                        switch (
+                            inputInnerValRecentNotificationsInnerResultItem.notificationType
+                        ) {
+                            case "POST_LIKE": {
+                                if (
+                                    typeof inputInnerValRecentNotificationsInnerResultItem ===
+                                        "object" &&
+                                    inputInnerValRecentNotificationsInnerResultItem !==
+                                        null
+                                ) {
+                                    const inputInnerValRecentNotificationsInnerResultItemInnerVal =
+                                        {};
+                                    inputInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
+                                        "POST_LIKE";
+                                    if (
+                                        typeof inputInnerValRecentNotificationsInnerResultItem.postId ===
+                                        "string"
+                                    ) {
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.postId =
+                                            inputInnerValRecentNotificationsInnerResultItem.postId;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]/postId",
+                                            "/properties/recentNotifications/elements/mapping/properties/postId/type",
+                                            "Expected string at /recentNotifications/[0]/postId",
+                                        );
+                                    }
+                                    if (
+                                        typeof inputInnerValRecentNotificationsInnerResultItem.userId ===
+                                        "string"
+                                    ) {
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.userId =
+                                            inputInnerValRecentNotificationsInnerResultItem.userId;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]/userId",
+                                            "/properties/recentNotifications/elements/mapping/properties/userId/type",
+                                            "Expected string at /recentNotifications/[0]/userId",
+                                        );
+                                    }
+                                    inputInnerValRecentNotificationsInnerResultItemResult =
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal;
+                                } else {
+                                    $fallback(
+                                        "/recentNotifications/[0]",
+                                        "/properties/recentNotifications/elements/mapping",
+                                        "Expected object",
+                                    );
+                                }
+                                break;
+                            }
+                            case "POST_COMMENT": {
+                                if (
+                                    typeof inputInnerValRecentNotificationsInnerResultItem ===
+                                        "object" &&
+                                    inputInnerValRecentNotificationsInnerResultItem !==
+                                        null
+                                ) {
+                                    const inputInnerValRecentNotificationsInnerResultItemInnerVal =
+                                        {};
+                                    inputInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
+                                        "POST_COMMENT";
+                                    if (
+                                        typeof inputInnerValRecentNotificationsInnerResultItem.postId ===
+                                        "string"
+                                    ) {
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.postId =
+                                            inputInnerValRecentNotificationsInnerResultItem.postId;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]/postId",
+                                            "/properties/recentNotifications/elements/mapping/properties/postId/type",
+                                            "Expected string at /recentNotifications/[0]/postId",
+                                        );
+                                    }
+                                    if (
+                                        typeof inputInnerValRecentNotificationsInnerResultItem.userId ===
+                                        "string"
+                                    ) {
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.userId =
+                                            inputInnerValRecentNotificationsInnerResultItem.userId;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]/userId",
+                                            "/properties/recentNotifications/elements/mapping/properties/userId/type",
+                                            "Expected string at /recentNotifications/[0]/userId",
+                                        );
+                                    }
+                                    if (
+                                        typeof inputInnerValRecentNotificationsInnerResultItem.commentText ===
+                                        "string"
+                                    ) {
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.commentText =
+                                            inputInnerValRecentNotificationsInnerResultItem.commentText;
+                                    } else {
+                                        $fallback(
+                                            "/recentNotifications/[0]/commentText",
+                                            "/properties/recentNotifications/elements/mapping/properties/commentText/type",
+                                            "Expected string at /recentNotifications/[0]/commentText",
+                                        );
+                                    }
+                                    inputInnerValRecentNotificationsInnerResultItemResult =
+                                        inputInnerValRecentNotificationsInnerResultItemInnerVal;
+                                } else {
+                                    $fallback(
+                                        "/recentNotifications/[0]",
+                                        "/properties/recentNotifications/elements/mapping",
+                                        "Expected object",
+                                    );
+                                }
+                                break;
+                            }
+                            default:
+                                $fallback(
+                                    "/recentNotifications/[0]",
+                                    "/properties/recentNotifications/elements/mapping",
+                                    "inputInnerValRecentNotificationsInnerResultItem.notificationType did not match one of the specified values",
+                                );
+                                break;
+                        }
+                    } else {
+                        $fallback(
+                            "/recentNotifications/[0]",
+                            "/properties/recentNotifications/elements",
+                            "Expected Object.",
+                        );
+                    }
+                    inputInnerValRecentNotificationsInnerResult.push(
+                        inputInnerValRecentNotificationsInnerResultItemResult,
+                    );
+                }
+                inputInnerVal.recentNotifications =
+                    inputInnerValRecentNotificationsInnerResult;
+            } else {
+                $fallback(
+                    "/recentNotifications",
+                    "/properties/recentNotifications",
+                    "Expected Array",
+                );
+            }
+            if (
+                typeof input.bookmarks === "object" &&
+                input.bookmarks !== null
+            ) {
+                const inputBookmarksResult = {};
+                for (const inputBookmarksKey of Object.keys(input.bookmarks)) {
+                    let inputBookmarksKeyVal;
+                    if (
+                        typeof input.bookmarks[inputBookmarksKey] ===
+                            "object" &&
+                        input.bookmarks[inputBookmarksKey] !== null
+                    ) {
+                        const inputBookmarksInputBookmarksKeyInnerVal = {};
+                        if (
+                            typeof input.bookmarks[inputBookmarksKey].postId ===
+                            "string"
+                        ) {
+                            inputBookmarksInputBookmarksKeyInnerVal.postId =
+                                input.bookmarks[inputBookmarksKey].postId;
+                        } else {
+                            $fallback(
+                                "/bookmarks/[key]/postId",
+                                "/properties/bookmarks/values/properties/postId/type",
+                                "Expected string at /bookmarks/[key]/postId",
+                            );
+                        }
+                        if (
+                            typeof input.bookmarks[inputBookmarksKey].userId ===
+                            "string"
+                        ) {
+                            inputBookmarksInputBookmarksKeyInnerVal.userId =
+                                input.bookmarks[inputBookmarksKey].userId;
+                        } else {
+                            $fallback(
+                                "/bookmarks/[key]/userId",
+                                "/properties/bookmarks/values/properties/userId/type",
+                                "Expected string at /bookmarks/[key]/userId",
+                            );
+                        }
+                        inputBookmarksKeyVal =
+                            inputBookmarksInputBookmarksKeyInnerVal;
+                    } else {
+                        $fallback(
+                            "/bookmarks/[key]",
+                            "/properties/bookmarks/values",
+                            "Expected object",
+                        );
+                    }
+                    inputBookmarksResult[inputBookmarksKey] =
+                        inputBookmarksKeyVal;
+                }
+                inputInnerVal.bookmarks = inputBookmarksResult;
+            } else {
+                $fallback(
+                    "/bookmarks",
+                    "/properties/bookmarks",
+                    "Expected object.",
+                );
+            }
+            if (typeof input.metadata === "object" && input.metadata !== null) {
+                const inputMetadataResult = {};
+                for (const inputMetadataKey of Object.keys(input.metadata)) {
+                    let inputMetadataKeyVal;
+                    inputMetadataKeyVal = input.metadata[inputMetadataKey];
+                    inputMetadataResult[inputMetadataKey] = inputMetadataKeyVal;
+                }
+                inputInnerVal.metadata = inputMetadataResult;
+            } else {
+                $fallback(
+                    "/metadata",
+                    "/properties/metadata",
+                    "Expected object.",
+                );
+            }
+            if (Array.isArray(input.randomList)) {
+                const inputInnerValRandomListInnerResult = [];
+                for (const inputInnerValRandomListInnerResultItem of input.randomList) {
+                    let inputInnerValRandomListInnerResultItemResult;
+                    inputInnerValRandomListInnerResultItemResult =
+                        inputInnerValRandomListInnerResultItem;
+                    inputInnerValRandomListInnerResult.push(
+                        inputInnerValRandomListInnerResultItemResult,
+                    );
+                }
+                inputInnerVal.randomList = inputInnerValRandomListInnerResult;
+            } else {
+                $fallback(
+                    "/randomList",
+                    "/properties/randomList",
+                    "Expected Array",
+                );
+            }
+            if (typeof input.bio === "undefined") {
+                // ignore undefined
+            } else {
+                if (typeof input.bio === "string") {
+                    inputInnerVal.bio = input.bio;
+                } else {
+                    $fallback(
+                        "/bio",
+                        "/optionalProperties/bio/type",
+                        "Expected string at /bio",
+                    );
+                }
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: UsersWatchUserResponse): string {
+        let json = "";
+        json += "{";
+        json += `"id":"${input.id
+            .replace(/[\n]/g, "\\n")
+            .replace(/"/g, '\\"')}"`;
+        json += `,"role":"${input.role}"`;
+        if (typeof input.photo === "object" && input.photo !== null) {
+            json += ',"photo":{';
+            json += `"url":"${input.photo.url
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
+
+            if (Number.isNaN(input.photo.width)) {
+                throw new Error("Expected number at /photo/width got NaN");
+            }
+            json += `,"width":${input.photo.width}`;
+
+            if (Number.isNaN(input.photo.height)) {
+                throw new Error("Expected number at /photo/height got NaN");
+            }
+            json += `,"height":${input.photo.height}`;
+            json += `,"bytes":"${input.photo.bytes.toString()}"`;
+            json += `,"nanoseconds":"${input.photo.nanoseconds.toString()}"`;
+            json += "}";
+        } else {
+            json += ',"photo":null';
+        }
+        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
+
+        if (Number.isNaN(input.numFollowers)) {
+            throw new Error("Expected number at /numFollowers got NaN");
+        }
+        json += `,"numFollowers":${input.numFollowers}`;
+        json += ',"settings":{';
+        json += `"notificationsEnabled":${input.settings.notificationsEnabled}`;
+        json += `,"preferredTheme":"${input.settings.preferredTheme}"`;
+        json += "}";
+        json += ',"recentNotifications":[';
+        for (let i = 0; i < input.recentNotifications.length; i++) {
+            const inputRecentNotificationsItem = input.recentNotifications[i];
+            if (i !== 0) {
+                json += ",";
+            }
+            switch (inputRecentNotificationsItem.notificationType) {
+                case "POST_LIKE": {
+                    json += "{";
+                    json += `"notificationType":"POST_LIKE"`;
+                    json += `,"postId":"${inputRecentNotificationsItem.postId
+                        .replace(/[\n]/g, "\\n")
+                        .replace(/"/g, '\\"')}"`;
+                    json += `,"userId":"${inputRecentNotificationsItem.userId
+                        .replace(/[\n]/g, "\\n")
+                        .replace(/"/g, '\\"')}"`;
+                    json += "}";
+                    break;
+                }
+                case "POST_COMMENT": {
+                    json += "{";
+                    json += `"notificationType":"POST_COMMENT"`;
+                    json += `,"postId":"${inputRecentNotificationsItem.postId
+                        .replace(/[\n]/g, "\\n")
+                        .replace(/"/g, '\\"')}"`;
+                    json += `,"userId":"${inputRecentNotificationsItem.userId
+                        .replace(/[\n]/g, "\\n")
+                        .replace(/"/g, '\\"')}"`;
+                    json += `,"commentText":"${inputRecentNotificationsItem.commentText
+                        .replace(/[\n]/g, "\\n")
+                        .replace(/"/g, '\\"')}"`;
+                    json += "}";
+                    break;
+                }
+            }
+        }
+        json += "]";
+        const bookmarksKeys = Object.keys(input.bookmarks);
+        json += ',"bookmarks":{';
+        for (let i = 0; i < bookmarksKeys.length; i++) {
+            const key = bookmarksKeys[i];
+            const innerVal = input.bookmarks[key];
+            if (i !== 0) {
+                json += `,"${key}":`;
+            } else {
+                json += `"${key}":`;
+            }
+            json += "{";
+            json += `"postId":"${innerVal.postId
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
+            json += `,"userId":"${innerVal.userId
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
+            json += "}";
+        }
+        json += "}";
+        const metadataKeys = Object.keys(input.metadata);
+        json += ',"metadata":{';
+        for (let i = 0; i < metadataKeys.length; i++) {
+            const key = metadataKeys[i];
+            const innerVal = input.metadata[key];
+            if (i !== 0) {
+                json += `,"${key}":`;
+            } else {
+                json += `"${key}":`;
+            }
+            if (typeof innerVal !== "undefined") {
+                json += JSON.stringify(innerVal);
+            }
+        }
+        json += "}";
+        json += ',"randomList":[';
+        for (let i = 0; i < input.randomList.length; i++) {
+            const inputRandomListItem = input.randomList[i];
+            if (i !== 0) {
+                json += ",";
+            }
+            if (typeof inputRandomListItem !== "undefined") {
+                json += JSON.stringify(inputRandomListItem);
+            }
+        }
+        json += "]";
+        if (typeof input.bio !== "undefined") {
+            json += `,"bio":"${input.bio
+                .replace(/[\n]/g, "\\n")
+                .replace(/"/g, '\\"')}"`;
+        }
+        json += "}";
+        return json;
+    },
+};
+export type UsersWatchUserResponseRole = "standard" | "admin";
+export interface UserPhoto {
+    url: string;
+    width: number;
+    height: number;
+    bytes: bigint;
+    nanoseconds: bigint;
+}
+
+export interface UserSettings {
+    notificationsEnabled: boolean;
+    preferredTheme: UsersWatchUserResponseSettingsPreferredTheme;
+}
+
+export type UsersWatchUserResponseSettingsPreferredTheme =
+    | "dark-mode"
+    | "light-mode"
+    | "system";
+export type UsersWatchUserResponseRecentNotificationsItem =
+    | UsersWatchUserResponseRecentNotificationsItemPostLike
+    | UsersWatchUserResponseRecentNotificationsItemPostComment;
+
+export interface UsersWatchUserResponseRecentNotificationsItemPostLike {
+    notificationType: "POST_LIKE";
+    postId: string;
+    userId: string;
+}
+
+export interface UsersWatchUserResponseRecentNotificationsItemPostComment {
+    notificationType: "POST_COMMENT";
+    postId: string;
+    userId: string;
+    commentText: string;
+}
+
+export type UsersWatchUserResponseBookmarks = Record<
+    string,
+    UsersWatchUserResponseBookmarksValue
+>;
+
+export interface UsersWatchUserResponseBookmarksValue {
+    postId: string;
+    userId: string;
+}
+
+export type UsersWatchUserResponseMetadata = Record<string, any>;
 
 export interface AnnotationId {
     id: string;
