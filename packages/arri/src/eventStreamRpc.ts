@@ -127,8 +127,6 @@ export class EventStreamConnection<TData> {
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.h3Event = event;
-        setSseHeaders(this.h3Event);
-        setResponseStatus(this.h3Event, 200);
         const id = getHeader(event, "Last-Event-ID");
         this.lastEventId = id;
 
@@ -149,6 +147,8 @@ export class EventStreamConnection<TData> {
      * Start sending the event stream to the client
      */
     start() {
+        setSseHeaders(this.h3Event);
+        setResponseStatus(this.h3Event, 200);
         this.h3Event._handled = true;
         void sendStream(this.h3Event, this.readable);
         this.pingInterval = setInterval(async () => {
