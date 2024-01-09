@@ -9,6 +9,7 @@ import {
     eventHandler,
     isPreflightRequest,
     setResponseHeaders,
+    type HTTPHeaderName,
 } from "h3";
 import { handleH3Error, type ErrorResponse } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
@@ -24,15 +25,19 @@ import {
 } from "./rpc";
 
 export function setSseHeaders(event: H3Event) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    setResponseHeaders(event, {
+    const isHttp2 = (event as any)._http2 === true;
+    const input: Partial<Record<HTTPHeaderName, string>> = {
         "Content-Type": "text/event-stream",
         "Cache-Control":
             "private, no-cache, no-store, no-transform, must-revalidate, max-age=0",
-        Connection: "keep-alive",
         Pragma: "no-cache",
         "X-Accel-Buffering": "no",
-    } as any);
+    };
+    if (!isHttp2) {
+        input.Connection = "keep-alive";
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    setResponseHeaders(event, input as any);
 }
 
 export function defineEventStreamRpc<
