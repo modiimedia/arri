@@ -2,13 +2,13 @@ import { nextTick } from "node:process";
 import { type InferType, a } from "arri-validate";
 import {
     type H3Event,
-    setHeaders,
     getHeader,
     setResponseStatus,
     sendStream,
     type Router,
     eventHandler,
     isPreflightRequest,
+    setResponseHeaders,
 } from "h3";
 import { handleH3Error, type ErrorResponse } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
@@ -24,14 +24,15 @@ import {
 } from "./rpc";
 
 export function setSseHeaders(event: H3Event) {
-    setHeaders(event, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    setResponseHeaders(event, {
         "Content-Type": "text/event-stream",
         "Cache-Control":
             "private, no-cache, no-store, no-transform, must-revalidate, max-age=0",
         Connection: "keep-alive",
         Pragma: "no-cache",
         "X-Accel-Buffering": "no",
-    });
+    } as any);
 }
 
 export function defineEventStreamRpc<
