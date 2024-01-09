@@ -1,6 +1,6 @@
 {
     "name": "arri-validate",
-    "version": "0.19.3",
+    "version": "0.19.4",
     "type": "module",
     "license": "MIT",
     "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
