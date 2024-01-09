@@ -1,6 +1,6 @@
 {
     "name": "arri-codegen-utils",
-    "version": "0.19.2",
+    "version": "0.19.3",
     "license": "MIT",
     "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
     "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
