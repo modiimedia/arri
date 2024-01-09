@@ -26,8 +26,11 @@ import {
 export function setSseHeaders(event: H3Event) {
     setHeaders(event, {
         "Content-Type": "text/event-stream",
+        "Cache-Control":
+            "private, no-cache, no-store, no-transform, must-revalidate, max-age=0",
         Connection: "keep-alive",
-        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        "X-Accel-Buffering": "no",
     });
 }
 
