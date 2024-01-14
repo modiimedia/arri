@@ -41,13 +41,13 @@
         "h3": "^1.10.0",
         "jiti": "^1.21.0",
         "ofetch": "^1.3.3",
-        "pathe": "^1.1.1",
+        "pathe": "^1.1.2",
         "prettier": "^3.1.1",
         "scule": "^1.2.0",
         "uncrypto": "^0.1.3"
     },
     "devDependencies": {
         "@types/degit": "^2.8.6",
-        "bun-types": "^1.0.21"
+        "bun-types": "^1.0.22"
     }
 }
