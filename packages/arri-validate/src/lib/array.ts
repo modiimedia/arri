@@ -74,7 +74,7 @@ function parse<T>(
         } catch (err) {
             data.errors.push({
                 instancePath: data.instancePath,
-                schemaPath: data.schemaPath,
+                schemaPath: `${data.schemaPath}/elements`,
                 message: `Error at ${data.instancePath}. Invalid JSON.`,
             });
             return undefined;
@@ -83,7 +83,7 @@ function parse<T>(
     if (!Array.isArray(parsedInput)) {
         data.errors.push({
             instancePath: data.instancePath,
-            schemaPath: data.schemaPath,
+            schemaPath: `${data.schemaPath}/elements`,
             message: `Error at ${
                 data.instancePath
             }. Expected array. Got ${typeof input}.`,
@@ -102,9 +102,9 @@ function parse<T>(
                     errors: data.errors,
                 },
             );
-            if (data.errors.length) {
-                return undefined;
-            }
+            // if (data.errors.length) {
+            //     return undefined;
+            // }
             result.push(parsedItem as any);
         } else {
             const parsedItem = innerSchema.metadata[SCHEMA_METADATA].parse(
@@ -115,9 +115,9 @@ function parse<T>(
                     errors: data.errors,
                 },
             );
-            if (data.errors.length) {
-                return undefined;
-            }
+            // if (data.errors.length) {
+            //     return undefined;
+            // }
             result.push(parsedItem as any);
         }
     }

@@ -90,7 +90,7 @@ function parse<T>(
     if (!isObject(parsedInput)) {
         data.errors.push({
             instancePath: data.instancePath,
-            schemaPath: data.schemaPath,
+            schemaPath: `${data.schemaPath}/values`,
             message: `Error at ${data.instancePath} Expected object`,
         });
         return undefined;

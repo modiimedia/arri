@@ -124,6 +124,16 @@ export function serialize<T = any>(schema: ASchema<T>, input: T) {
     return schema.metadata[SCHEMA_METADATA].serialize(input, data);
 }
 
+export function errors(schema: ASchema, input: unknown): ValueError[] {
+    const errorList: ValueError[] = [];
+    schema.metadata[SCHEMA_METADATA].parse(input, {
+        errors: errorList,
+        instancePath: "",
+        schemaPath: "",
+    });
+    return errorList;
+}
+
 export interface ValueError {
     instancePath: string;
     schemaPath: string;

@@ -289,7 +289,7 @@ function parseNumber(input: unknown, options: ValidationData) {
         if (Number.isNaN(result)) {
             options?.errors.push({
                 instancePath: options.instancePath,
-                schemaPath: options.schemaPath,
+                schemaPath: `${options.schemaPath}/type`,
                 message: `Error at ${options.instancePath}. Invalid number.`,
             });
             return undefined;
@@ -301,7 +301,7 @@ function parseNumber(input: unknown, options: ValidationData) {
     }
     options?.errors.push({
         instancePath: options.instancePath,
-        schemaPath: options.schemaPath,
+        schemaPath: `${options.schemaPath}/type`,
         message: `Error at ${options.instancePath}. Invalid number.`,
     });
     return undefined;
@@ -336,7 +336,7 @@ function numberScalarType<TType extends NumberType>(
                     if (typeof result !== "number") {
                         options?.errors.push({
                             instancePath: options.instancePath,
-                            schemaPath: options.schemaPath,
+                            schemaPath: `${options.schemaPath}/type`,
                             message: `Error at ${options.instancePath}. Invalid number.`,
                         });
                         return undefined;
@@ -347,7 +347,7 @@ function numberScalarType<TType extends NumberType>(
                     }
                     options?.errors.push({
                         instancePath: options.instancePath,
-                        schemaPath: options.schemaPath,
+                        schemaPath: `${options.schemaPath}/type`,
                         message: `Error at ${options.instancePath}. ${matchResult.message}`,
                     });
                     return undefined;
@@ -358,7 +358,7 @@ function numberScalarType<TType extends NumberType>(
                     if (typeof result !== "number") {
                         options.errors.push({
                             instancePath: options.instancePath,
-                            schemaPath: options.schemaPath,
+                            schemaPath: `${options.schemaPath}/type`,
                             message: `Error at ${
                                 options.instancePath
                             }. Unable to coerce ${typeof input} to ${type}.`,
@@ -371,7 +371,7 @@ function numberScalarType<TType extends NumberType>(
                     }
                     options.errors.push({
                         instancePath: options.instancePath,
-                        schemaPath: options.schemaPath,
+                        schemaPath: `${options.schemaPath}/type`,
                         message: `Error at ${options.instancePath}. ${matchResult.message}`,
                     });
                     return undefined;

@@ -146,13 +146,17 @@ function parse(
     coerce = false,
 ) {
     let parsedInput = input;
-    if (typeof input === "string" && data.instancePath.length === 0) {
+    if (
+        typeof input === "string" &&
+        input.length &&
+        data.instancePath.length === 0
+    ) {
         parsedInput = JSON.parse(input);
     }
     if (!isObject(parsedInput)) {
         data.errors.push({
             instancePath: data.instancePath,
-            schemaPath: data.schemaPath,
+            schemaPath: `${data.schemaPath}/discriminator`,
             message: `Error at ${
                 data.instancePath
             }. Expected object. Got ${typeof parsedInput}.`,
