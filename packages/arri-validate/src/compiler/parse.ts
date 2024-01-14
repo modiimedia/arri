@@ -14,7 +14,7 @@ import {
     type SchemaFormDiscriminator,
     type SchemaFormEmpty,
 } from "jtd-utils";
-import { camelCase, pascalCase } from "scule";
+import { camelCase } from "scule";
 import {
     int16Max,
     int16Min,
@@ -32,26 +32,9 @@ import {
 import { type TemplateInput } from "./common";
 
 export function createParsingTemplate(input: string, schema: Schema): string {
-    const validationErrorName = `$ValidationError${pascalCase(
-        schema.metadata?.id ?? input,
-    )}`;
-    const fallbackTemplate = `    class ${validationErrorName} extends Error {
-        errors;
-        constructor(input) {
-            super(input.message);
-            this.errors = input.errors;
-        }
-    }
-
-    function $fallback(instancePath, schemaPath, message) {
-        throw new ${validationErrorName}({ 
-            message: message,
-            errors: [{ 
-                instancePath: instancePath,
-                schemaPath: schemaPath,
-                message: message 
-            }],
-        });
+    const fallbackTemplate = `
+    function $fallback(instancePath, schemaPath) {
+        throw new Error(\`Error parsing input. InstancePath: "\${instancePath}". SchemaPath: "\${schemaPath}"\`);
     }`;
     let jsonParseCheck = "";
 

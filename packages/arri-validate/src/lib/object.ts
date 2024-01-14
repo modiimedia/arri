@@ -109,6 +109,7 @@ function parse<T>(
             schemaPath: `${data.schemaPath}/properties`,
             message: `Error at ${data.instancePath}. Expected object`,
         });
+        return undefined;
     }
     const result: Record<any, any> = {};
     const optionalProps = schema.optionalProperties ?? {};
