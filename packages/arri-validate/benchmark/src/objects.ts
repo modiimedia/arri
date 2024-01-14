@@ -285,6 +285,11 @@ void benny.suite(
     benny.add("Arri (Compiled)", () => {
         ArriUserValidator.serialize(input);
     }),
+    benny.add("Arri (Compiled) Validate and Serialize", () => {
+        if (ArriUserValidator.validate(input)) {
+            ArriUserValidator.serialize(input);
+        }
+    }),
     benny.add("Ajv - JTD (Compiled)", () => {
         AjvJtdUserSerializer(input);
     }),
