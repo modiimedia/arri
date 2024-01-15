@@ -1,5 +1,5 @@
 import { nextTick } from "node:process";
-import { type InferType, a } from "arri-validate";
+import { type InferType, a, type ValueError } from "arri-validate";
 import {
     type H3Event,
     getHeader,
@@ -88,6 +88,8 @@ export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
 }
 
 export interface EventStreamConnectionOptions<TData> {
+    validator: (input: unknown) => input is TData;
+    validationErrors: (input: unknown) => ValueError[];
     serializer: (input: TData) => string;
     pingInterval?: number;
 }
@@ -129,6 +131,8 @@ export class EventStreamConnection<TData> {
     private readonly writer: WritableStreamDefaultWriter;
     private writerIsClosed: boolean = false;
     private readonly encoder: TextEncoder;
+    private readonly validationErrors: (input: unknown) => ValueError[];
+    private readonly validator: (input: unknown) => input is TData;
     private readonly serializer: (input: TData) => string;
     private readonly h3Event: H3Event;
     private pingInterval: NodeJS.Timeout | undefined = undefined;
@@ -147,6 +151,8 @@ export class EventStreamConnection<TData> {
         this.pingIntervalMs = opts.pingInterval ?? 60000;
 
         this.serializer = opts.serializer;
+        this.validator = opts.validator;
+        this.validationErrors = opts.validationErrors;
         void this.writer.closed.then(() => {
             this.writerIsClosed = true;
         });
@@ -178,19 +184,49 @@ export class EventStreamConnection<TData> {
         if (Array.isArray(data)) {
             const events: Sse[] = [];
             for (const item of data) {
+                if (this.validator(item)) {
+                    events.push({
+                        id: eventId,
+                        event: "message",
+                        data: this.serializer(item),
+                    });
+                    continue;
+                }
+                const errors = this.validationErrors(item);
+                const errorResponse: ErrorResponse = {
+                    statusCode: 500,
+                    statusMessage:
+                        "Failed to serialize response. Response does not match specified schema.",
+                    data: errors,
+                };
                 events.push({
                     id: eventId,
-                    event: "message",
-                    data: this.serializer(item),
+                    event: "error",
+                    data: JSON.stringify(errorResponse),
                 });
             }
             await this.publishEvents(events);
             return;
         }
+        if (this.validator(data)) {
+            await this.publishEvent({
+                id: eventId,
+                event: "message",
+                data: this.serializer(data),
+            });
+            return;
+        }
+        const errors = this.validationErrors(data);
+        const errorResponse: ErrorResponse = {
+            statusCode: 500,
+            statusMessage:
+                "Failed to serialize response. Response does not match specified schema.",
+            data: errors,
+        };
         await this.publishEvent({
             id: eventId,
-            event: "message",
-            data: this.serializer(data),
+            event: "error",
+            data: JSON.stringify(errorResponse),
         });
     }
 
@@ -337,11 +373,23 @@ export function registerEventStreamRpc(
             }
             const connection = new EventStreamConnection(event, {
                 pingInterval: procedure.pingInterval,
+                validator:
+                    responseValidator?.validate ??
+                    (function () {
+                        return true;
+                    } as any),
                 serializer:
                     responseValidator?.serialize ??
                     function (_) {
                         return "";
                     },
+                validationErrors(input) {
+                    if (procedure.response) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        return a.errors(procedure.response, input);
+                    }
+                    return [];
+                },
             });
             event.context.connection = connection;
             await procedure.handler(
