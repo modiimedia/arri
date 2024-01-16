@@ -13,6 +13,9 @@ describe("Naming RPCs", () => {
             clientGenerators: [],
             buildDir: ".arri",
             esbuild: {},
+            serverEntry: "",
+            https: false,
+            http2: false,
         };
         const result = getRpcMetaFromPath(
             config,
@@ -32,6 +35,9 @@ describe("Naming RPCs", () => {
             clientGenerators: [],
             buildDir: ".arri",
             esbuild: {},
+            serverEntry: "",
+            https: false,
+            http2: false,
         };
         const result = getRpcMetaFromPath(
             config,

@@ -40,6 +40,13 @@
                 "passWithNoTests": true,
                 "reportsDirectory": "../../coverage/packages/arri-validate"
             }
+        },
+        "typecheck": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsc --noEmit",
+                "cwd": "packages/arri-validate"
+            }
         }
     },
     "tags": []

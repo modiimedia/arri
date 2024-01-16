@@ -31,6 +31,13 @@
                 "passWithNoTests": true,
                 "reportsDirectory": "../../../coverage/packages/arri-codegen/utils"
             }
+        },
+        "typecheck": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsc --noEmit",
+                "cwd": "packages/arri-codegen/utils"
+            }
         }
     },
     "tags": []
