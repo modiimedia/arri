@@ -68,7 +68,7 @@ describe("Type Inference", () => {
     });
 });
 
-test("Parsing", () => {
+describe("Parsing", () => {
     const StringArray = a.array(a.string());
     const NumberArray = a.array(a.number());
     const ObjectArray = a.array(

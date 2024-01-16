@@ -97,7 +97,7 @@ function parse<T>(
         } catch (err) {
             data.errors.push({
                 instancePath: data.instancePath,
-                schemaPath: data.schemaPath,
+                schemaPath: `${data.schemaPath}/properties`,
                 message: `Error at ${data.instancePath}. Invalid JSON.`,
             });
             return undefined;
@@ -106,9 +106,10 @@ function parse<T>(
     if (!isObject(parsedInput)) {
         data.errors.push({
             instancePath: data.instancePath,
-            schemaPath: data.schemaPath,
+            schemaPath: `${data.schemaPath}/properties`,
             message: `Error at ${data.instancePath}. Expected object`,
         });
+        return undefined;
     }
     const result: Record<any, any> = {};
     const optionalProps = schema.optionalProperties ?? {};
@@ -124,7 +125,7 @@ function parse<T>(
             ) {
                 data.errors.push({
                     instancePath: `${data.instancePath}/${key}`,
-                    schemaPath: `${data.schemaPath}/additionalKeys`,
+                    schemaPath: `${data.schemaPath}/additionalProperties`,
                     message: `Error at ${data.instancePath}/${key}. Key '${key}' is not included in the schema. To allow additional input properties set additionalProperties to 'true'.`,
                 });
             }

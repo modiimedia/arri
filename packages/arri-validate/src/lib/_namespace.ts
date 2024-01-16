@@ -29,6 +29,7 @@ export {
     validate,
     coerce,
     safeCoerce,
+    errors,
 } from "./validation";
 export { compile } from "../compile";
 export type { InferType as infer } from "../schemas";

@@ -2,7 +2,7 @@ import {
     type AScalarSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationData as ValidationContext,
 } from "../schemas";
 
 /**
@@ -41,20 +41,20 @@ function validate(input: unknown): input is string {
     return typeof input === "string";
 }
 
-function parse(input: unknown, options: ValidationData) {
+function parse(input: unknown, context: ValidationContext) {
     if (validate(input)) {
         return input;
     }
-    options.errors.push({
-        instancePath: options.instancePath,
-        schemaPath: options.schemaPath,
+    context.errors.push({
+        instancePath: context.instancePath,
+        schemaPath: `${context.schemaPath}/type`,
         message: `Error at ${
-            options.instancePath
+            context.instancePath
         }. Expected 'string' got ${typeof input}.`,
     });
     return undefined;
 }
 
-function coerce(input: unknown, options: ValidationData) {
-    return parse(input, options);
+function coerce(input: unknown, context: ValidationContext) {
+    return parse(input, context);
 }
