@@ -3,6 +3,13 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "targets": {
         "integration-test": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "vitest run --globals",
+                "cwd": "tests/clients/client-typescript"
+            }
+        },
+        "integration-test-old": {
             "executor": "@nx/vite:test",
             "outputs": [
                 "{workspaceRoot}/coverage/packages/test-client-typescript"
