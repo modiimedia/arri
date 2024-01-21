@@ -1,7 +1,5 @@
-/// <reference types="vitest" />
-import { defineConfig } from "vite";
-
 import viteTsConfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     cacheDir: "../../node_modules/.vite/client",
@@ -9,7 +7,7 @@ export default defineConfig({
     plugins: [
         viteTsConfigPaths({
             root: "../../../",
-        }),
+        }) as any,
     ],
 
     // Uncomment this if you are using workers.
