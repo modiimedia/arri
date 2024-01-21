@@ -1,6 +1,5 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
-
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
@@ -23,6 +22,7 @@ export default defineConfig({
 
     test: {
         globals: true,
+        reporters: ["default"],
         cache: {
             dir: "../../node_modules/.vitest",
         },
