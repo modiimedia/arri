@@ -266,25 +266,10 @@ export interface ManuallyAddedModel {
 }
 const $$ManuallyAddedModel = {
     parse(input: Record<any, any>): ManuallyAddedModel {
-        class $ValidationErrorManuallyAddedModel extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorManuallyAddedModel({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -328,9 +313,7 @@ const $$ManuallyAddedModel = {
     serialize(input: ManuallyAddedModel): string {
         let json = "";
         json += "{";
-        json += `"hello":"${input.hello
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"hello":"${input.hello.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -348,25 +331,10 @@ export interface AdaptersTypeboxAdapterParams {
 }
 const $$AdaptersTypeboxAdapterParams = {
     parse(input: Record<any, any>): AdaptersTypeboxAdapterParams {
-        class $ValidationErrorAdaptersTypeboxAdapterParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorAdaptersTypeboxAdapterParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -631,9 +599,7 @@ const $$AdaptersTypeboxAdapterParams = {
     serialize(input: AdaptersTypeboxAdapterParams): string {
         let json = "";
         json += "{";
-        json += `"string":"${input.string
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"boolean":${input.boolean}`;
 
         if (Number.isNaN(input.integer)) {
@@ -647,9 +613,7 @@ const $$AdaptersTypeboxAdapterParams = {
         json += `,"number":${input.number}`;
         json += `,"enumField":"${input.enumField}"`;
         json += ',"object":{';
-        json += `"string":"${input.object.string
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         json += ',"array":[';
         for (let i = 0; i < input.array.length; i++) {
@@ -661,9 +625,7 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         json += "]";
         if (typeof input.optionalString !== "undefined") {
-            json += `,"optionalString":"${input.optionalString
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"optionalString":"${input.optionalString.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         }
         json += "}";
         return json;
@@ -679,25 +641,10 @@ export interface AdaptersTypeboxAdapterResponse {
 }
 const $$AdaptersTypeboxAdapterResponse = {
     parse(input: Record<any, any>): AdaptersTypeboxAdapterResponse {
-        class $ValidationErrorAdaptersTypeboxAdapterResponse extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorAdaptersTypeboxAdapterResponse({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -741,9 +688,7 @@ const $$AdaptersTypeboxAdapterResponse = {
     serialize(input: AdaptersTypeboxAdapterResponse): string {
         let json = "";
         json += "{";
-        json += `"message":"${input.message
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -774,25 +719,10 @@ export interface ObjectWithEveryType {
 }
 const $$ObjectWithEveryType = {
     parse(input: Record<any, any>): ObjectWithEveryType {
-        class $ValidationErrorObjectWithEveryType extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorObjectWithEveryType({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -2074,9 +2004,7 @@ const $$ObjectWithEveryType = {
             json += '"any":' + JSON.stringify(input.any);
         }
         json += `,"boolean":${input.boolean}`;
-        json += `,"string":"${input.string
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
 
         if (Number.isNaN(input.float32)) {
@@ -2131,9 +2059,7 @@ const $$ObjectWithEveryType = {
         }
         json += "]";
         json += ',"object":{';
-        json += `"string":"${input.object.string
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"boolean":${input.object.boolean}`;
         json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
         json += "}";
@@ -2154,39 +2080,27 @@ const $$ObjectWithEveryType = {
             case "A": {
                 json += ',"discriminator":{';
                 json += `"type":"A"`;
-                json += `,"title":"${input.discriminator.title
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
                 break;
             }
             case "B": {
                 json += ',"discriminator":{';
                 json += `"type":"B"`;
-                json += `,"title":"${input.discriminator.title
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"description":"${input.discriminator.description
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
                 break;
             }
         }
         json += ',"nestedObject":{';
-        json += `"id":"${input.nestedObject.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.data.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
         json += "}";
         json += "}";
@@ -2204,9 +2118,7 @@ const $$ObjectWithEveryType = {
                     json += ",";
                 }
                 json += "{";
-                json += `"id":"${inputNestedArrayItemItem.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
                 json += "}";
             }
@@ -2288,25 +2200,10 @@ export interface ObjectWithEveryNullableType {
 }
 const $$ObjectWithEveryNullableType = {
     parse(input: Record<any, any>): ObjectWithEveryNullableType {
-        class $ValidationErrorObjectWithEveryNullableType extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorObjectWithEveryNullableType({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -4030,9 +3927,7 @@ const $$ObjectWithEveryNullableType = {
             json += ',"boolean":null';
         }
         if (typeof input.string === "string") {
-            json += `,"string":"${input.string
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         } else {
             json += ',"string":null';
         }
@@ -4143,9 +4038,7 @@ const $$ObjectWithEveryNullableType = {
         if (typeof input.object === "object" && input.object !== null) {
             json += ',"object":{';
             if (typeof input.object.string === "string") {
-                json += `"string":"${input.object.string
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
                 json += '"string":null';
             }
@@ -4196,9 +4089,7 @@ const $$ObjectWithEveryNullableType = {
                     json += ',"discriminator":{';
                     json += `"type":"A"`;
                     if (typeof input.discriminator.title === "string") {
-                        json += `,"title":"${input.discriminator.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
                         json += ',"title":null';
                     }
@@ -4209,16 +4100,12 @@ const $$ObjectWithEveryNullableType = {
                     json += ',"discriminator":{';
                     json += `"type":"B"`;
                     if (typeof input.discriminator.title === "string") {
-                        json += `,"title":"${input.discriminator.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
                         json += ',"title":null';
                     }
                     if (typeof input.discriminator.description === "string") {
-                        json += `,"description":"${input.discriminator.description
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
                         json += ',"description":null';
                     }
@@ -4235,9 +4122,7 @@ const $$ObjectWithEveryNullableType = {
         ) {
             json += ',"nestedObject":{';
             if (typeof input.nestedObject.id === "string") {
-                json += `"id":"${input.nestedObject.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
                 json += '"id":null';
             }
@@ -4255,9 +4140,7 @@ const $$ObjectWithEveryNullableType = {
             ) {
                 json += ',"data":{';
                 if (typeof input.nestedObject.data.id === "string") {
-                    json += `"id":"${input.nestedObject.data.id
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 } else {
                     json += '"id":null';
                 }
@@ -4275,9 +4158,7 @@ const $$ObjectWithEveryNullableType = {
                 ) {
                     json += ',"data":{';
                     if (typeof input.nestedObject.data.data.id === "string") {
-                        json += `"id":"${input.nestedObject.data.data.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
                         json += '"id":null';
                     }
@@ -4325,9 +4206,7 @@ const $$ObjectWithEveryNullableType = {
                             if (
                                 typeof inputNestedArrayItemItem.id === "string"
                             ) {
-                                json += `"id":"${inputNestedArrayItemItem.id
-                                    .replace(/[\n]/g, "\\n")
-                                    .replace(/"/g, '\\"')}"`;
+                                json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                             } else {
                                 json += '"id":null';
                             }
@@ -4430,25 +4309,10 @@ export interface ObjectWithEveryOptionalType {
 }
 const $$ObjectWithEveryOptionalType = {
     parse(input: Record<any, any>): ObjectWithEveryOptionalType {
-        class $ValidationErrorObjectWithEveryOptionalType extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorObjectWithEveryOptionalType({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -5960,13 +5824,9 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.string !== "undefined") {
             if (inputHasFields) {
-                json += `,"string":"${input.string
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
-                json += `"string":"${input.string
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 inputHasFields = true;
             }
         }
@@ -6141,17 +6001,13 @@ const $$ObjectWithEveryOptionalType = {
         if (typeof input.object !== "undefined") {
             if (inputHasFields) {
                 json += ',"object":{';
-                json += `"string":"${input.object.string
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"boolean":${input.object.boolean}`;
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
             } else {
                 json += '"object":{';
-                json += `"string":"${input.object.string
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"boolean":${input.object.boolean}`;
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
@@ -6196,21 +6052,15 @@ const $$ObjectWithEveryOptionalType = {
                     case "A": {
                         json += ',"discriminator":{';
                         json += `"type":"A"`;
-                        json += `,"title":"${input.discriminator.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         json += "}";
                         break;
                     }
                     case "B": {
                         json += ',"discriminator":{';
                         json += `"type":"B"`;
-                        json += `,"title":"${input.discriminator.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
-                        json += `,"description":"${input.discriminator.description
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         json += "}";
                         break;
                     }
@@ -6220,21 +6070,15 @@ const $$ObjectWithEveryOptionalType = {
                     case "A": {
                         json += '"discriminator":{';
                         json += `"type":"A"`;
-                        json += `,"title":"${input.discriminator.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         json += "}";
                         break;
                     }
                     case "B": {
                         json += '"discriminator":{';
                         json += `"type":"B"`;
-                        json += `,"title":"${input.discriminator.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
-                        json += `,"description":"${input.discriminator.description
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         json += "}";
                         break;
                     }
@@ -6245,38 +6089,26 @@ const $$ObjectWithEveryOptionalType = {
         if (typeof input.nestedObject !== "undefined") {
             if (inputHasFields) {
                 json += ',"nestedObject":{';
-                json += `"id":"${input.nestedObject.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.data.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
                 json += "}";
                 json += "}";
                 json += "}";
             } else {
                 json += '"nestedObject":{';
-                json += `"id":"${input.nestedObject.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.data.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
                 json += "}";
                 json += "}";
@@ -6300,9 +6132,7 @@ const $$ObjectWithEveryOptionalType = {
                             json += ",";
                         }
                         json += "{";
-                        json += `"id":"${inputNestedArrayItemItem.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
@@ -6324,9 +6154,7 @@ const $$ObjectWithEveryOptionalType = {
                             json += ",";
                         }
                         json += "{";
-                        json += `"id":"${inputNestedArrayItemItem.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
@@ -6391,25 +6219,10 @@ export interface AutoReconnectParams {
 }
 const $$AutoReconnectParams = {
     parse(input: Record<any, any>): AutoReconnectParams {
-        class $ValidationErrorAutoReconnectParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorAutoReconnectParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -6479,25 +6292,10 @@ export interface AutoReconnectResponse {
 }
 const $$AutoReconnectResponse = {
     parse(input: Record<any, any>): AutoReconnectResponse {
-        class $ValidationErrorAutoReconnectResponse extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorAutoReconnectResponse({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -6574,9 +6372,7 @@ const $$AutoReconnectResponse = {
             throw new Error("Expected number at /count got NaN");
         }
         json += `"count":${input.count}`;
-        json += `,"message":"${input.message
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -6587,25 +6383,10 @@ export interface ChatMessageParams {
 }
 const $$ChatMessageParams = {
     parse(input: Record<any, any>): ChatMessageParams {
-        class $ValidationErrorChatMessageParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorChatMessageParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -6649,9 +6430,7 @@ const $$ChatMessageParams = {
     serialize(input: ChatMessageParams): string {
         let json = "";
         json += "{";
-        json += `"channelId":"${input.channelId
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -6660,25 +6439,10 @@ const $$ChatMessageParams = {
 export type ChatMessage = ChatMessageText | ChatMessageImage | ChatMessageUrl;
 const $$ChatMessage = {
     parse(input: Record<any, any>): ChatMessage {
-        class $ValidationErrorChatMessage extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorChatMessage({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -7081,57 +6845,33 @@ const $$ChatMessage = {
             case "TEXT": {
                 json += "{";
                 json += `"messageType":"TEXT"`;
-                json += `,"id":"${input.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"text":"${input.text
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"text":"${input.text.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
                 break;
             }
             case "IMAGE": {
                 json += "{";
                 json += `"messageType":"IMAGE"`;
-                json += `,"id":"${input.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"image":"${input.image
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"image":"${input.image.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
                 break;
             }
             case "URL": {
                 json += "{";
                 json += `"messageType":"URL"`;
-                json += `,"id":"${input.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"url":"${input.url
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"url":"${input.url.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
                 break;
             }
@@ -7171,25 +6911,10 @@ export interface PostParams {
 }
 const $$PostParams = {
     parse(input: Record<any, any>): PostParams {
-        class $ValidationErrorPostParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorPostParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -7233,9 +6958,7 @@ const $$PostParams = {
     serialize(input: PostParams): string {
         let json = "";
         json += "{";
-        json += `"postId":"${input.postId
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -7255,25 +6978,10 @@ export interface Post {
 }
 const $$Post = {
     parse(input: Record<any, any>): Post {
-        class $ValidationErrorPost extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorPost({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -7683,48 +7391,30 @@ const $$Post = {
     serialize(input: Post): string {
         let json = "";
         json += "{";
-        json += `"id":"${input.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
-        json += `,"title":"${input.title
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"title":"${input.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"type":"${input.type}"`;
         if (typeof input.description === "string") {
-            json += `,"description":"${input.description
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"description":"${input.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         } else {
             json += ',"description":null';
         }
-        json += `,"content":"${input.content
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `,"content":"${input.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += ',"tags":[';
         for (let i = 0; i < input.tags.length; i++) {
             const inputTagsItem = input.tags[i];
             if (i !== 0) {
                 json += ",";
             }
-            json += `"${inputTagsItem
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `"${inputTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         }
         json += "]";
-        json += `,"authorId":"${input.authorId
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `,"authorId":"${input.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += ',"author":{';
-        json += `"id":"${input.author.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
-        json += `,"name":"${input.author.name
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"name":"${input.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         if (typeof input.author.bio === "string") {
-            json += `,"bio":"${input.author.bio
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"bio":"${input.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         } else {
             json += ',"bio":null';
         }
@@ -7752,25 +7442,10 @@ export interface PostListParams {
 }
 const $$PostListParams = {
     parse(input: Record<any, any>): PostListParams {
-        class $ValidationErrorPostListParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorPostListParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -7893,25 +7568,10 @@ export interface PostListResponse {
 }
 const $$PostListResponse = {
     parse(input: Record<any, any>): PostListResponse {
-        class $ValidationErrorPostListResponse extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorPostListResponse({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -8612,48 +8272,30 @@ const $$PostListResponse = {
                 json += ",";
             }
             json += "{";
-            json += `"id":"${inputItemsItem.id
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
-            json += `,"title":"${inputItemsItem.title
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `"id":"${inputItemsItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"title":"${inputItemsItem.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             json += `,"type":"${inputItemsItem.type}"`;
             if (typeof inputItemsItem.description === "string") {
-                json += `,"description":"${inputItemsItem.description
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"description":"${inputItemsItem.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
                 json += ',"description":null';
             }
-            json += `,"content":"${inputItemsItem.content
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"content":"${inputItemsItem.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             json += ',"tags":[';
             for (let i = 0; i < inputItemsItem.tags.length; i++) {
                 const inputItemsItemTagsItem = inputItemsItem.tags[i];
                 if (i !== 0) {
                     json += ",";
                 }
-                json += `"${inputItemsItemTagsItem
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"${inputItemsItemTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             }
             json += "]";
-            json += `,"authorId":"${inputItemsItem.authorId
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"authorId":"${inputItemsItem.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             json += ',"author":{';
-            json += `"id":"${inputItemsItem.author.id
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
-            json += `,"name":"${inputItemsItem.author.name
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `"id":"${inputItemsItem.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"name":"${inputItemsItem.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             if (typeof inputItemsItem.author.bio === "string") {
-                json += `,"bio":"${inputItemsItem.author.bio
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"bio":"${inputItemsItem.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
                 json += ',"bio":null';
             }
@@ -8678,25 +8320,10 @@ export type PostEvent =
     | PostEventPostCommented;
 const $$PostEvent = {
     parse(input: Record<any, any>): PostEvent {
-        class $ValidationErrorPostEvent extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorPostEvent({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -9808,9 +9435,7 @@ const $$PostEvent = {
             case "POST_CREATED": {
                 json += "{";
                 json += `"eventType":"POST_CREATED"`;
-                json += `,"postId":"${input.postId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
                 json += "}";
                 break;
@@ -9818,9 +9443,7 @@ const $$PostEvent = {
             case "POST_DELETED": {
                 json += "{";
                 json += `"eventType":"POST_DELETED"`;
-                json += `,"postId":"${input.postId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
                 json += "}";
                 break;
@@ -9828,33 +9451,23 @@ const $$PostEvent = {
             case "POST_UPDATED": {
                 json += "{";
                 json += `"eventType":"POST_UPDATED"`;
-                json += `,"postId":"${input.postId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
                 json += ',"data":{';
                 let dataHasFields = false;
                 if (typeof input.data.id !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"id":"${input.data.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"id":"${input.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
-                        json += `"id":"${input.data.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"id":"${input.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         dataHasFields = true;
                     }
                 }
                 if (typeof input.data.title !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"title":"${input.data.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
-                        json += `"title":"${input.data.title
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         dataHasFields = true;
                     }
                 }
@@ -9869,17 +9482,13 @@ const $$PostEvent = {
                 if (typeof input.data.description !== "undefined") {
                     if (dataHasFields) {
                         if (typeof input.data.description === "string") {
-                            json += `,"description":"${input.data.description
-                                .replace(/[\n]/g, "\\n")
-                                .replace(/"/g, '\\"')}"`;
+                            json += `,"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         } else {
                             json += ',"description":null';
                         }
                     } else {
                         if (typeof input.data.description === "string") {
-                            json += `"description":"${input.data.description
-                                .replace(/[\n]/g, "\\n")
-                                .replace(/"/g, '\\"')}"`;
+                            json += `"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         } else {
                             json += '"description":null';
                         }
@@ -9888,13 +9497,9 @@ const $$PostEvent = {
                 }
                 if (typeof input.data.content !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"content":"${input.data.content
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
-                        json += `"content":"${input.data.content
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         dataHasFields = true;
                     }
                 }
@@ -9906,9 +9511,7 @@ const $$PostEvent = {
                             if (i !== 0) {
                                 json += ",";
                             }
-                            json += `"${inputDataTagsItem
-                                .replace(/[\n]/g, "\\n")
-                                .replace(/"/g, '\\"')}"`;
+                            json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         }
                         json += "]";
                     } else {
@@ -9918,9 +9521,7 @@ const $$PostEvent = {
                             if (i !== 0) {
                                 json += ",";
                             }
-                            json += `"${inputDataTagsItem
-                                .replace(/[\n]/g, "\\n")
-                                .replace(/"/g, '\\"')}"`;
+                            json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         }
                         json += "]";
                         dataHasFields = true;
@@ -9928,29 +9529,19 @@ const $$PostEvent = {
                 }
                 if (typeof input.data.authorId !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"authorId":"${input.data.authorId
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `,"authorId":"${input.data.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     } else {
-                        json += `"authorId":"${input.data.authorId
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"authorId":"${input.data.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         dataHasFields = true;
                     }
                 }
                 if (typeof input.data.author !== "undefined") {
                     if (dataHasFields) {
                         json += ',"author":{';
-                        json += `"id":"${input.data.author.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
-                        json += `,"name":"${input.data.author.name
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"name":"${input.data.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":"${input.data.author.bio
-                                .replace(/[\n]/g, "\\n")
-                                .replace(/"/g, '\\"')}"`;
+                            json += `,"bio":"${input.data.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         } else {
                             json += ',"bio":null';
                         }
@@ -9959,16 +9550,10 @@ const $$PostEvent = {
                         json += "}";
                     } else {
                         json += '"author":{';
-                        json += `"id":"${input.data.author.id
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
-                        json += `,"name":"${input.data.author.name
-                            .replace(/[\n]/g, "\\n")
-                            .replace(/"/g, '\\"')}"`;
+                        json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"name":"${input.data.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":"${input.data.author.bio
-                                .replace(/[\n]/g, "\\n")
-                                .replace(/"/g, '\\"')}"`;
+                            json += `,"bio":"${input.data.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                         } else {
                             json += ',"bio":null';
                         }
@@ -10001,13 +9586,9 @@ const $$PostEvent = {
             case "POST_LIKED": {
                 json += "{";
                 json += `"eventType":"POST_LIKED"`;
-                json += `,"postId":"${input.postId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"postLikeId":"${input.postLikeId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"postLikeId":"${input.postLikeId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
 
                 if (Number.isNaN(input.postLikeCount)) {
                     throw new Error(
@@ -10021,16 +9602,10 @@ const $$PostEvent = {
             case "POST_COMMENTED": {
                 json += "{";
                 json += `"eventType":"POST_COMMENTED"`;
-                json += `,"postId":"${input.postId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"commentId":"${input.commentId
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
-                json += `,"commentText":"${input.commentText
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"commentId":"${input.commentId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"commentText":"${input.commentText.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
 
                 if (Number.isNaN(input.commentCount)) {
                     throw new Error("Expected number at /commentCount got NaN");
@@ -10098,25 +9673,10 @@ export interface LogPostEventResponse {
 }
 const $$LogPostEventResponse = {
     parse(input: Record<any, any>): LogPostEventResponse {
-        class $ValidationErrorLogPostEventResponse extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorLogPostEventResponse({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -10179,9 +9739,7 @@ const $$LogPostEventResponse = {
         let json = "";
         json += "{";
         json += `"success":${input.success}`;
-        json += `,"message":"${input.message
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -10193,25 +9751,10 @@ export interface UpdatePostParams {
 }
 const $$UpdatePostParams = {
     parse(input: Record<any, any>): UpdatePostParams {
-        class $ValidationErrorUpdatePostParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorUpdatePostParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -10426,37 +9969,27 @@ const $$UpdatePostParams = {
     serialize(input: UpdatePostParams): string {
         let json = "";
         json += "{";
-        json += `"postId":"${input.postId
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += ',"data":{';
         let dataHasFields = false;
         if (typeof input.data.title !== "undefined") {
             if (dataHasFields) {
-                json += `,"title":"${input.data.title
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
-                json += `"title":"${input.data.title
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 dataHasFields = true;
             }
         }
         if (typeof input.data.description !== "undefined") {
             if (dataHasFields) {
                 if (typeof input.data.description === "string") {
-                    json += `,"description":"${input.data.description
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `,"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 } else {
                     json += ',"description":null';
                 }
             } else {
                 if (typeof input.data.description === "string") {
-                    json += `"description":"${input.data.description
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 } else {
                     json += '"description":null';
                 }
@@ -10465,13 +9998,9 @@ const $$UpdatePostParams = {
         }
         if (typeof input.data.content !== "undefined") {
             if (dataHasFields) {
-                json += `,"content":"${input.data.content
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             } else {
-                json += `"content":"${input.data.content
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 dataHasFields = true;
             }
         }
@@ -10483,9 +10012,7 @@ const $$UpdatePostParams = {
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `"${inputDataTagsItem
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 }
                 json += "]";
             } else {
@@ -10495,9 +10022,7 @@ const $$UpdatePostParams = {
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `"${inputDataTagsItem
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 }
                 json += "]";
                 dataHasFields = true;
@@ -11757,25 +11282,10 @@ export interface AnnotationId {
 }
 const $$AnnotationId = {
     parse(input: Record<any, any>): AnnotationId {
-        class $ValidationErrorAnnotationId extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorAnnotationId({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -11837,12 +11347,8 @@ const $$AnnotationId = {
     serialize(input: AnnotationId): string {
         let json = "";
         json += "{";
-        json += `"id":"${input.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
-        json += `,"version":"${input.version
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"version":"${input.version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -11858,25 +11364,10 @@ export interface Annotation {
 }
 const $$Annotation = {
     parse(input: Record<any, any>): Annotation {
-        class $ValidationErrorAnnotation extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorAnnotation({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -12309,18 +11800,12 @@ const $$Annotation = {
         let json = "";
         json += "{";
         json += '"annotation_id":{';
-        json += `"id":"${input.annotation_id.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
-        json += `,"version":"${input.annotation_id.version
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.annotation_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"version":"${input.annotation_id.version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         json += ',"associated_id":{';
         json += `"entity_type":"${input.associated_id.entity_type}"`;
-        json += `,"id":"${input.associated_id.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         json += `,"annotation_type":"${input.annotation_type}"`;
 
@@ -12360,25 +11845,10 @@ export interface UpdateAnnotationParams {
 }
 const $$UpdateAnnotationParams = {
     parse(input: Record<any, any>): UpdateAnnotationParams {
-        class $ValidationErrorUpdateAnnotationParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorUpdateAnnotationParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -12874,28 +12344,20 @@ const $$UpdateAnnotationParams = {
     serialize(input: UpdateAnnotationParams): string {
         let json = "";
         json += "{";
-        json += `"annotation_id":"${input.annotation_id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
-        json += `,"annotation_id_version":"${input.annotation_id_version
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"annotation_id":"${input.annotation_id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"annotation_id_version":"${input.annotation_id_version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += ',"data":{';
         let dataHasFields = false;
         if (typeof input.data.associated_id !== "undefined") {
             if (dataHasFields) {
                 json += ',"associated_id":{';
                 json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":"${input.data.associated_id.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
             } else {
                 json += '"associated_id":{';
                 json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":"${input.data.associated_id.id
-                    .replace(/[\n]/g, "\\n")
-                    .replace(/"/g, '\\"')}"`;
+                json += `,"id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                 json += "}";
                 dataHasFields = true;
             }

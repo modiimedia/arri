@@ -7,6 +7,7 @@ import {
     type ASchema,
     type InferType,
     ValidationError,
+    errors as getInputErrors,
 } from "./_index";
 import { createParsingTemplate as getSchemaParsingCode } from "./compiler/parse";
 import { createSerializationV2Template as getSchemaSerializationCode } from "./compiler/serialize";
@@ -64,9 +65,9 @@ export function compile<TSchema extends ASchema<any>>(
 ): CompiledValidator<TSchema> {
     const validateCode = getSchemaValidationCode("input", schema);
     const parser = getCompiledParser("input", schema);
-    const parse = parser.fn;
+    const parseFn = parser.fn;
     const serializer = getCompiledSerializer(schema);
-    const serialize = serializer.fn;
+    const serializeFn = serializer.fn;
     const validate = new Function(
         "input",
         validateCode,
@@ -74,52 +75,62 @@ export function compile<TSchema extends ASchema<any>>(
 
     return {
         validate,
-        parse,
+        parse(input) {
+            try {
+                return parseFn(input);
+            } catch (err) {
+                const errors = getInputErrors(schema, input);
+                let errorMessage = err instanceof Error ? err.message : "";
+                if (errors.length) {
+                    errorMessage =
+                        errors[0].message ??
+                        `Parsing error at ${errors[0].instancePath}`;
+                }
+                throw new ValidationError({
+                    message: errorMessage,
+                    errors,
+                });
+            }
+        },
         safeParse(input) {
             try {
-                const result = parse(input);
+                const result = parseFn(input);
                 return {
                     success: true,
                     value: result,
                 };
             } catch (err) {
-                if (
-                    typeof err === "object" &&
-                    err !== null &&
-                    "instancePath" in err &&
-                    "schemaPath" in err &&
-                    "message" in err
-                ) {
-                    return {
-                        success: false,
-                        error: new ValidationError({
-                            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                            message: `${err.message}`,
-                            errors: [
-                                {
-                                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                                    instancePath: `${err.instancePath}`,
-                                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                                    schemaPath: `${err.schemaPath}`,
-                                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                                    message: `${err.message}`,
-                                },
-                            ],
-                        }),
-                    };
+                const errors = getInputErrors(schema, input);
+                let errorMessage = err instanceof Error ? err.message : "";
+                if (errors.length) {
+                    errorMessage =
+                        errors[0].message ??
+                        `Parsing error at ${errors[0].instancePath}`;
                 }
                 return {
                     success: false,
                     error: new ValidationError({
-                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                        message: `${err}`,
-                        errors: [],
+                        message: errorMessage,
+                        errors,
                     }),
                 };
             }
         },
         // eslint-disable-next-line no-eval
-        serialize,
+        serialize(input) {
+            try {
+                return serializeFn(input);
+            } catch (err) {
+                const errors = getInputErrors(schema, input);
+                let errorMessage = err instanceof Error ? err.message : "";
+                if (errors.length) {
+                    errorMessage =
+                        errors[0].message ??
+                        `Serialization error at ${errors[0].instancePath}`;
+                }
+                throw new ValidationError({ message: errorMessage, errors });
+            }
+        },
         compiledCode: {
             validate: validateCode,
             parse: parser.code,

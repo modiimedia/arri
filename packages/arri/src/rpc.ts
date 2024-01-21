@@ -285,6 +285,15 @@ export function registerRpc(
                 await opts.onBeforeResponse(event);
             }
             if (typeof response === "object") {
+                if (!responseValidator?.validate(response)) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    const errors = a.errors(procedure.response, response);
+                    throw defineError(500, {
+                        statusMessage:
+                            "Failed to serialize response. Response does not match specified schema",
+                        data: errors,
+                    });
+                }
                 setResponseHeader(event, "Content-Type", "application/json");
                 await send(
                     event,

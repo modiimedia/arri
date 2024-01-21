@@ -1,6 +1,6 @@
 {
     "name": "arri-adapter-typebox",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
@@ -22,7 +22,7 @@
         "directory": "packages/arri-adapter-typebox"
     },
     "dependencies": {
-        "@sinclair/typebox": "^0.32.3",
+        "@sinclair/typebox": "^0.32.11",
         "arri-validate": "workspace:*",
         "json-schema-to-jtd": "workspace:*"
     }

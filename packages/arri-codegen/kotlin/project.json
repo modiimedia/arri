@@ -35,6 +35,13 @@
                     "command": "vitest dev packages/arri-codegen/kotlin --globals --passWithNoTests"
                 }
             }
+        },
+        "typecheck": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsc --noEmit",
+                "cwd": "packages/arri-codegen/kotlin"
+            }
         }
     },
     "tags": []

@@ -1,10 +1,36 @@
 # Arri Validate
 
-**This is a work in progress. Stuff will break!**
-
 A type builder and validation library built on top of the [Json Type Definition (RFC 8927)](https://jsontypedef.com) This library is pretty similar to [Typebox](https://github.com/sinclairzx81/typebox) except that it creates Json Type Definition (JTD) objects instead of Json Schema objects.
 
 A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library
+
+## Table of Contents
+
+-   [Installation](#installation)
+-   [Basic Example](#basic-example)
+-   [Supported Types](#supported-types)
+    -   [Primitives](#primitives)
+    -   [Enums](#enums)
+    -   [Arrays / Lists](#arrays--lists)
+    -   [Objects](#objects)
+    -   [Records / Maps](#records--maps)
+    -   [Discriminated Unions](#discriminated-unions)
+-   [Modifiers](#modifiers)
+    -   [Optional](#optional)
+    -   [Nullable](#nullable)
+    -   [Extend](#extend)
+    -   [Omit](#omit)
+    -   [Pick](#pick)
+    -   [Partial](#partial)
+-   [Utilities](#helpers)
+    -   [Validate](#validate)
+    -   [Parse](#parse)
+    -   [Safe Parse](#safe-parse)
+    -   [Coerce](#coerce)
+    -   [Safe Coerce](#safe-coerce)
+    -   [Serialize](#serialize)
+    -   [Errors](#errors)
+-   [Compiled Validators](#compiled-validators)
 
 ## Installation
 
@@ -16,7 +42,7 @@ npm install arri-validate
 pnpm install arri-validate
 ```
 
-## Example
+## Basic Example
 
 ```ts
 import { a } from "arri-validate";
@@ -40,6 +66,509 @@ a.validate(User, { id: "1", name: null });
 
 // outputs valid json
 a.serialize(User, { id: "1", name: "John Doe" });
+```
+
+## Project Philosophy
+
+The goals of this project are as follows:
+
+-   Portable type definitions
+-   High performance validation, parsing, and serialization
+-   Consistent error reporting for parsing and serialization errors
+
+I am not looking to support every feature of Typescript's type system or even every possible representation of JSON. The goal is that the data models defined through this library can be used as a source of truth across multiple programming languages. Both JSON and Typescript have to be limited to accomplish this.
+
+### Adherence to RFC 8927
+
+To represent the data-models in a language agnostic way this library heavily relies on JSON Type Definition (JTD). However, this library does not strictly comply with the JTD specification. The reason for this is because JTD does not support 64-bit integers. I believe sharing large integers across languages is a huge pain point especially when going to and from Javascript. For this reason alone, I have opted to break away from the JTD spec and add support for `int64` and `uint64`. So while I have no intention to break further away from the spec I am open to it if a large enough issue arises (in my view). If you use this library be aware that I'm using a superset of JTD rather than a strict spec compliant implementation.
+
+## Supported Types
+
+### Primitives
+
+| Arri Schema   | Typescript | Json Type Definition  |
+| ------------- | ---------- | --------------------- |
+| a.any()       | any        | {}                    |
+| a.string()    | string     | { "type": "string" }  |
+| a.boolean()   | boolean    | {"type": "boolean"}   |
+| a.timestamp() | Date       | {"type": "timestamp"} |
+| a.float32()   | number     | {"type": "float32"}   |
+| a.float64()   | number     | {"type": "float64"}   |
+| a.int8()      | number     | {"type": "int8"}      |
+| a.int16()     | number     | {"type": "int16"}     |
+| a.int32()     | number     | {"type": "int32"}     |
+| a.int64()     | BigInt     | {"type": "int64"}     |
+| a.uint8()     | number     | {"type": "uint8"}     |
+| a.uint16()    | number     | {"type": "uint16"}    |
+| a.uint32()    | number     | {"type": "uint32"}    |
+| a.uint64()    | BigInt     | {"type": "uint64"}    |
+
+### Enums
+
+Enum schemas allow you to specify a predefine list of accepted strings
+
+**Usage**
+
+```ts
+const Status = a.enumerator(["ACTIVE", "INACTIVE", "UNKNOWN"]);
+type Status = a.infer<typeof Status>; // "ACTIVE" | "INACTIVE" | "UNKNOWN";
+
+a.validate(Status, "BLAH"); // false
+a.validate(Status, "ACTIVE"); // true
+```
+
+**Outputted JTD**
+
+```json
+{
+    "enum": ["ACTIVE", "INACTIVE", "UNKNOWN"]
+}
+```
+
+### Arrays / Lists
+
+**Usage**
+
+```ts
+const MyList = a.array(a.string());
+type MyList = a.infer<typeof MyList>; // string[];
+
+a.validate(MyList, [1, 2]); // false
+a.validate(MyList, ["hello", "world"]); // true
+```
+
+**Outputted JTD**
+
+```json
+{
+    "elements": {
+        "type": "string"
+    }
+}
+```
+
+### Objects
+
+**Usage**
+
+```ts
+const User = a.object({
+    id: a.string(),
+    email: a.string(),
+    created: a.timestamp(),
+});
+type User = a.infer<typeof User>; // { id: string; email: string; created: Date; }
+
+a.validate({
+    id: "1",
+    email: "johndoe@example.com",
+    created: new Date(),
+}); // true
+a.validate({
+    id: "1",
+    email: null,
+    created: new Date(),
+}); // false
+```
+
+**Outputted JTD**
+
+```json
+{
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "created": {
+            "type": "timestamp"
+        }
+    }
+}
+```
+
+### Records / Maps
+
+**Usage**
+
+```ts
+const R = a.record(a.boolean());
+type R = a.infer<typeof R>; // Record<string, boolean>
+
+a.validate(R, {
+    hello: true,
+    world: false,
+}); // true;
+a.validate(R, {
+    hello: "world",
+}); // false;
+```
+
+**Outputted JTD**
+
+```json
+{
+    "values": {
+        "type": "boolean"
+    }
+}
+```
+
+### Discriminated Unions
+
+**Usage**
+
+```ts
+const Shape = a.discriminator("type", {
+    RECTANGLE: a.object({
+        width: a.float32(),
+        height: a.float32(),
+    }),
+    CIRCLE: a.object({
+        radius: a.float32(),
+    }),
+});
+type Shape = a.infer<typeof Shape>; // { type: "RECTANGLE"; width: number; height: number; } | { type: "CIRCLE"; radius: number; }
+
+a.validate(Shape, {
+    type: "RECTANGLE",
+    width: 1,
+    height: 1.5,
+}); // true
+a.validate(Shape, {
+    type: "CIRCLE",
+    radius: 5,
+}); // true
+a.validate(Shape, {
+    type: "CIRCLE",
+    width: 1,
+    height: 1.5,
+}); // false
+```
+
+**Outputted JTD**
+
+```json
+{
+    "discriminator": "type",
+    "mapping": {
+        "RECTANGLE": {
+            "properties": {
+                "width": {
+                    "type": "float32"
+                },
+                "height": {
+                    "type": "float32"
+                }
+            }
+        },
+        "CIRCLE": {
+            "properties": {
+                "radius": {
+                    "type": "float32"
+                }
+            }
+        }
+    }
+}
+```
+
+## Modifiers
+
+### Optional
+
+Use `a.optional()` to make an object field optional.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    email: a.optional(a.string()),
+    date: a.timestamp();
+})
+
+/**
+ * Resulting type
+ * {
+ *   id: string;
+ *   email: string | undefined;
+ *   date: Date;
+ * }
+ */
+```
+
+**Outputted JTD**
+
+```json
+{
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "date": {
+            "type": "timestamp"
+        }
+    },
+    "optionalProperties": {
+        "email": {
+            "type": "string"
+        }
+    }
+}
+```
+
+### Nullable
+
+Use `a.nullable()` to make a particular type nullable
+
+```ts
+const name = a.nullable(a.string());
+
+/**
+ * Resulting type
+ * string | null
+ */
+```
+
+**Outputted JTD**
+
+```json
+{
+    "type": "string",
+    "nullable": true
+}
+```
+
+### Extend
+
+Extend an object schema with the `a.extend()` helper.
+
+```ts
+const A = a.object({
+    a: a.string(),
+    b: a.float32(),
+});
+// { a: string; b: number; }
+
+const B = a.object({
+    c: a.timestamp(),
+});
+// { c: Date }
+
+const C = a.extend(A, B);
+// { a: string; b: number; c: Date }
+```
+
+### Omit
+
+Use `a.omit()` to create a new object schema with certain properties removed
+
+```ts
+const A = a.object({
+    a: a.string(),
+    b: a.float32(),
+});
+// { a: string; b: number; }
+
+const B = a.omit(A, ["a"]);
+// { b: number; }
+```
+
+### Pick
+
+Use `a.pick()` to create a new object schema with the a subset of properties from the parent object
+
+```ts
+const A = a.object({
+    a: a.string(),
+    b: a.float32(),
+    c: a.timestamp(),
+});
+// { a: string; b: number; c: Date; }
+
+const B = a.pick(A, ["a", "c"]);
+// { a: string; c: Date; }
+```
+
+### Partial
+
+Use `a.partial()` to create a new object schema that makes all of the properties of the parent schema optional.
+
+```ts
+const A = a.object({
+    a: a.string(),
+    b: a.float32(),
+    c: a.timestamp(),
+});
+// { a: string; b: number; c: Date; }
+
+const B = a.partial(A);
+// { a: string | undefined; b: number | undefined; c: Date | undefined; }
+```
+
+## Helpers
+
+### Validate
+
+Call `a.validate()` to validate an input against an arri schema. This method also acts as a type guard, so any `any` or `unknown` types that pass validation will automatically gain autocomplete for the validated fields
+
+```ts
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+});
+a.validate(User, true); // false
+a.validate(User, { id: "1", name: "john doe" }); // true
+
+if (a.validate(User, someInput)) {
+    console.log(someInput.id); // intellisense works here
+}
+```
+
+### Parse
+
+Call `a.parse()` to parse a JSON string against an arri schema. It will also handle parsing normal objects as well.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+});
+
+// returns a User if successful or throws a ValidationError if fails
+const result = a.parse(User, jsonString);
+```
+
+### Safe Parse
+
+A safer alternative to `a.parse()` that doesn't throw an error.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+});
+
+const result = a.safeParse(User, jsonString);
+if (result.success) {
+    console.log(result.value); // result.value will be User
+} else {
+    console.error(result.error);
+}
+```
+
+### Coerce
+
+`a.coerce()` will attempt to convert inputs to the correct type. If it fails to convert the inputs it will throw a `ValidationError`
+
+```ts
+const A = a.object({
+    a: a.string(),
+    b: a.boolean(),
+    c: a.float32(),
+});
+
+a.coerce(A, {
+    a: "1",
+    b: "true",
+    c: "500.24",
+});
+// { a: "1", b: true, c: 500.24 };
+```
+
+### Safe Coerce
+
+`a.safeCoerce()` is an alternative to `a.coerce()` that doesn't throw.
+
+```ts
+const A = a.object({
+    a: a.string(),
+    b: a.boolean(),
+    c: a.float32(),
+});
+
+const result = a.safeCoerce(A, someInput);
+
+if (result.success) {
+    console.log(result.value);
+} else {
+    console.error(result.error);
+}
+```
+
+### Serialize
+
+`a.serialize()` will take an input and serialize it to a valid JSON string.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    name: a.string(),
+});
+
+a.serialize(User, { id: "1", name: "john doe" });
+// {"id":"1","name":"john doe"}
+```
+
+Be aware that this function does not validate the input. So if you are passing in an any or unknown type into this function it is recommended that you validate it first.
+
+### Errors
+
+Use `a.errors()` to get all of the validation errors of a given input.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    date: a.timestamp(),
+});
+
+a.errors(User, { id: 1, date: "hello world" });
+/**
+ * [
+ *   {
+ *     instancePath: "/id",
+ *     schemaPath: "/properties/id/type",
+ *     message: "Expected string",
+ *   },
+ *   {
+ *     instancePath: "/date",
+ *     schemaPath: "/properties/id/type",
+ *     message: "Expected instanceof Date",
+ *   }
+ * ]
+ *
+ */
+```
+
+## Compiled Validators
+
+`arri-validate` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions.
+
+```ts
+const User = a.object({
+    id: a.string(),
+    email: a.nullable(a.string()),
+    created: a.timestamp(),
+});
+
+const $$User = a.compile(User);
+
+$$User.validate(someInput);
+$$User.parse(someJson);
+$$User.serialize({ id: "1", email: null, created: new Date() });
+```
+
+In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once.
+
+Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
+
+You can use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
+
+```ts
+$$User.compiledCode.validate; // the generated validation code
+$$User.compiledCode.parse; // the generated parsing code
+$$User.compiledCode.serialize; // the generated serialization code
 ```
 
 ## Building

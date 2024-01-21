@@ -51,7 +51,9 @@ export function arriSseRequest<
             }
             break;
     }
-    const headers = { ...opts.headers, "Content-Type": "text/event-stream" };
+    const headers = {
+        ...opts.headers,
+    };
     const controller = new AbortController();
     let shouldAbort = false;
     void fetchEventSource(url, {

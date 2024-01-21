@@ -31,6 +31,13 @@
                 "passWithNoTests": true,
                 "reportsDirectory": "../../coverage/packages/json-schema-to-jtd"
             }
+        },
+        "typecheck": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsc --noEmit",
+                "cwd": "packages/json-schema-to-jtd"
+            }
         }
     },
     "tags": []
