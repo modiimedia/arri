@@ -8,22 +8,31 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import java.nio.ByteBuffer
 import java.time.Instant
 
-val JsonInstance = Json { ignoreUnknownKeys = true }
+
+val JsonInstanceModule = SerializersModule {
+    polymorphic(UserRecentNotificationsItem::class) {
+        subclass(UserRecentNotificationsItemPostLike::class)
+        subclass(UserRecentNotificationsItemPostComment::class)
+    }
+}
+val JsonInstance = Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = true
+    serializersModule = JsonInstanceModule
+}
 
 class TestClient(
     private val httpClient: HttpClient,
@@ -151,7 +160,7 @@ data class User(
     val metadata: Map<String, JsonElement>,
     val randomList: List<JsonElement>,
     val bio: String? = null,
-    ) {
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -223,17 +232,15 @@ enum class UserSettingsPreferredTheme() {
     System,
 }
 
-// TODO: Add custom JSONInstance
-
 @Serializable
-sealed class UserRecentNotificationsItem()
+sealed class UserRecentNotificationsItem(val messageType: String)
 
 @Serializable
 @SerialName("POST_LIKE")
 data class UserRecentNotificationsItemPostLike(
     val postId: String,
     val userId: String,
-) : UserRecentNotificationsItem()
+) : UserRecentNotificationsItem(messageType = "POST_LIKE")
 
 @Serializable
 @SerialName("POST_COMMENT")
@@ -241,7 +248,22 @@ data class UserRecentNotificationsItemPostComment(
     val postId: String,
     val userId: String,
     val commentText: String,
-) : UserRecentNotificationsItem()
+) : UserRecentNotificationsItem(messageType = "POST_COMMENT")
+
+
+object UserRecentNotificationsItemSerializer :
+    JsonContentPolymorphicSerializer<UserRecentNotificationsItem>(UserRecentNotificationsItem::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<UserRecentNotificationsItem> {
+        val discriminatorKey = "messageType";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "\"POST_LIKE\"" -> UserRecentNotificationsItemPostLike.serializer()
+            "\"POST_COMMENT\"" -> UserRecentNotificationsItemPostComment.serializer()
+            else -> UserRecentNotificationsItem.serializer()
+        }
+    }
+}
 
 @Serializable
 data class UserBookmarksValue(
@@ -296,7 +318,7 @@ private suspend fun prepareRequest(
             val queryParts = mutableListOf<String>()
             params?.jsonObject?.entries?.forEach {
                 var finalVal = it.value.toString()
-                if(finalVal.startsWith("\"") && finalVal.endsWith("\"")) {
+                if (finalVal.startsWith("\"") && finalVal.endsWith("\"")) {
                     finalVal = finalVal.substring(1, finalVal.length - 1)
                 }
                 queryParts.add("${it.key}=${finalVal}")

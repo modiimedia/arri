@@ -87,7 +87,9 @@ export default defineEventStreamRpc({
             }
         };
         const interval = setInterval(async () => {
-            await connection.push(randomItem());
+            const item = randomItem();
+            console.log(`payload`, a.serialize(ChatMessage, item));
+            await connection.push(item);
         }, 100);
 
         connection.on("disconnect", async () => {

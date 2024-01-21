@@ -10045,25 +10045,10 @@ export interface UsersWatchUserParams {
 }
 const $$UsersWatchUserParams = {
     parse(input: Record<any, any>): UsersWatchUserParams {
-        class $ValidationErrorUsersWatchUserParams extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorUsersWatchUserParams({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -10107,9 +10092,7 @@ const $$UsersWatchUserParams = {
     serialize(input: UsersWatchUserParams): string {
         let json = "";
         json += "{";
-        json += `"userId":"${input.userId
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },
@@ -10130,25 +10113,10 @@ export interface UsersWatchUserResponse {
 }
 const $$UsersWatchUserResponse = {
     parse(input: Record<any, any>): UsersWatchUserResponse {
-        class $ValidationErrorUsersWatchUserResponse extends Error {
-            errors;
-            constructor(input) {
-                super(input.message);
-                this.errors = input.errors;
-            }
-        }
-
-        function $fallback(instancePath, schemaPath, message) {
-            throw new $ValidationErrorUsersWatchUserResponse({
-                message: message,
-                errors: [
-                    {
-                        instancePath: instancePath,
-                        schemaPath: schemaPath,
-                        message: message,
-                    },
-                ],
-            });
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
         }
 
         if (typeof input === "string") {
@@ -11102,15 +11070,11 @@ const $$UsersWatchUserResponse = {
     serialize(input: UsersWatchUserResponse): string {
         let json = "";
         json += "{";
-        json += `"id":"${input.id
-            .replace(/[\n]/g, "\\n")
-            .replace(/"/g, '\\"')}"`;
+        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += `,"role":"${input.role}"`;
         if (typeof input.photo === "object" && input.photo !== null) {
             json += ',"photo":{';
-            json += `"url":"${input.photo.url
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `"url":"${input.photo.url.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
 
             if (Number.isNaN(input.photo.width)) {
                 throw new Error("Expected number at /photo/width got NaN");
@@ -11147,27 +11111,17 @@ const $$UsersWatchUserResponse = {
                 case "POST_LIKE": {
                     json += "{";
                     json += `"notificationType":"POST_LIKE"`;
-                    json += `,"postId":"${inputRecentNotificationsItem.postId
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
-                    json += `,"userId":"${inputRecentNotificationsItem.userId
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `,"postId":"${inputRecentNotificationsItem.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `,"userId":"${inputRecentNotificationsItem.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     json += "}";
                     break;
                 }
                 case "POST_COMMENT": {
                     json += "{";
                     json += `"notificationType":"POST_COMMENT"`;
-                    json += `,"postId":"${inputRecentNotificationsItem.postId
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
-                    json += `,"userId":"${inputRecentNotificationsItem.userId
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
-                    json += `,"commentText":"${inputRecentNotificationsItem.commentText
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    json += `,"postId":"${inputRecentNotificationsItem.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `,"userId":"${inputRecentNotificationsItem.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `,"commentText":"${inputRecentNotificationsItem.commentText.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
                     json += "}";
                     break;
                 }
@@ -11185,12 +11139,8 @@ const $$UsersWatchUserResponse = {
                 json += `"${key}":`;
             }
             json += "{";
-            json += `"postId":"${innerVal.postId
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
-            json += `,"userId":"${innerVal.userId
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `"postId":"${innerVal.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"userId":"${innerVal.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
             json += "}";
         }
         json += "}";
@@ -11221,9 +11171,7 @@ const $$UsersWatchUserResponse = {
         }
         json += "]";
         if (typeof input.bio !== "undefined") {
-            json += `,"bio":"${input.bio
-                .replace(/[\n]/g, "\\n")
-                .replace(/"/g, '\\"')}"`;
+            json += `,"bio":"${input.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         }
         json += "}";
         return json;
