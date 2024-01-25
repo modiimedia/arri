@@ -232,6 +232,10 @@ const Shape = a.discriminator("type", {
 });
 type Shape = a.infer<typeof Shape>; // { type: "RECTANGLE"; width: number; height: number; } | { type: "CIRCLE"; radius: number; }
 
+// Infer specific sub types of the union
+type ShapeTypeRectangle = a.inferSubType<Shape, "type", "RECTANGLE">; // { type "RECTANGLE"; width: number; height: number; };
+type ShapeTypeCircle = a.inferSubType<Shape, "type", "CIRCLE">; // { type "CIRCLE"; radius: number; }
+
 a.validate(Shape, {
     type: "RECTANGLE",
     width: 1,
