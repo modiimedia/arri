@@ -32,4 +32,7 @@ export {
     errors,
 } from "./validation";
 export { compile } from "../compile";
-export type { InferType as infer } from "../schemas";
+export type {
+    InferType as infer,
+    InferSubType as inferSubType,
+} from "../schemas";

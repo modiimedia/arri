@@ -79,6 +79,12 @@ export type InferType<TInput extends ASchema<any>> = Resolve<
     TInput["metadata"][typeof SCHEMA_METADATA]["output"]
 >;
 
+export type InferSubType<
+    TUnion extends Record<string, any>,
+    TKey extends keyof TUnion,
+    TVal extends TUnion[TKey],
+> = TUnion extends Record<TKey, TVal> ? TUnion : never;
+
 // basic types
 export interface AScalarSchema<T extends JtdType | NumberType = any, TVal = any>
     extends ASchema<TVal> {
@@ -184,15 +190,16 @@ export type InferObjectOutput<
     ? ResolveObject<InferObjectRawType<TInput>> & Record<any, any>
     : ResolveObject<InferObjectRawType<TInput>>;
 
-export type InferObjectRawType<TInput> = TInput extends Record<any, any>
-    ? {
-          [TKey in keyof TInput]: TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["optional"] extends true
-              ?
-                    | TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"]
-                    | undefined
-              : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
-      }
-    : never;
+export type InferObjectRawType<TInput> =
+    TInput extends Record<any, any>
+        ? {
+              [TKey in keyof TInput]: TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["optional"] extends true
+                  ?
+                        | TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"]
+                        | undefined
+                  : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
+          }
+        : never;
 
 export function isObject(input: unknown): input is Record<any, any> {
     return typeof input === "object" && input !== null;
