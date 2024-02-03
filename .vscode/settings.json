@@ -20,6 +20,10 @@
         "unflatten",
         "vals"
     ],
+    "rust-analyzer.linkedProjects": ["packages/arri-rs/Cargo.toml"],
+    "[rust]": {
+        "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
     "eslint.validate": ["json"],
     "java.compile.nullAnalysis.mode": "automatic"
 }
