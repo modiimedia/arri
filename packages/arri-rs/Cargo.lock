@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "arri-rs"
+name = "arri"
 version = "0.1.0"
 dependencies = [
  "serde",
