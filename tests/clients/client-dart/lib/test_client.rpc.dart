@@ -154,6 +154,32 @@ class TestClientMiscTestsService {
     );
   }
 
+  EventSource<StreamLargeObjectsResponse> streamLargeObjects({
+    SseHookOnData<StreamLargeObjectsResponse>? onData,
+    SseHookOnError<StreamLargeObjectsResponse>? onError,
+    SseHookOnConnectionError<StreamLargeObjectsResponse>? onConnectionError,
+    SseHookOnOpen<StreamLargeObjectsResponse>? onOpen,
+    SseHookOnClose<StreamLargeObjectsResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<StreamLargeObjectsResponse>(
+      "$_baseUrl/rpcs/misc-tests/stream-large-objects",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => StreamLargeObjectsResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
   EventSource<ChatMessage> streamMessages(
     ChatMessageParams params, {
     SseHookOnData<ChatMessage>? onData,
@@ -352,11 +378,11 @@ class ManuallyAddedModel {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "hello": hello,
     };
 
-    return result;
+    return __result;
   }
 
   ManuallyAddedModel copyWith({
@@ -408,7 +434,7 @@ class AdaptersTypeboxAdapterParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "string": string,
       "boolean": boolean,
       "integer": integer,
@@ -418,9 +444,9 @@ class AdaptersTypeboxAdapterParams {
       "array": array.map((item) => item).toList(),
     };
     if (optionalString != null) {
-      result["optionalString"] = optionalString;
+      __result["optionalString"] = optionalString;
     }
-    return result;
+    return __result;
   }
 
   AdaptersTypeboxAdapterParams copyWith({
@@ -482,11 +508,11 @@ class AdaptersTypeboxAdapterParamsObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "string": string,
     };
 
-    return result;
+    return __result;
   }
 
   AdaptersTypeboxAdapterParamsObject copyWith({
@@ -510,11 +536,11 @@ class AdaptersTypeboxAdapterResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "message": message,
     };
 
-    return result;
+    return __result;
   }
 
   AdaptersTypeboxAdapterResponse copyWith({
@@ -625,7 +651,7 @@ class ObjectWithEveryType {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "any": any,
       "boolean": boolean,
       "string": string,
@@ -651,7 +677,7 @@ class ObjectWithEveryType {
           .toList(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryType copyWith({
@@ -746,13 +772,13 @@ class ObjectWithEveryTypeObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "string": string,
       "boolean": boolean,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeObject copyWith({
@@ -808,12 +834,12 @@ class ObjectWithEveryTypeDiscriminatorA
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "type": type,
       "title": title,
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeDiscriminatorA copyWith({
@@ -844,13 +870,13 @@ class ObjectWithEveryTypeDiscriminatorB
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "type": type,
       "title": title,
       "description": description,
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeDiscriminatorB copyWith({
@@ -885,13 +911,13 @@ class ObjectWithEveryTypeNestedObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeNestedObject copyWith({
@@ -929,13 +955,13 @@ class ObjectWithEveryTypeNestedObjectData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeNestedObjectData copyWith({
@@ -970,12 +996,12 @@ class ObjectWithEveryTypeNestedObjectDataData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeNestedObjectDataData copyWith({
@@ -1008,12 +1034,12 @@ class ObjectWithEveryTypeNestedArrayItemItem {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryTypeNestedArrayItemItem copyWith({
@@ -1136,7 +1162,7 @@ class ObjectWithEveryNullableType {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "any": any,
       "boolean": boolean,
       "string": string,
@@ -1162,7 +1188,7 @@ class ObjectWithEveryNullableType {
           .toList(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableType copyWith({
@@ -1256,13 +1282,13 @@ class ObjectWithEveryNullableTypeObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "string": string,
       "boolean": boolean,
       "timestamp": timestamp?.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeObject copyWith({
@@ -1319,12 +1345,12 @@ class ObjectWithEveryNullableTypeDiscriminatorA
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "type": type,
       "title": title,
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeDiscriminatorA copyWith({
@@ -1355,13 +1381,13 @@ class ObjectWithEveryNullableTypeDiscriminatorB
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "type": type,
       "title": title,
       "description": description,
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeDiscriminatorB copyWith({
@@ -1396,13 +1422,13 @@ class ObjectWithEveryNullableTypeNestedObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp?.toUtc().toIso8601String(),
       "data": data?.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeNestedObject copyWith({
@@ -1440,13 +1466,13 @@ class ObjectWithEveryNullableTypeNestedObjectData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp?.toUtc().toIso8601String(),
       "data": data?.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeNestedObjectData copyWith({
@@ -1478,12 +1504,12 @@ class ObjectWithEveryNullableTypeNestedObjectDataData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp?.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeNestedObjectDataData copyWith({
@@ -1513,12 +1539,12 @@ class ObjectWithEveryNullableTypeNestedArrayItemItem {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp?.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryNullableTypeNestedArrayItemItem copyWith({
@@ -1639,73 +1665,73 @@ class ObjectWithEveryOptionalType {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{};
+    final __result = <String, dynamic>{};
     if (any != null) {
-      result["any"] = any;
+      __result["any"] = any;
     }
     if (boolean != null) {
-      result["boolean"] = boolean;
+      __result["boolean"] = boolean;
     }
     if (string != null) {
-      result["string"] = string;
+      __result["string"] = string;
     }
     if (timestamp != null) {
-      result["timestamp"] = timestamp?.toUtc().toIso8601String();
+      __result["timestamp"] = timestamp?.toUtc().toIso8601String();
     }
     if (float32 != null) {
-      result["float32"] = float32;
+      __result["float32"] = float32;
     }
     if (float64 != null) {
-      result["float64"] = float64;
+      __result["float64"] = float64;
     }
     if (int8 != null) {
-      result["int8"] = int8;
+      __result["int8"] = int8;
     }
     if (uint8 != null) {
-      result["uint8"] = uint8;
+      __result["uint8"] = uint8;
     }
     if (int16 != null) {
-      result["int16"] = int16;
+      __result["int16"] = int16;
     }
     if (uint16 != null) {
-      result["uint16"] = uint16;
+      __result["uint16"] = uint16;
     }
     if (int32 != null) {
-      result["int32"] = int32;
+      __result["int32"] = int32;
     }
     if (uint32 != null) {
-      result["uint32"] = uint32;
+      __result["uint32"] = uint32;
     }
     if (int64 != null) {
-      result["int64"] = int64?.toString();
+      __result["int64"] = int64?.toString();
     }
     if (uint64 != null) {
-      result["uint64"] = uint64?.toString();
+      __result["uint64"] = uint64?.toString();
     }
     if (enumerator != null) {
-      result["enumerator"] = enumerator?.value;
+      __result["enumerator"] = enumerator?.value;
     }
     if (array != null) {
-      result["array"] = array?.map((item) => item).toList();
+      __result["array"] = array?.map((item) => item).toList();
     }
     if (object != null) {
-      result["object"] = object?.toJson();
+      __result["object"] = object?.toJson();
     }
     if (record != null) {
-      result["record"] = record?.map((key, value) => MapEntry(key, value));
+      __result["record"] = record?.map((key, value) => MapEntry(key, value));
     }
     if (discriminator != null) {
-      result["discriminator"] = discriminator?.toJson();
+      __result["discriminator"] = discriminator?.toJson();
     }
     if (nestedObject != null) {
-      result["nestedObject"] = nestedObject?.toJson();
+      __result["nestedObject"] = nestedObject?.toJson();
     }
     if (nestedArray != null) {
-      result["nestedArray"] = nestedArray
+      __result["nestedArray"] = nestedArray
           ?.map((item) => item.map((item) => item.toJson()).toList())
           .toList();
     }
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalType copyWith({
@@ -1802,13 +1828,13 @@ class ObjectWithEveryOptionalTypeObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "string": string,
       "boolean": boolean,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeObject copyWith({
@@ -1865,12 +1891,12 @@ class ObjectWithEveryOptionalTypeDiscriminatorA
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "type": type,
       "title": title,
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeDiscriminatorA copyWith({
@@ -1901,13 +1927,13 @@ class ObjectWithEveryOptionalTypeDiscriminatorB
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "type": type,
       "title": title,
       "description": description,
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeDiscriminatorB copyWith({
@@ -1943,13 +1969,13 @@ class ObjectWithEveryOptionalTypeNestedObject {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeNestedObject copyWith({
@@ -1988,13 +2014,13 @@ class ObjectWithEveryOptionalTypeNestedObjectData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeNestedObjectData copyWith({
@@ -2029,12 +2055,12 @@ class ObjectWithEveryOptionalTypeNestedObjectDataData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeNestedObjectDataData copyWith({
@@ -2067,12 +2093,12 @@ class ObjectWithEveryOptionalTypeNestedArrayItemItem {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   ObjectWithEveryOptionalTypeNestedArrayItemItem copyWith({
@@ -2098,11 +2124,11 @@ class AutoReconnectParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "messageCount": messageCount,
     };
 
-    return result;
+    return __result;
   }
 
   AutoReconnectParams copyWith({
@@ -2129,12 +2155,12 @@ class AutoReconnectResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "count": count,
       "message": message,
     };
 
-    return result;
+    return __result;
   }
 
   AutoReconnectResponse copyWith({
@@ -2144,6 +2170,94 @@ class AutoReconnectResponse {
     return AutoReconnectResponse(
       count: count ?? this.count,
       message: message ?? this.message,
+    );
+  }
+}
+
+class StreamLargeObjectsResponse {
+  final List<double> numbers;
+  final List<StreamLargeObjectsResponseObjectsItem> objects;
+  const StreamLargeObjectsResponse({
+    required this.numbers,
+    required this.objects,
+  });
+  factory StreamLargeObjectsResponse.fromJson(Map<String, dynamic> json) {
+    return StreamLargeObjectsResponse(
+      numbers: json["numbers"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["numbers"] as List)
+              .map((item) => doubleFromDynamic(item, 0))
+              .toList() as List<double>
+          : <double>[],
+      objects: json["objects"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["objects"] as List)
+              .map((item) =>
+                  StreamLargeObjectsResponseObjectsItem.fromJson(item))
+              .toList() as List<StreamLargeObjectsResponseObjectsItem>
+          : <StreamLargeObjectsResponseObjectsItem>[],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "numbers": numbers.map((item) => item).toList(),
+      "objects": objects.map((item) => item.toJson()).toList(),
+    };
+
+    return __result;
+  }
+
+  StreamLargeObjectsResponse copyWith({
+    List<double>? numbers,
+    List<StreamLargeObjectsResponseObjectsItem>? objects,
+  }) {
+    return StreamLargeObjectsResponse(
+      numbers: numbers ?? this.numbers,
+      objects: objects ?? this.objects,
+    );
+  }
+}
+
+class StreamLargeObjectsResponseObjectsItem {
+  final String id;
+  final String name;
+  final String email;
+  const StreamLargeObjectsResponseObjectsItem({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
+  factory StreamLargeObjectsResponseObjectsItem.fromJson(
+      Map<String, dynamic> json) {
+    return StreamLargeObjectsResponseObjectsItem(
+      id: typeFromDynamic<String>(json["id"], ""),
+      name: typeFromDynamic<String>(json["name"], ""),
+      email: typeFromDynamic<String>(json["email"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "id": id,
+      "name": name,
+      "email": email,
+    };
+
+    return __result;
+  }
+
+  StreamLargeObjectsResponseObjectsItem copyWith({
+    String? id,
+    String? name,
+    String? email,
+  }) {
+    return StreamLargeObjectsResponseObjectsItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
     );
   }
 }
@@ -2160,11 +2274,11 @@ class ChatMessageParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "channelId": channelId,
     };
 
-    return result;
+    return __result;
   }
 
   ChatMessageParams copyWith({
@@ -2231,7 +2345,7 @@ class ChatMessageText implements ChatMessage {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "messageType": messageType,
       "id": id,
       "channelId": channelId,
@@ -2240,7 +2354,7 @@ class ChatMessageText implements ChatMessage {
       "text": text,
     };
 
-    return result;
+    return __result;
   }
 
   ChatMessageText copyWith({
@@ -2289,7 +2403,7 @@ class ChatMessageImage implements ChatMessage {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "messageType": messageType,
       "id": id,
       "channelId": channelId,
@@ -2298,7 +2412,7 @@ class ChatMessageImage implements ChatMessage {
       "image": image,
     };
 
-    return result;
+    return __result;
   }
 
   ChatMessageImage copyWith({
@@ -2347,7 +2461,7 @@ class ChatMessageUrl implements ChatMessage {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "messageType": messageType,
       "id": id,
       "channelId": channelId,
@@ -2356,7 +2470,7 @@ class ChatMessageUrl implements ChatMessage {
       "url": url,
     };
 
-    return result;
+    return __result;
   }
 
   ChatMessageUrl copyWith({
@@ -2388,11 +2502,11 @@ class PostParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "postId": postId,
     };
 
-    return result;
+    return __result;
   }
 
   PostParams copyWith({
@@ -2455,7 +2569,7 @@ class Post {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "title": title,
       "type": type.value,
@@ -2468,7 +2582,7 @@ class Post {
       "updatedAt": updatedAt.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   Post copyWith({
@@ -2549,7 +2663,7 @@ class Author {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "name": name,
       "bio": bio,
@@ -2557,7 +2671,7 @@ class Author {
       "updatedAt": updatedAt.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   Author copyWith({
@@ -2594,13 +2708,13 @@ class PostListParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "limit": limit,
     };
     if (type != null) {
-      result["type"] = type?.value;
+      __result["type"] = type?.value;
     }
-    return result;
+    return __result;
   }
 
   PostListParams copyWith({
@@ -2634,12 +2748,12 @@ class PostListResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "total": total,
       "items": items.map((item) => item.toJson()).toList(),
     };
 
-    return result;
+    return __result;
   }
 
   PostListResponse copyWith({
@@ -2703,13 +2817,13 @@ class PostEventPostCreated implements PostEvent {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "eventType": eventType,
       "postId": postId,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   PostEventPostCreated copyWith({
@@ -2743,13 +2857,13 @@ class PostEventPostDeleted implements PostEvent {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "eventType": eventType,
       "postId": postId,
       "timestamp": timestamp.toUtc().toIso8601String(),
     };
 
-    return result;
+    return __result;
   }
 
   PostEventPostDeleted copyWith({
@@ -2786,14 +2900,14 @@ class PostEventPostUpdated implements PostEvent {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "eventType": eventType,
       "postId": postId,
       "timestamp": timestamp.toUtc().toIso8601String(),
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   PostEventPostUpdated copyWith({
@@ -2858,38 +2972,38 @@ class PostEventPostUpdatedData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{};
+    final __result = <String, dynamic>{};
     if (id != null) {
-      result["id"] = id;
+      __result["id"] = id;
     }
     if (title != null) {
-      result["title"] = title;
+      __result["title"] = title;
     }
     if (type != null) {
-      result["type"] = type?.value;
+      __result["type"] = type?.value;
     }
     if (description != null) {
-      result["description"] = description;
+      __result["description"] = description;
     }
     if (content != null) {
-      result["content"] = content;
+      __result["content"] = content;
     }
     if (tags != null) {
-      result["tags"] = tags?.map((item) => item).toList();
+      __result["tags"] = tags?.map((item) => item).toList();
     }
     if (authorId != null) {
-      result["authorId"] = authorId;
+      __result["authorId"] = authorId;
     }
     if (author != null) {
-      result["author"] = author?.toJson();
+      __result["author"] = author?.toJson();
     }
     if (createdAt != null) {
-      result["createdAt"] = createdAt?.toUtc().toIso8601String();
+      __result["createdAt"] = createdAt?.toUtc().toIso8601String();
     }
     if (updatedAt != null) {
-      result["updatedAt"] = updatedAt?.toUtc().toIso8601String();
+      __result["updatedAt"] = updatedAt?.toUtc().toIso8601String();
     }
-    return result;
+    return __result;
   }
 
   PostEventPostUpdatedData copyWith({
@@ -2945,7 +3059,7 @@ class PostEventPostLiked implements PostEvent {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "eventType": eventType,
       "postId": postId,
       "timestamp": timestamp.toUtc().toIso8601String(),
@@ -2953,7 +3067,7 @@ class PostEventPostLiked implements PostEvent {
       "postLikeCount": postLikeCount,
     };
 
-    return result;
+    return __result;
   }
 
   PostEventPostLiked copyWith({
@@ -3000,7 +3114,7 @@ class PostEventPostCommented implements PostEvent {
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "eventType": eventType,
       "postId": postId,
       "timestamp": timestamp.toUtc().toIso8601String(),
@@ -3009,7 +3123,7 @@ class PostEventPostCommented implements PostEvent {
       "commentCount": commentCount,
     };
 
-    return result;
+    return __result;
   }
 
   PostEventPostCommented copyWith({
@@ -3044,12 +3158,12 @@ class LogPostEventResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "success": success,
       "message": message,
     };
 
-    return result;
+    return __result;
   }
 
   LogPostEventResponse copyWith({
@@ -3078,12 +3192,12 @@ class UpdatePostParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "postId": postId,
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   UpdatePostParams copyWith({
@@ -3124,20 +3238,20 @@ class UpdatePostParamsData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{};
+    final __result = <String, dynamic>{};
     if (title != null) {
-      result["title"] = title;
+      __result["title"] = title;
     }
     if (description != null) {
-      result["description"] = description;
+      __result["description"] = description;
     }
     if (content != null) {
-      result["content"] = content;
+      __result["content"] = content;
     }
     if (tags != null) {
-      result["tags"] = tags?.map((item) => item).toList();
+      __result["tags"] = tags?.map((item) => item).toList();
     }
-    return result;
+    return __result;
   }
 
   UpdatePostParamsData copyWith({
@@ -3170,12 +3284,12 @@ class AnnotationId {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "version": version,
     };
 
-    return result;
+    return __result;
   }
 
   AnnotationId copyWith({
@@ -3217,7 +3331,7 @@ class Annotation {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "annotation_id": annotationId.toJson(),
       "associated_id": associatedId.toJson(),
       "annotation_type": annotationType.value,
@@ -3226,7 +3340,7 @@ class Annotation {
       "box_type_range": boxTypeRange.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   Annotation copyWith({
@@ -3265,12 +3379,12 @@ class AssociatedId {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "entity_type": entityType.value,
       "id": id,
     };
 
-    return result;
+    return __result;
   }
 
   AssociatedId copyWith({
@@ -3342,12 +3456,12 @@ class AnnotationBoxTypeRange {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "start_time_in_nano_sec": startTimeInNanoSec.toString(),
       "end_time_in_nano_sec": endTimeInNanoSec.toString(),
     };
 
-    return result;
+    return __result;
   }
 
   AnnotationBoxTypeRange copyWith({
@@ -3380,13 +3494,13 @@ class UpdateAnnotationParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "annotation_id": annotationId,
       "annotation_id_version": annotationIdVersion,
       "data": data.toJson(),
     };
 
-    return result;
+    return __result;
   }
 
   UpdateAnnotationParams copyWith({
@@ -3435,23 +3549,23 @@ class UpdateAnnotationData {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{};
+    final __result = <String, dynamic>{};
     if (associatedId != null) {
-      result["associated_id"] = associatedId?.toJson();
+      __result["associated_id"] = associatedId?.toJson();
     }
     if (annotationType != null) {
-      result["annotation_type"] = annotationType?.value;
+      __result["annotation_type"] = annotationType?.value;
     }
     if (annotationTypeVersion != null) {
-      result["annotation_type_version"] = annotationTypeVersion;
+      __result["annotation_type_version"] = annotationTypeVersion;
     }
     if (metadata != null) {
-      result["metadata"] = metadata;
+      __result["metadata"] = metadata;
     }
     if (boxTypeRange != null) {
-      result["box_type_range"] = boxTypeRange?.toJson();
+      __result["box_type_range"] = boxTypeRange?.toJson();
     }
-    return result;
+    return __result;
   }
 
   UpdateAnnotationData copyWith({
@@ -3511,12 +3625,12 @@ class UpdateAnnotationParamsDataBoxTypeRange {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "start_time_in_nano_sec": startTimeInNanoSec.toString(),
       "end_time_in_nano_sec": endTimeInNanoSec.toString(),
     };
 
-    return result;
+    return __result;
   }
 
   UpdateAnnotationParamsDataBoxTypeRange copyWith({
