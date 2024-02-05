@@ -345,5 +345,26 @@ Future<void> main() async {
       expect(messageCount > 10, equals(true));
       expect(errorCount, equals(0));
     });
+    test("can stream large objects", () async {
+      var openCount = 0;
+      var msgCount = 0;
+      var errorCount = 0;
+      final eventSource = client.miscTests.streamLargeObjects(
+        onOpen: (_, __) {
+          openCount++;
+        },
+        onData: (data, _) {
+          msgCount++;
+        },
+        onError: (_, __) {
+          errorCount++;
+        },
+      );
+      await Future.delayed(Duration(seconds: 3));
+      eventSource.close();
+      expect(openCount, equals(1));
+      expect(msgCount > 2, equals(true));
+      expect(errorCount, equals(0));
+    });
   });
 }

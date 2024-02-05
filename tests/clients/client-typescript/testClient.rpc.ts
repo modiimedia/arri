@@ -109,6 +109,19 @@ export class TestClientMiscTestsService {
             options,
         );
     }
+    streamLargeObjects(options: SseOptions<StreamLargeObjectsResponse>) {
+        return arriSseRequest<StreamLargeObjectsResponse, undefined>(
+            {
+                url: `${this.baseUrl}/rpcs/misc-tests/stream-large-objects`,
+                method: "get",
+                headers: this.headers,
+                params: undefined,
+                parser: $$StreamLargeObjectsResponse.parse,
+                serializer: (_) => {},
+            },
+            options,
+        );
+    }
     streamMessages(
         params: ChatMessageParams,
         options: SseOptions<ChatMessage>,
@@ -6349,6 +6362,270 @@ const $$AutoReconnectResponse = {
         return json;
     },
 };
+
+export interface StreamLargeObjectsResponse {
+    numbers: Array<number>;
+    objects: Array<StreamLargeObjectsResponseObjectsItem>;
+}
+const $$StreamLargeObjectsResponse = {
+    parse(input: Record<any, any>): StreamLargeObjectsResponse {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (Array.isArray(json.numbers)) {
+                    const jsonInnerValNumbersInnerResult = [];
+                    for (const jsonInnerValNumbersInnerResultItem of json.numbers) {
+                        let jsonInnerValNumbersInnerResultItemResult;
+                        if (
+                            typeof jsonInnerValNumbersInnerResultItem ===
+                                "number" &&
+                            !Number.isNaN(jsonInnerValNumbersInnerResultItem)
+                        ) {
+                            jsonInnerValNumbersInnerResultItemResult =
+                                jsonInnerValNumbersInnerResultItem;
+                        } else {
+                            $fallback(
+                                "/numbers/[0]",
+                                "/properties/numbers/elements/type",
+                                "Expected number at /numbers/[0]",
+                            );
+                        }
+                        jsonInnerValNumbersInnerResult.push(
+                            jsonInnerValNumbersInnerResultItemResult,
+                        );
+                    }
+                    jsonInnerVal.numbers = jsonInnerValNumbersInnerResult;
+                } else {
+                    $fallback(
+                        "/numbers",
+                        "/properties/numbers",
+                        "Expected Array",
+                    );
+                }
+                if (Array.isArray(json.objects)) {
+                    const jsonInnerValObjectsInnerResult = [];
+                    for (const jsonInnerValObjectsInnerResultItem of json.objects) {
+                        let jsonInnerValObjectsInnerResultItemResult;
+                        if (
+                            typeof jsonInnerValObjectsInnerResultItem ===
+                                "object" &&
+                            jsonInnerValObjectsInnerResultItem !== null
+                        ) {
+                            const jsonInnerValObjectsInnerResultItemInnerVal =
+                                {};
+                            if (
+                                typeof jsonInnerValObjectsInnerResultItem.id ===
+                                "string"
+                            ) {
+                                jsonInnerValObjectsInnerResultItemInnerVal.id =
+                                    jsonInnerValObjectsInnerResultItem.id;
+                            } else {
+                                $fallback(
+                                    "/objects/[0]/id",
+                                    "/properties/objects/elements/properties/id/type",
+                                    "Expected string at /objects/[0]/id",
+                                );
+                            }
+                            if (
+                                typeof jsonInnerValObjectsInnerResultItem.name ===
+                                "string"
+                            ) {
+                                jsonInnerValObjectsInnerResultItemInnerVal.name =
+                                    jsonInnerValObjectsInnerResultItem.name;
+                            } else {
+                                $fallback(
+                                    "/objects/[0]/name",
+                                    "/properties/objects/elements/properties/name/type",
+                                    "Expected string at /objects/[0]/name",
+                                );
+                            }
+                            if (
+                                typeof jsonInnerValObjectsInnerResultItem.email ===
+                                "string"
+                            ) {
+                                jsonInnerValObjectsInnerResultItemInnerVal.email =
+                                    jsonInnerValObjectsInnerResultItem.email;
+                            } else {
+                                $fallback(
+                                    "/objects/[0]/email",
+                                    "/properties/objects/elements/properties/email/type",
+                                    "Expected string at /objects/[0]/email",
+                                );
+                            }
+                            jsonInnerValObjectsInnerResultItemResult =
+                                jsonInnerValObjectsInnerResultItemInnerVal;
+                        } else {
+                            $fallback(
+                                "/objects/[0]",
+                                "/properties/objects/elements",
+                                "Expected object",
+                            );
+                        }
+                        jsonInnerValObjectsInnerResult.push(
+                            jsonInnerValObjectsInnerResultItemResult,
+                        );
+                    }
+                    jsonInnerVal.objects = jsonInnerValObjectsInnerResult;
+                } else {
+                    $fallback(
+                        "/objects",
+                        "/properties/objects",
+                        "Expected Array",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (Array.isArray(input.numbers)) {
+                const inputInnerValNumbersInnerResult = [];
+                for (const inputInnerValNumbersInnerResultItem of input.numbers) {
+                    let inputInnerValNumbersInnerResultItemResult;
+                    if (
+                        typeof inputInnerValNumbersInnerResultItem ===
+                            "number" &&
+                        !Number.isNaN(inputInnerValNumbersInnerResultItem)
+                    ) {
+                        inputInnerValNumbersInnerResultItemResult =
+                            inputInnerValNumbersInnerResultItem;
+                    } else {
+                        $fallback(
+                            "/numbers/[0]",
+                            "/properties/numbers/elements/type",
+                            "Expected number at /numbers/[0]",
+                        );
+                    }
+                    inputInnerValNumbersInnerResult.push(
+                        inputInnerValNumbersInnerResultItemResult,
+                    );
+                }
+                inputInnerVal.numbers = inputInnerValNumbersInnerResult;
+            } else {
+                $fallback("/numbers", "/properties/numbers", "Expected Array");
+            }
+            if (Array.isArray(input.objects)) {
+                const inputInnerValObjectsInnerResult = [];
+                for (const inputInnerValObjectsInnerResultItem of input.objects) {
+                    let inputInnerValObjectsInnerResultItemResult;
+                    if (
+                        typeof inputInnerValObjectsInnerResultItem ===
+                            "object" &&
+                        inputInnerValObjectsInnerResultItem !== null
+                    ) {
+                        const inputInnerValObjectsInnerResultItemInnerVal = {};
+                        if (
+                            typeof inputInnerValObjectsInnerResultItem.id ===
+                            "string"
+                        ) {
+                            inputInnerValObjectsInnerResultItemInnerVal.id =
+                                inputInnerValObjectsInnerResultItem.id;
+                        } else {
+                            $fallback(
+                                "/objects/[0]/id",
+                                "/properties/objects/elements/properties/id/type",
+                                "Expected string at /objects/[0]/id",
+                            );
+                        }
+                        if (
+                            typeof inputInnerValObjectsInnerResultItem.name ===
+                            "string"
+                        ) {
+                            inputInnerValObjectsInnerResultItemInnerVal.name =
+                                inputInnerValObjectsInnerResultItem.name;
+                        } else {
+                            $fallback(
+                                "/objects/[0]/name",
+                                "/properties/objects/elements/properties/name/type",
+                                "Expected string at /objects/[0]/name",
+                            );
+                        }
+                        if (
+                            typeof inputInnerValObjectsInnerResultItem.email ===
+                            "string"
+                        ) {
+                            inputInnerValObjectsInnerResultItemInnerVal.email =
+                                inputInnerValObjectsInnerResultItem.email;
+                        } else {
+                            $fallback(
+                                "/objects/[0]/email",
+                                "/properties/objects/elements/properties/email/type",
+                                "Expected string at /objects/[0]/email",
+                            );
+                        }
+                        inputInnerValObjectsInnerResultItemResult =
+                            inputInnerValObjectsInnerResultItemInnerVal;
+                    } else {
+                        $fallback(
+                            "/objects/[0]",
+                            "/properties/objects/elements",
+                            "Expected object",
+                        );
+                    }
+                    inputInnerValObjectsInnerResult.push(
+                        inputInnerValObjectsInnerResultItemResult,
+                    );
+                }
+                inputInnerVal.objects = inputInnerValObjectsInnerResult;
+            } else {
+                $fallback("/objects", "/properties/objects", "Expected Array");
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: StreamLargeObjectsResponse): string {
+        let json = "";
+        json += "{";
+        json += '"numbers":[';
+        for (let i = 0; i < input.numbers.length; i++) {
+            const inputNumbersItem = input.numbers[i];
+            if (i !== 0) {
+                json += ",";
+            }
+
+            if (Number.isNaN(inputNumbersItem)) {
+                throw new Error("Expected number at /numbers/i got NaN");
+            }
+            json += `${inputNumbersItem}`;
+        }
+        json += "]";
+        json += ',"objects":[';
+        for (let i = 0; i < input.objects.length; i++) {
+            const inputObjectsItem = input.objects[i];
+            if (i !== 0) {
+                json += ",";
+            }
+            json += "{";
+            json += `"id":"${inputObjectsItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"name":"${inputObjectsItem.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"email":"${inputObjectsItem.email.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += "}";
+        }
+        json += "]";
+        json += "}";
+        return json;
+    },
+};
+export interface StreamLargeObjectsResponseObjectsItem {
+    id: string;
+    name: string;
+    email: string;
+}
 
 export interface ChatMessageParams {
     channelId: string;

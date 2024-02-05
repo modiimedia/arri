@@ -500,7 +500,7 @@ ${classNamePart} {
   }
   ${isDiscriminatorChild ? `@override` : ""}
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{${
+    final __result = <String, dynamic>{${
         isDiscriminatorChild
             ? `\n      "${discOptions?.discriminatorKey}": ${camelCaseWrapper(
                   discOptions?.discriminatorKey ?? "",
@@ -519,13 +519,13 @@ ${classNamePart} {
     ${optionalProperties
         .map(
             (prop) => `if (${camelCaseWrapper(prop.key)} != null) {
-      result["${prop.key}"] = ${prop.templates.toJsonTemplate(
+      __result["${prop.key}"] = ${prop.templates.toJsonTemplate(
           camelCaseWrapper(prop.key),
       )};
     }`,
         )
         .join("\n")}
-    return result;
+    return __result;
   }
   ${className} copyWith({
     ${copyWithParamParts.join(",\n    ")},

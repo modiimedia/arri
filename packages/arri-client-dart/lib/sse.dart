@@ -164,10 +164,17 @@ class EventSource<T> {
           "Server must return statusCode 200. Instead got ${response.statusCode}",
         );
       }
+      String pendingData = "";
       response.stream.listen(
         (value) {
           final input = utf8.decode(value);
-          final events = parseSseEvents(input, parser);
+          // this means we have a partial chunk so we need to store this until the whole message has been received
+          if (!input.endsWith("\n\n")) {
+            pendingData += input;
+            return;
+          }
+          final events = parseSseEvents(pendingData + input, parser);
+          pendingData = "";
           for (final event in events) {
             if (event.id != null) {
               lastEventId = event.id;

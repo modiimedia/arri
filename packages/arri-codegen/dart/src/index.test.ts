@@ -197,7 +197,7 @@ describe("Model Generation", () => {
           );
         }
         Map<String, dynamic> toJson() {
-          final result = <String, dynamic>{
+          final __result = <String, dynamic>{
             "id": id,
             "name": name,
             "count": count,
@@ -205,9 +205,9 @@ describe("Model Generation", () => {
             "lastSignedIn": lastSignedIn?.toUtc().toIso8601String(),
           };
           if (email != null) {
-            result["email"] = email;
+            __result["email"] = email;
           }
-          return result;
+          return __result;
         }
         User copyWith({
           String? id,
@@ -281,13 +281,13 @@ describe("Model Generation", () => {
             );
           }
           Map<String, dynamic> toJson() {
-            final result = <String, dynamic>{
+            final __result = <String, dynamic>{
               "id": id,
               "createdAt": createdAt.toUtc().toIso8601String(),
               "followers": followers.map((item) => item.toJson()).toList(),
               "settings": settings.toJson(),
             };
-            return result;
+            return __result;
           }
           User copyWith({
             String? id,
@@ -320,11 +320,11 @@ describe("Model Generation", () => {
             );
           }
           Map<String, dynamic> toJson() {
-            final result = <String, dynamic>{
+            final __result = <String, dynamic>{
               "id": id,
               "followedTime": followedTime.toUtc().toIso8601String(),
             };
-            return result;
+            return __result;
           }
           UserFollowersItem copyWith({
             String? id,
@@ -350,11 +350,11 @@ describe("Model Generation", () => {
             );
           }
           Map<String, dynamic> toJson() {
-            final result = <String, dynamic>{
+            final __result = <String, dynamic>{
               "notifications": notifications,
               "theme": theme.value,
             };
-            return result;
+            return __result;
           }
           UserSettings copyWith({
             bool? notifications,
@@ -420,14 +420,14 @@ describe("Model Generation", () => {
             );
           }
           Map<String, dynamic> toJson() {
-            final result = <String, dynamic>{
+            final __result = <String, dynamic>{
               "items": items.map((item) => item).toList(),
               "nullableItems": nullableItems?.map((item) => item).toList(),
             };
             if (objectItems != null) {
-              result["objectItems"] = objectItems?.map((item) => item.toJson()).toList();
+              __result["objectItems"] = objectItems?.map((item) => item.toJson()).toList();
             }
-            return result;
+            return __result;
           }
           Model copyWith({
             List<double>? items,
@@ -452,10 +452,10 @@ describe("Model Generation", () => {
             );
           }
           Map<String, dynamic> toJson() {
-            final result = <String, dynamic>{
+            final __result = <String, dynamic>{
               "id": id,
             };
-            return result;
+            return __result;
           }
           ModelObjectItemsItem copyWith({
             String? id,
@@ -497,16 +497,16 @@ describe("Model Generation", () => {
             );
           }
           Map<String, dynamic> toJson() {
-            final result = <String, dynamic>{
+            final __result = <String, dynamic>{
 
             };
             if (id != null) {
-              result["id"] = id;
+              __result["id"] = id;
             }
             if (tags != null) {
-              result["tags"] = tags?.map((item) => item).toList();
+              __result["tags"] = tags?.map((item) => item).toList();
             }
-            return result;
+            return __result;
           }
           Model copyWith({
             String? id,

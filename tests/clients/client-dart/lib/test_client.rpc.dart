@@ -154,6 +154,32 @@ class TestClientMiscTestsService {
     );
   }
 
+  EventSource<StreamLargeObjectsResponse> streamLargeObjects({
+    SseHookOnData<StreamLargeObjectsResponse>? onData,
+    SseHookOnError<StreamLargeObjectsResponse>? onError,
+    SseHookOnConnectionError<StreamLargeObjectsResponse>? onConnectionError,
+    SseHookOnOpen<StreamLargeObjectsResponse>? onOpen,
+    SseHookOnClose<StreamLargeObjectsResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<StreamLargeObjectsResponse>(
+      "$_baseUrl/rpcs/misc-tests/stream-large-objects",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => StreamLargeObjectsResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
   EventSource<ChatMessage> streamMessages(
     ChatMessageParams params, {
     SseHookOnData<ChatMessage>? onData,
@@ -2144,6 +2170,94 @@ class AutoReconnectResponse {
     return AutoReconnectResponse(
       count: count ?? this.count,
       message: message ?? this.message,
+    );
+  }
+}
+
+class StreamLargeObjectsResponse {
+  final List<double> numbers;
+  final List<StreamLargeObjectsResponseObjectsItem> objects;
+  const StreamLargeObjectsResponse({
+    required this.numbers,
+    required this.objects,
+  });
+  factory StreamLargeObjectsResponse.fromJson(Map<String, dynamic> json) {
+    return StreamLargeObjectsResponse(
+      numbers: json["numbers"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["numbers"] as List)
+              .map((item) => doubleFromDynamic(item, 0))
+              .toList() as List<double>
+          : <double>[],
+      objects: json["objects"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["objects"] as List)
+              .map((item) =>
+                  StreamLargeObjectsResponseObjectsItem.fromJson(item))
+              .toList() as List<StreamLargeObjectsResponseObjectsItem>
+          : <StreamLargeObjectsResponseObjectsItem>[],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "numbers": numbers.map((item) => item).toList(),
+      "objects": objects.map((item) => item.toJson()).toList(),
+    };
+
+    return __result;
+  }
+
+  StreamLargeObjectsResponse copyWith({
+    List<double>? numbers,
+    List<StreamLargeObjectsResponseObjectsItem>? objects,
+  }) {
+    return StreamLargeObjectsResponse(
+      numbers: numbers ?? this.numbers,
+      objects: objects ?? this.objects,
+    );
+  }
+}
+
+class StreamLargeObjectsResponseObjectsItem {
+  final String id;
+  final String name;
+  final String email;
+  const StreamLargeObjectsResponseObjectsItem({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
+  factory StreamLargeObjectsResponseObjectsItem.fromJson(
+      Map<String, dynamic> json) {
+    return StreamLargeObjectsResponseObjectsItem(
+      id: typeFromDynamic<String>(json["id"], ""),
+      name: typeFromDynamic<String>(json["name"], ""),
+      email: typeFromDynamic<String>(json["email"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "id": id,
+      "name": name,
+      "email": email,
+    };
+
+    return __result;
+  }
+
+  StreamLargeObjectsResponseObjectsItem copyWith({
+    String? id,
+    String? name,
+    String? email,
+  }) {
+    return StreamLargeObjectsResponseObjectsItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
     );
   }
 }
