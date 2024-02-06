@@ -120,7 +120,7 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   final result = await arriRequest(url,
       httpClient: httpClient, method: method, params: params, headers: headers);
   if (result.statusCode >= 200 && result.statusCode <= 299) {
-    return parser(result.body);
+    return parser(utf8.decode(result.bodyBytes));
   }
   throw ArriRequestError.fromResponse(result);
 }
