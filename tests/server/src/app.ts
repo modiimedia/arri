@@ -22,9 +22,6 @@ const app = new ArriApp({
 
 app.use(
     defineMiddleware((event) => {
-        if (event.path.includes("/send-object-stream")) {
-            return;
-        }
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&

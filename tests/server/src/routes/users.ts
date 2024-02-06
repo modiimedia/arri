@@ -7,7 +7,7 @@ const router = new ArriRouter();
 router.route({
     path: "/routes/hello-world",
     method: ["get", "post"],
-    handler(event) {
+    handler(_) {
         return `hello world`;
     },
 });
