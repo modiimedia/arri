@@ -135,7 +135,8 @@ export class EventStreamConnection<TData> {
     private readonly validator: (input: unknown) => input is TData;
     private readonly serializer: (input: TData) => string;
     private readonly h3Event: H3Event;
-    private pingInterval: NodeJS.Timeout | undefined = undefined;
+    // for some reason Rollup cannot output DTS when this is set to NodeJS.Timeout
+    private pingInterval: any | undefined = undefined;
     private readonly pingIntervalMs: number;
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
@@ -286,6 +287,7 @@ export class EventStreamConnection<TData> {
 
     private async cleanup() {
         if (this.pingInterval) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearInterval(this.pingInterval);
         }
         if (!this.writerIsClosed) {

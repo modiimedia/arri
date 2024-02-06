@@ -9,7 +9,7 @@
         "noPropertyAccessFromIndexSignature": false,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "types": ["vitest", "bun-types"]
+        "types": ["vitest", "bun-types", "node"]
     },
     "files": [],
     "include": [],
