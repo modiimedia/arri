@@ -20,7 +20,11 @@
         "unflatten",
         "vals"
     ],
-    "rust-analyzer.linkedProjects": ["packages/arri-rs/Cargo.toml"],
+    "rust-analyzer.linkedProjects": [
+        "packages/arri-rs/Cargo.toml",
+        "packages/arri-client-rust/Cargo.toml",
+        "packages/arri-codegen/rust-reference/Cargo.toml"
+    ],
     "[rust]": {
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
