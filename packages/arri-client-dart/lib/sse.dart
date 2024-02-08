@@ -153,6 +153,14 @@ class EventSource<T> {
       final response = await _httpClient.send(request);
       _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
+        final body = await utf8.decodeStream(response.stream);
+        Map<String, dynamic>? parsedJson;
+        try {
+          parsedJson = json.decode(body);
+        } catch (_) {}
+        if (parsedJson != null) {
+          throw ArriRequestError.fromJson(parsedJson);
+        }
         throw ArriRequestError(
           statusCode: response.statusCode,
           statusMessage:
