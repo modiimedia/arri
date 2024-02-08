@@ -155,6 +155,34 @@ class TestClientMiscTestsService {
     );
   }
 
+  EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
+    StreamConnectionErrorTestParams params, {
+    SseHookOnData<StreamConnectionErrorTestResponse>? onData,
+    SseHookOnError<StreamConnectionErrorTestResponse>? onError,
+    SseHookOnConnectionError<StreamConnectionErrorTestResponse>?
+        onConnectionError,
+    SseHookOnOpen<StreamConnectionErrorTestResponse>? onOpen,
+    SseHookOnClose<StreamConnectionErrorTestResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<StreamConnectionErrorTestResponse>(
+      "$_baseUrl/rpcs/misc-tests/stream-connection-error-test",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => StreamConnectionErrorTestResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
   EventSource<StreamLargeObjectsResponse> streamLargeObjects({
     SseHookOnData<StreamLargeObjectsResponse>? onData,
     SseHookOnError<StreamLargeObjectsResponse>? onError,
@@ -2170,6 +2198,69 @@ class AutoReconnectResponse {
   }) {
     return AutoReconnectResponse(
       count: count ?? this.count,
+      message: message ?? this.message,
+    );
+  }
+}
+
+class StreamConnectionErrorTestParams {
+  final int statusCode;
+  final String statusMessage;
+  const StreamConnectionErrorTestParams({
+    required this.statusCode,
+    required this.statusMessage,
+  });
+  factory StreamConnectionErrorTestParams.fromJson(Map<String, dynamic> json) {
+    return StreamConnectionErrorTestParams(
+      statusCode: intFromDynamic(json["statusCode"], 0),
+      statusMessage: typeFromDynamic<String>(json["statusMessage"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "statusCode": statusCode,
+      "statusMessage": statusMessage,
+    };
+
+    return __result;
+  }
+
+  StreamConnectionErrorTestParams copyWith({
+    int? statusCode,
+    String? statusMessage,
+  }) {
+    return StreamConnectionErrorTestParams(
+      statusCode: statusCode ?? this.statusCode,
+      statusMessage: statusMessage ?? this.statusMessage,
+    );
+  }
+}
+
+class StreamConnectionErrorTestResponse {
+  final String message;
+  const StreamConnectionErrorTestResponse({
+    required this.message,
+  });
+  factory StreamConnectionErrorTestResponse.fromJson(
+      Map<String, dynamic> json) {
+    return StreamConnectionErrorTestResponse(
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "message": message,
+    };
+
+    return __result;
+  }
+
+  StreamConnectionErrorTestResponse copyWith({
+    String? message,
+  }) {
+    return StreamConnectionErrorTestResponse(
       message: message ?? this.message,
     );
   }

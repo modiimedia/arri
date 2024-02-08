@@ -1,7 +1,7 @@
-import { faker } from "@faker-js/faker";
 import { randomInt, randomUUID } from "crypto";
-import { a } from "arri-validate";
+import { faker } from "@faker-js/faker";
 import { defineEventStreamRpc } from "arri";
+import { a } from "arri-validate";
 
 export const StreamLargeObjectsResponse = a.object(
     {
@@ -47,7 +47,7 @@ export default defineEventStreamRpc({
 
         const interval = setInterval(async () => {
             await connection.push(randomResponse());
-        }, 500);
+        });
         connection.on("disconnect", () => {
             clearInterval(interval);
         });

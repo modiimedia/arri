@@ -259,7 +259,7 @@ Future<void> main() async {
           }
         },
       );
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(Duration(milliseconds: 500));
       eventSource.close();
       expect(messageCount > 0, equals(true));
       expect(eventSource.isClosed, equals(true));
@@ -285,7 +285,7 @@ Future<void> main() async {
             break;
         }
       });
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(milliseconds: 500));
       await listener.cancel();
       expect(messageCount >= 1, equals(true));
       expect(eventSource.isClosed, equals(true));
@@ -303,7 +303,7 @@ Future<void> main() async {
           connection.close();
         },
       );
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(milliseconds: 500));
       expect(messageCount, equals(10));
       expect(errorCount, equals(1));
       expect(eventSource.isClosed, equals(true));
@@ -311,13 +311,15 @@ Future<void> main() async {
     test("subscription closed by server", () async {
       int messageCount = 0;
       int errorCount = 0;
-      final eventSource =
-          client.miscTests.streamTenEventsThenEnd(onData: (data, connection) {
-        messageCount++;
-      }, onError: (_, __) {
-        errorCount++;
-      });
-      await Future.delayed(Duration(seconds: 3));
+      final eventSource = client.miscTests.streamTenEventsThenEnd(
+        onData: (data, connection) {
+          messageCount++;
+        },
+        onError: (_, __) {
+          errorCount++;
+        },
+      );
+      await Future.delayed(Duration(milliseconds: 500));
       expect(messageCount, equals(10));
       expect(errorCount, equals(0));
       expect(eventSource.isClosed, equals(true));
@@ -339,7 +341,7 @@ Future<void> main() async {
           errorCount++;
         },
       );
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(milliseconds: 500));
       eventSource.close();
       expect(connectionCount > 0, equals(true));
       expect(messageCount > 10, equals(true));
@@ -360,11 +362,54 @@ Future<void> main() async {
           errorCount++;
         },
       );
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(milliseconds: 500));
       eventSource.close();
       expect(openCount, equals(1));
       expect(msgCount > 2, equals(true));
       expect(errorCount, equals(0));
+    });
+
+    test("stream error handling", () async {
+      var openCount = 0;
+      var errorCount = 0;
+      var connectionErrorCount = 0;
+      var msgCount = 0;
+      final List<ArriRequestError> errors = [];
+      final statusCode = 555;
+      final statusMessage = "test_message";
+      final eventSource = client.miscTests.streamConnectionErrorTest(
+        StreamConnectionErrorTestParams(
+          statusCode: statusCode,
+          statusMessage: statusMessage,
+        ),
+        onOpen: (_, __) {
+          openCount++;
+        },
+        onData: (data, _) {
+          msgCount++;
+        },
+        onError: (err, _) {
+          errorCount++;
+        },
+        onConnectionError: (err, _) {
+          connectionErrorCount++;
+          errors.add(err);
+        },
+      );
+      await Future.delayed(Duration(milliseconds: 500));
+      eventSource.close();
+      expect(openCount > 0, equals(true));
+      expect(errorCount, equals(0));
+      expect(msgCount, equals(0));
+      expect(connectionErrorCount > 0, equals(true));
+      expect(
+        errors.every(
+          (element) =>
+              element.statusCode == statusCode &&
+              element.statusMessage == statusMessage,
+        ),
+        equals(true),
+      );
     });
   });
 }

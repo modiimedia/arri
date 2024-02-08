@@ -109,6 +109,25 @@ export class TestClientMiscTestsService {
             options,
         );
     }
+    streamConnectionErrorTest(
+        params: StreamConnectionErrorTestParams,
+        options: SseOptions<StreamConnectionErrorTestResponse>,
+    ) {
+        return arriSseRequest<
+            StreamConnectionErrorTestResponse,
+            StreamConnectionErrorTestParams
+        >(
+            {
+                url: `${this.baseUrl}/rpcs/misc-tests/stream-connection-error-test`,
+                method: "get",
+                headers: this.headers,
+                params,
+                parser: $$StreamConnectionErrorTestResponse.parse,
+                serializer: $$StreamConnectionErrorTestParams.serialize,
+            },
+            options,
+        );
+    }
     streamLargeObjects(options: SseOptions<StreamLargeObjectsResponse>) {
         return arriSseRequest<StreamLargeObjectsResponse, undefined>(
             {
@@ -6358,6 +6377,156 @@ const $$AutoReconnectResponse = {
         }
         json += `"count":${input.count}`;
         json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += "}";
+        return json;
+    },
+};
+
+export interface StreamConnectionErrorTestParams {
+    statusCode: number;
+    statusMessage: string;
+}
+const $$StreamConnectionErrorTestParams = {
+    parse(input: Record<any, any>): StreamConnectionErrorTestParams {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (
+                    typeof json.statusCode === "number" &&
+                    Number.isInteger(json.statusCode) &&
+                    json.statusCode >= 0 &&
+                    json.statusCode <= 65535
+                ) {
+                    jsonInnerVal.statusCode = json.statusCode;
+                } else {
+                    $fallback(
+                        "/statusCode",
+                        "/properties/statusCode",
+                        "Expected valid integer between 0 and 65535",
+                    );
+                }
+                if (typeof json.statusMessage === "string") {
+                    jsonInnerVal.statusMessage = json.statusMessage;
+                } else {
+                    $fallback(
+                        "/statusMessage",
+                        "/properties/statusMessage/type",
+                        "Expected string at /statusMessage",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (
+                typeof input.statusCode === "number" &&
+                Number.isInteger(input.statusCode) &&
+                input.statusCode >= 0 &&
+                input.statusCode <= 65535
+            ) {
+                inputInnerVal.statusCode = input.statusCode;
+            } else {
+                $fallback(
+                    "/statusCode",
+                    "/properties/statusCode",
+                    "Expected valid integer between 0 and 65535",
+                );
+            }
+            if (typeof input.statusMessage === "string") {
+                inputInnerVal.statusMessage = input.statusMessage;
+            } else {
+                $fallback(
+                    "/statusMessage",
+                    "/properties/statusMessage/type",
+                    "Expected string at /statusMessage",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: StreamConnectionErrorTestParams): string {
+        let json = "";
+        json += "{";
+
+        if (Number.isNaN(input.statusCode)) {
+            throw new Error("Expected number at /statusCode got NaN");
+        }
+        json += `"statusCode":${input.statusCode}`;
+        json += `,"statusMessage":"${input.statusMessage.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += "}";
+        return json;
+    },
+};
+
+export interface StreamConnectionErrorTestResponse {
+    message: string;
+}
+const $$StreamConnectionErrorTestResponse = {
+    parse(input: Record<any, any>): StreamConnectionErrorTestResponse {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (typeof json.message === "string") {
+                    jsonInnerVal.message = json.message;
+                } else {
+                    $fallback(
+                        "/message",
+                        "/properties/message/type",
+                        "Expected string at /message",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (typeof input.message === "string") {
+                inputInnerVal.message = input.message;
+            } else {
+                $fallback(
+                    "/message",
+                    "/properties/message/type",
+                    "Expected string at /message",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: StreamConnectionErrorTestResponse): string {
+        let json = "";
+        json += "{";
+        json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },

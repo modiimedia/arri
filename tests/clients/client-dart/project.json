@@ -12,7 +12,7 @@
         "integration-test": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "dart test",
+                "command": "dart test --reporter=expanded",
                 "cwd": "tests/clients/client-dart"
             }
         }

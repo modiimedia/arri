@@ -57,6 +57,7 @@ class EventSource<T> {
   String? lastEventId;
   StreamController<T>? _streamController;
   final Duration _retryDelay;
+  int _internalRetryDelay = 100;
   final int? _maxRetryCount;
   int _retryCount = 0;
   T Function(String data) parser;
@@ -234,11 +235,26 @@ class EventSource<T> {
     } else {
       _onConnectionError.call(
         ArriRequestError(
-            statusCode: 0, statusMessage: "Unknown error connecting to $url"),
+          statusCode: 0,
+          statusMessage: "Unknown error connecting to $url",
+        ),
       );
     }
     if (_maxRetryCount != null && _maxRetryCount! <= _retryCount) {
       close();
+      return;
+    }
+    // exponential backoff maxing out at 60 seconds
+    if (_retryCount > 10 &&
+        _retryDelay.inMilliseconds == Duration.zero.inMilliseconds) {
+      _internalRetryDelay = _internalRetryDelay * 2;
+      if (_internalRetryDelay > 60000) {
+        _internalRetryDelay = 60000;
+      }
+      Timer(
+        Duration(milliseconds: _internalRetryDelay),
+        () => _connect(isRetry: true),
+      );
       return;
     }
     Timer(_retryDelay, () => _connect(isRetry: true));

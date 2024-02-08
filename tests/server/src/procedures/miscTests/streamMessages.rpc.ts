@@ -88,7 +88,7 @@ export default defineEventStreamRpc({
         };
         const interval = setInterval(async () => {
             await connection.push(randomItem());
-        }, 100);
+        });
 
         connection.on("disconnect", async () => {
             clearInterval(interval);
