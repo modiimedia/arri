@@ -20,6 +20,7 @@ pub struct ArriRequestError {
     pub status_code: u16,
     pub status_message: String,
     pub stack: String,
+    pub data: Option<serde_json::Value>,
 }
 
 pub async fn arri_request(
@@ -94,6 +95,7 @@ pub async fn arri_request(
                 status_code: err.status().unwrap_or(StatusCode::default()).as_u16(),
                 status_message: format!("Error requesting \"{}\"", opts.url),
                 stack: String::from(""),
+                data: None,
             })
         }
     }
@@ -107,7 +109,7 @@ pub trait ArriPayload {
 pub async fn parsed_arri_request<TResponse: ArriPayload, TParams: ArriPayload>(
     opts: ArriParsedRequestOptions<TParams>,
     params: Option<&impl ArriPayload>,
-    parser: fn(body: String) -> TResponse,
+    parser: fn(body: String) -> Result<TResponse, ArriRequestError>,
 ) -> Result<TResponse, ArriRequestError> {
     let result = arri_request(
         ArriRequestOptions {
@@ -126,12 +128,13 @@ pub async fn parsed_arri_request<TResponse: ArriPayload, TParams: ArriPayload>(
     let status = response.status().as_u16();
     let body = response.text().await;
     match body {
-        Ok(text) => return Ok(parser(text)),
+        Ok(text) => return parser(text),
         Err(_err) => {
             return Err(ArriRequestError {
                 status_code: status,
                 status_message: "Error parsing response from server".to_string(),
                 stack: "".to_string(),
+                data: Some(serde_json::Value::String(_err.to_string())),
             })
         }
     }
