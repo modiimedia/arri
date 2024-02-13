@@ -12,6 +12,7 @@ module.exports = {
         "**/node_modules",
         "**/.arri",
         "**/.output",
+        "**/*.dart",
         "dist",
         "**/*.js",
         "**/**/dist/*.d.ts",

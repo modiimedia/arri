@@ -18,7 +18,7 @@
         "arri-client": "workspace:*",
         "arri-codegen-utils": "workspace:*",
         "arri-validate": "workspace:*",
-        "prettier": "^3.2.4"
+        "prettier": "^3.2.5"
     },
-    "version": "0.21.1"
+    "version": "0.22.7"
 }

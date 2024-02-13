@@ -30,7 +30,7 @@ export default defineEventStreamRpc({
                 });
                 await cleanup();
             }
-        }, 100);
+        });
         async function cleanup() {
             clearInterval(interval);
         }

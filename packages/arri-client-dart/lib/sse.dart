@@ -57,6 +57,7 @@ class EventSource<T> {
   String? lastEventId;
   StreamController<T>? _streamController;
   final Duration _retryDelay;
+  int _internalRetryDelay = 100;
   final int? _maxRetryCount;
   int _retryCount = 0;
   T Function(String data) parser;
@@ -153,6 +154,14 @@ class EventSource<T> {
       final response = await _httpClient.send(request);
       _onOpen(response);
       if (response.statusCode < 200 || response.statusCode > 299) {
+        final body = await utf8.decodeStream(response.stream);
+        Map<String, dynamic>? parsedJson;
+        try {
+          parsedJson = json.decode(body);
+        } catch (_) {}
+        if (parsedJson != null) {
+          throw ArriRequestError.fromJson(parsedJson);
+        }
         throw ArriRequestError(
           statusCode: response.statusCode,
           statusMessage:
@@ -164,10 +173,17 @@ class EventSource<T> {
           "Server must return statusCode 200. Instead got ${response.statusCode}",
         );
       }
+      String pendingData = "";
       response.stream.listen(
         (value) {
           final input = utf8.decode(value);
-          final events = parseSseEvents(input, parser);
+          // this means we have a partial chunk so we need to store this until the whole message has been received
+          if (!input.endsWith("\n\n")) {
+            pendingData += input;
+            return;
+          }
+          final events = parseSseEvents(pendingData + input, parser);
+          pendingData = "";
           for (final event in events) {
             if (event.id != null) {
               lastEventId = event.id;
@@ -219,11 +235,26 @@ class EventSource<T> {
     } else {
       _onConnectionError.call(
         ArriRequestError(
-            statusCode: 0, statusMessage: "Unknown error connecting to $url"),
+          statusCode: 0,
+          statusMessage: "Unknown error connecting to $url",
+        ),
       );
     }
     if (_maxRetryCount != null && _maxRetryCount! <= _retryCount) {
       close();
+      return;
+    }
+    // exponential backoff maxing out at 60 seconds
+    if (_retryCount > 10 &&
+        _retryDelay.inMilliseconds == Duration.zero.inMilliseconds) {
+      _internalRetryDelay = _internalRetryDelay * 2;
+      if (_internalRetryDelay > 60000) {
+        _internalRetryDelay = 60000;
+      }
+      Timer(
+        Duration(milliseconds: _internalRetryDelay),
+        () => _connect(isRetry: true),
+      );
       return;
     }
     Timer(_retryDelay, () => _connect(isRetry: true));

@@ -26,7 +26,7 @@ export default defineEventStreamRpc({
                 await connection.end();
                 await cleanup();
             }
-        }, 100);
+        });
         async function cleanup() {
             clearInterval(interval);
         }

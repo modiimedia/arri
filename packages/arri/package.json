@@ -1,6 +1,6 @@
 {
     "name": "arri",
-    "version": "0.21.1",
+    "version": "0.22.7",
     "type": "module",
     "license": "MIT",
     "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
@@ -16,7 +16,7 @@
     },
     "bin": { "arri": "./dist/cli.mjs" },
     "dependencies": {
-        "@joshmossas/listhen": "1.5.13",
+        "@joshmossas/listhen": "1.6.0",
         "arri-codegen-dart": "workspace:*",
         "arri-codegen-ts": "workspace:*",
         "arri-codegen-utils": "workspace:*",
@@ -33,9 +33,9 @@
         "jiti": "^1.21.0",
         "ofetch": "^1.3.3",
         "pathe": "^1.1.2",
-        "prettier": "^3.2.4",
-        "scule": "^1.2.0",
+        "prettier": "^3.2.5",
+        "scule": "^1.3.0",
         "uncrypto": "^0.1.3"
     },
-    "devDependencies": { "@types/degit": "^2.8.6", "bun-types": "^1.0.25" }
+    "devDependencies": { "@types/degit": "^2.8.6", "bun-types": "^1.0.26" }
 }

@@ -262,7 +262,17 @@ export async function handleH3Error(
 ) {
     const error = isError(err)
         ? err
-        : defineError(500, { data: err as any, stack: `${err as any}` });
+        : defineError(500, {
+              statusMessage:
+                  typeof err === "object" &&
+                  err != null &&
+                  "message" in err &&
+                  typeof err.message === "string"
+                      ? err.message
+                      : undefined,
+              data: err as any,
+              stack: `${err as any}`,
+          });
     setResponseStatus(event, error.statusCode);
     if (onError) {
         await onError(error, event);
