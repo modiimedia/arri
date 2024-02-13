@@ -1,24 +1,13 @@
 use reqwest::{self, StatusCode};
-use serde_json::json;
-use std::{
-    collections::{hash_map, BTreeMap, HashMap},
-    iter::Map,
-    str::FromStr,
-};
-
-fn main() {
-    println!("Hello, world!");
-}
 
 pub struct ArriRequestOptions {
     pub client: reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub params: Option<serde_json::Value>,
     pub headers: reqwest::header::HeaderMap,
 }
 
-pub struct ArriParsedRequestOptions<TParams: ToJson> {
+pub struct ArriParsedRequestOptions<TParams: ArriPayload> {
     pub client: reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
@@ -31,29 +20,32 @@ pub struct ArriRequestError {
     pub status_code: u16,
     pub status_message: String,
     pub stack: String,
-    pub data: serde_json::Value,
 }
 
-pub async fn arri_request(opts: ArriRequestOptions) -> Result<reqwest::Response, ArriRequestError> {
-    let payload = &opts.params;
+pub async fn arri_request(
+    opts: ArriRequestOptions,
+    params: Option<&impl ArriPayload>,
+) -> Result<reqwest::Response, ArriRequestError> {
     let response: Result<reqwest::Response, reqwest::Error>;
     match opts.method {
         reqwest::Method::GET => {
-            let builder = opts.client.get(opts.url.clone()).headers(opts.headers);
-            match payload {
-                Some(val) => {
-                    response = builder.form(val).send().await;
-                }
-                None => {
-                    response = builder.send().await;
-                }
+            let mut final_url = opts.url.clone();
+            match params {
+                Some(val) => final_url = format!("{final_url}?${}", val.to_query_params_string()),
+                None => {}
             }
+            response = opts
+                .client
+                .get(final_url)
+                .headers(opts.headers)
+                .send()
+                .await;
         }
         reqwest::Method::POST => {
             let builder = opts.client.post(opts.url.clone()).headers(opts.headers);
-            match payload {
+            match params {
                 Some(val) => {
-                    response = builder.body(val.to_string()).send().await;
+                    response = builder.body(val.to_json_string()).send().await;
                 }
                 None => {
                     response = builder.send().await;
@@ -62,9 +54,9 @@ pub async fn arri_request(opts: ArriRequestOptions) -> Result<reqwest::Response,
         }
         reqwest::Method::PUT => {
             let builder = opts.client.put(opts.url.clone()).headers(opts.headers);
-            match payload {
+            match params {
                 Some(val) => {
-                    response = builder.body(val.to_string()).send().await;
+                    response = builder.body(val.to_json_string()).send().await;
                 }
                 None => {
                     response = builder.send().await;
@@ -73,9 +65,9 @@ pub async fn arri_request(opts: ArriRequestOptions) -> Result<reqwest::Response,
         }
         reqwest::Method::PATCH => {
             let builder = opts.client.patch(opts.url.clone()).headers(opts.headers);
-            match payload {
+            match params {
                 Some(val) => {
-                    response = builder.body(val.to_string()).send().await;
+                    response = builder.body(val.to_json_string()).send().await;
                 }
                 None => {
                     response = builder.send().await;
@@ -84,9 +76,9 @@ pub async fn arri_request(opts: ArriRequestOptions) -> Result<reqwest::Response,
         }
         reqwest::Method::DELETE => {
             let builder = opts.client.delete(opts.url.clone()).headers(opts.headers);
-            match payload {
+            match params {
                 Some(val) => {
-                    response = builder.body(val.to_string()).send().await;
+                    response = builder.body(val.to_json_string()).send().await;
                 }
                 None => {
                     response = builder.send().await;
@@ -102,30 +94,30 @@ pub async fn arri_request(opts: ArriRequestOptions) -> Result<reqwest::Response,
                 status_code: err.status().unwrap_or(StatusCode::default()).as_u16(),
                 status_message: format!("Error requesting \"{}\"", opts.url),
                 stack: String::from(""),
-                data: json!(err.to_string()),
             })
         }
     }
 }
 
-pub trait ToJson {
-    fn to_json(&self) -> serde_json::Value;
+pub trait ArriPayload {
+    fn to_json_string(&self) -> String;
+    fn to_query_params_string(&self) -> String;
 }
 
-pub async fn parsed_arri_request<TResponse: ToJson, TParams: ToJson>(
+pub async fn parsed_arri_request<TResponse: ArriPayload, TParams: ArriPayload>(
     opts: ArriParsedRequestOptions<TParams>,
+    params: Option<&impl ArriPayload>,
     parser: fn(body: String) -> TResponse,
 ) -> Result<TResponse, ArriRequestError> {
-    let result = arri_request(ArriRequestOptions {
-        method: opts.method,
-        url: opts.url,
-        params: match opts.params {
-            Some(val) => Some(val.to_json()),
-            None => None,
+    let result = arri_request(
+        ArriRequestOptions {
+            method: opts.method,
+            url: opts.url,
+            client: opts.client,
+            headers: opts.headers,
         },
-        client: opts.client,
-        headers: opts.headers,
-    })
+        params,
+    )
     .await;
     if result.is_err() {
         return Err(result.unwrap_err());
@@ -135,12 +127,11 @@ pub async fn parsed_arri_request<TResponse: ToJson, TParams: ToJson>(
     let body = response.text().await;
     match body {
         Ok(text) => return Ok(parser(text)),
-        Err(err) => {
+        Err(_err) => {
             return Err(ArriRequestError {
                 status_code: status,
                 status_message: "Error parsing response from server".to_string(),
                 stack: "".to_string(),
-                data: json!(err.to_string()),
             })
         }
     }
