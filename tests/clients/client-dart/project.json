@@ -1,20 +1,20 @@
 {
-    "name": "test-client-dart",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "targets": {
-        "pub-get": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "dart pub get",
-                "cwd": "tests/clients/client-dart"
-            }
-        },
-        "integration-test": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "dart test --reporter=expanded",
-                "cwd": "tests/clients/client-dart"
-            }
-        }
+  "name": "test-client-dart",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "pub-get": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub get",
+        "cwd": "tests/clients/client-dart"
+      }
+    },
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart test --reporter=expanded",
+        "cwd": "tests/clients/client-dart"
+      }
     }
+  }
 }

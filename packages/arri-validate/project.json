@@ -1,53 +1,53 @@
 {
-    "name": "arri-validate",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri-validate/src",
-    "projectType": "library",
-    "targets": {
-        "benchmark": {
-            "inputs": ["default", "{projectRoot}/benchmark/src"],
-            "outputs": ["{projectRoot}/benchmark/dist"],
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "jiti buildBenchmarks.ts && jiti benchmark/dist/_index.js",
-                "cwd": "packages/arri-validate"
-            }
-        },
-        "build": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist"],
-            "options": {
-                "command": "unbuild",
-                "cwd": "packages/arri-validate"
-            }
-        },
-        "publish": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "pnpm publish",
-                "cwd": "packages/arri-validate"
-            },
-            "dependsOn": ["build"]
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "outputs": ["{options.outputFile}"]
-        },
-        "test": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{workspaceRoot}/coverage/packages/arri-validate"],
-            "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-validate"
-            }
-        },
-        "typecheck": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsc --noEmit",
-                "cwd": "packages/arri-validate"
-            }
-        }
+  "name": "arri-validate",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/arri-validate/src",
+  "projectType": "library",
+  "targets": {
+    "benchmark": {
+      "inputs": ["default", "{projectRoot}/benchmark/src"],
+      "outputs": ["{projectRoot}/benchmark/dist"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jiti buildBenchmarks.ts && jiti benchmark/dist/_index.js",
+        "cwd": "packages/arri-validate"
+      }
     },
-    "tags": []
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "packages/arri-validate"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "packages/arri-validate"
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/packages/arri-validate"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/packages/arri-validate"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/arri-validate"
+      }
+    }
+  },
+  "tags": []
 }

@@ -1,23 +1,23 @@
 {
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "module": "CommonJS",
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "noImplicitOverride": true,
-        "noPropertyAccessFromIndexSignature": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "types": ["vitest"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["vitest"]
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
     },
-    "files": [],
-    "include": [],
-    "references": [
-        {
-            "path": "./tsconfig.lib.json"
-        },
-        {
-            "path": "./tsconfig.spec.json"
-        }
-    ]
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
 }
