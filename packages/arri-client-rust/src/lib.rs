@@ -8,7 +8,7 @@ pub struct ArriRequestOptions {
     pub headers: reqwest::header::HeaderMap,
 }
 
-pub struct ArriParsedRequestOptions<TParams: ArriPayload> {
+pub struct ArriParsedRequestOptions<TParams: ArriModel> {
     pub client: reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
@@ -26,7 +26,7 @@ pub struct ArriRequestError {
 
 pub async fn arri_request(
     opts: ArriRequestOptions,
-    params: Option<&impl ArriPayload>,
+    params: Option<&impl ArriModel>,
 ) -> Result<reqwest::Response, ArriRequestError> {
     let response: Result<reqwest::Response, reqwest::Error>;
     match opts.method {
@@ -102,16 +102,17 @@ pub async fn arri_request(
     }
 }
 
-pub trait ArriPayload {
+pub trait ArriModel {
+    fn new() -> Self;
     fn from_json(input: serde_json::Value) -> Self;
     fn from_json_string(input: String) -> Self;
     fn to_json_string(&self) -> String;
     fn to_query_params_string(&self) -> String;
 }
 
-pub async fn parsed_arri_request<TResponse: ArriPayload, TParams: ArriPayload>(
+pub async fn parsed_arri_request<TResponse: ArriModel, TParams: ArriModel>(
     opts: ArriParsedRequestOptions<TParams>,
-    params: Option<&impl ArriPayload>,
+    params: Option<&impl ArriModel>,
     parser: fn(body: String) -> Result<TResponse, ArriRequestError>,
 ) -> Result<TResponse, ArriRequestError> {
     let result = arri_request(
