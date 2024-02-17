@@ -1,4 +1,5 @@
 use reqwest::{self, StatusCode};
+pub use serde_json::{self};
 
 pub struct ArriRequestOptions {
     pub client: reqwest::Client,
@@ -102,6 +103,8 @@ pub async fn arri_request(
 }
 
 pub trait ArriPayload {
+    fn from_json(input: serde_json::Value) -> Self;
+    fn from_json_string(input: String) -> Self;
     fn to_json_string(&self) -> String;
     fn to_query_params_string(&self) -> String;
 }
