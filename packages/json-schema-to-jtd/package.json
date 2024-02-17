@@ -1,27 +1,18 @@
 {
-  "name": "json-schema-to-jtd",
-  "version": "0.23.0",
-  "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/modiimedia/arri.git",
-    "directory": "packages/json-schema-to-jtd"
-  },
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "dependencies": {
-    "jtd-utils": "workspace:*"
-  }
+    "name": "json-schema-to-jtd",
+    "version": "0.23.1",
+    "license": "MIT",
+    "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+    "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/modiimedia/arri.git",
+        "directory": "packages/json-schema-to-jtd"
+    },
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": ["dist"],
+    "dependencies": { "jtd-utils": "workspace:*" }
 }
