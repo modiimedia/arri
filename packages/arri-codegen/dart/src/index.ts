@@ -326,10 +326,7 @@ export function dartTypeFromJtdSchema(
      */
     nodePath: string,
     def: Schema,
-    additionalOptions: {
-        isOptional: boolean;
-        existingClassNames: string[];
-    },
+    additionalOptions: ConversionAdditionalOptions,
 ): DartProperty {
     if (isSchemaFormType(def)) {
         return dartScalarFromJtdScalar(nodePath, def, additionalOptions);
@@ -372,7 +369,14 @@ export function dartClassFromJtdSchema(
     const key = camelCaseWrapper(jsonKey);
     let className = def.metadata?.id ? pascalCase(def.metadata.id) : undefined;
     if (!className) {
-        className = pascalCase(nodePath.split(".").join("_"));
+        const relativePath = nodePath.split(".").pop();
+        if (additionalOptions.parentId && relativePath) {
+            className = pascalCase(
+                `${additionalOptions.parentId}_${relativePath}`,
+            );
+        } else {
+            className = pascalCase(nodePath.split(".").join("_"));
+        }
     }
     const properties: { key: string; templates: DartProperty }[] = [];
     const optionalProperties: { key: string; templates: DartProperty }[] = [];
@@ -392,6 +396,7 @@ export function dartClassFromJtdSchema(
         const keyPath = `${nodePath}.${key}`;
         const prop = def.properties[key];
         const mappedProp = dartTypeFromJtdSchema(keyPath, prop, {
+            parentId: className,
             isOptional: false,
             existingClassNames: additionalOptions.existingClassNames,
         });
@@ -408,6 +413,7 @@ export function dartClassFromJtdSchema(
             const keyPath = `${nodePath}.${key}`;
             const prop = def.optionalProperties[key];
             const mappedProp = dartTypeFromJtdSchema(keyPath, prop, {
+                parentId: className,
                 isOptional: true,
                 existingClassNames: additionalOptions.existingClassNames,
             });
@@ -662,6 +668,7 @@ function dartArrayFromJtdSchema(
 }
 
 interface ConversionAdditionalOptions {
+    parentId?: string;
     isOptional: boolean;
     existingClassNames: string[];
 }
@@ -983,6 +990,7 @@ function dartSealedClassFromJtdSchema(
             `${nodePath}.${camelCaseWrapper(discKeyValue.toLowerCase())}`,
             childDef,
             {
+                parentId: className,
                 isOptional: false,
                 existingClassNames: additionalOptions.existingClassNames,
                 discriminatorOptions: {
@@ -999,7 +1007,9 @@ function dartSealedClassFromJtdSchema(
     const description = def.metadata?.description
         ? `/// ${def.metadata.description}`
         : "";
-    const content = `${description}
+    let content = "";
+    if (!additionalOptions.existingClassNames.includes(className)) {
+        content = `${description}
 sealed class ${className} {
   final String ${discriminatorKey};
   const ${className}({
@@ -1021,6 +1031,9 @@ sealed class ${className} {
   Map<String, dynamic> toJson();
 }
 ${childContentParts.join("\n")}`;
+        additionalOptions.existingClassNames.push(className);
+    }
+
     const typeName = `${className}${isNullable ? "?" : ""}`;
     return {
         typeName,

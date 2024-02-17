@@ -6,7 +6,7 @@ export default defineConfig({
 
     plugins: [
         viteTsConfigPaths({
-            root: "../../",
+            root: "../../../",
         }) as any,
     ],
 
@@ -23,7 +23,7 @@ export default defineConfig({
         globals: true,
         reporters: ["default"],
         cache: {
-            dir: "../../node_modules/.vitest",
+            dir: "../../../node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
