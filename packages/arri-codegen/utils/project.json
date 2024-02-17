@@ -30,6 +30,11 @@
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "packages/arri-codegen/utils"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         },
         "typecheck": {

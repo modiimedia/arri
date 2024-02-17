@@ -30,6 +30,11 @@
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "packages/json-schema-to-jtd"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         },
         "typecheck": {

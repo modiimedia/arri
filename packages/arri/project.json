@@ -23,6 +23,11 @@
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "packages/arri"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         },
         "publish": {

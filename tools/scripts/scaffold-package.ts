@@ -136,6 +136,11 @@ function projectJsonTemplate(packageName: string) {
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "packages/${packageName}"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         }
     },

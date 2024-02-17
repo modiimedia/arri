@@ -11,6 +11,11 @@
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "tests/clients/client-typescript"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         }
     }

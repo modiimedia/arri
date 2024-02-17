@@ -30,6 +30,11 @@
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "packages/arri-client"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         },
         "typecheck": {

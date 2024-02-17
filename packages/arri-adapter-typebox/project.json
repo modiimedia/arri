@@ -32,6 +32,11 @@
             "options": {
                 "command": "vitest run --passWithNoTests --globals",
                 "cwd": "packages/arri-adapter-typebox"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         },
         "typecheck": {

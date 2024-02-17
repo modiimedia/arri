@@ -24,6 +24,22 @@ export const TestUserPhotoSchema = a.object(
     { id: "UserPhoto", description: "A profile picture" },
 );
 
+export const TestUserNotificationSchema = a.discriminator(
+    "notificationType",
+    {
+        POST_LIKE: a.object({
+            postId: a.string(),
+            userId: a.string(),
+        }),
+        POST_COMMENT: a.object({
+            postId: a.string(),
+            userId: a.string(),
+            commentText: a.string(),
+        }),
+    },
+    { id: "UserNotification" },
+);
+
 export const TestUserSchema = a.object(
     {
         id: a.string(),
@@ -32,19 +48,8 @@ export const TestUserSchema = a.object(
         createdAt: a.timestamp(),
         numFollowers: a.int32(),
         settings: TestUserSettingsSchema,
-        recentNotifications: a.array(
-            a.discriminator("notificationType", {
-                POST_LIKE: a.object({
-                    postId: a.string(),
-                    userId: a.string(),
-                }),
-                POST_COMMENT: a.object({
-                    postId: a.string(),
-                    userId: a.string(),
-                    commentText: a.string(),
-                }),
-            }),
-        ),
+        lastNotification: a.nullable(TestUserNotificationSchema),
+        recentNotifications: a.array(TestUserNotificationSchema),
         bookmarks: a.record(
             a.object({ postId: a.string(), userId: a.string() }),
         ),
