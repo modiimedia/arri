@@ -25,16 +25,11 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/vite:test",
             "outputs": ["{workspaceRoot}/coverage/packages/jtd-utils"],
             "options": {
-                "command": "vitest run --passWithNoTests --globals",
-                "cwd": "packages/jtd-utils"
-            },
-            "configurations": {
-                "watch": {
-                    "command": "vitest watch --passWithNoTests --globals"
-                }
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/jtd-utils"
             }
         },
         "typecheck": {

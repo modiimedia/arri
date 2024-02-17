@@ -25,18 +25,13 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/vite:test",
             "outputs": [
                 "{workspaceRoot}/coverage/packages/arri-codegen/kotlin"
             ],
             "options": {
-                "command": "vitest run --passWithNoTests --globals",
-                "cwd": "packages/arri-codegen/kotlin"
-            },
-            "configurations": {
-                "watch": {
-                    "command": "vitest watch --passWithNoTests --globals"
-                }
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri-codegen/kotlin"
             }
         },
         "typecheck": {

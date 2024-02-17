@@ -25,18 +25,13 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/vite:test",
             "outputs": [
                 "{workspaceRoot}/coverage/packages/arri-codegen/typescript"
             ],
             "options": {
-                "command": "vitest run --passWithNoTests --globals",
-                "cwd": "packages/arri-codegen/typescript"
-            },
-            "configurations": {
-                "watch": {
-                    "command": "vitest watch --passWithNoTests --globals"
-                }
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri-codegen/typescript"
             }
         },
         "typecheck": {

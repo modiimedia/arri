@@ -17,17 +17,12 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/vite:test",
             "inputs": ["{projectRoot}/src/**/*.ts"],
             "outputs": ["{workspaceRoot}/coverage/packages/arri"],
             "options": {
-                "command": "vitest run --passWithNoTests --globals",
-                "cwd": "packages/arri"
-            },
-            "configurations": {
-                "watch": {
-                    "command": "vitest watch --passWithNoTests --globals"
-                }
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri"
             }
         },
         "publish": {

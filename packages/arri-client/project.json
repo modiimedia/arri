@@ -25,16 +25,11 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/vite:test",
             "outputs": ["{workspaceRoot}/coverage/packages/arri-client"],
             "options": {
-                "command": "vitest run --passWithNoTests --globals",
-                "cwd": "packages/arri-client"
-            },
-            "configurations": {
-                "watch": {
-                    "command": "vitest watch --passWithNoTests --globals"
-                }
+                "passWithNoTests": true,
+                "reportsDirectory": "../../coverage/packages/arri-client"
             }
         },
         "typecheck": {
