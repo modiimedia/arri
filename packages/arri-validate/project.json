@@ -34,11 +34,11 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": ["{workspaceRoot}/coverage/packages/arri-validate"],
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-validate"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "packages/arri-validate"
             }
         },
         "typecheck": {

@@ -25,11 +25,11 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen/utils"],
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../../coverage/packages/arri-codegen/utils"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "packages/arri-codegen/utils"
             }
         },
         "typecheck": {

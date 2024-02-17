@@ -3,14 +3,14 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "targets": {
         "integration-test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": [
                 "{workspaceRoot}/coverage/packages/test-client-typescript"
             ],
             "cache": false,
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../../coverage/packages/test-client-typescript"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "tests/clients/client-typescript"
             }
         }
     }

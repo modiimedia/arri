@@ -25,13 +25,13 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": [
                 "{workspaceRoot}/coverage/packages/arri-adapter-typebox"
             ],
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-adapter-typebox"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "packages/arri-adapter-typebox"
             }
         },
         "typecheck": {

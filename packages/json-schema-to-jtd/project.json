@@ -25,11 +25,11 @@
             "outputs": ["{options.outputFile}"]
         },
         "test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": ["{workspaceRoot}/coverage/packages/json-schema-to-jtd"],
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/json-schema-to-jtd"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "packages/json-schema-to-jtd"
             }
         },
         "typecheck": {
