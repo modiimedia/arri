@@ -10,7 +10,8 @@
         "cwd": "tests/server"
       }
     },
-    "build": {
+    "build-server": {
+      "dependsOn": ["^build"],
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/.arri", "{projectRoot}/.output"],
       "options": {
@@ -20,7 +21,7 @@
       "cache": false
     },
     "serve": {
-      "dependsOn": ["build"],
+      "dependsOn": ["build-server"],
       "executor": "nx:run-commands",
       "options": {
         "command": "node .output/server --host",
