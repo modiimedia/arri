@@ -127,3 +127,20 @@ export function optional<T>(
         },
     };
 }
+
+export function clone<T>(
+    input: ASchema<T>,
+    opts: ASchemaOptions = {},
+): ASchema<T> {
+    const schema: ASchema<T> = {
+        ...input,
+        metadata: {
+            id: opts.id,
+            description: opts.description,
+            [SCHEMA_METADATA]: {
+                ...input.metadata[SCHEMA_METADATA],
+            },
+        },
+    };
+    return schema;
+}
