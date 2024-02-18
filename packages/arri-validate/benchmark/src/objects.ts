@@ -232,6 +232,11 @@ void benny.suite(
         format: "chart.html",
         folder: "benchmark/dist",
     }),
+    benny.save({
+        file: "objects-validation",
+        format: "json",
+        folder: "benchmark/dist",
+    }),
 );
 
 void benny.suite(
@@ -255,6 +260,11 @@ void benny.suite(
         format: "chart.html",
         folder: "benchmark/dist",
     }),
+    benny.save({
+        file: "objects-parsing",
+        format: "json",
+        folder: "benchmark/dist",
+    }),
 );
 
 void benny.suite(
@@ -273,6 +283,11 @@ void benny.suite(
     benny.save({
         file: "objects-coercion",
         format: "chart.html",
+        folder: "benchmark/dist",
+    }),
+    benny.save({
+        file: "objects-coercion",
+        format: "json",
         folder: "benchmark/dist",
     }),
 );
@@ -301,6 +316,11 @@ void benny.suite(
     benny.save({
         file: "objects-serialization",
         format: "chart.html",
+        folder: "benchmark/dist",
+    }),
+    benny.save({
+        file: "objects-serialization",
+        format: "json",
         folder: "benchmark/dist",
     }),
 );
