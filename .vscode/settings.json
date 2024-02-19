@@ -1,33 +1,33 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
-    },
-    "cSpell.words": [
-        "Arri",
-        "autoroutes",
-        "codegen",
-        "Consola",
-        "middlewares",
-        "modii",
-        "nitropack",
-        "ofetch",
-        "pathe",
-        "scule",
-        "typebox",
-        "typeof",
-        "uncrypto",
-        "unflatten",
-        "vals"
-    ],
-    "rust-analyzer.linkedProjects": [
-        "packages/arri-rs/Cargo.toml",
-        "packages/arri-client-rust/Cargo.toml",
-        "packages/arri-codegen/rust-reference/Cargo.toml"
-    ],
-    "[rust]": {
-        "editor.defaultFormatter": "rust-lang.rust-analyzer"
-    },
-    "eslint.validate": ["json"],
-    "java.compile.nullAnalysis.mode": "automatic"
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "cSpell.words": [
+    "Arri",
+    "autoroutes",
+    "codegen",
+    "Consola",
+    "middlewares",
+    "modii",
+    "nitropack",
+    "ofetch",
+    "pathe",
+    "scule",
+    "typebox",
+    "typeof",
+    "uncrypto",
+    "unflatten",
+    "vals"
+  ],
+  "rust-analyzer.linkedProjects": [
+    "packages/arri-rs/Cargo.toml",
+    "packages/arri-client-rust/Cargo.toml",
+    "packages/arri-codegen/rust-reference/Cargo.toml"
+  ],
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "eslint.validate": ["json"],
+  "java.compile.nullAnalysis.mode": "automatic"
 }

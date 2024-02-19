@@ -1,17 +1,17 @@
 {
-    "name": "test-server",
-    "type": "module",
-    "dependencies": {
-        "@faker-js/faker": "^8.4.0",
-        "arri": "workspace:*",
-        "arri-validate": "workspace:*"
-    },
-    "scripts": {
-        "start-server": "nx serve test-server",
-        "integration-tests": "nx run-many -t integration-test"
-    },
-    "devDependencies": {
-        "arri-adapter-typebox": "workspace:*",
-        "arri-codegen-utils": "workspace:*"
-    }
+  "name": "test-server",
+  "type": "module",
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "arri": "workspace:*",
+    "arri-validate": "workspace:*"
+  },
+  "scripts": {
+    "start-server": "nx serve test-server",
+    "integration-tests": "nx run-many -t integration-test"
+  },
+  "devDependencies": {
+    "arri-adapter-typebox": "workspace:*",
+    "arri-codegen-utils": "workspace:*"
+  }
 }

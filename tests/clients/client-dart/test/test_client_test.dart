@@ -221,7 +221,7 @@ Future<void> main() async {
         annotationId: "12345",
         annotationIdVersion: '3',
         data: UpdateAnnotationData(
-          boxTypeRange: UpdateAnnotationParamsDataBoxTypeRange(
+          boxTypeRange: UpdateAnnotationDataBoxTypeRange(
             startTimeInNanoSec: BigInt.parse("123456789"),
             endTimeInNanoSec: BigInt.parse("1234567890"),
           ),

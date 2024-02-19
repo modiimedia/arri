@@ -1,6 +1,6 @@
 {
     "name": "arri-validate",
-    "version": "0.22.7",
+    "version": "0.24.0",
     "type": "module",
     "license": "MIT",
     "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
@@ -20,5 +20,5 @@
         "scule": "^1.3.0",
         "uncrypto": "^0.1.3"
     },
-    "devDependencies": { "@faker-js/faker": "^8.4.0", "benny": "^3.7.1" }
+    "devDependencies": { "@faker-js/faker": "^8.4.1", "benny": "^3.7.1" }
 }

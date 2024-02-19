@@ -1,12 +1,12 @@
 {
-    "recommendations": [
-        "nrwl.angular-console",
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "mathiasfrohlich.kotlin",
-        "dart-code.dart-code",
-        "dart-code.flutter",
-        "rust-lang.rust-analyzer",
-        "tamasfe.even-better-toml"
-    ]
+  "recommendations": [
+    "nrwl.angular-console",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "mathiasfrohlich.kotlin",
+    "dart-code.dart-code",
+    "dart-code.flutter",
+    "rust-lang.rust-analyzer",
+    "tamasfe.even-better-toml"
+  ]
 }

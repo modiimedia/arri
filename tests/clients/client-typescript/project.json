@@ -1,17 +1,15 @@
 {
-    "name": "test-client-typescript",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "targets": {
-        "integration-test": {
-            "executor": "@nx/vite:test",
-            "outputs": [
-                "{workspaceRoot}/coverage/packages/test-client-typescript"
-            ],
-            "cache": false,
-            "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../../coverage/packages/test-client-typescript"
-            }
-        }
+  "name": "test-client-typescript",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "integration-test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/packages/test-client-typescript"],
+      "cache": false,
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/tests/test-client-typescript"
+      }
     }
+  }
 }

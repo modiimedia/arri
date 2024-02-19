@@ -3613,7 +3613,7 @@ class UpdateAnnotationData {
   final UpdateAnnotationParamsDataAnnotationType? annotationType;
   final int? annotationTypeVersion;
   final dynamic metadata;
-  final UpdateAnnotationParamsDataBoxTypeRange? boxTypeRange;
+  final UpdateAnnotationDataBoxTypeRange? boxTypeRange;
   const UpdateAnnotationData({
     this.associatedId,
     this.annotationType,
@@ -3634,8 +3634,7 @@ class UpdateAnnotationData {
           nullableIntFromDynamic(json["annotation_type_version"]),
       metadata: json["metadata"],
       boxTypeRange: json["box_type_range"] is Map<String, dynamic>
-          ? UpdateAnnotationParamsDataBoxTypeRange.fromJson(
-              json["box_type_range"])
+          ? UpdateAnnotationDataBoxTypeRange.fromJson(json["box_type_range"])
           : null,
     );
   }
@@ -3665,7 +3664,7 @@ class UpdateAnnotationData {
     UpdateAnnotationParamsDataAnnotationType? annotationType,
     int? annotationTypeVersion,
     dynamic metadata,
-    UpdateAnnotationParamsDataBoxTypeRange? boxTypeRange,
+    UpdateAnnotationDataBoxTypeRange? boxTypeRange,
   }) {
     return UpdateAnnotationData(
       associatedId: associatedId ?? this.associatedId,
@@ -3699,16 +3698,15 @@ enum UpdateAnnotationParamsDataAnnotationType
       name.compareTo(other.name);
 }
 
-class UpdateAnnotationParamsDataBoxTypeRange {
+class UpdateAnnotationDataBoxTypeRange {
   final BigInt startTimeInNanoSec;
   final BigInt endTimeInNanoSec;
-  const UpdateAnnotationParamsDataBoxTypeRange({
+  const UpdateAnnotationDataBoxTypeRange({
     required this.startTimeInNanoSec,
     required this.endTimeInNanoSec,
   });
-  factory UpdateAnnotationParamsDataBoxTypeRange.fromJson(
-      Map<String, dynamic> json) {
-    return UpdateAnnotationParamsDataBoxTypeRange(
+  factory UpdateAnnotationDataBoxTypeRange.fromJson(Map<String, dynamic> json) {
+    return UpdateAnnotationDataBoxTypeRange(
       startTimeInNanoSec:
           bigIntFromDynamic(json["start_time_in_nano_sec"], BigInt.zero),
       endTimeInNanoSec:
@@ -3725,11 +3723,11 @@ class UpdateAnnotationParamsDataBoxTypeRange {
     return __result;
   }
 
-  UpdateAnnotationParamsDataBoxTypeRange copyWith({
+  UpdateAnnotationDataBoxTypeRange copyWith({
     BigInt? startTimeInNanoSec,
     BigInt? endTimeInNanoSec,
   }) {
-    return UpdateAnnotationParamsDataBoxTypeRange(
+    return UpdateAnnotationDataBoxTypeRange(
       startTimeInNanoSec: startTimeInNanoSec ?? this.startTimeInNanoSec,
       endTimeInNanoSec: endTimeInNanoSec ?? this.endTimeInNanoSec,
     );

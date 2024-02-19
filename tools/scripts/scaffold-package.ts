@@ -131,11 +131,16 @@ function projectJsonTemplate(packageName: string) {
             }
         },
         "test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": ["{workspaceRoot}/coverage/packages/${packageName}"],
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/${packageName}"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "packages/${packageName}"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         }
     },
