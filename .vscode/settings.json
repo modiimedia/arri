@@ -6,6 +6,7 @@
   "cSpell.words": [
     "Arri",
     "autoroutes",
+    "chrono",
     "codegen",
     "Consola",
     "middlewares",
@@ -13,6 +14,7 @@
     "nitropack",
     "ofetch",
     "pathe",
+    "reqwest",
     "scule",
     "typebox",
     "typeof",

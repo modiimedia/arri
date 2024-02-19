@@ -1,6 +1,6 @@
 
 [package]
-name = "rust-reference"
+name = "rust_reference"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +9,4 @@ edition = "2021"
 [dependencies]
 
 arri_client = { path = "../../arri-client-rust" }
+tokio = {version = "1.36.0", features = ["full"]}
