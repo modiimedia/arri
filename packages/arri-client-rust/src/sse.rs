@@ -1,6 +1,6 @@
 use reqwest::{header::HeaderMap, Response};
 use serde_json::json;
-use std::{marker::PhantomData, thread};
+use std::marker::PhantomData;
 
 use crate::{ArriModel, ArriRequestError, ArriRequestErrorMethods};
 
@@ -148,69 +148,71 @@ where
         None => options.url,
     };
 
-    thread::spawn(|| {
-        let response = match json_body {
-            Some(body) => options
+    let response = match json_body {
+        Some(body) => {
+            options
                 .client
                 .request(options.method, url)
                 .headers(options.headers.to_owned())
                 .body(body)
-                .send(),
-            None => options
+                .send()
+                .await
+        }
+        None => {
+            options
                 .client
                 .request(options.method, url)
                 .headers(options.headers.to_owned())
-                .send(),
-        };
+                .send()
+                .await
+        }
+    };
 
-        if !response.is_ok() {
-            (options.on_connection_error)(ArriRequestError::new());
-            return;
-        }
-        let mut ok_response = response.unwrap();
-        (options.on_open)(&ok_response);
-        let status = ok_response.status().as_u16();
-        if status < 200 || status >= 300 {
-            let body = ok_response.text().await.unwrap_or_default();
-            (options.on_connection_error)(ArriRequestError::from_response_data(status, body));
-            return;
-        }
-        let mut pending_data: String = "".to_string();
-        while let Some(chunk) = ok_response.chunk().await.unwrap_or_default() {
-            let chunk_vec = chunk.to_vec();
-            let data = std::str::from_utf8(chunk_vec.as_slice());
-            match data {
-                Ok(text) => {
-                    if !text.ends_with("\n\n") {
-                        pending_data.push_str(text);
-                        continue;
-                    }
-                    let msg_text = format!("{}{}", pending_data, text);
-                    pending_data = String::from("");
-                    let messages = sse_messages_from_string(msg_text);
-                    for message in messages {
-                        let event = message.event.unwrap_or("".to_string());
-                        match event.as_str() {
-                            "error" => {
-                                (options.on_error)(ArriRequestError::from_json_string(
-                                    message.data,
-                                ));
-                            }
-                            "done" => {
-                                (options.on_close)(&ok_response);
-                                break;
-                            }
-                            _ => {
-                                (options.on_data)(message.data);
-                            }
+    if !response.is_ok() {
+        (options.on_connection_error)(ArriRequestError::new());
+        return;
+    }
+    let mut ok_response = response.unwrap();
+    (options.on_open)(&ok_response);
+    let status = ok_response.status().as_u16();
+    if status < 200 || status >= 300 {
+        let body = ok_response.text().await.unwrap_or_default();
+        (options.on_connection_error)(ArriRequestError::from_response_data(status, body));
+        return;
+    }
+    let mut pending_data: String = "".to_string();
+    while let Some(chunk) = ok_response.chunk().await.unwrap_or_default() {
+        let chunk_vec = chunk.to_vec();
+        let data = std::str::from_utf8(chunk_vec.as_slice());
+        match data {
+            Ok(text) => {
+                if !text.ends_with("\n\n") {
+                    pending_data.push_str(text);
+                    continue;
+                }
+                let msg_text = format!("{}{}", pending_data, text);
+                pending_data = String::from("");
+                let messages = sse_messages_from_string(msg_text);
+                for message in messages {
+                    let event = message.event.unwrap_or("".to_string());
+                    match event.as_str() {
+                        "error" => {
+                            (options.on_error)(ArriRequestError::from_json_string(message.data));
+                        }
+                        "done" => {
+                            (options.on_close)(&ok_response);
+                            break;
+                        }
+                        _ => {
+                            (options.on_data)(message.data);
                         }
                     }
                 }
-                _ => {}
             }
-            println!("Chunk: {:?}", chunk);
+            _ => {}
         }
-    });
+        println!("Chunk: {:?}", chunk);
+    }
 }
 
 #[derive(Debug, Clone)]
