@@ -51,7 +51,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "vite.config.ts"),
-                viteConfigTemplate(),
+                viteConfigTemplate(name),
             ),
         ]);
     },
@@ -262,12 +262,12 @@ function tsConfigSpecTemplate() {
 `;
 }
 
-function viteConfigTemplate() {
+function viteConfigTemplate(projectName: string) {
     return `import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/client",
+    cacheDir: "../../node_modules/.vite/${projectName}",
 
     plugins: [
         viteTsConfigPaths({

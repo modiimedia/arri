@@ -5,11 +5,11 @@ import { ChatMessage } from "./streamMessages.rpc";
 export default defineEventStreamRpc({
     params: undefined,
     response: ChatMessage,
-    handler({ connection }) {
+    handler({ stream }) {
         let messageCount = 0;
         const interval = setInterval(async () => {
             messageCount++;
-            await connection.push({
+            await stream.push({
                 id: randomUUID(),
                 channelId: "1",
                 date: new Date(),
@@ -23,14 +23,13 @@ export default defineEventStreamRpc({
                 );
             }
             if (messageCount === 10) {
-                await connection.end();
-                await cleanup();
+                await stream.close();
             }
         });
         async function cleanup() {
             clearInterval(interval);
         }
-        connection.on("disconnect", () => cleanup());
-        connection.start();
+        stream.on("close", () => cleanup());
+        stream.start();
     },
 });

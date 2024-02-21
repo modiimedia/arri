@@ -2,7 +2,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/client",
+    cacheDir: "../../node_modules/.vite/arri-validate",
 
     plugins: [
         viteTsConfigPaths({

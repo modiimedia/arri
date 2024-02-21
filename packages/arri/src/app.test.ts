@@ -31,11 +31,11 @@ it("creates valid app definition", () => {
         params: SayHelloParams,
         response: SayHelloResponse,
         isEventStream: true,
-        handler({ params, connection }) {
+        handler({ params, stream }) {
             const timeout = setInterval(async () => {
-                await connection.push({ message: `Hello ${params.name}` });
+                await stream.push({ message: `Hello ${params.name}` });
             }, 100);
-            connection.on("disconnect", () => {
+            stream.on("close", () => {
                 clearInterval(timeout);
             });
         },

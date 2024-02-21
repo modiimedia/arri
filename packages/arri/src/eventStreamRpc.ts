@@ -1,16 +1,16 @@
-import { nextTick } from "node:process";
 import { type InferType, a, type ValueError } from "arri-validate";
 import {
     type H3Event,
-    getHeader,
-    setResponseStatus,
-    sendStream,
     type Router,
     eventHandler,
     isPreflightRequest,
-    setResponseHeaders,
-    type HTTPHeaderName,
 } from "h3";
+import {
+    type EventStream,
+    createEventStream,
+    sendEventStream,
+    type EventStreamMessage,
+} from "h3-sse";
 import { handleH3Error, type ErrorResponse } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
@@ -23,24 +23,6 @@ import {
     validateRpcRequestInput,
     isRpc,
 } from "./rpc";
-
-export function setSseHeaders(event: H3Event) {
-    const isHttp2 =
-        getHeader(event, ":path") !== undefined &&
-        getHeader(event, ":method") !== undefined;
-    const input: Partial<Record<HTTPHeaderName, string>> = {
-        "Content-Type": "text/event-stream",
-        "Cache-Control":
-            "private, no-cache, no-store, no-transform, must-revalidate, max-age=0",
-        Pragma: "no-cache",
-        "X-Accel-Buffering": "no",
-    };
-    if (!isHttp2) {
-        input.Connection = "keep-alive";
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    setResponseHeaders(event, input as any);
-}
 
 export function defineEventStreamRpc<
     TParams extends RpcParamSchema | undefined = undefined,
@@ -76,17 +58,12 @@ export interface EventStreamRpc<
 
 export type EventStreamRpcHandler<TParams, TResponse> = (
     context: EventStreamRpcHandlerContext<TParams, TResponse>,
-    event: EventStreamRpcEvent<TParams, TResponse>,
+    event: RpcEvent<TResponse>,
 ) => void | Promise<void>;
-
-export interface EventStreamRpcEvent<TParams, TResponse>
-    extends RpcEvent<TParams> {
-    connection: EventStreamConnection<TResponse>;
-}
 
 export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
     extends RpcHandlerContext<TParams> {
-    connection: EventStreamConnection<TResponse>;
+    stream: EventStreamConnection<TResponse>;
 }
 
 export interface EventStreamConnectionOptions<TData> {
@@ -96,68 +73,25 @@ export interface EventStreamConnectionOptions<TData> {
     pingInterval?: number;
 }
 
-/**
- * A server sent event
- */
-export interface Sse {
-    id?: string;
-    event?: string;
-    data: string;
-}
-
-export function formatSse({ id, data, event }: Sse): string {
-    const parts: string[] = [];
-    if (id) {
-        parts.push(`id: ${id}`);
-    }
-    if (event) {
-        parts.push(`event: ${event}`);
-    }
-    parts.push(`data: ${data}`);
-    const payload = `${parts.join("\n")}\n\n`;
-    return payload;
-}
-
-export function formatSseList(events: Sse[]): string {
-    let output = "";
-    for (const event of events) {
-        output += formatSse(event);
-    }
-    return output;
-}
-
 export class EventStreamConnection<TData> {
-    lastEventId: string | undefined;
-    private readonly writable: WritableStream;
-    private readonly readable: ReadableStream;
-    private readonly writer: WritableStreamDefaultWriter;
-    private writerIsClosed: boolean = false;
-    private readonly encoder: TextEncoder;
+    private readonly h3Event: H3Event;
     private readonly validationErrors: (input: unknown) => ValueError[];
     private readonly validator: (input: unknown) => input is TData;
     private readonly serializer: (input: TData) => string;
-    private readonly h3Event: H3Event;
     // for some reason Rollup cannot output DTS when this is set to NodeJS.Timeout
     private pingInterval: any | undefined = undefined;
     private readonly pingIntervalMs: number;
+    readonly eventStream: EventStream;
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.h3Event = event;
-        const id = getHeader(event, "Last-Event-ID");
-        this.lastEventId = id;
-
-        const { readable, writable } = new TransformStream();
-        this.writable = writable;
-        this.readable = readable;
-        this.writer = writable.getWriter();
-        this.encoder = new TextEncoder();
+        this.eventStream = createEventStream(event, true);
         this.pingIntervalMs = opts.pingInterval ?? 60000;
-
         this.serializer = opts.serializer;
         this.validator = opts.validator;
         this.validationErrors = opts.validationErrors;
-        void this.writer.closed.then(() => {
-            this.writerIsClosed = true;
+        this.eventStream.on("close", () => {
+            this.cleanup();
         });
     }
 
@@ -165,13 +99,9 @@ export class EventStreamConnection<TData> {
      * Start sending the event stream to the client
      */
     start() {
-        setSseHeaders(this.h3Event);
-        setResponseStatus(this.h3Event, 200);
-        this.h3Event._handled = true;
-        void sendStream(this.h3Event, this.readable);
+        void sendEventStream(this.h3Event, this.eventStream);
         this.pingInterval = setInterval(async () => {
-            await this.publishEvent({
-                id: this.lastEventId,
+            await this.eventStream.push({
                 event: "ping",
                 data: "",
             });
@@ -185,7 +115,7 @@ export class EventStreamConnection<TData> {
     async push(data: TData, eventId?: string): Promise<void>;
     async push(data: TData | TData[], eventId?: string) {
         if (Array.isArray(data)) {
-            const events: Sse[] = [];
+            const events: EventStreamMessage[] = [];
             for (const item of data) {
                 if (this.validator(item)) {
                     events.push({
@@ -208,11 +138,11 @@ export class EventStreamConnection<TData> {
                     data: JSON.stringify(errorResponse),
                 });
             }
-            await this.publishEvents(events);
+            await this.eventStream.push(events);
             return;
         }
         if (this.validator(data)) {
-            await this.publishEvent({
+            await this.eventStream.push({
                 id: eventId,
                 event: "message",
                 data: this.serializer(data),
@@ -226,7 +156,7 @@ export class EventStreamConnection<TData> {
                 "Failed to serialize response. Response does not match specified schema.",
             data: errors,
         };
-        await this.publishEvent({
+        await this.eventStream.push({
             id: eventId,
             event: "error",
             data: JSON.stringify(errorResponse),
@@ -254,86 +184,42 @@ export class EventStreamConnection<TData> {
      * Publish an error event. This will trigger the `onError` hooks of any connected clients.
      */
     async pushError(error: ErrorResponse, eventId?: string) {
-        await this.publishEvent({
+        await this.eventStream.push({
             id: eventId,
             event: "error",
             data: JSON.stringify(error),
         });
     }
 
-    private async publishEvents(events: Sse[]) {
-        const payload = formatSseList(events);
-        if (this.writerIsClosed) {
-            try {
-                this.h3Event.node.res.end();
-            } catch (_) {
-                await this.cleanup();
-            }
-            return;
-        }
-        await this.writer.write(this.encoder.encode(payload));
-    }
-
-    private async publishEvent(event: Sse) {
-        const payload = formatSse(event);
-        if (this.writerIsClosed) {
-            try {
-                this.h3Event.node.res.end();
-            } catch (_) {
-                await this.cleanup();
-            }
-            return;
-        }
-        await this.writer.write(this.encoder.encode(payload));
-    }
-
-    private async cleanup() {
+    private cleanup() {
         if (this.pingInterval) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearInterval(this.pingInterval);
-        }
-        if (!this.writerIsClosed) {
-            try {
-                await this.writer.close();
-            } catch (_) {}
         }
     }
 
     /**
      * Tell clients that the stream has ended and close the connection.
      */
-    async end() {
-        await this.publishEvent({
-            event: "done",
-            data: "this stream has ended",
-        }).catch();
-        await new Promise((resolve, reject) => {
-            nextTick(() => {
-                try {
-                    this.h3Event.node.res.end();
-                    resolve(true);
-                } catch (err) {
-                    reject(err);
-                }
-            });
-        });
+    async close() {
+        await this.eventStream
+            .push({
+                event: "done",
+                data: "this stream has ended",
+            })
+            .catch();
+        await this.eventStream.close();
     }
 
-    on(event: "disconnect", callback: () => any): void;
-    on(event: "end", callback: () => any): void;
-    on(event: "disconnect" | "end", callback: () => any) {
+    on(event: "close", callback: () => any): void;
+    on(event: "request:close", callback: () => any): void;
+    on(event: "close" | "request:close", callback: () => any) {
         switch (event) {
-            case "disconnect":
-                this.h3Event.node.req.on("close", async () => {
-                    await callback();
-                    await this.cleanup();
-                });
+            case "close":
+                this.eventStream.on("close", callback);
                 break;
-            case "end":
-                this.h3Event.node.req.on("end", async () => {
-                    await callback();
-                    await this.cleanup();
-                });
+            case "request:close":
+                this.eventStream.on("request:close", callback);
                 break;
         }
     }
@@ -375,7 +261,7 @@ export function registerEventStreamRpc(
                     procedure.params,
                 );
             }
-            const connection = new EventStreamConnection(event, {
+            const stream = new EventStreamConnection(event, {
                 pingInterval: procedure.pingInterval,
                 validator:
                     responseValidator?.validate ??
@@ -395,11 +281,14 @@ export function registerEventStreamRpc(
                     return [];
                 },
             });
-            event.context.connection = connection;
+            event.context.stream = stream;
             await procedure.handler(
                 event.context as EventStreamRpcHandlerContext,
-                event as EventStreamRpcEvent<any, any>,
+                event as RpcEvent<any>,
             );
+            if (!event.handled && !stream.eventStream._handled) {
+                await sendEventStream(event, stream.eventStream);
+            }
         } catch (err) {
             await handleH3Error(err, event, opts.onError);
         }
