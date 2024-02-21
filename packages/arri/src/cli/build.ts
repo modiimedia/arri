@@ -136,7 +136,7 @@ async function createServerEntryFile(config: ResolvedArriConfig) {
                 js: `import { createRequire as topLevelCreateRequire } from 'module';
 const require = topLevelCreateRequire(import.meta.url);`,
             },
-            plugins: [replace({ "virtual:arri/app": "./app.js" })],
+            plugins: [replace({ "virtual:arri/app": "./app.mjs" })],
             allowOverwrite: true,
             outfile: path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
         });

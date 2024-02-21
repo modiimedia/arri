@@ -17,7 +17,7 @@
     "test": "nx run-many -t test",
     "build": "nx run-many -t build",
     "integration-test": "start-server-and-test 'integration-test:start-server' http-get://127.0.0.1:2020/status 'integration-test:run-tests'",
-    "integration-test:start-server": "nx build-server test-server && node tests/server/.output/server --host",
+    "integration-test:start-server": "nx build-server test-server && node tests/server/.output/server.mjs --host",
     "integration-test:run-tests": "nx run-many -t integration-test",
     "scaffold": "jiti tools/scripts/scaffold-package.ts",
     "postversion": "jiti tools/scripts/version-sync.ts",

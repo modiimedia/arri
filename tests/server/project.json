@@ -24,7 +24,7 @@
       "dependsOn": ["build-server"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "node .output/server --host",
+        "command": "node .output/server.mjs --host",
         "cwd": "tests/server"
       }
     }
