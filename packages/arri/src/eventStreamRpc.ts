@@ -25,7 +25,9 @@ import {
 } from "./rpc";
 
 export function setSseHeaders(event: H3Event) {
-    const isHttp2 = (event as any)._http2 === true;
+    const isHttp2 =
+        getHeader(event, ":path") !== undefined &&
+        getHeader(event, ":method") !== undefined;
     const input: Partial<Record<HTTPHeaderName, string>> = {
         "Content-Type": "text/event-stream",
         "Cache-Control":
