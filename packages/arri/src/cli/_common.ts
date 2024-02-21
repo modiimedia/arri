@@ -8,9 +8,9 @@ import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
 import { type ResolvedArriConfig } from "../config";
 
-export const GEN_APP_FILE = "__arri_app.mjs";
-export const GEN_SERVER_ENTRY_FILE = "__arri_server.mjs";
-export const GEN_CODEGEN_FILE = "__arri_codegen.mjs";
+export const GEN_APP_FILE = "__arri_app.js";
+export const GEN_SERVER_ENTRY_FILE = "__arri_server.js";
+export const GEN_CODEGEN_FILE = "__arri_codegen.js";
 export const OUT_APP_FILE = "app.mjs";
 export const OUT_SERVER_ENTRY = "server.mjs";
 export const OUT_CODEGEN = "codegen.mjs";
