@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "arri-codegen-utils": "workspace:*",
-    "json-schema-to-jtd": "workspace:*"
+    "json-schema-to-jtd": "workspace:*",
+    "jtd-utils": "workspace:*"
   }
 }

@@ -3421,11 +3421,11 @@ class UsersWatchUserParams {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "userId": userId,
     };
 
-    return result;
+    return __result;
   }
 
   UsersWatchUserParams copyWith({
@@ -3505,7 +3505,7 @@ class UsersWatchUserResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "id": id,
       "role": role.value,
       "photo": photo?.toJson(),
@@ -3519,9 +3519,9 @@ class UsersWatchUserResponse {
       "randomList": randomList.map((item) => item).toList(),
     };
     if (bio != null) {
-      result["bio"] = bio;
+      __result["bio"] = bio;
     }
-    return result;
+    return __result;
   }
 
   UsersWatchUserResponse copyWith({
@@ -3601,7 +3601,7 @@ class UserPhoto {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "url": url,
       "width": width,
       "height": height,
@@ -3609,7 +3609,7 @@ class UserPhoto {
       "nanoseconds": nanoseconds.toString(),
     };
 
-    return result;
+    return __result;
   }
 
   UserPhoto copyWith({
@@ -3646,12 +3646,12 @@ class UserSettings {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "notificationsEnabled": notificationsEnabled,
       "preferredTheme": preferredTheme.value,
     };
 
-    return result;
+    return __result;
   }
 
   UserSettings copyWith({
@@ -3734,13 +3734,13 @@ class UsersWatchUserResponseRecentNotificationsItemPostLike
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "notificationType": notificationType,
       "postId": postId,
       "userId": userId,
     };
 
-    return result;
+    return __result;
   }
 
   UsersWatchUserResponseRecentNotificationsItemPostLike copyWith({
@@ -3776,14 +3776,14 @@ class UsersWatchUserResponseRecentNotificationsItemPostComment
   }
   @override
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "notificationType": notificationType,
       "postId": postId,
       "userId": userId,
       "commentText": commentText,
     };
 
-    return result;
+    return __result;
   }
 
   UsersWatchUserResponseRecentNotificationsItemPostComment copyWith({
@@ -3815,12 +3815,12 @@ class UsersWatchUserResponseBookmarksValue {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
+    final __result = <String, dynamic>{
       "postId": postId,
       "userId": userId,
     };
 
-    return result;
+    return __result;
   }
 
   UsersWatchUserResponseBookmarksValue copyWith({

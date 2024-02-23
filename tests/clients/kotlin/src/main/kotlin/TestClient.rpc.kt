@@ -134,6 +134,85 @@ class TestClientMiscTestsService(
         }
         return job
     }
+    fun streamConnectionErrorTest(
+        scope: CoroutineScope,
+        params: StreamConnectionErrorTestParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onError: ((error: TestClientError) -> Unit) = {},
+        onConnectionError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
+    ): Job {
+        val finalHeaders = mutableMapOf<String, String>()
+        for (item in headers.entries) {
+            finalHeaders[item.key] = item.value
+        }
+        finalHeaders["Accept"] = "application/json, text/event-stream"
+        val job = scope.launch {
+            handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/misc-tests/stream-connection-error-test",
+                method = HttpMethod.Get,
+                params = JsonInstance.encodeToJsonElement<StreamConnectionErrorTestParams>(params),
+                headers = finalHeaders,
+                backoffTime = 0,
+                maxBackoffTime = 32000,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onConnectionError = onConnectionError,
+                onData = { str -> 
+                    val data = JsonInstance.decodeFromString<StreamConnectionErrorTestResponse>(str)
+                    onData(data)
+                },
+            )
+        }
+        return job
+    }
+    fun streamLargeObjects(
+        scope: CoroutineScope,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onError: ((error: TestClientError) -> Unit) = {},
+        onConnectionError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
+    ): Job {
+        val finalHeaders = mutableMapOf<String, String>()
+        for (item in headers.entries) {
+            finalHeaders[item.key] = item.value
+        }
+        finalHeaders["Accept"] = "application/json, text/event-stream"
+        val job = scope.launch {
+            handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/misc-tests/stream-large-objects",
+                method = HttpMethod.Get,
+                params = null,
+                headers = finalHeaders,
+                backoffTime = 0,
+                maxBackoffTime = 32000,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onConnectionError = onConnectionError,
+                onData = { str -> 
+                    val data = JsonInstance.decodeFromString<StreamLargeObjectsResponse>(str)
+                    onData(data)
+                },
+            )
+        }
+        return job
+    }
     fun streamMessages(
         scope: CoroutineScope,
         params: ChatMessageParams,
@@ -1176,6 +1255,33 @@ data class AutoReconnectParams(
 data class AutoReconnectResponse(
     val count: UByte,
     val message: String,
+)
+
+
+@Serializable
+data class StreamConnectionErrorTestParams(
+    val statusCode: UShort,
+    val statusMessage: String,
+)
+
+
+@Serializable
+data class StreamConnectionErrorTestResponse(
+    val message: String,
+)
+
+
+@Serializable
+data class StreamLargeObjectsResponse(
+    val numbers: List<Double>,
+    val objects: List<StreamLargeObjectsResponseObjectsItem>,
+)
+
+@Serializable
+data class StreamLargeObjectsResponseObjectsItem(
+    val id: String,
+    val name: String,
+    val email: String,
 )
 
 
