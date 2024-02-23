@@ -24,7 +24,7 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/typescript/testClient.rpc.ts",
+                "../clients/client-typescript/testClient.rpc.ts",
             ),
             prettierOptions: prettierConfig,
         }),
@@ -32,7 +32,7 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/dart/lib/test_client.rpc.dart",
+                "../clients/client-dart/lib/test_client.rpc.dart",
             ),
         }),
         kotlinClientGenerator({
