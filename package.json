@@ -21,6 +21,7 @@
     "integration-test:run-tests": "nx run-many -t integration-test",
     "scaffold": "jiti tools/scripts/scaffold-package.ts",
     "postversion": "jiti tools/scripts/version-sync.ts",
+    "postpublish": "nx publish arri-client-dart",
     "lint": "nx run-many -t lint",
     "lint:fix": "nx run-many -t lint --fix"
   },
