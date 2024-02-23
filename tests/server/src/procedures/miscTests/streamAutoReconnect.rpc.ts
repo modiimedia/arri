@@ -15,11 +15,11 @@ export default defineEventStreamRpc({
         },
         { id: "AutoReconnectResponse" },
     ),
-    handler({ params, connection }, event) {
+    handler({ params, stream }, event) {
         let messageCount = 0;
         const interval = setInterval(async () => {
             messageCount++;
-            await connection.push({
+            await stream.push({
                 count: messageCount,
                 message: `Hello World ${messageCount}`,
             });
@@ -32,9 +32,8 @@ export default defineEventStreamRpc({
                 throw new Error("Interval was not properly cleaned up");
             }
         });
-        connection.on("disconnect", () => {
+        stream.on("close", () => {
             clearInterval(interval);
         });
-        connection.start();
     },
 });

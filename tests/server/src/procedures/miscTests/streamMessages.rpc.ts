@@ -47,7 +47,7 @@ export type ChatMessage = a.infer<typeof ChatMessage>;
 export default defineEventStreamRpc({
     params: ChatMessageParams,
     response: ChatMessage,
-    handler({ params, connection }) {
+    handler({ params, stream }) {
         const randomItem = (): ChatMessage => {
             const userId = randomUUID();
             const now = new Date();
@@ -87,12 +87,12 @@ export default defineEventStreamRpc({
             }
         };
         const interval = setInterval(async () => {
-            await connection.push(randomItem());
+            await stream.push(randomItem());
         });
 
-        connection.on("disconnect", async () => {
+        stream.on("close", async () => {
             clearInterval(interval);
         });
-        connection.start();
+        stream.init();
     },
 });

@@ -26,7 +26,7 @@ export type StreamLargeObjectsResponse = a.infer<
 export default defineEventStreamRpc({
     params: undefined,
     response: StreamLargeObjectsResponse,
-    async handler({ connection }) {
+    async handler({ stream }) {
         function randomResponse(): StreamLargeObjectsResponse {
             const result: StreamLargeObjectsResponse = {
                 numbers: [],
@@ -42,13 +42,13 @@ export default defineEventStreamRpc({
             }
             return result;
         }
-        connection.start();
-        await connection.push(randomResponse());
+        stream.init();
+        await stream.push(randomResponse());
 
         const interval = setInterval(async () => {
-            await connection.push(randomResponse());
+            await stream.push(randomResponse());
         });
-        connection.on("disconnect", () => {
+        stream.on("close", () => {
             clearInterval(interval);
         });
     },
