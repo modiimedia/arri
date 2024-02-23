@@ -259,22 +259,24 @@ export default defineEventStreamRpc({
         createdAt: a.timestamp(),
         updatedAt: a.timestamp(),
     }),
-    handler({ params, connection }) {
+    handler({ params, stream }) {
+        // initialize the stream and send it to the client
+        stream.init();
+
         // send a message every second
         const interval = setInterval(async () => {
-            await connection.push({
+            await stream.push({
                 id: "1",
                 name: "John Doe",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
         }, 1000);
+
         // cleanup when the client disconnects
-        connection.on("disconnect", () => {
+        stream.on("close", () => {
             clearInterval(interval);
         });
-        // start streaming events to the client
-        connection.start();
     },
 });
 ```
@@ -282,11 +284,11 @@ export default defineEventStreamRpc({
 #### EventStreamConnection methods
 
 ```ts
-connection.push(data: Data, eventId?: string)
-connection.pushError(error: ArriRequestError, eventId?: string)
-connection.start()
-connection.end()
-connection.on(e: 'disconnect' | 'end', callback: () => any)
+stream.push(data: Data, eventId?: string)
+stream.pushError(error: ArriRequestError, eventId?: string)
+stream.init()
+stream.end()
+stream.on(e: 'request:close' | 'close', callback: () => any)
 ```
 
 ### Adding Non-RPC Routes
@@ -491,7 +493,7 @@ arri build [flags]
 arri init [dir]
 ```
 
-## Developing
+## Development
 
 ### Building
 
