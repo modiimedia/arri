@@ -7,3 +7,4 @@ export * from "./router";
 export * from "./route";
 export * from "./eventStreamRpc";
 export * from "h3";
+export * from "h3-sse";

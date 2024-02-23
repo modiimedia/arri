@@ -158,3 +158,23 @@ describe("optional()", () => {
         });
     });
 });
+
+describe("clone()", () => {
+    it("clones simple schemas", () => {
+        const StringSchema = a.string({
+            id: "string_schema",
+            description: "string_schema",
+        });
+
+        const ClonedStringSchema = a.clone(StringSchema);
+        type ClonedStringSchema = a.infer<typeof ClonedStringSchema>;
+        assertType<ClonedStringSchema>("hello world");
+        expect(ClonedStringSchema.metadata.id).toBe(undefined);
+        const ModifiedStringSchema = a.clone(StringSchema, {
+            id: "cloned_string_schema",
+        });
+        type ModifiedStringSchema = a.infer<typeof ModifiedStringSchema>;
+        assertType<ModifiedStringSchema>("hello world");
+        expect(ModifiedStringSchema.metadata.id).toBe("cloned_string_schema");
+    });
+});

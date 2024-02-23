@@ -374,11 +374,11 @@ test("SSE request", async () => {
         setTimeout(() => {
             controller.abort();
             resolve(true);
-        }, 5000);
+        }, 500);
     });
     expect(receivedMessageCount > 0).toBe(true);
     expect(wasConnected).toBe(true);
-}, 30000);
+}, 2000);
 
 test("SSE Request with errors", async () => {
     let timesConnected = 0;
@@ -399,13 +399,13 @@ test("SSE Request with errors", async () => {
     await new Promise((resolve) => {
         setTimeout(() => {
             resolve(true);
-        }, 5000);
+        }, 500);
     });
     expect(errorReceived?.statusCode).toBe(400);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
-}, 30000);
+}, 2000);
 
 test("SSE Request with done event", async () => {
     let timesConnected = 0;
@@ -425,7 +425,7 @@ test("SSE Request with done event", async () => {
     await new Promise((resolve) => {
         setTimeout(() => {
             resolve(true);
-        }, 5000);
+        }, 500);
     });
     expect(errorReceived).toBe(undefined);
     expect(controller.signal.aborted).toBe(true);

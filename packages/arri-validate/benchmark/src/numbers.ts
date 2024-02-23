@@ -63,6 +63,11 @@ void benny.suite(
         folder: "benchmark/dist",
         format: "chart.html",
     }),
+    benny.save({
+        file: "int-validation",
+        folder: "benchmark/dist",
+        format: "json",
+    }),
 );
 
 void benny.suite(
@@ -85,6 +90,11 @@ void benny.suite(
         file: "int-parsing",
         folder: "benchmark/dist",
         format: "chart.html",
+    }),
+    benny.save({
+        file: "int-parsing",
+        folder: "benchmark/dist",
+        format: "json",
     }),
 );
 
@@ -109,6 +119,11 @@ void benny.suite(
         folder: "benchmark/dist",
         format: "chart.html",
     }),
+    benny.save({
+        file: "int-coercion",
+        folder: "benchmark/dist",
+        format: "json",
+    }),
 );
 
 void benny.suite(
@@ -131,5 +146,10 @@ void benny.suite(
         file: "int-serialization",
         folder: "benchmark/dist",
         format: "chart.html",
+    }),
+    benny.save({
+        file: "int-serialization",
+        folder: "benchmark/dist",
+        format: "json",
     }),
 );

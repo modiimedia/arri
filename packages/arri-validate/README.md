@@ -22,7 +22,7 @@ A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx
     -   [Omit](#omit)
     -   [Pick](#pick)
     -   [Partial](#partial)
--   [Utilities](#helpers)
+-   [Utilities](#utilities)
     -   [Validate](#validate)
     -   [Parse](#parse)
     -   [Safe Parse](#safe-parse)
@@ -31,6 +31,8 @@ A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx
     -   [Serialize](#serialize)
     -   [Errors](#errors)
 -   [Compiled Validators](#compiled-validators)
+-   [Benchmarks](#benchmarks)
+-   [Development](#development)
 
 ## Installation
 
@@ -232,6 +234,10 @@ const Shape = a.discriminator("type", {
 });
 type Shape = a.infer<typeof Shape>; // { type: "RECTANGLE"; width: number; height: number; } | { type: "CIRCLE"; radius: number; }
 
+// Infer specific sub types of the union
+type ShapeTypeRectangle = a.inferSubType<Shape, "type", "RECTANGLE">; // { type "RECTANGLE"; width: number; height: number; };
+type ShapeTypeCircle = a.inferSubType<Shape, "type", "CIRCLE">; // { type "CIRCLE"; radius: number; }
+
 a.validate(Shape, {
     type: "RECTANGLE",
     width: 1,
@@ -340,6 +346,24 @@ const name = a.nullable(a.string());
 }
 ```
 
+### Clone
+
+Copy another schema without copying it's metadata using the `a.clone()` helper
+
+```ts
+const A = a.object(
+    {
+        a: a.string(),
+        b: a.float32(),
+    },
+    { id: "A" },
+);
+console.log(A.metadata.id); // "A"
+
+const B = a.clone(A);
+console.log(B.metadata.id); // undefined
+```
+
 ### Extend
 
 Extend an object schema with the `a.extend()` helper.
@@ -407,7 +431,7 @@ const B = a.partial(A);
 // { a: string | undefined; b: number | undefined; c: Date | undefined; }
 ```
 
-## Helpers
+## Utilities
 
 ### Validate
 
@@ -571,10 +595,127 @@ $$User.compiledCode.parse; // the generated parsing code
 $$User.compiledCode.serialize; // the generated serialization code
 ```
 
-## Building
+## Benchmarks
+
+_Last Updated: 2024-02-17_
+
+All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
+
+```txt
+OS - Pop!_OS 22.04 LTS
+CPU - AMD Ryzen 9 5900 12-Core Processor
+RAM - 32GB
+Graphics - AMD® Radeon rx 6900 xt
+```
+
+### Objects
+
+The following data was used in these benchmarks. Relevant schemas were created in each of the mentioned libraries.
+
+```ts
+{
+    id: 12345,
+    role: "moderator",
+    name: "John Doe",
+    email: null,
+    createdAt: 0,
+    updatedAt: 0,
+    settings: {
+        preferredTheme: "system",
+        allowNotifications: true,
+    },
+    recentNotifications: [
+        {
+            type: "POST_LIKE",
+            postId: "1",
+            userId: "2",
+        },
+        {
+            type: "POST_COMMENT",
+            postId: "1",
+            userId: "1",
+            commentText: "",
+        },
+    ],
+};
+```
+
+#### Validation
+
+| Library                      | op/s        |
+| ---------------------------- | ----------- |
+| **Arri (Compiled)**          | 135,577,679 |
+| Typebox (Compiled)           | 59,141,334  |
+| Ajv -JTD (Compiled)          | 38,308,645  |
+| Ajv - JTD                    | 30,481,986  |
+| Ajv - JSON Schema (Compiled) | 12,266,309  |
+| Ajv -JSON Schema             | 10,430,898  |
+| **Arri**                     | 2,243,081   |
+| Typebox                      | 98,2233     |
+| Zod                          | 52,9865     |
+
+#### Parsing
+
+| Library             | op/s    |
+| ------------------- | ------- |
+| JSON.parse          | 777,989 |
+| **Arri (Compiled)** | 729,225 |
+| **Arri**            | 376,368 |
+| Ajv -JTD (Compiled) | 245,730 |
+
+#### Serialization
+
+| Library                                    | op/s      |
+| ------------------------------------------ | --------- |
+| Ajv - JTD (Compiled)                       | 2,125,422 |
+| **Arri (Compiled)**                        | 1,963,027 |
+| **Arri (Compiled) Validate and Serialize** | 1,873,083 |
+| JSON.stringify                             | 981,663   |
+| Arri                                       | 224,707   |
+
+#### Coercion
+
+| Library  | op/s    |
+| -------- | ------- |
+| **Arri** | 839,642 |
+| Typebox  | 212,706 |
+| Zod      | 488,505 |
+
+### Integers
+
+#### Validation
+
+| Library                      | op/s        |
+| ---------------------------- | ----------- |
+| **Arri**                     | 210,933,339 |
+| **Arri (Compiled)**          | 207,119,519 |
+| Ajv - JSON Schema (Compiled) | 193,992,382 |
+| Ajv - JTD (Compiled)         | 169,603,655 |
+| Typebox (Compiled)           | 113,166,065 |
+| Ajv - JSON Schema            | 55,942,777  |
+| Ajv - JTD                    | 51,083,383  |
+| Typebox                      | 45,753,844  |
+| Zod                          | 1,163,445   |
+
+#### Parsing
+
+| Library              | op/s        |
+| -------------------- | ----------- |
+| **Arri (Compiled)**  | 153,161,724 |
+| **Arri**             | 138,649,162 |
+| JSON.parse()         | 19,045,882  |
+| Ajv - JTD (Compiled) | 9,363,809   |
+
+## Development
+
+### Building
 
 Run `nx build arri-validate` to build the library.
 
-## Running unit tests
+### Running unit tests
 
-Run `nx test arri-validate` to execute the unit tests via [Jest](https://jestjs.io).
+Run `nx test arri-validate` to execute the unit tests via Vitest
+
+### Benchmarking
+
+Run `nx benchmark arri-validate` to execute benchmarks

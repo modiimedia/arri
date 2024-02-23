@@ -1,44 +1,44 @@
 {
-    "name": "arri-client",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri-client/src",
-    "projectType": "library",
-    "targets": {
-        "build": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist"],
-            "options": {
-                "command": "unbuild",
-                "cwd": "packages/arri-client"
-            }
-        },
-        "publish": {
-            "dependsOn": ["build"],
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "pnpm publish",
-                "cwd": "packages/arri-client"
-            }
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "outputs": ["{options.outputFile}"]
-        },
-        "test": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{workspaceRoot}/coverage/packages/arri-client"],
-            "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri-client"
-            }
-        },
-        "typecheck": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsc --noEmit",
-                "cwd": "packages/arri-client"
-            }
-        }
+  "name": "arri-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/arri-client/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "packages/arri-client"
+      }
     },
-    "tags": []
+    "publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "packages/arri-client"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/packages/arri-client"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/packages/arri-client"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/arri-client"
+      }
+    }
+  },
+  "tags": []
 }

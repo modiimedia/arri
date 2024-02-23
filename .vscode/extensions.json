@@ -1,10 +1,10 @@
 {
-    "recommendations": [
-        "nrwl.angular-console",
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "mathiasfrohlich.kotlin",
-        "dart-code.dart-code",
-        "dart-code.flutter"
-    ]
+  "recommendations": [
+    "nrwl.angular-console",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "mathiasfrohlich.kotlin",
+    "dart-code.dart-code",
+    "dart-code.flutter"
+  ]
 }

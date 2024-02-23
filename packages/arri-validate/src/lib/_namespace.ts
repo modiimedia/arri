@@ -4,7 +4,7 @@ export { array } from "./array";
 export { boolean } from "./boolean";
 export { discriminator } from "./discriminator";
 export { stringEnum, enumerator } from "./enum";
-export { optional, nullable } from "./modifiers";
+export { optional, nullable, clone } from "./modifiers";
 export {
     number,
     int8,
@@ -32,4 +32,7 @@ export {
     errors,
 } from "./validation";
 export { compile } from "../compile";
-export type { InferType as infer } from "../schemas";
+export type {
+    InferType as infer,
+    InferSubType as inferSubType,
+} from "../schemas";

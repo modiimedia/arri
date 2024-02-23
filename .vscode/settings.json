@@ -1,27 +1,26 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
-    },
-    "cSpell.words": [
-        "Arri",
-        "autoroutes",
-        "codegen",
-        "Consola",
-        "kotlinx",
-        "ktor",
-        "middlewares",
-        "modii",
-        "nitropack",
-        "ofetch",
-        "pathe",
-        "scule",
-        "typebox",
-        "typeof",
-        "uncrypto",
-        "unflatten",
-        "vals"
-    ],
-    "eslint.validate": ["json"],
-    "java.compile.nullAnalysis.mode": "automatic"
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "cSpell.words": [
+    "Arri",
+    "autoroutes",
+    "codegen",
+    "Consola",
+    "middlewares",
+    "modii",
+    "nitropack",
+    "ofetch",
+    "pathe",
+    "pubspec",
+    "scule",
+    "typebox",
+    "typeof",
+    "uncrypto",
+    "unflatten",
+    "vals"
+  ],
+  "eslint.validate": ["json"],
+  "java.compile.nullAnalysis.mode": "automatic"
 }

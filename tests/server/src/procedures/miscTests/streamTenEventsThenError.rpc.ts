@@ -6,11 +6,11 @@ export default defineEventStreamRpc({
     method: "post",
     params: undefined,
     response: ChatMessage,
-    handler({ connection }) {
+    handler({ stream }) {
         let messageCount = 0;
         const interval = setInterval(async () => {
             messageCount++;
-            await connection.push({
+            await stream.push({
                 id: randomUUID(),
                 channelId: "1",
                 date: new Date(),
@@ -24,17 +24,16 @@ export default defineEventStreamRpc({
                 );
             }
             if (messageCount === 10) {
-                await connection.pushError({
+                await stream.pushError({
                     statusCode: 400,
                     statusMessage: "Too many requests",
                 });
                 await cleanup();
             }
-        }, 100);
+        });
         async function cleanup() {
             clearInterval(interval);
         }
-        connection.on("disconnect", () => cleanup());
-        connection.start();
+        stream.on("close", () => cleanup());
     },
 });

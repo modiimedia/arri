@@ -1,67 +1,67 @@
 {
-    "pluginsConfig": {
-        "@nx/js": {
-            "analyzeSourceFiles": true
-        }
+  "pluginsConfig": {
+    "@nx/js": {
+      "analyzeSourceFiles": true
+    }
+  },
+  "extends": "nx/presets/npm.json",
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "affected": {
+    "defaultBase": "master"
+  },
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/package.json",
+      "{projectRoot}/project.json",
+      "{projectRoot}/tsconfig.json",
+      "{projectRoot}/build.config.ts",
+      "{projectRoot}/src/**/*",
+      "{projectRoot}/node_modules"
+    ],
+    "shared-globals": [
+      "{workspaceRoot}/pnpm-lock.yaml",
+      "{workspaceRoot}/package.json"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "inputs": ["default", "^default", "shared-globals"],
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["^build", "prepare", "^prepare"],
+      "cache": true
     },
-    "extends": "nx/presets/npm.json",
-    "$schema": "./node_modules/nx/schemas/nx-schema.json",
-    "affected": {
-        "defaultBase": "master"
+    "publish": {
+      "inputs": ["default"],
+      "dependsOn": ["build", "^build"]
     },
-    "namedInputs": {
-        "default": [
-            "{projectRoot}/package.json",
-            "{projectRoot}/project.json",
-            "{projectRoot}/tsconfig.json",
-            "{projectRoot}/build.config.ts",
-            "{projectRoot}/src/**/*",
-            "{projectRoot}/node_modules"
-        ],
-        "shared-globals": [
-            "{workspaceRoot}/pnpm-lock.yaml",
-            "{workspaceRoot}/package.json"
-        ]
+    "test": {
+      "inputs": [
+        "default",
+        "shared-globals",
+        "{workspaceRoot}/jest.preset.js",
+        "{projectRoot}/vite.config.ts"
+      ],
+      "cache": true
     },
-    "targetDefaults": {
-        "build": {
-            "inputs": ["default", "^default", "shared-globals"],
-            "outputs": ["{projectRoot}/dist"],
-            "dependsOn": ["^build", "prepare", "^prepare"],
-            "cache": true
-        },
-        "lint": {
-            "inputs": [
-                "default",
-                "shared-globals",
-                "{projectRoot}/.eslintrc.json",
-                "{projectRoot}/.eslintrc.js",
-                "{workspaceRoot}/.eslintrc.json",
-                "{workspaceRoot}/.eslintrc.js",
-                "{workspaceRoot}/.eslintignore"
-            ],
-            "cache": true
-        },
-        "publish": {
-            "inputs": ["default"],
-            "dependsOn": ["build", "^build"]
-        },
-        "test": {
-            "inputs": [
-                "default",
-                "shared-globals",
-                "{workspaceRoot}/jest.preset.js",
-                "{projectRoot}/vite.config.ts"
-            ],
-            "cache": true
-        },
-        "integration-test": {
-            "cache": false
-        },
-        "@nx/vite:test": {
-            "cache": true,
-            "inputs": ["default", "^default"]
-        }
+    "integration-test": {
+      "cache": false
     },
-    "nxCloudAccessToken": "OGQzN2UxNzYtMzdkOC00Y2FmLTlkNDQtMTA0OTRjNThiYWRhfHJlYWQtd3JpdGU="
+    "@nx/vite:test": {
+      "cache": true,
+      "inputs": ["default", "^default"]
+    },
+    "@nx/eslint:lint": {
+      "inputs": [
+        "default",
+        "shared-globals",
+        "{projectRoot}/.eslintrc.json",
+        "{projectRoot}/.eslintrc.js",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintrc.js",
+        "{workspaceRoot}/.eslintignore"
+      ],
+      "cache": true
+    }
+  },
+  "nxCloudAccessToken": "OGQzN2UxNzYtMzdkOC00Y2FmLTlkNDQtMTA0OTRjNThiYWRhfHJlYWQtd3JpdGU="
 }

@@ -51,7 +51,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "vite.config.ts"),
-                viteConfigTemplate(),
+                viteConfigTemplate(name),
             ),
         ]);
     },
@@ -131,11 +131,16 @@ function projectJsonTemplate(packageName: string) {
             }
         },
         "test": {
-            "executor": "@nx/vite:test",
+            "executor": "nx:run-commands",
             "outputs": ["{workspaceRoot}/coverage/packages/${packageName}"],
             "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/${packageName}"
+                "command": "vitest run --passWithNoTests --globals",
+                "cwd": "packages/${packageName}"
+            },
+            "configurations": {
+                "watch": {
+                    "command": "vitest watch --passWithNoTests --globals"
+                }
             }
         }
     },
@@ -257,12 +262,12 @@ function tsConfigSpecTemplate() {
 `;
 }
 
-function viteConfigTemplate() {
+function viteConfigTemplate(projectName: string) {
     return `import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/client",
+    cacheDir: "../../node_modules/.vite/${projectName}",
 
     plugins: [
         viteTsConfigPaths({

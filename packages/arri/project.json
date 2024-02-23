@@ -1,45 +1,45 @@
 {
-    "name": "arri",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/arri/src",
-    "projectType": "library",
-    "targets": {
-        "build": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist"],
-            "options": {
-                "command": "unbuild",
-                "cwd": "packages/arri"
-            }
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "outputs": ["{options.outputFile}"]
-        },
-        "test": {
-            "executor": "@nx/vite:test",
-            "inputs": ["{projectRoot}/src/**/*.ts"],
-            "outputs": ["{workspaceRoot}/coverage/packages/arri"],
-            "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/arri"
-            }
-        },
-        "publish": {
-            "dependsOn": ["build"],
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "pnpm publish",
-                "cwd": "packages/arri"
-            }
-        },
-        "typecheck": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsc --noEmit",
-                "cwd": "packages/arri"
-            }
-        }
+  "name": "arri",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/arri/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "packages/arri"
+      }
     },
-    "tags": []
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "inputs": ["{projectRoot}/src/**/*.ts"],
+      "outputs": ["{workspaceRoot}/coverage/packages/arri"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/packages/arri"
+      }
+    },
+    "publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "packages/arri"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/arri"
+      }
+    }
+  },
+  "tags": []
 }

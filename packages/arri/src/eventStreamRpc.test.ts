@@ -1,10 +1,8 @@
-import { a } from "packages/arri-validate/dist";
+import { a } from "arri-validate";
 import {
     type EventStreamConnection,
     defineEventStreamRpc,
     isEventStreamRpc,
-    type Sse,
-    formatSse,
 } from "./eventStreamRpc";
 
 test("type inference", () => {
@@ -21,10 +19,10 @@ test("type inference", () => {
     defineEventStreamRpc({
         params: ParamsSchema,
         response: ResponseSchema,
-        handler({ params, connection }) {
+        handler({ params, stream }) {
             assertType<ParamsSchema>(params);
             assertType<EventStreamConnection<a.infer<typeof ResponseSchema>>>(
-                connection,
+                stream,
             );
         },
     });
@@ -37,19 +35,4 @@ test("isEventStreamRpc()", () => {
         handler() {},
     });
     expect(isEventStreamRpc(rpc)).toBe(true);
-});
-
-test("formatSseEvent()", () => {
-    const event: Sse = {
-        data: "hello world",
-    };
-    const event2: Sse = {
-        id: "1",
-        event: "message",
-        data: "hello world",
-    };
-    expect(formatSse(event)).toBe(`data: hello world\n\n`);
-    expect(formatSse(event2)).toBe(
-        `id: 1\nevent: message\ndata: hello world\n\n`,
-    );
 });

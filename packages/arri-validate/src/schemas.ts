@@ -79,6 +79,42 @@ export type InferType<TInput extends ASchema<any>> = Resolve<
     TInput["metadata"][typeof SCHEMA_METADATA]["output"]
 >;
 
+/**
+ * Infer a specific subtype of a discriminated union.
+ * In order for this to work you must first infer the union type using `a.infer`
+ * Then pass the type result to this
+ *
+ * @example
+ * ```ts
+ * const Shape = a.discriminator(
+ *   "type",
+ *   {
+ *     "RECTANGLE": a.object({
+ *       width: a.number(),
+ *       height: a.number(),
+ *     }),
+ *     "CIRCLE": a.object({
+ *       radius: a.number(),
+ *      }),
+ *   }
+ * );
+ *
+ * type Shape = a.infer<typeof Shape>;
+ * // { type: "RECTANGLE"; width: number; height: number } | { type: "CIRCLE"; radius: number; }
+ *
+ * type ShapeTypeRectangle = a.infer<Shape, "type", "RECTANGLE">
+ * // { type: "RECTANGLE"; width: number; height: number; }
+ *
+ * type ShapeTypeCircle = a.infer<Shape, "type", "CIRCLE">
+ * // { type: "CIRCLE"; radius: number; }
+ * ```
+ */
+export type InferSubType<
+    TUnion extends Record<string, any>,
+    TKey extends keyof TUnion,
+    TVal extends TUnion[TKey],
+> = TUnion extends Record<TKey, TVal> ? TUnion : never;
+
 // basic types
 export interface AScalarSchema<T extends JtdType | NumberType = any, TVal = any>
     extends ASchema<TVal> {
@@ -184,15 +220,16 @@ export type InferObjectOutput<
     ? ResolveObject<InferObjectRawType<TInput>> & Record<any, any>
     : ResolveObject<InferObjectRawType<TInput>>;
 
-export type InferObjectRawType<TInput> = TInput extends Record<any, any>
-    ? {
-          [TKey in keyof TInput]: TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["optional"] extends true
-              ?
-                    | TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"]
-                    | undefined
-              : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
-      }
-    : never;
+export type InferObjectRawType<TInput> =
+    TInput extends Record<any, any>
+        ? {
+              [TKey in keyof TInput]: TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["optional"] extends true
+                  ?
+                        | TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"]
+                        | undefined
+                  : TInput[TKey]["metadata"][typeof SCHEMA_METADATA]["output"];
+          }
+        : never;
 
 export function isObject(input: unknown): input is Record<any, any> {
     return typeof input === "object" && input !== null;
