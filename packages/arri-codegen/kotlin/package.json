@@ -1,21 +1,28 @@
 {
-    "name": "arri-codegen-kotlin",
-    "version": "0.25.0",
-    "type": "module",
-    "license": "MIT",
-    "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
-    "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/modiimedia/arri.git",
-        "directory": "packages/arri-codegen/kotlin"
-    },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.mjs",
-    "types": "./dist/index.d.ts",
-    "files": ["dist"],
-    "dependencies": {
-        "arri-codegen-utils": "workspace:*",
-        "json-schema-to-jtd": "workspace:*"
-    }
+  "name": "arri-codegen-kotlin",
+  "version": "0.26.0",
+  "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modiimedia/arri.git",
+    "directory": "packages/arri-codegen/kotlin"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "arri-codegen-utils": "workspace:*",
+    "json-schema-to-jtd": "workspace:*"
+  }
 }

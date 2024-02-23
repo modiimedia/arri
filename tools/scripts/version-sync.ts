@@ -5,9 +5,6 @@ import { globby } from "globby";
 import prettier from "prettier";
 
 async function main() {
-    const prettierConfig = JSON.parse(
-        readFileSync(".prettierrc", { encoding: "utf-8" }),
-    );
     const packageJson = JSON.parse(
         readFileSync("package.json", { encoding: "utf-8" }),
     );
@@ -41,10 +38,10 @@ async function main() {
         json.version = packageJson.version;
         await writeFile(
             jsonPath,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await prettier.format(JSON.stringify(json), {
                 parser: "json",
-                ...prettierConfig,
+                tabWidth: 2,
+                endOfLine: "lf",
             }),
         );
     });
