@@ -1,4 +1,4 @@
-import { type SchemaFormProperties, type SchemaFormType } from "@modii/jtd";
+import { type SchemaFormProperties, type SchemaFormType } from "jtd-utils";
 import { type JsonSchemaObject, type JsonSchemaScalarType } from "./models";
 import { jsonSchemaToJtdSchema } from "./index";
 

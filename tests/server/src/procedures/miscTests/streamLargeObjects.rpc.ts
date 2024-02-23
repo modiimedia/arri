@@ -42,7 +42,7 @@ export default defineEventStreamRpc({
             }
             return result;
         }
-        stream.start();
+        stream.init();
         await stream.push(randomResponse());
 
         const interval = setInterval(async () => {

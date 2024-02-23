@@ -30,6 +30,6 @@ export default defineEventStreamRpc({
             clearInterval(interval);
         }
         stream.on("close", () => cleanup());
-        stream.start();
+        stream.init();
     },
 });

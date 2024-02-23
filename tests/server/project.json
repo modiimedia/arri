@@ -27,6 +27,12 @@
         "command": "node .output/server.mjs --host",
         "cwd": "tests/server"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit"
+      }
     }
   }
 }

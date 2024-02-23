@@ -189,8 +189,8 @@ importers:
         specifier: ^1.10.2
         version: 1.10.2
       h3-sse:
-        specifier: ^0.0.7
-        version: 0.0.7(h3@1.10.2)
+        specifier: ^0.0.9
+        version: 0.0.9(h3@1.10.2)
       jiti:
         specifier: ^1.21.0
         version: 1.21.0
@@ -6761,8 +6761,8 @@ packages:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
     dev: true
 
-  /h3-sse@0.0.7(h3@1.10.2):
-    resolution: {integrity: sha512-MPYvx6jpCYlhry2VCCiLIV8PbpbN5GsdcamZqzjcj3iz3A4XaeczsK67ty30xtz6ZzgVUo0rVOBrGzvvZOFNHA==}
+  /h3-sse@0.0.9(h3@1.10.2):
+    resolution: {integrity: sha512-72e6V+z/m9+BxZqQzwUQszEe2y3lOo+HBhWe/NYrVsUnVoCidJB4kAxWS7gvpfgq4t69MqD9+cgfCpjQjOjecQ==}
     peerDependencies:
       h3: ^1
     dependencies:

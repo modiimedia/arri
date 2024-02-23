@@ -74,6 +74,7 @@ export interface EventStreamConnectionOptions<TData> {
 }
 
 export class EventStreamConnection<TData> {
+    readonly lastEventId?: string;
     private readonly h3Event: H3Event;
     private readonly validationErrors: (input: unknown) => ValueError[];
     private readonly validator: (input: unknown) => input is TData;
@@ -86,6 +87,7 @@ export class EventStreamConnection<TData> {
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.h3Event = event;
         this.eventStream = createEventStream(event, true);
+        this.lastEventId = this.eventStream.lastEventId;
         this.pingIntervalMs = opts.pingInterval ?? 60000;
         this.serializer = opts.serializer;
         this.validator = opts.validator;
@@ -96,9 +98,9 @@ export class EventStreamConnection<TData> {
     }
 
     /**
-     * Start sending the event stream to the client
+     * Initialize the stream. This must be called before sending any events.
      */
-    start() {
+    init() {
         void sendEventStream(this.h3Event, this.eventStream);
         this.pingInterval = setInterval(async () => {
             await this.eventStream.push({
