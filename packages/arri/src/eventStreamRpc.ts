@@ -8,7 +8,6 @@ import {
 import {
     type EventStream,
     createEventStream,
-    sendEventStream,
     type EventStreamMessage,
 } from "h3-sse";
 import { handleH3Error, type ErrorResponse } from "./errors";
@@ -75,7 +74,6 @@ export interface EventStreamConnectionOptions<TData> {
 
 export class EventStreamConnection<TData> {
     readonly lastEventId?: string;
-    private readonly h3Event: H3Event;
     private readonly validationErrors: (input: unknown) => ValueError[];
     private readonly validator: (input: unknown) => input is TData;
     private readonly serializer: (input: TData) => string;
@@ -85,23 +83,22 @@ export class EventStreamConnection<TData> {
     readonly eventStream: EventStream;
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
-        this.h3Event = event;
-        this.eventStream = createEventStream(event, true);
+        this.eventStream = createEventStream(event);
         this.lastEventId = this.eventStream.lastEventId;
         this.pingIntervalMs = opts.pingInterval ?? 60000;
         this.serializer = opts.serializer;
         this.validator = opts.validator;
         this.validationErrors = opts.validationErrors;
-        this.eventStream.on("close", () => {
+        this.eventStream.onClose(() => {
             this.cleanup();
         });
     }
 
     /**
-     * Initialize the stream. This must be called before sending any events.
+     * Send the stream to the client. This must be called before sending any events.
      */
-    init() {
-        void sendEventStream(this.h3Event, this.eventStream);
+    send() {
+        void this.eventStream.send();
         this.pingInterval = setInterval(async () => {
             await this.eventStream.push({
                 event: "ping",
@@ -213,17 +210,8 @@ export class EventStreamConnection<TData> {
         await this.eventStream.close();
     }
 
-    on(event: "close", callback: () => any): void;
-    on(event: "request:close", callback: () => any): void;
-    on(event: "close" | "request:close", callback: () => any) {
-        switch (event) {
-            case "close":
-                this.eventStream.on("close", callback);
-                break;
-            case "request:close":
-                this.eventStream.on("request:close", callback);
-                break;
-        }
+    onClose(cb: () => any): void {
+        this.eventStream.onClose(cb);
     }
 }
 
@@ -289,7 +277,7 @@ export function registerEventStreamRpc(
                 event as RpcEvent<any>,
             );
             if (!event.handled && !stream.eventStream._handled) {
-                await sendEventStream(event, stream.eventStream);
+                stream.send();
             }
         } catch (err) {
             await handleH3Error(err, event, opts.onError);

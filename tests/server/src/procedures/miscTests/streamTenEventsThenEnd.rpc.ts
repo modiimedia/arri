@@ -29,7 +29,7 @@ export default defineEventStreamRpc({
         async function cleanup() {
             clearInterval(interval);
         }
-        stream.on("close", () => cleanup());
-        stream.init();
+        stream.onClose(() => cleanup());
+        stream.send();
     },
 });
