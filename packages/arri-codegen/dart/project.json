@@ -27,6 +27,10 @@
     },
     "test": {
       "executor": "@nx/vite:test",
+      "inputs": [
+        "{projectRoot}/src",
+        "{workspaceRoot}/packages/arri-codegen/dart-reference/reference_client.dart"
+      ],
       "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen/dart"],
       "options": {
         "passWithNoTests": true,
