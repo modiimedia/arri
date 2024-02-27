@@ -103,6 +103,7 @@ export function createDartClient(
             serviceParts.push(service);
             serviceGetterParts.push(`${serviceName}Service get ${key} {
   return ${serviceName}Service(
+    httpClient: _httpClient,
     baseUrl: _baseUrl, 
     headers: _headers,
   );

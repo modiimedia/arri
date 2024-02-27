@@ -32,6 +32,7 @@ class TestClient {
 
   TestClientUsersService get users {
     return TestClientUsersService(
+      httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
     );
