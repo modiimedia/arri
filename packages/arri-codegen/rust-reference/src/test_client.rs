@@ -8,7 +8,7 @@ use arri_client::{
     ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
     EmptyArriModel,
 };
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, fmt::format, str::FromStr};
 
 pub struct TestClient {
     pub users: TestClientUsersService,
@@ -348,13 +348,106 @@ impl ArriModel for User {
     }
 
     fn to_json_string(&self) -> String {
-        let mut output = "".to_string();
-        output.push_str("");
+        let mut output = "{".to_string();
+        output.push_str("\"id:\":");
+        output.push_str(format!("\"{}\"", &self.id).as_str());
+        output.push_str(",\"role\":");
+        output.push_str(format!("\"{}\"", &self.role.to_json_string()).as_str());
+        output.push_str(",\"photo\":");
+        match &self.photo {
+            Some(photo) => {
+                output.push_str(photo.to_json_string().as_str());
+            }
+            None => {
+                output.push_str("null");
+            }
+        }
+        output.push_str(",\"createdAt\":");
+        output.push_str(format!("\"{}\"", &self.created_at.to_rfc3339()).as_str());
+        output.push_str("\"numFollowers\":");
+        output.push_str(&self.num_followers.to_string().as_str());
+        output.push_str(",\"settings\":");
+        output.push_str(&self.settings.to_json_string().as_str());
+        output.push_str(",\"lastNotification\":");
+        match &self.last_notification {
+            Some(last_notification) => {
+                output.push_str(last_notification.to_json_string().as_str());
+            }
+            None => {
+                output.push_str("null");
+            }
+        }
+        output.push_str(",\"recentNotifications\":");
+        output.push('[');
+        let mut recent_notifications_index = 0;
+        for item in &self.recent_notifications {
+            if recent_notifications_index != 0 {
+                output.push(',');
+            }
+            output.push_str(item.to_json_string().as_str());
+            recent_notifications_index += 1;
+        }
+        output.push(']');
+        output.push_str("\"bookmarks\":");
+        output.push('{');
+        let mut bookmarks_index = 0;
+        for (key, val) in &self.bookmarks {
+            if bookmarks_index == 0 {
+                output.push_str(format!("\"{}\":", key).as_str());
+            } else {
+                output.push_str(format!(",\"{}\":", key).as_str());
+            }
+            output.push_str(val.to_json_string().as_str());
+            bookmarks_index += 1;
+        }
+        output.push('}');
+        match &self.bio {
+            Some(bio) => {
+                output.push_str(",\"bio\":");
+                output.push_str(format!("\"{}\"", bio).as_str());
+            }
+            None => {}
+        }
+        output.push_str("\"metadata\":");
+        output.push('{');
+        let mut metadata_index = 0;
+        for (key, val) in &self.metadata {
+            match serde_json::to_string(val) {
+                Ok(val_val) => {
+                    if metadata_index == 0 {
+                        output.push_str(format!("\"{}\":", key).as_str());
+                    } else {
+                        output.push_str(format!(",\"{}\":", key).as_str());
+                    }
+                    output.push_str(&val_val);
+                    metadata_index += 1;
+                }
+                Err(_) => {}
+            }
+        }
+        output.push('}');
+        output.push_str("\"randomList\":");
+        output.push('[');
+        let mut random_list_index = 0;
+        for item in &self.random_list {
+            match serde_json::to_string(item) {
+                Ok(item_val) => {
+                    if random_list_index != 0 {
+                        output.push(',');
+                    }
+                    output.push_str(item_val.as_str());
+                    random_list_index += 1;
+                }
+                Err(_) => {}
+            }
+        }
+        output.push(']');
+        output.push('}');
         output
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        "".to_string()
     }
 }
 
@@ -536,11 +629,26 @@ impl ArriModel for UserSettings {
     }
 
     fn to_json_string(&self) -> String {
-        todo!()
+        let mut output = "{".to_string();
+        output.push_str("\"notificationsEnabled\":");
+        output.push_str(&self.notifications_enabled.to_string().as_str());
+        output.push_str(",\"preferredTheme\":");
+        output.push_str(format!("\"{}\"", &self.preferred_theme.to_json_string()).as_str());
+        output.push_str("}");
+        output
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        let mut parts: Vec<String> = Vec::new();
+        parts.push(format!(
+            "notificationsEnabled={}",
+            &self.notifications_enabled
+        ));
+        parts.push(format!(
+            "preferredTheme={}",
+            &self.preferred_theme.to_json_string()
+        ));
+        parts.join("&")
     }
 }
 
@@ -663,11 +771,54 @@ impl ArriModel for UserRecentNotificationsItem {
     }
 
     fn to_json_string(&self) -> String {
-        todo!()
+        match &self {
+            Self::PostLike { post_id, user_id } => {
+                let mut output = "{".to_string();
+                output.push_str("\"postId\":");
+                output.push_str(format!("\"{}\"", post_id).as_str());
+                output.push_str(",\"userId\":");
+                output.push_str(format!("\"{}\"", user_id).as_str());
+                output.push('}');
+                output
+            }
+            Self::PostComment {
+                post_id,
+                user_id,
+                comment_text,
+            } => {
+                let mut output = "{".to_string();
+                output.push_str("\"postId\":");
+                output.push_str(format!("\"{}\"", post_id).as_str());
+                output.push_str(",\"userId\":");
+                output.push_str(format!("\"{}\"", user_id).as_str());
+                output.push_str(",\"commentText\":");
+                output.push_str(format!("\"{}\"", comment_text).as_str());
+                output.push('}');
+                output
+            }
+        }
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        match &self {
+            Self::PostLike { post_id, user_id } => {
+                let mut parts: Vec<String> = Vec::new();
+                parts.push(format!("postId={}", post_id));
+                parts.push(format!("userId={}", user_id));
+                parts.join("&")
+            }
+            Self::PostComment {
+                post_id,
+                user_id,
+                comment_text,
+            } => {
+                let mut parts: Vec<String> = Vec::new();
+                parts.push(format!("postId={}", post_id));
+                parts.push(format!("userId={}", user_id));
+                parts.push(format!("commentText={}", comment_text));
+                parts.join("&")
+            }
+        }
     }
 }
 

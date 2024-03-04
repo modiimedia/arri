@@ -259,6 +259,16 @@ importers:
         specifier: workspace:*
         version: link:../../json-schema-to-jtd
 
+  packages/arri-codegen/rust:
+    dependencies:
+      arri-codegen-utils:
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../arri-validate
+
   packages/arri-codegen/typescript:
     dependencies:
       ajv:
