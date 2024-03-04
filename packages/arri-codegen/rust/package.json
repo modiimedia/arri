@@ -21,6 +21,7 @@
     "dist"
   ],
   "dependencies": {
+    "pathe": "^1.1.2",
     "arri-codegen-utils": "workspace:*"
   },
   "devDependencies": {

@@ -8,7 +8,7 @@ use arri_client::{
     ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
     EmptyArriModel,
 };
-use std::{collections::HashMap, fmt::format, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
 pub struct TestClient {
     pub users: TestClientUsersService,
@@ -181,7 +181,13 @@ impl ArriModel for GetStatusResponse {
     fn to_json_string(&self) -> String {
         let mut output = "{".to_string();
         output.push_str("\"message\":");
-        output.push_str(format!("\"{}\"", &self.message).as_str());
+        output.push_str(
+            format!(
+                "\"{}\"",
+                &self.message.replace("\n", "\\n").replace("\"", "\\\"")
+            )
+            .as_str(),
+        );
         output.push('}');
         output
     }
@@ -1017,6 +1023,8 @@ impl ArriModel for UpdateUserParams {
         parts.join("&")
     }
 }
+
+// TESTS //
 
 #[test]
 fn test_user_role() {
