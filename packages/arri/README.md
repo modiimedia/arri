@@ -261,7 +261,7 @@ export default defineEventStreamRpc({
     }),
     handler({ params, stream }) {
         // initialize the stream and send it to the client
-        stream.init();
+        stream.send();
 
         // send a message every second
         const interval = setInterval(async () => {
@@ -286,7 +286,7 @@ export default defineEventStreamRpc({
 ```ts
 stream.push(data: Data, eventId?: string)
 stream.pushError(error: ArriRequestError, eventId?: string)
-stream.init()
+stream.send()
 stream.end()
 stream.on(e: 'request:close' | 'close', callback: () => any)
 ```

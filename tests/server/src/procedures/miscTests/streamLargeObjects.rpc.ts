@@ -42,13 +42,13 @@ export default defineEventStreamRpc({
             }
             return result;
         }
-        stream.init();
+        stream.send();
         await stream.push(randomResponse());
 
         const interval = setInterval(async () => {
             await stream.push(randomResponse());
         });
-        stream.on("close", () => {
+        stream.onClose(() => {
             clearInterval(interval);
         });
     },

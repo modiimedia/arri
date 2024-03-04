@@ -35,7 +35,7 @@ it("creates valid app definition", () => {
             const timeout = setInterval(async () => {
                 await stream.push({ message: `Hello ${params.name}` });
             }, 100);
-            stream.on("close", () => {
+            stream.onClose(() => {
                 clearInterval(timeout);
             });
         },

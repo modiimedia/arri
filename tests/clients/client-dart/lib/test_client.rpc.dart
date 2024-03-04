@@ -19,6 +19,7 @@ class TestClient {
 
   TestClientAdaptersService get adapters {
     return TestClientAdaptersService(
+      httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
     );
@@ -26,6 +27,7 @@ class TestClient {
 
   TestClientMiscTestsService get miscTests {
     return TestClientMiscTestsService(
+      httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
     );
@@ -33,6 +35,7 @@ class TestClient {
 
   TestClientPostsService get posts {
     return TestClientPostsService(
+      httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
     );
@@ -40,6 +43,7 @@ class TestClient {
 
   TestClientVideosService get videos {
     return TestClientVideosService(
+      httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
     );
