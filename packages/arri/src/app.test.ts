@@ -43,7 +43,7 @@ it("creates valid app definition", () => {
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.2",
+        arriSchemaVersion: "0.0.3",
         procedures: {
             sayHello: {
                 method: "post",
