@@ -71,6 +71,7 @@ export interface RpcDefinition {
     params?: string;
     response?: string;
     description?: string;
+    isDeprecated?: boolean;
     isEventStream?: boolean;
 }
 export function isRpcDefinition(input: unknown): input is RpcDefinition {

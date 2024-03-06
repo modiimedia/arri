@@ -70,6 +70,7 @@ export interface Rpc<
     description?: string;
     params: TParams;
     response: TResponse;
+    isDeprecated?: boolean;
     isEventStream?: TIsEventStream;
     pingInterval?: TIsEventStream extends true ? number : undefined;
     handler: TIsEventStream extends true
@@ -169,6 +170,7 @@ export function createRpcDefinition(
         method,
         params: getRpcParamName(rpcName, procedure),
         response: getRpcResponseDefinition(rpcName, procedure),
+        isDeprecated: procedure.isDeprecated,
         isEventStream: procedure.isEventStream === true ? true : undefined,
     };
 }

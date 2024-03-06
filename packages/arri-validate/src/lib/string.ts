@@ -19,6 +19,7 @@ export function string(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: "",
                 parse,

@@ -34,6 +34,7 @@ export function record<TInnerSchema extends ASchema<any>>(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {},
                 validate(input): input is InferRecordType<TInnerSchema> {

@@ -20,6 +20,7 @@ export function timestamp(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: new Date(),
                 validate,
