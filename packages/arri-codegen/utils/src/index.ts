@@ -28,7 +28,7 @@ export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== "head";
 };
 
-export const SCHEMA_VERSION = "0.0.2" as const;
+export const SCHEMA_VERSION = "0.0.3" as const;
 
 export interface AppDefinition {
     arriSchemaVersion: typeof SCHEMA_VERSION;
@@ -71,6 +71,7 @@ export interface RpcDefinition {
     params?: string;
     response?: string;
     description?: string;
+    isDeprecated?: boolean;
     isEventStream?: boolean;
 }
 export function isRpcDefinition(input: unknown): input is RpcDefinition {

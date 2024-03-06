@@ -38,6 +38,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: values[0],
                 parse(input, data) {
