@@ -1,12 +1,9 @@
 import fs from "node:fs";
+import { isAppDefinition, type AppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
 import consola from "consola";
 import { ofetch } from "ofetch";
-import {
-    isAppDefinition,
-    type AppDefinition,
-} from "packages/arri-codegen/utils/dist";
 import path from "pathe";
 import { isResolvedArriConfig } from "../config";
 

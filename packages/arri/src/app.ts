@@ -4,6 +4,7 @@ import {
     type SchemaFormValues,
     type AppDefinition,
     type RpcDefinition,
+    SCHEMA_VERSION,
 } from "arri-codegen-utils";
 import { type AObjectSchema, type ASchema } from "arri-validate";
 import {
@@ -188,7 +189,7 @@ export class ArriApp implements ArriRouterBase {
 
     getAppDefinition(): AppDefinition {
         const appDef: AppDefinition = {
-            arriSchemaVersion: "0.0.2",
+            arriSchemaVersion: SCHEMA_VERSION,
             info: this.appInfo,
             procedures: {},
             models: this.models as any,
