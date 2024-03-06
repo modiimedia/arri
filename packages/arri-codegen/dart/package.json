@@ -1,6 +1,6 @@
 {
   "name": "arri-codegen-dart",
-  "version": "0.27.2",
+  "version": "0.27.3",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
