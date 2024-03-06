@@ -195,6 +195,7 @@ export function int64(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: BigInt("0"),
                 validate: isType,
@@ -258,6 +259,7 @@ export function uint64(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: BigInt("0"),
                 validate: isType,
@@ -319,6 +321,7 @@ function numberScalarType<TType extends NumberType>(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: 0,
                 validate(input): input is number {

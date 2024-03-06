@@ -28,6 +28,7 @@ export function nullable<T>(
         metadata: {
             id: opts.id ?? schema.metadata.id,
             description: opts.description ?? schema.metadata.description,
+            isDeprecated: opts.isDeprecated ?? schema.metadata.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: null as T | null,
                 optional: schema.metadata[SCHEMA_METADATA].optional,
@@ -95,6 +96,7 @@ export function optional<T>(
         metadata: {
             id: opts.id ?? input.metadata.id,
             description: opts.description ?? input.metadata.description,
+            isDeprecated: opts.isDeprecated ?? input.metadata.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: undefined as T | undefined,
                 optional: true,
@@ -137,6 +139,7 @@ export function clone<T>(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 ...input.metadata[SCHEMA_METADATA],
             },

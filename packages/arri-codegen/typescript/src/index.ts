@@ -172,14 +172,9 @@ export function tsRpcFromDefinition(
         parserPart = `$$${responseName}.parse`;
     }
     const paramsOutput = hasInput ? `params` : `params: undefined`;
-    const description = schema.description
-        ? `/**
-    * ${schema.description}
-    */\n`
-        : "";
     if (schema.isEventStream) {
         options.hasSseProcedures = true;
-        return `${description}${key}(${
+        return `${getJsDocComment({ isDeprecated: schema.isDeprecated, description: schema.description })}${key}(${
             paramsInput.length ? `${paramsInput}, ` : ""
         }options: SseOptions<${schema.response ?? "undefined"}>) {
             return arriSseRequest<${schema.response ?? "undefined"}, ${
@@ -194,7 +189,7 @@ export function tsRpcFromDefinition(
             }, options);
         }`;
     }
-    return `${description}${key}(${paramsInput}) {
+    return `${getJsDocComment({ isDeprecated: schema.isDeprecated, description: schema.description })}${key}(${paramsInput}) {
         return arriRequest<${schema.response ?? "undefined"}, ${
             schema.params ?? "undefined"
         }>({
@@ -345,6 +340,26 @@ export function tsAnyFromJtdSchema(
     };
 }
 
+export function getJsDocComment(metadata: Schema["metadata"]) {
+    const descriptionParts: string[] = [];
+
+    if (metadata?.description?.length) {
+        const parts = metadata.description.split("\n");
+        for (const part of parts) {
+            descriptionParts.push(`* ${part}`);
+        }
+    }
+    if (metadata?.isDeprecated) {
+        descriptionParts.push("* @deprecated");
+    }
+    if (descriptionParts.length === 0) {
+        return "";
+    }
+    return `/**
+${descriptionParts.join("\n")}
+*/\n`;
+}
+
 export function tsScalarFromJtdSchema(
     nodePath: string,
     def: SchemaFormType,
@@ -359,7 +374,7 @@ export function tsScalarFromJtdSchema(
             return {
                 tsType: "boolean",
                 schema: def,
-                fieldTemplate: `${maybeOptionalKey(
+                fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
                     key,
                     isOptional,
                 )}: ${maybeNullType("boolean", isNullable)}`,
@@ -384,7 +399,7 @@ export function tsScalarFromJtdSchema(
             return {
                 tsType: "string",
                 schema: def,
-                fieldTemplate: `${maybeOptionalKey(
+                fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
                     key,
                     isOptional,
                 )}: ${maybeNullType("string", isNullable)}`,
@@ -409,7 +424,7 @@ export function tsScalarFromJtdSchema(
             return {
                 tsType: "Date",
                 schema: def,
-                fieldTemplate: `${maybeOptionalKey(
+                fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
                     key,
                     isOptional,
                 )}: ${maybeNullType("Date", isNullable)}`,
@@ -441,7 +456,7 @@ export function tsScalarFromJtdSchema(
             return {
                 tsType: "number",
                 schema: def,
-                fieldTemplate: `${maybeOptionalKey(
+                fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
                     key,
                     isOptional,
                 )}: ${maybeNullType("number", isNullable)}`,
@@ -464,7 +479,7 @@ export function tsScalarFromJtdSchema(
             return {
                 tsType: "bigint",
                 schema: def,
-                fieldTemplate: `${maybeOptionalKey(
+                fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
                     key,
                     isOptional,
                 )}: ${maybeNullType("bigint", isNullable)}`,
@@ -592,7 +607,7 @@ export function tsObjectFromJtdSchema(
         }`;
     }
     if (!additionalOptions.existingTypeNames.includes(typeName)) {
-        content = `export interface ${typeName} {
+        content = `${getJsDocComment(def.metadata)}export interface ${typeName} {
         ${fieldParts.join(";\n    ")};
     }
     ${validatorPart}
@@ -602,7 +617,7 @@ export function tsObjectFromJtdSchema(
     return {
         tsType: typeName,
         schema: def,
-        fieldTemplate: `${maybeOptionalKey(
+        fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
             key,
             additionalOptions.isOptional,
         )}: ${maybeNullType(typeName, def.nullable ?? false)}`,
@@ -630,7 +645,7 @@ export function tsEnumFromJtdSchema(
 ): TsProperty {
     const keyName = nodePath.split(".").pop() ?? "";
     const typeName = getTypeName(nodePath, def);
-    let content = `export type ${typeName} = ${def.enum
+    let content = `${getJsDocComment(def.metadata)}export type ${typeName} = ${def.enum
         .map((val) => `"${val}"`)
         .join(" | ")}`;
     if (additionalOptions.existingTypeNames.includes(typeName)) {
@@ -641,7 +656,7 @@ export function tsEnumFromJtdSchema(
     return {
         tsType: typeName,
         schema: def,
-        fieldTemplate: `${maybeOptionalKey(
+        fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
             keyName,
             additionalOptions.isOptional,
         )}: ${maybeNullType(typeName, def.nullable ?? false)}`,
@@ -684,7 +699,7 @@ export function tsArrayFromJtdSchema(
     return {
         tsType,
         schema: def,
-        fieldTemplate: `${maybeOptionalKey(
+        fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
             key,
             additionalOptions.isOptional ?? false,
         )}: ${maybeNullType(tsType, def.nullable ?? false)}`,
@@ -762,7 +777,7 @@ export function tsDiscriminatedUnionFromJtdSchema(
     }
 }`;
     }
-    let content = `export type ${typeName} = ${subTypeNames.join(" | ")};
+    let content = `${getJsDocComment(def.metadata)}export type ${typeName} = ${subTypeNames.join(" | ")};
 ${validatorPart}
     ${subContentParts.join("\n")}`;
     if (additionalOptions.existingTypeNames.includes(typeName)) {
@@ -772,7 +787,7 @@ ${validatorPart}
     }
     return {
         tsType: typeName,
-        fieldTemplate: `${maybeOptionalKey(
+        fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
             key,
             additionalOptions.isOptional,
         )}: ${maybeNullType(typeName, def.nullable)}`,
@@ -832,14 +847,14 @@ export function tsRecordFromJtdSchema(
     }
 }`;
         }
-        content = `export type ${typeName} = Record<string, ${subType.tsType}>;
+        content = `${getJsDocComment(def.metadata)}export type ${typeName} = Record<string, ${subType.tsType}>;
 ${validatorPart}
 ${subType.content}`;
     }
     return {
         tsType: typeName,
         schema: def,
-        fieldTemplate: `${maybeOptionalKey(
+        fieldTemplate: `${getJsDocComment(def.metadata)}${maybeOptionalKey(
             key,
             additionalOptions.isOptional,
         )}: ${maybeNullType(typeName, def.nullable)}`,

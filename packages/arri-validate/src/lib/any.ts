@@ -8,6 +8,7 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
         metadata: {
             id: options.id,
             description: options.description,
+            isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: undefined as any,
                 parse: (input, _) => input,

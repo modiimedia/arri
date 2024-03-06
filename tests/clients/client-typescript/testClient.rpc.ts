@@ -57,6 +57,20 @@ export class TestClientMiscTestsService {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
     }
+    /**
+     * This RPC is no longer supported
+     * @deprecated
+     */
+    deprecatedRpc(params: DeprecatedRpcParams) {
+        return arriRequest<undefined, DeprecatedRpcParams>({
+            url: `${this.baseUrl}/rpcs/misc-tests/deprecated-rpc`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: (_) => {},
+            serializer: $$DeprecatedRpcParams.serialize,
+        });
+    }
     sendObject(params: ObjectWithEveryType) {
         return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
             url: `${this.baseUrl}/rpcs/misc-tests/send-object`,
@@ -693,6 +707,70 @@ const $$AdaptersTypeboxAdapterResponse = {
         let json = "";
         json += "{";
         json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += "}";
+        return json;
+    },
+};
+
+/**
+ * @deprecated
+ */
+export interface DeprecatedRpcParams {
+    /**
+     * @deprecated
+     */
+    deprecatedField: string;
+}
+const $$DeprecatedRpcParams = {
+    parse(input: Record<any, any>): DeprecatedRpcParams {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const jsonInnerVal = {};
+                if (typeof json.deprecatedField === "string") {
+                    jsonInnerVal.deprecatedField = json.deprecatedField;
+                } else {
+                    $fallback(
+                        "/deprecatedField",
+                        "/properties/deprecatedField/type",
+                        "Expected string at /deprecatedField",
+                    );
+                }
+                result = jsonInnerVal;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const inputInnerVal = {};
+            if (typeof input.deprecatedField === "string") {
+                inputInnerVal.deprecatedField = input.deprecatedField;
+            } else {
+                $fallback(
+                    "/deprecatedField",
+                    "/properties/deprecatedField/type",
+                    "Expected string at /deprecatedField",
+                );
+            }
+            result = inputInnerVal;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: DeprecatedRpcParams): string {
+        let json = "";
+        json += "{";
+        json += `"deprecatedField":"${input.deprecatedField.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
         json += "}";
         return json;
     },

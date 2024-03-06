@@ -63,6 +63,7 @@ export function discriminator<
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any,
                 validate(

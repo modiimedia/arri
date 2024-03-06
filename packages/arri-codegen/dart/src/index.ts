@@ -23,6 +23,7 @@ import {
     defineClientGeneratorPlugin,
     pascalCase,
     camelCase,
+    type SchemaMetadata,
 } from "arri-codegen-utils";
 import { a } from "arri-validate";
 
@@ -73,6 +74,24 @@ export const dartClientGenerator = defineClientGeneratorPlugin(
 
 export class DartClientGenerator {
     generatedModels: string[] = [];
+}
+
+export function getAnnotations(metadata?: SchemaMetadata) {
+    const commentParts: string[] = [];
+    if (metadata?.description?.length) {
+        const parts = metadata.description.split("\n");
+        for (const part of parts) {
+            commentParts.push(`/// ${part}`);
+        }
+    }
+    if (metadata?.isDeprecated) {
+        commentParts.push("@deprecated");
+    }
+
+    if (commentParts.length === 0) {
+        return "";
+    }
+    return `${commentParts.join("\n")}\n`;
 }
 
 export function createDartClient(
@@ -272,13 +291,7 @@ export function dartRpcFromDefinition(
             )`;
             break;
     }
-    const descriptionParts = [];
-    if (def.description) {
-        const parts = def.description.split("\n");
-        for (const part of parts) {
-            descriptionParts.push(`/// ${part}`);
-        }
-    }
+
     if (def.isEventStream) {
         const hookParts: string[] = [
             `SseHookOnData<${returnTypeName}>? onData`,
@@ -288,8 +301,7 @@ export function dartRpcFromDefinition(
             `SseHookOnClose<${returnTypeName}>? onClose`,
             `String? lastEventId`,
         ];
-        return `${descriptionParts.join("\n")}
-        ${returnType} ${key}(${
+        return `${getAnnotations({ description: def.description, isDeprecated: def.isDeprecated })}${returnType} ${key}(${
             paramsInput.length ? `${paramsInput}, ` : ""
         }{${hookParts.join(", ")},}) {
             return parsedArriSseRequest<${returnTypeName}>(
@@ -308,8 +320,7 @@ export function dartRpcFromDefinition(
             );
         }`;
     }
-    return `${descriptionParts.join("\n")}
-${returnType} ${key}(${paramsInput}) {
+    return `${getAnnotations({ description: def.description, isDeprecated: def.isDeprecated })}${returnType} ${key}(${paramsInput}) {
     return parsedArriRequest(
       "$_baseUrl${def.path}",
       httpClient: _httpClient,
@@ -487,16 +498,8 @@ final String ${camelCaseWrapper(discOptions.discriminatorKey)} = "${
     } else if (isException) {
         classNamePart += ` implements Exception`;
     }
-    const descriptionParts: string[] = [];
-    if (def.metadata?.description) {
-        const parts = def.metadata.description.split("\n");
-        for (const part of parts) {
-            descriptionParts.push(`/// ${part}`);
-        }
-    }
-    const description = descriptionParts.join("\n");
-    let content = `${description}
-${classNamePart} {
+
+    let content = `${getAnnotations(def.metadata)}${classNamePart} {
     ${fieldParts.join(";\n  ")};
   const ${className}({
     ${constructorParts.join(",\n    ")},
@@ -559,6 +562,7 @@ ${subContentParts.join("\n")}
             typeName,
             key,
             def.metadata?.description,
+            def.metadata?.isDeprecated,
         ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
@@ -594,6 +598,7 @@ function dartDynamicFromAny(
             "dynamic",
             key,
             def.metadata?.description,
+            def.metadata?.isDeprecated,
         ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
@@ -608,8 +613,12 @@ function fieldTemplateString(
     typeName: string,
     key: string,
     description?: string,
+    deprecated?: boolean,
 ): string {
     let result = "";
+    if (deprecated) {
+        result += `@deprecated\n`;
+    }
     if (description) {
         const parts = description.split("\n");
         for (const part of parts) {
@@ -641,6 +650,7 @@ function dartArrayFromJtdSchema(
             typeName,
             key,
             def.metadata?.description,
+            def.metadata?.isDeprecated,
         ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
@@ -696,6 +706,7 @@ function dartScalarFromJtdScalar(
                         "bool?",
                         key,
                         description,
+                        def.metadata?.isDeprecated,
                     ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
@@ -706,7 +717,12 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "bool",
-                fieldTemplate: fieldTemplateString("bool", key, description),
+                fieldTemplate: fieldTemplateString(
+                    "bool",
+                    key,
+                    description,
+                    def.metadata?.isDeprecated,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `typeFromDynamic<bool>(${input}, false)`,
@@ -722,6 +738,7 @@ function dartScalarFromJtdScalar(
                         "double?",
                         key,
                         description,
+                        def.metadata?.isDeprecated,
                     ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
@@ -732,7 +749,12 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "double",
-                fieldTemplate: fieldTemplateString("double", key, description),
+                fieldTemplate: fieldTemplateString(
+                    "double",
+                    key,
+                    description,
+                    def.metadata?.isDeprecated,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) => `doubleFromDynamic(${input}, 0)`,
                 toJsonTemplate: defaultToJsonTemplate,
@@ -751,6 +773,7 @@ function dartScalarFromJtdScalar(
                         "int?",
                         key,
                         description,
+                        def.metadata?.isDeprecated,
                     ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
@@ -761,7 +784,12 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "int",
-                fieldTemplate: fieldTemplateString(`int`, key, description),
+                fieldTemplate: fieldTemplateString(
+                    `int`,
+                    key,
+                    description,
+                    def.metadata?.isDeprecated,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) => `intFromDynamic(${input}, 0)`,
                 toJsonTemplate: defaultToJsonTemplate,
@@ -776,6 +804,7 @@ function dartScalarFromJtdScalar(
                         `BigInt?`,
                         key,
                         description,
+                        def.metadata?.isDeprecated,
                     ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
@@ -786,7 +815,12 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "BigInt",
-                fieldTemplate: fieldTemplateString(`BigInt`, key, description),
+                fieldTemplate: fieldTemplateString(
+                    `BigInt`,
+                    key,
+                    description,
+                    def.metadata?.isDeprecated,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `bigIntFromDynamic(${input}, BigInt.zero)`,
@@ -801,6 +835,7 @@ function dartScalarFromJtdScalar(
                         "DateTime?",
                         key,
                         description,
+                        def.metadata?.isDeprecated,
                     ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
@@ -816,6 +851,7 @@ function dartScalarFromJtdScalar(
                     "DateTime",
                     key,
                     description,
+                    def.metadata?.isDeprecated,
                 ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
@@ -834,6 +870,7 @@ function dartScalarFromJtdScalar(
                         "String?",
                         key,
                         description,
+                        def.metadata?.isDeprecated,
                     ),
                     constructorTemplate: defaultInitializationTemplate,
                     fromJsonTemplate: (input) =>
@@ -844,7 +881,12 @@ function dartScalarFromJtdScalar(
             }
             return {
                 typeName: "String",
-                fieldTemplate: fieldTemplateString("String", key, description),
+                fieldTemplate: fieldTemplateString(
+                    "String",
+                    key,
+                    description,
+                    def.metadata?.isDeprecated,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) =>
                     `typeFromDynamic<String>(${input}, "")`,
@@ -854,7 +896,12 @@ function dartScalarFromJtdScalar(
         default:
             return {
                 typeName: "dynamic",
-                fieldTemplate: fieldTemplateString("dynamic", key, description),
+                fieldTemplate: fieldTemplateString(
+                    "dynamic",
+                    key,
+                    description,
+                    def.metadata?.isDeprecated,
+                ),
                 constructorTemplate: defaultInitializationTemplate,
                 fromJsonTemplate: (input) => input,
                 toJsonTemplate: defaultToJsonTemplate,
@@ -881,7 +928,8 @@ function dartEnumFromJtdSchema(
         valNames.push(`${camelCaseWrapper(val)}`);
         fieldParts.push(`${camelCaseWrapper(val)}("${val}")`);
     }
-    let content = `enum ${className} implements Comparable<${className}> {
+
+    let content = `${getAnnotations(def.metadata)}enum ${className} implements Comparable<${className}> {
   ${fieldParts.join(",\n  ")};
   const ${className}(this.value);
   final String value;
@@ -909,6 +957,7 @@ function dartEnumFromJtdSchema(
             isNullable ? `${className}?` : className,
             key,
             def.metadata?.description,
+            def.metadata?.isDeprecated,
         ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
@@ -947,6 +996,7 @@ function dartMapFromJtdSchema(
             typeName,
             key,
             def.metadata?.description,
+            def.metadata?.isDeprecated,
         ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
@@ -1005,13 +1055,9 @@ function dartSealedClassFromJtdSchema(
         return ${child.typeName}.fromJson(json);`);
         childContentParts.push(child.content);
     });
-    const description = def.metadata?.description
-        ? `/// ${def.metadata.description}`
-        : "";
     let content = "";
     if (!additionalOptions.existingClassNames.includes(className)) {
-        content = `${description}
-sealed class ${className} {
+        content = `${getAnnotations(def.metadata)}sealed class ${className} {
   final String ${discriminatorKey};
   const ${className}({
     required this.${discriminatorKey},
@@ -1042,6 +1088,7 @@ ${childContentParts.join("\n")}`;
             typeName,
             key,
             def.metadata?.description,
+            def.metadata?.isDeprecated,
         ),
         constructorTemplate: additionalOptions.isOptional
             ? `this.${key}`
