@@ -1,4 +1,4 @@
-import { type SchemaFormType } from "packages/jtd-utils/dist";
+import { type SchemaFormType } from "jtd-utils";
 import * as a from "./_namespace";
 
 test("type inference", () => {

@@ -37,6 +37,7 @@ export interface SchemaMetadata<T> {
     [key: string]: any;
     id?: string;
     description?: string;
+    isDeprecated?: boolean;
     [SCHEMA_METADATA]: SchemaValidator<T>;
 }
 
@@ -69,6 +70,7 @@ export function isASchema(input: unknown): input is ASchema {
 export interface ASchemaOptions {
     id?: string;
     description?: string;
+    isDeprecated?: boolean;
 }
 
 export type Resolve<T> = T;

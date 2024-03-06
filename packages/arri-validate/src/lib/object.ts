@@ -56,6 +56,7 @@ export function object<
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies InferObjectOutput<
                     TInput,
@@ -258,6 +259,7 @@ export function pick<
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
                 parse: (input, data) => {
@@ -334,6 +336,7 @@ export function omit<
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any,
                 validate(input) {

@@ -130,6 +130,7 @@ class TestClientUsersSettingsService {
     _headers = {"client-version": "11", ...headers};
   }
 
+  @deprecated
   Future<void> getUserSettings() {
     return parsedArriRequest(
       "$_baseUrl/users/settings/get-user-settings",
@@ -369,6 +370,7 @@ class UserPhoto {
 
 class UserSettings {
   final bool notificationsEnabled;
+  @deprecated
   final UserSettingsPreferredTheme preferredTheme;
   const UserSettings({
     required this.notificationsEnabled,
@@ -402,6 +404,7 @@ class UserSettings {
   }
 }
 
+@deprecated
 enum UserSettingsPreferredTheme
     implements Comparable<UserSettingsPreferredTheme> {
   darkMode("dark-mode"),

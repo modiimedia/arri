@@ -1,5 +1,5 @@
+import { type AppDefinition } from "arri-codegen-utils";
 import { a } from "arri-validate";
-import { type AppDefinition } from "packages/arri-codegen/utils/dist";
 import { ArriApp } from "./app";
 
 it("creates valid app definition", () => {
@@ -43,7 +43,7 @@ it("creates valid app definition", () => {
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.2",
+        arriSchemaVersion: "0.0.3",
         procedures: {
             sayHello: {
                 method: "post",

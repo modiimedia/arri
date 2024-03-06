@@ -4,7 +4,9 @@ import { type AppDefinition } from "./index";
 export const TestUserSettingsSchema = a.object(
     {
         notificationsEnabled: a.boolean(),
-        preferredTheme: a.stringEnum(["dark-mode", "light-mode", "system"]),
+        preferredTheme: a.stringEnum(["dark-mode", "light-mode", "system"], {
+            isDeprecated: true,
+        }),
     },
     {
         id: "UserSettings",
@@ -83,7 +85,7 @@ export const TestErrorResponse = a.object({
 });
 
 export const TestAppDefinition: AppDefinition = {
-    arriSchemaVersion: "0.0.2",
+    arriSchemaVersion: "0.0.3",
     info: {
         title: "Test App Client",
         description: "This is a example app definition",
@@ -123,6 +125,7 @@ export const TestAppDefinition: AppDefinition = {
             method: "get",
             params: undefined,
             response: undefined,
+            isDeprecated: true,
         },
     },
     models: {

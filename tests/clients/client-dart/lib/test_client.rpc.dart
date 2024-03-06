@@ -91,6 +91,19 @@ class TestClientMiscTestsService {
     _headers = {"client-version": "10", ...headers};
   }
 
+  /// This RPC is no longer supported
+  @deprecated
+  Future<void> deprecatedRpc(DeprecatedRpcParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/misc-tests/deprecated-rpc",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) {},
+    );
+  }
+
   Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) {
     return parsedArriRequest(
       "$_baseUrl/rpcs/misc-tests/send-object",
@@ -581,6 +594,36 @@ class AdaptersTypeboxAdapterResponse {
   }) {
     return AdaptersTypeboxAdapterResponse(
       message: message ?? this.message,
+    );
+  }
+}
+
+@deprecated
+class DeprecatedRpcParams {
+  @deprecated
+  final String deprecatedField;
+  const DeprecatedRpcParams({
+    required this.deprecatedField,
+  });
+  factory DeprecatedRpcParams.fromJson(Map<String, dynamic> json) {
+    return DeprecatedRpcParams(
+      deprecatedField: typeFromDynamic<String>(json["deprecatedField"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "deprecatedField": deprecatedField,
+    };
+
+    return __result;
+  }
+
+  DeprecatedRpcParams copyWith({
+    String? deprecatedField,
+  }) {
+    return DeprecatedRpcParams(
+      deprecatedField: deprecatedField ?? this.deprecatedField,
     );
   }
 }

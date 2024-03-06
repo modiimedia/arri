@@ -19,6 +19,7 @@ export function boolean(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: false,
                 parse,

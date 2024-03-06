@@ -31,6 +31,7 @@ describe("Service Creation", () => {
                 method: "get",
                 params: "GetUserParams",
                 response: "User",
+                isDeprecated: true,
             },
             updateUser: {
                 description: "Update a user",
@@ -71,6 +72,7 @@ describe("Service Creation", () => {
             }
             /**
              * Fetch a user by id
+             * @deprecated
              */
             getUser(params: GetUserParams) {
                 return arriRequest<User, GetUserParams>({
@@ -125,7 +127,9 @@ describe("Model Creation", () => {
                 createdAt: a.timestamp(),
                 bio: a.optional(a.string()),
                 numFollowers: a.uint32(),
-                followedUsers: a.array(a.string()),
+                followedUsers: a.array(a.string(), {
+                    isDeprecated: true,
+                }),
             },
             { id: "User" },
         );
@@ -148,6 +152,9 @@ describe("Model Creation", () => {
             name: string;
             createdAt: Date;
             numFollowers: number;
+            /**
+             * @deprecated
+             */
             followedUsers: Array<string>;
             bio?: string;
         }

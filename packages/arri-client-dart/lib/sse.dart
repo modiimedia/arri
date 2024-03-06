@@ -174,6 +174,11 @@ class EventSource<T> {
         );
       }
       String pendingData = "";
+
+      // reset retry count when connection is successful
+      _retryCount = 0;
+      _internalRetryDelay = 100;
+
       response.stream.listen(
         (value) {
           final input = utf8.decode(value);

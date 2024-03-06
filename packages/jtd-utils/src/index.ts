@@ -5,6 +5,7 @@ export function isObject(input: unknown): input is Record<any, any> {
 export interface SchemaMetadata {
     id?: string;
     description?: string;
+    isDeprecated?: boolean;
 }
 
 export type Schema =

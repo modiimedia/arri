@@ -16,6 +16,7 @@ export function array<TInnerSchema extends ASchema<any> = any>(
         metadata: {
             id: opts.id,
             description: opts.description,
+            isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: [] as any,
                 parse(input, data) {
