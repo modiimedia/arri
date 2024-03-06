@@ -1,5 +1,5 @@
+import { type AppDefinition } from "arri-codegen-utils";
 import { a } from "arri-validate";
-import { type AppDefinition } from "packages/arri-codegen/utils/dist";
 import { ArriApp } from "./app";
 
 it("creates valid app definition", () => {
