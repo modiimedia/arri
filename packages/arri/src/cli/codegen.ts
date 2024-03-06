@@ -1,81 +1,80 @@
-import { existsSync, readFileSync } from "node:fs";
-import { dartClientGenerator } from "arri-codegen-dart";
-import { type AppDefinition } from "arri-codegen-utils";
+import fs from "node:fs";
+import { loadConfig } from "c12";
 import { defineCommand } from "citty";
+import consola from "consola";
 import { ofetch } from "ofetch";
+import {
+    isAppDefinition,
+    type AppDefinition,
+} from "packages/arri-codegen/utils/dist";
+import path from "pathe";
+import { isResolvedArriConfig } from "../config";
 
-const codegenDart = defineCommand({
+export default defineCommand({
     args: {
-        location: {
+        schema: {
             type: "positional",
-            required: true,
-            description:
-                "The path to an Arri definition file or a url that returns an Arri definition file.",
-        },
-        clientName: {
-            type: "string",
-            alias: ["name"],
+            alias: ["l"],
             required: true,
         },
-        outFile: {
+        config: {
             type: "string",
-            alias: ["out", "o"],
-            required: true,
+            alias: ["c"],
+            default: "arri.config.ts",
         },
     },
     async run({ args }) {
         const isUrl =
-            args.location.startsWith("http://") ||
-            args.location.startsWith("https://");
+            args.schema.startsWith("http://") ||
+            args.schema.startsWith("https://");
+        const isTs = args.schema.endsWith(".ts");
+        const isJs = args.schema.endsWith(".js");
         let def: AppDefinition | undefined;
         if (isUrl) {
-            const result = await ofetch(args.location);
+            const result = await ofetch(args.schema);
+            if (!isAppDefinition(result)) {
+                throw new Error(`Invalid App Definition at ${args.schema}`);
+            }
             def = result;
         } else {
-            if (!existsSync(args.location)) {
-                throw new Error(`Unable to find ${args.location}`);
+            if (!fs.existsSync(args.schema)) {
+                throw new Error(`Unable to find ${args.schema}`);
             }
-            const jsonString = JSON.parse(
-                readFileSync(args.location, { encoding: "utf-8" }),
-            );
-            def = jsonString;
+            if (isTs || isJs) {
+                const schemaResult = await loadConfig({
+                    configFile: args.schema,
+                });
+                if (!isAppDefinition(schemaResult.config)) {
+                    throw new Error(`Invalid App Definition at ${args.schema}`);
+                }
+                def = schemaResult.config;
+            } else {
+                const jsonString = JSON.parse(
+                    fs.readFileSync(args.schema, { encoding: "utf-8" }),
+                );
+                if (!isAppDefinition(jsonString)) {
+                    throw new Error(`Invalid App Definition at ${args.schema}`);
+                }
+                def = jsonString;
+            }
         }
         if (!def) {
-            throw new Error("Unable to load ApplicationDefinition json file");
+            throw new Error(`Unable to find App Definition at ${args.schema}`);
         }
-        await dartClientGenerator({
-            clientName: args.clientName,
-            outputFile: args.outFile,
-        }).generator(def);
+        if (!fs.existsSync(path.resolve(args.config))) {
+            throw new Error(
+                `Unable to load arri config at ${args.config}. Please specify a valid config path with --config`,
+            );
+        }
+        const configPath = path.resolve(args.config);
+        const { config } = await loadConfig({ configFile: configPath });
+        if (!isResolvedArriConfig(config)) {
+            throw new Error(`Invalid arri config at ${args.config}`);
+        }
+        consola.info(`Generating ${config.clientGenerators.length} clients`);
+        await Promise.allSettled(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            config.clientGenerators.map((gen) => gen.generator(def!)),
+        );
     },
-});
-
-const codegenTypescript = defineCommand({
-    args: {
-        location: {
-            type: "positional",
-            required: true,
-            description:
-                "The path to an Arri definition file or a url that returns an Arri definition file.",
-        },
-        clientName: {
-            type: "string",
-            alias: ["name"],
-            required: true,
-        },
-        outFile: {
-            type: "string",
-            alias: ["out", "o"],
-            required: true,
-        },
-    },
-    run({ args }) {},
-});
-
-export default defineCommand({
-    subCommands: {
-        dart: codegenDart,
-        typescript: codegenTypescript,
-    },
-    run({ args }) {},
 });
