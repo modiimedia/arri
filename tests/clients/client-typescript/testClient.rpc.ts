@@ -445,15 +445,14 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (Array.isArray(json.array)) {
-                    const jsonInnerValArrayInnerResult = [];
-                    for (const jsonInnerValArrayInnerResultItem of json.array) {
-                        let jsonInnerValArrayInnerResultItemResult;
+                    const jsonInnerValArrayInner = [];
+                    for (const __jsonInnerValArrayInnerAItem of json.array) {
+                        let ____jsonInnerValArrayInnerAItemAResult;
                         if (
-                            typeof jsonInnerValArrayInnerResultItem ===
-                            "boolean"
+                            typeof __jsonInnerValArrayInnerAItem === "boolean"
                         ) {
-                            jsonInnerValArrayInnerResultItemResult =
-                                jsonInnerValArrayInnerResultItem;
+                            ____jsonInnerValArrayInnerAItemAResult =
+                                __jsonInnerValArrayInnerAItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -461,11 +460,11 @@ const $$AdaptersTypeboxAdapterParams = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        jsonInnerValArrayInnerResult.push(
-                            jsonInnerValArrayInnerResultItemResult,
+                        jsonInnerValArrayInner.push(
+                            ____jsonInnerValArrayInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                    jsonInnerVal.array = jsonInnerValArrayInner;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
@@ -572,14 +571,12 @@ const $$AdaptersTypeboxAdapterParams = {
                 $fallback("/object", "/properties/object", "Expected object");
             }
             if (Array.isArray(input.array)) {
-                const inputInnerValArrayInnerResult = [];
-                for (const inputInnerValArrayInnerResultItem of input.array) {
-                    let inputInnerValArrayInnerResultItemResult;
-                    if (
-                        typeof inputInnerValArrayInnerResultItem === "boolean"
-                    ) {
-                        inputInnerValArrayInnerResultItemResult =
-                            inputInnerValArrayInnerResultItem;
+                const inputInnerValArrayInner = [];
+                for (const __inputInnerValArrayInnerAItem of input.array) {
+                    let ____inputInnerValArrayInnerAItemAResult;
+                    if (typeof __inputInnerValArrayInnerAItem === "boolean") {
+                        ____inputInnerValArrayInnerAItemAResult =
+                            __inputInnerValArrayInnerAItem;
                     } else {
                         $fallback(
                             "/array/[0]",
@@ -587,11 +584,11 @@ const $$AdaptersTypeboxAdapterParams = {
                             "Expected boolean for /array/[0]",
                         );
                     }
-                    inputInnerValArrayInnerResult.push(
-                        inputInnerValArrayInnerResultItemResult,
+                    inputInnerValArrayInner.push(
+                        ____inputInnerValArrayInnerAItemAResult,
                     );
                 }
-                inputInnerVal.array = inputInnerValArrayInnerResult;
+                inputInnerVal.array = inputInnerValArrayInner;
             } else {
                 $fallback("/array", "/properties/array", "Expected Array");
             }
@@ -1037,15 +1034,14 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (Array.isArray(json.array)) {
-                    const jsonInnerValArrayInnerResult = [];
-                    for (const jsonInnerValArrayInnerResultItem of json.array) {
-                        let jsonInnerValArrayInnerResultItemResult;
+                    const jsonInnerValArrayInner = [];
+                    for (const __jsonInnerValArrayInnerAItem of json.array) {
+                        let ____jsonInnerValArrayInnerAItemAResult;
                         if (
-                            typeof jsonInnerValArrayInnerResultItem ===
-                            "boolean"
+                            typeof __jsonInnerValArrayInnerAItem === "boolean"
                         ) {
-                            jsonInnerValArrayInnerResultItemResult =
-                                jsonInnerValArrayInnerResultItem;
+                            ____jsonInnerValArrayInnerAItemAResult =
+                                __jsonInnerValArrayInnerAItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -1053,11 +1049,11 @@ const $$ObjectWithEveryType = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        jsonInnerValArrayInnerResult.push(
-                            jsonInnerValArrayInnerResultItemResult,
+                        jsonInnerValArrayInner.push(
+                            ____jsonInnerValArrayInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                    jsonInnerVal.array = jsonInnerValArrayInner;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
@@ -1106,11 +1102,14 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof json.record === "object" && json.record !== null) {
-                    const jsonRecordResult = {};
-                    for (const jsonRecordKey of Object.keys(json.record)) {
-                        let jsonRecordKeyVal;
-                        if (typeof json.record[jsonRecordKey] === "boolean") {
-                            jsonRecordKeyVal = json.record[jsonRecordKey];
+                    const __jsonRecordRResult = {};
+                    for (const __jsonRecordRKey of Object.keys(json.record)) {
+                        let ____jsonRecordRKeyRVal;
+                        if (
+                            typeof json.record[__jsonRecordRKey] === "boolean"
+                        ) {
+                            ____jsonRecordRKeyRVal =
+                                json.record[__jsonRecordRKey];
                         } else {
                             $fallback(
                                 "/record/[key]",
@@ -1118,9 +1117,10 @@ const $$ObjectWithEveryType = {
                                 "Expected boolean for /record/[key]",
                             );
                         }
-                        jsonRecordResult[jsonRecordKey] = jsonRecordKeyVal;
+                        __jsonRecordRResult[__jsonRecordRKey] =
+                            ____jsonRecordRKeyRVal;
                     }
-                    jsonInnerVal.record = jsonRecordResult;
+                    jsonInnerVal.record = __jsonRecordRResult;
                 } else {
                     $fallback(
                         "/record",
@@ -1357,32 +1357,30 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (Array.isArray(json.nestedArray)) {
-                    const jsonInnerValNestedArrayInnerResult = [];
-                    for (const jsonInnerValNestedArrayInnerResultItem of json.nestedArray) {
-                        let jsonInnerValNestedArrayInnerResultItemResult;
+                    const jsonInnerValNestedArrayInner = [];
+                    for (const __jsonInnerValNestedArrayInnerAItem of json.nestedArray) {
+                        let ____jsonInnerValNestedArrayInnerAItemAResult;
                         if (
-                            Array.isArray(
-                                jsonInnerValNestedArrayInnerResultItem,
-                            )
+                            Array.isArray(__jsonInnerValNestedArrayInnerAItem)
                         ) {
-                            const jsonInnerValNestedArrayInnerResultItemResultInnerResult =
+                            const jsonInnerValNestedArrayInnerAItemAResultInner =
                                 [];
-                            for (const jsonInnerValNestedArrayInnerResultItemResultInnerResultItem of jsonInnerValNestedArrayInnerResultItem) {
-                                let jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                            for (const __jsonInnerValNestedArrayInnerAItemAResultInnerAItem of __jsonInnerValNestedArrayInnerAItem) {
+                                let ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
                                 if (
-                                    typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                    typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                         "object" &&
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem !==
+                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem !==
                                         null
                                 ) {
-                                    const jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
+                                    const jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
                                         {};
                                     if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                         "string"
                                     ) {
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/id",
@@ -1391,20 +1389,20 @@ const $$ObjectWithEveryType = {
                                         );
                                     }
                                     if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                             "object" &&
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
                                             Date
                                     ) {
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
                                     } else if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                         "string"
                                     ) {
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                             new Date(
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
                                             );
                                     } else {
                                         $fallback(
@@ -1413,8 +1411,8 @@ const $$ObjectWithEveryType = {
                                             "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                         );
                                     }
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                    ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
+                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]",
@@ -1422,12 +1420,12 @@ const $$ObjectWithEveryType = {
                                         "Expected object",
                                     );
                                 }
-                                jsonInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
+                                jsonInnerValNestedArrayInnerAItemAResultInner.push(
+                                    ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
                                 );
                             }
-                            jsonInnerValNestedArrayInnerResultItemResult =
-                                jsonInnerValNestedArrayInnerResultItemResultInnerResult;
+                            ____jsonInnerValNestedArrayInnerAItemAResult =
+                                jsonInnerValNestedArrayInnerAItemAResultInner;
                         } else {
                             $fallback(
                                 "/nestedArray/[0]",
@@ -1435,12 +1433,11 @@ const $$ObjectWithEveryType = {
                                 "Expected Array",
                             );
                         }
-                        jsonInnerValNestedArrayInnerResult.push(
-                            jsonInnerValNestedArrayInnerResultItemResult,
+                        jsonInnerValNestedArrayInner.push(
+                            ____jsonInnerValNestedArrayInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.nestedArray =
-                        jsonInnerValNestedArrayInnerResult;
+                    jsonInnerVal.nestedArray = jsonInnerValNestedArrayInner;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -1682,14 +1679,12 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (Array.isArray(input.array)) {
-                const inputInnerValArrayInnerResult = [];
-                for (const inputInnerValArrayInnerResultItem of input.array) {
-                    let inputInnerValArrayInnerResultItemResult;
-                    if (
-                        typeof inputInnerValArrayInnerResultItem === "boolean"
-                    ) {
-                        inputInnerValArrayInnerResultItemResult =
-                            inputInnerValArrayInnerResultItem;
+                const inputInnerValArrayInner = [];
+                for (const __inputInnerValArrayInnerAItem of input.array) {
+                    let ____inputInnerValArrayInnerAItemAResult;
+                    if (typeof __inputInnerValArrayInnerAItem === "boolean") {
+                        ____inputInnerValArrayInnerAItemAResult =
+                            __inputInnerValArrayInnerAItem;
                     } else {
                         $fallback(
                             "/array/[0]",
@@ -1697,11 +1692,11 @@ const $$ObjectWithEveryType = {
                             "Expected boolean for /array/[0]",
                         );
                     }
-                    inputInnerValArrayInnerResult.push(
-                        inputInnerValArrayInnerResultItemResult,
+                    inputInnerValArrayInner.push(
+                        ____inputInnerValArrayInnerAItemAResult,
                     );
                 }
-                inputInnerVal.array = inputInnerValArrayInnerResult;
+                inputInnerVal.array = inputInnerValArrayInner;
             } else {
                 $fallback("/array", "/properties/array", "Expected Array");
             }
@@ -1746,11 +1741,12 @@ const $$ObjectWithEveryType = {
                 $fallback("/object", "/properties/object", "Expected object");
             }
             if (typeof input.record === "object" && input.record !== null) {
-                const inputRecordResult = {};
-                for (const inputRecordKey of Object.keys(input.record)) {
-                    let inputRecordKeyVal;
-                    if (typeof input.record[inputRecordKey] === "boolean") {
-                        inputRecordKeyVal = input.record[inputRecordKey];
+                const __inputRecordRResult = {};
+                for (const __inputRecordRKey of Object.keys(input.record)) {
+                    let ____inputRecordRKeyRVal;
+                    if (typeof input.record[__inputRecordRKey] === "boolean") {
+                        ____inputRecordRKeyRVal =
+                            input.record[__inputRecordRKey];
                     } else {
                         $fallback(
                             "/record/[key]",
@@ -1758,9 +1754,10 @@ const $$ObjectWithEveryType = {
                             "Expected boolean for /record/[key]",
                         );
                     }
-                    inputRecordResult[inputRecordKey] = inputRecordKeyVal;
+                    __inputRecordRResult[__inputRecordRKey] =
+                        ____inputRecordRKeyRVal;
                 }
-                inputInnerVal.record = inputRecordResult;
+                inputInnerVal.record = __inputRecordRResult;
             } else {
                 $fallback("/record", "/properties/record", "Expected object.");
             }
@@ -1985,30 +1982,28 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (Array.isArray(input.nestedArray)) {
-                const inputInnerValNestedArrayInnerResult = [];
-                for (const inputInnerValNestedArrayInnerResultItem of input.nestedArray) {
-                    let inputInnerValNestedArrayInnerResultItemResult;
-                    if (
-                        Array.isArray(inputInnerValNestedArrayInnerResultItem)
-                    ) {
-                        const inputInnerValNestedArrayInnerResultItemResultInnerResult =
+                const inputInnerValNestedArrayInner = [];
+                for (const __inputInnerValNestedArrayInnerAItem of input.nestedArray) {
+                    let ____inputInnerValNestedArrayInnerAItemAResult;
+                    if (Array.isArray(__inputInnerValNestedArrayInnerAItem)) {
+                        const inputInnerValNestedArrayInnerAItemAResultInner =
                             [];
-                        for (const inputInnerValNestedArrayInnerResultItemResultInnerResultItem of inputInnerValNestedArrayInnerResultItem) {
-                            let inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                        for (const __inputInnerValNestedArrayInnerAItemAResultInnerAItem of __inputInnerValNestedArrayInnerAItem) {
+                            let ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
                             if (
-                                typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                     "object" &&
-                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem !==
+                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem !==
                                     null
                             ) {
-                                const inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
+                                const inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
                                     {};
                                 if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                     "string"
                                 ) {
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]/id",
@@ -2017,20 +2012,20 @@ const $$ObjectWithEveryType = {
                                     );
                                 }
                                 if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                         "object" &&
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
                                         Date
                                 ) {
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
                                 } else if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                     "string"
                                 ) {
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                         new Date(
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
                                         );
                                 } else {
                                     $fallback(
@@ -2039,8 +2034,8 @@ const $$ObjectWithEveryType = {
                                         "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                     );
                                 }
-                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
+                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]/[0]",
@@ -2048,12 +2043,12 @@ const $$ObjectWithEveryType = {
                                     "Expected object",
                                 );
                             }
-                            inputInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
+                            inputInnerValNestedArrayInnerAItemAResultInner.push(
+                                ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
                             );
                         }
-                        inputInnerValNestedArrayInnerResultItemResult =
-                            inputInnerValNestedArrayInnerResultItemResultInnerResult;
+                        ____inputInnerValNestedArrayInnerAItemAResult =
+                            inputInnerValNestedArrayInnerAItemAResultInner;
                     } else {
                         $fallback(
                             "/nestedArray/[0]",
@@ -2061,11 +2056,11 @@ const $$ObjectWithEveryType = {
                             "Expected Array",
                         );
                     }
-                    inputInnerValNestedArrayInnerResult.push(
-                        inputInnerValNestedArrayInnerResultItemResult,
+                    inputInnerValNestedArrayInner.push(
+                        ____inputInnerValNestedArrayInnerAItemAResult,
                     );
                 }
-                inputInnerVal.nestedArray = inputInnerValNestedArrayInnerResult;
+                inputInnerVal.nestedArray = inputInnerValNestedArrayInner;
             } else {
                 $fallback(
                     "/nestedArray",
@@ -2573,18 +2568,18 @@ const $$ObjectWithEveryNullableType = {
                     jsonInnerVal.array = null;
                 } else {
                     if (Array.isArray(json.array)) {
-                        const jsonInnerValArrayInnerResult = [];
-                        for (const jsonInnerValArrayInnerResultItem of json.array) {
-                            let jsonInnerValArrayInnerResultItemResult;
-                            if (jsonInnerValArrayInnerResultItem === null) {
-                                jsonInnerValArrayInnerResultItemResult = null;
+                        const jsonInnerValArrayInner = [];
+                        for (const __jsonInnerValArrayInnerAItem of json.array) {
+                            let ____jsonInnerValArrayInnerAItemAResult;
+                            if (__jsonInnerValArrayInnerAItem === null) {
+                                ____jsonInnerValArrayInnerAItemAResult = null;
                             } else {
                                 if (
-                                    typeof jsonInnerValArrayInnerResultItem ===
+                                    typeof __jsonInnerValArrayInnerAItem ===
                                     "boolean"
                                 ) {
-                                    jsonInnerValArrayInnerResultItemResult =
-                                        jsonInnerValArrayInnerResultItem;
+                                    ____jsonInnerValArrayInnerAItemAResult =
+                                        __jsonInnerValArrayInnerAItem;
                                 } else {
                                     $fallback(
                                         "/array/[0]",
@@ -2593,11 +2588,11 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonInnerValArrayInnerResult.push(
-                                jsonInnerValArrayInnerResultItemResult,
+                            jsonInnerValArrayInner.push(
+                                ____jsonInnerValArrayInnerAItemAResult,
                             );
                         }
-                        jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                        jsonInnerVal.array = jsonInnerValArrayInner;
                     } else {
                         $fallback(
                             "/array",
@@ -2680,18 +2675,20 @@ const $$ObjectWithEveryNullableType = {
                         typeof json.record === "object" &&
                         json.record !== null
                     ) {
-                        const jsonRecordResult = {};
-                        for (const jsonRecordKey of Object.keys(json.record)) {
-                            let jsonRecordKeyVal;
-                            if (json.record[jsonRecordKey] === null) {
-                                jsonRecordKeyVal = null;
+                        const __jsonRecordRResult = {};
+                        for (const __jsonRecordRKey of Object.keys(
+                            json.record,
+                        )) {
+                            let ____jsonRecordRKeyRVal;
+                            if (json.record[__jsonRecordRKey] === null) {
+                                ____jsonRecordRKeyRVal = null;
                             } else {
                                 if (
-                                    typeof json.record[jsonRecordKey] ===
+                                    typeof json.record[__jsonRecordRKey] ===
                                     "boolean"
                                 ) {
-                                    jsonRecordKeyVal =
-                                        json.record[jsonRecordKey];
+                                    ____jsonRecordRKeyRVal =
+                                        json.record[__jsonRecordRKey];
                                 } else {
                                     $fallback(
                                         "/record/[key]",
@@ -2700,9 +2697,10 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonRecordResult[jsonRecordKey] = jsonRecordKeyVal;
+                            __jsonRecordRResult[__jsonRecordRKey] =
+                                ____jsonRecordRKeyRVal;
                         }
-                        jsonInnerVal.record = jsonRecordResult;
+                        jsonInnerVal.record = __jsonRecordRResult;
                     } else {
                         $fallback(
                             "/record",
@@ -3023,52 +3021,50 @@ const $$ObjectWithEveryNullableType = {
                     jsonInnerVal.nestedArray = null;
                 } else {
                     if (Array.isArray(json.nestedArray)) {
-                        const jsonInnerValNestedArrayInnerResult = [];
-                        for (const jsonInnerValNestedArrayInnerResultItem of json.nestedArray) {
-                            let jsonInnerValNestedArrayInnerResultItemResult;
-                            if (
-                                jsonInnerValNestedArrayInnerResultItem === null
-                            ) {
-                                jsonInnerValNestedArrayInnerResultItemResult =
+                        const jsonInnerValNestedArrayInner = [];
+                        for (const __jsonInnerValNestedArrayInnerAItem of json.nestedArray) {
+                            let ____jsonInnerValNestedArrayInnerAItemAResult;
+                            if (__jsonInnerValNestedArrayInnerAItem === null) {
+                                ____jsonInnerValNestedArrayInnerAItemAResult =
                                     null;
                             } else {
                                 if (
                                     Array.isArray(
-                                        jsonInnerValNestedArrayInnerResultItem,
+                                        __jsonInnerValNestedArrayInnerAItem,
                                     )
                                 ) {
-                                    const jsonInnerValNestedArrayInnerResultItemResultInnerResult =
+                                    const jsonInnerValNestedArrayInnerAItemAResultInner =
                                         [];
-                                    for (const jsonInnerValNestedArrayInnerResultItemResultInnerResultItem of jsonInnerValNestedArrayInnerResultItem) {
-                                        let jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                                    for (const __jsonInnerValNestedArrayInnerAItemAResultInnerAItem of __jsonInnerValNestedArrayInnerAItem) {
+                                        let ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
                                         if (
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                             null
                                         ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
+                                            ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
                                                 null;
                                         } else {
                                             if (
-                                                typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                                typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                                     "object" &&
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem !==
+                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem !==
                                                     null
                                             ) {
-                                                const jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
+                                                const jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
                                                     {};
                                                 if (
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                                     null
                                                 ) {
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                    jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                                 } else {
                                                     if (
-                                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                                         "string"
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                                     } else {
                                                         $fallback(
                                                             "/nestedArray/[0]/[0]/id",
@@ -3078,27 +3074,27 @@ const $$ObjectWithEveryNullableType = {
                                                     }
                                                 }
                                                 if (
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                     null
                                                 ) {
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                                    jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                                         null;
                                                 } else {
                                                     if (
-                                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                             "object" &&
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
                                                             Date
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
                                                     } else if (
-                                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                         "string"
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                                             new Date(
-                                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
                                                             );
                                                     } else {
                                                         $fallback(
@@ -3108,8 +3104,8 @@ const $$ObjectWithEveryNullableType = {
                                                         );
                                                     }
                                                 }
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                                ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
+                                                    jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
                                             } else {
                                                 $fallback(
                                                     "/nestedArray/[0]/[0]",
@@ -3118,12 +3114,12 @@ const $$ObjectWithEveryNullableType = {
                                                 );
                                             }
                                         }
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
+                                        jsonInnerValNestedArrayInnerAItemAResultInner.push(
+                                            ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
                                         );
                                     }
-                                    jsonInnerValNestedArrayInnerResultItemResult =
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResult;
+                                    ____jsonInnerValNestedArrayInnerAItemAResult =
+                                        jsonInnerValNestedArrayInnerAItemAResultInner;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]",
@@ -3132,12 +3128,11 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonInnerValNestedArrayInnerResult.push(
-                                jsonInnerValNestedArrayInnerResultItemResult,
+                            jsonInnerValNestedArrayInner.push(
+                                ____jsonInnerValNestedArrayInnerAItemAResult,
                             );
                         }
-                        jsonInnerVal.nestedArray =
-                            jsonInnerValNestedArrayInnerResult;
+                        jsonInnerVal.nestedArray = jsonInnerValNestedArrayInner;
                     } else {
                         $fallback(
                             "/nestedArray",
@@ -3435,18 +3430,18 @@ const $$ObjectWithEveryNullableType = {
                 inputInnerVal.array = null;
             } else {
                 if (Array.isArray(input.array)) {
-                    const inputInnerValArrayInnerResult = [];
-                    for (const inputInnerValArrayInnerResultItem of input.array) {
-                        let inputInnerValArrayInnerResultItemResult;
-                        if (inputInnerValArrayInnerResultItem === null) {
-                            inputInnerValArrayInnerResultItemResult = null;
+                    const inputInnerValArrayInner = [];
+                    for (const __inputInnerValArrayInnerAItem of input.array) {
+                        let ____inputInnerValArrayInnerAItemAResult;
+                        if (__inputInnerValArrayInnerAItem === null) {
+                            ____inputInnerValArrayInnerAItemAResult = null;
                         } else {
                             if (
-                                typeof inputInnerValArrayInnerResultItem ===
+                                typeof __inputInnerValArrayInnerAItem ===
                                 "boolean"
                             ) {
-                                inputInnerValArrayInnerResultItemResult =
-                                    inputInnerValArrayInnerResultItem;
+                                ____inputInnerValArrayInnerAItemAResult =
+                                    __inputInnerValArrayInnerAItem;
                             } else {
                                 $fallback(
                                     "/array/[0]",
@@ -3455,11 +3450,11 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputInnerValArrayInnerResult.push(
-                            inputInnerValArrayInnerResultItemResult,
+                        inputInnerValArrayInner.push(
+                            ____inputInnerValArrayInnerAItemAResult,
                         );
                     }
-                    inputInnerVal.array = inputInnerValArrayInnerResult;
+                    inputInnerVal.array = inputInnerValArrayInner;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
@@ -3529,18 +3524,18 @@ const $$ObjectWithEveryNullableType = {
                 inputInnerVal.record = null;
             } else {
                 if (typeof input.record === "object" && input.record !== null) {
-                    const inputRecordResult = {};
-                    for (const inputRecordKey of Object.keys(input.record)) {
-                        let inputRecordKeyVal;
-                        if (input.record[inputRecordKey] === null) {
-                            inputRecordKeyVal = null;
+                    const __inputRecordRResult = {};
+                    for (const __inputRecordRKey of Object.keys(input.record)) {
+                        let ____inputRecordRKeyRVal;
+                        if (input.record[__inputRecordRKey] === null) {
+                            ____inputRecordRKeyRVal = null;
                         } else {
                             if (
-                                typeof input.record[inputRecordKey] ===
+                                typeof input.record[__inputRecordRKey] ===
                                 "boolean"
                             ) {
-                                inputRecordKeyVal =
-                                    input.record[inputRecordKey];
+                                ____inputRecordRKeyRVal =
+                                    input.record[__inputRecordRKey];
                             } else {
                                 $fallback(
                                     "/record/[key]",
@@ -3549,9 +3544,10 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputRecordResult[inputRecordKey] = inputRecordKeyVal;
+                        __inputRecordRResult[__inputRecordRKey] =
+                            ____inputRecordRKeyRVal;
                     }
-                    inputInnerVal.record = inputRecordResult;
+                    inputInnerVal.record = __inputRecordRResult;
                 } else {
                     $fallback(
                         "/record",
@@ -3866,50 +3862,50 @@ const $$ObjectWithEveryNullableType = {
                 inputInnerVal.nestedArray = null;
             } else {
                 if (Array.isArray(input.nestedArray)) {
-                    const inputInnerValNestedArrayInnerResult = [];
-                    for (const inputInnerValNestedArrayInnerResultItem of input.nestedArray) {
-                        let inputInnerValNestedArrayInnerResultItemResult;
-                        if (inputInnerValNestedArrayInnerResultItem === null) {
-                            inputInnerValNestedArrayInnerResultItemResult =
+                    const inputInnerValNestedArrayInner = [];
+                    for (const __inputInnerValNestedArrayInnerAItem of input.nestedArray) {
+                        let ____inputInnerValNestedArrayInnerAItemAResult;
+                        if (__inputInnerValNestedArrayInnerAItem === null) {
+                            ____inputInnerValNestedArrayInnerAItemAResult =
                                 null;
                         } else {
                             if (
                                 Array.isArray(
-                                    inputInnerValNestedArrayInnerResultItem,
+                                    __inputInnerValNestedArrayInnerAItem,
                                 )
                             ) {
-                                const inputInnerValNestedArrayInnerResultItemResultInnerResult =
+                                const inputInnerValNestedArrayInnerAItemAResultInner =
                                     [];
-                                for (const inputInnerValNestedArrayInnerResultItemResultInnerResultItem of inputInnerValNestedArrayInnerResultItem) {
-                                    let inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                                for (const __inputInnerValNestedArrayInnerAItemAResultInnerAItem of __inputInnerValNestedArrayInnerAItem) {
+                                    let ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
                                     if (
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                         null
                                     ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
+                                        ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
                                             null;
                                     } else {
                                         if (
-                                            typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                            typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                                 "object" &&
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem !==
+                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem !==
                                                 null
                                         ) {
-                                            const inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
+                                            const inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
                                                 {};
                                             if (
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                                 null
                                             ) {
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                             } else {
                                                 if (
-                                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                                     "string"
                                                 ) {
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                                 } else {
                                                     $fallback(
                                                         "/nestedArray/[0]/[0]/id",
@@ -3919,27 +3915,27 @@ const $$ObjectWithEveryNullableType = {
                                                 }
                                             }
                                             if (
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                 null
                                             ) {
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                                inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                                     null;
                                             } else {
                                                 if (
-                                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                         "object" &&
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
                                                         Date
                                                 ) {
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
                                                 } else if (
-                                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                     "string"
                                                 ) {
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                                         new Date(
-                                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
                                                         );
                                                 } else {
                                                     $fallback(
@@ -3949,8 +3945,8 @@ const $$ObjectWithEveryNullableType = {
                                                     );
                                                 }
                                             }
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                            ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
+                                                inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]",
@@ -3959,12 +3955,12 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
+                                    inputInnerValNestedArrayInnerAItemAResultInner.push(
+                                        ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
                                     );
                                 }
-                                inputInnerValNestedArrayInnerResultItemResult =
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResult;
+                                ____inputInnerValNestedArrayInnerAItemAResult =
+                                    inputInnerValNestedArrayInnerAItemAResultInner;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]",
@@ -3973,12 +3969,11 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputInnerValNestedArrayInnerResult.push(
-                            inputInnerValNestedArrayInnerResultItemResult,
+                        inputInnerValNestedArrayInner.push(
+                            ____inputInnerValNestedArrayInnerAItemAResult,
                         );
                     }
-                    inputInnerVal.nestedArray =
-                        inputInnerValNestedArrayInnerResult;
+                    inputInnerVal.nestedArray = inputInnerValNestedArrayInner;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -4690,15 +4685,15 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(json.array)) {
-                        const jsonInnerValArrayInnerResult = [];
-                        for (const jsonInnerValArrayInnerResultItem of json.array) {
-                            let jsonInnerValArrayInnerResultItemResult;
+                        const jsonInnerValArrayInner = [];
+                        for (const __jsonInnerValArrayInnerAItem of json.array) {
+                            let ____jsonInnerValArrayInnerAItemAResult;
                             if (
-                                typeof jsonInnerValArrayInnerResultItem ===
+                                typeof __jsonInnerValArrayInnerAItem ===
                                 "boolean"
                             ) {
-                                jsonInnerValArrayInnerResultItemResult =
-                                    jsonInnerValArrayInnerResultItem;
+                                ____jsonInnerValArrayInnerAItemAResult =
+                                    __jsonInnerValArrayInnerAItem;
                             } else {
                                 $fallback(
                                     "/array/[0]",
@@ -4706,11 +4701,11 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected boolean for /array/[0]",
                                 );
                             }
-                            jsonInnerValArrayInnerResult.push(
-                                jsonInnerValArrayInnerResultItemResult,
+                            jsonInnerValArrayInner.push(
+                                ____jsonInnerValArrayInnerAItemAResult,
                             );
                         }
-                        jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                        jsonInnerVal.array = jsonInnerValArrayInner;
                     } else {
                         $fallback(
                             "/array",
@@ -4778,13 +4773,17 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.record === "object" &&
                         json.record !== null
                     ) {
-                        const jsonRecordResult = {};
-                        for (const jsonRecordKey of Object.keys(json.record)) {
-                            let jsonRecordKeyVal;
+                        const __jsonRecordRResult = {};
+                        for (const __jsonRecordRKey of Object.keys(
+                            json.record,
+                        )) {
+                            let ____jsonRecordRKeyRVal;
                             if (
-                                typeof json.record[jsonRecordKey] === "boolean"
+                                typeof json.record[__jsonRecordRKey] ===
+                                "boolean"
                             ) {
-                                jsonRecordKeyVal = json.record[jsonRecordKey];
+                                ____jsonRecordRKeyRVal =
+                                    json.record[__jsonRecordRKey];
                             } else {
                                 $fallback(
                                     "/record/[key]",
@@ -4792,9 +4791,10 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected boolean for /record/[key]",
                                 );
                             }
-                            jsonRecordResult[jsonRecordKey] = jsonRecordKeyVal;
+                            __jsonRecordRResult[__jsonRecordRKey] =
+                                ____jsonRecordRKeyRVal;
                         }
-                        jsonInnerVal.record = jsonRecordResult;
+                        jsonInnerVal.record = __jsonRecordRResult;
                     } else {
                         $fallback(
                             "/record",
@@ -5046,32 +5046,32 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(json.nestedArray)) {
-                        const jsonInnerValNestedArrayInnerResult = [];
-                        for (const jsonInnerValNestedArrayInnerResultItem of json.nestedArray) {
-                            let jsonInnerValNestedArrayInnerResultItemResult;
+                        const jsonInnerValNestedArrayInner = [];
+                        for (const __jsonInnerValNestedArrayInnerAItem of json.nestedArray) {
+                            let ____jsonInnerValNestedArrayInnerAItemAResult;
                             if (
                                 Array.isArray(
-                                    jsonInnerValNestedArrayInnerResultItem,
+                                    __jsonInnerValNestedArrayInnerAItem,
                                 )
                             ) {
-                                const jsonInnerValNestedArrayInnerResultItemResultInnerResult =
+                                const jsonInnerValNestedArrayInnerAItemAResultInner =
                                     [];
-                                for (const jsonInnerValNestedArrayInnerResultItemResultInnerResultItem of jsonInnerValNestedArrayInnerResultItem) {
-                                    let jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                                for (const __jsonInnerValNestedArrayInnerAItemAResultInnerAItem of __jsonInnerValNestedArrayInnerAItem) {
+                                    let ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
                                     if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                             "object" &&
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem !==
+                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem !==
                                             null
                                     ) {
-                                        const jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
+                                        const jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
                                             {};
                                         if (
-                                            typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                            typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                             "string"
                                         ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]/id",
@@ -5080,20 +5080,20 @@ const $$ObjectWithEveryOptionalType = {
                                             );
                                         }
                                         if (
-                                            typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                            typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                                 "object" &&
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
                                                 Date
                                         ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
                                         } else if (
-                                            typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                            typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                             "string"
                                         ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                                 new Date(
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
                                                 );
                                         } else {
                                             $fallback(
@@ -5102,8 +5102,8 @@ const $$ObjectWithEveryOptionalType = {
                                                 "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                             );
                                         }
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                        ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
+                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]",
@@ -5111,12 +5111,12 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected object",
                                         );
                                     }
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
+                                    jsonInnerValNestedArrayInnerAItemAResultInner.push(
+                                        ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
                                     );
                                 }
-                                jsonInnerValNestedArrayInnerResultItemResult =
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResult;
+                                ____jsonInnerValNestedArrayInnerAItemAResult =
+                                    jsonInnerValNestedArrayInnerAItemAResultInner;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]",
@@ -5124,12 +5124,11 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected Array",
                                 );
                             }
-                            jsonInnerValNestedArrayInnerResult.push(
-                                jsonInnerValNestedArrayInnerResultItemResult,
+                            jsonInnerValNestedArrayInner.push(
+                                ____jsonInnerValNestedArrayInnerAItemAResult,
                             );
                         }
-                        jsonInnerVal.nestedArray =
-                            jsonInnerValNestedArrayInnerResult;
+                        jsonInnerVal.nestedArray = jsonInnerValNestedArrayInner;
                     } else {
                         $fallback(
                             "/nestedArray",
@@ -5435,15 +5434,14 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (Array.isArray(input.array)) {
-                    const inputInnerValArrayInnerResult = [];
-                    for (const inputInnerValArrayInnerResultItem of input.array) {
-                        let inputInnerValArrayInnerResultItemResult;
+                    const inputInnerValArrayInner = [];
+                    for (const __inputInnerValArrayInnerAItem of input.array) {
+                        let ____inputInnerValArrayInnerAItemAResult;
                         if (
-                            typeof inputInnerValArrayInnerResultItem ===
-                            "boolean"
+                            typeof __inputInnerValArrayInnerAItem === "boolean"
                         ) {
-                            inputInnerValArrayInnerResultItemResult =
-                                inputInnerValArrayInnerResultItem;
+                            ____inputInnerValArrayInnerAItemAResult =
+                                __inputInnerValArrayInnerAItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -5451,11 +5449,11 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        inputInnerValArrayInnerResult.push(
-                            inputInnerValArrayInnerResultItemResult,
+                        inputInnerValArrayInner.push(
+                            ____inputInnerValArrayInnerAItemAResult,
                         );
                     }
-                    inputInnerVal.array = inputInnerValArrayInnerResult;
+                    inputInnerVal.array = inputInnerValArrayInner;
                 } else {
                     $fallback(
                         "/array",
@@ -5516,11 +5514,14 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.record === "object" && input.record !== null) {
-                    const inputRecordResult = {};
-                    for (const inputRecordKey of Object.keys(input.record)) {
-                        let inputRecordKeyVal;
-                        if (typeof input.record[inputRecordKey] === "boolean") {
-                            inputRecordKeyVal = input.record[inputRecordKey];
+                    const __inputRecordRResult = {};
+                    for (const __inputRecordRKey of Object.keys(input.record)) {
+                        let ____inputRecordRKeyRVal;
+                        if (
+                            typeof input.record[__inputRecordRKey] === "boolean"
+                        ) {
+                            ____inputRecordRKeyRVal =
+                                input.record[__inputRecordRKey];
                         } else {
                             $fallback(
                                 "/record/[key]",
@@ -5528,9 +5529,10 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected boolean for /record/[key]",
                             );
                         }
-                        inputRecordResult[inputRecordKey] = inputRecordKeyVal;
+                        __inputRecordRResult[__inputRecordRKey] =
+                            ____inputRecordRKeyRVal;
                     }
-                    inputInnerVal.record = inputRecordResult;
+                    inputInnerVal.record = __inputRecordRResult;
                 } else {
                     $fallback(
                         "/record",
@@ -5782,32 +5784,30 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (Array.isArray(input.nestedArray)) {
-                    const inputInnerValNestedArrayInnerResult = [];
-                    for (const inputInnerValNestedArrayInnerResultItem of input.nestedArray) {
-                        let inputInnerValNestedArrayInnerResultItemResult;
+                    const inputInnerValNestedArrayInner = [];
+                    for (const __inputInnerValNestedArrayInnerAItem of input.nestedArray) {
+                        let ____inputInnerValNestedArrayInnerAItemAResult;
                         if (
-                            Array.isArray(
-                                inputInnerValNestedArrayInnerResultItem,
-                            )
+                            Array.isArray(__inputInnerValNestedArrayInnerAItem)
                         ) {
-                            const inputInnerValNestedArrayInnerResultItemResultInnerResult =
+                            const inputInnerValNestedArrayInnerAItemAResultInner =
                                 [];
-                            for (const inputInnerValNestedArrayInnerResultItemResultInnerResultItem of inputInnerValNestedArrayInnerResultItem) {
-                                let inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                            for (const __inputInnerValNestedArrayInnerAItemAResultInnerAItem of __inputInnerValNestedArrayInnerAItem) {
+                                let ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
                                 if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
+                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
                                         "object" &&
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem !==
+                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem !==
                                         null
                                 ) {
-                                    const inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
+                                    const inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
                                         {};
                                     if (
-                                        typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                        typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
                                         "string"
                                     ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
+                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/id",
@@ -5816,20 +5816,20 @@ const $$ObjectWithEveryOptionalType = {
                                         );
                                     }
                                     if (
-                                        typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                        typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                             "object" &&
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
                                             Date
                                     ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
                                     } else if (
-                                        typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                        typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
                                         "string"
                                     ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
                                             new Date(
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
                                             );
                                     } else {
                                         $fallback(
@@ -5838,8 +5838,8 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                         );
                                     }
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                    ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
+                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]",
@@ -5847,12 +5847,12 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected object",
                                     );
                                 }
-                                inputInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
+                                inputInnerValNestedArrayInnerAItemAResultInner.push(
+                                    ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
                                 );
                             }
-                            inputInnerValNestedArrayInnerResultItemResult =
-                                inputInnerValNestedArrayInnerResultItemResultInnerResult;
+                            ____inputInnerValNestedArrayInnerAItemAResult =
+                                inputInnerValNestedArrayInnerAItemAResultInner;
                         } else {
                             $fallback(
                                 "/nestedArray/[0]",
@@ -5860,12 +5860,11 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected Array",
                             );
                         }
-                        inputInnerValNestedArrayInnerResult.push(
-                            inputInnerValNestedArrayInnerResultItemResult,
+                        inputInnerValNestedArrayInner.push(
+                            ____inputInnerValNestedArrayInnerAItemAResult,
                         );
                     }
-                    inputInnerVal.nestedArray =
-                        inputInnerValNestedArrayInnerResult;
+                    inputInnerVal.nestedArray = inputInnerValNestedArrayInner;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -6628,16 +6627,16 @@ const $$StreamLargeObjectsResponse = {
             if (typeof json === "object" && json !== null) {
                 const jsonInnerVal = {};
                 if (Array.isArray(json.numbers)) {
-                    const jsonInnerValNumbersInnerResult = [];
-                    for (const jsonInnerValNumbersInnerResultItem of json.numbers) {
-                        let jsonInnerValNumbersInnerResultItemResult;
+                    const jsonInnerValNumbersInner = [];
+                    for (const __jsonInnerValNumbersInnerAItem of json.numbers) {
+                        let ____jsonInnerValNumbersInnerAItemAResult;
                         if (
-                            typeof jsonInnerValNumbersInnerResultItem ===
+                            typeof __jsonInnerValNumbersInnerAItem ===
                                 "number" &&
-                            !Number.isNaN(jsonInnerValNumbersInnerResultItem)
+                            !Number.isNaN(__jsonInnerValNumbersInnerAItem)
                         ) {
-                            jsonInnerValNumbersInnerResultItemResult =
-                                jsonInnerValNumbersInnerResultItem;
+                            ____jsonInnerValNumbersInnerAItemAResult =
+                                __jsonInnerValNumbersInnerAItem;
                         } else {
                             $fallback(
                                 "/numbers/[0]",
@@ -6645,11 +6644,11 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected number at /numbers/[0]",
                             );
                         }
-                        jsonInnerValNumbersInnerResult.push(
-                            jsonInnerValNumbersInnerResultItemResult,
+                        jsonInnerValNumbersInner.push(
+                            ____jsonInnerValNumbersInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.numbers = jsonInnerValNumbersInnerResult;
+                    jsonInnerVal.numbers = jsonInnerValNumbersInner;
                 } else {
                     $fallback(
                         "/numbers",
@@ -6658,22 +6657,21 @@ const $$StreamLargeObjectsResponse = {
                     );
                 }
                 if (Array.isArray(json.objects)) {
-                    const jsonInnerValObjectsInnerResult = [];
-                    for (const jsonInnerValObjectsInnerResultItem of json.objects) {
-                        let jsonInnerValObjectsInnerResultItemResult;
+                    const jsonInnerValObjectsInner = [];
+                    for (const __jsonInnerValObjectsInnerAItem of json.objects) {
+                        let ____jsonInnerValObjectsInnerAItemAResult;
                         if (
-                            typeof jsonInnerValObjectsInnerResultItem ===
+                            typeof __jsonInnerValObjectsInnerAItem ===
                                 "object" &&
-                            jsonInnerValObjectsInnerResultItem !== null
+                            __jsonInnerValObjectsInnerAItem !== null
                         ) {
-                            const jsonInnerValObjectsInnerResultItemInnerVal =
-                                {};
+                            const jsonInnerValObjectsInnerAItemInnerVal = {};
                             if (
-                                typeof jsonInnerValObjectsInnerResultItem.id ===
+                                typeof __jsonInnerValObjectsInnerAItem.id ===
                                 "string"
                             ) {
-                                jsonInnerValObjectsInnerResultItemInnerVal.id =
-                                    jsonInnerValObjectsInnerResultItem.id;
+                                jsonInnerValObjectsInnerAItemInnerVal.id =
+                                    __jsonInnerValObjectsInnerAItem.id;
                             } else {
                                 $fallback(
                                     "/objects/[0]/id",
@@ -6682,11 +6680,11 @@ const $$StreamLargeObjectsResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValObjectsInnerResultItem.name ===
+                                typeof __jsonInnerValObjectsInnerAItem.name ===
                                 "string"
                             ) {
-                                jsonInnerValObjectsInnerResultItemInnerVal.name =
-                                    jsonInnerValObjectsInnerResultItem.name;
+                                jsonInnerValObjectsInnerAItemInnerVal.name =
+                                    __jsonInnerValObjectsInnerAItem.name;
                             } else {
                                 $fallback(
                                     "/objects/[0]/name",
@@ -6695,11 +6693,11 @@ const $$StreamLargeObjectsResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValObjectsInnerResultItem.email ===
+                                typeof __jsonInnerValObjectsInnerAItem.email ===
                                 "string"
                             ) {
-                                jsonInnerValObjectsInnerResultItemInnerVal.email =
-                                    jsonInnerValObjectsInnerResultItem.email;
+                                jsonInnerValObjectsInnerAItemInnerVal.email =
+                                    __jsonInnerValObjectsInnerAItem.email;
                             } else {
                                 $fallback(
                                     "/objects/[0]/email",
@@ -6707,8 +6705,8 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/email",
                                 );
                             }
-                            jsonInnerValObjectsInnerResultItemResult =
-                                jsonInnerValObjectsInnerResultItemInnerVal;
+                            ____jsonInnerValObjectsInnerAItemAResult =
+                                jsonInnerValObjectsInnerAItemInnerVal;
                         } else {
                             $fallback(
                                 "/objects/[0]",
@@ -6716,11 +6714,11 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerValObjectsInnerResult.push(
-                            jsonInnerValObjectsInnerResultItemResult,
+                        jsonInnerValObjectsInner.push(
+                            ____jsonInnerValObjectsInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.objects = jsonInnerValObjectsInnerResult;
+                    jsonInnerVal.objects = jsonInnerValObjectsInner;
                 } else {
                     $fallback(
                         "/objects",
@@ -6738,16 +6736,15 @@ const $$StreamLargeObjectsResponse = {
         if (typeof input === "object" && input !== null) {
             const inputInnerVal = {};
             if (Array.isArray(input.numbers)) {
-                const inputInnerValNumbersInnerResult = [];
-                for (const inputInnerValNumbersInnerResultItem of input.numbers) {
-                    let inputInnerValNumbersInnerResultItemResult;
+                const inputInnerValNumbersInner = [];
+                for (const __inputInnerValNumbersInnerAItem of input.numbers) {
+                    let ____inputInnerValNumbersInnerAItemAResult;
                     if (
-                        typeof inputInnerValNumbersInnerResultItem ===
-                            "number" &&
-                        !Number.isNaN(inputInnerValNumbersInnerResultItem)
+                        typeof __inputInnerValNumbersInnerAItem === "number" &&
+                        !Number.isNaN(__inputInnerValNumbersInnerAItem)
                     ) {
-                        inputInnerValNumbersInnerResultItemResult =
-                            inputInnerValNumbersInnerResultItem;
+                        ____inputInnerValNumbersInnerAItemAResult =
+                            __inputInnerValNumbersInnerAItem;
                     } else {
                         $fallback(
                             "/numbers/[0]",
@@ -6755,30 +6752,29 @@ const $$StreamLargeObjectsResponse = {
                             "Expected number at /numbers/[0]",
                         );
                     }
-                    inputInnerValNumbersInnerResult.push(
-                        inputInnerValNumbersInnerResultItemResult,
+                    inputInnerValNumbersInner.push(
+                        ____inputInnerValNumbersInnerAItemAResult,
                     );
                 }
-                inputInnerVal.numbers = inputInnerValNumbersInnerResult;
+                inputInnerVal.numbers = inputInnerValNumbersInner;
             } else {
                 $fallback("/numbers", "/properties/numbers", "Expected Array");
             }
             if (Array.isArray(input.objects)) {
-                const inputInnerValObjectsInnerResult = [];
-                for (const inputInnerValObjectsInnerResultItem of input.objects) {
-                    let inputInnerValObjectsInnerResultItemResult;
+                const inputInnerValObjectsInner = [];
+                for (const __inputInnerValObjectsInnerAItem of input.objects) {
+                    let ____inputInnerValObjectsInnerAItemAResult;
                     if (
-                        typeof inputInnerValObjectsInnerResultItem ===
-                            "object" &&
-                        inputInnerValObjectsInnerResultItem !== null
+                        typeof __inputInnerValObjectsInnerAItem === "object" &&
+                        __inputInnerValObjectsInnerAItem !== null
                     ) {
-                        const inputInnerValObjectsInnerResultItemInnerVal = {};
+                        const inputInnerValObjectsInnerAItemInnerVal = {};
                         if (
-                            typeof inputInnerValObjectsInnerResultItem.id ===
+                            typeof __inputInnerValObjectsInnerAItem.id ===
                             "string"
                         ) {
-                            inputInnerValObjectsInnerResultItemInnerVal.id =
-                                inputInnerValObjectsInnerResultItem.id;
+                            inputInnerValObjectsInnerAItemInnerVal.id =
+                                __inputInnerValObjectsInnerAItem.id;
                         } else {
                             $fallback(
                                 "/objects/[0]/id",
@@ -6787,11 +6783,11 @@ const $$StreamLargeObjectsResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValObjectsInnerResultItem.name ===
+                            typeof __inputInnerValObjectsInnerAItem.name ===
                             "string"
                         ) {
-                            inputInnerValObjectsInnerResultItemInnerVal.name =
-                                inputInnerValObjectsInnerResultItem.name;
+                            inputInnerValObjectsInnerAItemInnerVal.name =
+                                __inputInnerValObjectsInnerAItem.name;
                         } else {
                             $fallback(
                                 "/objects/[0]/name",
@@ -6800,11 +6796,11 @@ const $$StreamLargeObjectsResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValObjectsInnerResultItem.email ===
+                            typeof __inputInnerValObjectsInnerAItem.email ===
                             "string"
                         ) {
-                            inputInnerValObjectsInnerResultItemInnerVal.email =
-                                inputInnerValObjectsInnerResultItem.email;
+                            inputInnerValObjectsInnerAItemInnerVal.email =
+                                __inputInnerValObjectsInnerAItem.email;
                         } else {
                             $fallback(
                                 "/objects/[0]/email",
@@ -6812,8 +6808,8 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/email",
                             );
                         }
-                        inputInnerValObjectsInnerResultItemResult =
-                            inputInnerValObjectsInnerResultItemInnerVal;
+                        ____inputInnerValObjectsInnerAItemAResult =
+                            inputInnerValObjectsInnerAItemInnerVal;
                     } else {
                         $fallback(
                             "/objects/[0]",
@@ -6821,11 +6817,11 @@ const $$StreamLargeObjectsResponse = {
                             "Expected object",
                         );
                     }
-                    inputInnerValObjectsInnerResult.push(
-                        inputInnerValObjectsInnerResultItemResult,
+                    inputInnerValObjectsInner.push(
+                        ____inputInnerValObjectsInnerAItemAResult,
                     );
                 }
-                inputInnerVal.objects = inputInnerValObjectsInnerResult;
+                inputInnerVal.objects = inputInnerValObjectsInner;
             } else {
                 $fallback("/objects", "/properties/objects", "Expected Array");
             }
@@ -7547,14 +7543,12 @@ const $$Post = {
                     );
                 }
                 if (Array.isArray(json.tags)) {
-                    const jsonInnerValTagsInnerResult = [];
-                    for (const jsonInnerValTagsInnerResultItem of json.tags) {
-                        let jsonInnerValTagsInnerResultItemResult;
-                        if (
-                            typeof jsonInnerValTagsInnerResultItem === "string"
-                        ) {
-                            jsonInnerValTagsInnerResultItemResult =
-                                jsonInnerValTagsInnerResultItem;
+                    const jsonInnerValTagsInner = [];
+                    for (const __jsonInnerValTagsInnerAItem of json.tags) {
+                        let ____jsonInnerValTagsInnerAItemAResult;
+                        if (typeof __jsonInnerValTagsInnerAItem === "string") {
+                            ____jsonInnerValTagsInnerAItemAResult =
+                                __jsonInnerValTagsInnerAItem;
                         } else {
                             $fallback(
                                 "/tags/[0]",
@@ -7562,11 +7556,11 @@ const $$Post = {
                                 "Expected string at /tags/[0]",
                             );
                         }
-                        jsonInnerValTagsInnerResult.push(
-                            jsonInnerValTagsInnerResultItemResult,
+                        jsonInnerValTagsInner.push(
+                            ____jsonInnerValTagsInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.tags = jsonInnerValTagsInnerResult;
+                    jsonInnerVal.tags = jsonInnerValTagsInner;
                 } else {
                     $fallback("/tags", "/properties/tags", "Expected Array");
                 }
@@ -7751,12 +7745,12 @@ const $$Post = {
                 );
             }
             if (Array.isArray(input.tags)) {
-                const inputInnerValTagsInnerResult = [];
-                for (const inputInnerValTagsInnerResultItem of input.tags) {
-                    let inputInnerValTagsInnerResultItemResult;
-                    if (typeof inputInnerValTagsInnerResultItem === "string") {
-                        inputInnerValTagsInnerResultItemResult =
-                            inputInnerValTagsInnerResultItem;
+                const inputInnerValTagsInner = [];
+                for (const __inputInnerValTagsInnerAItem of input.tags) {
+                    let ____inputInnerValTagsInnerAItemAResult;
+                    if (typeof __inputInnerValTagsInnerAItem === "string") {
+                        ____inputInnerValTagsInnerAItemAResult =
+                            __inputInnerValTagsInnerAItem;
                     } else {
                         $fallback(
                             "/tags/[0]",
@@ -7764,11 +7758,11 @@ const $$Post = {
                             "Expected string at /tags/[0]",
                         );
                     }
-                    inputInnerValTagsInnerResult.push(
-                        inputInnerValTagsInnerResultItemResult,
+                    inputInnerValTagsInner.push(
+                        ____inputInnerValTagsInnerAItemAResult,
                     );
                 }
-                inputInnerVal.tags = inputInnerValTagsInnerResult;
+                inputInnerVal.tags = inputInnerValTagsInner;
             } else {
                 $fallback("/tags", "/properties/tags", "Expected Array");
             }
@@ -8090,21 +8084,20 @@ const $$PostListResponse = {
                     );
                 }
                 if (Array.isArray(json.items)) {
-                    const jsonInnerValItemsInnerResult = [];
-                    for (const jsonInnerValItemsInnerResultItem of json.items) {
-                        let jsonInnerValItemsInnerResultItemResult;
+                    const jsonInnerValItemsInner = [];
+                    for (const __jsonInnerValItemsInnerAItem of json.items) {
+                        let ____jsonInnerValItemsInnerAItemAResult;
                         if (
-                            typeof jsonInnerValItemsInnerResultItem ===
-                                "object" &&
-                            jsonInnerValItemsInnerResultItem !== null
+                            typeof __jsonInnerValItemsInnerAItem === "object" &&
+                            __jsonInnerValItemsInnerAItem !== null
                         ) {
-                            const jsonInnerValItemsInnerResultItemInnerVal = {};
+                            const jsonInnerValItemsInnerAItemInnerVal = {};
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.id ===
+                                typeof __jsonInnerValItemsInnerAItem.id ===
                                 "string"
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.id =
-                                    jsonInnerValItemsInnerResultItem.id;
+                                jsonInnerValItemsInnerAItemInnerVal.id =
+                                    __jsonInnerValItemsInnerAItem.id;
                             } else {
                                 $fallback(
                                     "/items/[0]/id",
@@ -8113,11 +8106,11 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.title ===
+                                typeof __jsonInnerValItemsInnerAItem.title ===
                                 "string"
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.title =
-                                    jsonInnerValItemsInnerResultItem.title;
+                                jsonInnerValItemsInnerAItemInnerVal.title =
+                                    __jsonInnerValItemsInnerAItem.title;
                             } else {
                                 $fallback(
                                     "/items/[0]/title",
@@ -8126,19 +8119,19 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.type ===
+                                typeof __jsonInnerValItemsInnerAItem.type ===
                                 "string"
                             ) {
                                 if (
-                                    jsonInnerValItemsInnerResultItem.type ===
+                                    __jsonInnerValItemsInnerAItem.type ===
                                         "text" ||
-                                    jsonInnerValItemsInnerResultItem.type ===
+                                    __jsonInnerValItemsInnerAItem.type ===
                                         "image" ||
-                                    jsonInnerValItemsInnerResultItem.type ===
+                                    __jsonInnerValItemsInnerAItem.type ===
                                         "video"
                                 ) {
-                                    jsonInnerValItemsInnerResultItemInnerVal.type =
-                                        jsonInnerValItemsInnerResultItem.type;
+                                    jsonInnerValItemsInnerAItemInnerVal.type =
+                                        __jsonInnerValItemsInnerAItem.type;
                                 } else {
                                     $fallback(
                                         "/items/[0]/type",
@@ -8154,18 +8147,18 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                jsonInnerValItemsInnerResultItem.description ===
+                                __jsonInnerValItemsInnerAItem.description ===
                                 null
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.description =
-                                    jsonInnerValItemsInnerResultItem.description;
+                                jsonInnerValItemsInnerAItemInnerVal.description =
+                                    __jsonInnerValItemsInnerAItem.description;
                             } else {
                                 if (
-                                    typeof jsonInnerValItemsInnerResultItem.description ===
+                                    typeof __jsonInnerValItemsInnerAItem.description ===
                                     "string"
                                 ) {
-                                    jsonInnerValItemsInnerResultItemInnerVal.description =
-                                        jsonInnerValItemsInnerResultItem.description;
+                                    jsonInnerValItemsInnerAItemInnerVal.description =
+                                        __jsonInnerValItemsInnerAItem.description;
                                 } else {
                                     $fallback(
                                         "/items/[0]/description",
@@ -8175,11 +8168,11 @@ const $$PostListResponse = {
                                 }
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.content ===
+                                typeof __jsonInnerValItemsInnerAItem.content ===
                                 "string"
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.content =
-                                    jsonInnerValItemsInnerResultItem.content;
+                                jsonInnerValItemsInnerAItemInnerVal.content =
+                                    __jsonInnerValItemsInnerAItem.content;
                             } else {
                                 $fallback(
                                     "/items/[0]/content",
@@ -8189,19 +8182,19 @@ const $$PostListResponse = {
                             }
                             if (
                                 Array.isArray(
-                                    jsonInnerValItemsInnerResultItem.tags,
+                                    __jsonInnerValItemsInnerAItem.tags,
                                 )
                             ) {
-                                const jsonInnerValItemsInnerResultItemInnerValTagsInnerResult =
+                                const jsonInnerValItemsInnerAItemInnerValTagsInner =
                                     [];
-                                for (const jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItem of jsonInnerValItemsInnerResultItem.tags) {
-                                    let jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult;
+                                for (const __jsonInnerValItemsInnerAItemInnerValTagsInnerAItem of __jsonInnerValItemsInnerAItem.tags) {
+                                    let ____jsonInnerValItemsInnerAItemInnerValTagsInnerAItemAResult;
                                     if (
-                                        typeof jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItem ===
+                                        typeof __jsonInnerValItemsInnerAItemInnerValTagsInnerAItem ===
                                         "string"
                                     ) {
-                                        jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult =
-                                            jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItem;
+                                        ____jsonInnerValItemsInnerAItemInnerValTagsInnerAItemAResult =
+                                            __jsonInnerValItemsInnerAItemInnerValTagsInnerAItem;
                                     } else {
                                         $fallback(
                                             "/items/[0]/tags/[0]",
@@ -8209,12 +8202,12 @@ const $$PostListResponse = {
                                             "Expected string at /items/[0]/tags/[0]",
                                         );
                                     }
-                                    jsonInnerValItemsInnerResultItemInnerValTagsInnerResult.push(
-                                        jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult,
+                                    jsonInnerValItemsInnerAItemInnerValTagsInner.push(
+                                        ____jsonInnerValItemsInnerAItemInnerValTagsInnerAItemAResult,
                                     );
                                 }
-                                jsonInnerValItemsInnerResultItemInnerVal.tags =
-                                    jsonInnerValItemsInnerResultItemInnerValTagsInnerResult;
+                                jsonInnerValItemsInnerAItemInnerVal.tags =
+                                    jsonInnerValItemsInnerAItemInnerValTagsInner;
                             } else {
                                 $fallback(
                                     "/items/[0]/tags",
@@ -8223,11 +8216,11 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.authorId ===
+                                typeof __jsonInnerValItemsInnerAItem.authorId ===
                                 "string"
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.authorId =
-                                    jsonInnerValItemsInnerResultItem.authorId;
+                                jsonInnerValItemsInnerAItemInnerVal.authorId =
+                                    __jsonInnerValItemsInnerAItem.authorId;
                             } else {
                                 $fallback(
                                     "/items/[0]/authorId",
@@ -8236,18 +8229,18 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.author ===
+                                typeof __jsonInnerValItemsInnerAItem.author ===
                                     "object" &&
-                                jsonInnerValItemsInnerResultItem.author !== null
+                                __jsonInnerValItemsInnerAItem.author !== null
                             ) {
-                                const jsonInnerValItemsInnerResultItemAuthorInnerVal =
+                                const jsonInnerValItemsInnerAItemAuthorInnerVal =
                                     {};
                                 if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.id === "string"
+                                    typeof __jsonInnerValItemsInnerAItem.author
+                                        .id === "string"
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.id =
-                                        jsonInnerValItemsInnerResultItem.author.id;
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.id =
+                                        __jsonInnerValItemsInnerAItem.author.id;
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/id",
@@ -8256,11 +8249,11 @@ const $$PostListResponse = {
                                     );
                                 }
                                 if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.name === "string"
+                                    typeof __jsonInnerValItemsInnerAItem.author
+                                        .name === "string"
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.name =
-                                        jsonInnerValItemsInnerResultItem.author.name;
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.name =
+                                        __jsonInnerValItemsInnerAItem.author.name;
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/name",
@@ -8269,18 +8262,18 @@ const $$PostListResponse = {
                                     );
                                 }
                                 if (
-                                    jsonInnerValItemsInnerResultItem.author
-                                        .bio === null
+                                    __jsonInnerValItemsInnerAItem.author.bio ===
+                                    null
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                        jsonInnerValItemsInnerResultItem.author.bio;
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.bio =
+                                        __jsonInnerValItemsInnerAItem.author.bio;
                                 } else {
                                     if (
-                                        typeof jsonInnerValItemsInnerResultItem
+                                        typeof __jsonInnerValItemsInnerAItem
                                             .author.bio === "string"
                                     ) {
-                                        jsonInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                            jsonInnerValItemsInnerResultItem.author.bio;
+                                        jsonInnerValItemsInnerAItemAuthorInnerVal.bio =
+                                            __jsonInnerValItemsInnerAItem.author.bio;
                                     } else {
                                         $fallback(
                                             "/items/[0]/author/bio",
@@ -8290,20 +8283,20 @@ const $$PostListResponse = {
                                     }
                                 }
                                 if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.createdAt === "object" &&
-                                    jsonInnerValItemsInnerResultItem.author
+                                    typeof __jsonInnerValItemsInnerAItem.author
+                                        .createdAt === "object" &&
+                                    __jsonInnerValItemsInnerAItem.author
                                         .createdAt instanceof Date
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
-                                        jsonInnerValItemsInnerResultItem.author.createdAt;
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.createdAt =
+                                        __jsonInnerValItemsInnerAItem.author.createdAt;
                                 } else if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.createdAt === "string"
+                                    typeof __jsonInnerValItemsInnerAItem.author
+                                        .createdAt === "string"
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.createdAt =
                                         new Date(
-                                            jsonInnerValItemsInnerResultItem.author.createdAt,
+                                            __jsonInnerValItemsInnerAItem.author.createdAt,
                                         );
                                 } else {
                                     $fallback(
@@ -8313,20 +8306,20 @@ const $$PostListResponse = {
                                     );
                                 }
                                 if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.updatedAt === "object" &&
-                                    jsonInnerValItemsInnerResultItem.author
+                                    typeof __jsonInnerValItemsInnerAItem.author
+                                        .updatedAt === "object" &&
+                                    __jsonInnerValItemsInnerAItem.author
                                         .updatedAt instanceof Date
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
-                                        jsonInnerValItemsInnerResultItem.author.updatedAt;
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
+                                        __jsonInnerValItemsInnerAItem.author.updatedAt;
                                 } else if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.updatedAt === "string"
+                                    typeof __jsonInnerValItemsInnerAItem.author
+                                        .updatedAt === "string"
                                 ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
                                         new Date(
-                                            jsonInnerValItemsInnerResultItem.author.updatedAt,
+                                            __jsonInnerValItemsInnerAItem.author.updatedAt,
                                         );
                                 } else {
                                     $fallback(
@@ -8335,8 +8328,8 @@ const $$PostListResponse = {
                                         "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
                                     );
                                 }
-                                jsonInnerValItemsInnerResultItemInnerVal.author =
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal;
+                                jsonInnerValItemsInnerAItemInnerVal.author =
+                                    jsonInnerValItemsInnerAItemAuthorInnerVal;
                             } else {
                                 $fallback(
                                     "/items/[0]/author",
@@ -8345,20 +8338,20 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.createdAt ===
+                                typeof __jsonInnerValItemsInnerAItem.createdAt ===
                                     "object" &&
-                                jsonInnerValItemsInnerResultItem.createdAt instanceof
+                                __jsonInnerValItemsInnerAItem.createdAt instanceof
                                     Date
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.createdAt =
-                                    jsonInnerValItemsInnerResultItem.createdAt;
+                                jsonInnerValItemsInnerAItemInnerVal.createdAt =
+                                    __jsonInnerValItemsInnerAItem.createdAt;
                             } else if (
-                                typeof jsonInnerValItemsInnerResultItem.createdAt ===
+                                typeof __jsonInnerValItemsInnerAItem.createdAt ===
                                 "string"
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.createdAt =
+                                jsonInnerValItemsInnerAItemInnerVal.createdAt =
                                     new Date(
-                                        jsonInnerValItemsInnerResultItem.createdAt,
+                                        __jsonInnerValItemsInnerAItem.createdAt,
                                     );
                             } else {
                                 $fallback(
@@ -8368,20 +8361,20 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof jsonInnerValItemsInnerResultItem.updatedAt ===
+                                typeof __jsonInnerValItemsInnerAItem.updatedAt ===
                                     "object" &&
-                                jsonInnerValItemsInnerResultItem.updatedAt instanceof
+                                __jsonInnerValItemsInnerAItem.updatedAt instanceof
                                     Date
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.updatedAt =
-                                    jsonInnerValItemsInnerResultItem.updatedAt;
+                                jsonInnerValItemsInnerAItemInnerVal.updatedAt =
+                                    __jsonInnerValItemsInnerAItem.updatedAt;
                             } else if (
-                                typeof jsonInnerValItemsInnerResultItem.updatedAt ===
+                                typeof __jsonInnerValItemsInnerAItem.updatedAt ===
                                 "string"
                             ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.updatedAt =
+                                jsonInnerValItemsInnerAItemInnerVal.updatedAt =
                                     new Date(
-                                        jsonInnerValItemsInnerResultItem.updatedAt,
+                                        __jsonInnerValItemsInnerAItem.updatedAt,
                                     );
                             } else {
                                 $fallback(
@@ -8390,8 +8383,8 @@ const $$PostListResponse = {
                                     "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
                                 );
                             }
-                            jsonInnerValItemsInnerResultItemResult =
-                                jsonInnerValItemsInnerResultItemInnerVal;
+                            ____jsonInnerValItemsInnerAItemAResult =
+                                jsonInnerValItemsInnerAItemInnerVal;
                         } else {
                             $fallback(
                                 "/items/[0]",
@@ -8399,11 +8392,11 @@ const $$PostListResponse = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerValItemsInnerResult.push(
-                            jsonInnerValItemsInnerResultItemResult,
+                        jsonInnerValItemsInner.push(
+                            ____jsonInnerValItemsInnerAItemAResult,
                         );
                     }
-                    jsonInnerVal.items = jsonInnerValItemsInnerResult;
+                    jsonInnerVal.items = jsonInnerValItemsInner;
                 } else {
                     $fallback("/items", "/properties/items", "Expected Array");
                 }
@@ -8431,20 +8424,20 @@ const $$PostListResponse = {
                 );
             }
             if (Array.isArray(input.items)) {
-                const inputInnerValItemsInnerResult = [];
-                for (const inputInnerValItemsInnerResultItem of input.items) {
-                    let inputInnerValItemsInnerResultItemResult;
+                const inputInnerValItemsInner = [];
+                for (const __inputInnerValItemsInnerAItem of input.items) {
+                    let ____inputInnerValItemsInnerAItemAResult;
                     if (
-                        typeof inputInnerValItemsInnerResultItem === "object" &&
-                        inputInnerValItemsInnerResultItem !== null
+                        typeof __inputInnerValItemsInnerAItem === "object" &&
+                        __inputInnerValItemsInnerAItem !== null
                     ) {
-                        const inputInnerValItemsInnerResultItemInnerVal = {};
+                        const inputInnerValItemsInnerAItemInnerVal = {};
                         if (
-                            typeof inputInnerValItemsInnerResultItem.id ===
+                            typeof __inputInnerValItemsInnerAItem.id ===
                             "string"
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.id =
-                                inputInnerValItemsInnerResultItem.id;
+                            inputInnerValItemsInnerAItemInnerVal.id =
+                                __inputInnerValItemsInnerAItem.id;
                         } else {
                             $fallback(
                                 "/items/[0]/id",
@@ -8453,11 +8446,11 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.title ===
+                            typeof __inputInnerValItemsInnerAItem.title ===
                             "string"
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.title =
-                                inputInnerValItemsInnerResultItem.title;
+                            inputInnerValItemsInnerAItemInnerVal.title =
+                                __inputInnerValItemsInnerAItem.title;
                         } else {
                             $fallback(
                                 "/items/[0]/title",
@@ -8466,19 +8459,18 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.type ===
+                            typeof __inputInnerValItemsInnerAItem.type ===
                             "string"
                         ) {
                             if (
-                                inputInnerValItemsInnerResultItem.type ===
+                                __inputInnerValItemsInnerAItem.type ===
                                     "text" ||
-                                inputInnerValItemsInnerResultItem.type ===
+                                __inputInnerValItemsInnerAItem.type ===
                                     "image" ||
-                                inputInnerValItemsInnerResultItem.type ===
-                                    "video"
+                                __inputInnerValItemsInnerAItem.type === "video"
                             ) {
-                                inputInnerValItemsInnerResultItemInnerVal.type =
-                                    inputInnerValItemsInnerResultItem.type;
+                                inputInnerValItemsInnerAItemInnerVal.type =
+                                    __inputInnerValItemsInnerAItem.type;
                             } else {
                                 $fallback(
                                     "/items/[0]/type",
@@ -8494,18 +8486,17 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            inputInnerValItemsInnerResultItem.description ===
-                            null
+                            __inputInnerValItemsInnerAItem.description === null
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.description =
-                                inputInnerValItemsInnerResultItem.description;
+                            inputInnerValItemsInnerAItemInnerVal.description =
+                                __inputInnerValItemsInnerAItem.description;
                         } else {
                             if (
-                                typeof inputInnerValItemsInnerResultItem.description ===
+                                typeof __inputInnerValItemsInnerAItem.description ===
                                 "string"
                             ) {
-                                inputInnerValItemsInnerResultItemInnerVal.description =
-                                    inputInnerValItemsInnerResultItem.description;
+                                inputInnerValItemsInnerAItemInnerVal.description =
+                                    __inputInnerValItemsInnerAItem.description;
                             } else {
                                 $fallback(
                                     "/items/[0]/description",
@@ -8515,11 +8506,11 @@ const $$PostListResponse = {
                             }
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.content ===
+                            typeof __inputInnerValItemsInnerAItem.content ===
                             "string"
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.content =
-                                inputInnerValItemsInnerResultItem.content;
+                            inputInnerValItemsInnerAItemInnerVal.content =
+                                __inputInnerValItemsInnerAItem.content;
                         } else {
                             $fallback(
                                 "/items/[0]/content",
@@ -8528,20 +8519,18 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            Array.isArray(
-                                inputInnerValItemsInnerResultItem.tags,
-                            )
+                            Array.isArray(__inputInnerValItemsInnerAItem.tags)
                         ) {
-                            const inputInnerValItemsInnerResultItemInnerValTagsInnerResult =
+                            const inputInnerValItemsInnerAItemInnerValTagsInner =
                                 [];
-                            for (const inputInnerValItemsInnerResultItemInnerValTagsInnerResultItem of inputInnerValItemsInnerResultItem.tags) {
-                                let inputInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult;
+                            for (const __inputInnerValItemsInnerAItemInnerValTagsInnerAItem of __inputInnerValItemsInnerAItem.tags) {
+                                let ____inputInnerValItemsInnerAItemInnerValTagsInnerAItemAResult;
                                 if (
-                                    typeof inputInnerValItemsInnerResultItemInnerValTagsInnerResultItem ===
+                                    typeof __inputInnerValItemsInnerAItemInnerValTagsInnerAItem ===
                                     "string"
                                 ) {
-                                    inputInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult =
-                                        inputInnerValItemsInnerResultItemInnerValTagsInnerResultItem;
+                                    ____inputInnerValItemsInnerAItemInnerValTagsInnerAItemAResult =
+                                        __inputInnerValItemsInnerAItemInnerValTagsInnerAItem;
                                 } else {
                                     $fallback(
                                         "/items/[0]/tags/[0]",
@@ -8549,12 +8538,12 @@ const $$PostListResponse = {
                                         "Expected string at /items/[0]/tags/[0]",
                                     );
                                 }
-                                inputInnerValItemsInnerResultItemInnerValTagsInnerResult.push(
-                                    inputInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult,
+                                inputInnerValItemsInnerAItemInnerValTagsInner.push(
+                                    ____inputInnerValItemsInnerAItemInnerValTagsInnerAItemAResult,
                                 );
                             }
-                            inputInnerValItemsInnerResultItemInnerVal.tags =
-                                inputInnerValItemsInnerResultItemInnerValTagsInnerResult;
+                            inputInnerValItemsInnerAItemInnerVal.tags =
+                                inputInnerValItemsInnerAItemInnerValTagsInner;
                         } else {
                             $fallback(
                                 "/items/[0]/tags",
@@ -8563,11 +8552,11 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.authorId ===
+                            typeof __inputInnerValItemsInnerAItem.authorId ===
                             "string"
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.authorId =
-                                inputInnerValItemsInnerResultItem.authorId;
+                            inputInnerValItemsInnerAItemInnerVal.authorId =
+                                __inputInnerValItemsInnerAItem.authorId;
                         } else {
                             $fallback(
                                 "/items/[0]/authorId",
@@ -8576,18 +8565,18 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.author ===
+                            typeof __inputInnerValItemsInnerAItem.author ===
                                 "object" &&
-                            inputInnerValItemsInnerResultItem.author !== null
+                            __inputInnerValItemsInnerAItem.author !== null
                         ) {
-                            const inputInnerValItemsInnerResultItemAuthorInnerVal =
+                            const inputInnerValItemsInnerAItemAuthorInnerVal =
                                 {};
                             if (
-                                typeof inputInnerValItemsInnerResultItem.author
+                                typeof __inputInnerValItemsInnerAItem.author
                                     .id === "string"
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.id =
-                                    inputInnerValItemsInnerResultItem.author.id;
+                                inputInnerValItemsInnerAItemAuthorInnerVal.id =
+                                    __inputInnerValItemsInnerAItem.author.id;
                             } else {
                                 $fallback(
                                     "/items/[0]/author/id",
@@ -8596,11 +8585,11 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof inputInnerValItemsInnerResultItem.author
+                                typeof __inputInnerValItemsInnerAItem.author
                                     .name === "string"
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.name =
-                                    inputInnerValItemsInnerResultItem.author.name;
+                                inputInnerValItemsInnerAItemAuthorInnerVal.name =
+                                    __inputInnerValItemsInnerAItem.author.name;
                             } else {
                                 $fallback(
                                     "/items/[0]/author/name",
@@ -8609,18 +8598,18 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                inputInnerValItemsInnerResultItem.author.bio ===
+                                __inputInnerValItemsInnerAItem.author.bio ===
                                 null
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                    inputInnerValItemsInnerResultItem.author.bio;
+                                inputInnerValItemsInnerAItemAuthorInnerVal.bio =
+                                    __inputInnerValItemsInnerAItem.author.bio;
                             } else {
                                 if (
-                                    typeof inputInnerValItemsInnerResultItem
-                                        .author.bio === "string"
+                                    typeof __inputInnerValItemsInnerAItem.author
+                                        .bio === "string"
                                 ) {
-                                    inputInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                        inputInnerValItemsInnerResultItem.author.bio;
+                                    inputInnerValItemsInnerAItemAuthorInnerVal.bio =
+                                        __inputInnerValItemsInnerAItem.author.bio;
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/bio",
@@ -8630,20 +8619,20 @@ const $$PostListResponse = {
                                 }
                             }
                             if (
-                                typeof inputInnerValItemsInnerResultItem.author
+                                typeof __inputInnerValItemsInnerAItem.author
                                     .createdAt === "object" &&
-                                inputInnerValItemsInnerResultItem.author
+                                __inputInnerValItemsInnerAItem.author
                                     .createdAt instanceof Date
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
-                                    inputInnerValItemsInnerResultItem.author.createdAt;
+                                inputInnerValItemsInnerAItemAuthorInnerVal.createdAt =
+                                    __inputInnerValItemsInnerAItem.author.createdAt;
                             } else if (
-                                typeof inputInnerValItemsInnerResultItem.author
+                                typeof __inputInnerValItemsInnerAItem.author
                                     .createdAt === "string"
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
+                                inputInnerValItemsInnerAItemAuthorInnerVal.createdAt =
                                     new Date(
-                                        inputInnerValItemsInnerResultItem.author.createdAt,
+                                        __inputInnerValItemsInnerAItem.author.createdAt,
                                     );
                             } else {
                                 $fallback(
@@ -8653,20 +8642,20 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof inputInnerValItemsInnerResultItem.author
+                                typeof __inputInnerValItemsInnerAItem.author
                                     .updatedAt === "object" &&
-                                inputInnerValItemsInnerResultItem.author
+                                __inputInnerValItemsInnerAItem.author
                                     .updatedAt instanceof Date
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
-                                    inputInnerValItemsInnerResultItem.author.updatedAt;
+                                inputInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
+                                    __inputInnerValItemsInnerAItem.author.updatedAt;
                             } else if (
-                                typeof inputInnerValItemsInnerResultItem.author
+                                typeof __inputInnerValItemsInnerAItem.author
                                     .updatedAt === "string"
                             ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
+                                inputInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
                                     new Date(
-                                        inputInnerValItemsInnerResultItem.author.updatedAt,
+                                        __inputInnerValItemsInnerAItem.author.updatedAt,
                                     );
                             } else {
                                 $fallback(
@@ -8675,8 +8664,8 @@ const $$PostListResponse = {
                                     "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
                                 );
                             }
-                            inputInnerValItemsInnerResultItemInnerVal.author =
-                                inputInnerValItemsInnerResultItemAuthorInnerVal;
+                            inputInnerValItemsInnerAItemInnerVal.author =
+                                inputInnerValItemsInnerAItemAuthorInnerVal;
                         } else {
                             $fallback(
                                 "/items/[0]/author",
@@ -8685,20 +8674,20 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.createdAt ===
+                            typeof __inputInnerValItemsInnerAItem.createdAt ===
                                 "object" &&
-                            inputInnerValItemsInnerResultItem.createdAt instanceof
+                            __inputInnerValItemsInnerAItem.createdAt instanceof
                                 Date
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.createdAt =
-                                inputInnerValItemsInnerResultItem.createdAt;
+                            inputInnerValItemsInnerAItemInnerVal.createdAt =
+                                __inputInnerValItemsInnerAItem.createdAt;
                         } else if (
-                            typeof inputInnerValItemsInnerResultItem.createdAt ===
+                            typeof __inputInnerValItemsInnerAItem.createdAt ===
                             "string"
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.createdAt =
+                            inputInnerValItemsInnerAItemInnerVal.createdAt =
                                 new Date(
-                                    inputInnerValItemsInnerResultItem.createdAt,
+                                    __inputInnerValItemsInnerAItem.createdAt,
                                 );
                         } else {
                             $fallback(
@@ -8708,20 +8697,20 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof inputInnerValItemsInnerResultItem.updatedAt ===
+                            typeof __inputInnerValItemsInnerAItem.updatedAt ===
                                 "object" &&
-                            inputInnerValItemsInnerResultItem.updatedAt instanceof
+                            __inputInnerValItemsInnerAItem.updatedAt instanceof
                                 Date
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.updatedAt =
-                                inputInnerValItemsInnerResultItem.updatedAt;
+                            inputInnerValItemsInnerAItemInnerVal.updatedAt =
+                                __inputInnerValItemsInnerAItem.updatedAt;
                         } else if (
-                            typeof inputInnerValItemsInnerResultItem.updatedAt ===
+                            typeof __inputInnerValItemsInnerAItem.updatedAt ===
                             "string"
                         ) {
-                            inputInnerValItemsInnerResultItemInnerVal.updatedAt =
+                            inputInnerValItemsInnerAItemInnerVal.updatedAt =
                                 new Date(
-                                    inputInnerValItemsInnerResultItem.updatedAt,
+                                    __inputInnerValItemsInnerAItem.updatedAt,
                                 );
                         } else {
                             $fallback(
@@ -8730,8 +8719,8 @@ const $$PostListResponse = {
                                 "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
                             );
                         }
-                        inputInnerValItemsInnerResultItemResult =
-                            inputInnerValItemsInnerResultItemInnerVal;
+                        ____inputInnerValItemsInnerAItemAResult =
+                            inputInnerValItemsInnerAItemInnerVal;
                     } else {
                         $fallback(
                             "/items/[0]",
@@ -8739,11 +8728,11 @@ const $$PostListResponse = {
                             "Expected object",
                         );
                     }
-                    inputInnerValItemsInnerResult.push(
-                        inputInnerValItemsInnerResultItemResult,
+                    inputInnerValItemsInner.push(
+                        ____inputInnerValItemsInnerAItemAResult,
                     );
                 }
-                inputInnerVal.items = inputInnerValItemsInnerResult;
+                inputInnerVal.items = inputInnerValItemsInner;
             } else {
                 $fallback("/items", "/properties/items", "Expected Array");
             }
@@ -9026,17 +9015,16 @@ const $$PostEvent = {
                                     // ignore undefined
                                 } else {
                                     if (Array.isArray(json.data.tags)) {
-                                        const jsonDataInnerValTagsInnerResult =
-                                            [];
-                                        for (const jsonDataInnerValTagsInnerResultItem of json
+                                        const jsonDataInnerValTagsInner = [];
+                                        for (const __jsonDataInnerValTagsInnerAItem of json
                                             .data.tags) {
-                                            let jsonDataInnerValTagsInnerResultItemResult;
+                                            let ____jsonDataInnerValTagsInnerAItemAResult;
                                             if (
-                                                typeof jsonDataInnerValTagsInnerResultItem ===
+                                                typeof __jsonDataInnerValTagsInnerAItem ===
                                                 "string"
                                             ) {
-                                                jsonDataInnerValTagsInnerResultItemResult =
-                                                    jsonDataInnerValTagsInnerResultItem;
+                                                ____jsonDataInnerValTagsInnerAItemAResult =
+                                                    __jsonDataInnerValTagsInnerAItem;
                                             } else {
                                                 $fallback(
                                                     "/data/tags/[0]",
@@ -9044,12 +9032,12 @@ const $$PostEvent = {
                                                     "Expected string at /data/tags/[0]",
                                                 );
                                             }
-                                            jsonDataInnerValTagsInnerResult.push(
-                                                jsonDataInnerValTagsInnerResultItemResult,
+                                            jsonDataInnerValTagsInner.push(
+                                                ____jsonDataInnerValTagsInnerAItemAResult,
                                             );
                                         }
                                         jsonDataInnerVal.tags =
-                                            jsonDataInnerValTagsInnerResult;
+                                            jsonDataInnerValTagsInner;
                                     } else {
                                         $fallback(
                                             "/data/tags",
@@ -9579,16 +9567,16 @@ const $$PostEvent = {
                                 // ignore undefined
                             } else {
                                 if (Array.isArray(input.data.tags)) {
-                                    const inputDataInnerValTagsInnerResult = [];
-                                    for (const inputDataInnerValTagsInnerResultItem of input
+                                    const inputDataInnerValTagsInner = [];
+                                    for (const __inputDataInnerValTagsInnerAItem of input
                                         .data.tags) {
-                                        let inputDataInnerValTagsInnerResultItemResult;
+                                        let ____inputDataInnerValTagsInnerAItemAResult;
                                         if (
-                                            typeof inputDataInnerValTagsInnerResultItem ===
+                                            typeof __inputDataInnerValTagsInnerAItem ===
                                             "string"
                                         ) {
-                                            inputDataInnerValTagsInnerResultItemResult =
-                                                inputDataInnerValTagsInnerResultItem;
+                                            ____inputDataInnerValTagsInnerAItemAResult =
+                                                __inputDataInnerValTagsInnerAItem;
                                         } else {
                                             $fallback(
                                                 "/data/tags/[0]",
@@ -9596,12 +9584,12 @@ const $$PostEvent = {
                                                 "Expected string at /data/tags/[0]",
                                             );
                                         }
-                                        inputDataInnerValTagsInnerResult.push(
-                                            inputDataInnerValTagsInnerResultItemResult,
+                                        inputDataInnerValTagsInner.push(
+                                            ____inputDataInnerValTagsInnerAItemAResult,
                                         );
                                     }
                                     inputDataInnerVal.tags =
-                                        inputDataInnerValTagsInnerResult;
+                                        inputDataInnerValTagsInner;
                                 } else {
                                     $fallback(
                                         "/data/tags",
@@ -10318,16 +10306,16 @@ const $$UpdatePostParams = {
                         // ignore undefined
                     } else {
                         if (Array.isArray(json.data.tags)) {
-                            const jsonDataInnerValTagsInnerResult = [];
-                            for (const jsonDataInnerValTagsInnerResultItem of json
+                            const jsonDataInnerValTagsInner = [];
+                            for (const __jsonDataInnerValTagsInnerAItem of json
                                 .data.tags) {
-                                let jsonDataInnerValTagsInnerResultItemResult;
+                                let ____jsonDataInnerValTagsInnerAItemAResult;
                                 if (
-                                    typeof jsonDataInnerValTagsInnerResultItem ===
+                                    typeof __jsonDataInnerValTagsInnerAItem ===
                                     "string"
                                 ) {
-                                    jsonDataInnerValTagsInnerResultItemResult =
-                                        jsonDataInnerValTagsInnerResultItem;
+                                    ____jsonDataInnerValTagsInnerAItemAResult =
+                                        __jsonDataInnerValTagsInnerAItem;
                                 } else {
                                     $fallback(
                                         "/data/tags/[0]",
@@ -10335,12 +10323,11 @@ const $$UpdatePostParams = {
                                         "Expected string at /data/tags/[0]",
                                     );
                                 }
-                                jsonDataInnerValTagsInnerResult.push(
-                                    jsonDataInnerValTagsInnerResultItemResult,
+                                jsonDataInnerValTagsInner.push(
+                                    ____jsonDataInnerValTagsInnerAItemAResult,
                                 );
                             }
-                            jsonDataInnerVal.tags =
-                                jsonDataInnerValTagsInnerResult;
+                            jsonDataInnerVal.tags = jsonDataInnerValTagsInner;
                         } else {
                             $fallback(
                                 "/data/tags",
@@ -10421,16 +10408,16 @@ const $$UpdatePostParams = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(input.data.tags)) {
-                        const inputDataInnerValTagsInnerResult = [];
-                        for (const inputDataInnerValTagsInnerResultItem of input
+                        const inputDataInnerValTagsInner = [];
+                        for (const __inputDataInnerValTagsInnerAItem of input
                             .data.tags) {
-                            let inputDataInnerValTagsInnerResultItemResult;
+                            let ____inputDataInnerValTagsInnerAItemAResult;
                             if (
-                                typeof inputDataInnerValTagsInnerResultItem ===
+                                typeof __inputDataInnerValTagsInnerAItem ===
                                 "string"
                             ) {
-                                inputDataInnerValTagsInnerResultItemResult =
-                                    inputDataInnerValTagsInnerResultItem;
+                                ____inputDataInnerValTagsInnerAItemAResult =
+                                    __inputDataInnerValTagsInnerAItem;
                             } else {
                                 $fallback(
                                     "/data/tags/[0]",
@@ -10438,12 +10425,11 @@ const $$UpdatePostParams = {
                                     "Expected string at /data/tags/[0]",
                                 );
                             }
-                            inputDataInnerValTagsInnerResult.push(
-                                inputDataInnerValTagsInnerResultItemResult,
+                            inputDataInnerValTagsInner.push(
+                                ____inputDataInnerValTagsInnerAItemAResult,
                             );
                         }
-                        inputDataInnerVal.tags =
-                            inputDataInnerValTagsInnerResult;
+                        inputDataInnerVal.tags = inputDataInnerValTagsInner;
                     } else {
                         $fallback(
                             "/data/tags",

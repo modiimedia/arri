@@ -20,7 +20,7 @@ main() {
         parser: (input) => input,
         onConnectionError: (err, event) {
           errCount++;
-          if (errCount == 10) {
+          if (errCount == 5) {
             event.close();
           }
         },
