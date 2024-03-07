@@ -294,9 +294,9 @@ const $$ManuallyAddedModel = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.hello === "string") {
-                    jsonInnerVal.hello = json.hello;
+                    __D1.hello = json.hello;
                 } else {
                     $fallback(
                         "/hello",
@@ -304,7 +304,7 @@ const $$ManuallyAddedModel = {
                         "Expected string at /hello",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -312,9 +312,9 @@ const $$ManuallyAddedModel = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.hello === "string") {
-                inputInnerVal.hello = input.hello;
+                __D1.hello = input.hello;
             } else {
                 $fallback(
                     "/hello",
@@ -322,7 +322,7 @@ const $$ManuallyAddedModel = {
                     "Expected string at /hello",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -359,9 +359,9 @@ const $$AdaptersTypeboxAdapterParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.string === "string") {
-                    jsonInnerVal.string = json.string;
+                    __D1.string = json.string;
                 } else {
                     $fallback(
                         "/string",
@@ -370,7 +370,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (typeof json.boolean === "boolean") {
-                    jsonInnerVal.boolean = json.boolean;
+                    __D1.boolean = json.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -384,7 +384,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     json.integer >= -2147483648 &&
                     json.integer <= 2147483647
                 ) {
-                    jsonInnerVal.integer = json.integer;
+                    __D1.integer = json.integer;
                 } else {
                     $fallback(
                         "/integer",
@@ -396,7 +396,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     typeof json.number === "number" &&
                     !Number.isNaN(json.number)
                 ) {
-                    jsonInnerVal.number = json.number;
+                    __D1.number = json.number;
                 } else {
                     $fallback(
                         "/number",
@@ -410,7 +410,7 @@ const $$AdaptersTypeboxAdapterParams = {
                         json.enumField === "B" ||
                         json.enumField === "C"
                     ) {
-                        jsonInnerVal.enumField = json.enumField;
+                        __D1.enumField = json.enumField;
                     } else {
                         $fallback(
                             "/enumField",
@@ -426,9 +426,9 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (typeof json.object === "object" && json.object !== null) {
-                    const jsonObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.object.string === "string") {
-                        jsonObjectInnerVal.string = json.object.string;
+                        __D2.string = json.object.string;
                     } else {
                         $fallback(
                             "/object/string",
@@ -436,7 +436,7 @@ const $$AdaptersTypeboxAdapterParams = {
                             "Expected string at /object/string",
                         );
                     }
-                    jsonInnerVal.object = jsonObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -445,14 +445,11 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (Array.isArray(json.array)) {
-                    const jsonInnerValArrayInner = [];
-                    for (const __jsonInnerValArrayInnerAItem of json.array) {
-                        let ____jsonInnerValArrayInnerAItemAResult;
-                        if (
-                            typeof __jsonInnerValArrayInnerAItem === "boolean"
-                        ) {
-                            ____jsonInnerValArrayInnerAItemAResult =
-                                __jsonInnerValArrayInnerAItem;
+                    const __D2 = [];
+                    for (const __D2AItem of json.array) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "boolean") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -460,11 +457,9 @@ const $$AdaptersTypeboxAdapterParams = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        jsonInnerValArrayInner.push(
-                            ____jsonInnerValArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.array = jsonInnerValArrayInner;
+                    __D1.array = __D2;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
@@ -472,7 +467,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     // ignore undefined
                 } else {
                     if (typeof json.optionalString === "string") {
-                        jsonInnerVal.optionalString = json.optionalString;
+                        __D1.optionalString = json.optionalString;
                     } else {
                         $fallback(
                             "/optionalString",
@@ -481,7 +476,7 @@ const $$AdaptersTypeboxAdapterParams = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -489,9 +484,9 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.string === "string") {
-                inputInnerVal.string = input.string;
+                __D1.string = input.string;
             } else {
                 $fallback(
                     "/string",
@@ -500,7 +495,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 );
             }
             if (typeof input.boolean === "boolean") {
-                inputInnerVal.boolean = input.boolean;
+                __D1.boolean = input.boolean;
             } else {
                 $fallback(
                     "/boolean",
@@ -514,7 +509,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 input.integer >= -2147483648 &&
                 input.integer <= 2147483647
             ) {
-                inputInnerVal.integer = input.integer;
+                __D1.integer = input.integer;
             } else {
                 $fallback(
                     "/integer",
@@ -526,7 +521,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 typeof input.number === "number" &&
                 !Number.isNaN(input.number)
             ) {
-                inputInnerVal.number = input.number;
+                __D1.number = input.number;
             } else {
                 $fallback(
                     "/number",
@@ -540,7 +535,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     input.enumField === "B" ||
                     input.enumField === "C"
                 ) {
-                    inputInnerVal.enumField = input.enumField;
+                    __D1.enumField = input.enumField;
                 } else {
                     $fallback(
                         "/enumField",
@@ -556,9 +551,9 @@ const $$AdaptersTypeboxAdapterParams = {
                 );
             }
             if (typeof input.object === "object" && input.object !== null) {
-                const inputObjectInnerVal = {};
+                const __D2 = {};
                 if (typeof input.object.string === "string") {
-                    inputObjectInnerVal.string = input.object.string;
+                    __D2.string = input.object.string;
                 } else {
                     $fallback(
                         "/object/string",
@@ -566,17 +561,16 @@ const $$AdaptersTypeboxAdapterParams = {
                         "Expected string at /object/string",
                     );
                 }
-                inputInnerVal.object = inputObjectInnerVal;
+                __D1.object = __D2;
             } else {
                 $fallback("/object", "/properties/object", "Expected object");
             }
             if (Array.isArray(input.array)) {
-                const inputInnerValArrayInner = [];
-                for (const __inputInnerValArrayInnerAItem of input.array) {
-                    let ____inputInnerValArrayInnerAItemAResult;
-                    if (typeof __inputInnerValArrayInnerAItem === "boolean") {
-                        ____inputInnerValArrayInnerAItemAResult =
-                            __inputInnerValArrayInnerAItem;
+                const __D2 = [];
+                for (const __D2AItem of input.array) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "boolean") {
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/array/[0]",
@@ -584,11 +578,9 @@ const $$AdaptersTypeboxAdapterParams = {
                             "Expected boolean for /array/[0]",
                         );
                     }
-                    inputInnerValArrayInner.push(
-                        ____inputInnerValArrayInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.array = inputInnerValArrayInner;
+                __D1.array = __D2;
             } else {
                 $fallback("/array", "/properties/array", "Expected Array");
             }
@@ -596,7 +588,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 // ignore undefined
             } else {
                 if (typeof input.optionalString === "string") {
-                    inputInnerVal.optionalString = input.optionalString;
+                    __D1.optionalString = input.optionalString;
                 } else {
                     $fallback(
                         "/optionalString",
@@ -605,7 +597,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -666,9 +658,9 @@ const $$AdaptersTypeboxAdapterResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                    __D1.message = json.message;
                 } else {
                     $fallback(
                         "/message",
@@ -676,7 +668,7 @@ const $$AdaptersTypeboxAdapterResponse = {
                         "Expected string at /message",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -684,9 +676,9 @@ const $$AdaptersTypeboxAdapterResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+                __D1.message = input.message;
             } else {
                 $fallback(
                     "/message",
@@ -694,7 +686,7 @@ const $$AdaptersTypeboxAdapterResponse = {
                     "Expected string at /message",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -730,9 +722,9 @@ const $$DeprecatedRpcParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.deprecatedField === "string") {
-                    jsonInnerVal.deprecatedField = json.deprecatedField;
+                    __D1.deprecatedField = json.deprecatedField;
                 } else {
                     $fallback(
                         "/deprecatedField",
@@ -740,7 +732,7 @@ const $$DeprecatedRpcParams = {
                         "Expected string at /deprecatedField",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -748,9 +740,9 @@ const $$DeprecatedRpcParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.deprecatedField === "string") {
-                inputInnerVal.deprecatedField = input.deprecatedField;
+                __D1.deprecatedField = input.deprecatedField;
             } else {
                 $fallback(
                     "/deprecatedField",
@@ -758,7 +750,7 @@ const $$DeprecatedRpcParams = {
                     "Expected string at /deprecatedField",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -808,10 +800,10 @@ const $$ObjectWithEveryType = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                jsonInnerVal.any = json.any;
+                const __D1 = {};
+                __D1.any = json.any;
                 if (typeof json.boolean === "boolean") {
-                    jsonInnerVal.boolean = json.boolean;
+                    __D1.boolean = json.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -820,7 +812,7 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof json.string === "string") {
-                    jsonInnerVal.string = json.string;
+                    __D1.string = json.string;
                 } else {
                     $fallback(
                         "/string",
@@ -832,9 +824,9 @@ const $$ObjectWithEveryType = {
                     typeof json.timestamp === "object" &&
                     json.timestamp instanceof Date
                 ) {
-                    jsonInnerVal.timestamp = json.timestamp;
+                    __D1.timestamp = json.timestamp;
                 } else if (typeof json.timestamp === "string") {
-                    jsonInnerVal.timestamp = new Date(json.timestamp);
+                    __D1.timestamp = new Date(json.timestamp);
                 } else {
                     $fallback(
                         "/timestamp",
@@ -846,7 +838,7 @@ const $$ObjectWithEveryType = {
                     typeof json.float32 === "number" &&
                     !Number.isNaN(json.float32)
                 ) {
-                    jsonInnerVal.float32 = json.float32;
+                    __D1.float32 = json.float32;
                 } else {
                     $fallback(
                         "/float32",
@@ -858,7 +850,7 @@ const $$ObjectWithEveryType = {
                     typeof json.float64 === "number" &&
                     !Number.isNaN(json.float64)
                 ) {
-                    jsonInnerVal.float64 = json.float64;
+                    __D1.float64 = json.float64;
                 } else {
                     $fallback(
                         "/float64",
@@ -872,7 +864,7 @@ const $$ObjectWithEveryType = {
                     json.int8 >= -128 &&
                     json.int8 <= 127
                 ) {
-                    jsonInnerVal.int8 = json.int8;
+                    __D1.int8 = json.int8;
                 } else {
                     $fallback(
                         "/int8",
@@ -886,7 +878,7 @@ const $$ObjectWithEveryType = {
                     json.uint8 >= 0 &&
                     json.uint8 <= 255
                 ) {
-                    jsonInnerVal.uint8 = json.uint8;
+                    __D1.uint8 = json.uint8;
                 } else {
                     $fallback(
                         "/uint8",
@@ -900,7 +892,7 @@ const $$ObjectWithEveryType = {
                     json.int16 >= -32768 &&
                     json.int16 <= 32767
                 ) {
-                    jsonInnerVal.int16 = json.int16;
+                    __D1.int16 = json.int16;
                 } else {
                     $fallback(
                         "/int16",
@@ -914,7 +906,7 @@ const $$ObjectWithEveryType = {
                     json.uint16 >= 0 &&
                     json.uint16 <= 65535
                 ) {
-                    jsonInnerVal.uint16 = json.uint16;
+                    __D1.uint16 = json.uint16;
                 } else {
                     $fallback(
                         "/uint16",
@@ -928,7 +920,7 @@ const $$ObjectWithEveryType = {
                     json.int32 >= -2147483648 &&
                     json.int32 <= 2147483647
                 ) {
-                    jsonInnerVal.int32 = json.int32;
+                    __D1.int32 = json.int32;
                 } else {
                     $fallback(
                         "/int32",
@@ -942,7 +934,7 @@ const $$ObjectWithEveryType = {
                     json.uint32 >= 0 &&
                     json.uint32 <= 4294967295
                 ) {
-                    jsonInnerVal.uint32 = json.uint32;
+                    __D1.uint32 = json.uint32;
                 } else {
                     $fallback(
                         "/uint32",
@@ -956,7 +948,7 @@ const $$ObjectWithEveryType = {
                 ) {
                     try {
                         const val = BigInt(json.int64);
-                        jsonInnerVal.int64 = val;
+                        __D1.int64 = val;
                     } catch (err) {
                         $fallback(
                             "/int64",
@@ -965,7 +957,7 @@ const $$ObjectWithEveryType = {
                         );
                     }
                 } else if (typeof json.int64 === "bigint") {
-                    jsonInnerVal.int64 = json.int64;
+                    __D1.int64 = json.int64;
                 } else {
                     $fallback(
                         "/int64",
@@ -980,7 +972,7 @@ const $$ObjectWithEveryType = {
                     try {
                         const val = BigInt(json.uint64);
                         if (val >= BigInt("0")) {
-                            jsonInnerVal.uint64 = val;
+                            __D1.uint64 = val;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -997,7 +989,7 @@ const $$ObjectWithEveryType = {
                     }
                 } else if (typeof json.uint64 === "bigint") {
                     if (json.uint64 >= BigInt("0")) {
-                        jsonInnerVal.uint64 = json.uint64;
+                        __D1.uint64 = json.uint64;
                     } else {
                         $fallback(
                             "/uint64",
@@ -1018,7 +1010,7 @@ const $$ObjectWithEveryType = {
                         json.enumerator === "B" ||
                         json.enumerator === "C"
                     ) {
-                        jsonInnerVal.enumerator = json.enumerator;
+                        __D1.enumerator = json.enumerator;
                     } else {
                         $fallback(
                             "/enumerator",
@@ -1034,14 +1026,11 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (Array.isArray(json.array)) {
-                    const jsonInnerValArrayInner = [];
-                    for (const __jsonInnerValArrayInnerAItem of json.array) {
-                        let ____jsonInnerValArrayInnerAItemAResult;
-                        if (
-                            typeof __jsonInnerValArrayInnerAItem === "boolean"
-                        ) {
-                            ____jsonInnerValArrayInnerAItemAResult =
-                                __jsonInnerValArrayInnerAItem;
+                    const __D2 = [];
+                    for (const __D2AItem of json.array) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "boolean") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -1049,18 +1038,16 @@ const $$ObjectWithEveryType = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        jsonInnerValArrayInner.push(
-                            ____jsonInnerValArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.array = jsonInnerValArrayInner;
+                    __D1.array = __D2;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
                 if (typeof json.object === "object" && json.object !== null) {
-                    const jsonObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.object.string === "string") {
-                        jsonObjectInnerVal.string = json.object.string;
+                        __D2.string = json.object.string;
                     } else {
                         $fallback(
                             "/object/string",
@@ -1069,7 +1056,7 @@ const $$ObjectWithEveryType = {
                         );
                     }
                     if (typeof json.object.boolean === "boolean") {
-                        jsonObjectInnerVal.boolean = json.object.boolean;
+                        __D2.boolean = json.object.boolean;
                     } else {
                         $fallback(
                             "/object/boolean",
@@ -1081,11 +1068,9 @@ const $$ObjectWithEveryType = {
                         typeof json.object.timestamp === "object" &&
                         json.object.timestamp instanceof Date
                     ) {
-                        jsonObjectInnerVal.timestamp = json.object.timestamp;
+                        __D2.timestamp = json.object.timestamp;
                     } else if (typeof json.object.timestamp === "string") {
-                        jsonObjectInnerVal.timestamp = new Date(
-                            json.object.timestamp,
-                        );
+                        __D2.timestamp = new Date(json.object.timestamp);
                     } else {
                         $fallback(
                             "/object/timestamp",
@@ -1093,7 +1078,7 @@ const $$ObjectWithEveryType = {
                             "Expected instanceof Date or ISO Date string at /object/timestamp",
                         );
                     }
-                    jsonInnerVal.object = jsonObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -1102,14 +1087,11 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof json.record === "object" && json.record !== null) {
-                    const __jsonRecordRResult = {};
-                    for (const __jsonRecordRKey of Object.keys(json.record)) {
-                        let ____jsonRecordRKeyRVal;
-                        if (
-                            typeof json.record[__jsonRecordRKey] === "boolean"
-                        ) {
-                            ____jsonRecordRKeyRVal =
-                                json.record[__jsonRecordRKey];
+                    const __D2RResult = {};
+                    for (const __D2RKey of Object.keys(json.record)) {
+                        let __D2RKeyRVal;
+                        if (typeof json.record[__D2RKey] === "boolean") {
+                            __D2RKeyRVal = json.record[__D2RKey];
                         } else {
                             $fallback(
                                 "/record/[key]",
@@ -1117,10 +1099,9 @@ const $$ObjectWithEveryType = {
                                 "Expected boolean for /record/[key]",
                             );
                         }
-                        __jsonRecordRResult[__jsonRecordRKey] =
-                            ____jsonRecordRKeyRVal;
+                        __D2RResult[__D2RKey] = __D2RKeyRVal;
                     }
-                    jsonInnerVal.record = __jsonRecordRResult;
+                    __D1.record = __D2RResult;
                 } else {
                     $fallback(
                         "/record",
@@ -1138,13 +1119,12 @@ const $$ObjectWithEveryType = {
                                 typeof json.discriminator === "object" &&
                                 json.discriminator !== null
                             ) {
-                                const jsonDiscriminatorInnerVal = {};
-                                jsonDiscriminatorInnerVal.type = "A";
+                                const __D2 = {};
+                                __D2.type = "A";
                                 if (
                                     typeof json.discriminator.title === "string"
                                 ) {
-                                    jsonDiscriminatorInnerVal.title =
-                                        json.discriminator.title;
+                                    __D2.title = json.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -1152,8 +1132,7 @@ const $$ObjectWithEveryType = {
                                         "Expected string at /discriminator/title",
                                     );
                                 }
-                                jsonInnerVal.discriminator =
-                                    jsonDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -1168,13 +1147,12 @@ const $$ObjectWithEveryType = {
                                 typeof json.discriminator === "object" &&
                                 json.discriminator !== null
                             ) {
-                                const jsonDiscriminatorInnerVal = {};
-                                jsonDiscriminatorInnerVal.type = "B";
+                                const __D2 = {};
+                                __D2.type = "B";
                                 if (
                                     typeof json.discriminator.title === "string"
                                 ) {
-                                    jsonDiscriminatorInnerVal.title =
-                                        json.discriminator.title;
+                                    __D2.title = json.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -1186,7 +1164,7 @@ const $$ObjectWithEveryType = {
                                     typeof json.discriminator.description ===
                                     "string"
                                 ) {
-                                    jsonDiscriminatorInnerVal.description =
+                                    __D2.description =
                                         json.discriminator.description;
                                 } else {
                                     $fallback(
@@ -1195,8 +1173,7 @@ const $$ObjectWithEveryType = {
                                         "Expected string at /discriminator/description",
                                     );
                                 }
-                                jsonInnerVal.discriminator =
-                                    jsonDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -1225,9 +1202,9 @@ const $$ObjectWithEveryType = {
                     typeof json.nestedObject === "object" &&
                     json.nestedObject !== null
                 ) {
-                    const jsonNestedObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.nestedObject.id === "string") {
-                        jsonNestedObjectInnerVal.id = json.nestedObject.id;
+                        __D2.id = json.nestedObject.id;
                     } else {
                         $fallback(
                             "/nestedObject/id",
@@ -1239,14 +1216,11 @@ const $$ObjectWithEveryType = {
                         typeof json.nestedObject.timestamp === "object" &&
                         json.nestedObject.timestamp instanceof Date
                     ) {
-                        jsonNestedObjectInnerVal.timestamp =
-                            json.nestedObject.timestamp;
+                        __D2.timestamp = json.nestedObject.timestamp;
                     } else if (
                         typeof json.nestedObject.timestamp === "string"
                     ) {
-                        jsonNestedObjectInnerVal.timestamp = new Date(
-                            json.nestedObject.timestamp,
-                        );
+                        __D2.timestamp = new Date(json.nestedObject.timestamp);
                     } else {
                         $fallback(
                             "/nestedObject/timestamp",
@@ -1258,10 +1232,9 @@ const $$ObjectWithEveryType = {
                         typeof json.nestedObject.data === "object" &&
                         json.nestedObject.data !== null
                     ) {
-                        const jsonNestedObjectDataInnerVal = {};
+                        const __D3 = {};
                         if (typeof json.nestedObject.data.id === "string") {
-                            jsonNestedObjectDataInnerVal.id =
-                                json.nestedObject.data.id;
+                            __D3.id = json.nestedObject.data.id;
                         } else {
                             $fallback(
                                 "/nestedObject/data/id",
@@ -1274,12 +1247,11 @@ const $$ObjectWithEveryType = {
                                 "object" &&
                             json.nestedObject.data.timestamp instanceof Date
                         ) {
-                            jsonNestedObjectDataInnerVal.timestamp =
-                                json.nestedObject.data.timestamp;
+                            __D3.timestamp = json.nestedObject.data.timestamp;
                         } else if (
                             typeof json.nestedObject.data.timestamp === "string"
                         ) {
-                            jsonNestedObjectDataInnerVal.timestamp = new Date(
+                            __D3.timestamp = new Date(
                                 json.nestedObject.data.timestamp,
                             );
                         } else {
@@ -1293,13 +1265,12 @@ const $$ObjectWithEveryType = {
                             typeof json.nestedObject.data.data === "object" &&
                             json.nestedObject.data.data !== null
                         ) {
-                            const jsonNestedObjectDataDataInnerVal = {};
+                            const __D4 = {};
                             if (
                                 typeof json.nestedObject.data.data.id ===
                                 "string"
                             ) {
-                                jsonNestedObjectDataDataInnerVal.id =
-                                    json.nestedObject.data.data.id;
+                                __D4.id = json.nestedObject.data.data.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/id",
@@ -1313,16 +1284,15 @@ const $$ObjectWithEveryType = {
                                 json.nestedObject.data.data.timestamp instanceof
                                     Date
                             ) {
-                                jsonNestedObjectDataDataInnerVal.timestamp =
+                                __D4.timestamp =
                                     json.nestedObject.data.data.timestamp;
                             } else if (
                                 typeof json.nestedObject.data.data.timestamp ===
                                 "string"
                             ) {
-                                jsonNestedObjectDataDataInnerVal.timestamp =
-                                    new Date(
-                                        json.nestedObject.data.data.timestamp,
-                                    );
+                                __D4.timestamp = new Date(
+                                    json.nestedObject.data.data.timestamp,
+                                );
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/timestamp",
@@ -1330,8 +1300,7 @@ const $$ObjectWithEveryType = {
                                     "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                                 );
                             }
-                            jsonNestedObjectDataInnerVal.data =
-                                jsonNestedObjectDataDataInnerVal;
+                            __D3.data = __D4;
                         } else {
                             $fallback(
                                 "/nestedObject/data/data",
@@ -1339,8 +1308,7 @@ const $$ObjectWithEveryType = {
                                 "Expected object",
                             );
                         }
-                        jsonNestedObjectInnerVal.data =
-                            jsonNestedObjectDataInnerVal;
+                        __D2.data = __D3;
                     } else {
                         $fallback(
                             "/nestedObject/data",
@@ -1348,7 +1316,7 @@ const $$ObjectWithEveryType = {
                             "Expected object",
                         );
                     }
-                    jsonInnerVal.nestedObject = jsonNestedObjectInnerVal;
+                    __D1.nestedObject = __D2;
                 } else {
                     $fallback(
                         "/nestedObject",
@@ -1357,30 +1325,20 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (Array.isArray(json.nestedArray)) {
-                    const jsonInnerValNestedArrayInner = [];
-                    for (const __jsonInnerValNestedArrayInnerAItem of json.nestedArray) {
-                        let ____jsonInnerValNestedArrayInnerAItemAResult;
-                        if (
-                            Array.isArray(__jsonInnerValNestedArrayInnerAItem)
-                        ) {
-                            const jsonInnerValNestedArrayInnerAItemAResultInner =
-                                [];
-                            for (const __jsonInnerValNestedArrayInnerAItemAResultInnerAItem of __jsonInnerValNestedArrayInnerAItem) {
-                                let ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.nestedArray) {
+                        let __D2AItemAResult;
+                        if (Array.isArray(__D2AItem)) {
+                            const __D3 = [];
+                            for (const __D3AItem of __D2AItem) {
+                                let __D3AItemAResult;
                                 if (
-                                    typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                        "object" &&
-                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem !==
-                                        null
+                                    typeof __D3AItem === "object" &&
+                                    __D3AItem !== null
                                 ) {
-                                    const jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
-                                        {};
-                                    if (
-                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
-                                        "string"
-                                    ) {
-                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                    const __D4 = {};
+                                    if (typeof __D3AItem.id === "string") {
+                                        __D4.id = __D3AItem.id;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/id",
@@ -1389,21 +1347,17 @@ const $$ObjectWithEveryType = {
                                         );
                                     }
                                     if (
-                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                        typeof __D3AItem.timestamp ===
                                             "object" &&
-                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
-                                            Date
+                                        __D3AItem.timestamp instanceof Date
                                     ) {
-                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
+                                        __D4.timestamp = __D3AItem.timestamp;
                                     } else if (
-                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
-                                        "string"
+                                        typeof __D3AItem.timestamp === "string"
                                     ) {
-                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                            new Date(
-                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
-                                            );
+                                        __D4.timestamp = new Date(
+                                            __D3AItem.timestamp,
+                                        );
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/timestamp",
@@ -1411,8 +1365,7 @@ const $$ObjectWithEveryType = {
                                             "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                         );
                                     }
-                                    ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
+                                    __D3AItemAResult = __D4;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]",
@@ -1420,12 +1373,9 @@ const $$ObjectWithEveryType = {
                                         "Expected object",
                                     );
                                 }
-                                jsonInnerValNestedArrayInnerAItemAResultInner.push(
-                                    ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
-                                );
+                                __D3.push(__D3AItemAResult);
                             }
-                            ____jsonInnerValNestedArrayInnerAItemAResult =
-                                jsonInnerValNestedArrayInnerAItemAResultInner;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/nestedArray/[0]",
@@ -1433,11 +1383,9 @@ const $$ObjectWithEveryType = {
                                 "Expected Array",
                             );
                         }
-                        jsonInnerValNestedArrayInner.push(
-                            ____jsonInnerValNestedArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.nestedArray = jsonInnerValNestedArrayInner;
+                    __D1.nestedArray = __D2;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -1445,7 +1393,7 @@ const $$ObjectWithEveryType = {
                         "Expected Array",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -1453,10 +1401,10 @@ const $$ObjectWithEveryType = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            inputInnerVal.any = input.any;
+            const __D1 = {};
+            __D1.any = input.any;
             if (typeof input.boolean === "boolean") {
-                inputInnerVal.boolean = input.boolean;
+                __D1.boolean = input.boolean;
             } else {
                 $fallback(
                     "/boolean",
@@ -1465,7 +1413,7 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (typeof input.string === "string") {
-                inputInnerVal.string = input.string;
+                __D1.string = input.string;
             } else {
                 $fallback(
                     "/string",
@@ -1477,9 +1425,9 @@ const $$ObjectWithEveryType = {
                 typeof input.timestamp === "object" &&
                 input.timestamp instanceof Date
             ) {
-                inputInnerVal.timestamp = input.timestamp;
+                __D1.timestamp = input.timestamp;
             } else if (typeof input.timestamp === "string") {
-                inputInnerVal.timestamp = new Date(input.timestamp);
+                __D1.timestamp = new Date(input.timestamp);
             } else {
                 $fallback(
                     "/timestamp",
@@ -1491,7 +1439,7 @@ const $$ObjectWithEveryType = {
                 typeof input.float32 === "number" &&
                 !Number.isNaN(input.float32)
             ) {
-                inputInnerVal.float32 = input.float32;
+                __D1.float32 = input.float32;
             } else {
                 $fallback(
                     "/float32",
@@ -1503,7 +1451,7 @@ const $$ObjectWithEveryType = {
                 typeof input.float64 === "number" &&
                 !Number.isNaN(input.float64)
             ) {
-                inputInnerVal.float64 = input.float64;
+                __D1.float64 = input.float64;
             } else {
                 $fallback(
                     "/float64",
@@ -1517,7 +1465,7 @@ const $$ObjectWithEveryType = {
                 input.int8 >= -128 &&
                 input.int8 <= 127
             ) {
-                inputInnerVal.int8 = input.int8;
+                __D1.int8 = input.int8;
             } else {
                 $fallback(
                     "/int8",
@@ -1531,7 +1479,7 @@ const $$ObjectWithEveryType = {
                 input.uint8 >= 0 &&
                 input.uint8 <= 255
             ) {
-                inputInnerVal.uint8 = input.uint8;
+                __D1.uint8 = input.uint8;
             } else {
                 $fallback(
                     "/uint8",
@@ -1545,7 +1493,7 @@ const $$ObjectWithEveryType = {
                 input.int16 >= -32768 &&
                 input.int16 <= 32767
             ) {
-                inputInnerVal.int16 = input.int16;
+                __D1.int16 = input.int16;
             } else {
                 $fallback(
                     "/int16",
@@ -1559,7 +1507,7 @@ const $$ObjectWithEveryType = {
                 input.uint16 >= 0 &&
                 input.uint16 <= 65535
             ) {
-                inputInnerVal.uint16 = input.uint16;
+                __D1.uint16 = input.uint16;
             } else {
                 $fallback(
                     "/uint16",
@@ -1573,7 +1521,7 @@ const $$ObjectWithEveryType = {
                 input.int32 >= -2147483648 &&
                 input.int32 <= 2147483647
             ) {
-                inputInnerVal.int32 = input.int32;
+                __D1.int32 = input.int32;
             } else {
                 $fallback(
                     "/int32",
@@ -1587,7 +1535,7 @@ const $$ObjectWithEveryType = {
                 input.uint32 >= 0 &&
                 input.uint32 <= 4294967295
             ) {
-                inputInnerVal.uint32 = input.uint32;
+                __D1.uint32 = input.uint32;
             } else {
                 $fallback(
                     "/uint32",
@@ -1601,7 +1549,7 @@ const $$ObjectWithEveryType = {
             ) {
                 try {
                     const val = BigInt(input.int64);
-                    inputInnerVal.int64 = val;
+                    __D1.int64 = val;
                 } catch (err) {
                     $fallback(
                         "/int64",
@@ -1610,7 +1558,7 @@ const $$ObjectWithEveryType = {
                     );
                 }
             } else if (typeof input.int64 === "bigint") {
-                inputInnerVal.int64 = input.int64;
+                __D1.int64 = input.int64;
             } else {
                 $fallback(
                     "/int64",
@@ -1625,7 +1573,7 @@ const $$ObjectWithEveryType = {
                 try {
                     const val = BigInt(input.uint64);
                     if (val >= BigInt("0")) {
-                        inputInnerVal.uint64 = val;
+                        __D1.uint64 = val;
                     } else {
                         $fallback(
                             "/uint64",
@@ -1642,7 +1590,7 @@ const $$ObjectWithEveryType = {
                 }
             } else if (typeof input.uint64 === "bigint") {
                 if (input.uint64 >= BigInt("0")) {
-                    inputInnerVal.uint64 = input.uint64;
+                    __D1.uint64 = input.uint64;
                 } else {
                     $fallback(
                         "/uint64",
@@ -1663,7 +1611,7 @@ const $$ObjectWithEveryType = {
                     input.enumerator === "B" ||
                     input.enumerator === "C"
                 ) {
-                    inputInnerVal.enumerator = input.enumerator;
+                    __D1.enumerator = input.enumerator;
                 } else {
                     $fallback(
                         "/enumerator",
@@ -1679,12 +1627,11 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (Array.isArray(input.array)) {
-                const inputInnerValArrayInner = [];
-                for (const __inputInnerValArrayInnerAItem of input.array) {
-                    let ____inputInnerValArrayInnerAItemAResult;
-                    if (typeof __inputInnerValArrayInnerAItem === "boolean") {
-                        ____inputInnerValArrayInnerAItemAResult =
-                            __inputInnerValArrayInnerAItem;
+                const __D2 = [];
+                for (const __D2AItem of input.array) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "boolean") {
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/array/[0]",
@@ -1692,18 +1639,16 @@ const $$ObjectWithEveryType = {
                             "Expected boolean for /array/[0]",
                         );
                     }
-                    inputInnerValArrayInner.push(
-                        ____inputInnerValArrayInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.array = inputInnerValArrayInner;
+                __D1.array = __D2;
             } else {
                 $fallback("/array", "/properties/array", "Expected Array");
             }
             if (typeof input.object === "object" && input.object !== null) {
-                const inputObjectInnerVal = {};
+                const __D2 = {};
                 if (typeof input.object.string === "string") {
-                    inputObjectInnerVal.string = input.object.string;
+                    __D2.string = input.object.string;
                 } else {
                     $fallback(
                         "/object/string",
@@ -1712,7 +1657,7 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof input.object.boolean === "boolean") {
-                    inputObjectInnerVal.boolean = input.object.boolean;
+                    __D2.boolean = input.object.boolean;
                 } else {
                     $fallback(
                         "/object/boolean",
@@ -1724,11 +1669,9 @@ const $$ObjectWithEveryType = {
                     typeof input.object.timestamp === "object" &&
                     input.object.timestamp instanceof Date
                 ) {
-                    inputObjectInnerVal.timestamp = input.object.timestamp;
+                    __D2.timestamp = input.object.timestamp;
                 } else if (typeof input.object.timestamp === "string") {
-                    inputObjectInnerVal.timestamp = new Date(
-                        input.object.timestamp,
-                    );
+                    __D2.timestamp = new Date(input.object.timestamp);
                 } else {
                     $fallback(
                         "/object/timestamp",
@@ -1736,17 +1679,16 @@ const $$ObjectWithEveryType = {
                         "Expected instanceof Date or ISO Date string at /object/timestamp",
                     );
                 }
-                inputInnerVal.object = inputObjectInnerVal;
+                __D1.object = __D2;
             } else {
                 $fallback("/object", "/properties/object", "Expected object");
             }
             if (typeof input.record === "object" && input.record !== null) {
-                const __inputRecordRResult = {};
-                for (const __inputRecordRKey of Object.keys(input.record)) {
-                    let ____inputRecordRKeyRVal;
-                    if (typeof input.record[__inputRecordRKey] === "boolean") {
-                        ____inputRecordRKeyRVal =
-                            input.record[__inputRecordRKey];
+                const __D2RResult = {};
+                for (const __D2RKey of Object.keys(input.record)) {
+                    let __D2RKeyRVal;
+                    if (typeof input.record[__D2RKey] === "boolean") {
+                        __D2RKeyRVal = input.record[__D2RKey];
                     } else {
                         $fallback(
                             "/record/[key]",
@@ -1754,10 +1696,9 @@ const $$ObjectWithEveryType = {
                             "Expected boolean for /record/[key]",
                         );
                     }
-                    __inputRecordRResult[__inputRecordRKey] =
-                        ____inputRecordRKeyRVal;
+                    __D2RResult[__D2RKey] = __D2RKeyRVal;
                 }
-                inputInnerVal.record = __inputRecordRResult;
+                __D1.record = __D2RResult;
             } else {
                 $fallback("/record", "/properties/record", "Expected object.");
             }
@@ -1771,11 +1712,10 @@ const $$ObjectWithEveryType = {
                             typeof input.discriminator === "object" &&
                             input.discriminator !== null
                         ) {
-                            const inputDiscriminatorInnerVal = {};
-                            inputDiscriminatorInnerVal.type = "A";
+                            const __D2 = {};
+                            __D2.type = "A";
                             if (typeof input.discriminator.title === "string") {
-                                inputDiscriminatorInnerVal.title =
-                                    input.discriminator.title;
+                                __D2.title = input.discriminator.title;
                             } else {
                                 $fallback(
                                     "/discriminator/title",
@@ -1783,8 +1723,7 @@ const $$ObjectWithEveryType = {
                                     "Expected string at /discriminator/title",
                                 );
                             }
-                            inputInnerVal.discriminator =
-                                inputDiscriminatorInnerVal;
+                            __D1.discriminator = __D2;
                         } else {
                             $fallback(
                                 "/discriminator",
@@ -1799,11 +1738,10 @@ const $$ObjectWithEveryType = {
                             typeof input.discriminator === "object" &&
                             input.discriminator !== null
                         ) {
-                            const inputDiscriminatorInnerVal = {};
-                            inputDiscriminatorInnerVal.type = "B";
+                            const __D2 = {};
+                            __D2.type = "B";
                             if (typeof input.discriminator.title === "string") {
-                                inputDiscriminatorInnerVal.title =
-                                    input.discriminator.title;
+                                __D2.title = input.discriminator.title;
                             } else {
                                 $fallback(
                                     "/discriminator/title",
@@ -1815,7 +1753,7 @@ const $$ObjectWithEveryType = {
                                 typeof input.discriminator.description ===
                                 "string"
                             ) {
-                                inputDiscriminatorInnerVal.description =
+                                __D2.description =
                                     input.discriminator.description;
                             } else {
                                 $fallback(
@@ -1824,8 +1762,7 @@ const $$ObjectWithEveryType = {
                                     "Expected string at /discriminator/description",
                                 );
                             }
-                            inputInnerVal.discriminator =
-                                inputDiscriminatorInnerVal;
+                            __D1.discriminator = __D2;
                         } else {
                             $fallback(
                                 "/discriminator",
@@ -1854,9 +1791,9 @@ const $$ObjectWithEveryType = {
                 typeof input.nestedObject === "object" &&
                 input.nestedObject !== null
             ) {
-                const inputNestedObjectInnerVal = {};
+                const __D2 = {};
                 if (typeof input.nestedObject.id === "string") {
-                    inputNestedObjectInnerVal.id = input.nestedObject.id;
+                    __D2.id = input.nestedObject.id;
                 } else {
                     $fallback(
                         "/nestedObject/id",
@@ -1868,12 +1805,9 @@ const $$ObjectWithEveryType = {
                     typeof input.nestedObject.timestamp === "object" &&
                     input.nestedObject.timestamp instanceof Date
                 ) {
-                    inputNestedObjectInnerVal.timestamp =
-                        input.nestedObject.timestamp;
+                    __D2.timestamp = input.nestedObject.timestamp;
                 } else if (typeof input.nestedObject.timestamp === "string") {
-                    inputNestedObjectInnerVal.timestamp = new Date(
-                        input.nestedObject.timestamp,
-                    );
+                    __D2.timestamp = new Date(input.nestedObject.timestamp);
                 } else {
                     $fallback(
                         "/nestedObject/timestamp",
@@ -1885,10 +1819,9 @@ const $$ObjectWithEveryType = {
                     typeof input.nestedObject.data === "object" &&
                     input.nestedObject.data !== null
                 ) {
-                    const inputNestedObjectDataInnerVal = {};
+                    const __D3 = {};
                     if (typeof input.nestedObject.data.id === "string") {
-                        inputNestedObjectDataInnerVal.id =
-                            input.nestedObject.data.id;
+                        __D3.id = input.nestedObject.data.id;
                     } else {
                         $fallback(
                             "/nestedObject/data/id",
@@ -1900,12 +1833,11 @@ const $$ObjectWithEveryType = {
                         typeof input.nestedObject.data.timestamp === "object" &&
                         input.nestedObject.data.timestamp instanceof Date
                     ) {
-                        inputNestedObjectDataInnerVal.timestamp =
-                            input.nestedObject.data.timestamp;
+                        __D3.timestamp = input.nestedObject.data.timestamp;
                     } else if (
                         typeof input.nestedObject.data.timestamp === "string"
                     ) {
-                        inputNestedObjectDataInnerVal.timestamp = new Date(
+                        __D3.timestamp = new Date(
                             input.nestedObject.data.timestamp,
                         );
                     } else {
@@ -1919,12 +1851,11 @@ const $$ObjectWithEveryType = {
                         typeof input.nestedObject.data.data === "object" &&
                         input.nestedObject.data.data !== null
                     ) {
-                        const inputNestedObjectDataDataInnerVal = {};
+                        const __D4 = {};
                         if (
                             typeof input.nestedObject.data.data.id === "string"
                         ) {
-                            inputNestedObjectDataDataInnerVal.id =
-                                input.nestedObject.data.data.id;
+                            __D4.id = input.nestedObject.data.data.id;
                         } else {
                             $fallback(
                                 "/nestedObject/data/data/id",
@@ -1938,16 +1869,15 @@ const $$ObjectWithEveryType = {
                             input.nestedObject.data.data.timestamp instanceof
                                 Date
                         ) {
-                            inputNestedObjectDataDataInnerVal.timestamp =
+                            __D4.timestamp =
                                 input.nestedObject.data.data.timestamp;
                         } else if (
                             typeof input.nestedObject.data.data.timestamp ===
                             "string"
                         ) {
-                            inputNestedObjectDataDataInnerVal.timestamp =
-                                new Date(
-                                    input.nestedObject.data.data.timestamp,
-                                );
+                            __D4.timestamp = new Date(
+                                input.nestedObject.data.data.timestamp,
+                            );
                         } else {
                             $fallback(
                                 "/nestedObject/data/data/timestamp",
@@ -1955,8 +1885,7 @@ const $$ObjectWithEveryType = {
                                 "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                             );
                         }
-                        inputNestedObjectDataInnerVal.data =
-                            inputNestedObjectDataDataInnerVal;
+                        __D3.data = __D4;
                     } else {
                         $fallback(
                             "/nestedObject/data/data",
@@ -1964,8 +1893,7 @@ const $$ObjectWithEveryType = {
                             "Expected object",
                         );
                     }
-                    inputNestedObjectInnerVal.data =
-                        inputNestedObjectDataInnerVal;
+                    __D2.data = __D3;
                 } else {
                     $fallback(
                         "/nestedObject/data",
@@ -1973,7 +1901,7 @@ const $$ObjectWithEveryType = {
                         "Expected object",
                     );
                 }
-                inputInnerVal.nestedObject = inputNestedObjectInnerVal;
+                __D1.nestedObject = __D2;
             } else {
                 $fallback(
                     "/nestedObject",
@@ -1982,28 +1910,20 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (Array.isArray(input.nestedArray)) {
-                const inputInnerValNestedArrayInner = [];
-                for (const __inputInnerValNestedArrayInnerAItem of input.nestedArray) {
-                    let ____inputInnerValNestedArrayInnerAItemAResult;
-                    if (Array.isArray(__inputInnerValNestedArrayInnerAItem)) {
-                        const inputInnerValNestedArrayInnerAItemAResultInner =
-                            [];
-                        for (const __inputInnerValNestedArrayInnerAItemAResultInnerAItem of __inputInnerValNestedArrayInnerAItem) {
-                            let ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
+                const __D2 = [];
+                for (const __D2AItem of input.nestedArray) {
+                    let __D2AItemAResult;
+                    if (Array.isArray(__D2AItem)) {
+                        const __D3 = [];
+                        for (const __D3AItem of __D2AItem) {
+                            let __D3AItemAResult;
                             if (
-                                typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                    "object" &&
-                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem !==
-                                    null
+                                typeof __D3AItem === "object" &&
+                                __D3AItem !== null
                             ) {
-                                const inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
-                                    {};
-                                if (
-                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
-                                    "string"
-                                ) {
-                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                const __D4 = {};
+                                if (typeof __D3AItem.id === "string") {
+                                    __D4.id = __D3AItem.id;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]/id",
@@ -2012,21 +1932,16 @@ const $$ObjectWithEveryType = {
                                     );
                                 }
                                 if (
-                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
-                                        "object" &&
-                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
-                                        Date
+                                    typeof __D3AItem.timestamp === "object" &&
+                                    __D3AItem.timestamp instanceof Date
                                 ) {
-                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
+                                    __D4.timestamp = __D3AItem.timestamp;
                                 } else if (
-                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
-                                    "string"
+                                    typeof __D3AItem.timestamp === "string"
                                 ) {
-                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                        new Date(
-                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
-                                        );
+                                    __D4.timestamp = new Date(
+                                        __D3AItem.timestamp,
+                                    );
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]/timestamp",
@@ -2034,8 +1949,7 @@ const $$ObjectWithEveryType = {
                                         "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                     );
                                 }
-                                ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
+                                __D3AItemAResult = __D4;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]/[0]",
@@ -2043,12 +1957,9 @@ const $$ObjectWithEveryType = {
                                     "Expected object",
                                 );
                             }
-                            inputInnerValNestedArrayInnerAItemAResultInner.push(
-                                ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
-                            );
+                            __D3.push(__D3AItemAResult);
                         }
-                        ____inputInnerValNestedArrayInnerAItemAResult =
-                            inputInnerValNestedArrayInnerAItemAResultInner;
+                        __D2AItemAResult = __D3;
                     } else {
                         $fallback(
                             "/nestedArray/[0]",
@@ -2056,11 +1967,9 @@ const $$ObjectWithEveryType = {
                             "Expected Array",
                         );
                     }
-                    inputInnerValNestedArrayInner.push(
-                        ____inputInnerValNestedArrayInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.nestedArray = inputInnerValNestedArrayInner;
+                __D1.nestedArray = __D2;
             } else {
                 $fallback(
                     "/nestedArray",
@@ -2068,7 +1977,7 @@ const $$ObjectWithEveryType = {
                     "Expected Array",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -2287,13 +2196,13 @@ const $$ObjectWithEveryNullableType = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                jsonInnerVal.any = json.any;
+                const __D1 = {};
+                __D1.any = json.any;
                 if (json.boolean === null) {
-                    jsonInnerVal.boolean = null;
+                    __D1.boolean = null;
                 } else {
                     if (typeof json.boolean === "boolean") {
-                        jsonInnerVal.boolean = json.boolean;
+                        __D1.boolean = json.boolean;
                     } else {
                         $fallback(
                             "/boolean",
@@ -2303,10 +2212,10 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.string === null) {
-                    jsonInnerVal.string = json.string;
+                    __D1.string = json.string;
                 } else {
                     if (typeof json.string === "string") {
-                        jsonInnerVal.string = json.string;
+                        __D1.string = json.string;
                     } else {
                         $fallback(
                             "/string",
@@ -2316,15 +2225,15 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.timestamp === null) {
-                    jsonInnerVal.timestamp = null;
+                    __D1.timestamp = null;
                 } else {
                     if (
                         typeof json.timestamp === "object" &&
                         json.timestamp instanceof Date
                     ) {
-                        jsonInnerVal.timestamp = json.timestamp;
+                        __D1.timestamp = json.timestamp;
                     } else if (typeof json.timestamp === "string") {
-                        jsonInnerVal.timestamp = new Date(json.timestamp);
+                        __D1.timestamp = new Date(json.timestamp);
                     } else {
                         $fallback(
                             "/timestamp",
@@ -2334,13 +2243,13 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.float32 === null) {
-                    jsonInnerVal.float32 = null;
+                    __D1.float32 = null;
                 } else {
                     if (
                         typeof json.float32 === "number" &&
                         !Number.isNaN(json.float32)
                     ) {
-                        jsonInnerVal.float32 = json.float32;
+                        __D1.float32 = json.float32;
                     } else {
                         $fallback(
                             "/float32",
@@ -2350,13 +2259,13 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.float64 === null) {
-                    jsonInnerVal.float64 = null;
+                    __D1.float64 = null;
                 } else {
                     if (
                         typeof json.float64 === "number" &&
                         !Number.isNaN(json.float64)
                     ) {
-                        jsonInnerVal.float64 = json.float64;
+                        __D1.float64 = json.float64;
                     } else {
                         $fallback(
                             "/float64",
@@ -2366,7 +2275,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.int8 === null) {
-                    jsonInnerVal.int8 = null;
+                    __D1.int8 = null;
                 } else {
                     if (
                         typeof json.int8 === "number" &&
@@ -2374,7 +2283,7 @@ const $$ObjectWithEveryNullableType = {
                         json.int8 >= -128 &&
                         json.int8 <= 127
                     ) {
-                        jsonInnerVal.int8 = json.int8;
+                        __D1.int8 = json.int8;
                     } else {
                         $fallback(
                             "/int8",
@@ -2384,7 +2293,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.uint8 === null) {
-                    jsonInnerVal.uint8 = null;
+                    __D1.uint8 = null;
                 } else {
                     if (
                         typeof json.uint8 === "number" &&
@@ -2392,7 +2301,7 @@ const $$ObjectWithEveryNullableType = {
                         json.uint8 >= 0 &&
                         json.uint8 <= 255
                     ) {
-                        jsonInnerVal.uint8 = json.uint8;
+                        __D1.uint8 = json.uint8;
                     } else {
                         $fallback(
                             "/uint8",
@@ -2402,7 +2311,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.int16 === null) {
-                    jsonInnerVal.int16 = null;
+                    __D1.int16 = null;
                 } else {
                     if (
                         typeof json.int16 === "number" &&
@@ -2410,7 +2319,7 @@ const $$ObjectWithEveryNullableType = {
                         json.int16 >= -32768 &&
                         json.int16 <= 32767
                     ) {
-                        jsonInnerVal.int16 = json.int16;
+                        __D1.int16 = json.int16;
                     } else {
                         $fallback(
                             "/int16",
@@ -2420,7 +2329,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.uint16 === null) {
-                    jsonInnerVal.uint16 = null;
+                    __D1.uint16 = null;
                 } else {
                     if (
                         typeof json.uint16 === "number" &&
@@ -2428,7 +2337,7 @@ const $$ObjectWithEveryNullableType = {
                         json.uint16 >= 0 &&
                         json.uint16 <= 65535
                     ) {
-                        jsonInnerVal.uint16 = json.uint16;
+                        __D1.uint16 = json.uint16;
                     } else {
                         $fallback(
                             "/uint16",
@@ -2438,7 +2347,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.int32 === null) {
-                    jsonInnerVal.int32 = null;
+                    __D1.int32 = null;
                 } else {
                     if (
                         typeof json.int32 === "number" &&
@@ -2446,7 +2355,7 @@ const $$ObjectWithEveryNullableType = {
                         json.int32 >= -2147483648 &&
                         json.int32 <= 2147483647
                     ) {
-                        jsonInnerVal.int32 = json.int32;
+                        __D1.int32 = json.int32;
                     } else {
                         $fallback(
                             "/int32",
@@ -2456,7 +2365,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.uint32 === null) {
-                    jsonInnerVal.uint32 = null;
+                    __D1.uint32 = null;
                 } else {
                     if (
                         typeof json.uint32 === "number" &&
@@ -2464,7 +2373,7 @@ const $$ObjectWithEveryNullableType = {
                         json.uint32 >= 0 &&
                         json.uint32 <= 4294967295
                     ) {
-                        jsonInnerVal.uint32 = json.uint32;
+                        __D1.uint32 = json.uint32;
                     } else {
                         $fallback(
                             "/uint32",
@@ -2479,7 +2388,7 @@ const $$ObjectWithEveryNullableType = {
                 ) {
                     try {
                         const val = BigInt(json.int64);
-                        jsonInnerVal.int64 = val;
+                        __D1.int64 = val;
                     } catch (err) {
                         $fallback(
                             "/int64",
@@ -2488,9 +2397,9 @@ const $$ObjectWithEveryNullableType = {
                         );
                     }
                 } else if (typeof json.int64 === "bigint") {
-                    jsonInnerVal.int64 = json.int64;
+                    __D1.int64 = json.int64;
                 } else if (json.int64 === null) {
-                    jsonInnerVal.int64 = null;
+                    __D1.int64 = null;
                 } else {
                     $fallback(
                         "/int64",
@@ -2505,7 +2414,7 @@ const $$ObjectWithEveryNullableType = {
                     try {
                         const val = BigInt(json.uint64);
                         if (val >= BigInt("0")) {
-                            jsonInnerVal.uint64 = val;
+                            __D1.uint64 = val;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -2522,7 +2431,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 } else if (typeof json.uint64 === "bigint") {
                     if (json.uint64 >= BigInt("0")) {
-                        jsonInnerVal.uint64 = json.uint64;
+                        __D1.uint64 = json.uint64;
                     } else {
                         $fallback(
                             "/uint64",
@@ -2531,7 +2440,7 @@ const $$ObjectWithEveryNullableType = {
                         );
                     }
                 } else if (json.uint64 === null) {
-                    jsonInnerVal.uint64 = null;
+                    __D1.uint64 = null;
                 } else {
                     $fallback(
                         "/uint64",
@@ -2540,7 +2449,7 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
                 if (json.enumerator === null) {
-                    jsonInnerVal.enumerator = null;
+                    __D1.enumerator = null;
                 } else {
                     if (typeof json.enumerator === "string") {
                         if (
@@ -2548,7 +2457,7 @@ const $$ObjectWithEveryNullableType = {
                             json.enumerator === "B" ||
                             json.enumerator === "C"
                         ) {
-                            jsonInnerVal.enumerator = json.enumerator;
+                            __D1.enumerator = json.enumerator;
                         } else {
                             $fallback(
                                 "/enumerator",
@@ -2565,21 +2474,17 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.array === null) {
-                    jsonInnerVal.array = null;
+                    __D1.array = null;
                 } else {
                     if (Array.isArray(json.array)) {
-                        const jsonInnerValArrayInner = [];
-                        for (const __jsonInnerValArrayInnerAItem of json.array) {
-                            let ____jsonInnerValArrayInnerAItemAResult;
-                            if (__jsonInnerValArrayInnerAItem === null) {
-                                ____jsonInnerValArrayInnerAItemAResult = null;
+                        const __D2 = [];
+                        for (const __D2AItem of json.array) {
+                            let __D2AItemAResult;
+                            if (__D2AItem === null) {
+                                __D2AItemAResult = null;
                             } else {
-                                if (
-                                    typeof __jsonInnerValArrayInnerAItem ===
-                                    "boolean"
-                                ) {
-                                    ____jsonInnerValArrayInnerAItemAResult =
-                                        __jsonInnerValArrayInnerAItem;
+                                if (typeof __D2AItem === "boolean") {
+                                    __D2AItemAResult = __D2AItem;
                                 } else {
                                     $fallback(
                                         "/array/[0]",
@@ -2588,11 +2493,9 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonInnerValArrayInner.push(
-                                ____jsonInnerValArrayInnerAItemAResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.array = jsonInnerValArrayInner;
+                        __D1.array = __D2;
                     } else {
                         $fallback(
                             "/array",
@@ -2602,18 +2505,18 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.object === null) {
-                    jsonInnerVal.object = null;
+                    __D1.object = null;
                 } else {
                     if (
                         typeof json.object === "object" &&
                         json.object !== null
                     ) {
-                        const jsonObjectInnerVal = {};
+                        const __D2 = {};
                         if (json.object.string === null) {
-                            jsonObjectInnerVal.string = json.object.string;
+                            __D2.string = json.object.string;
                         } else {
                             if (typeof json.object.string === "string") {
-                                jsonObjectInnerVal.string = json.object.string;
+                                __D2.string = json.object.string;
                             } else {
                                 $fallback(
                                     "/object/string",
@@ -2623,11 +2526,10 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.object.boolean === null) {
-                            jsonObjectInnerVal.boolean = null;
+                            __D2.boolean = null;
                         } else {
                             if (typeof json.object.boolean === "boolean") {
-                                jsonObjectInnerVal.boolean =
-                                    json.object.boolean;
+                                __D2.boolean = json.object.boolean;
                             } else {
                                 $fallback(
                                     "/object/boolean",
@@ -2637,18 +2539,17 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.object.timestamp === null) {
-                            jsonObjectInnerVal.timestamp = null;
+                            __D2.timestamp = null;
                         } else {
                             if (
                                 typeof json.object.timestamp === "object" &&
                                 json.object.timestamp instanceof Date
                             ) {
-                                jsonObjectInnerVal.timestamp =
-                                    json.object.timestamp;
+                                __D2.timestamp = json.object.timestamp;
                             } else if (
                                 typeof json.object.timestamp === "string"
                             ) {
-                                jsonObjectInnerVal.timestamp = new Date(
+                                __D2.timestamp = new Date(
                                     json.object.timestamp,
                                 );
                             } else {
@@ -2659,7 +2560,7 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        jsonInnerVal.object = jsonObjectInnerVal;
+                        __D1.object = __D2;
                     } else {
                         $fallback(
                             "/object",
@@ -2669,26 +2570,22 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.record === null) {
-                    jsonInnerVal.record = null;
+                    __D1.record = null;
                 } else {
                     if (
                         typeof json.record === "object" &&
                         json.record !== null
                     ) {
-                        const __jsonRecordRResult = {};
-                        for (const __jsonRecordRKey of Object.keys(
-                            json.record,
-                        )) {
-                            let ____jsonRecordRKeyRVal;
-                            if (json.record[__jsonRecordRKey] === null) {
-                                ____jsonRecordRKeyRVal = null;
+                        const __D2RResult = {};
+                        for (const __D2RKey of Object.keys(json.record)) {
+                            let __D2RKeyRVal;
+                            if (json.record[__D2RKey] === null) {
+                                __D2RKeyRVal = null;
                             } else {
                                 if (
-                                    typeof json.record[__jsonRecordRKey] ===
-                                    "boolean"
+                                    typeof json.record[__D2RKey] === "boolean"
                                 ) {
-                                    ____jsonRecordRKeyRVal =
-                                        json.record[__jsonRecordRKey];
+                                    __D2RKeyRVal = json.record[__D2RKey];
                                 } else {
                                     $fallback(
                                         "/record/[key]",
@@ -2697,10 +2594,9 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            __jsonRecordRResult[__jsonRecordRKey] =
-                                ____jsonRecordRKeyRVal;
+                            __D2RResult[__D2RKey] = __D2RKeyRVal;
                         }
-                        jsonInnerVal.record = __jsonRecordRResult;
+                        __D1.record = __D2RResult;
                     } else {
                         $fallback(
                             "/record",
@@ -2710,7 +2606,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.discriminator === null) {
-                    jsonInnerVal.discriminator = null;
+                    __D1.discriminator = null;
                 } else {
                     if (
                         typeof json.discriminator === "object" &&
@@ -2722,17 +2618,16 @@ const $$ObjectWithEveryNullableType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "A";
+                                    const __D2 = {};
+                                    __D2.type = "A";
                                     if (json.discriminator.title === null) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         if (
                                             typeof json.discriminator.title ===
                                             "string"
                                         ) {
-                                            jsonDiscriminatorInnerVal.title =
+                                            __D2.title =
                                                 json.discriminator.title;
                                         } else {
                                             $fallback(
@@ -2742,8 +2637,7 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -2758,17 +2652,16 @@ const $$ObjectWithEveryNullableType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "B";
+                                    const __D2 = {};
+                                    __D2.type = "B";
                                     if (json.discriminator.title === null) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         if (
                                             typeof json.discriminator.title ===
                                             "string"
                                         ) {
-                                            jsonDiscriminatorInnerVal.title =
+                                            __D2.title =
                                                 json.discriminator.title;
                                         } else {
                                             $fallback(
@@ -2781,14 +2674,14 @@ const $$ObjectWithEveryNullableType = {
                                     if (
                                         json.discriminator.description === null
                                     ) {
-                                        jsonDiscriminatorInnerVal.description =
+                                        __D2.description =
                                             json.discriminator.description;
                                     } else {
                                         if (
                                             typeof json.discriminator
                                                 .description === "string"
                                         ) {
-                                            jsonDiscriminatorInnerVal.description =
+                                            __D2.description =
                                                 json.discriminator.description;
                                         } else {
                                             $fallback(
@@ -2798,8 +2691,7 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -2826,19 +2718,18 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.nestedObject === null) {
-                    jsonInnerVal.nestedObject = null;
+                    __D1.nestedObject = null;
                 } else {
                     if (
                         typeof json.nestedObject === "object" &&
                         json.nestedObject !== null
                     ) {
-                        const jsonNestedObjectInnerVal = {};
+                        const __D2 = {};
                         if (json.nestedObject.id === null) {
-                            jsonNestedObjectInnerVal.id = json.nestedObject.id;
+                            __D2.id = json.nestedObject.id;
                         } else {
                             if (typeof json.nestedObject.id === "string") {
-                                jsonNestedObjectInnerVal.id =
-                                    json.nestedObject.id;
+                                __D2.id = json.nestedObject.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/id",
@@ -2848,19 +2739,18 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.nestedObject.timestamp === null) {
-                            jsonNestedObjectInnerVal.timestamp = null;
+                            __D2.timestamp = null;
                         } else {
                             if (
                                 typeof json.nestedObject.timestamp ===
                                     "object" &&
                                 json.nestedObject.timestamp instanceof Date
                             ) {
-                                jsonNestedObjectInnerVal.timestamp =
-                                    json.nestedObject.timestamp;
+                                __D2.timestamp = json.nestedObject.timestamp;
                             } else if (
                                 typeof json.nestedObject.timestamp === "string"
                             ) {
-                                jsonNestedObjectInnerVal.timestamp = new Date(
+                                __D2.timestamp = new Date(
                                     json.nestedObject.timestamp,
                                 );
                             } else {
@@ -2872,23 +2762,21 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.nestedObject.data === null) {
-                            jsonNestedObjectInnerVal.data = null;
+                            __D2.data = null;
                         } else {
                             if (
                                 typeof json.nestedObject.data === "object" &&
                                 json.nestedObject.data !== null
                             ) {
-                                const jsonNestedObjectDataInnerVal = {};
+                                const __D3 = {};
                                 if (json.nestedObject.data.id === null) {
-                                    jsonNestedObjectDataInnerVal.id =
-                                        json.nestedObject.data.id;
+                                    __D3.id = json.nestedObject.data.id;
                                 } else {
                                     if (
                                         typeof json.nestedObject.data.id ===
                                         "string"
                                     ) {
-                                        jsonNestedObjectDataInnerVal.id =
-                                            json.nestedObject.data.id;
+                                        __D3.id = json.nestedObject.data.id;
                                     } else {
                                         $fallback(
                                             "/nestedObject/data/id",
@@ -2898,8 +2786,7 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                 }
                                 if (json.nestedObject.data.timestamp === null) {
-                                    jsonNestedObjectDataInnerVal.timestamp =
-                                        null;
+                                    __D3.timestamp = null;
                                 } else {
                                     if (
                                         typeof json.nestedObject.data
@@ -2907,16 +2794,15 @@ const $$ObjectWithEveryNullableType = {
                                         json.nestedObject.data
                                             .timestamp instanceof Date
                                     ) {
-                                        jsonNestedObjectDataInnerVal.timestamp =
+                                        __D3.timestamp =
                                             json.nestedObject.data.timestamp;
                                     } else if (
                                         typeof json.nestedObject.data
                                             .timestamp === "string"
                                     ) {
-                                        jsonNestedObjectDataInnerVal.timestamp =
-                                            new Date(
-                                                json.nestedObject.data.timestamp,
-                                            );
+                                        __D3.timestamp = new Date(
+                                            json.nestedObject.data.timestamp,
+                                        );
                                     } else {
                                         $fallback(
                                             "/nestedObject/data/timestamp",
@@ -2926,27 +2812,26 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                 }
                                 if (json.nestedObject.data.data === null) {
-                                    jsonNestedObjectDataInnerVal.data = null;
+                                    __D3.data = null;
                                 } else {
                                     if (
                                         typeof json.nestedObject.data.data ===
                                             "object" &&
                                         json.nestedObject.data.data !== null
                                     ) {
-                                        const jsonNestedObjectDataDataInnerVal =
-                                            {};
+                                        const __D4 = {};
                                         if (
                                             json.nestedObject.data.data.id ===
                                             null
                                         ) {
-                                            jsonNestedObjectDataDataInnerVal.id =
+                                            __D4.id =
                                                 json.nestedObject.data.data.id;
                                         } else {
                                             if (
                                                 typeof json.nestedObject.data
                                                     .data.id === "string"
                                             ) {
-                                                jsonNestedObjectDataDataInnerVal.id =
+                                                __D4.id =
                                                     json.nestedObject.data.data.id;
                                             } else {
                                                 $fallback(
@@ -2960,8 +2845,7 @@ const $$ObjectWithEveryNullableType = {
                                             json.nestedObject.data.data
                                                 .timestamp === null
                                         ) {
-                                            jsonNestedObjectDataDataInnerVal.timestamp =
-                                                null;
+                                            __D4.timestamp = null;
                                         } else {
                                             if (
                                                 typeof json.nestedObject.data
@@ -2970,16 +2854,15 @@ const $$ObjectWithEveryNullableType = {
                                                 json.nestedObject.data.data
                                                     .timestamp instanceof Date
                                             ) {
-                                                jsonNestedObjectDataDataInnerVal.timestamp =
+                                                __D4.timestamp =
                                                     json.nestedObject.data.data.timestamp;
                                             } else if (
                                                 typeof json.nestedObject.data
                                                     .data.timestamp === "string"
                                             ) {
-                                                jsonNestedObjectDataDataInnerVal.timestamp =
-                                                    new Date(
-                                                        json.nestedObject.data.data.timestamp,
-                                                    );
+                                                __D4.timestamp = new Date(
+                                                    json.nestedObject.data.data.timestamp,
+                                                );
                                             } else {
                                                 $fallback(
                                                     "/nestedObject/data/data/timestamp",
@@ -2988,8 +2871,7 @@ const $$ObjectWithEveryNullableType = {
                                                 );
                                             }
                                         }
-                                        jsonNestedObjectDataInnerVal.data =
-                                            jsonNestedObjectDataDataInnerVal;
+                                        __D3.data = __D4;
                                     } else {
                                         $fallback(
                                             "/nestedObject/data/data",
@@ -2998,8 +2880,7 @@ const $$ObjectWithEveryNullableType = {
                                         );
                                     }
                                 }
-                                jsonNestedObjectInnerVal.data =
-                                    jsonNestedObjectDataInnerVal;
+                                __D2.data = __D3;
                             } else {
                                 $fallback(
                                     "/nestedObject/data",
@@ -3008,7 +2889,7 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        jsonInnerVal.nestedObject = jsonNestedObjectInnerVal;
+                        __D1.nestedObject = __D2;
                     } else {
                         $fallback(
                             "/nestedObject",
@@ -3018,53 +2899,35 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.nestedArray === null) {
-                    jsonInnerVal.nestedArray = null;
+                    __D1.nestedArray = null;
                 } else {
                     if (Array.isArray(json.nestedArray)) {
-                        const jsonInnerValNestedArrayInner = [];
-                        for (const __jsonInnerValNestedArrayInnerAItem of json.nestedArray) {
-                            let ____jsonInnerValNestedArrayInnerAItemAResult;
-                            if (__jsonInnerValNestedArrayInnerAItem === null) {
-                                ____jsonInnerValNestedArrayInnerAItemAResult =
-                                    null;
+                        const __D2 = [];
+                        for (const __D2AItem of json.nestedArray) {
+                            let __D2AItemAResult;
+                            if (__D2AItem === null) {
+                                __D2AItemAResult = null;
                             } else {
-                                if (
-                                    Array.isArray(
-                                        __jsonInnerValNestedArrayInnerAItem,
-                                    )
-                                ) {
-                                    const jsonInnerValNestedArrayInnerAItemAResultInner =
-                                        [];
-                                    for (const __jsonInnerValNestedArrayInnerAItemAResultInnerAItem of __jsonInnerValNestedArrayInnerAItem) {
-                                        let ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
-                                        if (
-                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                            null
-                                        ) {
-                                            ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                                null;
+                                if (Array.isArray(__D2AItem)) {
+                                    const __D3 = [];
+                                    for (const __D3AItem of __D2AItem) {
+                                        let __D3AItemAResult;
+                                        if (__D3AItem === null) {
+                                            __D3AItemAResult = null;
                                         } else {
                                             if (
-                                                typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                                    "object" &&
-                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem !==
-                                                    null
+                                                typeof __D3AItem === "object" &&
+                                                __D3AItem !== null
                                             ) {
-                                                const jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
-                                                    {};
-                                                if (
-                                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
-                                                    null
-                                                ) {
-                                                    jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                                const __D4 = {};
+                                                if (__D3AItem.id === null) {
+                                                    __D4.id = __D3AItem.id;
                                                 } else {
                                                     if (
-                                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
+                                                        typeof __D3AItem.id ===
                                                         "string"
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                                        __D4.id = __D3AItem.id;
                                                     } else {
                                                         $fallback(
                                                             "/nestedArray/[0]/[0]/id",
@@ -3074,27 +2937,25 @@ const $$ObjectWithEveryNullableType = {
                                                     }
                                                 }
                                                 if (
-                                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
-                                                    null
+                                                    __D3AItem.timestamp === null
                                                 ) {
-                                                    jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                        null;
+                                                    __D4.timestamp = null;
                                                 } else {
                                                     if (
-                                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                                        typeof __D3AItem.timestamp ===
                                                             "object" &&
-                                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
+                                                        __D3AItem.timestamp instanceof
                                                             Date
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
+                                                        __D4.timestamp =
+                                                            __D3AItem.timestamp;
                                                     } else if (
-                                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                                        typeof __D3AItem.timestamp ===
                                                         "string"
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
+                                                        __D4.timestamp =
                                                             new Date(
-                                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
+                                                                __D3AItem.timestamp,
                                                             );
                                                     } else {
                                                         $fallback(
@@ -3104,8 +2965,7 @@ const $$ObjectWithEveryNullableType = {
                                                         );
                                                     }
                                                 }
-                                                ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                                    jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
+                                                __D3AItemAResult = __D4;
                                             } else {
                                                 $fallback(
                                                     "/nestedArray/[0]/[0]",
@@ -3114,12 +2974,9 @@ const $$ObjectWithEveryNullableType = {
                                                 );
                                             }
                                         }
-                                        jsonInnerValNestedArrayInnerAItemAResultInner.push(
-                                            ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
-                                        );
+                                        __D3.push(__D3AItemAResult);
                                     }
-                                    ____jsonInnerValNestedArrayInnerAItemAResult =
-                                        jsonInnerValNestedArrayInnerAItemAResultInner;
+                                    __D2AItemAResult = __D3;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]",
@@ -3128,11 +2985,9 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonInnerValNestedArrayInner.push(
-                                ____jsonInnerValNestedArrayInnerAItemAResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.nestedArray = jsonInnerValNestedArrayInner;
+                        __D1.nestedArray = __D2;
                     } else {
                         $fallback(
                             "/nestedArray",
@@ -3141,7 +2996,7 @@ const $$ObjectWithEveryNullableType = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -3149,13 +3004,13 @@ const $$ObjectWithEveryNullableType = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            inputInnerVal.any = input.any;
+            const __D1 = {};
+            __D1.any = input.any;
             if (input.boolean === null) {
-                inputInnerVal.boolean = null;
+                __D1.boolean = null;
             } else {
                 if (typeof input.boolean === "boolean") {
-                    inputInnerVal.boolean = input.boolean;
+                    __D1.boolean = input.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -3165,10 +3020,10 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.string === null) {
-                inputInnerVal.string = input.string;
+                __D1.string = input.string;
             } else {
                 if (typeof input.string === "string") {
-                    inputInnerVal.string = input.string;
+                    __D1.string = input.string;
                 } else {
                     $fallback(
                         "/string",
@@ -3178,15 +3033,15 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.timestamp === null) {
-                inputInnerVal.timestamp = null;
+                __D1.timestamp = null;
             } else {
                 if (
                     typeof input.timestamp === "object" &&
                     input.timestamp instanceof Date
                 ) {
-                    inputInnerVal.timestamp = input.timestamp;
+                    __D1.timestamp = input.timestamp;
                 } else if (typeof input.timestamp === "string") {
-                    inputInnerVal.timestamp = new Date(input.timestamp);
+                    __D1.timestamp = new Date(input.timestamp);
                 } else {
                     $fallback(
                         "/timestamp",
@@ -3196,13 +3051,13 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.float32 === null) {
-                inputInnerVal.float32 = null;
+                __D1.float32 = null;
             } else {
                 if (
                     typeof input.float32 === "number" &&
                     !Number.isNaN(input.float32)
                 ) {
-                    inputInnerVal.float32 = input.float32;
+                    __D1.float32 = input.float32;
                 } else {
                     $fallback(
                         "/float32",
@@ -3212,13 +3067,13 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.float64 === null) {
-                inputInnerVal.float64 = null;
+                __D1.float64 = null;
             } else {
                 if (
                     typeof input.float64 === "number" &&
                     !Number.isNaN(input.float64)
                 ) {
-                    inputInnerVal.float64 = input.float64;
+                    __D1.float64 = input.float64;
                 } else {
                     $fallback(
                         "/float64",
@@ -3228,7 +3083,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.int8 === null) {
-                inputInnerVal.int8 = null;
+                __D1.int8 = null;
             } else {
                 if (
                     typeof input.int8 === "number" &&
@@ -3236,7 +3091,7 @@ const $$ObjectWithEveryNullableType = {
                     input.int8 >= -128 &&
                     input.int8 <= 127
                 ) {
-                    inputInnerVal.int8 = input.int8;
+                    __D1.int8 = input.int8;
                 } else {
                     $fallback(
                         "/int8",
@@ -3246,7 +3101,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.uint8 === null) {
-                inputInnerVal.uint8 = null;
+                __D1.uint8 = null;
             } else {
                 if (
                     typeof input.uint8 === "number" &&
@@ -3254,7 +3109,7 @@ const $$ObjectWithEveryNullableType = {
                     input.uint8 >= 0 &&
                     input.uint8 <= 255
                 ) {
-                    inputInnerVal.uint8 = input.uint8;
+                    __D1.uint8 = input.uint8;
                 } else {
                     $fallback(
                         "/uint8",
@@ -3264,7 +3119,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.int16 === null) {
-                inputInnerVal.int16 = null;
+                __D1.int16 = null;
             } else {
                 if (
                     typeof input.int16 === "number" &&
@@ -3272,7 +3127,7 @@ const $$ObjectWithEveryNullableType = {
                     input.int16 >= -32768 &&
                     input.int16 <= 32767
                 ) {
-                    inputInnerVal.int16 = input.int16;
+                    __D1.int16 = input.int16;
                 } else {
                     $fallback(
                         "/int16",
@@ -3282,7 +3137,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.uint16 === null) {
-                inputInnerVal.uint16 = null;
+                __D1.uint16 = null;
             } else {
                 if (
                     typeof input.uint16 === "number" &&
@@ -3290,7 +3145,7 @@ const $$ObjectWithEveryNullableType = {
                     input.uint16 >= 0 &&
                     input.uint16 <= 65535
                 ) {
-                    inputInnerVal.uint16 = input.uint16;
+                    __D1.uint16 = input.uint16;
                 } else {
                     $fallback(
                         "/uint16",
@@ -3300,7 +3155,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.int32 === null) {
-                inputInnerVal.int32 = null;
+                __D1.int32 = null;
             } else {
                 if (
                     typeof input.int32 === "number" &&
@@ -3308,7 +3163,7 @@ const $$ObjectWithEveryNullableType = {
                     input.int32 >= -2147483648 &&
                     input.int32 <= 2147483647
                 ) {
-                    inputInnerVal.int32 = input.int32;
+                    __D1.int32 = input.int32;
                 } else {
                     $fallback(
                         "/int32",
@@ -3318,7 +3173,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.uint32 === null) {
-                inputInnerVal.uint32 = null;
+                __D1.uint32 = null;
             } else {
                 if (
                     typeof input.uint32 === "number" &&
@@ -3326,7 +3181,7 @@ const $$ObjectWithEveryNullableType = {
                     input.uint32 >= 0 &&
                     input.uint32 <= 4294967295
                 ) {
-                    inputInnerVal.uint32 = input.uint32;
+                    __D1.uint32 = input.uint32;
                 } else {
                     $fallback(
                         "/uint32",
@@ -3341,7 +3196,7 @@ const $$ObjectWithEveryNullableType = {
             ) {
                 try {
                     const val = BigInt(input.int64);
-                    inputInnerVal.int64 = val;
+                    __D1.int64 = val;
                 } catch (err) {
                     $fallback(
                         "/int64",
@@ -3350,9 +3205,9 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
             } else if (typeof input.int64 === "bigint") {
-                inputInnerVal.int64 = input.int64;
+                __D1.int64 = input.int64;
             } else if (input.int64 === null) {
-                inputInnerVal.int64 = null;
+                __D1.int64 = null;
             } else {
                 $fallback(
                     "/int64",
@@ -3367,7 +3222,7 @@ const $$ObjectWithEveryNullableType = {
                 try {
                     const val = BigInt(input.uint64);
                     if (val >= BigInt("0")) {
-                        inputInnerVal.uint64 = val;
+                        __D1.uint64 = val;
                     } else {
                         $fallback(
                             "/uint64",
@@ -3384,7 +3239,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             } else if (typeof input.uint64 === "bigint") {
                 if (input.uint64 >= BigInt("0")) {
-                    inputInnerVal.uint64 = input.uint64;
+                    __D1.uint64 = input.uint64;
                 } else {
                     $fallback(
                         "/uint64",
@@ -3393,7 +3248,7 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
             } else if (input.uint64 === null) {
-                inputInnerVal.uint64 = null;
+                __D1.uint64 = null;
             } else {
                 $fallback(
                     "/uint64",
@@ -3402,7 +3257,7 @@ const $$ObjectWithEveryNullableType = {
                 );
             }
             if (input.enumerator === null) {
-                inputInnerVal.enumerator = null;
+                __D1.enumerator = null;
             } else {
                 if (typeof input.enumerator === "string") {
                     if (
@@ -3410,7 +3265,7 @@ const $$ObjectWithEveryNullableType = {
                         input.enumerator === "B" ||
                         input.enumerator === "C"
                     ) {
-                        inputInnerVal.enumerator = input.enumerator;
+                        __D1.enumerator = input.enumerator;
                     } else {
                         $fallback(
                             "/enumerator",
@@ -3427,21 +3282,17 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.array === null) {
-                inputInnerVal.array = null;
+                __D1.array = null;
             } else {
                 if (Array.isArray(input.array)) {
-                    const inputInnerValArrayInner = [];
-                    for (const __inputInnerValArrayInnerAItem of input.array) {
-                        let ____inputInnerValArrayInnerAItemAResult;
-                        if (__inputInnerValArrayInnerAItem === null) {
-                            ____inputInnerValArrayInnerAItemAResult = null;
+                    const __D2 = [];
+                    for (const __D2AItem of input.array) {
+                        let __D2AItemAResult;
+                        if (__D2AItem === null) {
+                            __D2AItemAResult = null;
                         } else {
-                            if (
-                                typeof __inputInnerValArrayInnerAItem ===
-                                "boolean"
-                            ) {
-                                ____inputInnerValArrayInnerAItemAResult =
-                                    __inputInnerValArrayInnerAItem;
+                            if (typeof __D2AItem === "boolean") {
+                                __D2AItemAResult = __D2AItem;
                             } else {
                                 $fallback(
                                     "/array/[0]",
@@ -3450,25 +3301,23 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputInnerValArrayInner.push(
-                            ____inputInnerValArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.array = inputInnerValArrayInner;
+                    __D1.array = __D2;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
             }
             if (input.object === null) {
-                inputInnerVal.object = null;
+                __D1.object = null;
             } else {
                 if (typeof input.object === "object" && input.object !== null) {
-                    const inputObjectInnerVal = {};
+                    const __D2 = {};
                     if (input.object.string === null) {
-                        inputObjectInnerVal.string = input.object.string;
+                        __D2.string = input.object.string;
                     } else {
                         if (typeof input.object.string === "string") {
-                            inputObjectInnerVal.string = input.object.string;
+                            __D2.string = input.object.string;
                         } else {
                             $fallback(
                                 "/object/string",
@@ -3478,10 +3327,10 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.object.boolean === null) {
-                        inputObjectInnerVal.boolean = null;
+                        __D2.boolean = null;
                     } else {
                         if (typeof input.object.boolean === "boolean") {
-                            inputObjectInnerVal.boolean = input.object.boolean;
+                            __D2.boolean = input.object.boolean;
                         } else {
                             $fallback(
                                 "/object/boolean",
@@ -3491,18 +3340,15 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.object.timestamp === null) {
-                        inputObjectInnerVal.timestamp = null;
+                        __D2.timestamp = null;
                     } else {
                         if (
                             typeof input.object.timestamp === "object" &&
                             input.object.timestamp instanceof Date
                         ) {
-                            inputObjectInnerVal.timestamp =
-                                input.object.timestamp;
+                            __D2.timestamp = input.object.timestamp;
                         } else if (typeof input.object.timestamp === "string") {
-                            inputObjectInnerVal.timestamp = new Date(
-                                input.object.timestamp,
-                            );
+                            __D2.timestamp = new Date(input.object.timestamp);
                         } else {
                             $fallback(
                                 "/object/timestamp",
@@ -3511,7 +3357,7 @@ const $$ObjectWithEveryNullableType = {
                             );
                         }
                     }
-                    inputInnerVal.object = inputObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -3521,21 +3367,17 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.record === null) {
-                inputInnerVal.record = null;
+                __D1.record = null;
             } else {
                 if (typeof input.record === "object" && input.record !== null) {
-                    const __inputRecordRResult = {};
-                    for (const __inputRecordRKey of Object.keys(input.record)) {
-                        let ____inputRecordRKeyRVal;
-                        if (input.record[__inputRecordRKey] === null) {
-                            ____inputRecordRKeyRVal = null;
+                    const __D2RResult = {};
+                    for (const __D2RKey of Object.keys(input.record)) {
+                        let __D2RKeyRVal;
+                        if (input.record[__D2RKey] === null) {
+                            __D2RKeyRVal = null;
                         } else {
-                            if (
-                                typeof input.record[__inputRecordRKey] ===
-                                "boolean"
-                            ) {
-                                ____inputRecordRKeyRVal =
-                                    input.record[__inputRecordRKey];
+                            if (typeof input.record[__D2RKey] === "boolean") {
+                                __D2RKeyRVal = input.record[__D2RKey];
                             } else {
                                 $fallback(
                                     "/record/[key]",
@@ -3544,10 +3386,9 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        __inputRecordRResult[__inputRecordRKey] =
-                            ____inputRecordRKeyRVal;
+                        __D2RResult[__D2RKey] = __D2RKeyRVal;
                     }
-                    inputInnerVal.record = __inputRecordRResult;
+                    __D1.record = __D2RResult;
                 } else {
                     $fallback(
                         "/record",
@@ -3557,7 +3398,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.discriminator === null) {
-                inputInnerVal.discriminator = null;
+                __D1.discriminator = null;
             } else {
                 if (
                     typeof input.discriminator === "object" &&
@@ -3569,18 +3410,16 @@ const $$ObjectWithEveryNullableType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "A";
+                                const __D2 = {};
+                                __D2.type = "A";
                                 if (input.discriminator.title === null) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     if (
                                         typeof input.discriminator.title ===
                                         "string"
                                     ) {
-                                        inputDiscriminatorInnerVal.title =
-                                            input.discriminator.title;
+                                        __D2.title = input.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -3589,8 +3428,7 @@ const $$ObjectWithEveryNullableType = {
                                         );
                                     }
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -3605,18 +3443,16 @@ const $$ObjectWithEveryNullableType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "B";
+                                const __D2 = {};
+                                __D2.type = "B";
                                 if (input.discriminator.title === null) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     if (
                                         typeof input.discriminator.title ===
                                         "string"
                                     ) {
-                                        inputDiscriminatorInnerVal.title =
-                                            input.discriminator.title;
+                                        __D2.title = input.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -3626,14 +3462,14 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                 }
                                 if (input.discriminator.description === null) {
-                                    inputDiscriminatorInnerVal.description =
+                                    __D2.description =
                                         input.discriminator.description;
                                 } else {
                                     if (
                                         typeof input.discriminator
                                             .description === "string"
                                     ) {
-                                        inputDiscriminatorInnerVal.description =
+                                        __D2.description =
                                             input.discriminator.description;
                                     } else {
                                         $fallback(
@@ -3643,8 +3479,7 @@ const $$ObjectWithEveryNullableType = {
                                         );
                                     }
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -3671,19 +3506,18 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.nestedObject === null) {
-                inputInnerVal.nestedObject = null;
+                __D1.nestedObject = null;
             } else {
                 if (
                     typeof input.nestedObject === "object" &&
                     input.nestedObject !== null
                 ) {
-                    const inputNestedObjectInnerVal = {};
+                    const __D2 = {};
                     if (input.nestedObject.id === null) {
-                        inputNestedObjectInnerVal.id = input.nestedObject.id;
+                        __D2.id = input.nestedObject.id;
                     } else {
                         if (typeof input.nestedObject.id === "string") {
-                            inputNestedObjectInnerVal.id =
-                                input.nestedObject.id;
+                            __D2.id = input.nestedObject.id;
                         } else {
                             $fallback(
                                 "/nestedObject/id",
@@ -3693,18 +3527,17 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.nestedObject.timestamp === null) {
-                        inputNestedObjectInnerVal.timestamp = null;
+                        __D2.timestamp = null;
                     } else {
                         if (
                             typeof input.nestedObject.timestamp === "object" &&
                             input.nestedObject.timestamp instanceof Date
                         ) {
-                            inputNestedObjectInnerVal.timestamp =
-                                input.nestedObject.timestamp;
+                            __D2.timestamp = input.nestedObject.timestamp;
                         } else if (
                             typeof input.nestedObject.timestamp === "string"
                         ) {
-                            inputNestedObjectInnerVal.timestamp = new Date(
+                            __D2.timestamp = new Date(
                                 input.nestedObject.timestamp,
                             );
                         } else {
@@ -3716,23 +3549,21 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.nestedObject.data === null) {
-                        inputNestedObjectInnerVal.data = null;
+                        __D2.data = null;
                     } else {
                         if (
                             typeof input.nestedObject.data === "object" &&
                             input.nestedObject.data !== null
                         ) {
-                            const inputNestedObjectDataInnerVal = {};
+                            const __D3 = {};
                             if (input.nestedObject.data.id === null) {
-                                inputNestedObjectDataInnerVal.id =
-                                    input.nestedObject.data.id;
+                                __D3.id = input.nestedObject.data.id;
                             } else {
                                 if (
                                     typeof input.nestedObject.data.id ===
                                     "string"
                                 ) {
-                                    inputNestedObjectDataInnerVal.id =
-                                        input.nestedObject.data.id;
+                                    __D3.id = input.nestedObject.data.id;
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/id",
@@ -3742,7 +3573,7 @@ const $$ObjectWithEveryNullableType = {
                                 }
                             }
                             if (input.nestedObject.data.timestamp === null) {
-                                inputNestedObjectDataInnerVal.timestamp = null;
+                                __D3.timestamp = null;
                             } else {
                                 if (
                                     typeof input.nestedObject.data.timestamp ===
@@ -3750,16 +3581,15 @@ const $$ObjectWithEveryNullableType = {
                                     input.nestedObject.data.timestamp instanceof
                                         Date
                                 ) {
-                                    inputNestedObjectDataInnerVal.timestamp =
+                                    __D3.timestamp =
                                         input.nestedObject.data.timestamp;
                                 } else if (
                                     typeof input.nestedObject.data.timestamp ===
                                     "string"
                                 ) {
-                                    inputNestedObjectDataInnerVal.timestamp =
-                                        new Date(
-                                            input.nestedObject.data.timestamp,
-                                        );
+                                    __D3.timestamp = new Date(
+                                        input.nestedObject.data.timestamp,
+                                    );
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/timestamp",
@@ -3769,26 +3599,25 @@ const $$ObjectWithEveryNullableType = {
                                 }
                             }
                             if (input.nestedObject.data.data === null) {
-                                inputNestedObjectDataInnerVal.data = null;
+                                __D3.data = null;
                             } else {
                                 if (
                                     typeof input.nestedObject.data.data ===
                                         "object" &&
                                     input.nestedObject.data.data !== null
                                 ) {
-                                    const inputNestedObjectDataDataInnerVal =
-                                        {};
+                                    const __D4 = {};
                                     if (
                                         input.nestedObject.data.data.id === null
                                     ) {
-                                        inputNestedObjectDataDataInnerVal.id =
+                                        __D4.id =
                                             input.nestedObject.data.data.id;
                                     } else {
                                         if (
                                             typeof input.nestedObject.data.data
                                                 .id === "string"
                                         ) {
-                                            inputNestedObjectDataDataInnerVal.id =
+                                            __D4.id =
                                                 input.nestedObject.data.data.id;
                                         } else {
                                             $fallback(
@@ -3802,8 +3631,7 @@ const $$ObjectWithEveryNullableType = {
                                         input.nestedObject.data.data
                                             .timestamp === null
                                     ) {
-                                        inputNestedObjectDataDataInnerVal.timestamp =
-                                            null;
+                                        __D4.timestamp = null;
                                     } else {
                                         if (
                                             typeof input.nestedObject.data.data
@@ -3811,16 +3639,15 @@ const $$ObjectWithEveryNullableType = {
                                             input.nestedObject.data.data
                                                 .timestamp instanceof Date
                                         ) {
-                                            inputNestedObjectDataDataInnerVal.timestamp =
+                                            __D4.timestamp =
                                                 input.nestedObject.data.data.timestamp;
                                         } else if (
                                             typeof input.nestedObject.data.data
                                                 .timestamp === "string"
                                         ) {
-                                            inputNestedObjectDataDataInnerVal.timestamp =
-                                                new Date(
-                                                    input.nestedObject.data.data.timestamp,
-                                                );
+                                            __D4.timestamp = new Date(
+                                                input.nestedObject.data.data.timestamp,
+                                            );
                                         } else {
                                             $fallback(
                                                 "/nestedObject/data/data/timestamp",
@@ -3829,8 +3656,7 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    inputNestedObjectDataInnerVal.data =
-                                        inputNestedObjectDataDataInnerVal;
+                                    __D3.data = __D4;
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/data",
@@ -3839,8 +3665,7 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            inputNestedObjectInnerVal.data =
-                                inputNestedObjectDataInnerVal;
+                            __D2.data = __D3;
                         } else {
                             $fallback(
                                 "/nestedObject/data",
@@ -3849,7 +3674,7 @@ const $$ObjectWithEveryNullableType = {
                             );
                         }
                     }
-                    inputInnerVal.nestedObject = inputNestedObjectInnerVal;
+                    __D1.nestedObject = __D2;
                 } else {
                     $fallback(
                         "/nestedObject",
@@ -3859,53 +3684,35 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.nestedArray === null) {
-                inputInnerVal.nestedArray = null;
+                __D1.nestedArray = null;
             } else {
                 if (Array.isArray(input.nestedArray)) {
-                    const inputInnerValNestedArrayInner = [];
-                    for (const __inputInnerValNestedArrayInnerAItem of input.nestedArray) {
-                        let ____inputInnerValNestedArrayInnerAItemAResult;
-                        if (__inputInnerValNestedArrayInnerAItem === null) {
-                            ____inputInnerValNestedArrayInnerAItemAResult =
-                                null;
+                    const __D2 = [];
+                    for (const __D2AItem of input.nestedArray) {
+                        let __D2AItemAResult;
+                        if (__D2AItem === null) {
+                            __D2AItemAResult = null;
                         } else {
-                            if (
-                                Array.isArray(
-                                    __inputInnerValNestedArrayInnerAItem,
-                                )
-                            ) {
-                                const inputInnerValNestedArrayInnerAItemAResultInner =
-                                    [];
-                                for (const __inputInnerValNestedArrayInnerAItemAResultInnerAItem of __inputInnerValNestedArrayInnerAItem) {
-                                    let ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
-                                    if (
-                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                        null
-                                    ) {
-                                        ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                            null;
+                            if (Array.isArray(__D2AItem)) {
+                                const __D3 = [];
+                                for (const __D3AItem of __D2AItem) {
+                                    let __D3AItemAResult;
+                                    if (__D3AItem === null) {
+                                        __D3AItemAResult = null;
                                     } else {
                                         if (
-                                            typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                                "object" &&
-                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem !==
-                                                null
+                                            typeof __D3AItem === "object" &&
+                                            __D3AItem !== null
                                         ) {
-                                            const inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
-                                                {};
-                                            if (
-                                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
-                                                null
-                                            ) {
-                                                inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                            const __D4 = {};
+                                            if (__D3AItem.id === null) {
+                                                __D4.id = __D3AItem.id;
                                             } else {
                                                 if (
-                                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
+                                                    typeof __D3AItem.id ===
                                                     "string"
                                                 ) {
-                                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                                    __D4.id = __D3AItem.id;
                                                 } else {
                                                     $fallback(
                                                         "/nestedArray/[0]/[0]/id",
@@ -3914,29 +3721,24 @@ const $$ObjectWithEveryNullableType = {
                                                     );
                                                 }
                                             }
-                                            if (
-                                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
-                                                null
-                                            ) {
-                                                inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                    null;
+                                            if (__D3AItem.timestamp === null) {
+                                                __D4.timestamp = null;
                                             } else {
                                                 if (
-                                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                                    typeof __D3AItem.timestamp ===
                                                         "object" &&
-                                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
+                                                    __D3AItem.timestamp instanceof
                                                         Date
                                                 ) {
-                                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
+                                                    __D4.timestamp =
+                                                        __D3AItem.timestamp;
                                                 } else if (
-                                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                                    typeof __D3AItem.timestamp ===
                                                     "string"
                                                 ) {
-                                                    inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                        new Date(
-                                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
-                                                        );
+                                                    __D4.timestamp = new Date(
+                                                        __D3AItem.timestamp,
+                                                    );
                                                 } else {
                                                     $fallback(
                                                         "/nestedArray/[0]/[0]/timestamp",
@@ -3945,8 +3747,7 @@ const $$ObjectWithEveryNullableType = {
                                                     );
                                                 }
                                             }
-                                            ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                                inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
+                                            __D3AItemAResult = __D4;
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]",
@@ -3955,12 +3756,9 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    inputInnerValNestedArrayInnerAItemAResultInner.push(
-                                        ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
-                                    );
+                                    __D3.push(__D3AItemAResult);
                                 }
-                                ____inputInnerValNestedArrayInnerAItemAResult =
-                                    inputInnerValNestedArrayInnerAItemAResultInner;
+                                __D2AItemAResult = __D3;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]",
@@ -3969,11 +3767,9 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputInnerValNestedArrayInner.push(
-                            ____inputInnerValNestedArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.nestedArray = inputInnerValNestedArrayInner;
+                    __D1.nestedArray = __D2;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -3982,7 +3778,7 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -4396,17 +4192,17 @@ const $$ObjectWithEveryOptionalType = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.any === "undefined") {
                     // ignore undefined
                 } else {
-                    jsonInnerVal.any = json.any;
+                    __D1.any = json.any;
                 }
                 if (typeof json.boolean === "undefined") {
                     // ignore undefined
                 } else {
                     if (typeof json.boolean === "boolean") {
-                        jsonInnerVal.boolean = json.boolean;
+                        __D1.boolean = json.boolean;
                     } else {
                         $fallback(
                             "/boolean",
@@ -4419,7 +4215,7 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (typeof json.string === "string") {
-                        jsonInnerVal.string = json.string;
+                        __D1.string = json.string;
                     } else {
                         $fallback(
                             "/string",
@@ -4435,9 +4231,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.timestamp === "object" &&
                         json.timestamp instanceof Date
                     ) {
-                        jsonInnerVal.timestamp = json.timestamp;
+                        __D1.timestamp = json.timestamp;
                     } else if (typeof json.timestamp === "string") {
-                        jsonInnerVal.timestamp = new Date(json.timestamp);
+                        __D1.timestamp = new Date(json.timestamp);
                     } else {
                         $fallback(
                             "/timestamp",
@@ -4453,7 +4249,7 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.float32 === "number" &&
                         !Number.isNaN(json.float32)
                     ) {
-                        jsonInnerVal.float32 = json.float32;
+                        __D1.float32 = json.float32;
                     } else {
                         $fallback(
                             "/float32",
@@ -4469,7 +4265,7 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.float64 === "number" &&
                         !Number.isNaN(json.float64)
                     ) {
-                        jsonInnerVal.float64 = json.float64;
+                        __D1.float64 = json.float64;
                     } else {
                         $fallback(
                             "/float64",
@@ -4487,7 +4283,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.int8 >= -128 &&
                         json.int8 <= 127
                     ) {
-                        jsonInnerVal.int8 = json.int8;
+                        __D1.int8 = json.int8;
                     } else {
                         $fallback(
                             "/int8",
@@ -4505,7 +4301,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.uint8 >= 0 &&
                         json.uint8 <= 255
                     ) {
-                        jsonInnerVal.uint8 = json.uint8;
+                        __D1.uint8 = json.uint8;
                     } else {
                         $fallback(
                             "/uint8",
@@ -4523,7 +4319,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.int16 >= -32768 &&
                         json.int16 <= 32767
                     ) {
-                        jsonInnerVal.int16 = json.int16;
+                        __D1.int16 = json.int16;
                     } else {
                         $fallback(
                             "/int16",
@@ -4541,7 +4337,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.uint16 >= 0 &&
                         json.uint16 <= 65535
                     ) {
-                        jsonInnerVal.uint16 = json.uint16;
+                        __D1.uint16 = json.uint16;
                     } else {
                         $fallback(
                             "/uint16",
@@ -4559,7 +4355,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.int32 >= -2147483648 &&
                         json.int32 <= 2147483647
                     ) {
-                        jsonInnerVal.int32 = json.int32;
+                        __D1.int32 = json.int32;
                     } else {
                         $fallback(
                             "/int32",
@@ -4577,7 +4373,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.uint32 >= 0 &&
                         json.uint32 <= 4294967295
                     ) {
-                        jsonInnerVal.uint32 = json.uint32;
+                        __D1.uint32 = json.uint32;
                     } else {
                         $fallback(
                             "/uint32",
@@ -4595,7 +4391,7 @@ const $$ObjectWithEveryOptionalType = {
                     ) {
                         try {
                             const val = BigInt(json.int64);
-                            jsonInnerVal.int64 = val;
+                            __D1.int64 = val;
                         } catch (err) {
                             $fallback(
                                 "/int64",
@@ -4604,7 +4400,7 @@ const $$ObjectWithEveryOptionalType = {
                             );
                         }
                     } else if (typeof json.int64 === "bigint") {
-                        jsonInnerVal.int64 = json.int64;
+                        __D1.int64 = json.int64;
                     } else {
                         $fallback(
                             "/int64",
@@ -4623,7 +4419,7 @@ const $$ObjectWithEveryOptionalType = {
                         try {
                             const val = BigInt(json.uint64);
                             if (val >= BigInt("0")) {
-                                jsonInnerVal.uint64 = val;
+                                __D1.uint64 = val;
                             } else {
                                 $fallback(
                                     "/uint64",
@@ -4640,7 +4436,7 @@ const $$ObjectWithEveryOptionalType = {
                         }
                     } else if (typeof json.uint64 === "bigint") {
                         if (json.uint64 >= BigInt("0")) {
-                            jsonInnerVal.uint64 = json.uint64;
+                            __D1.uint64 = json.uint64;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -4665,7 +4461,7 @@ const $$ObjectWithEveryOptionalType = {
                             json.enumerator === "B" ||
                             json.enumerator === "C"
                         ) {
-                            jsonInnerVal.enumerator = json.enumerator;
+                            __D1.enumerator = json.enumerator;
                         } else {
                             $fallback(
                                 "/enumerator",
@@ -4685,15 +4481,11 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(json.array)) {
-                        const jsonInnerValArrayInner = [];
-                        for (const __jsonInnerValArrayInnerAItem of json.array) {
-                            let ____jsonInnerValArrayInnerAItemAResult;
-                            if (
-                                typeof __jsonInnerValArrayInnerAItem ===
-                                "boolean"
-                            ) {
-                                ____jsonInnerValArrayInnerAItemAResult =
-                                    __jsonInnerValArrayInnerAItem;
+                        const __D2 = [];
+                        for (const __D2AItem of json.array) {
+                            let __D2AItemAResult;
+                            if (typeof __D2AItem === "boolean") {
+                                __D2AItemAResult = __D2AItem;
                             } else {
                                 $fallback(
                                     "/array/[0]",
@@ -4701,11 +4493,9 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected boolean for /array/[0]",
                                 );
                             }
-                            jsonInnerValArrayInner.push(
-                                ____jsonInnerValArrayInnerAItemAResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.array = jsonInnerValArrayInner;
+                        __D1.array = __D2;
                     } else {
                         $fallback(
                             "/array",
@@ -4721,9 +4511,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.object === "object" &&
                         json.object !== null
                     ) {
-                        const jsonObjectInnerVal = {};
+                        const __D2 = {};
                         if (typeof json.object.string === "string") {
-                            jsonObjectInnerVal.string = json.object.string;
+                            __D2.string = json.object.string;
                         } else {
                             $fallback(
                                 "/object/string",
@@ -4732,7 +4522,7 @@ const $$ObjectWithEveryOptionalType = {
                             );
                         }
                         if (typeof json.object.boolean === "boolean") {
-                            jsonObjectInnerVal.boolean = json.object.boolean;
+                            __D2.boolean = json.object.boolean;
                         } else {
                             $fallback(
                                 "/object/boolean",
@@ -4744,12 +4534,9 @@ const $$ObjectWithEveryOptionalType = {
                             typeof json.object.timestamp === "object" &&
                             json.object.timestamp instanceof Date
                         ) {
-                            jsonObjectInnerVal.timestamp =
-                                json.object.timestamp;
+                            __D2.timestamp = json.object.timestamp;
                         } else if (typeof json.object.timestamp === "string") {
-                            jsonObjectInnerVal.timestamp = new Date(
-                                json.object.timestamp,
-                            );
+                            __D2.timestamp = new Date(json.object.timestamp);
                         } else {
                             $fallback(
                                 "/object/timestamp",
@@ -4757,7 +4544,7 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected instanceof Date or ISO Date string at /object/timestamp",
                             );
                         }
-                        jsonInnerVal.object = jsonObjectInnerVal;
+                        __D1.object = __D2;
                     } else {
                         $fallback(
                             "/object",
@@ -4773,17 +4560,11 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.record === "object" &&
                         json.record !== null
                     ) {
-                        const __jsonRecordRResult = {};
-                        for (const __jsonRecordRKey of Object.keys(
-                            json.record,
-                        )) {
-                            let ____jsonRecordRKeyRVal;
-                            if (
-                                typeof json.record[__jsonRecordRKey] ===
-                                "boolean"
-                            ) {
-                                ____jsonRecordRKeyRVal =
-                                    json.record[__jsonRecordRKey];
+                        const __D2RResult = {};
+                        for (const __D2RKey of Object.keys(json.record)) {
+                            let __D2RKeyRVal;
+                            if (typeof json.record[__D2RKey] === "boolean") {
+                                __D2RKeyRVal = json.record[__D2RKey];
                             } else {
                                 $fallback(
                                     "/record/[key]",
@@ -4791,10 +4572,9 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected boolean for /record/[key]",
                                 );
                             }
-                            __jsonRecordRResult[__jsonRecordRKey] =
-                                ____jsonRecordRKeyRVal;
+                            __D2RResult[__D2RKey] = __D2RKeyRVal;
                         }
-                        jsonInnerVal.record = __jsonRecordRResult;
+                        __D1.record = __D2RResult;
                     } else {
                         $fallback(
                             "/record",
@@ -4816,14 +4596,13 @@ const $$ObjectWithEveryOptionalType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "A";
+                                    const __D2 = {};
+                                    __D2.type = "A";
                                     if (
                                         typeof json.discriminator.title ===
                                         "string"
                                     ) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -4831,8 +4610,7 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected string at /discriminator/title",
                                         );
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -4847,14 +4625,13 @@ const $$ObjectWithEveryOptionalType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "B";
+                                    const __D2 = {};
+                                    __D2.type = "B";
                                     if (
                                         typeof json.discriminator.title ===
                                         "string"
                                     ) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -4866,7 +4643,7 @@ const $$ObjectWithEveryOptionalType = {
                                         typeof json.discriminator
                                             .description === "string"
                                     ) {
-                                        jsonDiscriminatorInnerVal.description =
+                                        __D2.description =
                                             json.discriminator.description;
                                     } else {
                                         $fallback(
@@ -4875,8 +4652,7 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected string at /discriminator/description",
                                         );
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -4909,9 +4685,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.nestedObject === "object" &&
                         json.nestedObject !== null
                     ) {
-                        const jsonNestedObjectInnerVal = {};
+                        const __D2 = {};
                         if (typeof json.nestedObject.id === "string") {
-                            jsonNestedObjectInnerVal.id = json.nestedObject.id;
+                            __D2.id = json.nestedObject.id;
                         } else {
                             $fallback(
                                 "/nestedObject/id",
@@ -4923,12 +4699,11 @@ const $$ObjectWithEveryOptionalType = {
                             typeof json.nestedObject.timestamp === "object" &&
                             json.nestedObject.timestamp instanceof Date
                         ) {
-                            jsonNestedObjectInnerVal.timestamp =
-                                json.nestedObject.timestamp;
+                            __D2.timestamp = json.nestedObject.timestamp;
                         } else if (
                             typeof json.nestedObject.timestamp === "string"
                         ) {
-                            jsonNestedObjectInnerVal.timestamp = new Date(
+                            __D2.timestamp = new Date(
                                 json.nestedObject.timestamp,
                             );
                         } else {
@@ -4942,10 +4717,9 @@ const $$ObjectWithEveryOptionalType = {
                             typeof json.nestedObject.data === "object" &&
                             json.nestedObject.data !== null
                         ) {
-                            const jsonNestedObjectDataInnerVal = {};
+                            const __D3 = {};
                             if (typeof json.nestedObject.data.id === "string") {
-                                jsonNestedObjectDataInnerVal.id =
-                                    json.nestedObject.data.id;
+                                __D3.id = json.nestedObject.data.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/id",
@@ -4958,14 +4732,15 @@ const $$ObjectWithEveryOptionalType = {
                                     "object" &&
                                 json.nestedObject.data.timestamp instanceof Date
                             ) {
-                                jsonNestedObjectDataInnerVal.timestamp =
+                                __D3.timestamp =
                                     json.nestedObject.data.timestamp;
                             } else if (
                                 typeof json.nestedObject.data.timestamp ===
                                 "string"
                             ) {
-                                jsonNestedObjectDataInnerVal.timestamp =
-                                    new Date(json.nestedObject.data.timestamp);
+                                __D3.timestamp = new Date(
+                                    json.nestedObject.data.timestamp,
+                                );
                             } else {
                                 $fallback(
                                     "/nestedObject/data/timestamp",
@@ -4978,13 +4753,12 @@ const $$ObjectWithEveryOptionalType = {
                                     "object" &&
                                 json.nestedObject.data.data !== null
                             ) {
-                                const jsonNestedObjectDataDataInnerVal = {};
+                                const __D4 = {};
                                 if (
                                     typeof json.nestedObject.data.data.id ===
                                     "string"
                                 ) {
-                                    jsonNestedObjectDataDataInnerVal.id =
-                                        json.nestedObject.data.data.id;
+                                    __D4.id = json.nestedObject.data.data.id;
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/data/id",
@@ -4998,16 +4772,15 @@ const $$ObjectWithEveryOptionalType = {
                                     json.nestedObject.data.data
                                         .timestamp instanceof Date
                                 ) {
-                                    jsonNestedObjectDataDataInnerVal.timestamp =
+                                    __D4.timestamp =
                                         json.nestedObject.data.data.timestamp;
                                 } else if (
                                     typeof json.nestedObject.data.data
                                         .timestamp === "string"
                                 ) {
-                                    jsonNestedObjectDataDataInnerVal.timestamp =
-                                        new Date(
-                                            json.nestedObject.data.data.timestamp,
-                                        );
+                                    __D4.timestamp = new Date(
+                                        json.nestedObject.data.data.timestamp,
+                                    );
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/data/timestamp",
@@ -5015,8 +4788,7 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                                     );
                                 }
-                                jsonNestedObjectDataInnerVal.data =
-                                    jsonNestedObjectDataDataInnerVal;
+                                __D3.data = __D4;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data",
@@ -5024,8 +4796,7 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected object",
                                 );
                             }
-                            jsonNestedObjectInnerVal.data =
-                                jsonNestedObjectDataInnerVal;
+                            __D2.data = __D3;
                         } else {
                             $fallback(
                                 "/nestedObject/data",
@@ -5033,7 +4804,7 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerVal.nestedObject = jsonNestedObjectInnerVal;
+                        __D1.nestedObject = __D2;
                     } else {
                         $fallback(
                             "/nestedObject",
@@ -5046,32 +4817,20 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(json.nestedArray)) {
-                        const jsonInnerValNestedArrayInner = [];
-                        for (const __jsonInnerValNestedArrayInnerAItem of json.nestedArray) {
-                            let ____jsonInnerValNestedArrayInnerAItemAResult;
-                            if (
-                                Array.isArray(
-                                    __jsonInnerValNestedArrayInnerAItem,
-                                )
-                            ) {
-                                const jsonInnerValNestedArrayInnerAItemAResultInner =
-                                    [];
-                                for (const __jsonInnerValNestedArrayInnerAItemAResultInnerAItem of __jsonInnerValNestedArrayInnerAItem) {
-                                    let ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
+                        const __D2 = [];
+                        for (const __D2AItem of json.nestedArray) {
+                            let __D2AItemAResult;
+                            if (Array.isArray(__D2AItem)) {
+                                const __D3 = [];
+                                for (const __D3AItem of __D2AItem) {
+                                    let __D3AItemAResult;
                                     if (
-                                        typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                            "object" &&
-                                        __jsonInnerValNestedArrayInnerAItemAResultInnerAItem !==
-                                            null
+                                        typeof __D3AItem === "object" &&
+                                        __D3AItem !== null
                                     ) {
-                                        const jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
-                                            {};
-                                        if (
-                                            typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                        const __D4 = {};
+                                        if (typeof __D3AItem.id === "string") {
+                                            __D4.id = __D3AItem.id;
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]/id",
@@ -5080,21 +4839,19 @@ const $$ObjectWithEveryOptionalType = {
                                             );
                                         }
                                         if (
-                                            typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                            typeof __D3AItem.timestamp ===
                                                 "object" &&
-                                            __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
-                                                Date
+                                            __D3AItem.timestamp instanceof Date
                                         ) {
-                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
+                                            __D4.timestamp =
+                                                __D3AItem.timestamp;
                                         } else if (
-                                            typeof __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                            typeof __D3AItem.timestamp ===
                                             "string"
                                         ) {
-                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                                new Date(
-                                                    __jsonInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
-                                                );
+                                            __D4.timestamp = new Date(
+                                                __D3AItem.timestamp,
+                                            );
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]/timestamp",
@@ -5102,8 +4859,7 @@ const $$ObjectWithEveryOptionalType = {
                                                 "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                             );
                                         }
-                                        ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                            jsonInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
+                                        __D3AItemAResult = __D4;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]",
@@ -5111,12 +4867,9 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected object",
                                         );
                                     }
-                                    jsonInnerValNestedArrayInnerAItemAResultInner.push(
-                                        ____jsonInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
-                                    );
+                                    __D3.push(__D3AItemAResult);
                                 }
-                                ____jsonInnerValNestedArrayInnerAItemAResult =
-                                    jsonInnerValNestedArrayInnerAItemAResultInner;
+                                __D2AItemAResult = __D3;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]",
@@ -5124,11 +4877,9 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected Array",
                                 );
                             }
-                            jsonInnerValNestedArrayInner.push(
-                                ____jsonInnerValNestedArrayInnerAItemAResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.nestedArray = jsonInnerValNestedArrayInner;
+                        __D1.nestedArray = __D2;
                     } else {
                         $fallback(
                             "/nestedArray",
@@ -5137,7 +4888,7 @@ const $$ObjectWithEveryOptionalType = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -5145,17 +4896,17 @@ const $$ObjectWithEveryOptionalType = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.any === "undefined") {
                 // ignore undefined
             } else {
-                inputInnerVal.any = input.any;
+                __D1.any = input.any;
             }
             if (typeof input.boolean === "undefined") {
                 // ignore undefined
             } else {
                 if (typeof input.boolean === "boolean") {
-                    inputInnerVal.boolean = input.boolean;
+                    __D1.boolean = input.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -5168,7 +4919,7 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.string === "string") {
-                    inputInnerVal.string = input.string;
+                    __D1.string = input.string;
                 } else {
                     $fallback(
                         "/string",
@@ -5184,9 +4935,9 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.timestamp === "object" &&
                     input.timestamp instanceof Date
                 ) {
-                    inputInnerVal.timestamp = input.timestamp;
+                    __D1.timestamp = input.timestamp;
                 } else if (typeof input.timestamp === "string") {
-                    inputInnerVal.timestamp = new Date(input.timestamp);
+                    __D1.timestamp = new Date(input.timestamp);
                 } else {
                     $fallback(
                         "/timestamp",
@@ -5202,7 +4953,7 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.float32 === "number" &&
                     !Number.isNaN(input.float32)
                 ) {
-                    inputInnerVal.float32 = input.float32;
+                    __D1.float32 = input.float32;
                 } else {
                     $fallback(
                         "/float32",
@@ -5218,7 +4969,7 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.float64 === "number" &&
                     !Number.isNaN(input.float64)
                 ) {
-                    inputInnerVal.float64 = input.float64;
+                    __D1.float64 = input.float64;
                 } else {
                     $fallback(
                         "/float64",
@@ -5236,7 +4987,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.int8 >= -128 &&
                     input.int8 <= 127
                 ) {
-                    inputInnerVal.int8 = input.int8;
+                    __D1.int8 = input.int8;
                 } else {
                     $fallback(
                         "/int8",
@@ -5254,7 +5005,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.uint8 >= 0 &&
                     input.uint8 <= 255
                 ) {
-                    inputInnerVal.uint8 = input.uint8;
+                    __D1.uint8 = input.uint8;
                 } else {
                     $fallback(
                         "/uint8",
@@ -5272,7 +5023,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.int16 >= -32768 &&
                     input.int16 <= 32767
                 ) {
-                    inputInnerVal.int16 = input.int16;
+                    __D1.int16 = input.int16;
                 } else {
                     $fallback(
                         "/int16",
@@ -5290,7 +5041,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.uint16 >= 0 &&
                     input.uint16 <= 65535
                 ) {
-                    inputInnerVal.uint16 = input.uint16;
+                    __D1.uint16 = input.uint16;
                 } else {
                     $fallback(
                         "/uint16",
@@ -5308,7 +5059,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.int32 >= -2147483648 &&
                     input.int32 <= 2147483647
                 ) {
-                    inputInnerVal.int32 = input.int32;
+                    __D1.int32 = input.int32;
                 } else {
                     $fallback(
                         "/int32",
@@ -5326,7 +5077,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.uint32 >= 0 &&
                     input.uint32 <= 4294967295
                 ) {
-                    inputInnerVal.uint32 = input.uint32;
+                    __D1.uint32 = input.uint32;
                 } else {
                     $fallback(
                         "/uint32",
@@ -5344,7 +5095,7 @@ const $$ObjectWithEveryOptionalType = {
                 ) {
                     try {
                         const val = BigInt(input.int64);
-                        inputInnerVal.int64 = val;
+                        __D1.int64 = val;
                     } catch (err) {
                         $fallback(
                             "/int64",
@@ -5353,7 +5104,7 @@ const $$ObjectWithEveryOptionalType = {
                         );
                     }
                 } else if (typeof input.int64 === "bigint") {
-                    inputInnerVal.int64 = input.int64;
+                    __D1.int64 = input.int64;
                 } else {
                     $fallback(
                         "/int64",
@@ -5372,7 +5123,7 @@ const $$ObjectWithEveryOptionalType = {
                     try {
                         const val = BigInt(input.uint64);
                         if (val >= BigInt("0")) {
-                            inputInnerVal.uint64 = val;
+                            __D1.uint64 = val;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -5389,7 +5140,7 @@ const $$ObjectWithEveryOptionalType = {
                     }
                 } else if (typeof input.uint64 === "bigint") {
                     if (input.uint64 >= BigInt("0")) {
-                        inputInnerVal.uint64 = input.uint64;
+                        __D1.uint64 = input.uint64;
                     } else {
                         $fallback(
                             "/uint64",
@@ -5414,7 +5165,7 @@ const $$ObjectWithEveryOptionalType = {
                         input.enumerator === "B" ||
                         input.enumerator === "C"
                     ) {
-                        inputInnerVal.enumerator = input.enumerator;
+                        __D1.enumerator = input.enumerator;
                     } else {
                         $fallback(
                             "/enumerator",
@@ -5434,14 +5185,11 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (Array.isArray(input.array)) {
-                    const inputInnerValArrayInner = [];
-                    for (const __inputInnerValArrayInnerAItem of input.array) {
-                        let ____inputInnerValArrayInnerAItemAResult;
-                        if (
-                            typeof __inputInnerValArrayInnerAItem === "boolean"
-                        ) {
-                            ____inputInnerValArrayInnerAItemAResult =
-                                __inputInnerValArrayInnerAItem;
+                    const __D2 = [];
+                    for (const __D2AItem of input.array) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "boolean") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -5449,11 +5197,9 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        inputInnerValArrayInner.push(
-                            ____inputInnerValArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.array = inputInnerValArrayInner;
+                    __D1.array = __D2;
                 } else {
                     $fallback(
                         "/array",
@@ -5466,9 +5212,9 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.object === "object" && input.object !== null) {
-                    const inputObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof input.object.string === "string") {
-                        inputObjectInnerVal.string = input.object.string;
+                        __D2.string = input.object.string;
                     } else {
                         $fallback(
                             "/object/string",
@@ -5477,7 +5223,7 @@ const $$ObjectWithEveryOptionalType = {
                         );
                     }
                     if (typeof input.object.boolean === "boolean") {
-                        inputObjectInnerVal.boolean = input.object.boolean;
+                        __D2.boolean = input.object.boolean;
                     } else {
                         $fallback(
                             "/object/boolean",
@@ -5489,11 +5235,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof input.object.timestamp === "object" &&
                         input.object.timestamp instanceof Date
                     ) {
-                        inputObjectInnerVal.timestamp = input.object.timestamp;
+                        __D2.timestamp = input.object.timestamp;
                     } else if (typeof input.object.timestamp === "string") {
-                        inputObjectInnerVal.timestamp = new Date(
-                            input.object.timestamp,
-                        );
+                        __D2.timestamp = new Date(input.object.timestamp);
                     } else {
                         $fallback(
                             "/object/timestamp",
@@ -5501,7 +5245,7 @@ const $$ObjectWithEveryOptionalType = {
                             "Expected instanceof Date or ISO Date string at /object/timestamp",
                         );
                     }
-                    inputInnerVal.object = inputObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -5514,14 +5258,11 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.record === "object" && input.record !== null) {
-                    const __inputRecordRResult = {};
-                    for (const __inputRecordRKey of Object.keys(input.record)) {
-                        let ____inputRecordRKeyRVal;
-                        if (
-                            typeof input.record[__inputRecordRKey] === "boolean"
-                        ) {
-                            ____inputRecordRKeyRVal =
-                                input.record[__inputRecordRKey];
+                    const __D2RResult = {};
+                    for (const __D2RKey of Object.keys(input.record)) {
+                        let __D2RKeyRVal;
+                        if (typeof input.record[__D2RKey] === "boolean") {
+                            __D2RKeyRVal = input.record[__D2RKey];
                         } else {
                             $fallback(
                                 "/record/[key]",
@@ -5529,10 +5270,9 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected boolean for /record/[key]",
                             );
                         }
-                        __inputRecordRResult[__inputRecordRKey] =
-                            ____inputRecordRKeyRVal;
+                        __D2RResult[__D2RKey] = __D2RKeyRVal;
                     }
-                    inputInnerVal.record = __inputRecordRResult;
+                    __D1.record = __D2RResult;
                 } else {
                     $fallback(
                         "/record",
@@ -5554,14 +5294,13 @@ const $$ObjectWithEveryOptionalType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "A";
+                                const __D2 = {};
+                                __D2.type = "A";
                                 if (
                                     typeof input.discriminator.title ===
                                     "string"
                                 ) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -5569,8 +5308,7 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected string at /discriminator/title",
                                     );
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -5585,14 +5323,13 @@ const $$ObjectWithEveryOptionalType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "B";
+                                const __D2 = {};
+                                __D2.type = "B";
                                 if (
                                     typeof input.discriminator.title ===
                                     "string"
                                 ) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -5604,7 +5341,7 @@ const $$ObjectWithEveryOptionalType = {
                                     typeof input.discriminator.description ===
                                     "string"
                                 ) {
-                                    inputDiscriminatorInnerVal.description =
+                                    __D2.description =
                                         input.discriminator.description;
                                 } else {
                                     $fallback(
@@ -5613,8 +5350,7 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected string at /discriminator/description",
                                     );
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -5647,9 +5383,9 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.nestedObject === "object" &&
                     input.nestedObject !== null
                 ) {
-                    const inputNestedObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof input.nestedObject.id === "string") {
-                        inputNestedObjectInnerVal.id = input.nestedObject.id;
+                        __D2.id = input.nestedObject.id;
                     } else {
                         $fallback(
                             "/nestedObject/id",
@@ -5661,14 +5397,11 @@ const $$ObjectWithEveryOptionalType = {
                         typeof input.nestedObject.timestamp === "object" &&
                         input.nestedObject.timestamp instanceof Date
                     ) {
-                        inputNestedObjectInnerVal.timestamp =
-                            input.nestedObject.timestamp;
+                        __D2.timestamp = input.nestedObject.timestamp;
                     } else if (
                         typeof input.nestedObject.timestamp === "string"
                     ) {
-                        inputNestedObjectInnerVal.timestamp = new Date(
-                            input.nestedObject.timestamp,
-                        );
+                        __D2.timestamp = new Date(input.nestedObject.timestamp);
                     } else {
                         $fallback(
                             "/nestedObject/timestamp",
@@ -5680,10 +5413,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof input.nestedObject.data === "object" &&
                         input.nestedObject.data !== null
                     ) {
-                        const inputNestedObjectDataInnerVal = {};
+                        const __D3 = {};
                         if (typeof input.nestedObject.data.id === "string") {
-                            inputNestedObjectDataInnerVal.id =
-                                input.nestedObject.data.id;
+                            __D3.id = input.nestedObject.data.id;
                         } else {
                             $fallback(
                                 "/nestedObject/data/id",
@@ -5696,13 +5428,12 @@ const $$ObjectWithEveryOptionalType = {
                                 "object" &&
                             input.nestedObject.data.timestamp instanceof Date
                         ) {
-                            inputNestedObjectDataInnerVal.timestamp =
-                                input.nestedObject.data.timestamp;
+                            __D3.timestamp = input.nestedObject.data.timestamp;
                         } else if (
                             typeof input.nestedObject.data.timestamp ===
                             "string"
                         ) {
-                            inputNestedObjectDataInnerVal.timestamp = new Date(
+                            __D3.timestamp = new Date(
                                 input.nestedObject.data.timestamp,
                             );
                         } else {
@@ -5716,13 +5447,12 @@ const $$ObjectWithEveryOptionalType = {
                             typeof input.nestedObject.data.data === "object" &&
                             input.nestedObject.data.data !== null
                         ) {
-                            const inputNestedObjectDataDataInnerVal = {};
+                            const __D4 = {};
                             if (
                                 typeof input.nestedObject.data.data.id ===
                                 "string"
                             ) {
-                                inputNestedObjectDataDataInnerVal.id =
-                                    input.nestedObject.data.data.id;
+                                __D4.id = input.nestedObject.data.data.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/id",
@@ -5736,16 +5466,15 @@ const $$ObjectWithEveryOptionalType = {
                                 input.nestedObject.data.data
                                     .timestamp instanceof Date
                             ) {
-                                inputNestedObjectDataDataInnerVal.timestamp =
+                                __D4.timestamp =
                                     input.nestedObject.data.data.timestamp;
                             } else if (
                                 typeof input.nestedObject.data.data
                                     .timestamp === "string"
                             ) {
-                                inputNestedObjectDataDataInnerVal.timestamp =
-                                    new Date(
-                                        input.nestedObject.data.data.timestamp,
-                                    );
+                                __D4.timestamp = new Date(
+                                    input.nestedObject.data.data.timestamp,
+                                );
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/timestamp",
@@ -5753,8 +5482,7 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                                 );
                             }
-                            inputNestedObjectDataInnerVal.data =
-                                inputNestedObjectDataDataInnerVal;
+                            __D3.data = __D4;
                         } else {
                             $fallback(
                                 "/nestedObject/data/data",
@@ -5762,8 +5490,7 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected object",
                             );
                         }
-                        inputNestedObjectInnerVal.data =
-                            inputNestedObjectDataInnerVal;
+                        __D2.data = __D3;
                     } else {
                         $fallback(
                             "/nestedObject/data",
@@ -5771,7 +5498,7 @@ const $$ObjectWithEveryOptionalType = {
                             "Expected object",
                         );
                     }
-                    inputInnerVal.nestedObject = inputNestedObjectInnerVal;
+                    __D1.nestedObject = __D2;
                 } else {
                     $fallback(
                         "/nestedObject",
@@ -5784,30 +5511,20 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (Array.isArray(input.nestedArray)) {
-                    const inputInnerValNestedArrayInner = [];
-                    for (const __inputInnerValNestedArrayInnerAItem of input.nestedArray) {
-                        let ____inputInnerValNestedArrayInnerAItemAResult;
-                        if (
-                            Array.isArray(__inputInnerValNestedArrayInnerAItem)
-                        ) {
-                            const inputInnerValNestedArrayInnerAItemAResultInner =
-                                [];
-                            for (const __inputInnerValNestedArrayInnerAItemAResultInnerAItem of __inputInnerValNestedArrayInnerAItem) {
-                                let ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult;
+                    const __D2 = [];
+                    for (const __D2AItem of input.nestedArray) {
+                        let __D2AItemAResult;
+                        if (Array.isArray(__D2AItem)) {
+                            const __D3 = [];
+                            for (const __D3AItem of __D2AItem) {
+                                let __D3AItemAResult;
                                 if (
-                                    typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem ===
-                                        "object" &&
-                                    __inputInnerValNestedArrayInnerAItemAResultInnerAItem !==
-                                        null
+                                    typeof __D3AItem === "object" &&
+                                    __D3AItem !== null
                                 ) {
-                                    const inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal =
-                                        {};
-                                    if (
-                                        typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id ===
-                                        "string"
-                                    ) {
-                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.id =
-                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.id;
+                                    const __D4 = {};
+                                    if (typeof __D3AItem.id === "string") {
+                                        __D4.id = __D3AItem.id;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/id",
@@ -5816,21 +5533,17 @@ const $$ObjectWithEveryOptionalType = {
                                         );
                                     }
                                     if (
-                                        typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
+                                        typeof __D3AItem.timestamp ===
                                             "object" &&
-                                        __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp instanceof
-                                            Date
+                                        __D3AItem.timestamp instanceof Date
                                     ) {
-                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                            __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp;
+                                        __D4.timestamp = __D3AItem.timestamp;
                                     } else if (
-                                        typeof __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp ===
-                                        "string"
+                                        typeof __D3AItem.timestamp === "string"
                                     ) {
-                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal.timestamp =
-                                            new Date(
-                                                __inputInnerValNestedArrayInnerAItemAResultInnerAItem.timestamp,
-                                            );
+                                        __D4.timestamp = new Date(
+                                            __D3AItem.timestamp,
+                                        );
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/timestamp",
@@ -5838,8 +5551,7 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                         );
                                     }
-                                    ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult =
-                                        inputInnerValNestedArrayInnerAItemAResultInnerAItemInnerVal;
+                                    __D3AItemAResult = __D4;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]",
@@ -5847,12 +5559,9 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected object",
                                     );
                                 }
-                                inputInnerValNestedArrayInnerAItemAResultInner.push(
-                                    ____inputInnerValNestedArrayInnerAItemAResultInnerAItemAResult,
-                                );
+                                __D3.push(__D3AItemAResult);
                             }
-                            ____inputInnerValNestedArrayInnerAItemAResult =
-                                inputInnerValNestedArrayInnerAItemAResultInner;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/nestedArray/[0]",
@@ -5860,11 +5569,9 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected Array",
                             );
                         }
-                        inputInnerValNestedArrayInner.push(
-                            ____inputInnerValNestedArrayInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.nestedArray = inputInnerValNestedArrayInner;
+                    __D1.nestedArray = __D2;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -5873,7 +5580,7 @@ const $$ObjectWithEveryOptionalType = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6310,14 +6017,14 @@ const $$AutoReconnectParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.messageCount === "number" &&
                     Number.isInteger(json.messageCount) &&
                     json.messageCount >= 0 &&
                     json.messageCount <= 255
                 ) {
-                    jsonInnerVal.messageCount = json.messageCount;
+                    __D1.messageCount = json.messageCount;
                 } else {
                     $fallback(
                         "/messageCount",
@@ -6325,7 +6032,7 @@ const $$AutoReconnectParams = {
                         "Expected valid integer between 0 and 255",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6333,14 +6040,14 @@ const $$AutoReconnectParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.messageCount === "number" &&
                 Number.isInteger(input.messageCount) &&
                 input.messageCount >= 0 &&
                 input.messageCount <= 255
             ) {
-                inputInnerVal.messageCount = input.messageCount;
+                __D1.messageCount = input.messageCount;
             } else {
                 $fallback(
                     "/messageCount",
@@ -6348,7 +6055,7 @@ const $$AutoReconnectParams = {
                     "Expected valid integer between 0 and 255",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6383,14 +6090,14 @@ const $$AutoReconnectResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.count === "number" &&
                     Number.isInteger(json.count) &&
                     json.count >= 0 &&
                     json.count <= 255
                 ) {
-                    jsonInnerVal.count = json.count;
+                    __D1.count = json.count;
                 } else {
                     $fallback(
                         "/count",
@@ -6399,7 +6106,7 @@ const $$AutoReconnectResponse = {
                     );
                 }
                 if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                    __D1.message = json.message;
                 } else {
                     $fallback(
                         "/message",
@@ -6407,7 +6114,7 @@ const $$AutoReconnectResponse = {
                         "Expected string at /message",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6415,14 +6122,14 @@ const $$AutoReconnectResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.count === "number" &&
                 Number.isInteger(input.count) &&
                 input.count >= 0 &&
                 input.count <= 255
             ) {
-                inputInnerVal.count = input.count;
+                __D1.count = input.count;
             } else {
                 $fallback(
                     "/count",
@@ -6431,7 +6138,7 @@ const $$AutoReconnectResponse = {
                 );
             }
             if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+                __D1.message = input.message;
             } else {
                 $fallback(
                     "/message",
@@ -6439,7 +6146,7 @@ const $$AutoReconnectResponse = {
                     "Expected string at /message",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6475,14 +6182,14 @@ const $$StreamConnectionErrorTestParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.statusCode === "number" &&
                     Number.isInteger(json.statusCode) &&
                     json.statusCode >= 0 &&
                     json.statusCode <= 65535
                 ) {
-                    jsonInnerVal.statusCode = json.statusCode;
+                    __D1.statusCode = json.statusCode;
                 } else {
                     $fallback(
                         "/statusCode",
@@ -6491,7 +6198,7 @@ const $$StreamConnectionErrorTestParams = {
                     );
                 }
                 if (typeof json.statusMessage === "string") {
-                    jsonInnerVal.statusMessage = json.statusMessage;
+                    __D1.statusMessage = json.statusMessage;
                 } else {
                     $fallback(
                         "/statusMessage",
@@ -6499,7 +6206,7 @@ const $$StreamConnectionErrorTestParams = {
                         "Expected string at /statusMessage",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6507,14 +6214,14 @@ const $$StreamConnectionErrorTestParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.statusCode === "number" &&
                 Number.isInteger(input.statusCode) &&
                 input.statusCode >= 0 &&
                 input.statusCode <= 65535
             ) {
-                inputInnerVal.statusCode = input.statusCode;
+                __D1.statusCode = input.statusCode;
             } else {
                 $fallback(
                     "/statusCode",
@@ -6523,7 +6230,7 @@ const $$StreamConnectionErrorTestParams = {
                 );
             }
             if (typeof input.statusMessage === "string") {
-                inputInnerVal.statusMessage = input.statusMessage;
+                __D1.statusMessage = input.statusMessage;
             } else {
                 $fallback(
                     "/statusMessage",
@@ -6531,7 +6238,7 @@ const $$StreamConnectionErrorTestParams = {
                     "Expected string at /statusMessage",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6566,9 +6273,9 @@ const $$StreamConnectionErrorTestResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                    __D1.message = json.message;
                 } else {
                     $fallback(
                         "/message",
@@ -6576,7 +6283,7 @@ const $$StreamConnectionErrorTestResponse = {
                         "Expected string at /message",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6584,9 +6291,9 @@ const $$StreamConnectionErrorTestResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+                __D1.message = input.message;
             } else {
                 $fallback(
                     "/message",
@@ -6594,7 +6301,7 @@ const $$StreamConnectionErrorTestResponse = {
                     "Expected string at /message",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6625,18 +6332,16 @@ const $$StreamLargeObjectsResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (Array.isArray(json.numbers)) {
-                    const jsonInnerValNumbersInner = [];
-                    for (const __jsonInnerValNumbersInnerAItem of json.numbers) {
-                        let ____jsonInnerValNumbersInnerAItemAResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.numbers) {
+                        let __D2AItemAResult;
                         if (
-                            typeof __jsonInnerValNumbersInnerAItem ===
-                                "number" &&
-                            !Number.isNaN(__jsonInnerValNumbersInnerAItem)
+                            typeof __D2AItem === "number" &&
+                            !Number.isNaN(__D2AItem)
                         ) {
-                            ____jsonInnerValNumbersInnerAItemAResult =
-                                __jsonInnerValNumbersInnerAItem;
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/numbers/[0]",
@@ -6644,11 +6349,9 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected number at /numbers/[0]",
                             );
                         }
-                        jsonInnerValNumbersInner.push(
-                            ____jsonInnerValNumbersInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.numbers = jsonInnerValNumbersInner;
+                    __D1.numbers = __D2;
                 } else {
                     $fallback(
                         "/numbers",
@@ -6657,21 +6360,16 @@ const $$StreamLargeObjectsResponse = {
                     );
                 }
                 if (Array.isArray(json.objects)) {
-                    const jsonInnerValObjectsInner = [];
-                    for (const __jsonInnerValObjectsInnerAItem of json.objects) {
-                        let ____jsonInnerValObjectsInnerAItemAResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.objects) {
+                        let __D2AItemAResult;
                         if (
-                            typeof __jsonInnerValObjectsInnerAItem ===
-                                "object" &&
-                            __jsonInnerValObjectsInnerAItem !== null
+                            typeof __D2AItem === "object" &&
+                            __D2AItem !== null
                         ) {
-                            const jsonInnerValObjectsInnerAItemInnerVal = {};
-                            if (
-                                typeof __jsonInnerValObjectsInnerAItem.id ===
-                                "string"
-                            ) {
-                                jsonInnerValObjectsInnerAItemInnerVal.id =
-                                    __jsonInnerValObjectsInnerAItem.id;
+                            const __D3 = {};
+                            if (typeof __D2AItem.id === "string") {
+                                __D3.id = __D2AItem.id;
                             } else {
                                 $fallback(
                                     "/objects/[0]/id",
@@ -6679,12 +6377,8 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/id",
                                 );
                             }
-                            if (
-                                typeof __jsonInnerValObjectsInnerAItem.name ===
-                                "string"
-                            ) {
-                                jsonInnerValObjectsInnerAItemInnerVal.name =
-                                    __jsonInnerValObjectsInnerAItem.name;
+                            if (typeof __D2AItem.name === "string") {
+                                __D3.name = __D2AItem.name;
                             } else {
                                 $fallback(
                                     "/objects/[0]/name",
@@ -6692,12 +6386,8 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/name",
                                 );
                             }
-                            if (
-                                typeof __jsonInnerValObjectsInnerAItem.email ===
-                                "string"
-                            ) {
-                                jsonInnerValObjectsInnerAItemInnerVal.email =
-                                    __jsonInnerValObjectsInnerAItem.email;
+                            if (typeof __D2AItem.email === "string") {
+                                __D3.email = __D2AItem.email;
                             } else {
                                 $fallback(
                                     "/objects/[0]/email",
@@ -6705,8 +6395,7 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/email",
                                 );
                             }
-                            ____jsonInnerValObjectsInnerAItemAResult =
-                                jsonInnerValObjectsInnerAItemInnerVal;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/objects/[0]",
@@ -6714,11 +6403,9 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerValObjectsInner.push(
-                            ____jsonInnerValObjectsInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.objects = jsonInnerValObjectsInner;
+                    __D1.objects = __D2;
                 } else {
                     $fallback(
                         "/objects",
@@ -6726,7 +6413,7 @@ const $$StreamLargeObjectsResponse = {
                         "Expected Array",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6734,17 +6421,16 @@ const $$StreamLargeObjectsResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (Array.isArray(input.numbers)) {
-                const inputInnerValNumbersInner = [];
-                for (const __inputInnerValNumbersInnerAItem of input.numbers) {
-                    let ____inputInnerValNumbersInnerAItemAResult;
+                const __D2 = [];
+                for (const __D2AItem of input.numbers) {
+                    let __D2AItemAResult;
                     if (
-                        typeof __inputInnerValNumbersInnerAItem === "number" &&
-                        !Number.isNaN(__inputInnerValNumbersInnerAItem)
+                        typeof __D2AItem === "number" &&
+                        !Number.isNaN(__D2AItem)
                     ) {
-                        ____inputInnerValNumbersInnerAItemAResult =
-                            __inputInnerValNumbersInnerAItem;
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/numbers/[0]",
@@ -6752,29 +6438,20 @@ const $$StreamLargeObjectsResponse = {
                             "Expected number at /numbers/[0]",
                         );
                     }
-                    inputInnerValNumbersInner.push(
-                        ____inputInnerValNumbersInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.numbers = inputInnerValNumbersInner;
+                __D1.numbers = __D2;
             } else {
                 $fallback("/numbers", "/properties/numbers", "Expected Array");
             }
             if (Array.isArray(input.objects)) {
-                const inputInnerValObjectsInner = [];
-                for (const __inputInnerValObjectsInnerAItem of input.objects) {
-                    let ____inputInnerValObjectsInnerAItemAResult;
-                    if (
-                        typeof __inputInnerValObjectsInnerAItem === "object" &&
-                        __inputInnerValObjectsInnerAItem !== null
-                    ) {
-                        const inputInnerValObjectsInnerAItemInnerVal = {};
-                        if (
-                            typeof __inputInnerValObjectsInnerAItem.id ===
-                            "string"
-                        ) {
-                            inputInnerValObjectsInnerAItemInnerVal.id =
-                                __inputInnerValObjectsInnerAItem.id;
+                const __D2 = [];
+                for (const __D2AItem of input.objects) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "object" && __D2AItem !== null) {
+                        const __D3 = {};
+                        if (typeof __D2AItem.id === "string") {
+                            __D3.id = __D2AItem.id;
                         } else {
                             $fallback(
                                 "/objects/[0]/id",
@@ -6782,12 +6459,8 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/id",
                             );
                         }
-                        if (
-                            typeof __inputInnerValObjectsInnerAItem.name ===
-                            "string"
-                        ) {
-                            inputInnerValObjectsInnerAItemInnerVal.name =
-                                __inputInnerValObjectsInnerAItem.name;
+                        if (typeof __D2AItem.name === "string") {
+                            __D3.name = __D2AItem.name;
                         } else {
                             $fallback(
                                 "/objects/[0]/name",
@@ -6795,12 +6468,8 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/name",
                             );
                         }
-                        if (
-                            typeof __inputInnerValObjectsInnerAItem.email ===
-                            "string"
-                        ) {
-                            inputInnerValObjectsInnerAItemInnerVal.email =
-                                __inputInnerValObjectsInnerAItem.email;
+                        if (typeof __D2AItem.email === "string") {
+                            __D3.email = __D2AItem.email;
                         } else {
                             $fallback(
                                 "/objects/[0]/email",
@@ -6808,8 +6477,7 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/email",
                             );
                         }
-                        ____inputInnerValObjectsInnerAItemAResult =
-                            inputInnerValObjectsInnerAItemInnerVal;
+                        __D2AItemAResult = __D3;
                     } else {
                         $fallback(
                             "/objects/[0]",
@@ -6817,15 +6485,13 @@ const $$StreamLargeObjectsResponse = {
                             "Expected object",
                         );
                     }
-                    inputInnerValObjectsInner.push(
-                        ____inputInnerValObjectsInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.objects = inputInnerValObjectsInner;
+                __D1.objects = __D2;
             } else {
                 $fallback("/objects", "/properties/objects", "Expected Array");
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6885,9 +6551,9 @@ const $$ChatMessageParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.channelId === "string") {
-                    jsonInnerVal.channelId = json.channelId;
+                    __D1.channelId = json.channelId;
                 } else {
                     $fallback(
                         "/channelId",
@@ -6895,7 +6561,7 @@ const $$ChatMessageParams = {
                         "Expected string at /channelId",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6903,9 +6569,9 @@ const $$ChatMessageParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.channelId === "string") {
-                inputInnerVal.channelId = input.channelId;
+                __D1.channelId = input.channelId;
             } else {
                 $fallback(
                     "/channelId",
@@ -6913,7 +6579,7 @@ const $$ChatMessageParams = {
                     "Expected string at /channelId",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6944,10 +6610,10 @@ const $$ChatMessage = {
                 switch (json.messageType) {
                     case "TEXT": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "TEXT";
+                            const __D1 = {};
+                            __D1.messageType = "TEXT";
                             if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
+                                __D1.id = json.id;
                             } else {
                                 $fallback(
                                     "/id",
@@ -6956,7 +6622,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
+                                __D1.channelId = json.channelId;
                             } else {
                                 $fallback(
                                     "/channelId",
@@ -6965,7 +6631,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
+                                __D1.userId = json.userId;
                             } else {
                                 $fallback(
                                     "/userId",
@@ -6977,9 +6643,9 @@ const $$ChatMessage = {
                                 typeof json.date === "object" &&
                                 json.date instanceof Date
                             ) {
-                                jsonInnerVal.date = json.date;
+                                __D1.date = json.date;
                             } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
+                                __D1.date = new Date(json.date);
                             } else {
                                 $fallback(
                                     "/date",
@@ -6988,7 +6654,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.text === "string") {
-                                jsonInnerVal.text = json.text;
+                                __D1.text = json.text;
                             } else {
                                 $fallback(
                                     "/text",
@@ -6996,7 +6662,7 @@ const $$ChatMessage = {
                                     "Expected string at /text",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -7004,10 +6670,10 @@ const $$ChatMessage = {
                     }
                     case "IMAGE": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "IMAGE";
+                            const __D1 = {};
+                            __D1.messageType = "IMAGE";
                             if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
+                                __D1.id = json.id;
                             } else {
                                 $fallback(
                                     "/id",
@@ -7016,7 +6682,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
+                                __D1.channelId = json.channelId;
                             } else {
                                 $fallback(
                                     "/channelId",
@@ -7025,7 +6691,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
+                                __D1.userId = json.userId;
                             } else {
                                 $fallback(
                                     "/userId",
@@ -7037,9 +6703,9 @@ const $$ChatMessage = {
                                 typeof json.date === "object" &&
                                 json.date instanceof Date
                             ) {
-                                jsonInnerVal.date = json.date;
+                                __D1.date = json.date;
                             } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
+                                __D1.date = new Date(json.date);
                             } else {
                                 $fallback(
                                     "/date",
@@ -7048,7 +6714,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.image === "string") {
-                                jsonInnerVal.image = json.image;
+                                __D1.image = json.image;
                             } else {
                                 $fallback(
                                     "/image",
@@ -7056,7 +6722,7 @@ const $$ChatMessage = {
                                     "Expected string at /image",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -7064,10 +6730,10 @@ const $$ChatMessage = {
                     }
                     case "URL": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "URL";
+                            const __D1 = {};
+                            __D1.messageType = "URL";
                             if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
+                                __D1.id = json.id;
                             } else {
                                 $fallback(
                                     "/id",
@@ -7076,7 +6742,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
+                                __D1.channelId = json.channelId;
                             } else {
                                 $fallback(
                                     "/channelId",
@@ -7085,7 +6751,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
+                                __D1.userId = json.userId;
                             } else {
                                 $fallback(
                                     "/userId",
@@ -7097,9 +6763,9 @@ const $$ChatMessage = {
                                 typeof json.date === "object" &&
                                 json.date instanceof Date
                             ) {
-                                jsonInnerVal.date = json.date;
+                                __D1.date = json.date;
                             } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
+                                __D1.date = new Date(json.date);
                             } else {
                                 $fallback(
                                     "/date",
@@ -7108,7 +6774,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.url === "string") {
-                                jsonInnerVal.url = json.url;
+                                __D1.url = json.url;
                             } else {
                                 $fallback(
                                     "/url",
@@ -7116,7 +6782,7 @@ const $$ChatMessage = {
                                     "Expected string at /url",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -7140,10 +6806,10 @@ const $$ChatMessage = {
             switch (input.messageType) {
                 case "TEXT": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "TEXT";
+                        const __D1 = {};
+                        __D1.messageType = "TEXT";
                         if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
+                            __D1.id = input.id;
                         } else {
                             $fallback(
                                 "/id",
@@ -7152,7 +6818,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
+                            __D1.channelId = input.channelId;
                         } else {
                             $fallback(
                                 "/channelId",
@@ -7161,7 +6827,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
+                            __D1.userId = input.userId;
                         } else {
                             $fallback(
                                 "/userId",
@@ -7173,9 +6839,9 @@ const $$ChatMessage = {
                             typeof input.date === "object" &&
                             input.date instanceof Date
                         ) {
-                            inputInnerVal.date = input.date;
+                            __D1.date = input.date;
                         } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
+                            __D1.date = new Date(input.date);
                         } else {
                             $fallback(
                                 "/date",
@@ -7184,7 +6850,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.text === "string") {
-                            inputInnerVal.text = input.text;
+                            __D1.text = input.text;
                         } else {
                             $fallback(
                                 "/text",
@@ -7192,7 +6858,7 @@ const $$ChatMessage = {
                                 "Expected string at /text",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -7200,10 +6866,10 @@ const $$ChatMessage = {
                 }
                 case "IMAGE": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "IMAGE";
+                        const __D1 = {};
+                        __D1.messageType = "IMAGE";
                         if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
+                            __D1.id = input.id;
                         } else {
                             $fallback(
                                 "/id",
@@ -7212,7 +6878,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
+                            __D1.channelId = input.channelId;
                         } else {
                             $fallback(
                                 "/channelId",
@@ -7221,7 +6887,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
+                            __D1.userId = input.userId;
                         } else {
                             $fallback(
                                 "/userId",
@@ -7233,9 +6899,9 @@ const $$ChatMessage = {
                             typeof input.date === "object" &&
                             input.date instanceof Date
                         ) {
-                            inputInnerVal.date = input.date;
+                            __D1.date = input.date;
                         } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
+                            __D1.date = new Date(input.date);
                         } else {
                             $fallback(
                                 "/date",
@@ -7244,7 +6910,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.image === "string") {
-                            inputInnerVal.image = input.image;
+                            __D1.image = input.image;
                         } else {
                             $fallback(
                                 "/image",
@@ -7252,7 +6918,7 @@ const $$ChatMessage = {
                                 "Expected string at /image",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -7260,10 +6926,10 @@ const $$ChatMessage = {
                 }
                 case "URL": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "URL";
+                        const __D1 = {};
+                        __D1.messageType = "URL";
                         if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
+                            __D1.id = input.id;
                         } else {
                             $fallback(
                                 "/id",
@@ -7272,7 +6938,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
+                            __D1.channelId = input.channelId;
                         } else {
                             $fallback(
                                 "/channelId",
@@ -7281,7 +6947,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
+                            __D1.userId = input.userId;
                         } else {
                             $fallback(
                                 "/userId",
@@ -7293,9 +6959,9 @@ const $$ChatMessage = {
                             typeof input.date === "object" &&
                             input.date instanceof Date
                         ) {
-                            inputInnerVal.date = input.date;
+                            __D1.date = input.date;
                         } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
+                            __D1.date = new Date(input.date);
                         } else {
                             $fallback(
                                 "/date",
@@ -7304,7 +6970,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.url === "string") {
-                            inputInnerVal.url = input.url;
+                            __D1.url = input.url;
                         } else {
                             $fallback(
                                 "/url",
@@ -7312,7 +6978,7 @@ const $$ChatMessage = {
                                 "Expected string at /url",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -7413,9 +7079,9 @@ const $$PostParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.postId === "string") {
-                    jsonInnerVal.postId = json.postId;
+                    __D1.postId = json.postId;
                 } else {
                     $fallback(
                         "/postId",
@@ -7423,7 +7089,7 @@ const $$PostParams = {
                         "Expected string at /postId",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -7431,9 +7097,9 @@ const $$PostParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.postId === "string") {
-                inputInnerVal.postId = input.postId;
+                __D1.postId = input.postId;
             } else {
                 $fallback(
                     "/postId",
@@ -7441,7 +7107,7 @@ const $$PostParams = {
                     "Expected string at /postId",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -7480,9 +7146,9 @@ const $$Post = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.id === "string") {
-                    jsonInnerVal.id = json.id;
+                    __D1.id = json.id;
                 } else {
                     $fallback(
                         "/id",
@@ -7491,7 +7157,7 @@ const $$Post = {
                     );
                 }
                 if (typeof json.title === "string") {
-                    jsonInnerVal.title = json.title;
+                    __D1.title = json.title;
                 } else {
                     $fallback(
                         "/title",
@@ -7505,7 +7171,7 @@ const $$Post = {
                         json.type === "image" ||
                         json.type === "video"
                     ) {
-                        jsonInnerVal.type = json.type;
+                        __D1.type = json.type;
                     } else {
                         $fallback(
                             "/type",
@@ -7521,10 +7187,10 @@ const $$Post = {
                     );
                 }
                 if (json.description === null) {
-                    jsonInnerVal.description = json.description;
+                    __D1.description = json.description;
                 } else {
                     if (typeof json.description === "string") {
-                        jsonInnerVal.description = json.description;
+                        __D1.description = json.description;
                     } else {
                         $fallback(
                             "/description",
@@ -7534,7 +7200,7 @@ const $$Post = {
                     }
                 }
                 if (typeof json.content === "string") {
-                    jsonInnerVal.content = json.content;
+                    __D1.content = json.content;
                 } else {
                     $fallback(
                         "/content",
@@ -7543,12 +7209,11 @@ const $$Post = {
                     );
                 }
                 if (Array.isArray(json.tags)) {
-                    const jsonInnerValTagsInner = [];
-                    for (const __jsonInnerValTagsInnerAItem of json.tags) {
-                        let ____jsonInnerValTagsInnerAItemAResult;
-                        if (typeof __jsonInnerValTagsInnerAItem === "string") {
-                            ____jsonInnerValTagsInnerAItemAResult =
-                                __jsonInnerValTagsInnerAItem;
+                    const __D2 = [];
+                    for (const __D2AItem of json.tags) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "string") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/tags/[0]",
@@ -7556,16 +7221,14 @@ const $$Post = {
                                 "Expected string at /tags/[0]",
                             );
                         }
-                        jsonInnerValTagsInner.push(
-                            ____jsonInnerValTagsInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.tags = jsonInnerValTagsInner;
+                    __D1.tags = __D2;
                 } else {
                     $fallback("/tags", "/properties/tags", "Expected Array");
                 }
                 if (typeof json.authorId === "string") {
-                    jsonInnerVal.authorId = json.authorId;
+                    __D1.authorId = json.authorId;
                 } else {
                     $fallback(
                         "/authorId",
@@ -7574,9 +7237,9 @@ const $$Post = {
                     );
                 }
                 if (typeof json.author === "object" && json.author !== null) {
-                    const jsonAuthorInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.author.id === "string") {
-                        jsonAuthorInnerVal.id = json.author.id;
+                        __D2.id = json.author.id;
                     } else {
                         $fallback(
                             "/author/id",
@@ -7585,7 +7248,7 @@ const $$Post = {
                         );
                     }
                     if (typeof json.author.name === "string") {
-                        jsonAuthorInnerVal.name = json.author.name;
+                        __D2.name = json.author.name;
                     } else {
                         $fallback(
                             "/author/name",
@@ -7594,10 +7257,10 @@ const $$Post = {
                         );
                     }
                     if (json.author.bio === null) {
-                        jsonAuthorInnerVal.bio = json.author.bio;
+                        __D2.bio = json.author.bio;
                     } else {
                         if (typeof json.author.bio === "string") {
-                            jsonAuthorInnerVal.bio = json.author.bio;
+                            __D2.bio = json.author.bio;
                         } else {
                             $fallback(
                                 "/author/bio",
@@ -7610,11 +7273,9 @@ const $$Post = {
                         typeof json.author.createdAt === "object" &&
                         json.author.createdAt instanceof Date
                     ) {
-                        jsonAuthorInnerVal.createdAt = json.author.createdAt;
+                        __D2.createdAt = json.author.createdAt;
                     } else if (typeof json.author.createdAt === "string") {
-                        jsonAuthorInnerVal.createdAt = new Date(
-                            json.author.createdAt,
-                        );
+                        __D2.createdAt = new Date(json.author.createdAt);
                     } else {
                         $fallback(
                             "/author/createdAt",
@@ -7626,11 +7287,9 @@ const $$Post = {
                         typeof json.author.updatedAt === "object" &&
                         json.author.updatedAt instanceof Date
                     ) {
-                        jsonAuthorInnerVal.updatedAt = json.author.updatedAt;
+                        __D2.updatedAt = json.author.updatedAt;
                     } else if (typeof json.author.updatedAt === "string") {
-                        jsonAuthorInnerVal.updatedAt = new Date(
-                            json.author.updatedAt,
-                        );
+                        __D2.updatedAt = new Date(json.author.updatedAt);
                     } else {
                         $fallback(
                             "/author/updatedAt",
@@ -7638,7 +7297,7 @@ const $$Post = {
                             "Expected instanceof Date or ISO Date string at /author/updatedAt",
                         );
                     }
-                    jsonInnerVal.author = jsonAuthorInnerVal;
+                    __D1.author = __D2;
                 } else {
                     $fallback(
                         "/author",
@@ -7650,9 +7309,9 @@ const $$Post = {
                     typeof json.createdAt === "object" &&
                     json.createdAt instanceof Date
                 ) {
-                    jsonInnerVal.createdAt = json.createdAt;
+                    __D1.createdAt = json.createdAt;
                 } else if (typeof json.createdAt === "string") {
-                    jsonInnerVal.createdAt = new Date(json.createdAt);
+                    __D1.createdAt = new Date(json.createdAt);
                 } else {
                     $fallback(
                         "/createdAt",
@@ -7664,9 +7323,9 @@ const $$Post = {
                     typeof json.updatedAt === "object" &&
                     json.updatedAt instanceof Date
                 ) {
-                    jsonInnerVal.updatedAt = json.updatedAt;
+                    __D1.updatedAt = json.updatedAt;
                 } else if (typeof json.updatedAt === "string") {
-                    jsonInnerVal.updatedAt = new Date(json.updatedAt);
+                    __D1.updatedAt = new Date(json.updatedAt);
                 } else {
                     $fallback(
                         "/updatedAt",
@@ -7674,7 +7333,7 @@ const $$Post = {
                         "Expected instanceof Date or ISO Date string at /updatedAt",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -7682,9 +7341,9 @@ const $$Post = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.id === "string") {
-                inputInnerVal.id = input.id;
+                __D1.id = input.id;
             } else {
                 $fallback(
                     "/id",
@@ -7693,7 +7352,7 @@ const $$Post = {
                 );
             }
             if (typeof input.title === "string") {
-                inputInnerVal.title = input.title;
+                __D1.title = input.title;
             } else {
                 $fallback(
                     "/title",
@@ -7707,7 +7366,7 @@ const $$Post = {
                     input.type === "image" ||
                     input.type === "video"
                 ) {
-                    inputInnerVal.type = input.type;
+                    __D1.type = input.type;
                 } else {
                     $fallback(
                         "/type",
@@ -7723,10 +7382,10 @@ const $$Post = {
                 );
             }
             if (input.description === null) {
-                inputInnerVal.description = input.description;
+                __D1.description = input.description;
             } else {
                 if (typeof input.description === "string") {
-                    inputInnerVal.description = input.description;
+                    __D1.description = input.description;
                 } else {
                     $fallback(
                         "/description",
@@ -7736,7 +7395,7 @@ const $$Post = {
                 }
             }
             if (typeof input.content === "string") {
-                inputInnerVal.content = input.content;
+                __D1.content = input.content;
             } else {
                 $fallback(
                     "/content",
@@ -7745,12 +7404,11 @@ const $$Post = {
                 );
             }
             if (Array.isArray(input.tags)) {
-                const inputInnerValTagsInner = [];
-                for (const __inputInnerValTagsInnerAItem of input.tags) {
-                    let ____inputInnerValTagsInnerAItemAResult;
-                    if (typeof __inputInnerValTagsInnerAItem === "string") {
-                        ____inputInnerValTagsInnerAItemAResult =
-                            __inputInnerValTagsInnerAItem;
+                const __D2 = [];
+                for (const __D2AItem of input.tags) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "string") {
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/tags/[0]",
@@ -7758,16 +7416,14 @@ const $$Post = {
                             "Expected string at /tags/[0]",
                         );
                     }
-                    inputInnerValTagsInner.push(
-                        ____inputInnerValTagsInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.tags = inputInnerValTagsInner;
+                __D1.tags = __D2;
             } else {
                 $fallback("/tags", "/properties/tags", "Expected Array");
             }
             if (typeof input.authorId === "string") {
-                inputInnerVal.authorId = input.authorId;
+                __D1.authorId = input.authorId;
             } else {
                 $fallback(
                     "/authorId",
@@ -7776,9 +7432,9 @@ const $$Post = {
                 );
             }
             if (typeof input.author === "object" && input.author !== null) {
-                const inputAuthorInnerVal = {};
+                const __D2 = {};
                 if (typeof input.author.id === "string") {
-                    inputAuthorInnerVal.id = input.author.id;
+                    __D2.id = input.author.id;
                 } else {
                     $fallback(
                         "/author/id",
@@ -7787,7 +7443,7 @@ const $$Post = {
                     );
                 }
                 if (typeof input.author.name === "string") {
-                    inputAuthorInnerVal.name = input.author.name;
+                    __D2.name = input.author.name;
                 } else {
                     $fallback(
                         "/author/name",
@@ -7796,10 +7452,10 @@ const $$Post = {
                     );
                 }
                 if (input.author.bio === null) {
-                    inputAuthorInnerVal.bio = input.author.bio;
+                    __D2.bio = input.author.bio;
                 } else {
                     if (typeof input.author.bio === "string") {
-                        inputAuthorInnerVal.bio = input.author.bio;
+                        __D2.bio = input.author.bio;
                     } else {
                         $fallback(
                             "/author/bio",
@@ -7812,11 +7468,9 @@ const $$Post = {
                     typeof input.author.createdAt === "object" &&
                     input.author.createdAt instanceof Date
                 ) {
-                    inputAuthorInnerVal.createdAt = input.author.createdAt;
+                    __D2.createdAt = input.author.createdAt;
                 } else if (typeof input.author.createdAt === "string") {
-                    inputAuthorInnerVal.createdAt = new Date(
-                        input.author.createdAt,
-                    );
+                    __D2.createdAt = new Date(input.author.createdAt);
                 } else {
                     $fallback(
                         "/author/createdAt",
@@ -7828,11 +7482,9 @@ const $$Post = {
                     typeof input.author.updatedAt === "object" &&
                     input.author.updatedAt instanceof Date
                 ) {
-                    inputAuthorInnerVal.updatedAt = input.author.updatedAt;
+                    __D2.updatedAt = input.author.updatedAt;
                 } else if (typeof input.author.updatedAt === "string") {
-                    inputAuthorInnerVal.updatedAt = new Date(
-                        input.author.updatedAt,
-                    );
+                    __D2.updatedAt = new Date(input.author.updatedAt);
                 } else {
                     $fallback(
                         "/author/updatedAt",
@@ -7840,7 +7492,7 @@ const $$Post = {
                         "Expected instanceof Date or ISO Date string at /author/updatedAt",
                     );
                 }
-                inputInnerVal.author = inputAuthorInnerVal;
+                __D1.author = __D2;
             } else {
                 $fallback("/author", "/properties/author", "Expected object");
             }
@@ -7848,9 +7500,9 @@ const $$Post = {
                 typeof input.createdAt === "object" &&
                 input.createdAt instanceof Date
             ) {
-                inputInnerVal.createdAt = input.createdAt;
+                __D1.createdAt = input.createdAt;
             } else if (typeof input.createdAt === "string") {
-                inputInnerVal.createdAt = new Date(input.createdAt);
+                __D1.createdAt = new Date(input.createdAt);
             } else {
                 $fallback(
                     "/createdAt",
@@ -7862,9 +7514,9 @@ const $$Post = {
                 typeof input.updatedAt === "object" &&
                 input.updatedAt instanceof Date
             ) {
-                inputInnerVal.updatedAt = input.updatedAt;
+                __D1.updatedAt = input.updatedAt;
             } else if (typeof input.updatedAt === "string") {
-                inputInnerVal.updatedAt = new Date(input.updatedAt);
+                __D1.updatedAt = new Date(input.updatedAt);
             } else {
                 $fallback(
                     "/updatedAt",
@@ -7872,7 +7524,7 @@ const $$Post = {
                     "Expected instanceof Date or ISO Date string at /updatedAt",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -7942,14 +7594,14 @@ const $$PostListParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.limit === "number" &&
                     Number.isInteger(json.limit) &&
                     json.limit >= -128 &&
                     json.limit <= 127
                 ) {
-                    jsonInnerVal.limit = json.limit;
+                    __D1.limit = json.limit;
                 } else {
                     $fallback(
                         "/limit",
@@ -7966,7 +7618,7 @@ const $$PostListParams = {
                             json.type === "image" ||
                             json.type === "video"
                         ) {
-                            jsonInnerVal.type = json.type;
+                            __D1.type = json.type;
                         } else {
                             $fallback(
                                 "/type",
@@ -7982,7 +7634,7 @@ const $$PostListParams = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -7990,14 +7642,14 @@ const $$PostListParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.limit === "number" &&
                 Number.isInteger(input.limit) &&
                 input.limit >= -128 &&
                 input.limit <= 127
             ) {
-                inputInnerVal.limit = input.limit;
+                __D1.limit = input.limit;
             } else {
                 $fallback(
                     "/limit",
@@ -8014,7 +7666,7 @@ const $$PostListParams = {
                         input.type === "image" ||
                         input.type === "video"
                     ) {
-                        inputInnerVal.type = input.type;
+                        __D1.type = input.type;
                     } else {
                         $fallback(
                             "/type",
@@ -8030,7 +7682,7 @@ const $$PostListParams = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -8068,14 +7720,14 @@ const $$PostListResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.total === "number" &&
                     Number.isInteger(json.total) &&
                     json.total >= -2147483648 &&
                     json.total <= 2147483647
                 ) {
-                    jsonInnerVal.total = json.total;
+                    __D1.total = json.total;
                 } else {
                     $fallback(
                         "/total",
@@ -8084,20 +7736,16 @@ const $$PostListResponse = {
                     );
                 }
                 if (Array.isArray(json.items)) {
-                    const jsonInnerValItemsInner = [];
-                    for (const __jsonInnerValItemsInnerAItem of json.items) {
-                        let ____jsonInnerValItemsInnerAItemAResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.items) {
+                        let __D2AItemAResult;
                         if (
-                            typeof __jsonInnerValItemsInnerAItem === "object" &&
-                            __jsonInnerValItemsInnerAItem !== null
+                            typeof __D2AItem === "object" &&
+                            __D2AItem !== null
                         ) {
-                            const jsonInnerValItemsInnerAItemInnerVal = {};
-                            if (
-                                typeof __jsonInnerValItemsInnerAItem.id ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerAItemInnerVal.id =
-                                    __jsonInnerValItemsInnerAItem.id;
+                            const __D3 = {};
+                            if (typeof __D2AItem.id === "string") {
+                                __D3.id = __D2AItem.id;
                             } else {
                                 $fallback(
                                     "/items/[0]/id",
@@ -8105,12 +7753,8 @@ const $$PostListResponse = {
                                     "Expected string at /items/[0]/id",
                                 );
                             }
-                            if (
-                                typeof __jsonInnerValItemsInnerAItem.title ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerAItemInnerVal.title =
-                                    __jsonInnerValItemsInnerAItem.title;
+                            if (typeof __D2AItem.title === "string") {
+                                __D3.title = __D2AItem.title;
                             } else {
                                 $fallback(
                                     "/items/[0]/title",
@@ -8118,20 +7762,13 @@ const $$PostListResponse = {
                                     "Expected string at /items/[0]/title",
                                 );
                             }
-                            if (
-                                typeof __jsonInnerValItemsInnerAItem.type ===
-                                "string"
-                            ) {
+                            if (typeof __D2AItem.type === "string") {
                                 if (
-                                    __jsonInnerValItemsInnerAItem.type ===
-                                        "text" ||
-                                    __jsonInnerValItemsInnerAItem.type ===
-                                        "image" ||
-                                    __jsonInnerValItemsInnerAItem.type ===
-                                        "video"
+                                    __D2AItem.type === "text" ||
+                                    __D2AItem.type === "image" ||
+                                    __D2AItem.type === "video"
                                 ) {
-                                    jsonInnerValItemsInnerAItemInnerVal.type =
-                                        __jsonInnerValItemsInnerAItem.type;
+                                    __D3.type = __D2AItem.type;
                                 } else {
                                     $fallback(
                                         "/items/[0]/type",
@@ -8146,19 +7783,11 @@ const $$PostListResponse = {
                                     "Expected one of the following values: [text, image, video] at /items/[0]/type.",
                                 );
                             }
-                            if (
-                                __jsonInnerValItemsInnerAItem.description ===
-                                null
-                            ) {
-                                jsonInnerValItemsInnerAItemInnerVal.description =
-                                    __jsonInnerValItemsInnerAItem.description;
+                            if (__D2AItem.description === null) {
+                                __D3.description = __D2AItem.description;
                             } else {
-                                if (
-                                    typeof __jsonInnerValItemsInnerAItem.description ===
-                                    "string"
-                                ) {
-                                    jsonInnerValItemsInnerAItemInnerVal.description =
-                                        __jsonInnerValItemsInnerAItem.description;
+                                if (typeof __D2AItem.description === "string") {
+                                    __D3.description = __D2AItem.description;
                                 } else {
                                     $fallback(
                                         "/items/[0]/description",
@@ -8167,12 +7796,8 @@ const $$PostListResponse = {
                                     );
                                 }
                             }
-                            if (
-                                typeof __jsonInnerValItemsInnerAItem.content ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerAItemInnerVal.content =
-                                    __jsonInnerValItemsInnerAItem.content;
+                            if (typeof __D2AItem.content === "string") {
+                                __D3.content = __D2AItem.content;
                             } else {
                                 $fallback(
                                     "/items/[0]/content",
@@ -8180,21 +7805,12 @@ const $$PostListResponse = {
                                     "Expected string at /items/[0]/content",
                                 );
                             }
-                            if (
-                                Array.isArray(
-                                    __jsonInnerValItemsInnerAItem.tags,
-                                )
-                            ) {
-                                const jsonInnerValItemsInnerAItemInnerValTagsInner =
-                                    [];
-                                for (const __jsonInnerValItemsInnerAItemInnerValTagsInnerAItem of __jsonInnerValItemsInnerAItem.tags) {
-                                    let ____jsonInnerValItemsInnerAItemInnerValTagsInnerAItemAResult;
-                                    if (
-                                        typeof __jsonInnerValItemsInnerAItemInnerValTagsInnerAItem ===
-                                        "string"
-                                    ) {
-                                        ____jsonInnerValItemsInnerAItemInnerValTagsInnerAItemAResult =
-                                            __jsonInnerValItemsInnerAItemInnerValTagsInnerAItem;
+                            if (Array.isArray(__D2AItem.tags)) {
+                                const __D4 = [];
+                                for (const __D4AItem of __D2AItem.tags) {
+                                    let __D4AItemAResult;
+                                    if (typeof __D4AItem === "string") {
+                                        __D4AItemAResult = __D4AItem;
                                     } else {
                                         $fallback(
                                             "/items/[0]/tags/[0]",
@@ -8202,12 +7818,9 @@ const $$PostListResponse = {
                                             "Expected string at /items/[0]/tags/[0]",
                                         );
                                     }
-                                    jsonInnerValItemsInnerAItemInnerValTagsInner.push(
-                                        ____jsonInnerValItemsInnerAItemInnerValTagsInnerAItemAResult,
-                                    );
+                                    __D4.push(__D4AItemAResult);
                                 }
-                                jsonInnerValItemsInnerAItemInnerVal.tags =
-                                    jsonInnerValItemsInnerAItemInnerValTagsInner;
+                                __D3.tags = __D4;
                             } else {
                                 $fallback(
                                     "/items/[0]/tags",
@@ -8215,12 +7828,8 @@ const $$PostListResponse = {
                                     "Expected Array",
                                 );
                             }
-                            if (
-                                typeof __jsonInnerValItemsInnerAItem.authorId ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerAItemInnerVal.authorId =
-                                    __jsonInnerValItemsInnerAItem.authorId;
+                            if (typeof __D2AItem.authorId === "string") {
+                                __D3.authorId = __D2AItem.authorId;
                             } else {
                                 $fallback(
                                     "/items/[0]/authorId",
@@ -8229,18 +7838,12 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof __jsonInnerValItemsInnerAItem.author ===
-                                    "object" &&
-                                __jsonInnerValItemsInnerAItem.author !== null
+                                typeof __D2AItem.author === "object" &&
+                                __D2AItem.author !== null
                             ) {
-                                const jsonInnerValItemsInnerAItemAuthorInnerVal =
-                                    {};
-                                if (
-                                    typeof __jsonInnerValItemsInnerAItem.author
-                                        .id === "string"
-                                ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.id =
-                                        __jsonInnerValItemsInnerAItem.author.id;
+                                const __D4 = {};
+                                if (typeof __D2AItem.author.id === "string") {
+                                    __D4.id = __D2AItem.author.id;
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/id",
@@ -8248,12 +7851,8 @@ const $$PostListResponse = {
                                         "Expected string at /items/[0]/author/id",
                                     );
                                 }
-                                if (
-                                    typeof __jsonInnerValItemsInnerAItem.author
-                                        .name === "string"
-                                ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.name =
-                                        __jsonInnerValItemsInnerAItem.author.name;
+                                if (typeof __D2AItem.author.name === "string") {
+                                    __D4.name = __D2AItem.author.name;
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/name",
@@ -8261,19 +7860,13 @@ const $$PostListResponse = {
                                         "Expected string at /items/[0]/author/name",
                                     );
                                 }
-                                if (
-                                    __jsonInnerValItemsInnerAItem.author.bio ===
-                                    null
-                                ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.bio =
-                                        __jsonInnerValItemsInnerAItem.author.bio;
+                                if (__D2AItem.author.bio === null) {
+                                    __D4.bio = __D2AItem.author.bio;
                                 } else {
                                     if (
-                                        typeof __jsonInnerValItemsInnerAItem
-                                            .author.bio === "string"
+                                        typeof __D2AItem.author.bio === "string"
                                     ) {
-                                        jsonInnerValItemsInnerAItemAuthorInnerVal.bio =
-                                            __jsonInnerValItemsInnerAItem.author.bio;
+                                        __D4.bio = __D2AItem.author.bio;
                                     } else {
                                         $fallback(
                                             "/items/[0]/author/bio",
@@ -8283,21 +7876,18 @@ const $$PostListResponse = {
                                     }
                                 }
                                 if (
-                                    typeof __jsonInnerValItemsInnerAItem.author
-                                        .createdAt === "object" &&
-                                    __jsonInnerValItemsInnerAItem.author
-                                        .createdAt instanceof Date
+                                    typeof __D2AItem.author.createdAt ===
+                                        "object" &&
+                                    __D2AItem.author.createdAt instanceof Date
                                 ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.createdAt =
-                                        __jsonInnerValItemsInnerAItem.author.createdAt;
+                                    __D4.createdAt = __D2AItem.author.createdAt;
                                 } else if (
-                                    typeof __jsonInnerValItemsInnerAItem.author
-                                        .createdAt === "string"
+                                    typeof __D2AItem.author.createdAt ===
+                                    "string"
                                 ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.createdAt =
-                                        new Date(
-                                            __jsonInnerValItemsInnerAItem.author.createdAt,
-                                        );
+                                    __D4.createdAt = new Date(
+                                        __D2AItem.author.createdAt,
+                                    );
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/createdAt",
@@ -8306,21 +7896,18 @@ const $$PostListResponse = {
                                     );
                                 }
                                 if (
-                                    typeof __jsonInnerValItemsInnerAItem.author
-                                        .updatedAt === "object" &&
-                                    __jsonInnerValItemsInnerAItem.author
-                                        .updatedAt instanceof Date
+                                    typeof __D2AItem.author.updatedAt ===
+                                        "object" &&
+                                    __D2AItem.author.updatedAt instanceof Date
                                 ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
-                                        __jsonInnerValItemsInnerAItem.author.updatedAt;
+                                    __D4.updatedAt = __D2AItem.author.updatedAt;
                                 } else if (
-                                    typeof __jsonInnerValItemsInnerAItem.author
-                                        .updatedAt === "string"
+                                    typeof __D2AItem.author.updatedAt ===
+                                    "string"
                                 ) {
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
-                                        new Date(
-                                            __jsonInnerValItemsInnerAItem.author.updatedAt,
-                                        );
+                                    __D4.updatedAt = new Date(
+                                        __D2AItem.author.updatedAt,
+                                    );
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/updatedAt",
@@ -8328,8 +7915,7 @@ const $$PostListResponse = {
                                         "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
                                     );
                                 }
-                                jsonInnerValItemsInnerAItemInnerVal.author =
-                                    jsonInnerValItemsInnerAItemAuthorInnerVal;
+                                __D3.author = __D4;
                             } else {
                                 $fallback(
                                     "/items/[0]/author",
@@ -8338,21 +7924,14 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof __jsonInnerValItemsInnerAItem.createdAt ===
-                                    "object" &&
-                                __jsonInnerValItemsInnerAItem.createdAt instanceof
-                                    Date
+                                typeof __D2AItem.createdAt === "object" &&
+                                __D2AItem.createdAt instanceof Date
                             ) {
-                                jsonInnerValItemsInnerAItemInnerVal.createdAt =
-                                    __jsonInnerValItemsInnerAItem.createdAt;
+                                __D3.createdAt = __D2AItem.createdAt;
                             } else if (
-                                typeof __jsonInnerValItemsInnerAItem.createdAt ===
-                                "string"
+                                typeof __D2AItem.createdAt === "string"
                             ) {
-                                jsonInnerValItemsInnerAItemInnerVal.createdAt =
-                                    new Date(
-                                        __jsonInnerValItemsInnerAItem.createdAt,
-                                    );
+                                __D3.createdAt = new Date(__D2AItem.createdAt);
                             } else {
                                 $fallback(
                                     "/items/[0]/createdAt",
@@ -8361,21 +7940,14 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof __jsonInnerValItemsInnerAItem.updatedAt ===
-                                    "object" &&
-                                __jsonInnerValItemsInnerAItem.updatedAt instanceof
-                                    Date
+                                typeof __D2AItem.updatedAt === "object" &&
+                                __D2AItem.updatedAt instanceof Date
                             ) {
-                                jsonInnerValItemsInnerAItemInnerVal.updatedAt =
-                                    __jsonInnerValItemsInnerAItem.updatedAt;
+                                __D3.updatedAt = __D2AItem.updatedAt;
                             } else if (
-                                typeof __jsonInnerValItemsInnerAItem.updatedAt ===
-                                "string"
+                                typeof __D2AItem.updatedAt === "string"
                             ) {
-                                jsonInnerValItemsInnerAItemInnerVal.updatedAt =
-                                    new Date(
-                                        __jsonInnerValItemsInnerAItem.updatedAt,
-                                    );
+                                __D3.updatedAt = new Date(__D2AItem.updatedAt);
                             } else {
                                 $fallback(
                                     "/items/[0]/updatedAt",
@@ -8383,8 +7955,7 @@ const $$PostListResponse = {
                                     "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
                                 );
                             }
-                            ____jsonInnerValItemsInnerAItemAResult =
-                                jsonInnerValItemsInnerAItemInnerVal;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/items/[0]",
@@ -8392,15 +7963,13 @@ const $$PostListResponse = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerValItemsInner.push(
-                            ____jsonInnerValItemsInnerAItemAResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.items = jsonInnerValItemsInner;
+                    __D1.items = __D2;
                 } else {
                     $fallback("/items", "/properties/items", "Expected Array");
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -8408,14 +7977,14 @@ const $$PostListResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.total === "number" &&
                 Number.isInteger(input.total) &&
                 input.total >= -2147483648 &&
                 input.total <= 2147483647
             ) {
-                inputInnerVal.total = input.total;
+                __D1.total = input.total;
             } else {
                 $fallback(
                     "/total",
@@ -8424,20 +7993,13 @@ const $$PostListResponse = {
                 );
             }
             if (Array.isArray(input.items)) {
-                const inputInnerValItemsInner = [];
-                for (const __inputInnerValItemsInnerAItem of input.items) {
-                    let ____inputInnerValItemsInnerAItemAResult;
-                    if (
-                        typeof __inputInnerValItemsInnerAItem === "object" &&
-                        __inputInnerValItemsInnerAItem !== null
-                    ) {
-                        const inputInnerValItemsInnerAItemInnerVal = {};
-                        if (
-                            typeof __inputInnerValItemsInnerAItem.id ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.id =
-                                __inputInnerValItemsInnerAItem.id;
+                const __D2 = [];
+                for (const __D2AItem of input.items) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "object" && __D2AItem !== null) {
+                        const __D3 = {};
+                        if (typeof __D2AItem.id === "string") {
+                            __D3.id = __D2AItem.id;
                         } else {
                             $fallback(
                                 "/items/[0]/id",
@@ -8445,12 +8007,8 @@ const $$PostListResponse = {
                                 "Expected string at /items/[0]/id",
                             );
                         }
-                        if (
-                            typeof __inputInnerValItemsInnerAItem.title ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.title =
-                                __inputInnerValItemsInnerAItem.title;
+                        if (typeof __D2AItem.title === "string") {
+                            __D3.title = __D2AItem.title;
                         } else {
                             $fallback(
                                 "/items/[0]/title",
@@ -8458,19 +8016,13 @@ const $$PostListResponse = {
                                 "Expected string at /items/[0]/title",
                             );
                         }
-                        if (
-                            typeof __inputInnerValItemsInnerAItem.type ===
-                            "string"
-                        ) {
+                        if (typeof __D2AItem.type === "string") {
                             if (
-                                __inputInnerValItemsInnerAItem.type ===
-                                    "text" ||
-                                __inputInnerValItemsInnerAItem.type ===
-                                    "image" ||
-                                __inputInnerValItemsInnerAItem.type === "video"
+                                __D2AItem.type === "text" ||
+                                __D2AItem.type === "image" ||
+                                __D2AItem.type === "video"
                             ) {
-                                inputInnerValItemsInnerAItemInnerVal.type =
-                                    __inputInnerValItemsInnerAItem.type;
+                                __D3.type = __D2AItem.type;
                             } else {
                                 $fallback(
                                     "/items/[0]/type",
@@ -8485,18 +8037,11 @@ const $$PostListResponse = {
                                 "Expected one of the following values: [text, image, video] at /items/[0]/type.",
                             );
                         }
-                        if (
-                            __inputInnerValItemsInnerAItem.description === null
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.description =
-                                __inputInnerValItemsInnerAItem.description;
+                        if (__D2AItem.description === null) {
+                            __D3.description = __D2AItem.description;
                         } else {
-                            if (
-                                typeof __inputInnerValItemsInnerAItem.description ===
-                                "string"
-                            ) {
-                                inputInnerValItemsInnerAItemInnerVal.description =
-                                    __inputInnerValItemsInnerAItem.description;
+                            if (typeof __D2AItem.description === "string") {
+                                __D3.description = __D2AItem.description;
                             } else {
                                 $fallback(
                                     "/items/[0]/description",
@@ -8505,12 +8050,8 @@ const $$PostListResponse = {
                                 );
                             }
                         }
-                        if (
-                            typeof __inputInnerValItemsInnerAItem.content ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.content =
-                                __inputInnerValItemsInnerAItem.content;
+                        if (typeof __D2AItem.content === "string") {
+                            __D3.content = __D2AItem.content;
                         } else {
                             $fallback(
                                 "/items/[0]/content",
@@ -8518,19 +8059,12 @@ const $$PostListResponse = {
                                 "Expected string at /items/[0]/content",
                             );
                         }
-                        if (
-                            Array.isArray(__inputInnerValItemsInnerAItem.tags)
-                        ) {
-                            const inputInnerValItemsInnerAItemInnerValTagsInner =
-                                [];
-                            for (const __inputInnerValItemsInnerAItemInnerValTagsInnerAItem of __inputInnerValItemsInnerAItem.tags) {
-                                let ____inputInnerValItemsInnerAItemInnerValTagsInnerAItemAResult;
-                                if (
-                                    typeof __inputInnerValItemsInnerAItemInnerValTagsInnerAItem ===
-                                    "string"
-                                ) {
-                                    ____inputInnerValItemsInnerAItemInnerValTagsInnerAItemAResult =
-                                        __inputInnerValItemsInnerAItemInnerValTagsInnerAItem;
+                        if (Array.isArray(__D2AItem.tags)) {
+                            const __D4 = [];
+                            for (const __D4AItem of __D2AItem.tags) {
+                                let __D4AItemAResult;
+                                if (typeof __D4AItem === "string") {
+                                    __D4AItemAResult = __D4AItem;
                                 } else {
                                     $fallback(
                                         "/items/[0]/tags/[0]",
@@ -8538,12 +8072,9 @@ const $$PostListResponse = {
                                         "Expected string at /items/[0]/tags/[0]",
                                     );
                                 }
-                                inputInnerValItemsInnerAItemInnerValTagsInner.push(
-                                    ____inputInnerValItemsInnerAItemInnerValTagsInnerAItemAResult,
-                                );
+                                __D4.push(__D4AItemAResult);
                             }
-                            inputInnerValItemsInnerAItemInnerVal.tags =
-                                inputInnerValItemsInnerAItemInnerValTagsInner;
+                            __D3.tags = __D4;
                         } else {
                             $fallback(
                                 "/items/[0]/tags",
@@ -8551,12 +8082,8 @@ const $$PostListResponse = {
                                 "Expected Array",
                             );
                         }
-                        if (
-                            typeof __inputInnerValItemsInnerAItem.authorId ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.authorId =
-                                __inputInnerValItemsInnerAItem.authorId;
+                        if (typeof __D2AItem.authorId === "string") {
+                            __D3.authorId = __D2AItem.authorId;
                         } else {
                             $fallback(
                                 "/items/[0]/authorId",
@@ -8565,18 +8092,12 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof __inputInnerValItemsInnerAItem.author ===
-                                "object" &&
-                            __inputInnerValItemsInnerAItem.author !== null
+                            typeof __D2AItem.author === "object" &&
+                            __D2AItem.author !== null
                         ) {
-                            const inputInnerValItemsInnerAItemAuthorInnerVal =
-                                {};
-                            if (
-                                typeof __inputInnerValItemsInnerAItem.author
-                                    .id === "string"
-                            ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.id =
-                                    __inputInnerValItemsInnerAItem.author.id;
+                            const __D4 = {};
+                            if (typeof __D2AItem.author.id === "string") {
+                                __D4.id = __D2AItem.author.id;
                             } else {
                                 $fallback(
                                     "/items/[0]/author/id",
@@ -8584,12 +8105,8 @@ const $$PostListResponse = {
                                     "Expected string at /items/[0]/author/id",
                                 );
                             }
-                            if (
-                                typeof __inputInnerValItemsInnerAItem.author
-                                    .name === "string"
-                            ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.name =
-                                    __inputInnerValItemsInnerAItem.author.name;
+                            if (typeof __D2AItem.author.name === "string") {
+                                __D4.name = __D2AItem.author.name;
                             } else {
                                 $fallback(
                                     "/items/[0]/author/name",
@@ -8597,19 +8114,11 @@ const $$PostListResponse = {
                                     "Expected string at /items/[0]/author/name",
                                 );
                             }
-                            if (
-                                __inputInnerValItemsInnerAItem.author.bio ===
-                                null
-                            ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.bio =
-                                    __inputInnerValItemsInnerAItem.author.bio;
+                            if (__D2AItem.author.bio === null) {
+                                __D4.bio = __D2AItem.author.bio;
                             } else {
-                                if (
-                                    typeof __inputInnerValItemsInnerAItem.author
-                                        .bio === "string"
-                                ) {
-                                    inputInnerValItemsInnerAItemAuthorInnerVal.bio =
-                                        __inputInnerValItemsInnerAItem.author.bio;
+                                if (typeof __D2AItem.author.bio === "string") {
+                                    __D4.bio = __D2AItem.author.bio;
                                 } else {
                                     $fallback(
                                         "/items/[0]/author/bio",
@@ -8619,21 +8128,17 @@ const $$PostListResponse = {
                                 }
                             }
                             if (
-                                typeof __inputInnerValItemsInnerAItem.author
-                                    .createdAt === "object" &&
-                                __inputInnerValItemsInnerAItem.author
-                                    .createdAt instanceof Date
+                                typeof __D2AItem.author.createdAt ===
+                                    "object" &&
+                                __D2AItem.author.createdAt instanceof Date
                             ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.createdAt =
-                                    __inputInnerValItemsInnerAItem.author.createdAt;
+                                __D4.createdAt = __D2AItem.author.createdAt;
                             } else if (
-                                typeof __inputInnerValItemsInnerAItem.author
-                                    .createdAt === "string"
+                                typeof __D2AItem.author.createdAt === "string"
                             ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.createdAt =
-                                    new Date(
-                                        __inputInnerValItemsInnerAItem.author.createdAt,
-                                    );
+                                __D4.createdAt = new Date(
+                                    __D2AItem.author.createdAt,
+                                );
                             } else {
                                 $fallback(
                                     "/items/[0]/author/createdAt",
@@ -8642,21 +8147,17 @@ const $$PostListResponse = {
                                 );
                             }
                             if (
-                                typeof __inputInnerValItemsInnerAItem.author
-                                    .updatedAt === "object" &&
-                                __inputInnerValItemsInnerAItem.author
-                                    .updatedAt instanceof Date
+                                typeof __D2AItem.author.updatedAt ===
+                                    "object" &&
+                                __D2AItem.author.updatedAt instanceof Date
                             ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
-                                    __inputInnerValItemsInnerAItem.author.updatedAt;
+                                __D4.updatedAt = __D2AItem.author.updatedAt;
                             } else if (
-                                typeof __inputInnerValItemsInnerAItem.author
-                                    .updatedAt === "string"
+                                typeof __D2AItem.author.updatedAt === "string"
                             ) {
-                                inputInnerValItemsInnerAItemAuthorInnerVal.updatedAt =
-                                    new Date(
-                                        __inputInnerValItemsInnerAItem.author.updatedAt,
-                                    );
+                                __D4.updatedAt = new Date(
+                                    __D2AItem.author.updatedAt,
+                                );
                             } else {
                                 $fallback(
                                     "/items/[0]/author/updatedAt",
@@ -8664,8 +8165,7 @@ const $$PostListResponse = {
                                     "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
                                 );
                             }
-                            inputInnerValItemsInnerAItemInnerVal.author =
-                                inputInnerValItemsInnerAItemAuthorInnerVal;
+                            __D3.author = __D4;
                         } else {
                             $fallback(
                                 "/items/[0]/author",
@@ -8674,21 +8174,12 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof __inputInnerValItemsInnerAItem.createdAt ===
-                                "object" &&
-                            __inputInnerValItemsInnerAItem.createdAt instanceof
-                                Date
+                            typeof __D2AItem.createdAt === "object" &&
+                            __D2AItem.createdAt instanceof Date
                         ) {
-                            inputInnerValItemsInnerAItemInnerVal.createdAt =
-                                __inputInnerValItemsInnerAItem.createdAt;
-                        } else if (
-                            typeof __inputInnerValItemsInnerAItem.createdAt ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.createdAt =
-                                new Date(
-                                    __inputInnerValItemsInnerAItem.createdAt,
-                                );
+                            __D3.createdAt = __D2AItem.createdAt;
+                        } else if (typeof __D2AItem.createdAt === "string") {
+                            __D3.createdAt = new Date(__D2AItem.createdAt);
                         } else {
                             $fallback(
                                 "/items/[0]/createdAt",
@@ -8697,21 +8188,12 @@ const $$PostListResponse = {
                             );
                         }
                         if (
-                            typeof __inputInnerValItemsInnerAItem.updatedAt ===
-                                "object" &&
-                            __inputInnerValItemsInnerAItem.updatedAt instanceof
-                                Date
+                            typeof __D2AItem.updatedAt === "object" &&
+                            __D2AItem.updatedAt instanceof Date
                         ) {
-                            inputInnerValItemsInnerAItemInnerVal.updatedAt =
-                                __inputInnerValItemsInnerAItem.updatedAt;
-                        } else if (
-                            typeof __inputInnerValItemsInnerAItem.updatedAt ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerAItemInnerVal.updatedAt =
-                                new Date(
-                                    __inputInnerValItemsInnerAItem.updatedAt,
-                                );
+                            __D3.updatedAt = __D2AItem.updatedAt;
+                        } else if (typeof __D2AItem.updatedAt === "string") {
+                            __D3.updatedAt = new Date(__D2AItem.updatedAt);
                         } else {
                             $fallback(
                                 "/items/[0]/updatedAt",
@@ -8719,8 +8201,7 @@ const $$PostListResponse = {
                                 "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
                             );
                         }
-                        ____inputInnerValItemsInnerAItemAResult =
-                            inputInnerValItemsInnerAItemInnerVal;
+                        __D2AItemAResult = __D3;
                     } else {
                         $fallback(
                             "/items/[0]",
@@ -8728,15 +8209,13 @@ const $$PostListResponse = {
                             "Expected object",
                         );
                     }
-                    inputInnerValItemsInner.push(
-                        ____inputInnerValItemsInnerAItemAResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.items = inputInnerValItemsInner;
+                __D1.items = __D2;
             } else {
                 $fallback("/items", "/properties/items", "Expected Array");
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -8818,10 +8297,10 @@ const $$PostEvent = {
                 switch (json.eventType) {
                     case "POST_CREATED": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_CREATED";
+                            const __D1 = {};
+                            __D1.eventType = "POST_CREATED";
                             if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
+                                __D1.postId = json.postId;
                             } else {
                                 $fallback(
                                     "/postId",
@@ -8833,11 +8312,9 @@ const $$PostEvent = {
                                 typeof json.timestamp === "object" &&
                                 json.timestamp instanceof Date
                             ) {
-                                jsonInnerVal.timestamp = json.timestamp;
+                                __D1.timestamp = json.timestamp;
                             } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
+                                __D1.timestamp = new Date(json.timestamp);
                             } else {
                                 $fallback(
                                     "/timestamp",
@@ -8845,7 +8322,7 @@ const $$PostEvent = {
                                     "Expected instanceof Date or ISO Date string at /timestamp",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -8853,10 +8330,10 @@ const $$PostEvent = {
                     }
                     case "POST_DELETED": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_DELETED";
+                            const __D1 = {};
+                            __D1.eventType = "POST_DELETED";
                             if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
+                                __D1.postId = json.postId;
                             } else {
                                 $fallback(
                                     "/postId",
@@ -8868,11 +8345,9 @@ const $$PostEvent = {
                                 typeof json.timestamp === "object" &&
                                 json.timestamp instanceof Date
                             ) {
-                                jsonInnerVal.timestamp = json.timestamp;
+                                __D1.timestamp = json.timestamp;
                             } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
+                                __D1.timestamp = new Date(json.timestamp);
                             } else {
                                 $fallback(
                                     "/timestamp",
@@ -8880,7 +8355,7 @@ const $$PostEvent = {
                                     "Expected instanceof Date or ISO Date string at /timestamp",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -8888,10 +8363,10 @@ const $$PostEvent = {
                     }
                     case "POST_UPDATED": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_UPDATED";
+                            const __D1 = {};
+                            __D1.eventType = "POST_UPDATED";
                             if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
+                                __D1.postId = json.postId;
                             } else {
                                 $fallback(
                                     "/postId",
@@ -8903,11 +8378,9 @@ const $$PostEvent = {
                                 typeof json.timestamp === "object" &&
                                 json.timestamp instanceof Date
                             ) {
-                                jsonInnerVal.timestamp = json.timestamp;
+                                __D1.timestamp = json.timestamp;
                             } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
+                                __D1.timestamp = new Date(json.timestamp);
                             } else {
                                 $fallback(
                                     "/timestamp",
@@ -8919,12 +8392,12 @@ const $$PostEvent = {
                                 typeof json.data === "object" &&
                                 json.data !== null
                             ) {
-                                const jsonDataInnerVal = {};
+                                const __D2 = {};
                                 if (typeof json.data.id === "undefined") {
                                     // ignore undefined
                                 } else {
                                     if (typeof json.data.id === "string") {
-                                        jsonDataInnerVal.id = json.data.id;
+                                        __D2.id = json.data.id;
                                     } else {
                                         $fallback(
                                             "/data/id",
@@ -8937,8 +8410,7 @@ const $$PostEvent = {
                                     // ignore undefined
                                 } else {
                                     if (typeof json.data.title === "string") {
-                                        jsonDataInnerVal.title =
-                                            json.data.title;
+                                        __D2.title = json.data.title;
                                     } else {
                                         $fallback(
                                             "/data/title",
@@ -8956,8 +8428,7 @@ const $$PostEvent = {
                                             json.data.type === "image" ||
                                             json.data.type === "video"
                                         ) {
-                                            jsonDataInnerVal.type =
-                                                json.data.type;
+                                            __D2.type = json.data.type;
                                         } else {
                                             $fallback(
                                                 "/data/type",
@@ -8979,14 +8450,14 @@ const $$PostEvent = {
                                     // ignore undefined
                                 } else {
                                     if (json.data.description === null) {
-                                        jsonDataInnerVal.description =
+                                        __D2.description =
                                             json.data.description;
                                     } else {
                                         if (
                                             typeof json.data.description ===
                                             "string"
                                         ) {
-                                            jsonDataInnerVal.description =
+                                            __D2.description =
                                                 json.data.description;
                                         } else {
                                             $fallback(
@@ -9001,8 +8472,7 @@ const $$PostEvent = {
                                     // ignore undefined
                                 } else {
                                     if (typeof json.data.content === "string") {
-                                        jsonDataInnerVal.content =
-                                            json.data.content;
+                                        __D2.content = json.data.content;
                                     } else {
                                         $fallback(
                                             "/data/content",
@@ -9015,16 +8485,12 @@ const $$PostEvent = {
                                     // ignore undefined
                                 } else {
                                     if (Array.isArray(json.data.tags)) {
-                                        const jsonDataInnerValTagsInner = [];
-                                        for (const __jsonDataInnerValTagsInnerAItem of json
-                                            .data.tags) {
-                                            let ____jsonDataInnerValTagsInnerAItemAResult;
-                                            if (
-                                                typeof __jsonDataInnerValTagsInnerAItem ===
-                                                "string"
-                                            ) {
-                                                ____jsonDataInnerValTagsInnerAItemAResult =
-                                                    __jsonDataInnerValTagsInnerAItem;
+                                        const __D3 = [];
+                                        for (const __D3AItem of json.data
+                                            .tags) {
+                                            let __D3AItemAResult;
+                                            if (typeof __D3AItem === "string") {
+                                                __D3AItemAResult = __D3AItem;
                                             } else {
                                                 $fallback(
                                                     "/data/tags/[0]",
@@ -9032,12 +8498,9 @@ const $$PostEvent = {
                                                     "Expected string at /data/tags/[0]",
                                                 );
                                             }
-                                            jsonDataInnerValTagsInner.push(
-                                                ____jsonDataInnerValTagsInnerAItemAResult,
-                                            );
+                                            __D3.push(__D3AItemAResult);
                                         }
-                                        jsonDataInnerVal.tags =
-                                            jsonDataInnerValTagsInner;
+                                        __D2.tags = __D3;
                                     } else {
                                         $fallback(
                                             "/data/tags",
@@ -9052,8 +8515,7 @@ const $$PostEvent = {
                                     if (
                                         typeof json.data.authorId === "string"
                                     ) {
-                                        jsonDataInnerVal.authorId =
-                                            json.data.authorId;
+                                        __D2.authorId = json.data.authorId;
                                     } else {
                                         $fallback(
                                             "/data/authorId",
@@ -9069,13 +8531,12 @@ const $$PostEvent = {
                                         typeof json.data.author === "object" &&
                                         json.data.author !== null
                                     ) {
-                                        const jsonDataAuthorInnerVal = {};
+                                        const __D3 = {};
                                         if (
                                             typeof json.data.author.id ===
                                             "string"
                                         ) {
-                                            jsonDataAuthorInnerVal.id =
-                                                json.data.author.id;
+                                            __D3.id = json.data.author.id;
                                         } else {
                                             $fallback(
                                                 "/data/author/id",
@@ -9087,8 +8548,7 @@ const $$PostEvent = {
                                             typeof json.data.author.name ===
                                             "string"
                                         ) {
-                                            jsonDataAuthorInnerVal.name =
-                                                json.data.author.name;
+                                            __D3.name = json.data.author.name;
                                         } else {
                                             $fallback(
                                                 "/data/author/name",
@@ -9097,15 +8557,13 @@ const $$PostEvent = {
                                             );
                                         }
                                         if (json.data.author.bio === null) {
-                                            jsonDataAuthorInnerVal.bio =
-                                                json.data.author.bio;
+                                            __D3.bio = json.data.author.bio;
                                         } else {
                                             if (
                                                 typeof json.data.author.bio ===
                                                 "string"
                                             ) {
-                                                jsonDataAuthorInnerVal.bio =
-                                                    json.data.author.bio;
+                                                __D3.bio = json.data.author.bio;
                                             } else {
                                                 $fallback(
                                                     "/data/author/bio",
@@ -9120,16 +8578,15 @@ const $$PostEvent = {
                                             json.data.author
                                                 .createdAt instanceof Date
                                         ) {
-                                            jsonDataAuthorInnerVal.createdAt =
+                                            __D3.createdAt =
                                                 json.data.author.createdAt;
                                         } else if (
                                             typeof json.data.author
                                                 .createdAt === "string"
                                         ) {
-                                            jsonDataAuthorInnerVal.createdAt =
-                                                new Date(
-                                                    json.data.author.createdAt,
-                                                );
+                                            __D3.createdAt = new Date(
+                                                json.data.author.createdAt,
+                                            );
                                         } else {
                                             $fallback(
                                                 "/data/author/createdAt",
@@ -9143,16 +8600,15 @@ const $$PostEvent = {
                                             json.data.author
                                                 .updatedAt instanceof Date
                                         ) {
-                                            jsonDataAuthorInnerVal.updatedAt =
+                                            __D3.updatedAt =
                                                 json.data.author.updatedAt;
                                         } else if (
                                             typeof json.data.author
                                                 .updatedAt === "string"
                                         ) {
-                                            jsonDataAuthorInnerVal.updatedAt =
-                                                new Date(
-                                                    json.data.author.updatedAt,
-                                                );
+                                            __D3.updatedAt = new Date(
+                                                json.data.author.updatedAt,
+                                            );
                                         } else {
                                             $fallback(
                                                 "/data/author/updatedAt",
@@ -9160,8 +8616,7 @@ const $$PostEvent = {
                                                 "Expected instanceof Date or ISO Date string at /data/author/updatedAt",
                                             );
                                         }
-                                        jsonDataInnerVal.author =
-                                            jsonDataAuthorInnerVal;
+                                        __D2.author = __D3;
                                     } else {
                                         $fallback(
                                             "/data/author",
@@ -9180,12 +8635,11 @@ const $$PostEvent = {
                                             "object" &&
                                         json.data.createdAt instanceof Date
                                     ) {
-                                        jsonDataInnerVal.createdAt =
-                                            json.data.createdAt;
+                                        __D2.createdAt = json.data.createdAt;
                                     } else if (
                                         typeof json.data.createdAt === "string"
                                     ) {
-                                        jsonDataInnerVal.createdAt = new Date(
+                                        __D2.createdAt = new Date(
                                             json.data.createdAt,
                                         );
                                     } else {
@@ -9206,12 +8660,11 @@ const $$PostEvent = {
                                             "object" &&
                                         json.data.updatedAt instanceof Date
                                     ) {
-                                        jsonDataInnerVal.updatedAt =
-                                            json.data.updatedAt;
+                                        __D2.updatedAt = json.data.updatedAt;
                                     } else if (
                                         typeof json.data.updatedAt === "string"
                                     ) {
-                                        jsonDataInnerVal.updatedAt = new Date(
+                                        __D2.updatedAt = new Date(
                                             json.data.updatedAt,
                                         );
                                     } else {
@@ -9222,7 +8675,7 @@ const $$PostEvent = {
                                         );
                                     }
                                 }
-                                jsonInnerVal.data = jsonDataInnerVal;
+                                __D1.data = __D2;
                             } else {
                                 $fallback(
                                     "/data",
@@ -9230,7 +8683,7 @@ const $$PostEvent = {
                                     "Expected object",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -9238,10 +8691,10 @@ const $$PostEvent = {
                     }
                     case "POST_LIKED": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_LIKED";
+                            const __D1 = {};
+                            __D1.eventType = "POST_LIKED";
                             if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
+                                __D1.postId = json.postId;
                             } else {
                                 $fallback(
                                     "/postId",
@@ -9253,11 +8706,9 @@ const $$PostEvent = {
                                 typeof json.timestamp === "object" &&
                                 json.timestamp instanceof Date
                             ) {
-                                jsonInnerVal.timestamp = json.timestamp;
+                                __D1.timestamp = json.timestamp;
                             } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
+                                __D1.timestamp = new Date(json.timestamp);
                             } else {
                                 $fallback(
                                     "/timestamp",
@@ -9266,7 +8717,7 @@ const $$PostEvent = {
                                 );
                             }
                             if (typeof json.postLikeId === "string") {
-                                jsonInnerVal.postLikeId = json.postLikeId;
+                                __D1.postLikeId = json.postLikeId;
                             } else {
                                 $fallback(
                                     "/postLikeId",
@@ -9280,7 +8731,7 @@ const $$PostEvent = {
                                 json.postLikeCount >= 0 &&
                                 json.postLikeCount <= 4294967295
                             ) {
-                                jsonInnerVal.postLikeCount = json.postLikeCount;
+                                __D1.postLikeCount = json.postLikeCount;
                             } else {
                                 $fallback(
                                     "/postLikeCount",
@@ -9288,7 +8739,7 @@ const $$PostEvent = {
                                     "Expected valid integer between 0 and 4294967295",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -9296,10 +8747,10 @@ const $$PostEvent = {
                     }
                     case "POST_COMMENTED": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_COMMENTED";
+                            const __D1 = {};
+                            __D1.eventType = "POST_COMMENTED";
                             if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
+                                __D1.postId = json.postId;
                             } else {
                                 $fallback(
                                     "/postId",
@@ -9311,11 +8762,9 @@ const $$PostEvent = {
                                 typeof json.timestamp === "object" &&
                                 json.timestamp instanceof Date
                             ) {
-                                jsonInnerVal.timestamp = json.timestamp;
+                                __D1.timestamp = json.timestamp;
                             } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
+                                __D1.timestamp = new Date(json.timestamp);
                             } else {
                                 $fallback(
                                     "/timestamp",
@@ -9324,7 +8773,7 @@ const $$PostEvent = {
                                 );
                             }
                             if (typeof json.commentId === "string") {
-                                jsonInnerVal.commentId = json.commentId;
+                                __D1.commentId = json.commentId;
                             } else {
                                 $fallback(
                                     "/commentId",
@@ -9333,7 +8782,7 @@ const $$PostEvent = {
                                 );
                             }
                             if (typeof json.commentText === "string") {
-                                jsonInnerVal.commentText = json.commentText;
+                                __D1.commentText = json.commentText;
                             } else {
                                 $fallback(
                                     "/commentText",
@@ -9347,7 +8796,7 @@ const $$PostEvent = {
                                 json.commentCount >= 0 &&
                                 json.commentCount <= 4294967295
                             ) {
-                                jsonInnerVal.commentCount = json.commentCount;
+                                __D1.commentCount = json.commentCount;
                             } else {
                                 $fallback(
                                     "/commentCount",
@@ -9355,7 +8804,7 @@ const $$PostEvent = {
                                     "Expected valid integer between 0 and 4294967295",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -9379,10 +8828,10 @@ const $$PostEvent = {
             switch (input.eventType) {
                 case "POST_CREATED": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_CREATED";
+                        const __D1 = {};
+                        __D1.eventType = "POST_CREATED";
                         if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
+                            __D1.postId = input.postId;
                         } else {
                             $fallback(
                                 "/postId",
@@ -9394,9 +8843,9 @@ const $$PostEvent = {
                             typeof input.timestamp === "object" &&
                             input.timestamp instanceof Date
                         ) {
-                            inputInnerVal.timestamp = input.timestamp;
+                            __D1.timestamp = input.timestamp;
                         } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
+                            __D1.timestamp = new Date(input.timestamp);
                         } else {
                             $fallback(
                                 "/timestamp",
@@ -9404,7 +8853,7 @@ const $$PostEvent = {
                                 "Expected instanceof Date or ISO Date string at /timestamp",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -9412,10 +8861,10 @@ const $$PostEvent = {
                 }
                 case "POST_DELETED": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_DELETED";
+                        const __D1 = {};
+                        __D1.eventType = "POST_DELETED";
                         if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
+                            __D1.postId = input.postId;
                         } else {
                             $fallback(
                                 "/postId",
@@ -9427,9 +8876,9 @@ const $$PostEvent = {
                             typeof input.timestamp === "object" &&
                             input.timestamp instanceof Date
                         ) {
-                            inputInnerVal.timestamp = input.timestamp;
+                            __D1.timestamp = input.timestamp;
                         } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
+                            __D1.timestamp = new Date(input.timestamp);
                         } else {
                             $fallback(
                                 "/timestamp",
@@ -9437,7 +8886,7 @@ const $$PostEvent = {
                                 "Expected instanceof Date or ISO Date string at /timestamp",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -9445,10 +8894,10 @@ const $$PostEvent = {
                 }
                 case "POST_UPDATED": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_UPDATED";
+                        const __D1 = {};
+                        __D1.eventType = "POST_UPDATED";
                         if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
+                            __D1.postId = input.postId;
                         } else {
                             $fallback(
                                 "/postId",
@@ -9460,9 +8909,9 @@ const $$PostEvent = {
                             typeof input.timestamp === "object" &&
                             input.timestamp instanceof Date
                         ) {
-                            inputInnerVal.timestamp = input.timestamp;
+                            __D1.timestamp = input.timestamp;
                         } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
+                            __D1.timestamp = new Date(input.timestamp);
                         } else {
                             $fallback(
                                 "/timestamp",
@@ -9474,12 +8923,12 @@ const $$PostEvent = {
                             typeof input.data === "object" &&
                             input.data !== null
                         ) {
-                            const inputDataInnerVal = {};
+                            const __D2 = {};
                             if (typeof input.data.id === "undefined") {
                                 // ignore undefined
                             } else {
                                 if (typeof input.data.id === "string") {
-                                    inputDataInnerVal.id = input.data.id;
+                                    __D2.id = input.data.id;
                                 } else {
                                     $fallback(
                                         "/data/id",
@@ -9492,7 +8941,7 @@ const $$PostEvent = {
                                 // ignore undefined
                             } else {
                                 if (typeof input.data.title === "string") {
-                                    inputDataInnerVal.title = input.data.title;
+                                    __D2.title = input.data.title;
                                 } else {
                                     $fallback(
                                         "/data/title",
@@ -9510,8 +8959,7 @@ const $$PostEvent = {
                                         input.data.type === "image" ||
                                         input.data.type === "video"
                                     ) {
-                                        inputDataInnerVal.type =
-                                            input.data.type;
+                                        __D2.type = input.data.type;
                                     } else {
                                         $fallback(
                                             "/data/type",
@@ -9531,14 +8979,13 @@ const $$PostEvent = {
                                 // ignore undefined
                             } else {
                                 if (input.data.description === null) {
-                                    inputDataInnerVal.description =
-                                        input.data.description;
+                                    __D2.description = input.data.description;
                                 } else {
                                     if (
                                         typeof input.data.description ===
                                         "string"
                                     ) {
-                                        inputDataInnerVal.description =
+                                        __D2.description =
                                             input.data.description;
                                     } else {
                                         $fallback(
@@ -9553,8 +9000,7 @@ const $$PostEvent = {
                                 // ignore undefined
                             } else {
                                 if (typeof input.data.content === "string") {
-                                    inputDataInnerVal.content =
-                                        input.data.content;
+                                    __D2.content = input.data.content;
                                 } else {
                                     $fallback(
                                         "/data/content",
@@ -9567,16 +9013,11 @@ const $$PostEvent = {
                                 // ignore undefined
                             } else {
                                 if (Array.isArray(input.data.tags)) {
-                                    const inputDataInnerValTagsInner = [];
-                                    for (const __inputDataInnerValTagsInnerAItem of input
-                                        .data.tags) {
-                                        let ____inputDataInnerValTagsInnerAItemAResult;
-                                        if (
-                                            typeof __inputDataInnerValTagsInnerAItem ===
-                                            "string"
-                                        ) {
-                                            ____inputDataInnerValTagsInnerAItemAResult =
-                                                __inputDataInnerValTagsInnerAItem;
+                                    const __D3 = [];
+                                    for (const __D3AItem of input.data.tags) {
+                                        let __D3AItemAResult;
+                                        if (typeof __D3AItem === "string") {
+                                            __D3AItemAResult = __D3AItem;
                                         } else {
                                             $fallback(
                                                 "/data/tags/[0]",
@@ -9584,12 +9025,9 @@ const $$PostEvent = {
                                                 "Expected string at /data/tags/[0]",
                                             );
                                         }
-                                        inputDataInnerValTagsInner.push(
-                                            ____inputDataInnerValTagsInnerAItemAResult,
-                                        );
+                                        __D3.push(__D3AItemAResult);
                                     }
-                                    inputDataInnerVal.tags =
-                                        inputDataInnerValTagsInner;
+                                    __D2.tags = __D3;
                                 } else {
                                     $fallback(
                                         "/data/tags",
@@ -9602,8 +9040,7 @@ const $$PostEvent = {
                                 // ignore undefined
                             } else {
                                 if (typeof input.data.authorId === "string") {
-                                    inputDataInnerVal.authorId =
-                                        input.data.authorId;
+                                    __D2.authorId = input.data.authorId;
                                 } else {
                                     $fallback(
                                         "/data/authorId",
@@ -9619,12 +9056,11 @@ const $$PostEvent = {
                                     typeof input.data.author === "object" &&
                                     input.data.author !== null
                                 ) {
-                                    const inputDataAuthorInnerVal = {};
+                                    const __D3 = {};
                                     if (
                                         typeof input.data.author.id === "string"
                                     ) {
-                                        inputDataAuthorInnerVal.id =
-                                            input.data.author.id;
+                                        __D3.id = input.data.author.id;
                                     } else {
                                         $fallback(
                                             "/data/author/id",
@@ -9636,8 +9072,7 @@ const $$PostEvent = {
                                         typeof input.data.author.name ===
                                         "string"
                                     ) {
-                                        inputDataAuthorInnerVal.name =
-                                            input.data.author.name;
+                                        __D3.name = input.data.author.name;
                                     } else {
                                         $fallback(
                                             "/data/author/name",
@@ -9646,15 +9081,13 @@ const $$PostEvent = {
                                         );
                                     }
                                     if (input.data.author.bio === null) {
-                                        inputDataAuthorInnerVal.bio =
-                                            input.data.author.bio;
+                                        __D3.bio = input.data.author.bio;
                                     } else {
                                         if (
                                             typeof input.data.author.bio ===
                                             "string"
                                         ) {
-                                            inputDataAuthorInnerVal.bio =
-                                                input.data.author.bio;
+                                            __D3.bio = input.data.author.bio;
                                         } else {
                                             $fallback(
                                                 "/data/author/bio",
@@ -9669,16 +9102,15 @@ const $$PostEvent = {
                                         input.data.author.createdAt instanceof
                                             Date
                                     ) {
-                                        inputDataAuthorInnerVal.createdAt =
+                                        __D3.createdAt =
                                             input.data.author.createdAt;
                                     } else if (
                                         typeof input.data.author.createdAt ===
                                         "string"
                                     ) {
-                                        inputDataAuthorInnerVal.createdAt =
-                                            new Date(
-                                                input.data.author.createdAt,
-                                            );
+                                        __D3.createdAt = new Date(
+                                            input.data.author.createdAt,
+                                        );
                                     } else {
                                         $fallback(
                                             "/data/author/createdAt",
@@ -9692,16 +9124,15 @@ const $$PostEvent = {
                                         input.data.author.updatedAt instanceof
                                             Date
                                     ) {
-                                        inputDataAuthorInnerVal.updatedAt =
+                                        __D3.updatedAt =
                                             input.data.author.updatedAt;
                                     } else if (
                                         typeof input.data.author.updatedAt ===
                                         "string"
                                     ) {
-                                        inputDataAuthorInnerVal.updatedAt =
-                                            new Date(
-                                                input.data.author.updatedAt,
-                                            );
+                                        __D3.updatedAt = new Date(
+                                            input.data.author.updatedAt,
+                                        );
                                     } else {
                                         $fallback(
                                             "/data/author/updatedAt",
@@ -9709,8 +9140,7 @@ const $$PostEvent = {
                                             "Expected instanceof Date or ISO Date string at /data/author/updatedAt",
                                         );
                                     }
-                                    inputDataInnerVal.author =
-                                        inputDataAuthorInnerVal;
+                                    __D2.author = __D3;
                                 } else {
                                     $fallback(
                                         "/data/author",
@@ -9726,12 +9156,11 @@ const $$PostEvent = {
                                     typeof input.data.createdAt === "object" &&
                                     input.data.createdAt instanceof Date
                                 ) {
-                                    inputDataInnerVal.createdAt =
-                                        input.data.createdAt;
+                                    __D2.createdAt = input.data.createdAt;
                                 } else if (
                                     typeof input.data.createdAt === "string"
                                 ) {
-                                    inputDataInnerVal.createdAt = new Date(
+                                    __D2.createdAt = new Date(
                                         input.data.createdAt,
                                     );
                                 } else {
@@ -9749,12 +9178,11 @@ const $$PostEvent = {
                                     typeof input.data.updatedAt === "object" &&
                                     input.data.updatedAt instanceof Date
                                 ) {
-                                    inputDataInnerVal.updatedAt =
-                                        input.data.updatedAt;
+                                    __D2.updatedAt = input.data.updatedAt;
                                 } else if (
                                     typeof input.data.updatedAt === "string"
                                 ) {
-                                    inputDataInnerVal.updatedAt = new Date(
+                                    __D2.updatedAt = new Date(
                                         input.data.updatedAt,
                                     );
                                 } else {
@@ -9765,7 +9193,7 @@ const $$PostEvent = {
                                     );
                                 }
                             }
-                            inputInnerVal.data = inputDataInnerVal;
+                            __D1.data = __D2;
                         } else {
                             $fallback(
                                 "/data",
@@ -9773,7 +9201,7 @@ const $$PostEvent = {
                                 "Expected object",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -9781,10 +9209,10 @@ const $$PostEvent = {
                 }
                 case "POST_LIKED": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_LIKED";
+                        const __D1 = {};
+                        __D1.eventType = "POST_LIKED";
                         if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
+                            __D1.postId = input.postId;
                         } else {
                             $fallback(
                                 "/postId",
@@ -9796,9 +9224,9 @@ const $$PostEvent = {
                             typeof input.timestamp === "object" &&
                             input.timestamp instanceof Date
                         ) {
-                            inputInnerVal.timestamp = input.timestamp;
+                            __D1.timestamp = input.timestamp;
                         } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
+                            __D1.timestamp = new Date(input.timestamp);
                         } else {
                             $fallback(
                                 "/timestamp",
@@ -9807,7 +9235,7 @@ const $$PostEvent = {
                             );
                         }
                         if (typeof input.postLikeId === "string") {
-                            inputInnerVal.postLikeId = input.postLikeId;
+                            __D1.postLikeId = input.postLikeId;
                         } else {
                             $fallback(
                                 "/postLikeId",
@@ -9821,7 +9249,7 @@ const $$PostEvent = {
                             input.postLikeCount >= 0 &&
                             input.postLikeCount <= 4294967295
                         ) {
-                            inputInnerVal.postLikeCount = input.postLikeCount;
+                            __D1.postLikeCount = input.postLikeCount;
                         } else {
                             $fallback(
                                 "/postLikeCount",
@@ -9829,7 +9257,7 @@ const $$PostEvent = {
                                 "Expected valid integer between 0 and 4294967295",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -9837,10 +9265,10 @@ const $$PostEvent = {
                 }
                 case "POST_COMMENTED": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_COMMENTED";
+                        const __D1 = {};
+                        __D1.eventType = "POST_COMMENTED";
                         if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
+                            __D1.postId = input.postId;
                         } else {
                             $fallback(
                                 "/postId",
@@ -9852,9 +9280,9 @@ const $$PostEvent = {
                             typeof input.timestamp === "object" &&
                             input.timestamp instanceof Date
                         ) {
-                            inputInnerVal.timestamp = input.timestamp;
+                            __D1.timestamp = input.timestamp;
                         } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
+                            __D1.timestamp = new Date(input.timestamp);
                         } else {
                             $fallback(
                                 "/timestamp",
@@ -9863,7 +9291,7 @@ const $$PostEvent = {
                             );
                         }
                         if (typeof input.commentId === "string") {
-                            inputInnerVal.commentId = input.commentId;
+                            __D1.commentId = input.commentId;
                         } else {
                             $fallback(
                                 "/commentId",
@@ -9872,7 +9300,7 @@ const $$PostEvent = {
                             );
                         }
                         if (typeof input.commentText === "string") {
-                            inputInnerVal.commentText = input.commentText;
+                            __D1.commentText = input.commentText;
                         } else {
                             $fallback(
                                 "/commentText",
@@ -9886,7 +9314,7 @@ const $$PostEvent = {
                             input.commentCount >= 0 &&
                             input.commentCount <= 4294967295
                         ) {
-                            inputInnerVal.commentCount = input.commentCount;
+                            __D1.commentCount = input.commentCount;
                         } else {
                             $fallback(
                                 "/commentCount",
@@ -9894,7 +9322,7 @@ const $$PostEvent = {
                                 "Expected valid integer between 0 and 4294967295",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -10167,9 +9595,9 @@ const $$LogPostEventResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.success === "boolean") {
-                    jsonInnerVal.success = json.success;
+                    __D1.success = json.success;
                 } else {
                     $fallback(
                         "/success",
@@ -10178,7 +9606,7 @@ const $$LogPostEventResponse = {
                     );
                 }
                 if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                    __D1.message = json.message;
                 } else {
                     $fallback(
                         "/message",
@@ -10186,7 +9614,7 @@ const $$LogPostEventResponse = {
                         "Expected string at /message",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -10194,9 +9622,9 @@ const $$LogPostEventResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.success === "boolean") {
-                inputInnerVal.success = input.success;
+                __D1.success = input.success;
             } else {
                 $fallback(
                     "/success",
@@ -10205,7 +9633,7 @@ const $$LogPostEventResponse = {
                 );
             }
             if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+                __D1.message = input.message;
             } else {
                 $fallback(
                     "/message",
@@ -10213,7 +9641,7 @@ const $$LogPostEventResponse = {
                     "Expected string at /message",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -10245,9 +9673,9 @@ const $$UpdatePostParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.postId === "string") {
-                    jsonInnerVal.postId = json.postId;
+                    __D1.postId = json.postId;
                 } else {
                     $fallback(
                         "/postId",
@@ -10256,12 +9684,12 @@ const $$UpdatePostParams = {
                     );
                 }
                 if (typeof json.data === "object" && json.data !== null) {
-                    const jsonDataInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.data.title === "undefined") {
                         // ignore undefined
                     } else {
                         if (typeof json.data.title === "string") {
-                            jsonDataInnerVal.title = json.data.title;
+                            __D2.title = json.data.title;
                         } else {
                             $fallback(
                                 "/data/title",
@@ -10274,12 +9702,10 @@ const $$UpdatePostParams = {
                         // ignore undefined
                     } else {
                         if (json.data.description === null) {
-                            jsonDataInnerVal.description =
-                                json.data.description;
+                            __D2.description = json.data.description;
                         } else {
                             if (typeof json.data.description === "string") {
-                                jsonDataInnerVal.description =
-                                    json.data.description;
+                                __D2.description = json.data.description;
                             } else {
                                 $fallback(
                                     "/data/description",
@@ -10293,7 +9719,7 @@ const $$UpdatePostParams = {
                         // ignore undefined
                     } else {
                         if (typeof json.data.content === "string") {
-                            jsonDataInnerVal.content = json.data.content;
+                            __D2.content = json.data.content;
                         } else {
                             $fallback(
                                 "/data/content",
@@ -10306,16 +9732,11 @@ const $$UpdatePostParams = {
                         // ignore undefined
                     } else {
                         if (Array.isArray(json.data.tags)) {
-                            const jsonDataInnerValTagsInner = [];
-                            for (const __jsonDataInnerValTagsInnerAItem of json
-                                .data.tags) {
-                                let ____jsonDataInnerValTagsInnerAItemAResult;
-                                if (
-                                    typeof __jsonDataInnerValTagsInnerAItem ===
-                                    "string"
-                                ) {
-                                    ____jsonDataInnerValTagsInnerAItemAResult =
-                                        __jsonDataInnerValTagsInnerAItem;
+                            const __D3 = [];
+                            for (const __D3AItem of json.data.tags) {
+                                let __D3AItemAResult;
+                                if (typeof __D3AItem === "string") {
+                                    __D3AItemAResult = __D3AItem;
                                 } else {
                                     $fallback(
                                         "/data/tags/[0]",
@@ -10323,11 +9744,9 @@ const $$UpdatePostParams = {
                                         "Expected string at /data/tags/[0]",
                                     );
                                 }
-                                jsonDataInnerValTagsInner.push(
-                                    ____jsonDataInnerValTagsInnerAItemAResult,
-                                );
+                                __D3.push(__D3AItemAResult);
                             }
-                            jsonDataInnerVal.tags = jsonDataInnerValTagsInner;
+                            __D2.tags = __D3;
                         } else {
                             $fallback(
                                 "/data/tags",
@@ -10336,11 +9755,11 @@ const $$UpdatePostParams = {
                             );
                         }
                     }
-                    jsonInnerVal.data = jsonDataInnerVal;
+                    __D1.data = __D2;
                 } else {
                     $fallback("/data", "/properties/data", "Expected object");
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -10348,9 +9767,9 @@ const $$UpdatePostParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.postId === "string") {
-                inputInnerVal.postId = input.postId;
+                __D1.postId = input.postId;
             } else {
                 $fallback(
                     "/postId",
@@ -10359,12 +9778,12 @@ const $$UpdatePostParams = {
                 );
             }
             if (typeof input.data === "object" && input.data !== null) {
-                const inputDataInnerVal = {};
+                const __D2 = {};
                 if (typeof input.data.title === "undefined") {
                     // ignore undefined
                 } else {
                     if (typeof input.data.title === "string") {
-                        inputDataInnerVal.title = input.data.title;
+                        __D2.title = input.data.title;
                     } else {
                         $fallback(
                             "/data/title",
@@ -10377,11 +9796,10 @@ const $$UpdatePostParams = {
                     // ignore undefined
                 } else {
                     if (input.data.description === null) {
-                        inputDataInnerVal.description = input.data.description;
+                        __D2.description = input.data.description;
                     } else {
                         if (typeof input.data.description === "string") {
-                            inputDataInnerVal.description =
-                                input.data.description;
+                            __D2.description = input.data.description;
                         } else {
                             $fallback(
                                 "/data/description",
@@ -10395,7 +9813,7 @@ const $$UpdatePostParams = {
                     // ignore undefined
                 } else {
                     if (typeof input.data.content === "string") {
-                        inputDataInnerVal.content = input.data.content;
+                        __D2.content = input.data.content;
                     } else {
                         $fallback(
                             "/data/content",
@@ -10408,16 +9826,11 @@ const $$UpdatePostParams = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(input.data.tags)) {
-                        const inputDataInnerValTagsInner = [];
-                        for (const __inputDataInnerValTagsInnerAItem of input
-                            .data.tags) {
-                            let ____inputDataInnerValTagsInnerAItemAResult;
-                            if (
-                                typeof __inputDataInnerValTagsInnerAItem ===
-                                "string"
-                            ) {
-                                ____inputDataInnerValTagsInnerAItemAResult =
-                                    __inputDataInnerValTagsInnerAItem;
+                        const __D3 = [];
+                        for (const __D3AItem of input.data.tags) {
+                            let __D3AItemAResult;
+                            if (typeof __D3AItem === "string") {
+                                __D3AItemAResult = __D3AItem;
                             } else {
                                 $fallback(
                                     "/data/tags/[0]",
@@ -10425,11 +9838,9 @@ const $$UpdatePostParams = {
                                     "Expected string at /data/tags/[0]",
                                 );
                             }
-                            inputDataInnerValTagsInner.push(
-                                ____inputDataInnerValTagsInnerAItemAResult,
-                            );
+                            __D3.push(__D3AItemAResult);
                         }
-                        inputDataInnerVal.tags = inputDataInnerValTagsInner;
+                        __D2.tags = __D3;
                     } else {
                         $fallback(
                             "/data/tags",
@@ -10438,11 +9849,11 @@ const $$UpdatePostParams = {
                         );
                     }
                 }
-                inputInnerVal.data = inputDataInnerVal;
+                __D1.data = __D2;
             } else {
                 $fallback("/data", "/properties/data", "Expected object");
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -10538,9 +9949,9 @@ const $$AnnotationId = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.id === "string") {
-                    jsonInnerVal.id = json.id;
+                    __D1.id = json.id;
                 } else {
                     $fallback(
                         "/id",
@@ -10549,7 +9960,7 @@ const $$AnnotationId = {
                     );
                 }
                 if (typeof json.version === "string") {
-                    jsonInnerVal.version = json.version;
+                    __D1.version = json.version;
                 } else {
                     $fallback(
                         "/version",
@@ -10557,7 +9968,7 @@ const $$AnnotationId = {
                         "Expected string at /version",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -10565,9 +9976,9 @@ const $$AnnotationId = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.id === "string") {
-                inputInnerVal.id = input.id;
+                __D1.id = input.id;
             } else {
                 $fallback(
                     "/id",
@@ -10576,7 +9987,7 @@ const $$AnnotationId = {
                 );
             }
             if (typeof input.version === "string") {
-                inputInnerVal.version = input.version;
+                __D1.version = input.version;
             } else {
                 $fallback(
                     "/version",
@@ -10584,7 +9995,7 @@ const $$AnnotationId = {
                     "Expected string at /version",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -10620,14 +10031,14 @@ const $$Annotation = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.annotation_id === "object" &&
                     json.annotation_id !== null
                 ) {
-                    const jsonAnnotationIdInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.annotation_id.id === "string") {
-                        jsonAnnotationIdInnerVal.id = json.annotation_id.id;
+                        __D2.id = json.annotation_id.id;
                     } else {
                         $fallback(
                             "/annotation_id/id",
@@ -10636,8 +10047,7 @@ const $$Annotation = {
                         );
                     }
                     if (typeof json.annotation_id.version === "string") {
-                        jsonAnnotationIdInnerVal.version =
-                            json.annotation_id.version;
+                        __D2.version = json.annotation_id.version;
                     } else {
                         $fallback(
                             "/annotation_id/version",
@@ -10645,7 +10055,7 @@ const $$Annotation = {
                             "Expected string at /annotation_id/version",
                         );
                     }
-                    jsonInnerVal.annotation_id = jsonAnnotationIdInnerVal;
+                    __D1.annotation_id = __D2;
                 } else {
                     $fallback(
                         "/annotation_id",
@@ -10657,14 +10067,13 @@ const $$Annotation = {
                     typeof json.associated_id === "object" &&
                     json.associated_id !== null
                 ) {
-                    const jsonAssociatedIdInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.associated_id.entity_type === "string") {
                         if (
                             json.associated_id.entity_type === "MOVIE_ID" ||
                             json.associated_id.entity_type === "SHOW_ID"
                         ) {
-                            jsonAssociatedIdInnerVal.entity_type =
-                                json.associated_id.entity_type;
+                            __D2.entity_type = json.associated_id.entity_type;
                         } else {
                             $fallback(
                                 "/associated_id/entity_type",
@@ -10680,7 +10089,7 @@ const $$Annotation = {
                         );
                     }
                     if (typeof json.associated_id.id === "string") {
-                        jsonAssociatedIdInnerVal.id = json.associated_id.id;
+                        __D2.id = json.associated_id.id;
                     } else {
                         $fallback(
                             "/associated_id/id",
@@ -10688,7 +10097,7 @@ const $$Annotation = {
                             "Expected string at /associated_id/id",
                         );
                     }
-                    jsonInnerVal.associated_id = jsonAssociatedIdInnerVal;
+                    __D1.associated_id = __D2;
                 } else {
                     $fallback(
                         "/associated_id",
@@ -10698,7 +10107,7 @@ const $$Annotation = {
                 }
                 if (typeof json.annotation_type === "string") {
                     if (json.annotation_type === "ANNOTATION_BOUNDINGBOX") {
-                        jsonInnerVal.annotation_type = json.annotation_type;
+                        __D1.annotation_type = json.annotation_type;
                     } else {
                         $fallback(
                             "/annotation_type",
@@ -10719,8 +10128,7 @@ const $$Annotation = {
                     json.annotation_type_version >= 0 &&
                     json.annotation_type_version <= 65535
                 ) {
-                    jsonInnerVal.annotation_type_version =
-                        json.annotation_type_version;
+                    __D1.annotation_type_version = json.annotation_type_version;
                 } else {
                     $fallback(
                         "/annotation_type_version",
@@ -10728,12 +10136,12 @@ const $$Annotation = {
                         "Expected valid integer between 0 and 65535",
                     );
                 }
-                jsonInnerVal.metadata = json.metadata;
+                __D1.metadata = json.metadata;
                 if (
                     typeof json.box_type_range === "object" &&
                     json.box_type_range !== null
                 ) {
-                    const jsonBoxTypeRangeInnerVal = {};
+                    const __D2 = {};
                     if (
                         typeof json.box_type_range.start_time_in_nano_sec ===
                             "string" ||
@@ -10744,8 +10152,7 @@ const $$Annotation = {
                             const val = BigInt(
                                 json.box_type_range.start_time_in_nano_sec,
                             );
-                            jsonBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                val;
+                            __D2.start_time_in_nano_sec = val;
                         } catch (err) {
                             $fallback(
                                 "/box_type_range/start_time_in_nano_sec",
@@ -10757,7 +10164,7 @@ const $$Annotation = {
                         typeof json.box_type_range.start_time_in_nano_sec ===
                         "bigint"
                     ) {
-                        jsonBoxTypeRangeInnerVal.start_time_in_nano_sec =
+                        __D2.start_time_in_nano_sec =
                             json.box_type_range.start_time_in_nano_sec;
                     } else {
                         $fallback(
@@ -10777,8 +10184,7 @@ const $$Annotation = {
                                 json.box_type_range.end_time_in_nano_sec,
                             );
                             if (val >= BigInt("0")) {
-                                jsonBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                    val;
+                                __D2.end_time_in_nano_sec = val;
                             } else {
                                 $fallback(
                                     "/box_type_range/end_time_in_nano_sec",
@@ -10801,7 +10207,7 @@ const $$Annotation = {
                             json.box_type_range.end_time_in_nano_sec >=
                             BigInt("0")
                         ) {
-                            jsonBoxTypeRangeInnerVal.end_time_in_nano_sec =
+                            __D2.end_time_in_nano_sec =
                                 json.box_type_range.end_time_in_nano_sec;
                         } else {
                             $fallback(
@@ -10817,7 +10223,7 @@ const $$Annotation = {
                             "Expected BigInt or Integer string. Got ${json.box_type_range.end_time_in_nano_sec}",
                         );
                     }
-                    jsonInnerVal.box_type_range = jsonBoxTypeRangeInnerVal;
+                    __D1.box_type_range = __D2;
                 } else {
                     $fallback(
                         "/box_type_range",
@@ -10825,7 +10231,7 @@ const $$Annotation = {
                         "Expected object",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -10833,14 +10239,14 @@ const $$Annotation = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.annotation_id === "object" &&
                 input.annotation_id !== null
             ) {
-                const inputAnnotationIdInnerVal = {};
+                const __D2 = {};
                 if (typeof input.annotation_id.id === "string") {
-                    inputAnnotationIdInnerVal.id = input.annotation_id.id;
+                    __D2.id = input.annotation_id.id;
                 } else {
                     $fallback(
                         "/annotation_id/id",
@@ -10849,8 +10255,7 @@ const $$Annotation = {
                     );
                 }
                 if (typeof input.annotation_id.version === "string") {
-                    inputAnnotationIdInnerVal.version =
-                        input.annotation_id.version;
+                    __D2.version = input.annotation_id.version;
                 } else {
                     $fallback(
                         "/annotation_id/version",
@@ -10858,7 +10263,7 @@ const $$Annotation = {
                         "Expected string at /annotation_id/version",
                     );
                 }
-                inputInnerVal.annotation_id = inputAnnotationIdInnerVal;
+                __D1.annotation_id = __D2;
             } else {
                 $fallback(
                     "/annotation_id",
@@ -10870,14 +10275,13 @@ const $$Annotation = {
                 typeof input.associated_id === "object" &&
                 input.associated_id !== null
             ) {
-                const inputAssociatedIdInnerVal = {};
+                const __D2 = {};
                 if (typeof input.associated_id.entity_type === "string") {
                     if (
                         input.associated_id.entity_type === "MOVIE_ID" ||
                         input.associated_id.entity_type === "SHOW_ID"
                     ) {
-                        inputAssociatedIdInnerVal.entity_type =
-                            input.associated_id.entity_type;
+                        __D2.entity_type = input.associated_id.entity_type;
                     } else {
                         $fallback(
                             "/associated_id/entity_type",
@@ -10893,7 +10297,7 @@ const $$Annotation = {
                     );
                 }
                 if (typeof input.associated_id.id === "string") {
-                    inputAssociatedIdInnerVal.id = input.associated_id.id;
+                    __D2.id = input.associated_id.id;
                 } else {
                     $fallback(
                         "/associated_id/id",
@@ -10901,7 +10305,7 @@ const $$Annotation = {
                         "Expected string at /associated_id/id",
                     );
                 }
-                inputInnerVal.associated_id = inputAssociatedIdInnerVal;
+                __D1.associated_id = __D2;
             } else {
                 $fallback(
                     "/associated_id",
@@ -10911,7 +10315,7 @@ const $$Annotation = {
             }
             if (typeof input.annotation_type === "string") {
                 if (input.annotation_type === "ANNOTATION_BOUNDINGBOX") {
-                    inputInnerVal.annotation_type = input.annotation_type;
+                    __D1.annotation_type = input.annotation_type;
                 } else {
                     $fallback(
                         "/annotation_type",
@@ -10932,8 +10336,7 @@ const $$Annotation = {
                 input.annotation_type_version >= 0 &&
                 input.annotation_type_version <= 65535
             ) {
-                inputInnerVal.annotation_type_version =
-                    input.annotation_type_version;
+                __D1.annotation_type_version = input.annotation_type_version;
             } else {
                 $fallback(
                     "/annotation_type_version",
@@ -10941,12 +10344,12 @@ const $$Annotation = {
                     "Expected valid integer between 0 and 65535",
                 );
             }
-            inputInnerVal.metadata = input.metadata;
+            __D1.metadata = input.metadata;
             if (
                 typeof input.box_type_range === "object" &&
                 input.box_type_range !== null
             ) {
-                const inputBoxTypeRangeInnerVal = {};
+                const __D2 = {};
                 if (
                     typeof input.box_type_range.start_time_in_nano_sec ===
                         "string" ||
@@ -10957,7 +10360,7 @@ const $$Annotation = {
                         const val = BigInt(
                             input.box_type_range.start_time_in_nano_sec,
                         );
-                        inputBoxTypeRangeInnerVal.start_time_in_nano_sec = val;
+                        __D2.start_time_in_nano_sec = val;
                     } catch (err) {
                         $fallback(
                             "/box_type_range/start_time_in_nano_sec",
@@ -10969,7 +10372,7 @@ const $$Annotation = {
                     typeof input.box_type_range.start_time_in_nano_sec ===
                     "bigint"
                 ) {
-                    inputBoxTypeRangeInnerVal.start_time_in_nano_sec =
+                    __D2.start_time_in_nano_sec =
                         input.box_type_range.start_time_in_nano_sec;
                 } else {
                     $fallback(
@@ -10989,8 +10392,7 @@ const $$Annotation = {
                             input.box_type_range.end_time_in_nano_sec,
                         );
                         if (val >= BigInt("0")) {
-                            inputBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                val;
+                            __D2.end_time_in_nano_sec = val;
                         } else {
                             $fallback(
                                 "/box_type_range/end_time_in_nano_sec",
@@ -11012,7 +10414,7 @@ const $$Annotation = {
                     if (
                         input.box_type_range.end_time_in_nano_sec >= BigInt("0")
                     ) {
-                        inputBoxTypeRangeInnerVal.end_time_in_nano_sec =
+                        __D2.end_time_in_nano_sec =
                             input.box_type_range.end_time_in_nano_sec;
                     } else {
                         $fallback(
@@ -11028,7 +10430,7 @@ const $$Annotation = {
                         "Expected BigInt or Integer string. Got ${input.box_type_range.end_time_in_nano_sec}",
                     );
                 }
-                inputInnerVal.box_type_range = inputBoxTypeRangeInnerVal;
+                __D1.box_type_range = __D2;
             } else {
                 $fallback(
                     "/box_type_range",
@@ -11036,7 +10438,7 @@ const $$Annotation = {
                     "Expected object",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -11101,9 +10503,9 @@ const $$UpdateAnnotationParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.annotation_id === "string") {
-                    jsonInnerVal.annotation_id = json.annotation_id;
+                    __D1.annotation_id = json.annotation_id;
                 } else {
                     $fallback(
                         "/annotation_id",
@@ -11112,8 +10514,7 @@ const $$UpdateAnnotationParams = {
                     );
                 }
                 if (typeof json.annotation_id_version === "string") {
-                    jsonInnerVal.annotation_id_version =
-                        json.annotation_id_version;
+                    __D1.annotation_id_version = json.annotation_id_version;
                 } else {
                     $fallback(
                         "/annotation_id_version",
@@ -11122,7 +10523,7 @@ const $$UpdateAnnotationParams = {
                     );
                 }
                 if (typeof json.data === "object" && json.data !== null) {
-                    const jsonDataInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.data.associated_id === "undefined") {
                         // ignore undefined
                     } else {
@@ -11130,7 +10531,7 @@ const $$UpdateAnnotationParams = {
                             typeof json.data.associated_id === "object" &&
                             json.data.associated_id !== null
                         ) {
-                            const jsonDataAssociatedIdInnerVal = {};
+                            const __D3 = {};
                             if (
                                 typeof json.data.associated_id.entity_type ===
                                 "string"
@@ -11141,7 +10542,7 @@ const $$UpdateAnnotationParams = {
                                     json.data.associated_id.entity_type ===
                                         "SHOW_ID"
                                 ) {
-                                    jsonDataAssociatedIdInnerVal.entity_type =
+                                    __D3.entity_type =
                                         json.data.associated_id.entity_type;
                                 } else {
                                     $fallback(
@@ -11160,8 +10561,7 @@ const $$UpdateAnnotationParams = {
                             if (
                                 typeof json.data.associated_id.id === "string"
                             ) {
-                                jsonDataAssociatedIdInnerVal.id =
-                                    json.data.associated_id.id;
+                                __D3.id = json.data.associated_id.id;
                             } else {
                                 $fallback(
                                     "/data/associated_id/id",
@@ -11169,8 +10569,7 @@ const $$UpdateAnnotationParams = {
                                     "Expected string at /data/associated_id/id",
                                 );
                             }
-                            jsonDataInnerVal.associated_id =
-                                jsonDataAssociatedIdInnerVal;
+                            __D2.associated_id = __D3;
                         } else {
                             $fallback(
                                 "/data/associated_id",
@@ -11187,7 +10586,7 @@ const $$UpdateAnnotationParams = {
                                 json.data.annotation_type ===
                                 "ANNOTATION_BOUNDINGBOX"
                             ) {
-                                jsonDataInnerVal.annotation_type =
+                                __D2.annotation_type =
                                     json.data.annotation_type;
                             } else {
                                 $fallback(
@@ -11218,7 +10617,7 @@ const $$UpdateAnnotationParams = {
                             json.data.annotation_type_version >= 0 &&
                             json.data.annotation_type_version <= 65535
                         ) {
-                            jsonDataInnerVal.annotation_type_version =
+                            __D2.annotation_type_version =
                                 json.data.annotation_type_version;
                         } else {
                             $fallback(
@@ -11231,7 +10630,7 @@ const $$UpdateAnnotationParams = {
                     if (typeof json.data.metadata === "undefined") {
                         // ignore undefined
                     } else {
-                        jsonDataInnerVal.metadata = json.data.metadata;
+                        __D2.metadata = json.data.metadata;
                     }
                     if (typeof json.data.box_type_range === "undefined") {
                         // ignore undefined
@@ -11240,7 +10639,7 @@ const $$UpdateAnnotationParams = {
                             typeof json.data.box_type_range === "object" &&
                             json.data.box_type_range !== null
                         ) {
-                            const jsonDataBoxTypeRangeInnerVal = {};
+                            const __D3 = {};
                             if (
                                 typeof json.data.box_type_range
                                     .start_time_in_nano_sec === "string" ||
@@ -11252,8 +10651,7 @@ const $$UpdateAnnotationParams = {
                                         json.data.box_type_range
                                             .start_time_in_nano_sec,
                                     );
-                                    jsonDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                        val;
+                                    __D3.start_time_in_nano_sec = val;
                                 } catch (err) {
                                     $fallback(
                                         "/data/box_type_range/start_time_in_nano_sec",
@@ -11265,7 +10663,7 @@ const $$UpdateAnnotationParams = {
                                 typeof json.data.box_type_range
                                     .start_time_in_nano_sec === "bigint"
                             ) {
-                                jsonDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
+                                __D3.start_time_in_nano_sec =
                                     json.data.box_type_range.start_time_in_nano_sec;
                             } else {
                                 $fallback(
@@ -11286,8 +10684,7 @@ const $$UpdateAnnotationParams = {
                                             .end_time_in_nano_sec,
                                     );
                                     if (val >= BigInt("0")) {
-                                        jsonDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                            val;
+                                        __D3.end_time_in_nano_sec = val;
                                     } else {
                                         $fallback(
                                             "/data/box_type_range/end_time_in_nano_sec",
@@ -11310,7 +10707,7 @@ const $$UpdateAnnotationParams = {
                                     json.data.box_type_range
                                         .end_time_in_nano_sec >= BigInt("0")
                                 ) {
-                                    jsonDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
+                                    __D3.end_time_in_nano_sec =
                                         json.data.box_type_range.end_time_in_nano_sec;
                                 } else {
                                     $fallback(
@@ -11326,8 +10723,7 @@ const $$UpdateAnnotationParams = {
                                     "Expected BigInt or Integer string. Got ${json.data.box_type_range.end_time_in_nano_sec}",
                                 );
                             }
-                            jsonDataInnerVal.box_type_range =
-                                jsonDataBoxTypeRangeInnerVal;
+                            __D2.box_type_range = __D3;
                         } else {
                             $fallback(
                                 "/data/box_type_range",
@@ -11336,11 +10732,11 @@ const $$UpdateAnnotationParams = {
                             );
                         }
                     }
-                    jsonInnerVal.data = jsonDataInnerVal;
+                    __D1.data = __D2;
                 } else {
                     $fallback("/data", "/properties/data", "Expected object");
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -11348,9 +10744,9 @@ const $$UpdateAnnotationParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.annotation_id === "string") {
-                inputInnerVal.annotation_id = input.annotation_id;
+                __D1.annotation_id = input.annotation_id;
             } else {
                 $fallback(
                     "/annotation_id",
@@ -11359,8 +10755,7 @@ const $$UpdateAnnotationParams = {
                 );
             }
             if (typeof input.annotation_id_version === "string") {
-                inputInnerVal.annotation_id_version =
-                    input.annotation_id_version;
+                __D1.annotation_id_version = input.annotation_id_version;
             } else {
                 $fallback(
                     "/annotation_id_version",
@@ -11369,7 +10764,7 @@ const $$UpdateAnnotationParams = {
                 );
             }
             if (typeof input.data === "object" && input.data !== null) {
-                const inputDataInnerVal = {};
+                const __D2 = {};
                 if (typeof input.data.associated_id === "undefined") {
                     // ignore undefined
                 } else {
@@ -11377,7 +10772,7 @@ const $$UpdateAnnotationParams = {
                         typeof input.data.associated_id === "object" &&
                         input.data.associated_id !== null
                     ) {
-                        const inputDataAssociatedIdInnerVal = {};
+                        const __D3 = {};
                         if (
                             typeof input.data.associated_id.entity_type ===
                             "string"
@@ -11388,7 +10783,7 @@ const $$UpdateAnnotationParams = {
                                 input.data.associated_id.entity_type ===
                                     "SHOW_ID"
                             ) {
-                                inputDataAssociatedIdInnerVal.entity_type =
+                                __D3.entity_type =
                                     input.data.associated_id.entity_type;
                             } else {
                                 $fallback(
@@ -11405,8 +10800,7 @@ const $$UpdateAnnotationParams = {
                             );
                         }
                         if (typeof input.data.associated_id.id === "string") {
-                            inputDataAssociatedIdInnerVal.id =
-                                input.data.associated_id.id;
+                            __D3.id = input.data.associated_id.id;
                         } else {
                             $fallback(
                                 "/data/associated_id/id",
@@ -11414,8 +10808,7 @@ const $$UpdateAnnotationParams = {
                                 "Expected string at /data/associated_id/id",
                             );
                         }
-                        inputDataInnerVal.associated_id =
-                            inputDataAssociatedIdInnerVal;
+                        __D2.associated_id = __D3;
                     } else {
                         $fallback(
                             "/data/associated_id",
@@ -11432,8 +10825,7 @@ const $$UpdateAnnotationParams = {
                             input.data.annotation_type ===
                             "ANNOTATION_BOUNDINGBOX"
                         ) {
-                            inputDataInnerVal.annotation_type =
-                                input.data.annotation_type;
+                            __D2.annotation_type = input.data.annotation_type;
                         } else {
                             $fallback(
                                 "/data/annotation_type",
@@ -11459,7 +10851,7 @@ const $$UpdateAnnotationParams = {
                         input.data.annotation_type_version >= 0 &&
                         input.data.annotation_type_version <= 65535
                     ) {
-                        inputDataInnerVal.annotation_type_version =
+                        __D2.annotation_type_version =
                             input.data.annotation_type_version;
                     } else {
                         $fallback(
@@ -11472,7 +10864,7 @@ const $$UpdateAnnotationParams = {
                 if (typeof input.data.metadata === "undefined") {
                     // ignore undefined
                 } else {
-                    inputDataInnerVal.metadata = input.data.metadata;
+                    __D2.metadata = input.data.metadata;
                 }
                 if (typeof input.data.box_type_range === "undefined") {
                     // ignore undefined
@@ -11481,7 +10873,7 @@ const $$UpdateAnnotationParams = {
                         typeof input.data.box_type_range === "object" &&
                         input.data.box_type_range !== null
                     ) {
-                        const inputDataBoxTypeRangeInnerVal = {};
+                        const __D3 = {};
                         if (
                             typeof input.data.box_type_range
                                 .start_time_in_nano_sec === "string" ||
@@ -11493,8 +10885,7 @@ const $$UpdateAnnotationParams = {
                                     input.data.box_type_range
                                         .start_time_in_nano_sec,
                                 );
-                                inputDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                    val;
+                                __D3.start_time_in_nano_sec = val;
                             } catch (err) {
                                 $fallback(
                                     "/data/box_type_range/start_time_in_nano_sec",
@@ -11506,7 +10897,7 @@ const $$UpdateAnnotationParams = {
                             typeof input.data.box_type_range
                                 .start_time_in_nano_sec === "bigint"
                         ) {
-                            inputDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
+                            __D3.start_time_in_nano_sec =
                                 input.data.box_type_range.start_time_in_nano_sec;
                         } else {
                             $fallback(
@@ -11527,8 +10918,7 @@ const $$UpdateAnnotationParams = {
                                         .end_time_in_nano_sec,
                                 );
                                 if (val >= BigInt("0")) {
-                                    inputDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                        val;
+                                    __D3.end_time_in_nano_sec = val;
                                 } else {
                                     $fallback(
                                         "/data/box_type_range/end_time_in_nano_sec",
@@ -11551,7 +10941,7 @@ const $$UpdateAnnotationParams = {
                                 input.data.box_type_range
                                     .end_time_in_nano_sec >= BigInt("0")
                             ) {
-                                inputDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
+                                __D3.end_time_in_nano_sec =
                                     input.data.box_type_range.end_time_in_nano_sec;
                             } else {
                                 $fallback(
@@ -11567,8 +10957,7 @@ const $$UpdateAnnotationParams = {
                                 "Expected BigInt or Integer string. Got ${input.data.box_type_range.end_time_in_nano_sec}",
                             );
                         }
-                        inputDataInnerVal.box_type_range =
-                            inputDataBoxTypeRangeInnerVal;
+                        __D2.box_type_range = __D3;
                     } else {
                         $fallback(
                             "/data/box_type_range",
@@ -11577,11 +10966,11 @@ const $$UpdateAnnotationParams = {
                         );
                     }
                 }
-                inputInnerVal.data = inputDataInnerVal;
+                __D1.data = __D2;
             } else {
                 $fallback("/data", "/properties/data", "Expected object");
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
