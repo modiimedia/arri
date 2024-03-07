@@ -482,11 +482,10 @@ export function arrayTemplate(
             .split("[")
             .join("_")
             .split("]")
-            .join("_")}_innerResult`,
+            .join("_")}_inner`,
     );
-    const itemVar = `${resultVar}Item`;
-    const itemResultVar = `${itemVar}Result`;
-
+    const itemVar = `__${resultVar}AItem`;
+    const itemResultVar = `__${itemVar}AResult`;
     const innerTemplate = schemaTemplate({
         val: itemVar,
         targetVal: itemResultVar,
@@ -579,9 +578,9 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
             .split("]")
             .join("_"),
     );
-    const resultVal = `${valPrefix}Result`;
-    const loopVal = `${valPrefix}Key`;
-    const loopResultVal = `${loopVal}Val`;
+    const resultVal = `__${valPrefix}RResult`;
+    const loopVal = `__${valPrefix}RKey`;
+    const loopResultVal = `__${loopVal}RVal`;
     const innerTemplate = schemaTemplate({
         val: `${input.val}[${loopVal}]`,
         targetVal: loopResultVal,
