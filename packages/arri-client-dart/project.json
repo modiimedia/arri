@@ -12,6 +12,12 @@
     },
     "test": {
       "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/lib",
+        "{projectRoot}/test",
+        "{projectRoot}/pubspec.yaml",
+        "{projectRoot}"
+      ],
       "options": {
         "command": "dart test",
         "cwd": "packages/arri-client-dart"

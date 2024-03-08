@@ -182,14 +182,9 @@ class EventSource<T> {
       response.stream.listen(
         (value) {
           final input = utf8.decode(value);
-          // this means we have a partial chunk so we need to store this until the whole message has been received
-          if (!input.endsWith("\n\n")) {
-            pendingData += input;
-            return;
-          }
-          final events = parseSseEvents(pendingData + input, parser);
-          pendingData = "";
-          for (final event in events) {
+          final eventResult = parseSseEvents(pendingData + input, parser);
+          pendingData = eventResult.leftoverData;
+          for (final event in eventResult.events) {
             if (event.id != null) {
               lastEventId = event.id;
             }
@@ -283,19 +278,34 @@ class EventSource<T> {
   }
 }
 
-List<SseEvent<T>> parseSseEvents<T>(
+class ParseSseEventsResult<T> {
+  final List<SseEvent<T>> events;
+  final String leftoverData;
+  const ParseSseEventsResult({
+    required this.events,
+    required this.leftoverData,
+  });
+}
+
+ParseSseEventsResult<T> parseSseEvents<T>(
   String input,
   T Function(String) dataParser,
 ) {
   final stringParts = input.split("\n\n");
+  final endingPart = stringParts.removeLast();
   final result = <SseEvent<T>>[];
   for (final part in stringParts) {
     final event = parseSseEvent(part);
-    if (event != null) {
-      result.add(SseEvent<T>.fromString(part, dataParser));
+    if (event == null) {
+      print("WARN: Invalid message data $event");
+      continue;
     }
+    result.add(SseEvent<T>.fromString(part, dataParser));
   }
-  return result;
+  return ParseSseEventsResult(
+    events: result,
+    leftoverData: endingPart,
+  );
 }
 
 SseRawEvent<TData>? parseSseEvent<TData>(String input) {
@@ -319,15 +329,19 @@ sealed class SseEvent<TData> {
     TData Function(String) parser,
   ) {
     final sse = SseRawEvent<TData>.fromString(input);
-    switch (sse.event) {
-      case "message":
-        return SseMessageEvent.fromRawSseEvent(sse, parser);
-      case "error":
-        return SseErrorEvent.fromRawSseEvent(sse);
-      case "done":
-        return SseDoneEvent.fromRawSseEvent(sse);
-      default:
-        return sse;
+    try {
+      switch (sse.event) {
+        case "message":
+          return SseMessageEvent.fromRawSseEvent(sse, parser);
+        case "error":
+          return SseErrorEvent.fromRawSseEvent(sse);
+        case "done":
+          return SseDoneEvent.fromRawSseEvent(sse);
+        default:
+          return SseMessageEvent.fromRawSseEvent(sse, parser);
+      }
+    } catch (err) {
+      return sse;
     }
   }
 }
