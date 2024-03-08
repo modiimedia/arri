@@ -13,10 +13,9 @@
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{projectRoot}/lib",
-        "{projectRoot}/test",
-        "{projectRoot}/pubspec.yaml",
-        "{projectRoot}"
+        "{projectRoot}/lib/**/*.dart",
+        "{projectRoot}/test/**/*.dart",
+        "{projectRoot}/pubspec.yaml"
       ],
       "options": {
         "command": "dart test",

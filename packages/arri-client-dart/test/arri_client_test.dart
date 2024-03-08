@@ -34,6 +34,28 @@ main() {
     expect(closeCount, equals(1));
   });
 
+  test("parsing sse messages", () {
+    final streamedTxt = """id: 1
+data: hello world
+
+id: 2
+data: hello world
+
+""";
+
+    final result = parseSseEvents(streamedTxt, (input) {
+      return input;
+    });
+
+    expect(result.events.length, equals(2));
+    expect(result.leftoverData, equals(""));
+    expect(
+      result.events.every((element) =>
+          element is SseMessageEvent<String> && element.data == "hello world"),
+      equals(true),
+    );
+  });
+
   test("partial sse message", () {
     final streamedTxt = """id: 1
 data: {"hello":"wo""";
