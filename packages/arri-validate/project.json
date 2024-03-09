@@ -38,7 +38,8 @@
       "outputs": ["{workspaceRoot}/coverage/packages/arri-validate"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/packages/arri-validate"
+        "reportsDirectory": "../../coverage/packages/arri-validate",
+        "watch": false
       }
     },
     "typecheck": {

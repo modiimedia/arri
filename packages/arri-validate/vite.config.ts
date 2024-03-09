@@ -22,6 +22,12 @@ export default defineConfig({
     test: {
         globals: true,
         reporters: ["default"],
+        pool: "threads",
+        poolOptions: {
+            threads: {
+                singleThread: true,
+            },
+        },
         cache: {
             dir: "../../node_modules/.vitest",
         },
