@@ -4,6 +4,7 @@ import { defineConfig } from "arri";
 import {
     typescriptClientGenerator,
     dartClientGenerator,
+    rustClientGenerator,
 } from "arri/dist/codegen";
 
 const prettierConfig = JSON.parse(
@@ -32,6 +33,13 @@ export default defineConfig({
             outputFile: path.resolve(
                 __dirname,
                 "../clients/client-dart/lib/test_client.rpc.dart",
+            ),
+        }),
+        rustClientGenerator({
+            clientName: "TestClient",
+            outputFile: path.resolve(
+                __dirname,
+                "../clients/rust/src/test_client.rpc.rs",
             ),
         }),
     ],

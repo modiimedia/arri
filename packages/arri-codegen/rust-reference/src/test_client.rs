@@ -4,7 +4,7 @@ use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request,
     reqwest::Method,
-    serde_json::{self, json, Value},
+    serde_json::{self},
     ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
     EmptyArriModel,
 };
@@ -160,9 +160,9 @@ impl ArriModel for GetStatusResponse {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let message = match val.get("message") {
-                    Some(Value::String(message_val)) => message_val.to_string(),
+                    Some(serde_json::Value::String(message_val)) => message_val.to_string(),
                     _ => "".to_string(),
                 };
                 Self { message }
@@ -172,7 +172,7 @@ impl ArriModel for GetStatusResponse {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -212,8 +212,8 @@ pub struct User {
     pub recent_notifications: Vec<UserRecentNotificationsItem>,
     pub bookmarks: HashMap<String, UserBookmarksValue>,
     pub bio: Option<String>,
-    pub metadata: HashMap<String, Value>,
-    pub random_list: Vec<Value>,
+    pub metadata: HashMap<String, serde_json::Value>,
+    pub random_list: Vec<serde_json::Value>,
 }
 
 impl ArriModel for User {
@@ -236,9 +236,9 @@ impl ArriModel for User {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let id = match val.get("id") {
-                    Some(Value::String(id_val)) => id_val.to_string(),
+                    Some(serde_json::Value::String(id_val)) => id_val.to_string(),
                     _ => "".to_string(),
                 };
                 let role = match val.get("role") {
@@ -250,7 +250,7 @@ impl ArriModel for User {
                     None => None,
                 };
                 let created_at = match val.get("createdAt") {
-                    Some(Value::String(created_at_val)) => {
+                    Some(serde_json::Value::String(created_at_val)) => {
                         match DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val.as_str()) {
                             Ok(created_at_val_result) => created_at_val_result,
                             Err(_) => DateTime::default(),
@@ -259,7 +259,7 @@ impl ArriModel for User {
                     _ => DateTime::default(),
                 };
                 let num_followers = match val.get("numFollowers") {
-                    Some(Value::Number(num_followers_val)) => {
+                    Some(serde_json::Value::Number(num_followers_val)) => {
                         match i32::try_from(num_followers_val.as_i64().unwrap_or(0)) {
                             Ok(num_followers_val_result) => num_followers_val_result,
                             _ => 0,
@@ -278,7 +278,7 @@ impl ArriModel for User {
                     _ => None,
                 };
                 let recent_notifications = match val.get("recentNotifications") {
-                    Some(Value::Array(recent_notifications_val)) => {
+                    Some(serde_json::Value::Array(recent_notifications_val)) => {
                         let mut items: Vec<UserRecentNotificationsItem> = Vec::new();
                         for recent_notifications_val_item in recent_notifications_val.into_iter() {
                             items.push(UserRecentNotificationsItem::from_json(
@@ -290,7 +290,7 @@ impl ArriModel for User {
                     _ => Vec::new(),
                 };
                 let bookmarks = match val.get("bookmarks") {
-                    Some(Value::Object(bookmarks_val)) => {
+                    Some(serde_json::Value::Object(bookmarks_val)) => {
                         let mut hash_map: HashMap<String, UserBookmarksValue> = HashMap::new();
                         for (key, val) in bookmarks_val.into_iter() {
                             hash_map.insert(
@@ -303,12 +303,12 @@ impl ArriModel for User {
                     _ => HashMap::new(),
                 };
                 let bio = match val.get("bio") {
-                    Some(Value::String(bio_val)) => Some(bio_val.to_string()),
+                    Some(serde_json::Value::String(bio_val)) => Some(bio_val.to_string()),
                     _ => None,
                 };
                 let metadata = match val.get("metadata") {
-                    Some(Value::Object(metadata_val)) => {
-                        let mut hash_map: HashMap<String, Value> = HashMap::new();
+                    Some(serde_json::Value::Object(metadata_val)) => {
+                        let mut hash_map: HashMap<String, serde_json::Value> = HashMap::new();
                         for (key, val) in metadata_val.into_iter() {
                             hash_map.insert(key.to_owned(), val.to_owned());
                         }
@@ -317,8 +317,8 @@ impl ArriModel for User {
                     _ => HashMap::new(),
                 };
                 let random_list = match val.get("randomList") {
-                    Some(Value::Array(random_list_val)) => {
-                        let mut items: Vec<Value> = Vec::new();
+                    Some(serde_json::Value::Array(random_list_val)) => {
+                        let mut items: Vec<serde_json::Value> = Vec::new();
                         for item in random_list_val.into_iter() {
                             items.push(item.to_owned());
                         }
@@ -347,7 +347,7 @@ impl ArriModel for User {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -408,9 +408,11 @@ impl ArriModel for User {
         }
         output.push('}');
         match &self.bio {
-            Some(bio) => {
+            Some(bio_val) => {
                 output.push_str(",\"bio\":");
-                output.push_str(format!("\"{}\"", bio).as_str());
+                output.push_str(
+                    format!("\"{}\"", bio_val.replace("\n", "\\n").replace("\"", "\\\"")).as_str(),
+                );
             }
             None => {}
         }
@@ -467,9 +469,9 @@ impl ArriModel for UserRole {
     fn new() -> Self {
         Self::Standard
     }
-    fn from_json(input: Value) -> Self {
+    fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::String(val) => match val.as_str() {
+            serde_json::Value::String(val) => match val.as_str() {
                 "STANDARD" => Self::Standard,
                 "ADMIN" => Self::Admin,
                 _ => Self::Standard,
@@ -479,7 +481,7 @@ impl ArriModel for UserRole {
     }
 
     fn from_json_string(input: String) -> Self {
-        Self::from_json(json!(input))
+        Self::from_json(serde_json::json!(input))
     }
 
     fn to_json_string(&self) -> String {
@@ -515,25 +517,29 @@ impl ArriModel for UserPhoto {
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let url = match val.get("url") {
-                    Some(Value::String(url_val)) => url_val.to_owned(),
+                    Some(serde_json::Value::String(url_val)) => url_val.to_owned(),
                     _ => "".to_string(),
                 };
                 let width = match val.get("width") {
-                    Some(Value::Number(width_val)) => width_val.as_f64().unwrap_or(0.0),
+                    Some(serde_json::Value::Number(width_val)) => width_val.as_f64().unwrap_or(0.0),
                     _ => 0.0,
                 };
                 let height = match val.get("height") {
-                    Some(Value::Number(height_val)) => height_val.as_f64().unwrap_or(0.0),
+                    Some(serde_json::Value::Number(height_val)) => {
+                        height_val.as_f64().unwrap_or(0.0)
+                    }
                     _ => 0.0,
                 };
                 let bytes = match val.get("bytes") {
-                    Some(Value::Number(bytes_val)) => bytes_val.as_i64().unwrap_or(0),
+                    Some(serde_json::Value::Number(bytes_val)) => bytes_val.as_i64().unwrap_or(0),
                     _ => 0,
                 };
                 let nanoseconds = match val.get("nanoseconds") {
-                    Some(Value::Number(nanoseconds_val)) => nanoseconds_val.as_u64().unwrap_or(0),
+                    Some(serde_json::Value::Number(nanoseconds_val)) => {
+                        nanoseconds_val.as_u64().unwrap_or(0)
+                    }
                     _ => 0,
                 };
                 Self {
@@ -549,7 +555,7 @@ impl ArriModel for UserPhoto {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -604,9 +610,9 @@ impl ArriModel for UserSettings {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let notifications_enabled = match val.get("notificationsEnabled") {
-                    Some(Value::Bool(notifications_enabled_val)) => {
+                    Some(serde_json::Value::Bool(notifications_enabled_val)) => {
                         notifications_enabled_val.to_owned()
                     }
                     _ => false,
@@ -628,7 +634,7 @@ impl ArriModel for UserSettings {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -672,7 +678,7 @@ impl ArriModel for UserSettingsPreferredTheme {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::String(val) => match val.as_str() {
+            serde_json::Value::String(val) => match val.as_str() {
                 "dark-mode" => Self::DarkMode,
                 "light-mode" => Self::LightMode,
                 "system" => Self::System,
@@ -683,7 +689,7 @@ impl ArriModel for UserSettingsPreferredTheme {
     }
 
     fn from_json_string(input: String) -> Self {
-        Self::from_json(json!(input))
+        Self::from_json(serde_json::json!(input))
     }
 
     fn to_json_string(&self) -> String {
@@ -722,9 +728,9 @@ impl ArriModel for UserRecentNotificationsItem {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let notification_type = match val.get("notificationType") {
-                    Some(Value::String(notification_type_value)) => {
+                    Some(serde_json::Value::String(notification_type_value)) => {
                         notification_type_value.to_string()
                     }
                     _ => "POST_LIKE".to_string(),
@@ -732,26 +738,34 @@ impl ArriModel for UserRecentNotificationsItem {
                 match notification_type.as_str() {
                     "POST_LIKE" => {
                         let post_id = match val.get("postId") {
-                            Some(Value::String(post_id_value)) => post_id_value.to_string(),
+                            Some(serde_json::Value::String(post_id_value)) => {
+                                post_id_value.to_string()
+                            }
                             _ => "".to_string(),
                         };
                         let user_id = match val.get("userId") {
-                            Some(Value::String(user_id_value)) => user_id_value.to_string(),
+                            Some(serde_json::Value::String(user_id_value)) => {
+                                user_id_value.to_string()
+                            }
                             _ => "".to_string(),
                         };
                         return Self::PostLike { post_id, user_id };
                     }
                     "POST_COMMENT" => {
                         let post_id = match val.get("postId") {
-                            Some(Value::String(post_id_value)) => post_id_value.to_owned(),
+                            Some(serde_json::Value::String(post_id_value)) => {
+                                post_id_value.to_owned()
+                            }
                             _ => "".to_string(),
                         };
                         let user_id = match val.get("userId") {
-                            Some(Value::String(user_id_value)) => user_id_value.to_string(),
+                            Some(serde_json::Value::String(user_id_value)) => {
+                                user_id_value.to_string()
+                            }
                             _ => "".to_string(),
                         };
                         let comment_text = match val.get("commentText") {
-                            Some(Value::String(comment_text_value)) => {
+                            Some(serde_json::Value::String(comment_text_value)) => {
                                 comment_text_value.to_string()
                             }
                             _ => "".to_string(),
@@ -770,7 +784,7 @@ impl ArriModel for UserRecentNotificationsItem {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -844,13 +858,13 @@ impl ArriModel for UserBookmarksValue {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let post_id = match val.get("postId") {
-                    Some(Value::String(post_id_val)) => post_id_val.to_string(),
+                    Some(serde_json::Value::String(post_id_val)) => post_id_val.to_string(),
                     _ => "".to_string(),
                 };
                 let user_id = match val.get("userId") {
-                    Some(Value::String(user_id_val)) => user_id_val.to_string(),
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_string(),
                     _ => "".to_string(),
                 };
                 Self { post_id, user_id }
@@ -860,7 +874,7 @@ impl ArriModel for UserBookmarksValue {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -897,9 +911,9 @@ impl ArriModel for UserParams {
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let user_id = match val.get("userId") {
-                    Some(Value::String(user_id_val)) => user_id_val.to_string(),
+                    Some(serde_json::Value::String(user_id_val)) => user_id_val.to_string(),
                     _ => "".to_string(),
                 };
                 Self { user_id }
@@ -909,7 +923,7 @@ impl ArriModel for UserParams {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -953,13 +967,13 @@ impl ArriModel for UpdateUserParams {
     }
     fn from_json(json: serde_json::Value) -> Self {
         match json {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
                 let id = match val.get("id") {
-                    Some(Value::String(id_val)) => id_val.to_string(),
+                    Some(serde_json::Value::String(id_val)) => id_val.to_string(),
                     _ => "".to_string(),
                 };
                 let bio = match val.get("bio") {
-                    Some(Value::String(bio_val)) => Some(bio_val.to_string()),
+                    Some(serde_json::Value::String(bio_val)) => Some(bio_val.to_string()),
                     _ => None,
                 };
                 let photo = match val.get("photo") {
@@ -973,7 +987,7 @@ impl ArriModel for UpdateUserParams {
     }
 
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1143,7 +1157,7 @@ fn test_user() {
     assert_eq!(user.metadata.clone().into_iter().len(), 2);
     assert_eq!(
         user.metadata.clone().get("description").unwrap().to_owned(),
-        Value::String("this is a description".to_string())
+        serde_json::Value::String("this is a description".to_string())
     );
     assert_eq!(
         user.metadata
@@ -1151,18 +1165,24 @@ fn test_user() {
             .get("isRestricted")
             .unwrap()
             .to_owned(),
-        Value::Bool(false)
+        serde_json::Value::Bool(false)
     );
     assert_eq!(user.random_list.clone().len(), 4);
     println!("{:?}", user.random_list);
-    assert_eq!(user.random_list.get(0).unwrap().to_owned(), json!(1));
-    assert_eq!(user.random_list.get(1).unwrap().to_owned(), json!(2));
+    assert_eq!(
+        user.random_list.get(0).unwrap().to_owned(),
+        serde_json::json!(1)
+    );
+    assert_eq!(
+        user.random_list.get(1).unwrap().to_owned(),
+        serde_json::json!(2)
+    );
     assert_eq!(
         user.random_list.get(2).unwrap().to_owned(),
-        Value::Bool(true)
+        serde_json::Value::Bool(true)
     );
     assert_eq!(
         user.random_list.get(3).unwrap().to_owned(),
-        Value::Bool(false)
+        serde_json::Value::Bool(false)
     );
 }

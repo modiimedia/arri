@@ -28,6 +28,7 @@
     "@joshmossas/listhen": "1.6.0",
     "arri-codegen-dart": "workspace:*",
     "arri-codegen-ts": "workspace:*",
+    "arri-codegen-rust": "workspace:*",
     "arri-codegen-utils": "workspace:*",
     "arri-validate": "workspace:*",
     "c12": "^1.10.0",

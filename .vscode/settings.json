@@ -26,7 +26,8 @@
   "rust-analyzer.linkedProjects": [
     "packages/arri-rs/Cargo.toml",
     "packages/arri-client-rust/Cargo.toml",
-    "packages/arri-codegen/rust-reference/Cargo.toml"
+    "packages/arri-codegen/rust-reference/Cargo.toml",
+    "tests/clients/rust/Cargo.toml"
   ],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"

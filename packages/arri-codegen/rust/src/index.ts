@@ -89,7 +89,7 @@ use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request,
     reqwest::Method,
-    serde_json::{self, json, Value},
+    serde_json::{self},
     ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
     EmptyArriModel,
 };
@@ -146,19 +146,21 @@ export function rustAnyFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     return {
-        fieldTemplate: schema.nullable ? "Option<Value>" : "Value",
-        defaultTemplate: schema.nullable ? "None()" : "Value::Null",
+        fieldTemplate: schema.nullable
+            ? "Option<serde_json::Value>"
+            : "serde_json::Value",
+        defaultTemplate: schema.nullable ? "None()" : "serde_json::Value::Null",
         fromJsonTemplate(val, key) {
             const rustKey = snakeCase(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(Value(${rustKey}_val)) => Some(${rustKey}_val),
+                    Some(serde_json::Value(${rustKey}_val)) => Some(${rustKey}_val),
                     _ => None(),
                 }`;
             }
             return `match ${val} {
-                Some(Value(${rustKey}_val)) => ${maybeSome(`${rustKey}_val`, context.isOptional)},
-                _ => ${maybeNone("Value::Null", context.isOptional)},
+                Some(serde_json::Value(${rustKey}_val)) => ${maybeSome(`${rustKey}_val`, context.isOptional)},
+                _ => ${maybeNone("serde_json::Value::Null", context.isOptional)},
             }`;
         },
         toJsonTemplate(val, key) {
@@ -213,12 +215,12 @@ export function rustBoolFromSchema(
                 return `format!(match ${val} {
     Some(${rustKey}_val) => ${rustKey}_val.to_string(),
     None => "null".to_string(),
-}`;
+})`;
             },
             fromJsonTemplate: (val, key) => {
                 const rustKey = snakeCase(key);
                 return `match ${val}.get("${key}") {
-    Some(Value::Bool(${rustKey}_val)) => Some(${rustKey}_val),
+    Some(serde_json::Value::Bool(${rustKey}_val)) => Some(${rustKey}_val),
     _ => None(),
 }`;
             },
@@ -241,7 +243,7 @@ export function rustBoolFromSchema(
         fromJsonTemplate: (val, key) => {
             const rustKey = snakeCase(key);
             return `match ${val}.get("${key}") {
-    Some(Value::Bool(${rustKey}_val)) => ${maybeSome(`${rustKey}_val`, context.isOptional)},
+    Some(serde_json::Value::Bool(${rustKey}_val)) => ${maybeSome(`${rustKey}_val`, context.isOptional)},
     _ => ${maybeNone("false", context.isOptional)},
 }`;
         },
@@ -274,7 +276,7 @@ export function rustStringFromSchema(
             fromJsonTemplate: (val, key) => {
                 const rustKey = snakeCase(key);
                 return `match ${val}.get("${key}") {
-    Some(Value::String(${rustKey}_val)) => Some(${rustKey}_val.to_owned()),
+    Some(serde_json::Value::String(${rustKey}_val)) => Some(${rustKey}_val.to_owned()),
     _ => None,
 }`;
             },
@@ -299,7 +301,7 @@ export function rustStringFromSchema(
         fromJsonTemplate: (val, key) => {
             const rustKey = snakeCase(key);
             return `match ${val}.get("${key}") {
-    Some(Value::String(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.to_owned()`, context.isOptional)},
+    Some(serde_json::Value::String(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.to_owned()`, context.isOptional)},
     _ => ${maybeNone(`"".to_string()`, context.isOptional)},
 }`;
         },
@@ -331,7 +333,7 @@ export function rustDateTimeFromSchema(
             fromJsonTemplate: (val, key) => {
                 const rustKey = snakeCase(key);
                 return `match ${val}.get("${key}") {
-                    Some(Value::String(${rustKey}_val)) => match DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val.as_str()) {
+                    Some(serde_json::Value::String(${rustKey}_val)) => match DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val.as_str()) {
                         Ok(${rustKey}_val_result) => Some(${rustKey}_val_result),
                         _ => None(),
                     },
@@ -360,7 +362,7 @@ export function rustDateTimeFromSchema(
         fromJsonTemplate(val, key) {
             const rustKey = snakeCase(key);
             return `match ${val}.get("${key}") {
-                Some(Value::String(${rustKey}_val)) => match DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val.as_str()) {
+                Some(serde_json::Value::String(${rustKey}_val)) => match DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val.as_str()) {
                     Ok(${rustKey}_val_result) => ${maybeSome(`${rustKey}_val_result`, context.isOptional)},
                     _ => ${maybeNone("DateTime::default()", context.isOptional)},
                 },
@@ -385,7 +387,7 @@ export function rustF32FromSchema(
             fromJsonTemplate(val, key) {
                 const rustKey = snakeCase(key);
                 return `match ${val} {
-                    Some(Value::Number(${rustKey}_val)) => match f32::try_from(${rustKey}_val.as_f64().unwrap_or(0.0)) {
+                    Some(serde_json::Value::Number(${rustKey}_val)) => match f32::try_from(${rustKey}_val.as_f64().unwrap_or(0.0)) {
                         Ok(${rustKey}_val_result) => Some(${rustKey}_val_result),
                         _ => None,
                     },
@@ -415,7 +417,7 @@ export function rustF32FromSchema(
         fromJsonTemplate(val, key) {
             const rustKey = snakeCase(key);
             return `match ${val} {
-                Some(Value::Number(${rustKey}_val)) => match f32::try_from(${rustKey}_val.as_f64().unwrap_or(0.0)) {
+                Some(serde_json::Value::Number(${rustKey}_val)) => match f32::try_from(${rustKey}_val.as_f64().unwrap_or(0.0)) {
                     Ok(${rustKey}_val_result) => ${maybeSome(
                         `${rustKey}_val_result`,
                         context.isOptional,
@@ -442,11 +444,11 @@ export function rustF64FromSchema(
     const isOptionType =
         (schema.nullable ?? false) || (context.isOptional ?? false);
     return {
-        fieldTemplate: schema.nullable ? `Option<f64>` : "f64",
+        fieldTemplate: isOptionType ? `Option<f64>` : "f64",
         defaultTemplate: maybeNone(`0.0`, isOptionType),
         toJsonTemplate(val, key) {
             const rustKey = snakeCase(key);
-            if (schema.nullable) {
+            if (isOptionType) {
                 return `match ${val} {
                     Some(${rustKey}_val) => ${rustKey}_val.to_string(),
                     _ => "null".to_string(),
@@ -457,7 +459,7 @@ export function rustF64FromSchema(
         fromJsonTemplate(val, key) {
             const rustKey = snakeCase(key);
             return `match ${val} {
-                Some(Value::number(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.as_f64()`, isOptionType)},
+                Some(serde_json::Value::number(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.as_f64()`, isOptionType)},
                 _ => ${maybeNone("0.0", isOptionType)}
             }`;
         },
@@ -478,7 +480,41 @@ export function rustF64FromSchema(
 export function rustInt8FromSchema(
     schema: SchemaFormType,
     context: GeneratorContext,
-): RustProperty {}
+): RustProperty {
+    const isOptionType =
+        (schema.nullable ?? false) || (context.isOptional ?? false);
+    return {
+        fieldTemplate: isOptionType ? `Option<i8>` : "i8",
+        defaultTemplate: maybeNone("0", isOptionType),
+        toJsonTemplate: (val, key) => {
+            const rustKey = snakeCase(key);
+            if (schema.nullable) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
+                    _ => ${rustKey}_val.to_string()
+                }`;
+            }
+            return `${rustKey}_val.to_string()`;
+        },
+        fromJsonTemplate: (val, key) => {
+            const rustKey = snakeCase(key);
+            return `match ${val} {
+                Some(serde_json::Value::number(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.as_i64().try_into:: <i8>().unwrap_or(0)`, isOptionType)},
+                _ => ${maybeNone("0", isOptionType)}
+            }`;
+        },
+        toQueryTemplate: (val, key) => {
+            const rustKey = snakeCase(key);
+            if (schema.nullable) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
+                    _ => ${rustKey}_val.to_string(),`;
+            }
+            return `${rustKey}_val.to_string(),`;
+        },
+        content: "",
+    };
+}
 
 export function rustStructFromSchema(
     schema: SchemaFormProperties,
@@ -544,7 +580,7 @@ export function rustStructFromSchema(
             );
             defaultParts.push(`        ${rustKey}: None`);
             fromJsonParts.push(`let ${rustKey} = match val.get("${key}") {
-                 Some(Value(${rustKey}_val)) => ${prop.fromJsonTemplate(`${rustKey}_val`, key)},
+                 Some(serde_json::Value(${rustKey}_val)) => ${prop.fromJsonTemplate(`${rustKey}_val`, key)},
                  _ => None,
             };`);
             if (keyCount > 0) {
@@ -589,9 +625,9 @@ impl ArriModel for ${structName} {
 ${defaultParts.join(",\n")},
         }
     }
-    fn from_json(input: Value) -> Self {
+    fn from_json(input: serde_json::Value) -> Self {
         match input {
-            Value::Object(val) => {
+            serde_json::Value::Object(val) => {
 ${fromJsonParts.join("\n")}
                 Self {
                     ${keyParts.join(",\n            ")},
@@ -600,7 +636,7 @@ ${fromJsonParts.join("\n")}
         }
     }
     fn from_json_string(input: String) -> Self {
-        match Value::from_str(input.as_str()) {
+        match serde_json::Value::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -639,12 +675,12 @@ ${fromJsonParts.join("\n")}
             const rustKey = camelCase(key);
             if (schema.nullable) {
                 return `match ${val} {
-                Some(Value(${rustKey}_val)) => ${structName}.from_json(${rustKey}_val),
+                Some(serde_json::Value(${rustKey}_val)) => ${structName}.from_json(${rustKey}_val),
                 _ => None(),
             }`;
             }
             return `match ${val} {
-                Some(Value(${rustKey}_val)) => ${structName}.from_json(${rustKey}_val),
+                Some(serde_json::Value(${rustKey}_val)) => ${structName}.from_json(${rustKey}_val),
                 _ => ${structName}::new(),
             }`;
         },
@@ -652,7 +688,7 @@ ${fromJsonParts.join("\n")}
             const rustKey = snakeCase(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(Value(${rustKey}_val)) => ${structName}.to_query_params_string(),
+                    Some(serde_json::Value(${rustKey}_val)) => ${structName}.to_query_params_string(),
                     _ => "null".to_string(),
                 }`;
             }
