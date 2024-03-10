@@ -39,7 +39,7 @@ export function typeboxAdapter<TInput extends TSchema>(
                 _isAdaptedSchema: true,
                 output: {} as any as Static<TInput>,
                 optional: input[OptionalKind] === "Optional",
-                parse(val) {
+                parse(val: unknown) {
                     if (typeof val === "string") {
                         const parsedVal = JSON.parse(val);
                         if (compiled.Check(parsedVal)) {
@@ -54,18 +54,18 @@ export function typeboxAdapter<TInput extends TSchema>(
                     }
                     throw typeboxErrorsToArriError(compiled.Errors(val));
                 },
-                coerce(val) {
+                coerce(val: unknown) {
                     return Value.Cast(input, val);
                 },
-                validate(val): val is Static<TInput> {
+                validate(val: unknown): val is Static<TInput> {
                     return compiled.Check(val);
                 },
-                serialize(val) {
+                serialize(val: Static<TInput>) {
                     return compiled.Encode(val);
                 },
             },
         },
-    };
+    } satisfies AAdaptedSchema<TInput>;
 }
 
 function typeboxErrorsToArriError(errs: ValueErrorIterator): ValidationError {

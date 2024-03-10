@@ -22,7 +22,8 @@
       "outputs": ["{workspaceRoot}/coverage/packages/arri"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/packages/arri"
+        "reportsDirectory": "../../coverage/packages/arri",
+        "watch": false
       }
     },
     "publish": {

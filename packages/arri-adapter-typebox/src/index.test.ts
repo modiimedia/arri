@@ -1,4 +1,5 @@
-import { Type } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
+import { defineRpc, defineEventStreamRpc } from "arri";
 import { a } from "arri-validate";
 import { typeboxAdapter } from "./index";
 
@@ -135,4 +136,58 @@ it("parses objects in the expected way", () => {
     expect(!a.safeParse(TargetUserSchema, JSON.stringify(badInput)).success);
     expect(!a.safeParse(ConvertedUserSchema, badInput).success);
     expect(!a.safeParse(ConvertedUserSchema, JSON.stringify(badInput)).success);
+});
+
+describe("arri inference", () => {
+    test("object parameters", () => {
+        const Schema = Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+        });
+        type Schema = Static<typeof Schema>;
+        defineRpc({
+            params: typeboxAdapter(Schema),
+            response: typeboxAdapter(Schema),
+            handler({ params }) {
+                assertType<Schema>(params);
+                return {
+                    id: "",
+                    name: "",
+                };
+            },
+        });
+        defineEventStreamRpc({
+            params: typeboxAdapter(Schema),
+            response: typeboxAdapter(Schema),
+            handler({ params, stream }) {
+                assertType<Schema>(params);
+                stream.send();
+                void stream.push({ id: "", name: "" });
+            },
+        });
+    });
+    test("record parameters", () => {
+        const Schema = Type.Record(Type.String(), Type.Boolean());
+        type Schema = Static<typeof Schema>;
+        defineRpc({
+            params: typeboxAdapter(Schema),
+            response: typeboxAdapter(Schema),
+            handler({ params }) {
+                assertType<Schema>(params);
+                return {
+                    "1": true,
+                    "2": false,
+                };
+            },
+        });
+        defineEventStreamRpc({
+            params: typeboxAdapter(Schema),
+            response: typeboxAdapter(Schema),
+            handler({ params, stream }) {
+                assertType<Schema>(params);
+                stream.send();
+                void stream.push({ "1": true, "2": false });
+            },
+        });
+    });
 });

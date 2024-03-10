@@ -404,15 +404,7 @@ function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
 }
 
 function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
-    const innerTargetVal = camelCase(
-        `${input.val
-            .split(".")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("")}_innerVal`,
-    );
+    const innerTargetVal = `__${getDepthStr(input.instancePath)}`;
     const parsingParts: string[] = [];
     if (input.discriminatorKey && input.discriminatorValue) {
         parsingParts.push(
@@ -475,18 +467,9 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
 export function arrayTemplate(
     input: TemplateInput<SchemaFormElements>,
 ): string {
-    const resultVar = camelCase(
-        `${input.targetVal
-            .split(".")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("_")}_innerResult`,
-    );
-    const itemVar = `${resultVar}Item`;
-    const itemResultVar = `${itemVar}Result`;
-
+    const resultVar = `__${getDepthStr(input.instancePath)}`;
+    const itemVar = `${resultVar}AItem`;
+    const itemResultVar = `${itemVar}AResult`;
     const innerTemplate = schemaTemplate({
         val: itemVar,
         targetVal: itemResultVar,
@@ -569,19 +552,17 @@ export function discriminatorTemplate(
     return mainTemplate;
 }
 
+function getDepthStr(instancePath: string) {
+    const parts = instancePath.split("/");
+    const depth = parts.length;
+    return `D${depth}`;
+}
+
 export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
-    const valPrefix = camelCase(
-        input.val
-            .split(".")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("_"),
-    );
-    const resultVal = `${valPrefix}Result`;
-    const loopVal = `${valPrefix}Key`;
-    const loopResultVal = `${loopVal}Val`;
+    const valPrefix = getDepthStr(input.instancePath);
+    const resultVal = `__${valPrefix}RResult`;
+    const loopVal = `__${valPrefix}RKey`;
+    const loopResultVal = `${loopVal}RVal`;
     const innerTemplate = schemaTemplate({
         val: `${input.val}[${loopVal}]`,
         targetVal: loopResultVal,
