@@ -1,4 +1,5 @@
-import { readFileSync } from "fs";
+import { execSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { normalizeWhitespace, type SchemaFormType } from "arri-codegen-utils";
 import { a } from "arri-validate";
 import path from "pathe";
@@ -15,6 +16,14 @@ const defaultContext: GeneratorContext = {
     generatedTypes: [],
     clientName: "",
 };
+
+const tmpDir = path.resolve(__dirname, "../.tmp");
+
+beforeAll(() => {
+    if (!existsSync(tmpDir)) {
+        mkdirSync(tmpDir);
+    }
+});
 
 describe("Scalar Types", () => {
     test("bool", () => {
@@ -190,7 +199,16 @@ describe("objects", () => {
             instancePath: "/schema",
             schemaPath: "",
         });
-
+        const outputFilePath = path.resolve(
+            tmpDir,
+            "complete_object_output.rs",
+        );
+        writeFileSync(
+            path.resolve(tmpDir, "complete_object_output.rs"),
+            result.content,
+        );
+        execSync(`rustfmt ${outputFilePath}`);
+        const outputFile = readFileSync(outputFilePath, { encoding: "utf8" });
         const referenceFile = readFileSync(
             path.resolve(
                 __dirname,
@@ -202,7 +220,7 @@ describe("objects", () => {
         parts.shift();
         const expectedResult = parts.join("\n");
 
-        expect(normalizeWhitespace(result.content)).toBe(
+        expect(normalizeWhitespace(outputFile)).toBe(
             normalizeWhitespace(expectedResult),
         );
     });

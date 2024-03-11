@@ -16,7 +16,7 @@ function defaultFromJson(
     defaultVal: string,
 ) {
     const rustKey = validRustKey(key);
-    return `match ${val} {
+    return `match ${val}.get("${key}") {
     Some(serde_json::Value::Number(${rustKey}_val)) => ${fromJsonNumber(`${rustKey}_val`)},
     _ => ${defaultVal},
 }`;
@@ -36,12 +36,15 @@ function defaultToJson(val: string, key: string, isNullable?: boolean) {
 function defaultToQuery(val: string, key: string, isNullable?: boolean) {
     const rustKey = validRustKey(key);
     if (isNullable) {
-        return `match ${val} {
-    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-    _ => "null".to_string(),
-}`;
+        return `format!(
+    "${key}={}",
+    match ${val} {
+        Some(${rustKey}_val) => ${rustKey}_val.to_string(),
+        _ => "null".to_string(),
     }
-    return `${val}.to_string()`;
+)`;
+    }
+    return `format!("${key}={}", ${val})`;
 }
 
 export function rustFloatFromSchema(
@@ -67,7 +70,7 @@ export function rustFloatFromSchema(
             );
         }
         return maybeSome(
-            `f32::try_from(${subKey}.as_f64().unwrap_or(0.0)).unwrap_or(0.0)`,
+            `${subKey}.as_f64().unwrap_or(0.0) as f32`,
             schema.nullable,
         );
     };
@@ -126,19 +129,20 @@ export function rustIntFromSchema(
             key,
             (subKey) =>
                 maybeSome(
-                    `${typeName}::tryFrom(${subKey}.as_i64().unwrap_or(0.0)).unwrap_or(0)`,
+                    `${typeName}::try_from(${subKey}.as_i64().unwrap_or(0)).unwrap_or(0)`,
                 ),
             maybeNone(`0`, schema.nullable),
         );
     if (typeName === "i64" || typeName === "u64") {
         fromJsonTemplate = (val: string, key: string) => {
             const rustKey = validRustKey(key);
-            return `match ${val} {
+            return `match ${val}.get("${key}") {
                 Some(serde_json::Value::String(${rustKey}_val)) => ${maybeSome(
                     `${rustKey}_val.parse::<${typeName}>().unwrap_or(0)`,
                     schema.nullable,
                 )},
-                _ => ${maybeNone(`0`, schema.nullable)}`;
+                _ => ${maybeNone(`0`, schema.nullable)}
+            }`;
         };
     }
 

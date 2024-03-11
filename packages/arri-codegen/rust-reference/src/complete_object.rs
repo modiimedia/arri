@@ -8,6 +8,7 @@ use arri_client::{
 
 // IGNORE BEFORE //
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct CompleteObject {
     pub any: serde_json::Value,
     pub string: String,
@@ -191,7 +192,7 @@ impl ArriModel for CompleteObject {
         output.push_str("\"any\":");
         output.push_str(
             serde_json::to_string(&self.any)
-                .unwrap_or("\"\"".to_string())
+                .unwrap_or("\"null\"".to_string())
                 .as_str(),
         );
         output.push_str(",\"string\":");
@@ -203,31 +204,31 @@ impl ArriModel for CompleteObject {
             .as_str(),
         );
         output.push_str(",\"boolean\":");
-        output.push_str(format!("{}", &self.boolean.to_string()).as_str());
+        output.push_str(&self.boolean.to_string().as_str());
         output.push_str(",\"float32\":");
-        output.push_str(format!("{}", &self.float32.to_string()).as_str());
+        output.push_str(&self.float32.to_string().as_str());
         output.push_str(",\"float64\":");
-        output.push_str(format!("{}", &self.float64.to_string()).as_str());
+        output.push_str(&self.float64.to_string().as_str());
         output.push_str(",\"int8\":");
-        output.push_str(format!("{}", &self.int8.to_string()).as_str());
+        output.push_str(&self.int8.to_string().as_str());
         output.push_str(",\"uint8\":");
-        output.push_str(format!("{}", &self.uint8.to_string()).as_str());
+        output.push_str(&self.uint8.to_string().as_str());
         output.push_str(",\"int16\":");
-        output.push_str(format!("{}", &self.int16.to_string()).as_str());
+        output.push_str(&self.int16.to_string().as_str());
         output.push_str(",\"uint16\":");
-        output.push_str(format!("{}", &self.uint16.to_string()).as_str());
+        output.push_str(&self.uint16.to_string().as_str());
         output.push_str(",\"int32\":");
-        output.push_str(format!("{}", &self.int32.to_string()).as_str());
+        output.push_str(&self.int32.to_string().as_str());
         output.push_str(",\"uint32\":");
-        output.push_str(format!("{}", &self.uint32.to_string()).as_str());
+        output.push_str(&self.uint32.to_string().as_str());
         output.push_str(",\"int64\":");
-        output.push_str(format!("\"{}\"", &self.int64.to_string()).as_str());
+        output.push_str(&self.int64.to_string().as_str());
         output.push_str(",\"uint64\":");
-        output.push_str(format!("\"{}\"", &self.uint64.to_string()).as_str());
+        output.push_str(&self.uint64.to_string().as_str());
         output.push_str(",\"timestamp\":");
         output.push_str(format!("\"{}\"", &self.timestamp.to_rfc3339()).as_str());
         output.push_str(",\"enum\":");
-        output.push_str(format!("\"{}\"", &self.r#enum.to_json_string()).as_str());
+        output.push_str(&self.r#enum.to_json_string().as_str());
         output.push_str(",\"stringArray\":");
         output.push('[');
         for (i, string_array_el) in self.string_array.iter().enumerate() {
@@ -242,10 +243,40 @@ impl ArriModel for CompleteObject {
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        let mut parts: Vec<String> = Vec::new();
+        parts.push(format!(
+            "any={}",
+            serde_json::to_string(&self.any).unwrap_or("null".to_string())
+        ));
+        parts.push(format!("string={}", &self.string));
+        parts.push(format!("boolean={}", &self.boolean));
+        parts.push(format!("float32={}", &self.float32));
+        parts.push(format!("float64={}", &self.float64));
+        parts.push(format!("int8={}", &self.int8));
+        parts.push(format!("uint8={}", &self.uint8));
+        parts.push(format!("int16={}", &self.int16));
+        parts.push(format!("uint16={}", &self.uint16));
+        parts.push(format!("int32={}", &self.int32));
+        parts.push(format!("uint32={}", &self.uint32));
+        parts.push(format!("int64={}", &self.int64));
+        parts.push(format!("uint64={}", &self.uint64));
+        parts.push(format!("timestamp={}", &self.timestamp.to_rfc3339()));
+        parts.push(format!("enum={}", &self.r#enum.to_query_params_string()));
+        let mut string_array_index = 0;
+        let mut string_array_output = "stringArray=[".to_string();
+        for string_array_item in &self.string_array {
+            if string_array_index != 0 {
+                string_array_output.push(',');
+            }
+            string_array_output.push_str(string_array_item.as_str());
+            string_array_index += 1;
+        }
+        parts.push(string_array_output);
+        parts.join("&")
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CompleteObjectEnum {
     A,
     B,
