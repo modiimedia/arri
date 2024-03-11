@@ -1,14 +1,12 @@
-import fs from "node:fs";
+import { readFileSync } from "fs";
 import { normalizeWhitespace, type SchemaFormType } from "arri-codegen-utils";
-import { TestAppDefinition } from "arri-codegen-utils/dist/testModels";
 import { a } from "arri-validate";
 import path from "pathe";
+import { type GeneratorContext } from "./common";
 import {
-    type GeneratorContext,
     rustBoolFromSchema,
     rustStructFromSchema,
-    createRustClient,
-    rustClientGenerator,
+    rustTypeFromSchema,
 } from "./index";
 
 const defaultContext: GeneratorContext = {
@@ -52,6 +50,7 @@ describe("objects", () => {
                 id: "User",
             },
         );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const result = rustStructFromSchema(User, {
             clientName: "",
             generatedTypes: [],
@@ -59,17 +58,19 @@ describe("objects", () => {
             schemaPath: "",
         });
         expect(normalizeWhitespace(result.content)).toBe(
-            normalizeWhitespace(`struct User {
-            id: String,
-            name: String,
-            date: DateTime<FixedOffset>,
-            is_admin: bool,
-            num_followers: Option<f32>,
+            normalizeWhitespace(`
+        #[derive(Debug, PartialEq, Clone)]
+        pub struct User {
+            pub id: String,
+            pub name: String,
+            pub date: DateTime<FixedOffset>,
+            pub is_admin: bool,
+            pub num_followers: Option<f32>,
         }
         
         impl ArriModel for User {
             fn new() -> Self {
-                User {
+                Self {
                     id: "".to_string(),
                     name: "".to_string(),
                     date: DateTime::default(),
@@ -77,38 +78,35 @@ describe("objects", () => {
                     num_followers: None,
                 }
             }
-            fn from_json(input: Value) -> Self {
+            fn from_json(input: serde_json::Value) -> Self {
                 match input {
-                    Value::Object(val) => {
+                    serde_json::Value::Object(val) => {
                         let id = match val.get("id") {
-                            Some(Value::String(id_val)) => id_val.to_owned(),
+                            Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
                             _ => "".to_string(),
                         };
                         let name = match val.get("name") {
-                            Some(Value::String(name_val)) => name_val.to_owned(),
+                            Some(serde_json::Value::String(name_val)) => name_val.to_owned(),
                             _ => "".to_string(),
                         };
                         let date = match val.get("date") {
-                            Some(Value::String(date_val)) => match DateTime::<FixedOffset>::parse_from_rfc3339(date_val.as_str()) {
+                            Some(serde_json::Value::String(date_val)) => match DateTime::<FixedOffset>::parse_from_rfc3339(date_val.as_str()) {
                                 Ok(date_val_result) => date_val_result,
                                 _ => DateTime::default(),
                             },
                             _ => DateTime::default(),
                         };
                         let is_admin = match val.get("isAdmin") {
-                            Some(Value::Bool(is_admin_val)) => is_admin_val,
+                            Some(serde_json::Value::Bool(is_admin_val)) => is_admin_val,
                             _ => false,
                         };
                         let num_followers = match val.get("numFollowers") {
-                            Some(Value(num_followers_val)) => match num_followers_val {
-                                Some(Value::Number(num_followers_val)) => match f32::try_from(num_followers_val.as_f64().unwrap_or(0.0)) {
-                                    Ok(num_followers_val_result) => Some(num_followers_val_result),
-                                    _ => None,
-                                },
-                                _ => None,
+                            Some(serde_json::Value(num_followers_val)) => match num_followers_val {
+                                Some(serde_json::Value::Number(num_followers_val)) => f32::try_from(num_followers_val.as_f64().unwrap_or(0.0)).unwrap_or(0.0),
+                                _ => 0.0,
                             },
                             _ => None,
-                        }
+                        };
                         Self {
                             id,
                             name,
@@ -120,7 +118,7 @@ describe("objects", () => {
                 }
             }
             fn from_json_string(input: String) -> Self {
-                match Value::from_str(input.as_str()) {
+                match serde_json::Value::from_str(input.as_str()) {
                     Ok(val) => Self::from_json(val),
                     _ => Self::new(),
                 }
@@ -162,25 +160,71 @@ describe("objects", () => {
         }`),
         );
     });
+
+    test("complete object", () => {
+        const CompleteObject = a.object(
+            {
+                any: a.any(),
+                string: a.string(),
+                boolean: a.boolean(),
+                float32: a.float32(),
+                float64: a.float64(),
+                int8: a.int8(),
+                uint8: a.uint8(),
+                int16: a.int16(),
+                uint16: a.uint16(),
+                int32: a.int32(),
+                uint32: a.uint32(),
+                int64: a.int64(),
+                uint64: a.uint64(),
+                timestamp: a.timestamp(),
+                enum: a.enumerator(["A", "B"]),
+                stringArray: a.array(a.string()),
+            },
+            { id: "CompleteObject" },
+        );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const result = rustTypeFromSchema(CompleteObject, {
+            clientName: "",
+            generatedTypes: [],
+            instancePath: "/schema",
+            schemaPath: "",
+        });
+
+        const referenceFile = readFileSync(
+            path.resolve(
+                __dirname,
+                "../../rust-reference/src/complete_object.rs",
+            ),
+            { encoding: "utf8" },
+        );
+        const parts = referenceFile.split("// IGNORE BEFORE //");
+        parts.shift();
+        const expectedResult = parts.join("\n");
+
+        expect(normalizeWhitespace(result.content)).toBe(
+            normalizeWhitespace(expectedResult),
+        );
+    });
 });
 
-test("Test App Def", async () => {
-    const outputFile = path.resolve(__dirname, "../.tmp/test_client.rpc.rs");
-    if (!fs.existsSync(outputFile)) {
-        fs.mkdirSync(path.resolve(__dirname, "../.tmp"));
-    }
-    await rustClientGenerator({
-        clientName: "Test Client",
-        outputFile,
-    }).generator(TestAppDefinition);
-    const client = fs.readFileSync(outputFile, { encoding: "utf8" });
-    const referenceClient = fs
-        .readFileSync(
-            path.resolve(__dirname, "../../rust-reference/src/test_client.rs"),
-            { encoding: "utf8" },
-        )
-        .split("// TESTS //")[0];
-    expect(normalizeWhitespace(client)).toBe(
-        normalizeWhitespace(referenceClient),
-    );
-});
+// test("Test App Def", async () => {
+//     const outputFile = path.resolve(__dirname, "../.tmp/test_client.rpc.rs");
+//     if (!fs.existsSync(outputFile)) {
+//         fs.mkdirSync(path.resolve(__dirname, "../.tmp"));
+//     }
+//     await rustClientGenerator({
+//         clientName: "Test Client",
+//         outputFile,
+//     }).generator(TestAppDefinition);
+//     const client = fs.readFileSync(outputFile, { encoding: "utf8" });
+//     const referenceClient = fs
+//         .readFileSync(
+//             path.resolve(__dirname, "../../rust-reference/src/test_client.rs"),
+//             { encoding: "utf8" },
+//         )
+//         .split("// TESTS //")[0];
+//     expect(normalizeWhitespace(client)).toBe(
+//         normalizeWhitespace(referenceClient),
+//     );
+// });

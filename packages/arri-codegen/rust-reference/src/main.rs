@@ -1,3 +1,4 @@
+mod complete_object;
 mod test_client;
 
 use arri_client::{

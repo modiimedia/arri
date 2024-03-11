@@ -6,13 +6,24 @@ import {
     type SchemaFormProperties,
     type SchemaFormType,
     defineClientGeneratorPlugin,
-    isSchemaFormProperties,
     isSchemaFormType,
     pascalCase,
-    snakeCase,
     unflattenProcedures,
+    isSchemaFormProperties,
+    type SchemaFormEnum,
+    isSchemaFormEnum,
 } from "arri-codegen-utils";
 import path from "pathe";
+import {
+    maybeNone,
+    maybeSome,
+    validRustKey,
+    type GeneratorContext,
+    type RustProperty,
+    maybeOption,
+    isOptionType,
+} from "./common";
+import { rustFloatFromSchema, rustIntFromSchema } from "./numbers";
 
 interface RustClientGeneratorOptions {
     clientName: string;
@@ -46,28 +57,6 @@ export const rustClientGenerator = defineClientGeneratorPlugin(
         };
     },
 );
-
-export interface GeneratorContext {
-    schemaPath: string;
-    instancePath: string;
-    generatedTypes: string[];
-    clientName: string;
-    isOptional?: boolean;
-}
-
-function maybeSome(val: string, isSome?: boolean) {
-    if (isSome) {
-        return `Some(${val})`;
-    }
-    return val;
-}
-
-function maybeNone(val: string, isNone?: boolean) {
-    if (isNone) {
-        return "None";
-    }
-    return val;
-}
 
 export function createRustClient(
     def: AppDefinition,
@@ -114,11 +103,9 @@ export function rustTypeFromSchema(
             case "timestamp":
                 return rustDateTimeFromSchema(schema, context);
             case "float32":
-                return rustF32FromSchema(schema, context);
             case "float64":
-                return rustF64FromSchema(schema, context);
+                return rustFloatFromSchema(schema, context);
             case "int8":
-                return rustInt8FromSchema(schema, context);
             case "uint8":
             case "int16":
             case "uint16":
@@ -126,22 +113,16 @@ export function rustTypeFromSchema(
             case "uint32":
             case "int64":
             case "uint64":
-                break;
+                return rustIntFromSchema(schema, context);
         }
     }
     if (isSchemaFormProperties(schema)) {
         return rustStructFromSchema(schema, context);
     }
+    if (isSchemaFormEnum(schema)) {
+        return rustEnumFromSchema(schema, context);
+    }
     return rustAnyFromSchema(schema, context);
-}
-
-export interface RustProperty {
-    fieldTemplate: string;
-    fromJsonTemplate: (val: string, key: string) => string;
-    toJsonTemplate: (val: string, key: string) => string;
-    toQueryTemplate: (val: string, key: string) => string;
-    defaultTemplate: string;
-    content: string;
 }
 
 export function rustAnyFromSchema(
@@ -149,9 +130,10 @@ export function rustAnyFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     return {
-        fieldTemplate: schema.nullable
-            ? "Option<serde_json::Value>"
-            : "serde_json::Value",
+        fieldTemplate: maybeOption(
+            "serde_json::Value",
+            isOptionType(schema, context),
+        ),
         defaultTemplate: schema.nullable ? "None()" : "serde_json::Value::Null",
         fromJsonTemplate(val, key) {
             const rustKey = validRustKey(key);
@@ -299,7 +281,10 @@ export function rustStringFromSchema(
             if (context.instancePath.length === 0) {
                 return `${val}.replace("\\n", "\\\\n").replace("\\"", "\\\\\\"")`;
             }
-            return `format!("\\"{}\\"", ${val}.replace("\\n", "\\\\n").replace("\\"", "\\\\\\""))`;
+            return `format!(
+    "\\"{}\\"", 
+    ${val}.replace("\\n", "\\\\n").replace("\\"", "\\\\\\"")
+)`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
@@ -379,153 +364,68 @@ export function rustDateTimeFromSchema(
     };
 }
 
-export function rustF32FromSchema(
-    schema: SchemaFormType,
+export function rustEnumFromSchema(
+    schema: SchemaFormEnum,
     context: GeneratorContext,
 ): RustProperty {
-    if (schema.nullable) {
-        return {
-            fieldTemplate: "Option<f32>",
-            defaultTemplate: "None",
-            fromJsonTemplate(val, key) {
-                const rustKey = validRustKey(key);
-                return `match ${val} {
-                    Some(serde_json::Value::Number(${rustKey}_val)) => match f32::try_from(${rustKey}_val.as_f64().unwrap_or(0.0)) {
-                        Ok(${rustKey}_val_result) => Some(${rustKey}_val_result),
-                        _ => None,
-                    },
-                    _ => None,
-                }`;
-            },
-            toJsonTemplate(val, key) {
-                const rustKey = validRustKey(key);
-                return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}.to_string(),
-                    _ => "null".to_string(),
-                }`;
-            },
-            toQueryTemplate(val, key) {
-                const rustKey = validRustKey(key);
-                return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}.to_string(),
-                    _ => "null".to_string(),
-                }`;
-            },
-            content: "",
-        };
+    let enumName = pascalCase(schema.metadata?.id ?? "");
+    if (!enumName.length) {
+        enumName = pascalCase(
+            context.instancePath.length
+                ? context.instancePath.split("/").join("_")
+                : context.schemaPath.split("/").join("_"),
+            { normalize: true },
+        );
     }
-    return {
-        fieldTemplate: "f32",
-        defaultTemplate: "0.0",
-        fromJsonTemplate(val, key) {
-            const rustKey = validRustKey(key);
-            return `match ${val} {
-                Some(serde_json::Value::Number(${rustKey}_val)) => match f32::try_from(${rustKey}_val.as_f64().unwrap_or(0.0)) {
-                    Ok(${rustKey}_val_result) => ${maybeSome(
-                        `${rustKey}_val_result`,
-                        context.isOptional,
-                    )},
-                    _ => ${maybeNone("0.0", context.isOptional)},
-                },
-                _ => ${maybeNone("0.0", context.isOptional)},
-            }`;
-        },
-        toJsonTemplate(val, key) {
-            return `${val}.to_string()`;
-        },
-        toQueryTemplate(val, key) {
-            return `${val}.to_string()`;
-        },
-        content: "",
-    };
-}
-
-export function rustF64FromSchema(
-    schema: SchemaFormType,
-    context: GeneratorContext,
-): RustProperty {
-    const isOptionType =
-        (schema.nullable ?? false) || (context.isOptional ?? false);
-    return {
-        fieldTemplate: isOptionType ? `Option<f64>` : "f64",
-        defaultTemplate: maybeNone(`0.0`, isOptionType),
-        toJsonTemplate(val, key) {
-            const rustKey = validRustKey(key);
-            if (isOptionType) {
-                return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-                    _ => "null".to_string(),
-                }`;
-            }
-            return `${val}.to_string()`;
-        },
-        fromJsonTemplate(val, key) {
-            const rustKey = validRustKey(key);
-            return `match ${val} {
-                Some(serde_json::Value::number(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.as_f64()`, isOptionType)},
-                _ => ${maybeNone("0.0", isOptionType)}
-            }`;
-        },
-        toQueryTemplate(val, key) {
-            const rustKey = validRustKey(key);
-            if (schema.nullable) {
-                return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-                    _ => "null".to_string(),
-                }`;
-            }
-            return `${val}.to_string()`;
-        },
-        content: "",
-    };
-}
-
-export function validRustKey(key: string): string {
-    const finalKey = snakeCase(key);
-    const illegalKeys = ["type"];
-    if (illegalKeys.includes(finalKey)) {
-        return `r#${finalKey}`;
+    const fieldParts: string[] = [];
+    for (const val of schema.enum) {
+        const rustVal = pascalCase(val, { normalize: true });
+        fieldParts.push(rustVal);
     }
-    return finalKey;
-}
+    const defaultVal = maybeNone(`${enumName}::${fieldParts[0]}`);
+    let content = `pub enum ${enumName} {
+    ${fieldParts.join(",\n")}
+}`;
+    if (context.generatedTypes.includes(enumName)) {
+        content = "";
+    } else {
+        context.generatedTypes.push(enumName);
+    }
 
-export function rustInt8FromSchema(
-    schema: SchemaFormType,
-    context: GeneratorContext,
-): RustProperty {
-    const isOptionType =
-        (schema.nullable ?? false) || (context.isOptional ?? false);
     return {
-        fieldTemplate: isOptionType ? `Option<i8>` : "i8",
-        defaultTemplate: maybeNone("0", isOptionType),
+        fieldTemplate: maybeOption(enumName, isOptionType(schema, context)),
+        defaultTemplate: defaultVal,
         toJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-                    _ => ${rustKey}_val.to_string(),
+                    Some(${rustKey}_val) => ${rustKey}_val.to_json_string(),
+                    _ => "null".to_string(),
                 }`;
             }
-            return `${rustKey}_val.to_string()`;
+            return `${val}.to_json_string()`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
-            return `match ${val} {
-                Some(serde_json::Value::number(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.as_i64().try_into:: <i8>().unwrap_or(0)`, isOptionType)},
-                _ => ${maybeNone("0", isOptionType)}
-            }`;
+            if (schema.nullable) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => Some(${enumName}::from_json(${rustKey}_val)),
+                    _ => None,
+                }`;
+            }
+            return `${enumName}::from_json(${val})`;
         },
         toQueryTemplate: (val, key) => {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-                    _ => ${rustKey}_val.to_string(),
+                    Some(${rustKey}_val) => ${rustKey}_val.to_query_params_string(),
+                    _ => "null".to_string(),
                 }`;
             }
-            return `${rustKey}_val.to_string(),`;
+            return `${val}.to_query_params_string()`;
         },
-        content: "",
+        content,
     };
 }
 
@@ -550,6 +450,7 @@ export function rustStructFromSchema(
     const toJsonParts: string[] = [];
     const fromJsonParts: string[] = [];
     const toQueryParts: string[] = [];
+    const subContentParts: string[] = [];
     let keyCount = 0;
     for (const key of Object.keys(schema.properties)) {
         const rustKey = validRustKey(key);
@@ -560,6 +461,9 @@ export function rustStructFromSchema(
             schemaPath: `${context.schemaPath}/properties/${key}`,
             isOptional: false,
         });
+        if (prop.content) {
+            subContentParts.push(prop.content);
+        }
         fieldParts.push(`    pub ${rustKey}: ${prop.fieldTemplate}`);
         defaultParts.push(`        ${rustKey}: ${prop.defaultTemplate}`);
         fromJsonParts.push(
@@ -571,11 +475,15 @@ export function rustStructFromSchema(
             toJsonParts.push(`output.push_str(",\\"${key}\\":");`);
         }
         toJsonParts.push(
-            `output.push_str(${prop.toJsonTemplate(`&self.${rustKey}`, key)}.as_str());`,
+            `output.push_str(
+    ${prop.toJsonTemplate(`&self.${rustKey}`, key)}
+    .as_str(),
+);`,
         );
         toQueryParts.push(
             `parts.push(format!("${key}={}", ${prop.toQueryTemplate(`&self.${rustKey}`, key)}));`,
         );
+
         keyCount++;
     }
     if (schema.optionalProperties) {
@@ -588,9 +496,10 @@ export function rustStructFromSchema(
                 schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                 isOptional: true,
             });
-            fieldParts.push(
-                `    pub ${rustKey}: Option<${prop.fieldTemplate}>`,
-            );
+            if (prop.content) {
+                subContentParts.push(prop.content);
+            }
+            fieldParts.push(`    pub ${rustKey}: ${prop.fieldTemplate}`);
             defaultParts.push(`        ${rustKey}: None`);
             fromJsonParts.push(`let ${rustKey} = match val.get("${key}") {
                  Some(serde_json::Value(${rustKey}_val)) => ${prop.fromJsonTemplate(`${rustKey}_val`, key)},

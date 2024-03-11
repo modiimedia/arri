@@ -15,6 +15,15 @@ pub struct ManuallyAddedModel {
     pub hello: String,
 }
 
+fn blah(nm: serde_json::Value) -> u8 {
+    match nm {
+        serde_json::Value::Number(val) => {
+            u8::try_from(val.as_u64().unwrap_or_default()).unwrap_or(0)
+        }
+        _ => 0,
+    }
+}
+
 impl ArriModel for ManuallyAddedModel {
     fn new() -> Self {
         Self {

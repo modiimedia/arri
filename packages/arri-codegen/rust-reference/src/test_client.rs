@@ -533,7 +533,9 @@ impl ArriModel for UserPhoto {
                     _ => 0.0,
                 };
                 let bytes = match val.get("bytes") {
-                    Some(serde_json::Value::Number(bytes_val)) => bytes_val.as_i64().unwrap_or(0),
+                    Some(serde_json::Value::String(bytes_val)) => {
+                        bytes_val.parse::<i64>().unwrap_or(0)
+                    }
                     _ => 0,
                 };
                 let nanoseconds = match val.get("nanoseconds") {
