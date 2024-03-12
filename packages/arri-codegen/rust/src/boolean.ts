@@ -5,62 +5,44 @@ import {
     maybeNone,
     maybeSome,
     validRustKey,
+    maybeOption,
+    isOptionType,
 } from "./common";
 
 export function rustBoolFromSchema(
     schema: SchemaFormType,
     context: GeneratorContext,
 ): RustProperty {
-    if (schema.nullable) {
-        return {
-            fieldTemplate: "Option<bool>",
-            defaultTemplate: "None()",
-            toJsonTemplate: (val, key) => {
-                const rustKey = validRustKey(key);
-                return `format!(match ${val} {
-    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-    None => "null".to_string(),
-})`;
-            },
-            fromJsonTemplate: (val, key) => {
-                const rustKey = validRustKey(key);
-                return `match ${val}.get("${key}") {
-    Some(serde_json::Value::Bool(${rustKey}_val)) => Some(${rustKey}_val),
-    _ => None(),
-}`;
-            },
-            toQueryTemplate(val, key) {
-                const rustKey = validRustKey(key);
-                return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val,
-                    _ => "null".to_string(),
-                }`;
-            },
-            content: "",
-        };
-    }
+    const isOption = isOptionType(schema, context);
     return {
-        fieldTemplate: "bool",
-        defaultTemplate: "false",
-        toJsonTemplate: (val, _) => {
-            return `${val}.to_string()`;
+        fieldTemplate: maybeOption("bool", isOption),
+        defaultTemplate: maybeNone(`false`, isOption),
+        toJsonTemplate: (target, val, key) => {
+            const rustKey = validRustKey(key);
+            if (schema.nullable) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${target}.push_str(${rustKey}_val.to_string().as_str()),
+                    _ => ${target}.push_str("null"),
+                }`;
+            }
+            return `${target}.push_str(${val}.to_string().as_str())`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
-            return `match ${val}.get("${key}") {
-    Some(serde_json::Value::Bool(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.to_owned()`, context.isOptional)},
-    _ => ${maybeNone("false", context.isOptional)},
+            return `match ${val} {
+    Some(serde_json::Value::Bool(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.to_owned()`, isOption)},
+    _ => ${maybeNone("false", isOption)},
 }`;
         },
-        toQueryTemplate(val, key) {
+        toQueryTemplate(target, val, key) {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
-                return `format!("${key}={}", match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-                    _ => "null".to_string()
-                })`;
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${target}.push(format!("${key}={}", ${rustKey}_val)),
+                    _ => ${target}.push("${key}=null".to_string())
+                }`;
             }
-            return `format!("${key}={}", ${val})`;
+            return `${target}.push(format!("${key}={}", ${val}))`;
         },
         content: "",
     };

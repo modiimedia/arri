@@ -13,47 +13,40 @@ export function rustDateTimeFromSchema(
     schema: SchemaFormType,
     context: GeneratorContext,
 ): RustProperty {
-    const fieldTemplate = maybeOption(
-        "DateTime<FixedOffset>",
-        isOptionType(schema, context),
-    );
-    const defaultTemplate = maybeNone(
-        "DateTime::default()",
-        isOptionType(schema, context),
-    );
+    const isOption = isOptionType(schema, context);
+    const fieldTemplate = maybeOption("DateTime<FixedOffset>", isOption);
+    const defaultTemplate = maybeNone("DateTime::default()", isOption);
     return {
         fieldTemplate,
         defaultTemplate,
-        toJsonTemplate: (val, key) => {
+        toJsonTemplate: (target, val, key) => {
             const rustKey = validRustKey(key);
-            let output = `${val}.to_rfc3339()`;
             if (schema.nullable) {
-                output = `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_rfc3339(),
-                    _ => "null".to_string(),
+                return `match ${val} {
+                    Some(${rustKey}_val) => {
+                        ${target}.push_str(format!("\\"{}\\"", ${rustKey}_val.to_rfc3339()).as_str())
+                    },
+                    _ => ${target}.push_str("null"),
                 }`;
             }
-            if (context.instancePath.length !== 0) {
-                return `format!("\\"{}\\"", ${output})`;
-            }
-            return output;
+            return `${target}.push_str(format!("\\"{}\\"", ${val}.to_rfc3339()).as_str())`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
-            return `match ${val}.get("${key}") {
-                    Some(serde_json::Value::String(${rustKey}_val)) => ${maybeSome(`DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val).unwrap_or(DateTime::default())`)},
-                    _ => ${maybeNone(`DateTime::default()`, schema.nullable)},
-                }`;
+            return `match ${val} {
+    Some(serde_json::Value::String(${rustKey}_val)) => ${maybeSome(`DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val).unwrap_or(DateTime::default())`, isOption)},
+    _ => ${maybeNone(`DateTime::default()`, isOption)},
+}`;
         },
-        toQueryTemplate(val, key) {
+        toQueryTemplate(target, val, key) {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
-                return `format!("${key}={}", match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_rfc3339(),
-                    _ => "null".to_string()
-                })`;
+                return `match ${val} {
+    Some(${rustKey}_val) => parts.push(format!("${key}={}", ${rustKey}_val.to_rfc3339())),
+    _ => parts.push("${key}=null".to_string()),
+}`;
             }
-            return `format!("${key}={}", ${val}.to_rfc3339())`;
+            return `${target}.push(format!("${key}={}", ${val}.to_rfc3339()))`;
         },
         content: "",
     };

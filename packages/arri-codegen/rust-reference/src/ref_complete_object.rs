@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_variables)]
 use std::str::FromStr;
 
 use arri_client::{
@@ -133,24 +134,19 @@ impl ArriModel for CompleteObject {
                     _ => DateTime::default(),
                 };
                 let r#enum = match val.get("enum") {
-                    Some(serde_json::Value::String(r#enum_val)) => match r#enum_val.as_str() {
-                        "A" => CompleteObjectEnum::A,
-                        "B" => CompleteObjectEnum::B,
-                        _ => CompleteObjectEnum::A,
-                    },
+                    Some(r#enum_val) => CompleteObjectEnum::from_json(r#enum_val.to_owned()),
                     _ => CompleteObjectEnum::A,
                 };
                 let string_array = match val.get("stringArray") {
                     Some(serde_json::Value::Array(string_array_val)) => {
                         let mut string_array_val_result: Vec<String> = Vec::new();
                         for string_array_val_item in string_array_val {
-                            match string_array_val_item {
-                                serde_json::Value::String(string_array_val_item_val) => {
-                                    string_array_val_result
-                                        .push(string_array_val_item_val.to_owned())
+                            string_array_val_result.push(match Some(string_array_val_item) {
+                                Some(serde_json::Value::String(string_array_val_item_val)) => {
+                                    string_array_val_item_val.to_owned()
                                 }
-                                _ => {}
-                            }
+                                _ => "".to_string(),
+                            })
                         }
                         string_array_val_result
                     }
@@ -189,6 +185,7 @@ impl ArriModel for CompleteObject {
 
     fn to_json_string(&self) -> String {
         let mut output = "{".to_string();
+        let key_count = 16;
         output.push_str("\"any\":");
         output.push_str(
             serde_json::to_string(&self.any)
@@ -222,20 +219,28 @@ impl ArriModel for CompleteObject {
         output.push_str(",\"uint32\":");
         output.push_str(&self.uint32.to_string().as_str());
         output.push_str(",\"int64\":");
-        output.push_str(&self.int64.to_string().as_str());
+        output.push_str(format!("\"{}\"", &self.int64).as_str());
         output.push_str(",\"uint64\":");
-        output.push_str(&self.uint64.to_string().as_str());
+        output.push_str(format!("\"{}\"", &self.uint64).as_str());
         output.push_str(",\"timestamp\":");
         output.push_str(format!("\"{}\"", &self.timestamp.to_rfc3339()).as_str());
         output.push_str(",\"enum\":");
         output.push_str(&self.r#enum.to_json_string().as_str());
         output.push_str(",\"stringArray\":");
         output.push('[');
-        for (i, string_array_el) in self.string_array.iter().enumerate() {
-            if i != 0 {
+        let mut string_array_index = 0;
+        for string_array_item in &self.string_array {
+            if string_array_index != 0 {
                 output.push(',');
             }
-            output.push_str(format!("\"{}\"", string_array_el).as_str());
+            output.push_str(
+                format!(
+                    "\"{}\"",
+                    string_array_item.replace("\n", "\\n").replace("\"", "\\\"")
+                )
+                .as_str(),
+            );
+            string_array_index += 1;
         }
         output.push(']');
         output.push('}');
@@ -262,16 +267,22 @@ impl ArriModel for CompleteObject {
         parts.push(format!("uint64={}", &self.uint64));
         parts.push(format!("timestamp={}", &self.timestamp.to_rfc3339()));
         parts.push(format!("enum={}", &self.r#enum.to_query_params_string()));
-        let mut string_array_index = 0;
         let mut string_array_output = "stringArray=[".to_string();
+        let mut string_array_index = 0;
         for string_array_item in &self.string_array {
             if string_array_index != 0 {
                 string_array_output.push(',');
             }
-            string_array_output.push_str(string_array_item.as_str());
+            string_array_output.push_str(
+                format!(
+                    "\"{}\"",
+                    string_array_item.replace("\n", "\\n").replace("\"", "\\\"")
+                )
+                .as_str(),
+            );
             string_array_index += 1;
         }
-        parts.push(string_array_output);
+        parts.push(format!("stringArray={}", string_array_output));
         parts.join("&")
     }
 }
@@ -307,8 +318,8 @@ impl ArriModel for CompleteObjectEnum {
 
     fn to_json_string(&self) -> String {
         match &self {
-            Self::A => "A".to_string(),
-            Self::B => "B".to_string(),
+            Self::A => format!("\"{}\"", "A"),
+            Self::B => format!("\"{}\"", "B"),
         }
     }
 

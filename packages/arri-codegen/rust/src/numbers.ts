@@ -16,41 +16,49 @@ function defaultFromJson(
     defaultVal: string,
 ) {
     const rustKey = validRustKey(key);
-    return `match ${val}.get("${key}") {
+    return `match ${val} {
     Some(serde_json::Value::Number(${rustKey}_val)) => ${fromJsonNumber(`${rustKey}_val`)},
     _ => ${defaultVal},
 }`;
 }
 
-function defaultToJson(val: string, key: string, isNullable?: boolean) {
+function defaultToJson(
+    target: string,
+    val: string,
+    key: string,
+    isNullable?: boolean,
+) {
     const rustKey = validRustKey(key);
     if (isNullable) {
         return `match ${val} {
-    Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-    _ => "null".to_string(),
+    Some(${rustKey}_val) => ${target}.push_str(${rustKey}_val.to_string().as_str()),
+    _ => ${target}.push_str("null"),
 }`;
     }
-    return `${val}.to_string()`;
+    return `${target}.push_str(${val}.to_string().as_str())`;
 }
 
-function defaultToQuery(val: string, key: string, isNullable?: boolean) {
+function defaultToQuery(
+    target: string,
+    val: string,
+    key: string,
+    isNullable?: boolean,
+) {
     const rustKey = validRustKey(key);
     if (isNullable) {
-        return `format!(
-    "${key}={}",
-    match ${val} {
-        Some(${rustKey}_val) => ${rustKey}_val.to_string(),
-        _ => "null".to_string(),
+        return `match ${val} {
+    Some(${rustKey}_val) => ${target}.push(format!("${key}={}", ${rustKey}_val)),
+    _ => ${target}.push("${key}=null".to_string()),
+}`;
     }
-)`;
-    }
-    return `format!("${key}={}", ${val})`;
+    return `${target}.push(format!("${key}={}", ${val}))`;
 }
 
 export function rustFloatFromSchema(
     schema: SchemaFormType,
     context: GeneratorContext,
 ): RustProperty {
+    const isOption = isOptionType(schema, context);
     let typeName = "";
     switch (schema.type) {
         case "float32":
@@ -64,30 +72,25 @@ export function rustFloatFromSchema(
     }
     const fromJsonNumber = (subKey: string) => {
         if (schema.type === "float64") {
-            return maybeSome(
-                `${subKey}.as_f64().unwrap_or(0.0)`,
-                schema.nullable,
-            );
+            return maybeSome(`${subKey}.as_f64().unwrap_or(0.0)`, isOption);
         }
-        return maybeSome(
-            `${subKey}.as_f64().unwrap_or(0.0) as f32`,
-            schema.nullable,
-        );
+        return maybeSome(`${subKey}.as_f64().unwrap_or(0.0) as f32`, isOption);
     };
 
     return {
-        fieldTemplate: maybeOption(typeName, isOptionType(schema, context)),
-        defaultTemplate: maybeNone("0.0", schema.nullable),
+        fieldTemplate: maybeOption(typeName, isOption),
+        defaultTemplate: maybeNone("0.0", isOption),
         fromJsonTemplate: (val, key) =>
             defaultFromJson(
                 val,
                 key,
                 fromJsonNumber,
-                maybeNone("0.0", schema.nullable),
+                maybeNone("0.0", isOption),
             ),
-        toJsonTemplate: (val, key) => defaultToJson(val, key, schema.nullable),
-        toQueryTemplate: (val, key) =>
-            defaultToQuery(val, key, schema.nullable),
+        toJsonTemplate: (target, val, key) =>
+            defaultToJson(target, val, key, schema.nullable),
+        toQueryTemplate: (target, val, key) =>
+            defaultToQuery(target, val, key, schema.nullable),
         content: "",
     };
 }
@@ -130,29 +133,42 @@ export function rustIntFromSchema(
             (subKey) =>
                 maybeSome(
                     `${typeName}::try_from(${subKey}.as_i64().unwrap_or(0)).unwrap_or(0)`,
+                    isOptionType(schema, context),
                 ),
-            maybeNone(`0`, schema.nullable),
+            maybeNone(`0`, isOptionType(schema, context)),
         );
+    let toJsonTemplate = (target: string, val: string, key: string) =>
+        defaultToJson(target, val, key, schema.nullable);
     if (typeName === "i64" || typeName === "u64") {
         fromJsonTemplate = (val: string, key: string) => {
             const rustKey = validRustKey(key);
-            return `match ${val}.get("${key}") {
+            return `match ${val} {
                 Some(serde_json::Value::String(${rustKey}_val)) => ${maybeSome(
                     `${rustKey}_val.parse::<${typeName}>().unwrap_or(0)`,
-                    schema.nullable,
+                    isOptionType(schema, context),
                 )},
-                _ => ${maybeNone(`0`, schema.nullable)}
+                _ => ${maybeNone(`0`, isOptionType(schema, context))}
             }`;
+        };
+        toJsonTemplate = (target: string, val: string, key: string) => {
+            const rustKey = validRustKey(key);
+            if (schema.nullable) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${target}.push_str(format!("\\"{}\\"", ${rustKey}_val.to_string()).as_str()),
+                    _ => ${target}.push_str("null"),
+                }`;
+            }
+            return `${target}.push_str(format!("\\"{}\\"", ${val}).as_str())`;
         };
     }
 
     return {
         fieldTemplate: maybeOption(typeName, isOptionType(schema, context)),
         defaultTemplate: maybeNone("0", isOptionType(schema, context)),
-        toJsonTemplate: (val, key) => defaultToJson(val, key, schema.nullable),
+        toJsonTemplate,
         fromJsonTemplate,
-        toQueryTemplate: (val, key) =>
-            defaultToQuery(val, key, schema.nullable),
+        toQueryTemplate: (target, val, key) =>
+            defaultToQuery(target, val, key, schema.nullable),
         content: "",
     };
 }

@@ -8,9 +8,11 @@ import {
     unflattenProcedures,
     isSchemaFormProperties,
     isSchemaFormEnum,
+    isSchemaFormElements,
 } from "arri-codegen-utils";
 import path from "pathe";
 import { rustAnyFromSchema } from "./any";
+import { rustVecFromSchema } from "./array";
 import { rustBoolFromSchema } from "./boolean";
 import { type GeneratorContext, type RustProperty } from "./common";
 import { rustEnumFromSchema } from "./enum";
@@ -56,6 +58,7 @@ export function createRustClient(
     def: AppDefinition,
     context: GeneratorContext,
 ): string {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const services = unflattenProcedures(def.procedures);
 
     const modelParts: string[] = [];
@@ -120,8 +123,10 @@ export function rustTypeFromSchema(
         return rustStructFromSchema(schema, context);
     }
     if (isSchemaFormEnum(schema)) {
-        console.log(schema);
         return rustEnumFromSchema(schema, context);
+    }
+    if (isSchemaFormElements(schema)) {
+        return rustVecFromSchema(schema, context);
     }
     return rustAnyFromSchema(schema, context);
 }

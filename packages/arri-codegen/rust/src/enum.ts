@@ -6,21 +6,15 @@ import {
     maybeNone,
     maybeOption,
     validRustKey,
+    getTypeName,
 } from "./common";
 
 export function rustEnumFromSchema(
     schema: SchemaFormEnum,
     context: GeneratorContext,
 ): RustProperty {
-    let enumName = pascalCase(schema.metadata?.id ?? "");
-    if (!enumName.length) {
-        enumName = pascalCase(
-            context.instancePath.length
-                ? context.instancePath.split("/").join("_")
-                : context.schemaPath.split("/").join("_"),
-            { normalize: true },
-        );
-    }
+    const isOption = isOptionType(schema, context);
+    const enumName = getTypeName(schema, context);
     const fieldParts: string[] = [];
     const fromJsonMatchParts: string[] = [];
     const toJsonStringMatchParts: string[] = [];
@@ -29,12 +23,14 @@ export function rustEnumFromSchema(
         const rustVal = pascalCase(val, { normalize: true });
         fieldParts.push(rustVal);
         fromJsonMatchParts.push(`"${val}" => Self::${rustVal}`);
-        toJsonStringMatchParts.push(`Self:${rustVal} => "${val}".to_string()`);
+        toJsonStringMatchParts.push(
+            `Self::${rustVal} => format!("\\"{}\\"", "${val}")`,
+        );
         toQueryParamMatchParts.push(`Self::${rustVal} => "${val}".to_string()`);
     }
-    const defaultVal = maybeNone(`#[derive(Debug, PartialEq, Clone)]
-${enumName}::${fieldParts[0]}`);
-    let content = `pub enum ${enumName} {
+    const defaultVal = maybeNone(`${enumName}::${fieldParts[0]}`, isOption);
+    let content = `#[derive(Debug, PartialEq, Clone)]
+pub enum ${enumName} {
     ${fieldParts.join(",\n")}
 }
 
@@ -44,7 +40,7 @@ impl ArriModel for ${enumName} {
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            serde_json::Value::String(val) -> match val.as_str() {
+            serde_json::Value::String(input_val) => match input_val.as_str() {
                 ${fromJsonMatchParts.join(",\n\t\t\t\t")},
                 _ => Self::${pascalCase(schema.enum[0], { normalize: true })},
             },
@@ -76,37 +72,40 @@ impl ArriModel for ${enumName} {
     }
 
     return {
-        fieldTemplate: maybeOption(enumName, isOptionType(schema, context)),
+        fieldTemplate: maybeOption(enumName, isOption),
         defaultTemplate: defaultVal,
-        toJsonTemplate: (val, key) => {
+        toJsonTemplate: (target, val, key) => {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_json_string(),
-                    _ => "null".to_string(),
+                    Some(${rustKey}_val) => ${target}.push_str(${rustKey}_val.to_json_string().as_str()),
+                    _ => ${target}.push_str("null"),
                 }`;
             }
-            return `${val}.to_json_string()`;
+            return `${target}.push_str(${val}.to_json_string().as_str())`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
-            if (schema.nullable) {
+            if (isOption) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => Some(${enumName}::from_json(${rustKey}_val)),
+                    Some(${rustKey}_val) => Some(${enumName}::from_json(${rustKey}_val.to_owned())),
                     _ => None,
                 }`;
             }
-            return `${enumName}::from_json(${val})`;
+            return `match ${val} {
+            Some(${rustKey}_val) => ${enumName}::from_json(${rustKey}_val.to_owned()),
+            _ => ${defaultVal},
+        }`;
         },
-        toQueryTemplate: (val, key) => {
+        toQueryTemplate: (target, val, key) => {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
-                return `format!("${key}={}", match ${val} {
-                    Some(${rustKey}_val) => ${rustKey}_val.to_query_params_string(),
-                    _ => "null".to_string(),
-                })`;
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${target}.push(format!("${key}={}", ${rustKey}_val.to_query_params_string())),
+                    _ => ${target}.push("${key}=null".to_string()),
+                }`;
             }
-            return `format!("${key}={}", ${val}.to_query_params_string())`;
+            return `${target}.push(format!("${key}={}", ${val}.to_query_params_string()))`;
         },
         content,
     };

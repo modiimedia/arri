@@ -1,6 +1,7 @@
-import { type Schema, snakeCase } from "arri-codegen-utils";
+import { type Schema, snakeCase, pascalCase } from "arri-codegen-utils";
 
 export interface GeneratorContext {
+    parentId?: string;
     schemaPath: string;
     instancePath: string;
     generatedTypes: string[];
@@ -11,8 +12,8 @@ export interface GeneratorContext {
 export interface RustProperty {
     fieldTemplate: string;
     fromJsonTemplate: (val: string, key: string) => string;
-    toJsonTemplate: (val: string, key: string) => string;
-    toQueryTemplate: (val: string, key: string) => string;
+    toJsonTemplate: (targetString: string, val: string, key: string) => string;
+    toQueryTemplate: (targetVec: string, val: string, key: string) => string;
     defaultTemplate: string;
     content: string;
 }
@@ -111,4 +112,20 @@ export function maybeNone(val: string, isNone?: boolean) {
         return "None";
     }
     return val;
+}
+
+export function getTypeName(schema: Schema, context: GeneratorContext): string {
+    let typeName = schema.metadata?.id ?? "";
+    if (typeName.length === 0) {
+        if (context.parentId) {
+            typeName = pascalCase(
+                `${context.parentId}_${context.instancePath.split("/").pop()}`,
+            );
+        } else {
+            typeName = pascalCase(
+                `${context.instancePath.split("/").join("_")}`,
+            );
+        }
+    }
+    return typeName;
 }

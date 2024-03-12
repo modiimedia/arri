@@ -1,4 +1,6 @@
-mod complete_object;
+mod ref_complete_object;
+mod ref_nullable_object;
+mod ref_partial_object;
 mod test_client;
 
 use arri_client::{

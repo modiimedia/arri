@@ -1,8 +1,12 @@
-import { pascalCase, type SchemaFormProperties } from "arri-codegen-utils";
+import { type SchemaFormProperties } from "arri-codegen-utils";
 import {
     type GeneratorContext,
     type RustProperty,
     validRustKey,
+    getTypeName,
+    isOptionType,
+    maybeOption,
+    maybeNone,
 } from "./common";
 import { rustTypeFromSchema } from ".";
 
@@ -10,17 +14,8 @@ export function rustStructFromSchema(
     schema: SchemaFormProperties,
     context: GeneratorContext,
 ): RustProperty {
-    let structName = pascalCase(schema.metadata?.id ?? "");
-    if (!structName.length) {
-        structName = pascalCase(
-            context.instancePath.length
-                ? context.instancePath.split("/").join("_")
-                : context.schemaPath.split("/").join("_"),
-            {
-                normalize: true,
-            },
-        );
-    }
+    const structName = getTypeName(schema, context);
+    const isOption = isOptionType(schema, context);
     const keyParts: string[] = [];
     const fieldParts: string[] = [];
     const defaultParts: string[] = [];
@@ -28,12 +23,18 @@ export function rustStructFromSchema(
     const fromJsonParts: string[] = [];
     const toQueryParts: string[] = [];
     const subContentParts: string[] = [];
+    const requiredKeyCount = Object.keys(schema.properties).length;
+    const keyCountPart =
+        requiredKeyCount > 0
+            ? `let key_count = ${requiredKeyCount}`
+            : `let mut key_count = ${requiredKeyCount}`;
     let keyCount = 0;
     for (const key of Object.keys(schema.properties)) {
         const rustKey = validRustKey(key);
         keyParts.push(rustKey);
         const prop = rustTypeFromSchema(schema.properties[key], {
             ...context,
+            parentId: structName,
             instancePath: `${context.instancePath}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             isOptional: false,
@@ -44,7 +45,7 @@ export function rustStructFromSchema(
         fieldParts.push(`    pub ${rustKey}: ${prop.fieldTemplate}`);
         defaultParts.push(`        ${rustKey}: ${prop.defaultTemplate}`);
         fromJsonParts.push(
-            `            let ${rustKey} = ${prop.fromJsonTemplate("val", key)};`,
+            `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key)};`,
         );
         if (keyCount === 0) {
             toJsonParts.push(`output.push_str("\\"${key}\\":");`);
@@ -52,15 +53,11 @@ export function rustStructFromSchema(
             toJsonParts.push(`output.push_str(",\\"${key}\\":");`);
         }
         toJsonParts.push(
-            `output.push_str(
-    ${prop.toJsonTemplate(`&self.${rustKey}`, key)}
-    .as_str(),
-);`,
+            prop.toJsonTemplate("output", `&self.${rustKey}`, key),
         );
         toQueryParts.push(
-            `parts.push(${prop.toQueryTemplate(`&self.${rustKey}`, key)});`,
+            prop.toQueryTemplate("parts", `&self.${rustKey}`, key),
         );
-
         keyCount++;
     }
     if (schema.optionalProperties) {
@@ -69,6 +66,7 @@ export function rustStructFromSchema(
             keyParts.push(rustKey);
             const prop = rustTypeFromSchema(schema.optionalProperties[key], {
                 ...context,
+                parentId: structName,
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
                 isOptional: true,
@@ -78,27 +76,25 @@ export function rustStructFromSchema(
             }
             fieldParts.push(`    pub ${rustKey}: ${prop.fieldTemplate}`);
             defaultParts.push(`        ${rustKey}: None`);
-            fromJsonParts.push(`let ${rustKey} = match val.get("${key}") {
-                 Some(serde_json::Value(${rustKey}_val)) => Some(${prop.fromJsonTemplate(`${rustKey}_val`, key)}),
-                 _ => None,
-            };`);
+            fromJsonParts.push(
+                `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key)};`,
+            );
             if (keyCount > 0) {
                 toJsonParts.push(`match &self.${rustKey} {
                     Some(${rustKey}_val) => {
                         output.push_str(",\\"${key}\\":");
-                        output.push_str(${prop.toJsonTemplate(`${rustKey}_val`, key)}.as_str());
+                        ${prop.toJsonTemplate(`output`, `${rustKey}_val`, key)};
                     },
                     _ => {},
                 };`);
             } else {
                 toJsonParts.push(`match &self.${rustKey} {
                     Some(${rustKey}_val) => {
-                        if(key_count == 0) {
-                            output.push_str("\\"${key}\\":");
-                        } else {
-                            output.push_str(",\\"${key}\\":");
+                        if key_count > 0 {
+                            output.push(',');
                         }
-                        output.push_str(${prop.toJsonTemplate(`${rustKey}_val`, key)}.as_str());
+                        output.push_str("\\"${key}\\":");
+                        ${prop.toJsonTemplate("output", `${rustKey}_val`, key)};
                         key_count += 1;
                     },
                     _ => {},
@@ -106,7 +102,7 @@ export function rustStructFromSchema(
             }
             toQueryParts.push(`match &self.${rustKey} {
                 Some(${rustKey}_val) => {
-                    parts.push(${prop.toQueryTemplate(`${rustKey}_val`, key)});
+                    ${prop.toQueryTemplate("parts", `${rustKey}_val`, key)};
                 },
                 _ => {},
             };`);
@@ -143,40 +139,43 @@ ${fromJsonParts.join("\n")}
     }
     fn to_json_string(&self) -> String {
         let mut output = "{".to_string();
-        ${toJsonParts.join("\n")}
+        ${keyCountPart};
+        ${toJsonParts.join(";\n\t\t")};
         output.push('}');
         output
     }
     fn to_query_params_string(&self) -> String {
         let mut parts: Vec<String> = Vec::new();
-        ${toQueryParts.join("\n")}
+        ${toQueryParts.join(";\n\t\t")};
         parts.join("&")
     }
-}`;
+}
+${subContentParts.join("\n")}
+`;
     if (context.generatedTypes.includes(structName)) {
         content = "";
     } else {
         context.generatedTypes.push(structName);
     }
     return {
-        fieldTemplate: structName,
-        defaultTemplate: `${structName}::new()`,
-        toJsonTemplate: (val, key) => {
+        fieldTemplate: maybeOption(structName, isOption),
+        defaultTemplate: maybeNone(`${structName}::new()`, isOption),
+        toJsonTemplate: (target, val, key) => {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => ${structName}.to_json_string(),
-                    _ => "null".to_string(),
+                    Some(${rustKey}_val) => ${target}.push_str(${structName}.to_json_string().as_str()),
+                    _ => ${target}.push_str("null"),
                 }`;
             }
-            return `${rustKey}.to_json_string()`;
+            return `${target}.push_str(${rustKey}.to_json_string().as_str())`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
-            if (schema.nullable) {
+            if (isOption) {
                 return `match ${val} {
-                Some(serde_json::Value(${rustKey}_val)) => ${structName}.from_json(${rustKey}_val),
-                _ => None(),
+                Some(serde_json::Value(${rustKey}_val)) => Some(${structName}.from_json(${rustKey}_val)),
+                _ => None,
             }`;
             }
             return `match ${val} {
@@ -184,15 +183,15 @@ ${fromJsonParts.join("\n")}
                 _ => ${structName}::new(),
             }`;
         },
-        toQueryTemplate(val, key) {
+        toQueryTemplate(target, val, key) {
             const rustKey = validRustKey(key);
             if (schema.nullable) {
-                return `format!("${key}={}", match ${val} {
+                return `${target}.push(format!("${key}={}", match ${val} {
                     Some(serde_json::Value(${rustKey}_val)) => ${structName}.to_query_params_string(),
                     _ => "null".to_string(),
-                })`;
+                }))`;
             }
-            return `format!("${key}={}, ${structName}.to_query_params_string())`;
+            return `${target}.push(format!("${key}={}, ${structName}.to_query_params_string()))`;
         },
         content,
     };
