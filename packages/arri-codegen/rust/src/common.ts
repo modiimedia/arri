@@ -18,8 +18,10 @@ export interface RustProperty {
     content: string;
 }
 
+const illegalChars = ["[", "]"];
+
 export function validRustKey(key: string): string {
-    const finalKey = snakeCase(key);
+    let finalKey = snakeCase(key);
     const illegalKeys = [
         "bool",
         "String",
@@ -84,7 +86,12 @@ export function validRustKey(key: string): string {
         "try",
     ];
     if (illegalKeys.includes(finalKey)) {
-        return `r#${finalKey}`;
+        finalKey = `r#${finalKey}`;
+    }
+    for (const char of illegalChars) {
+        if (finalKey.includes(char)) {
+            finalKey = finalKey.split(char).join("_");
+        }
     }
     return finalKey;
 }
@@ -125,6 +132,11 @@ export function getTypeName(schema: Schema, context: GeneratorContext): string {
             typeName = pascalCase(
                 `${context.instancePath.split("/").join("_")}`,
             );
+        }
+    }
+    for (const char of illegalChars) {
+        if (typeName.includes(char)) {
+            typeName = typeName.split(char).join("_");
         }
     }
     return typeName;

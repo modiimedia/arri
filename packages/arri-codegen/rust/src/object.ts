@@ -64,7 +64,8 @@ export function rustStructFromSchema(
         for (const key of Object.keys(schema.optionalProperties)) {
             const rustKey = validRustKey(key);
             keyParts.push(rustKey);
-            const prop = rustTypeFromSchema(schema.optionalProperties[key], {
+            const subSchema = schema.optionalProperties[key];
+            const prop = rustTypeFromSchema(subSchema, {
                 ...context,
                 parentId: structName,
                 instancePath: `${context.instancePath}/${key}`,
@@ -164,22 +165,25 @@ ${subContentParts.join("\n")}
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => ${target}.push_str(${structName}.to_json_string().as_str()),
+                    Some(${rustKey}_val) => ${target}.push_str(${rustKey}_val.to_json_string().as_str()),
                     _ => ${target}.push_str("null"),
                 }`;
             }
-            return `${target}.push_str(${rustKey}.to_json_string().as_str())`;
+            return `${target}.push_str(${val}.to_json_string().as_str())`;
         },
         fromJsonTemplate: (val, key) => {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
-                Some(serde_json::Value(${rustKey}_val)) => Some(${structName}.from_json(${rustKey}_val)),
+                Some(${rustKey}_val) => match ${rustKey}_val {
+                    serde_json::Value::Object(_) => Some(${structName}::from_json(${rustKey}_val.to_owned())),
+                    _ => None,
+                },
                 _ => None,
             }`;
             }
             return `match ${val} {
-                Some(serde_json::Value(${rustKey}_val)) => ${structName}.from_json(${rustKey}_val),
+                Some(${rustKey}_val) => ${structName}::from_json(${rustKey}_val.to_owned()),
                 _ => ${structName}::new(),
             }`;
         },
@@ -187,11 +191,11 @@ ${subContentParts.join("\n")}
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `${target}.push(format!("${key}={}", match ${val} {
-                    Some(serde_json::Value(${rustKey}_val)) => ${structName}.to_query_params_string(),
+                    Some(${rustKey}_val) => ${rustKey}_val.to_query_params_string(),
                     _ => "null".to_string(),
                 }))`;
             }
-            return `${target}.push(format!("${key}={}, ${structName}.to_query_params_string()))`;
+            return `${target}.push(format!("${key}={}", ${val}.to_query_params_string()))`;
         },
         content,
     };

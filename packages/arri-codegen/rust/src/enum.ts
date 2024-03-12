@@ -36,7 +36,7 @@ pub enum ${enumName} {
 
 impl ArriModel for ${enumName} {
     fn new() -> Self {
-        Self::A
+        Self::${pascalCase(schema.enum[0], { normalize: true })}
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
