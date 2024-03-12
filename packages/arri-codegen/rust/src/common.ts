@@ -1,4 +1,8 @@
 import { type Schema, snakeCase, pascalCase } from "arri-codegen-utils";
+import path from "pathe";
+
+export const tmpDir = path.resolve(__dirname, "../.tmp");
+export const refDir = path.resolve(__dirname, "../../rust-reference/src");
 
 export interface GeneratorContext {
     parentId?: string;

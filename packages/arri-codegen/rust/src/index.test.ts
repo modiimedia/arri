@@ -4,7 +4,7 @@ import { normalizeWhitespace, type SchemaFormType } from "arri-codegen-utils";
 import { a } from "arri-validate";
 import path from "pathe";
 import { rustBoolFromSchema } from "./boolean";
-import { type GeneratorContext } from "./common";
+import { tmpDir, type GeneratorContext, refDir } from "./common";
 import { rustTypeFromSchema } from "./index";
 
 const defaultContext: GeneratorContext = {
@@ -13,9 +13,6 @@ const defaultContext: GeneratorContext = {
     generatedTypes: [],
     clientName: "",
 };
-
-const tmpDir = path.resolve(__dirname, "../.tmp");
-const refDir = path.resolve(__dirname, "../../rust-reference/src");
 
 beforeAll(() => {
     if (!existsSync(tmpDir)) {

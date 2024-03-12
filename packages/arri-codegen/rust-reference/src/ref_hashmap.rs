@@ -22,15 +22,15 @@ impl ArriModel for ObjectWithRecord {
                     Some(serde_json::Value::Object(string_record_val)) => {
                         let mut string_record_result: HashMap<String, String> = HashMap::new();
                         for (string_record_key, string_record_key_val) in string_record_val {
-                            match string_record_key_val {
-                                serde_json::Value::String(string_record_key_val_val) => {
-                                    string_record_result.insert(
-                                        string_record_key.to_owned(),
-                                        string_record_key_val_val.to_owned(),
-                                    );
-                                }
-                                _ => {}
-                            }
+                            string_record_result.insert(
+                                string_record_key.to_owned(),
+                                match string_record_key_val {
+                                    serde_json::Value::String(string_record_key_val_val) => {
+                                        string_record_key_val_val.to_owned()
+                                    }
+                                    _ => "".to_string(),
+                                },
+                            );
                         }
                         string_record_result
                     }
@@ -68,6 +68,7 @@ impl ArriModel for ObjectWithRecord {
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
         _json_output_.push_str("\"stringRecord\":");
+        _json_output_.push('{');
         let mut string_record_index = 0;
         for (string_record_key, string_record_val) in &self.string_record {
             if string_record_index != 0 {
@@ -86,6 +87,7 @@ impl ArriModel for ObjectWithRecord {
             _json_output_.push_str(user_record_val.to_json_string().as_str());
             user_record_index += 1;
         }
+        _json_output_.push('}');
         _json_output_.push('}');
         _json_output_
     }
