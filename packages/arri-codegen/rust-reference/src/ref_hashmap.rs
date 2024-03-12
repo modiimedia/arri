@@ -1,7 +1,9 @@
+use arri_client::{serde_json, ArriModel};
 use std::collections::HashMap;
 
-use arri_client::{serde_json, ArriModel};
+// IGNORE PREVIOUS //
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct ObjectWithRecord {
     pub string_record: HashMap<String, String>,
     pub user_record: HashMap<String, User>,
@@ -75,9 +77,18 @@ impl ArriModel for ObjectWithRecord {
                 _json_output_.push(',');
             }
             _json_output_.push_str(format!("\"{}\":", string_record_key).as_str());
-            _json_output_.push_str(format!("\"{}\"", string_record_val).as_str());
+            _json_output_.push_str(
+                format!(
+                    "\"{}\"",
+                    string_record_val.replace("\n", "\\n").replace("\"", "\\\"")
+                )
+                .as_str(),
+            );
             string_record_index += 1;
         }
+        _json_output_.push('}');
+        _json_output_.push_str(",\"userRecord\":");
+        _json_output_.push('{');
         let mut user_record_index = 0;
         for (user_record_key, user_record_val) in &self.user_record {
             if user_record_index != 0 {
@@ -94,35 +105,13 @@ impl ArriModel for ObjectWithRecord {
 
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        let mut string_record_index = 0;
-        let mut string_record_output = "{".to_string();
-        for (string_record_key, string_record_val) in &self.string_record {
-            if string_record_index != 0 {
-                string_record_output.push(',');
-            }
-            string_record_output
-                .push_str(format!("{}={}", string_record_key, string_record_val).as_str());
-            string_record_index += 1;
-        }
-        string_record_output.push('}');
-        _query_parts_.push(string_record_output);
-        let mut user_record_index = 0;
-        let mut user_record_output = "{".to_string();
-        for (user_record_key, user_record_val) in &self.user_record {
-            if user_record_index != 0 {
-                user_record_output.push(',');
-            }
-            user_record_output.push_str(
-                format!("{}={}", user_record_key, user_record_val.to_json_string()).as_str(),
-            );
-            user_record_index += 1;
-        }
-        user_record_output.push('}');
-        _query_parts_.push(user_record_output);
+        println!("Error at /ObjectWithRecord/stringRecord. Nested objects cannot be serialized to query params.");
+        println!("Error at /ObjectWithRecord/userRecord. Nested objects cannot be serialized to query params.");
         _query_parts_.join("&")
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -162,10 +151,23 @@ impl ArriModel for User {
 
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
+        let _key_count_ = 2;
         _json_output_.push_str("\"id\":");
-        _json_output_.push_str(format!("\"{}\"", &self.id).as_str());
+        _json_output_.push_str(
+            format!(
+                "\"{}\"",
+                &self.id.replace("\n", "\\n").replace("\"", "\\\"")
+            )
+            .as_str(),
+        );
         _json_output_.push_str(",\"name\":");
-        _json_output_.push_str(format!("\"{}\"", &self.name).as_str());
+        _json_output_.push_str(
+            format!(
+                "\"{}\"",
+                &self.name.replace("\n", "\\n").replace("\"", "\\\"")
+            )
+            .as_str(),
+        );
         _json_output_.push('}');
         _json_output_
     }

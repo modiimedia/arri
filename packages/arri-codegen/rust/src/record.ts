@@ -82,9 +82,17 @@ export function rustHashmapFromSchema(
             return `let mut ${rustKey}_index = 0;
                 for (${rustKey}_key, ${rustKey}_val) in ${val} {
                     if ${rustKey}_index != 0 {
-                        ${target}.push(',')
+                        ${target}.push(',');
                     }
-                }`;
+                    ${target}.push_str(format!("\\"{}\\":", ${rustKey}_key).as_str());
+                    ${subType.toJsonTemplate(target, `${rustKey}_val`, rustKey)};
+                    ${rustKey}_index += 1;
+                }
+                ${target}.push('}')`;
         },
+        toQueryTemplate: (target, val, key) => {
+            return `println!("Error at ${context.instancePath}. Nested objects cannot be serialized to query params.")`;
+        },
+        content: subType.content,
     };
 }
