@@ -26,8 +26,8 @@ export function rustStructFromSchema(
     const requiredKeyCount = Object.keys(schema.properties).length;
     const keyCountPart =
         requiredKeyCount > 0
-            ? `let key_count = ${requiredKeyCount}`
-            : `let mut key_count = ${requiredKeyCount}`;
+            ? `let _key_count_ = ${requiredKeyCount}`
+            : `let mut _key_count_ = ${requiredKeyCount}`;
     let keyCount = 0;
     for (const key of Object.keys(schema.properties)) {
         const rustKey = validRustKey(key);
@@ -48,15 +48,15 @@ export function rustStructFromSchema(
             `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key)};`,
         );
         if (keyCount === 0) {
-            toJsonParts.push(`output.push_str("\\"${key}\\":");`);
+            toJsonParts.push(`_json_output_.push_str("\\"${key}\\":");`);
         } else {
-            toJsonParts.push(`output.push_str(",\\"${key}\\":");`);
+            toJsonParts.push(`_json_output_.push_str(",\\"${key}\\":");`);
         }
         toJsonParts.push(
-            prop.toJsonTemplate("output", `&self.${rustKey}`, key),
+            prop.toJsonTemplate("_json_output_", `&self.${rustKey}`, key),
         );
         toQueryParts.push(
-            prop.toQueryTemplate("parts", `&self.${rustKey}`, key),
+            prop.toQueryTemplate("_query_parts_", `&self.${rustKey}`, key),
         );
         keyCount++;
     }
@@ -82,27 +82,27 @@ export function rustStructFromSchema(
             if (keyCount > 0) {
                 toJsonParts.push(`match &self.${rustKey} {
                     Some(${rustKey}_val) => {
-                        output.push_str(",\\"${key}\\":");
-                        ${prop.toJsonTemplate(`output`, `${rustKey}_val`, key)};
+                        _json_output_.push_str(",\\"${key}\\":");
+                        ${prop.toJsonTemplate(`_json_output_`, `${rustKey}_val`, key)};
                     },
                     _ => {},
                 };`);
             } else {
                 toJsonParts.push(`match &self.${rustKey} {
                     Some(${rustKey}_val) => {
-                        if key_count > 0 {
-                            output.push(',');
+                        if _key_count_ > 0 {
+                            _json_output_.push(',');
                         }
-                        output.push_str("\\"${key}\\":");
-                        ${prop.toJsonTemplate("output", `${rustKey}_val`, key)};
-                        key_count += 1;
+                        _json_output_.push_str("\\"${key}\\":");
+                        ${prop.toJsonTemplate("_json_output_", `${rustKey}_val`, key)};
+                        _key_count_ += 1;
                     },
                     _ => {},
                 };`);
             }
             toQueryParts.push(`match &self.${rustKey} {
                 Some(${rustKey}_val) => {
-                    ${prop.toQueryTemplate("parts", `${rustKey}_val`, key)};
+                    ${prop.toQueryTemplate("_query_parts_", `${rustKey}_val`, key)};
                 },
                 _ => {},
             };`);
@@ -138,16 +138,16 @@ ${fromJsonParts.join("\n")}
         }
     }
     fn to_json_string(&self) -> String {
-        let mut output = "{".to_string();
+        let mut _json_output_ = "{".to_string();
         ${keyCountPart};
         ${toJsonParts.join(";\n\t\t")};
-        output.push('}');
-        output
+        _json_output_.push('}');
+        _json_output_
     }
     fn to_query_params_string(&self) -> String {
-        let mut parts: Vec<String> = Vec::new();
+        let mut _query_parts_: Vec<String> = Vec::new();
         ${toQueryParts.join(";\n\t\t")};
-        parts.join("&")
+        _query_parts_.join("&")
     }
 }
 ${subContentParts.join("\n")}

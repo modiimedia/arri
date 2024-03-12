@@ -185,196 +185,196 @@ impl ArriModel for PartialObject {
     }
 
     fn to_json_string(&self) -> String {
-        let mut output = "{".to_string();
-        let mut key_count = 0;
+        let mut _json_output_ = "{".to_string();
+        let mut _key_count_ = 0;
         match &self.any {
             Some(any_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"any\":");
-                output.push_str(
+                _json_output_.push_str("\"any\":");
+                _json_output_.push_str(
                     serde_json::to_string(any_val)
                         .unwrap_or("\"null\"".to_string())
                         .as_str(),
                 );
-                key_count += 1;
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.string {
             Some(string_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"string\":");
-                output.push_str(
+                _json_output_.push_str("\"string\":");
+                _json_output_.push_str(
                     format!(
                         "\"{}\"",
                         string_val.replace("\n", "\\n").replace("\"", "\\\"")
                     )
                     .as_str(),
                 );
-                key_count += 1;
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.boolean {
             Some(boolean_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"boolean\":");
-                output.push_str(boolean_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"boolean\":");
+                _json_output_.push_str(boolean_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.float32 {
             Some(float32_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"float32\":");
-                output.push_str(float32_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"float32\":");
+                _json_output_.push_str(float32_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.float64 {
             Some(float64_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"float64\":");
-                output.push_str(float64_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"float64\":");
+                _json_output_.push_str(float64_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.int8 {
             Some(int8_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"int8\":");
-                output.push_str(int8_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"int8\":");
+                _json_output_.push_str(int8_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.uint8 {
             Some(uint8_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"uint8\":");
-                output.push_str(uint8_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"uint8\":");
+                _json_output_.push_str(uint8_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.int16 {
             Some(int16_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"int16\":");
-                output.push_str(int16_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"int16\":");
+                _json_output_.push_str(int16_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.uint16 {
             Some(uint16_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"uint16\":");
-                output.push_str(uint16_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"uint16\":");
+                _json_output_.push_str(uint16_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.int32 {
             Some(int32_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"int32\":");
-                output.push_str(int32_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"int32\":");
+                _json_output_.push_str(int32_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.uint32 {
             Some(uint32_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"uint32\":");
-                output.push_str(uint32_val.to_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"uint32\":");
+                _json_output_.push_str(uint32_val.to_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.int64 {
             Some(int64_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"int64\":");
-                output.push_str(format!("\"{}\"", int64_val).as_str());
-                key_count += 1;
+                _json_output_.push_str("\"int64\":");
+                _json_output_.push_str(format!("\"{}\"", int64_val).as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.uint64 {
             Some(uint64_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"uint64\":");
-                output.push_str(format!("\"{}\"", uint64_val).as_str());
-                key_count += 1;
+                _json_output_.push_str("\"uint64\":");
+                _json_output_.push_str(format!("\"{}\"", uint64_val).as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.timestamp {
             Some(timestamp_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"timestamp\":");
-                output.push_str(format!("\"{}\"", timestamp_val.to_rfc3339()).as_str());
-                key_count += 1;
+                _json_output_.push_str("\"timestamp\":");
+                _json_output_.push_str(format!("\"{}\"", timestamp_val.to_rfc3339()).as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.r#enum {
             Some(r#enum_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"enum\":");
-                output.push_str(r#enum_val.to_json_string().as_str());
-                key_count += 1;
+                _json_output_.push_str("\"enum\":");
+                _json_output_.push_str(r#enum_val.to_json_string().as_str());
+                _key_count_ += 1;
             }
             _ => {}
         };
         match &self.string_array {
             Some(string_array_val) => {
-                if key_count > 0 {
-                    output.push(',');
+                if _key_count_ > 0 {
+                    _json_output_.push(',');
                 }
-                output.push_str("\"stringArray\":");
-                output.push('[');
+                _json_output_.push_str("\"stringArray\":");
+                _json_output_.push('[');
                 let mut string_array_val_index = 0;
                 for string_array_val_item in string_array_val {
                     if string_array_val_index != 0 {
-                        output.push(',');
+                        _json_output_.push(',');
                     }
-                    output.push_str(
+                    _json_output_.push_str(
                         format!(
                             "\"{}\"",
                             string_array_val_item
@@ -385,20 +385,20 @@ impl ArriModel for PartialObject {
                     );
                     string_array_val_index += 1;
                 }
-                output.push(']');
-                key_count += 1;
+                _json_output_.push(']');
+                _key_count_ += 1;
             }
             _ => {}
         };
-        output.push('}');
-        output
+        _json_output_.push('}');
+        _json_output_
     }
 
     fn to_query_params_string(&self) -> String {
-        let mut parts: Vec<String> = Vec::new();
+        let mut _query_parts_: Vec<String> = Vec::new();
         match &self.any {
             Some(any_val) => {
-                parts.push(format!(
+                _query_parts_.push(format!(
                     "any={}",
                     serde_json::to_string(any_val).unwrap_or("null".to_string())
                 ));
@@ -407,85 +407,85 @@ impl ArriModel for PartialObject {
         };
         match &self.string {
             Some(string_val) => {
-                parts.push(format!("string={}", string_val));
+                _query_parts_.push(format!("string={}", string_val));
             }
             _ => {}
         };
         match &self.boolean {
             Some(boolean_val) => {
-                parts.push(format!("boolean={}", boolean_val));
+                _query_parts_.push(format!("boolean={}", boolean_val));
             }
             _ => {}
         };
         match &self.float32 {
             Some(float32_val) => {
-                parts.push(format!("float32={}", float32_val));
+                _query_parts_.push(format!("float32={}", float32_val));
             }
             _ => {}
         };
         match &self.float64 {
             Some(float64_val) => {
-                parts.push(format!("float64={}", float64_val));
+                _query_parts_.push(format!("float64={}", float64_val));
             }
             _ => {}
         };
         match &self.int8 {
             Some(int8_val) => {
-                parts.push(format!("int8={}", int8_val));
+                _query_parts_.push(format!("int8={}", int8_val));
             }
             _ => {}
         };
         match &self.uint8 {
             Some(uint8_val) => {
-                parts.push(format!("uint8={}", uint8_val));
+                _query_parts_.push(format!("uint8={}", uint8_val));
             }
             _ => {}
         };
         match &self.int16 {
             Some(int16_val) => {
-                parts.push(format!("int16={}", int16_val));
+                _query_parts_.push(format!("int16={}", int16_val));
             }
             _ => {}
         };
         match &self.uint16 {
             Some(uint16_val) => {
-                parts.push(format!("uint16={}", uint16_val));
+                _query_parts_.push(format!("uint16={}", uint16_val));
             }
             _ => {}
         };
         match &self.int32 {
             Some(int32_val) => {
-                parts.push(format!("int32={}", int32_val));
+                _query_parts_.push(format!("int32={}", int32_val));
             }
             _ => {}
         };
         match &self.uint32 {
             Some(uint32_val) => {
-                parts.push(format!("uint32={}", uint32_val));
+                _query_parts_.push(format!("uint32={}", uint32_val));
             }
             _ => {}
         };
         match &self.int64 {
             Some(int64_val) => {
-                parts.push(format!("int64={}", int64_val));
+                _query_parts_.push(format!("int64={}", int64_val));
             }
             _ => {}
         };
         match &self.uint64 {
             Some(uint64_val) => {
-                parts.push(format!("uint64={}", uint64_val));
+                _query_parts_.push(format!("uint64={}", uint64_val));
             }
             _ => {}
         };
         match &self.timestamp {
             Some(timestamp_val) => {
-                parts.push(format!("timestamp={}", timestamp_val.to_rfc3339()));
+                _query_parts_.push(format!("timestamp={}", timestamp_val.to_rfc3339()));
             }
             _ => {}
         };
         match &self.r#enum {
             Some(r#enum_val) => {
-                parts.push(format!("enum={}", r#enum_val.to_query_params_string()));
+                _query_parts_.push(format!("enum={}", r#enum_val.to_query_params_string()));
             }
             _ => {}
         };
@@ -508,11 +508,11 @@ impl ArriModel for PartialObject {
                     );
                     string_array_val_index += 1;
                 }
-                parts.push(format!("stringArray={}", string_array_val_output));
+                _query_parts_.push(format!("stringArray={}", string_array_val_output));
             }
             _ => {}
         };
-        parts.join("&")
+        _query_parts_.join("&")
     }
 }
 

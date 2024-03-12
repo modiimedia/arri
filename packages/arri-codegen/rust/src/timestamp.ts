@@ -42,8 +42,8 @@ export function rustDateTimeFromSchema(
             const rustKey = validRustKey(key);
             if (schema.nullable) {
                 return `match ${val} {
-    Some(${rustKey}_val) => parts.push(format!("${key}={}", ${rustKey}_val.to_rfc3339())),
-    _ => parts.push("${key}=null".to_string()),
+    Some(${rustKey}_val) => ${target}.push(format!("${key}={}", ${rustKey}_val.to_rfc3339())),
+    _ => ${target}.push("${key}=null".to_string()),
 }`;
             }
             return `${target}.push(format!("${key}={}", ${val}.to_rfc3339()))`;

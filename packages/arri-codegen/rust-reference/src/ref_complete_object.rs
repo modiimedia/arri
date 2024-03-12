@@ -184,56 +184,56 @@ impl ArriModel for CompleteObject {
     }
 
     fn to_json_string(&self) -> String {
-        let mut output = "{".to_string();
-        let key_count = 16;
-        output.push_str("\"any\":");
-        output.push_str(
+        let mut _json_output_ = "{".to_string();
+        let _key_count_ = 16;
+        _json_output_.push_str("\"any\":");
+        _json_output_.push_str(
             serde_json::to_string(&self.any)
                 .unwrap_or("\"null\"".to_string())
                 .as_str(),
         );
-        output.push_str(",\"string\":");
-        output.push_str(
+        _json_output_.push_str(",\"string\":");
+        _json_output_.push_str(
             format!(
                 "\"{}\"",
                 &self.string.replace("\n", "\\n").replace("\"", "\\\"")
             )
             .as_str(),
         );
-        output.push_str(",\"boolean\":");
-        output.push_str(&self.boolean.to_string().as_str());
-        output.push_str(",\"float32\":");
-        output.push_str(&self.float32.to_string().as_str());
-        output.push_str(",\"float64\":");
-        output.push_str(&self.float64.to_string().as_str());
-        output.push_str(",\"int8\":");
-        output.push_str(&self.int8.to_string().as_str());
-        output.push_str(",\"uint8\":");
-        output.push_str(&self.uint8.to_string().as_str());
-        output.push_str(",\"int16\":");
-        output.push_str(&self.int16.to_string().as_str());
-        output.push_str(",\"uint16\":");
-        output.push_str(&self.uint16.to_string().as_str());
-        output.push_str(",\"int32\":");
-        output.push_str(&self.int32.to_string().as_str());
-        output.push_str(",\"uint32\":");
-        output.push_str(&self.uint32.to_string().as_str());
-        output.push_str(",\"int64\":");
-        output.push_str(format!("\"{}\"", &self.int64).as_str());
-        output.push_str(",\"uint64\":");
-        output.push_str(format!("\"{}\"", &self.uint64).as_str());
-        output.push_str(",\"timestamp\":");
-        output.push_str(format!("\"{}\"", &self.timestamp.to_rfc3339()).as_str());
-        output.push_str(",\"enum\":");
-        output.push_str(&self.r#enum.to_json_string().as_str());
-        output.push_str(",\"stringArray\":");
-        output.push('[');
+        _json_output_.push_str(",\"boolean\":");
+        _json_output_.push_str(&self.boolean.to_string().as_str());
+        _json_output_.push_str(",\"float32\":");
+        _json_output_.push_str(&self.float32.to_string().as_str());
+        _json_output_.push_str(",\"float64\":");
+        _json_output_.push_str(&self.float64.to_string().as_str());
+        _json_output_.push_str(",\"int8\":");
+        _json_output_.push_str(&self.int8.to_string().as_str());
+        _json_output_.push_str(",\"uint8\":");
+        _json_output_.push_str(&self.uint8.to_string().as_str());
+        _json_output_.push_str(",\"int16\":");
+        _json_output_.push_str(&self.int16.to_string().as_str());
+        _json_output_.push_str(",\"uint16\":");
+        _json_output_.push_str(&self.uint16.to_string().as_str());
+        _json_output_.push_str(",\"int32\":");
+        _json_output_.push_str(&self.int32.to_string().as_str());
+        _json_output_.push_str(",\"uint32\":");
+        _json_output_.push_str(&self.uint32.to_string().as_str());
+        _json_output_.push_str(",\"int64\":");
+        _json_output_.push_str(format!("\"{}\"", &self.int64).as_str());
+        _json_output_.push_str(",\"uint64\":");
+        _json_output_.push_str(format!("\"{}\"", &self.uint64).as_str());
+        _json_output_.push_str(",\"timestamp\":");
+        _json_output_.push_str(format!("\"{}\"", &self.timestamp.to_rfc3339()).as_str());
+        _json_output_.push_str(",\"enum\":");
+        _json_output_.push_str(&self.r#enum.to_json_string().as_str());
+        _json_output_.push_str(",\"stringArray\":");
+        _json_output_.push('[');
         let mut string_array_index = 0;
         for string_array_item in &self.string_array {
             if string_array_index != 0 {
-                output.push(',');
+                _json_output_.push(',');
             }
-            output.push_str(
+            _json_output_.push_str(
                 format!(
                     "\"{}\"",
                     string_array_item.replace("\n", "\\n").replace("\"", "\\\"")
@@ -242,31 +242,31 @@ impl ArriModel for CompleteObject {
             );
             string_array_index += 1;
         }
-        output.push(']');
-        output.push('}');
-        output
+        _json_output_.push(']');
+        _json_output_.push('}');
+        _json_output_
     }
 
     fn to_query_params_string(&self) -> String {
-        let mut parts: Vec<String> = Vec::new();
-        parts.push(format!(
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!(
             "any={}",
             serde_json::to_string(&self.any).unwrap_or("null".to_string())
         ));
-        parts.push(format!("string={}", &self.string));
-        parts.push(format!("boolean={}", &self.boolean));
-        parts.push(format!("float32={}", &self.float32));
-        parts.push(format!("float64={}", &self.float64));
-        parts.push(format!("int8={}", &self.int8));
-        parts.push(format!("uint8={}", &self.uint8));
-        parts.push(format!("int16={}", &self.int16));
-        parts.push(format!("uint16={}", &self.uint16));
-        parts.push(format!("int32={}", &self.int32));
-        parts.push(format!("uint32={}", &self.uint32));
-        parts.push(format!("int64={}", &self.int64));
-        parts.push(format!("uint64={}", &self.uint64));
-        parts.push(format!("timestamp={}", &self.timestamp.to_rfc3339()));
-        parts.push(format!("enum={}", &self.r#enum.to_query_params_string()));
+        _query_parts_.push(format!("string={}", &self.string));
+        _query_parts_.push(format!("boolean={}", &self.boolean));
+        _query_parts_.push(format!("float32={}", &self.float32));
+        _query_parts_.push(format!("float64={}", &self.float64));
+        _query_parts_.push(format!("int8={}", &self.int8));
+        _query_parts_.push(format!("uint8={}", &self.uint8));
+        _query_parts_.push(format!("int16={}", &self.int16));
+        _query_parts_.push(format!("uint16={}", &self.uint16));
+        _query_parts_.push(format!("int32={}", &self.int32));
+        _query_parts_.push(format!("uint32={}", &self.uint32));
+        _query_parts_.push(format!("int64={}", &self.int64));
+        _query_parts_.push(format!("uint64={}", &self.uint64));
+        _query_parts_.push(format!("timestamp={}", &self.timestamp.to_rfc3339()));
+        _query_parts_.push(format!("enum={}", &self.r#enum.to_query_params_string()));
         let mut string_array_output = "stringArray=[".to_string();
         let mut string_array_index = 0;
         for string_array_item in &self.string_array {
@@ -282,8 +282,8 @@ impl ArriModel for CompleteObject {
             );
             string_array_index += 1;
         }
-        parts.push(format!("stringArray={}", string_array_output));
-        parts.join("&")
+        _query_parts_.push(format!("stringArray={}", string_array_output));
+        _query_parts_.join("&")
     }
 }
 

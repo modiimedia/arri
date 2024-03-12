@@ -1,13 +1,14 @@
+mod ref_client;
 mod ref_complete_object;
+mod ref_hashmap;
 mod ref_nullable_object;
 mod ref_partial_object;
-mod test_client;
 
 use arri_client::{
     reqwest::{header::HeaderMap, Client},
     ArriClientConfig, ArriService,
 };
-use test_client::{
+use ref_client::{
     TestClient, TestClientUserSettingsServiceMethods, TestClientUsersServiceMethods, UserParams,
 };
 

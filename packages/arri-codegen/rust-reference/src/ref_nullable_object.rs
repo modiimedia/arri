@@ -185,20 +185,20 @@ impl ArriModel for NullableObject {
     }
 
     fn to_json_string(&self) -> String {
-        let mut output = "{".to_string();
-        let key_count = 16;
-        output.push_str("\"any\":");
+        let mut _json_output_ = "{".to_string();
+        let _key_count_ = 16;
+        _json_output_.push_str("\"any\":");
         match &self.any {
-            Some(any_val) => output.push_str(
+            Some(any_val) => _json_output_.push_str(
                 serde_json::to_string(any_val)
                     .unwrap_or("null".to_string())
                     .as_str(),
             ),
-            _ => output.push_str("null"),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"string\":");
+        _json_output_.push_str(",\"string\":");
         match &self.string {
-            Some(string_val) => output.push_str(
+            Some(string_val) => _json_output_.push_str(
                 format!(
                     "\"{}\"",
                     string_val.replace("\n", "\\n").replace("\"", "\\\"")
@@ -206,85 +206,89 @@ impl ArriModel for NullableObject {
                 .as_str(),
             ),
 
-            _ => output.push_str("null"),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"boolean\":");
+        _json_output_.push_str(",\"boolean\":");
         match &self.boolean {
-            Some(boolean_val) => output.push_str(boolean_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(boolean_val) => _json_output_.push_str(boolean_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"float32\":");
+        _json_output_.push_str(",\"float32\":");
         match &self.float32 {
-            Some(float32_val) => output.push_str(float32_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(float32_val) => _json_output_.push_str(float32_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"float64\":");
+        _json_output_.push_str(",\"float64\":");
         match &self.float64 {
-            Some(float64_val) => output.push_str(float64_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(float64_val) => _json_output_.push_str(float64_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"int8\":");
+        _json_output_.push_str(",\"int8\":");
         match &self.int8 {
-            Some(int8_val) => output.push_str(int8_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(int8_val) => _json_output_.push_str(int8_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"uint8\":");
+        _json_output_.push_str(",\"uint8\":");
         match &self.uint8 {
-            Some(uint8_val) => output.push_str(uint8_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(uint8_val) => _json_output_.push_str(uint8_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"int16\":");
+        _json_output_.push_str(",\"int16\":");
         match &self.int16 {
-            Some(int16_val) => output.push_str(int16_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(int16_val) => _json_output_.push_str(int16_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"uint16\":");
+        _json_output_.push_str(",\"uint16\":");
         match &self.uint16 {
-            Some(uint16_val) => output.push_str(uint16_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(uint16_val) => _json_output_.push_str(uint16_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"int32\":");
+        _json_output_.push_str(",\"int32\":");
         match &self.int32 {
-            Some(int32_val) => output.push_str(int32_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(int32_val) => _json_output_.push_str(int32_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"uint32\":");
+        _json_output_.push_str(",\"uint32\":");
         match &self.uint32 {
-            Some(uint32_val) => output.push_str(uint32_val.to_string().as_str()),
-            _ => output.push_str("null"),
+            Some(uint32_val) => _json_output_.push_str(uint32_val.to_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"int64\":");
+        _json_output_.push_str(",\"int64\":");
         match &self.int64 {
-            Some(int64_val) => output.push_str(format!("\"{}\"", int64_val.to_string()).as_str()),
-            _ => output.push_str("null"),
+            Some(int64_val) => {
+                _json_output_.push_str(format!("\"{}\"", int64_val.to_string()).as_str())
+            }
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"uint64\":");
+        _json_output_.push_str(",\"uint64\":");
         match &self.uint64 {
-            Some(uint64_val) => output.push_str(format!("\"{}\"", uint64_val.to_string()).as_str()),
-            _ => output.push_str("null"),
+            Some(uint64_val) => {
+                _json_output_.push_str(format!("\"{}\"", uint64_val.to_string()).as_str())
+            }
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"timestamp\":");
+        _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
-                output.push_str(format!("\"{}\"", timestamp_val.to_rfc3339()).as_str())
+                _json_output_.push_str(format!("\"{}\"", timestamp_val.to_rfc3339()).as_str())
             }
-            _ => output.push_str("null"),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"enum\":");
+        _json_output_.push_str(",\"enum\":");
         match &self.r#enum {
-            Some(r#enum_val) => output.push_str(r#enum_val.to_json_string().as_str()),
-            _ => output.push_str("null"),
+            Some(r#enum_val) => _json_output_.push_str(r#enum_val.to_json_string().as_str()),
+            _ => _json_output_.push_str("null"),
         };
-        output.push_str(",\"stringArray\":");
+        _json_output_.push_str(",\"stringArray\":");
         match &self.string_array {
             Some(string_array_val) => {
-                output.push('[');
+                _json_output_.push('[');
                 let mut string_array_val_index = 0;
                 for string_array_val_item in string_array_val {
                     if string_array_val_index != 0 {
-                        output.push(',');
+                        _json_output_.push(',');
                     }
-                    output.push_str(
+                    _json_output_.push_str(
                         format!(
                             "\"{}\"",
                             string_array_val_item
@@ -295,78 +299,82 @@ impl ArriModel for NullableObject {
                     );
                     string_array_val_index += 1;
                 }
-                output.push(']');
+                _json_output_.push(']');
             }
-            _ => output.push_str("null"),
+            _ => _json_output_.push_str("null"),
         };
-        output.push('}');
-        output
+        _json_output_.push('}');
+        _json_output_
     }
 
     fn to_query_params_string(&self) -> String {
-        let mut parts: Vec<String> = Vec::new();
+        let mut _query_parts_: Vec<String> = Vec::new();
         match &self.any {
-            Some(any_val) => parts.push(format!(
+            Some(any_val) => _query_parts_.push(format!(
                 "any={}",
                 serde_json::to_string(any_val).unwrap_or("null".to_string())
             )),
-            _ => parts.push("any=null".to_string()),
+            _ => _query_parts_.push("any=null".to_string()),
         };
         match &self.string {
-            Some(string_val) => parts.push(format!("string={}", string_val)),
-            _ => parts.push("string=null".to_string()),
+            Some(string_val) => _query_parts_.push(format!("string={}", string_val)),
+            _ => _query_parts_.push("string=null".to_string()),
         };
         match &self.boolean {
-            Some(boolean_val) => parts.push(format!("boolean={}", boolean_val)),
-            _ => parts.push("boolean=null".to_string()),
+            Some(boolean_val) => _query_parts_.push(format!("boolean={}", boolean_val)),
+            _ => _query_parts_.push("boolean=null".to_string()),
         };
         match &self.float32 {
-            Some(float32_val) => parts.push(format!("float32={}", float32_val)),
-            _ => parts.push("float32=null".to_string()),
+            Some(float32_val) => _query_parts_.push(format!("float32={}", float32_val)),
+            _ => _query_parts_.push("float32=null".to_string()),
         };
         match &self.float64 {
-            Some(float64_val) => parts.push(format!("float64={}", float64_val)),
-            _ => parts.push("float64=null".to_string()),
+            Some(float64_val) => _query_parts_.push(format!("float64={}", float64_val)),
+            _ => _query_parts_.push("float64=null".to_string()),
         };
         match &self.int8 {
-            Some(int8_val) => parts.push(format!("int8={}", int8_val)),
-            _ => parts.push("int8=null".to_string()),
+            Some(int8_val) => _query_parts_.push(format!("int8={}", int8_val)),
+            _ => _query_parts_.push("int8=null".to_string()),
         };
         match &self.uint8 {
-            Some(uint8_val) => parts.push(format!("uint8={}", uint8_val)),
-            _ => parts.push("uint8=null".to_string()),
+            Some(uint8_val) => _query_parts_.push(format!("uint8={}", uint8_val)),
+            _ => _query_parts_.push("uint8=null".to_string()),
         };
         match &self.int16 {
-            Some(int16_val) => parts.push(format!("int16={}", int16_val)),
-            _ => parts.push("int16=null".to_string()),
+            Some(int16_val) => _query_parts_.push(format!("int16={}", int16_val)),
+            _ => _query_parts_.push("int16=null".to_string()),
         };
         match &self.uint16 {
-            Some(uint16_val) => parts.push(format!("uint16={}", uint16_val)),
-            _ => parts.push("uint16=null".to_string()),
+            Some(uint16_val) => _query_parts_.push(format!("uint16={}", uint16_val)),
+            _ => _query_parts_.push("uint16=null".to_string()),
         };
         match &self.int32 {
-            Some(int32_val) => parts.push(format!("int32={}", int32_val)),
-            _ => parts.push("int32=null".to_string()),
+            Some(int32_val) => _query_parts_.push(format!("int32={}", int32_val)),
+            _ => _query_parts_.push("int32=null".to_string()),
         };
         match &self.uint32 {
-            Some(uint32_val) => parts.push(format!("uint32={}", uint32_val)),
-            _ => parts.push("uint32=null".to_string()),
+            Some(uint32_val) => _query_parts_.push(format!("uint32={}", uint32_val)),
+            _ => _query_parts_.push("uint32=null".to_string()),
         };
         match &self.int64 {
-            Some(int64_val) => parts.push(format!("int64={}", int64_val)),
-            _ => parts.push("int64=null".to_string()),
+            Some(int64_val) => _query_parts_.push(format!("int64={}", int64_val)),
+            _ => _query_parts_.push("int64=null".to_string()),
         };
         match &self.uint64 {
-            Some(uint64_val) => parts.push(format!("uint64={}", uint64_val)),
-            _ => parts.push("uint64=null".to_string()),
+            Some(uint64_val) => _query_parts_.push(format!("uint64={}", uint64_val)),
+            _ => _query_parts_.push("uint64=null".to_string()),
         };
         match &self.timestamp {
-            Some(timestamp_val) => parts.push(format!("timestamp={}", timestamp_val.to_rfc3339())),
-            _ => parts.push("timestamp=null".to_string()),
+            Some(timestamp_val) => {
+                _query_parts_.push(format!("timestamp={}", timestamp_val.to_rfc3339()))
+            }
+            _ => _query_parts_.push("timestamp=null".to_string()),
         };
         match &self.r#enum {
-            Some(r#enum_val) => parts.push(format!("enum={}", r#enum_val.to_query_params_string())),
-            _ => parts.push("enum=null".to_string()),
+            Some(r#enum_val) => {
+                _query_parts_.push(format!("enum={}", r#enum_val.to_query_params_string()))
+            }
+            _ => _query_parts_.push("enum=null".to_string()),
         };
         match &self.string_array {
             Some(string_array_val) => {
@@ -387,11 +395,11 @@ impl ArriModel for NullableObject {
                     );
                     string_array_val_index += 1;
                 }
-                parts.push(format!("stringArray={}", string_array_val_output));
+                _query_parts_.push(format!("stringArray={}", string_array_val_output));
             }
-            _ => parts.push("stringArray=null".to_string()),
+            _ => _query_parts_.push("stringArray=null".to_string()),
         };
-        parts.join("&")
+        _query_parts_.join("&")
     }
 }
 
