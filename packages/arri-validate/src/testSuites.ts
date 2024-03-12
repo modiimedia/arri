@@ -615,13 +615,24 @@ export const validationTestSuites: Record<
             description: a.string(),
         }),
         goodInputs: [
-            { description: "hello\nworld\nhow are you\t" },
+            { description: "hello\nworld\nhow are you\b\f\n\r\t" },
             {
                 description:
                     '\t\tShe say, "Hello Johnathon! How Are You?"\n"Fine..." He replied quietly.',
             },
         ],
         badInputs: [null, false],
+    },
+    "object with unicode characters": {
+        schema: a.object({
+            description: a.string(),
+        }),
+        goodInputs: [
+            {
+                description: "hello \u00ff",
+            },
+        ],
+        badInputs: [],
     },
     "object with nested modifiers": {
         schema: a.object({

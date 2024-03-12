@@ -30,8 +30,13 @@ export function string(
                         return input;
                     }
                     return `"${input
+                        .replace(/[\\]/g, "\\\\")
+                        .replace(/["]/g, '\\"')
+                        .replace(/[/]/g, "\\/")
+                        .replace(/[\b]/g, "\\b")
+                        .replace(/[\f]/g, "\\f")
                         .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')
+                        .replace(/[\r]/g, "\\r")
                         .replace(/[\t]/g, "\\t")}"`;
                 },
             },
