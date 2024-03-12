@@ -20,26 +20,30 @@ impl ArriModel for ObjectWithRecord {
             serde_json::Value::Object(val) => {
                 let string_record = match val.get("stringRecord") {
                     Some(serde_json::Value::Object(string_record_val)) => {
-                        let string_record_val_result: HashMap<String, String> = HashMap::new();
-                        for (string_record_val_key, string_record_val_val) in string_record_val {
-                            match string_record_val_val {
-                                serde_json::Value::String(string_record_val_val_val) => {
-                                    string_record_val_result[string_record_val_key] =
-                                        string_record_val_val_val.to_owned();
+                        let mut string_record_result: HashMap<String, String> = HashMap::new();
+                        for (string_record_key, string_record_key_val) in string_record_val {
+                            match string_record_key_val {
+                                serde_json::Value::String(string_record_key_val_val) => {
+                                    string_record_result.insert(
+                                        string_record_key.to_owned(),
+                                        string_record_key_val_val.to_owned(),
+                                    );
                                 }
                                 _ => {}
                             }
                         }
-                        string_record_val_result
+                        string_record_result
                     }
                     _ => HashMap::new(),
                 };
                 let user_record = match val.get("userRecord") {
                     Some(serde_json::Value::Object(user_record_val)) => {
-                        let user_record_result: HashMap<String, User> = HashMap::new();
+                        let mut user_record_result: HashMap<String, User> = HashMap::new();
                         for (user_record_key, user_record_key_val) in user_record_val {
-                            user_record_result[user_record_key] =
-                                User::from_json(user_record_key_val);
+                            user_record_result.insert(
+                                user_record_key.to_owned(),
+                                User::from_json(user_record_key_val.to_owned()),
+                            );
                         }
                         user_record_result
                     }
