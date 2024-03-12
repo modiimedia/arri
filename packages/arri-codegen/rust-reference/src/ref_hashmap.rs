@@ -84,6 +84,7 @@ impl ArriModel for ObjectWithRecord {
             }
             _json_output_.push_str(format!("\"{}\":", user_record_key).as_str());
             _json_output_.push_str(user_record_val.to_json_string().as_str());
+            user_record_index += 1;
         }
         _json_output_.push('}');
         _json_output_
@@ -158,19 +159,19 @@ impl ArriModel for User {
     }
 
     fn to_json_string(&self) -> String {
-        let mut output = "{".to_string();
-        output.push_str("\"id\":");
-        output.push_str(format!("\"{}\"", &self.id).as_str());
-        output.push_str(",\"name\":");
-        output.push_str(format!("\"{}\"", &self.name).as_str());
-        output.push('}');
-        output
+        let mut _json_output_ = "{".to_string();
+        _json_output_.push_str("\"id\":");
+        _json_output_.push_str(format!("\"{}\"", &self.id).as_str());
+        _json_output_.push_str(",\"name\":");
+        _json_output_.push_str(format!("\"{}\"", &self.name).as_str());
+        _json_output_.push('}');
+        _json_output_
     }
 
     fn to_query_params_string(&self) -> String {
-        let mut parts: Vec<String> = Vec::new();
-        parts.push(format!("id={}", &self.id));
-        parts.push(format!("name={}", &self.name));
-        parts.join("&")
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("id={}", &self.id));
+        _query_parts_.push(format!("name={}", &self.name));
+        _query_parts_.join("&")
     }
 }
