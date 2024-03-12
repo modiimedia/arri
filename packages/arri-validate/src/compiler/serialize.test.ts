@@ -8,6 +8,9 @@ for (const key of Object.keys(validationTestSuites)) {
     for (const input of suite.goodInputs) {
         test(key, () => {
             const result = Compiled.serialize(input);
+            if (key === "object with characters needing escaping") {
+                console.log(result);
+            }
             expect(typeof result === "string");
             if (
                 !isAScalarSchema(suite.schema) &&

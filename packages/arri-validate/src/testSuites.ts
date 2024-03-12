@@ -82,7 +82,12 @@ export const validationTestSuites: Record<
     },
     string: {
         schema: a.string(),
-        goodInputs: ["hello world", `Hello "world"`, `Hello\nworld`],
+        goodInputs: [
+            "hello world",
+            `Hello "world"`,
+            `Hello\nworld`,
+            `Hello\tworld`,
+        ],
         badInputs: [1, false, null, {}],
     },
     "nullable string": {
@@ -605,15 +610,15 @@ export const validationTestSuites: Record<
             true,
         ],
     },
-    "object with multiline and quoted strings": {
+    "object with characters needing escaping": {
         schema: a.object({
             description: a.string(),
         }),
         goodInputs: [
-            { description: "hello\nworld\nhow are you" },
+            { description: "hello\nworld\nhow are you\t" },
             {
                 description:
-                    'She say, "Hello Johnathon! How Are You?"\n"Fine..." He replied quietly.',
+                    '\t\tShe say, "Hello Johnathon! How Are You?"\n"Fine..." He replied quietly.',
             },
         ],
         badInputs: [null, false],

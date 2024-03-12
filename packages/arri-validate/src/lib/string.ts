@@ -31,7 +31,8 @@ export function string(
                     }
                     return `"${input
                         .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                        .replace(/"/g, '\\"')
+                        .replace(/[\t]/g, "\\t")}"`;
                 },
             },
         },
