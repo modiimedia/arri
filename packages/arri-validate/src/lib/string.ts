@@ -29,10 +29,10 @@ export function string(
                     if (data.instancePath.length === 0) {
                         return input;
                     }
+
                     return `"${input
                         .replace(/[\\]/g, "\\\\")
                         .replace(/["]/g, '\\"')
-                        .replace(/[/]/g, "\\/")
                         .replace(/[\b]/g, "\\b")
                         .replace(/[\f]/g, "\\f")
                         .replace(/[\n]/g, "\\n")

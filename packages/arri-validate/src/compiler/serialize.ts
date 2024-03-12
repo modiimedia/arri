@@ -91,6 +91,9 @@ export function scalarTemplate(
         case "uint16":
         case "uint8":
             return numberTemplate(input);
+        default:
+            input.schema.type satisfies never;
+            throw new Error("Invalid value in 'type'");
     }
 }
 
@@ -111,7 +114,6 @@ export function stringTemplate(
     }"\${${input.val}
             .replace(/[\\\\]/g, '\\\\\\\\')
             .replace(/["]/g, '\\\\"')
-            .replace(/[/]/g, '\\\\/')
             .replace(/[\\b]/g, '\\\\b')
             .replace(/[\\f]/g, '\\\\f')
             .replace(/[\\n]/g, '\\\\n')
