@@ -1095,6 +1095,7 @@ export const serializationTestSuites: Record<
             description: a.string(),
         }),
         inputs: [
+            { description: '"What are you doing?" said Veronica' },
             { description: "hello\nworld\nhow are you\b\f\n\r\t" },
             {
                 description:

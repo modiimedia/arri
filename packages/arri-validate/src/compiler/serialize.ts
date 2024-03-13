@@ -129,7 +129,7 @@ if (${input.val}.length < 42) {
         }
         if (__point__ === 0x22 || __point__ === 0x5c) {
             __last__ === -1 && (__last__ = 0);
-            __result__ += input.slice(__last__, i) + '\\\\';
+            __result__ += ${input.val}.slice(__last__, i) + '\\\\';
             __last__ = i;
         }
     }
