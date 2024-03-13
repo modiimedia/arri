@@ -330,8 +330,43 @@ const $$ManuallyAddedModel = {
     },
     serialize(input: ManuallyAddedModel): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"hello":"${input.hello.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"hello":`;
+        if (input.hello.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.hello.length; i++) {
+                __point__ = input.hello.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.hello);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.hello.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.hello}"`;
+                } else {
+                    json += `"${__result__}${input.hello.slice(__last__)}"`;
+                }
+            }
+        } else if (input.hello.length < 5000 && !STR_ESCAPE.test(input.hello)) {
+            json += `"${input.hello}"`;
+        } else {
+            json += JSON.stringify(input.hello);
+        }
         json += "}";
         return json;
     },
@@ -605,8 +640,46 @@ const $$AdaptersTypeboxAdapterParams = {
     },
     serialize(input: AdaptersTypeboxAdapterParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"string":`;
+        if (input.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.string.length; i++) {
+                __point__ = input.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += `"${__result__}${input.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.string.length < 5000 &&
+            !STR_ESCAPE.test(input.string)
+        ) {
+            json += `"${input.string}"`;
+        } else {
+            json += JSON.stringify(input.string);
+        }
         json += `,"boolean":${input.boolean}`;
 
         if (Number.isNaN(input.integer)) {
@@ -620,7 +693,43 @@ const $$AdaptersTypeboxAdapterParams = {
         json += `,"number":${input.number}`;
         json += `,"enumField":"${input.enumField}"`;
         json += ',"object":{';
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"string":`;
+        if (input.object.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.object.string.length; i++) {
+                __point__ = input.object.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.object.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.object.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.object.string.length < 5000 &&
+            !STR_ESCAPE.test(input.object.string)
+        ) {
+            json += `"${input.object.string}"`;
+        } else {
+            json += JSON.stringify(input.object.string);
+        }
         json += "}";
         json += ',"array":[';
         for (let i = 0; i < input.array.length; i++) {
@@ -632,7 +741,44 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         json += "]";
         if (typeof input.optionalString !== "undefined") {
-            json += `,"optionalString":"${input.optionalString.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"optionalString":`;
+            if (input.optionalString.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.optionalString.length; i++) {
+                    __point__ = input.optionalString.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.optionalString);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            input.optionalString.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.optionalString}"`;
+                    } else {
+                        json += `"${__result__}${input.optionalString.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                input.optionalString.length < 5000 &&
+                !STR_ESCAPE.test(input.optionalString)
+            ) {
+                json += `"${input.optionalString}"`;
+            } else {
+                json += JSON.stringify(input.optionalString);
+            }
         }
         json += "}";
         return json;
@@ -694,8 +840,46 @@ const $$AdaptersTypeboxAdapterResponse = {
     },
     serialize(input: AdaptersTypeboxAdapterResponse): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
         json += "}";
         return json;
     },
@@ -758,8 +942,47 @@ const $$DeprecatedRpcParams = {
     },
     serialize(input: DeprecatedRpcParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"deprecatedField":"${input.deprecatedField.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"deprecatedField":`;
+        if (input.deprecatedField.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.deprecatedField.length; i++) {
+                __point__ = input.deprecatedField.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.deprecatedField);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.deprecatedField.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.deprecatedField}"`;
+                } else {
+                    json += `"${__result__}${input.deprecatedField.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.deprecatedField.length < 5000 &&
+            !STR_ESCAPE.test(input.deprecatedField)
+        ) {
+            json += `"${input.deprecatedField}"`;
+        } else {
+            json += JSON.stringify(input.deprecatedField);
+        }
         json += "}";
         return json;
     },
@@ -1985,12 +2208,50 @@ const $$ObjectWithEveryType = {
     },
     serialize(input: ObjectWithEveryType): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
         if (typeof input.any !== "undefined") {
             json += '"any":' + JSON.stringify(input.any);
         }
         json += `,"boolean":${input.boolean}`;
-        json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"string":`;
+        if (input.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.string.length; i++) {
+                __point__ = input.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += `"${__result__}${input.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.string.length < 5000 &&
+            !STR_ESCAPE.test(input.string)
+        ) {
+            json += `"${input.string}"`;
+        } else {
+            json += JSON.stringify(input.string);
+        }
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
 
         if (Number.isNaN(input.float32)) {
@@ -2045,7 +2306,43 @@ const $$ObjectWithEveryType = {
         }
         json += "]";
         json += ',"object":{';
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"string":`;
+        if (input.object.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.object.string.length; i++) {
+                __point__ = input.object.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.object.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.object.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.object.string.length < 5000 &&
+            !STR_ESCAPE.test(input.object.string)
+        ) {
+            json += `"${input.object.string}"`;
+        } else {
+            json += JSON.stringify(input.object.string);
+        }
         json += `,"boolean":${input.object.boolean}`;
         json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
         json += "}";
@@ -2066,27 +2363,262 @@ const $$ObjectWithEveryType = {
             case "A": {
                 json += ',"discriminator":{';
                 json += `"type":"A"`;
-                json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"title":`;
+                if (input.discriminator.title.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.discriminator.title.length; i++) {
+                        __point__ = input.discriminator.title.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.discriminator.title);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.discriminator.title.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.discriminator.title.length < 5000 &&
+                    !STR_ESCAPE.test(input.discriminator.title)
+                ) {
+                    json += `"${input.discriminator.title}"`;
+                } else {
+                    json += JSON.stringify(input.discriminator.title);
+                }
                 json += "}";
                 break;
             }
             case "B": {
                 json += ',"discriminator":{';
                 json += `"type":"B"`;
-                json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"title":`;
+                if (input.discriminator.title.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.discriminator.title.length; i++) {
+                        __point__ = input.discriminator.title.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.discriminator.title);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.discriminator.title.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.discriminator.title.length < 5000 &&
+                    !STR_ESCAPE.test(input.discriminator.title)
+                ) {
+                    json += `"${input.discriminator.title}"`;
+                } else {
+                    json += JSON.stringify(input.discriminator.title);
+                }
+                json += `,"description":`;
+                if (input.discriminator.description.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.discriminator.description.length;
+                        i++
+                    ) {
+                        __point__ =
+                            input.discriminator.description.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.discriminator.description.slice(
+                                    __last__,
+                                    i,
+                                ) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.discriminator.description.length < 5000 &&
+                    !STR_ESCAPE.test(input.discriminator.description)
+                ) {
+                    json += `"${input.discriminator.description}"`;
+                } else {
+                    json += JSON.stringify(input.discriminator.description);
+                }
                 json += "}";
                 break;
             }
         }
         json += ',"nestedObject":{';
-        json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.nestedObject.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.nestedObject.id.length; i++) {
+                __point__ = input.nestedObject.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.nestedObject.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.nestedObject.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.nestedObject.id.length < 5000 &&
+            !STR_ESCAPE.test(input.nestedObject.id)
+        ) {
+            json += `"${input.nestedObject.id}"`;
+        } else {
+            json += JSON.stringify(input.nestedObject.id);
+        }
         json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.nestedObject.data.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.nestedObject.data.id.length; i++) {
+                __point__ = input.nestedObject.data.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.nestedObject.data.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.nestedObject.data.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.nestedObject.data.id}"`;
+                } else {
+                    json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.nestedObject.data.id.length < 5000 &&
+            !STR_ESCAPE.test(input.nestedObject.data.id)
+        ) {
+            json += `"${input.nestedObject.data.id}"`;
+        } else {
+            json += JSON.stringify(input.nestedObject.data.id);
+        }
         json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
         json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.nestedObject.data.data.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.nestedObject.data.data.id.length; i++) {
+                __point__ = input.nestedObject.data.data.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.nestedObject.data.data.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.nestedObject.data.data.id.slice(__last__, i) +
+                        "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.nestedObject.data.data.id}"`;
+                } else {
+                    json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.nestedObject.data.data.id.length < 5000 &&
+            !STR_ESCAPE.test(input.nestedObject.data.data.id)
+        ) {
+            json += `"${input.nestedObject.data.data.id}"`;
+        } else {
+            json += JSON.stringify(input.nestedObject.data.data.id);
+        }
         json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
         json += "}";
         json += "}";
@@ -2104,7 +2636,49 @@ const $$ObjectWithEveryType = {
                     json += ",";
                 }
                 json += "{";
-                json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (inputNestedArrayItemItem.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < inputNestedArrayItemItem.id.length;
+                        i++
+                    ) {
+                        __point__ = inputNestedArrayItemItem.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(inputNestedArrayItemItem.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                inputNestedArrayItemItem.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${inputNestedArrayItemItem.id}"`;
+                        } else {
+                            json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    inputNestedArrayItemItem.id.length < 5000 &&
+                    !STR_ESCAPE.test(inputNestedArrayItemItem.id)
+                ) {
+                    json += `"${inputNestedArrayItemItem.id}"`;
+                } else {
+                    json += JSON.stringify(inputNestedArrayItemItem.id);
+                }
                 json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
                 json += "}";
             }
@@ -3786,6 +4360,8 @@ const $$ObjectWithEveryNullableType = {
     },
     serialize(input: ObjectWithEveryNullableType): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
         if (input.any === null) {
             json += '"any":null';
@@ -3800,7 +4376,43 @@ const $$ObjectWithEveryNullableType = {
             json += ',"boolean":null';
         }
         if (typeof input.string === "string") {
-            json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"string":`;
+            if (input.string.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.string.length; i++) {
+                    __point__ = input.string.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.string);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ += input.string.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.string}"`;
+                    } else {
+                        json += `"${__result__}${input.string.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                input.string.length < 5000 &&
+                !STR_ESCAPE.test(input.string)
+            ) {
+                json += `"${input.string}"`;
+            } else {
+                json += JSON.stringify(input.string);
+            }
         } else {
             json += ',"string":null';
         }
@@ -3911,7 +4523,44 @@ const $$ObjectWithEveryNullableType = {
         if (typeof input.object === "object" && input.object !== null) {
             json += ',"object":{';
             if (typeof input.object.string === "string") {
-                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"string":`;
+                if (input.object.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.object.string.length; i++) {
+                        __point__ = input.object.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.object.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.object.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.object.string}"`;
+                        } else {
+                            json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.object.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.object.string)
+                ) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += JSON.stringify(input.object.string);
+                }
             } else {
                 json += '"string":null';
             }
@@ -3962,7 +4611,54 @@ const $$ObjectWithEveryNullableType = {
                     json += ',"discriminator":{';
                     json += `"type":"A"`;
                     if (typeof input.discriminator.title === "string") {
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                     } else {
                         json += ',"title":null';
                     }
@@ -3973,12 +4669,110 @@ const $$ObjectWithEveryNullableType = {
                     json += ',"discriminator":{';
                     json += `"type":"B"`;
                     if (typeof input.discriminator.title === "string") {
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                     } else {
                         json += ',"title":null';
                     }
                     if (typeof input.discriminator.description === "string") {
-                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"description":`;
+                        if (input.discriminator.description.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.description.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.description.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.description,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.description.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.description}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.description.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.description)
+                        ) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                        }
                     } else {
                         json += ',"description":null';
                     }
@@ -3995,7 +4789,44 @@ const $$ObjectWithEveryNullableType = {
         ) {
             json += ',"nestedObject":{';
             if (typeof input.nestedObject.id === "string") {
-                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.nestedObject.id.length; i++) {
+                        __point__ = input.nestedObject.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.id)
+                ) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.id);
+                }
             } else {
                 json += '"id":null';
             }
@@ -4013,7 +4844,54 @@ const $$ObjectWithEveryNullableType = {
             ) {
                 json += ',"data":{';
                 if (typeof input.nestedObject.data.id === "string") {
-                    json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `"id":`;
+                    if (input.nestedObject.data.id.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (
+                            let i = 0;
+                            i < input.nestedObject.data.id.length;
+                            i++
+                        ) {
+                            __point__ =
+                                input.nestedObject.data.id.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(
+                                    input.nestedObject.data.id,
+                                );
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.nestedObject.data.id.slice(
+                                        __last__,
+                                        i,
+                                    ) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.nestedObject.data.id}"`;
+                            } else {
+                                json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.nestedObject.data.id.length < 5000 &&
+                        !STR_ESCAPE.test(input.nestedObject.data.id)
+                    ) {
+                        json += `"${input.nestedObject.data.id}"`;
+                    } else {
+                        json += JSON.stringify(input.nestedObject.data.id);
+                    }
                 } else {
                     json += '"id":null';
                 }
@@ -4031,7 +4909,58 @@ const $$ObjectWithEveryNullableType = {
                 ) {
                     json += ',"data":{';
                     if (typeof input.nestedObject.data.data.id === "string") {
-                        json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (input.nestedObject.data.data.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.nestedObject.data.data.id.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.nestedObject.data.data.id.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.nestedObject.data.data.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.nestedObject.data.data.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.nestedObject.data.data.id}"`;
+                                } else {
+                                    json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.nestedObject.data.data.id.length < 5000 &&
+                            !STR_ESCAPE.test(input.nestedObject.data.data.id)
+                        ) {
+                            json += `"${input.nestedObject.data.data.id}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.nestedObject.data.data.id,
+                            );
+                        }
                     } else {
                         json += '"id":null';
                     }
@@ -4079,7 +5008,64 @@ const $$ObjectWithEveryNullableType = {
                             if (
                                 typeof inputNestedArrayItemItem.id === "string"
                             ) {
-                                json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                                json += `"id":`;
+                                if (inputNestedArrayItemItem.id.length < 42) {
+                                    let __result__ = "";
+                                    let __last__ = -1;
+                                    let __point__ = 255;
+                                    let __finished__ = false;
+                                    for (
+                                        let i = 0;
+                                        i < inputNestedArrayItemItem.id.length;
+                                        i++
+                                    ) {
+                                        __point__ =
+                                            inputNestedArrayItemItem.id.charCodeAt(
+                                                i,
+                                            );
+                                        if (
+                                            __point__ < 32 ||
+                                            (__point__ >= 0xd800 &&
+                                                __point__ <= 0xdfff)
+                                        ) {
+                                            json += JSON.stringify(
+                                                inputNestedArrayItemItem.id,
+                                            );
+                                            __finished__ = true;
+                                            break;
+                                        }
+                                        if (
+                                            __point__ === 0x22 ||
+                                            __point__ === 0x5c
+                                        ) {
+                                            __last__ === -1 && (__last__ = 0);
+                                            __result__ +=
+                                                inputNestedArrayItemItem.id.slice(
+                                                    __last__,
+                                                    i,
+                                                ) + "\\";
+                                            __last__ = i;
+                                        }
+                                    }
+                                    if (!__finished__) {
+                                        if (__last__ === -1) {
+                                            json += `"${inputNestedArrayItemItem.id}"`;
+                                        } else {
+                                            json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                                        }
+                                    }
+                                } else if (
+                                    inputNestedArrayItemItem.id.length < 5000 &&
+                                    !STR_ESCAPE.test(
+                                        inputNestedArrayItemItem.id,
+                                    )
+                                ) {
+                                    json += `"${inputNestedArrayItemItem.id}"`;
+                                } else {
+                                    json += JSON.stringify(
+                                        inputNestedArrayItemItem.id,
+                                    );
+                                }
                             } else {
                                 json += '"id":null';
                             }
@@ -5588,6 +6574,8 @@ const $$ObjectWithEveryOptionalType = {
     },
     serialize(input: ObjectWithEveryOptionalType): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
         let inputHasFields = false;
         if (typeof input.any !== "undefined") {
@@ -5612,9 +6600,83 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.string !== "undefined") {
             if (inputHasFields) {
-                json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"string":`;
+                if (input.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.string.length; i++) {
+                        __point__ = input.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.string}"`;
+                        } else {
+                            json += `"${__result__}${input.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.string)
+                ) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += JSON.stringify(input.string);
+                }
             } else {
-                json += `"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"string":`;
+                if (input.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.string.length; i++) {
+                        __point__ = input.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.string}"`;
+                        } else {
+                            json += `"${__result__}${input.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.string)
+                ) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += JSON.stringify(input.string);
+                }
                 inputHasFields = true;
             }
         }
@@ -5789,13 +6851,87 @@ const $$ObjectWithEveryOptionalType = {
         if (typeof input.object !== "undefined") {
             if (inputHasFields) {
                 json += ',"object":{';
-                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"string":`;
+                if (input.object.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.object.string.length; i++) {
+                        __point__ = input.object.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.object.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.object.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.object.string}"`;
+                        } else {
+                            json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.object.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.object.string)
+                ) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += JSON.stringify(input.object.string);
+                }
                 json += `,"boolean":${input.object.boolean}`;
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
             } else {
                 json += '"object":{';
-                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"string":`;
+                if (input.object.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.object.string.length; i++) {
+                        __point__ = input.object.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.object.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.object.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.object.string}"`;
+                        } else {
+                            json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.object.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.object.string)
+                ) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += JSON.stringify(input.object.string);
+                }
                 json += `,"boolean":${input.object.boolean}`;
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
@@ -5840,15 +6976,160 @@ const $$ObjectWithEveryOptionalType = {
                     case "A": {
                         json += ',"discriminator":{';
                         json += `"type":"A"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                         json += "}";
                         break;
                     }
                     case "B": {
                         json += ',"discriminator":{';
                         json += `"type":"B"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
+                        json += `,"description":`;
+                        if (input.discriminator.description.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.description.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.description.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.description,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.description.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.description}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.description.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.description)
+                        ) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                        }
                         json += "}";
                         break;
                     }
@@ -5858,15 +7139,160 @@ const $$ObjectWithEveryOptionalType = {
                     case "A": {
                         json += '"discriminator":{';
                         json += `"type":"A"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                         json += "}";
                         break;
                     }
                     case "B": {
                         json += '"discriminator":{';
                         json += `"type":"B"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
+                        json += `,"description":`;
+                        if (input.discriminator.description.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.description.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.description.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.description,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.description.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.description}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.description.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.description)
+                        ) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                        }
                         json += "}";
                         break;
                     }
@@ -5877,26 +7303,278 @@ const $$ObjectWithEveryOptionalType = {
         if (typeof input.nestedObject !== "undefined") {
             if (inputHasFields) {
                 json += ',"nestedObject":{';
-                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.nestedObject.id.length; i++) {
+                        __point__ = input.nestedObject.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.id)
+                ) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.id.length;
+                        i++
+                    ) {
+                        __point__ = input.nestedObject.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.data.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.data.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.data.id.length;
+                        i++
+                    ) {
+                        __point__ =
+                            input.nestedObject.data.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(
+                                input.nestedObject.data.data.id,
+                            );
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.data.id.slice(
+                                    __last__,
+                                    i,
+                                ) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
                 json += "}";
                 json += "}";
                 json += "}";
             } else {
                 json += '"nestedObject":{';
-                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.nestedObject.id.length; i++) {
+                        __point__ = input.nestedObject.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.id)
+                ) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.id.length;
+                        i++
+                    ) {
+                        __point__ = input.nestedObject.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.data.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
                 json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.data.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.data.id.length;
+                        i++
+                    ) {
+                        __point__ =
+                            input.nestedObject.data.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(
+                                input.nestedObject.data.data.id,
+                            );
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.data.id.slice(
+                                    __last__,
+                                    i,
+                                ) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
                 json += "}";
                 json += "}";
@@ -5920,7 +7598,54 @@ const $$ObjectWithEveryOptionalType = {
                             json += ",";
                         }
                         json += "{";
-                        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (inputNestedArrayItemItem.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < inputNestedArrayItemItem.id.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    inputNestedArrayItemItem.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        inputNestedArrayItemItem.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        inputNestedArrayItemItem.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${inputNestedArrayItemItem.id}"`;
+                                } else {
+                                    json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            inputNestedArrayItemItem.id.length < 5000 &&
+                            !STR_ESCAPE.test(inputNestedArrayItemItem.id)
+                        ) {
+                            json += `"${inputNestedArrayItemItem.id}"`;
+                        } else {
+                            json += JSON.stringify(inputNestedArrayItemItem.id);
+                        }
                         json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
@@ -5942,7 +7667,54 @@ const $$ObjectWithEveryOptionalType = {
                             json += ",";
                         }
                         json += "{";
-                        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (inputNestedArrayItemItem.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < inputNestedArrayItemItem.id.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    inputNestedArrayItemItem.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        inputNestedArrayItemItem.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        inputNestedArrayItemItem.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${inputNestedArrayItemItem.id}"`;
+                                } else {
+                                    json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            inputNestedArrayItemItem.id.length < 5000 &&
+                            !STR_ESCAPE.test(inputNestedArrayItemItem.id)
+                        ) {
+                            json += `"${inputNestedArrayItemItem.id}"`;
+                        } else {
+                            json += JSON.stringify(inputNestedArrayItemItem.id);
+                        }
                         json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
@@ -6063,6 +7835,7 @@ const $$AutoReconnectParams = {
     },
     serialize(input: AutoReconnectParams): string {
         let json = "";
+
         json += "{";
 
         if (Number.isNaN(input.messageCount)) {
@@ -6154,13 +7927,51 @@ const $$AutoReconnectResponse = {
     },
     serialize(input: AutoReconnectResponse): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
 
         if (Number.isNaN(input.count)) {
             throw new Error("Expected number at /count got NaN");
         }
         json += `"count":${input.count}`;
-        json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
         json += "}";
         return json;
     },
@@ -6246,13 +8057,51 @@ const $$StreamConnectionErrorTestParams = {
     },
     serialize(input: StreamConnectionErrorTestParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
 
         if (Number.isNaN(input.statusCode)) {
             throw new Error("Expected number at /statusCode got NaN");
         }
         json += `"statusCode":${input.statusCode}`;
-        json += `,"statusMessage":"${input.statusMessage.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"statusMessage":`;
+        if (input.statusMessage.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.statusMessage.length; i++) {
+                __point__ = input.statusMessage.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.statusMessage);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.statusMessage.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.statusMessage}"`;
+                } else {
+                    json += `"${__result__}${input.statusMessage.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.statusMessage.length < 5000 &&
+            !STR_ESCAPE.test(input.statusMessage)
+        ) {
+            json += `"${input.statusMessage}"`;
+        } else {
+            json += JSON.stringify(input.statusMessage);
+        }
         json += "}";
         return json;
     },
@@ -6309,8 +8158,46 @@ const $$StreamConnectionErrorTestResponse = {
     },
     serialize(input: StreamConnectionErrorTestResponse): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
         json += "}";
         return json;
     },
@@ -6499,6 +8386,8 @@ const $$StreamLargeObjectsResponse = {
     },
     serialize(input: StreamLargeObjectsResponse): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
         json += '"numbers":[';
         for (let i = 0; i < input.numbers.length; i++) {
@@ -6520,9 +8409,120 @@ const $$StreamLargeObjectsResponse = {
                 json += ",";
             }
             json += "{";
-            json += `"id":"${inputObjectsItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"name":"${inputObjectsItem.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"email":"${inputObjectsItem.email.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `"id":`;
+            if (inputObjectsItem.id.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputObjectsItem.id.length; i++) {
+                    __point__ = inputObjectsItem.id.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputObjectsItem.id);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputObjectsItem.id.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputObjectsItem.id}"`;
+                    } else {
+                        json += `"${__result__}${inputObjectsItem.id.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputObjectsItem.id.length < 5000 &&
+                !STR_ESCAPE.test(inputObjectsItem.id)
+            ) {
+                json += `"${inputObjectsItem.id}"`;
+            } else {
+                json += JSON.stringify(inputObjectsItem.id);
+            }
+            json += `,"name":`;
+            if (inputObjectsItem.name.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputObjectsItem.name.length; i++) {
+                    __point__ = inputObjectsItem.name.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputObjectsItem.name);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputObjectsItem.name.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputObjectsItem.name}"`;
+                    } else {
+                        json += `"${__result__}${inputObjectsItem.name.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputObjectsItem.name.length < 5000 &&
+                !STR_ESCAPE.test(inputObjectsItem.name)
+            ) {
+                json += `"${inputObjectsItem.name}"`;
+            } else {
+                json += JSON.stringify(inputObjectsItem.name);
+            }
+            json += `,"email":`;
+            if (inputObjectsItem.email.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputObjectsItem.email.length; i++) {
+                    __point__ = inputObjectsItem.email.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputObjectsItem.email);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputObjectsItem.email.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputObjectsItem.email}"`;
+                    } else {
+                        json += `"${__result__}${inputObjectsItem.email.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputObjectsItem.email.length < 5000 &&
+                !STR_ESCAPE.test(inputObjectsItem.email)
+            ) {
+                json += `"${inputObjectsItem.email}"`;
+            } else {
+                json += JSON.stringify(inputObjectsItem.email);
+            }
             json += "}";
         }
         json += "]";
@@ -6587,8 +8587,46 @@ const $$ChatMessageParams = {
     },
     serialize(input: ChatMessageParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"channelId":`;
+        if (input.channelId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.channelId.length; i++) {
+                __point__ = input.channelId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.channelId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.channelId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.channelId.length < 5000 &&
+            !STR_ESCAPE.test(input.channelId)
+        ) {
+            json += `"${input.channelId}"`;
+        } else {
+            json += JSON.stringify(input.channelId);
+        }
         json += "}";
         return json;
     },
@@ -6999,37 +9037,477 @@ const $$ChatMessage = {
     },
     serialize(input: ChatMessage): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         switch (input.messageType) {
             case "TEXT": {
                 json += "{";
                 json += `"messageType":"TEXT"`;
-                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.id.length; i++) {
+                        __point__ = input.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.id}"`;
+                        } else {
+                            json += `"${__result__}${input.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.id)
+                ) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += JSON.stringify(input.id);
+                }
+                json += `,"channelId":`;
+                if (input.channelId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.channelId.length; i++) {
+                        __point__ = input.channelId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.channelId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.channelId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.channelId}"`;
+                        } else {
+                            json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.channelId.length < 5000 &&
+                    !STR_ESCAPE.test(input.channelId)
+                ) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += JSON.stringify(input.channelId);
+                }
+                json += `,"userId":`;
+                if (input.userId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.userId.length; i++) {
+                        __point__ = input.userId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.userId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.userId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.userId}"`;
+                        } else {
+                            json += `"${__result__}${input.userId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.userId.length < 5000 &&
+                    !STR_ESCAPE.test(input.userId)
+                ) {
+                    json += `"${input.userId}"`;
+                } else {
+                    json += JSON.stringify(input.userId);
+                }
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"text":"${input.text.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"text":`;
+                if (input.text.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.text.length; i++) {
+                        __point__ = input.text.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.text);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.text.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.text}"`;
+                        } else {
+                            json += `"${__result__}${input.text.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.text.length < 5000 &&
+                    !STR_ESCAPE.test(input.text)
+                ) {
+                    json += `"${input.text}"`;
+                } else {
+                    json += JSON.stringify(input.text);
+                }
                 json += "}";
                 break;
             }
             case "IMAGE": {
                 json += "{";
                 json += `"messageType":"IMAGE"`;
-                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.id.length; i++) {
+                        __point__ = input.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.id}"`;
+                        } else {
+                            json += `"${__result__}${input.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.id)
+                ) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += JSON.stringify(input.id);
+                }
+                json += `,"channelId":`;
+                if (input.channelId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.channelId.length; i++) {
+                        __point__ = input.channelId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.channelId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.channelId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.channelId}"`;
+                        } else {
+                            json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.channelId.length < 5000 &&
+                    !STR_ESCAPE.test(input.channelId)
+                ) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += JSON.stringify(input.channelId);
+                }
+                json += `,"userId":`;
+                if (input.userId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.userId.length; i++) {
+                        __point__ = input.userId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.userId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.userId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.userId}"`;
+                        } else {
+                            json += `"${__result__}${input.userId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.userId.length < 5000 &&
+                    !STR_ESCAPE.test(input.userId)
+                ) {
+                    json += `"${input.userId}"`;
+                } else {
+                    json += JSON.stringify(input.userId);
+                }
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"image":"${input.image.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"image":`;
+                if (input.image.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.image.length; i++) {
+                        __point__ = input.image.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.image);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.image.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.image}"`;
+                        } else {
+                            json += `"${__result__}${input.image.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.image.length < 5000 &&
+                    !STR_ESCAPE.test(input.image)
+                ) {
+                    json += `"${input.image}"`;
+                } else {
+                    json += JSON.stringify(input.image);
+                }
                 json += "}";
                 break;
             }
             case "URL": {
                 json += "{";
                 json += `"messageType":"URL"`;
-                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.id.length; i++) {
+                        __point__ = input.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.id}"`;
+                        } else {
+                            json += `"${__result__}${input.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.id)
+                ) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += JSON.stringify(input.id);
+                }
+                json += `,"channelId":`;
+                if (input.channelId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.channelId.length; i++) {
+                        __point__ = input.channelId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.channelId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.channelId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.channelId}"`;
+                        } else {
+                            json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.channelId.length < 5000 &&
+                    !STR_ESCAPE.test(input.channelId)
+                ) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += JSON.stringify(input.channelId);
+                }
+                json += `,"userId":`;
+                if (input.userId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.userId.length; i++) {
+                        __point__ = input.userId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.userId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.userId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.userId}"`;
+                        } else {
+                            json += `"${__result__}${input.userId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.userId.length < 5000 &&
+                    !STR_ESCAPE.test(input.userId)
+                ) {
+                    json += `"${input.userId}"`;
+                } else {
+                    json += JSON.stringify(input.userId);
+                }
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"url":"${input.url.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"url":`;
+                if (input.url.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.url.length; i++) {
+                        __point__ = input.url.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.url);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.url.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.url}"`;
+                        } else {
+                            json += `"${__result__}${input.url.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.url.length < 5000 &&
+                    !STR_ESCAPE.test(input.url)
+                ) {
+                    json += `"${input.url}"`;
+                } else {
+                    json += JSON.stringify(input.url);
+                }
                 json += "}";
                 break;
             }
@@ -7115,8 +9593,46 @@ const $$PostParams = {
     },
     serialize(input: PostParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"postId":`;
+        if (input.postId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.postId.length; i++) {
+                __point__ = input.postId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.postId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.postId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += `"${__result__}${input.postId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.postId.length < 5000 &&
+            !STR_ESCAPE.test(input.postId)
+        ) {
+            json += `"${input.postId}"`;
+        } else {
+            json += JSON.stringify(input.postId);
+        }
         json += "}";
         return json;
     },
@@ -7532,31 +10048,353 @@ const $$Post = {
     },
     serialize(input: Post): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"title":"${input.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.id.length; i++) {
+                __point__ = input.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += `"${__result__}${input.id.slice(__last__)}"`;
+                }
+            }
+        } else if (input.id.length < 5000 && !STR_ESCAPE.test(input.id)) {
+            json += `"${input.id}"`;
+        } else {
+            json += JSON.stringify(input.id);
+        }
+        json += `,"title":`;
+        if (input.title.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.title.length; i++) {
+                __point__ = input.title.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.title);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.title.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.title}"`;
+                } else {
+                    json += `"${__result__}${input.title.slice(__last__)}"`;
+                }
+            }
+        } else if (input.title.length < 5000 && !STR_ESCAPE.test(input.title)) {
+            json += `"${input.title}"`;
+        } else {
+            json += JSON.stringify(input.title);
+        }
         json += `,"type":"${input.type}"`;
         if (typeof input.description === "string") {
-            json += `,"description":"${input.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"description":`;
+            if (input.description.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.description.length; i++) {
+                    __point__ = input.description.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.description);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            input.description.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.description}"`;
+                    } else {
+                        json += `"${__result__}${input.description.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                input.description.length < 5000 &&
+                !STR_ESCAPE.test(input.description)
+            ) {
+                json += `"${input.description}"`;
+            } else {
+                json += JSON.stringify(input.description);
+            }
         } else {
             json += ',"description":null';
         }
-        json += `,"content":"${input.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"content":`;
+        if (input.content.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.content.length; i++) {
+                __point__ = input.content.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.content);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.content.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.content}"`;
+                } else {
+                    json += `"${__result__}${input.content.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.content.length < 5000 &&
+            !STR_ESCAPE.test(input.content)
+        ) {
+            json += `"${input.content}"`;
+        } else {
+            json += JSON.stringify(input.content);
+        }
         json += ',"tags":[';
         for (let i = 0; i < input.tags.length; i++) {
             const inputTagsItem = input.tags[i];
             if (i !== 0) {
                 json += ",";
             }
-            json += `"${inputTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += ``;
+            if (inputTagsItem.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputTagsItem.length; i++) {
+                    __point__ = inputTagsItem.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputTagsItem);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ += inputTagsItem.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputTagsItem}"`;
+                    } else {
+                        json += `"${__result__}${inputTagsItem.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputTagsItem.length < 5000 &&
+                !STR_ESCAPE.test(inputTagsItem)
+            ) {
+                json += `"${inputTagsItem}"`;
+            } else {
+                json += JSON.stringify(inputTagsItem);
+            }
         }
         json += "]";
-        json += `,"authorId":"${input.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"authorId":`;
+        if (input.authorId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.authorId.length; i++) {
+                __point__ = input.authorId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.authorId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.authorId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.authorId}"`;
+                } else {
+                    json += `"${__result__}${input.authorId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.authorId.length < 5000 &&
+            !STR_ESCAPE.test(input.authorId)
+        ) {
+            json += `"${input.authorId}"`;
+        } else {
+            json += JSON.stringify(input.authorId);
+        }
         json += ',"author":{';
-        json += `"id":"${input.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"name":"${input.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.author.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.author.id.length; i++) {
+                __point__ = input.author.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.author.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.author.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.author.id}"`;
+                } else {
+                    json += `"${__result__}${input.author.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.author.id.length < 5000 &&
+            !STR_ESCAPE.test(input.author.id)
+        ) {
+            json += `"${input.author.id}"`;
+        } else {
+            json += JSON.stringify(input.author.id);
+        }
+        json += `,"name":`;
+        if (input.author.name.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.author.name.length; i++) {
+                __point__ = input.author.name.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.author.name);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.author.name.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.author.name}"`;
+                } else {
+                    json += `"${__result__}${input.author.name.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.author.name.length < 5000 &&
+            !STR_ESCAPE.test(input.author.name)
+        ) {
+            json += `"${input.author.name}"`;
+        } else {
+            json += JSON.stringify(input.author.name);
+        }
         if (typeof input.author.bio === "string") {
-            json += `,"bio":"${input.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"bio":`;
+            if (input.author.bio.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.author.bio.length; i++) {
+                    __point__ = input.author.bio.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.author.bio);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            input.author.bio.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.author.bio}"`;
+                    } else {
+                        json += `"${__result__}${input.author.bio.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                input.author.bio.length < 5000 &&
+                !STR_ESCAPE.test(input.author.bio)
+            ) {
+                json += `"${input.author.bio}"`;
+            } else {
+                json += JSON.stringify(input.author.bio);
+            }
         } else {
             json += ',"bio":null';
         }
@@ -7690,6 +10528,7 @@ const $$PostListParams = {
     },
     serialize(input: PostListParams): string {
         let json = "";
+
         json += "{";
 
         if (Number.isNaN(input.limit)) {
@@ -8223,6 +11062,8 @@ const $$PostListResponse = {
     },
     serialize(input: PostListResponse): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
 
         if (Number.isNaN(input.total)) {
@@ -8236,30 +11077,371 @@ const $$PostListResponse = {
                 json += ",";
             }
             json += "{";
-            json += `"id":"${inputItemsItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"title":"${inputItemsItem.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `"id":`;
+            if (inputItemsItem.id.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputItemsItem.id.length; i++) {
+                    __point__ = inputItemsItem.id.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputItemsItem.id);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputItemsItem.id.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputItemsItem.id}"`;
+                    } else {
+                        json += `"${__result__}${inputItemsItem.id.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputItemsItem.id.length < 5000 &&
+                !STR_ESCAPE.test(inputItemsItem.id)
+            ) {
+                json += `"${inputItemsItem.id}"`;
+            } else {
+                json += JSON.stringify(inputItemsItem.id);
+            }
+            json += `,"title":`;
+            if (inputItemsItem.title.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputItemsItem.title.length; i++) {
+                    __point__ = inputItemsItem.title.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputItemsItem.title);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputItemsItem.title.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputItemsItem.title}"`;
+                    } else {
+                        json += `"${__result__}${inputItemsItem.title.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputItemsItem.title.length < 5000 &&
+                !STR_ESCAPE.test(inputItemsItem.title)
+            ) {
+                json += `"${inputItemsItem.title}"`;
+            } else {
+                json += JSON.stringify(inputItemsItem.title);
+            }
             json += `,"type":"${inputItemsItem.type}"`;
             if (typeof inputItemsItem.description === "string") {
-                json += `,"description":"${inputItemsItem.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"description":`;
+                if (inputItemsItem.description.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < inputItemsItem.description.length;
+                        i++
+                    ) {
+                        __point__ = inputItemsItem.description.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(inputItemsItem.description);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                inputItemsItem.description.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${inputItemsItem.description}"`;
+                        } else {
+                            json += `"${__result__}${inputItemsItem.description.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    inputItemsItem.description.length < 5000 &&
+                    !STR_ESCAPE.test(inputItemsItem.description)
+                ) {
+                    json += `"${inputItemsItem.description}"`;
+                } else {
+                    json += JSON.stringify(inputItemsItem.description);
+                }
             } else {
                 json += ',"description":null';
             }
-            json += `,"content":"${inputItemsItem.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"content":`;
+            if (inputItemsItem.content.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputItemsItem.content.length; i++) {
+                    __point__ = inputItemsItem.content.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputItemsItem.content);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputItemsItem.content.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputItemsItem.content}"`;
+                    } else {
+                        json += `"${__result__}${inputItemsItem.content.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputItemsItem.content.length < 5000 &&
+                !STR_ESCAPE.test(inputItemsItem.content)
+            ) {
+                json += `"${inputItemsItem.content}"`;
+            } else {
+                json += JSON.stringify(inputItemsItem.content);
+            }
             json += ',"tags":[';
             for (let i = 0; i < inputItemsItem.tags.length; i++) {
                 const inputItemsItemTagsItem = inputItemsItem.tags[i];
                 if (i !== 0) {
                     json += ",";
                 }
-                json += `"${inputItemsItemTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += ``;
+                if (inputItemsItemTagsItem.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < inputItemsItemTagsItem.length; i++) {
+                        __point__ = inputItemsItemTagsItem.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(inputItemsItemTagsItem);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                inputItemsItemTagsItem.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${inputItemsItemTagsItem}"`;
+                        } else {
+                            json += `"${__result__}${inputItemsItemTagsItem.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    inputItemsItemTagsItem.length < 5000 &&
+                    !STR_ESCAPE.test(inputItemsItemTagsItem)
+                ) {
+                    json += `"${inputItemsItemTagsItem}"`;
+                } else {
+                    json += JSON.stringify(inputItemsItemTagsItem);
+                }
             }
             json += "]";
-            json += `,"authorId":"${inputItemsItem.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"authorId":`;
+            if (inputItemsItem.authorId.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputItemsItem.authorId.length; i++) {
+                    __point__ = inputItemsItem.authorId.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputItemsItem.authorId);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputItemsItem.authorId.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputItemsItem.authorId}"`;
+                    } else {
+                        json += `"${__result__}${inputItemsItem.authorId.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputItemsItem.authorId.length < 5000 &&
+                !STR_ESCAPE.test(inputItemsItem.authorId)
+            ) {
+                json += `"${inputItemsItem.authorId}"`;
+            } else {
+                json += JSON.stringify(inputItemsItem.authorId);
+            }
             json += ',"author":{';
-            json += `"id":"${inputItemsItem.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"name":"${inputItemsItem.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `"id":`;
+            if (inputItemsItem.author.id.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputItemsItem.author.id.length; i++) {
+                    __point__ = inputItemsItem.author.id.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputItemsItem.author.id);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputItemsItem.author.id.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputItemsItem.author.id}"`;
+                    } else {
+                        json += `"${__result__}${inputItemsItem.author.id.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputItemsItem.author.id.length < 5000 &&
+                !STR_ESCAPE.test(inputItemsItem.author.id)
+            ) {
+                json += `"${inputItemsItem.author.id}"`;
+            } else {
+                json += JSON.stringify(inputItemsItem.author.id);
+            }
+            json += `,"name":`;
+            if (inputItemsItem.author.name.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < inputItemsItem.author.name.length; i++) {
+                    __point__ = inputItemsItem.author.name.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(inputItemsItem.author.name);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            inputItemsItem.author.name.slice(__last__, i) +
+                            "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${inputItemsItem.author.name}"`;
+                    } else {
+                        json += `"${__result__}${inputItemsItem.author.name.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                inputItemsItem.author.name.length < 5000 &&
+                !STR_ESCAPE.test(inputItemsItem.author.name)
+            ) {
+                json += `"${inputItemsItem.author.name}"`;
+            } else {
+                json += JSON.stringify(inputItemsItem.author.name);
+            }
             if (typeof inputItemsItem.author.bio === "string") {
-                json += `,"bio":"${inputItemsItem.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"bio":`;
+                if (inputItemsItem.author.bio.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < inputItemsItem.author.bio.length; i++) {
+                        __point__ = inputItemsItem.author.bio.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(inputItemsItem.author.bio);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                inputItemsItem.author.bio.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${inputItemsItem.author.bio}"`;
+                        } else {
+                            json += `"${__result__}${inputItemsItem.author.bio.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    inputItemsItem.author.bio.length < 5000 &&
+                    !STR_ESCAPE.test(inputItemsItem.author.bio)
+                ) {
+                    json += `"${inputItemsItem.author.bio}"`;
+                } else {
+                    json += JSON.stringify(inputItemsItem.author.bio);
+                }
             } else {
                 json += ',"bio":null';
             }
@@ -9343,11 +12525,50 @@ const $$PostEvent = {
     },
     serialize(input: PostEvent): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         switch (input.eventType) {
             case "POST_CREATED": {
                 json += "{";
                 json += `"eventType":"POST_CREATED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"postId":`;
+                if (input.postId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.postId.length; i++) {
+                        __point__ = input.postId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.postId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.postId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.postId}"`;
+                        } else {
+                            json += `"${__result__}${input.postId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.postId.length < 5000 &&
+                    !STR_ESCAPE.test(input.postId)
+                ) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += JSON.stringify(input.postId);
+                }
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
                 json += "}";
                 break;
@@ -9355,7 +12576,44 @@ const $$PostEvent = {
             case "POST_DELETED": {
                 json += "{";
                 json += `"eventType":"POST_DELETED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"postId":`;
+                if (input.postId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.postId.length; i++) {
+                        __point__ = input.postId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.postId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.postId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.postId}"`;
+                        } else {
+                            json += `"${__result__}${input.postId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.postId.length < 5000 &&
+                    !STR_ESCAPE.test(input.postId)
+                ) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += JSON.stringify(input.postId);
+                }
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
                 json += "}";
                 break;
@@ -9363,23 +12621,210 @@ const $$PostEvent = {
             case "POST_UPDATED": {
                 json += "{";
                 json += `"eventType":"POST_UPDATED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"postId":`;
+                if (input.postId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.postId.length; i++) {
+                        __point__ = input.postId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.postId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.postId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.postId}"`;
+                        } else {
+                            json += `"${__result__}${input.postId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.postId.length < 5000 &&
+                    !STR_ESCAPE.test(input.postId)
+                ) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += JSON.stringify(input.postId);
+                }
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
                 json += ',"data":{';
                 let dataHasFields = false;
                 if (typeof input.data.id !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"id":"${input.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"id":`;
+                        if (input.data.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (let i = 0; i < input.data.id.length; i++) {
+                                __point__ = input.data.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.id);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.id.slice(__last__, i) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.id}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.id.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.id)
+                        ) {
+                            json += `"${input.data.id}"`;
+                        } else {
+                            json += JSON.stringify(input.data.id);
+                        }
                     } else {
-                        json += `"id":"${input.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (input.data.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (let i = 0; i < input.data.id.length; i++) {
+                                __point__ = input.data.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.id);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.id.slice(__last__, i) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.id}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.id.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.id)
+                        ) {
+                            json += `"${input.data.id}"`;
+                        } else {
+                            json += JSON.stringify(input.data.id);
+                        }
                         dataHasFields = true;
                     }
                 }
                 if (typeof input.data.title !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.data.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (let i = 0; i < input.data.title.length; i++) {
+                                __point__ = input.data.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.title);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.title.slice(__last__, i) +
+                                        "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.title)
+                        ) {
+                            json += `"${input.data.title}"`;
+                        } else {
+                            json += JSON.stringify(input.data.title);
+                        }
                     } else {
-                        json += `"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"title":`;
+                        if (input.data.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (let i = 0; i < input.data.title.length; i++) {
+                                __point__ = input.data.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.title);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.title.slice(__last__, i) +
+                                        "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.title)
+                        ) {
+                            json += `"${input.data.title}"`;
+                        } else {
+                            json += JSON.stringify(input.data.title);
+                        }
                         dataHasFields = true;
                     }
                 }
@@ -9394,13 +12839,115 @@ const $$PostEvent = {
                 if (typeof input.data.description !== "undefined") {
                     if (dataHasFields) {
                         if (typeof input.data.description === "string") {
-                            json += `,"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            json += `,"description":`;
+                            if (input.data.description.length < 42) {
+                                let __result__ = "";
+                                let __last__ = -1;
+                                let __point__ = 255;
+                                let __finished__ = false;
+                                for (
+                                    let i = 0;
+                                    i < input.data.description.length;
+                                    i++
+                                ) {
+                                    __point__ =
+                                        input.data.description.charCodeAt(i);
+                                    if (
+                                        __point__ < 32 ||
+                                        (__point__ >= 0xd800 &&
+                                            __point__ <= 0xdfff)
+                                    ) {
+                                        json += JSON.stringify(
+                                            input.data.description,
+                                        );
+                                        __finished__ = true;
+                                        break;
+                                    }
+                                    if (
+                                        __point__ === 0x22 ||
+                                        __point__ === 0x5c
+                                    ) {
+                                        __last__ === -1 && (__last__ = 0);
+                                        __result__ +=
+                                            input.data.description.slice(
+                                                __last__,
+                                                i,
+                                            ) + "\\";
+                                        __last__ = i;
+                                    }
+                                }
+                                if (!__finished__) {
+                                    if (__last__ === -1) {
+                                        json += `"${input.data.description}"`;
+                                    } else {
+                                        json += `"${__result__}${input.data.description.slice(__last__)}"`;
+                                    }
+                                }
+                            } else if (
+                                input.data.description.length < 5000 &&
+                                !STR_ESCAPE.test(input.data.description)
+                            ) {
+                                json += `"${input.data.description}"`;
+                            } else {
+                                json += JSON.stringify(input.data.description);
+                            }
                         } else {
                             json += ',"description":null';
                         }
                     } else {
                         if (typeof input.data.description === "string") {
-                            json += `"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            json += `"description":`;
+                            if (input.data.description.length < 42) {
+                                let __result__ = "";
+                                let __last__ = -1;
+                                let __point__ = 255;
+                                let __finished__ = false;
+                                for (
+                                    let i = 0;
+                                    i < input.data.description.length;
+                                    i++
+                                ) {
+                                    __point__ =
+                                        input.data.description.charCodeAt(i);
+                                    if (
+                                        __point__ < 32 ||
+                                        (__point__ >= 0xd800 &&
+                                            __point__ <= 0xdfff)
+                                    ) {
+                                        json += JSON.stringify(
+                                            input.data.description,
+                                        );
+                                        __finished__ = true;
+                                        break;
+                                    }
+                                    if (
+                                        __point__ === 0x22 ||
+                                        __point__ === 0x5c
+                                    ) {
+                                        __last__ === -1 && (__last__ = 0);
+                                        __result__ +=
+                                            input.data.description.slice(
+                                                __last__,
+                                                i,
+                                            ) + "\\";
+                                        __last__ = i;
+                                    }
+                                }
+                                if (!__finished__) {
+                                    if (__last__ === -1) {
+                                        json += `"${input.data.description}"`;
+                                    } else {
+                                        json += `"${__result__}${input.data.description.slice(__last__)}"`;
+                                    }
+                                }
+                            } else if (
+                                input.data.description.length < 5000 &&
+                                !STR_ESCAPE.test(input.data.description)
+                            ) {
+                                json += `"${input.data.description}"`;
+                            } else {
+                                json += JSON.stringify(input.data.description);
+                            }
                         } else {
                             json += '"description":null';
                         }
@@ -9409,9 +12956,93 @@ const $$PostEvent = {
                 }
                 if (typeof input.data.content !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"content":`;
+                        if (input.data.content.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.content.length;
+                                i++
+                            ) {
+                                __point__ = input.data.content.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.content);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.content.slice(__last__, i) +
+                                        "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.content}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.content.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.content.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.content)
+                        ) {
+                            json += `"${input.data.content}"`;
+                        } else {
+                            json += JSON.stringify(input.data.content);
+                        }
                     } else {
-                        json += `"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"content":`;
+                        if (input.data.content.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.content.length;
+                                i++
+                            ) {
+                                __point__ = input.data.content.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.content);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.content.slice(__last__, i) +
+                                        "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.content}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.content.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.content.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.content)
+                        ) {
+                            json += `"${input.data.content}"`;
+                        } else {
+                            json += JSON.stringify(input.data.content);
+                        }
                         dataHasFields = true;
                     }
                 }
@@ -9423,7 +13054,56 @@ const $$PostEvent = {
                             if (i !== 0) {
                                 json += ",";
                             }
-                            json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            json += ``;
+                            if (inputDataTagsItem.length < 42) {
+                                let __result__ = "";
+                                let __last__ = -1;
+                                let __point__ = 255;
+                                let __finished__ = false;
+                                for (
+                                    let i = 0;
+                                    i < inputDataTagsItem.length;
+                                    i++
+                                ) {
+                                    __point__ = inputDataTagsItem.charCodeAt(i);
+                                    if (
+                                        __point__ < 32 ||
+                                        (__point__ >= 0xd800 &&
+                                            __point__ <= 0xdfff)
+                                    ) {
+                                        json +=
+                                            JSON.stringify(inputDataTagsItem);
+                                        __finished__ = true;
+                                        break;
+                                    }
+                                    if (
+                                        __point__ === 0x22 ||
+                                        __point__ === 0x5c
+                                    ) {
+                                        __last__ === -1 && (__last__ = 0);
+                                        __result__ +=
+                                            inputDataTagsItem.slice(
+                                                __last__,
+                                                i,
+                                            ) + "\\";
+                                        __last__ = i;
+                                    }
+                                }
+                                if (!__finished__) {
+                                    if (__last__ === -1) {
+                                        json += `"${inputDataTagsItem}"`;
+                                    } else {
+                                        json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
+                                    }
+                                }
+                            } else if (
+                                inputDataTagsItem.length < 5000 &&
+                                !STR_ESCAPE.test(inputDataTagsItem)
+                            ) {
+                                json += `"${inputDataTagsItem}"`;
+                            } else {
+                                json += JSON.stringify(inputDataTagsItem);
+                            }
                         }
                         json += "]";
                     } else {
@@ -9433,7 +13113,56 @@ const $$PostEvent = {
                             if (i !== 0) {
                                 json += ",";
                             }
-                            json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            json += ``;
+                            if (inputDataTagsItem.length < 42) {
+                                let __result__ = "";
+                                let __last__ = -1;
+                                let __point__ = 255;
+                                let __finished__ = false;
+                                for (
+                                    let i = 0;
+                                    i < inputDataTagsItem.length;
+                                    i++
+                                ) {
+                                    __point__ = inputDataTagsItem.charCodeAt(i);
+                                    if (
+                                        __point__ < 32 ||
+                                        (__point__ >= 0xd800 &&
+                                            __point__ <= 0xdfff)
+                                    ) {
+                                        json +=
+                                            JSON.stringify(inputDataTagsItem);
+                                        __finished__ = true;
+                                        break;
+                                    }
+                                    if (
+                                        __point__ === 0x22 ||
+                                        __point__ === 0x5c
+                                    ) {
+                                        __last__ === -1 && (__last__ = 0);
+                                        __result__ +=
+                                            inputDataTagsItem.slice(
+                                                __last__,
+                                                i,
+                                            ) + "\\";
+                                        __last__ = i;
+                                    }
+                                }
+                                if (!__finished__) {
+                                    if (__last__ === -1) {
+                                        json += `"${inputDataTagsItem}"`;
+                                    } else {
+                                        json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
+                                    }
+                                }
+                            } else if (
+                                inputDataTagsItem.length < 5000 &&
+                                !STR_ESCAPE.test(inputDataTagsItem)
+                            ) {
+                                json += `"${inputDataTagsItem}"`;
+                            } else {
+                                json += JSON.stringify(inputDataTagsItem);
+                            }
                         }
                         json += "]";
                         dataHasFields = true;
@@ -9441,19 +13170,247 @@ const $$PostEvent = {
                 }
                 if (typeof input.data.authorId !== "undefined") {
                     if (dataHasFields) {
-                        json += `,"authorId":"${input.data.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"authorId":`;
+                        if (input.data.authorId.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.authorId.length;
+                                i++
+                            ) {
+                                __point__ = input.data.authorId.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.authorId);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.authorId.slice(__last__, i) +
+                                        "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.authorId}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.authorId.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.authorId.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.authorId)
+                        ) {
+                            json += `"${input.data.authorId}"`;
+                        } else {
+                            json += JSON.stringify(input.data.authorId);
+                        }
                     } else {
-                        json += `"authorId":"${input.data.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"authorId":`;
+                        if (input.data.authorId.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.authorId.length;
+                                i++
+                            ) {
+                                __point__ = input.data.authorId.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(input.data.authorId);
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.authorId.slice(__last__, i) +
+                                        "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.authorId}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.authorId.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.authorId.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.authorId)
+                        ) {
+                            json += `"${input.data.authorId}"`;
+                        } else {
+                            json += JSON.stringify(input.data.authorId);
+                        }
                         dataHasFields = true;
                     }
                 }
                 if (typeof input.data.author !== "undefined") {
                     if (dataHasFields) {
                         json += ',"author":{';
-                        json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"name":"${input.data.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (input.data.author.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.author.id.length;
+                                i++
+                            ) {
+                                __point__ = input.data.author.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.data.author.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.author.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.author.id}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.author.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.author.id.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.author.id)
+                        ) {
+                            json += `"${input.data.author.id}"`;
+                        } else {
+                            json += JSON.stringify(input.data.author.id);
+                        }
+                        json += `,"name":`;
+                        if (input.data.author.name.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.author.name.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.data.author.name.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.data.author.name,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.author.name.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.author.name}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.author.name.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.author.name.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.author.name)
+                        ) {
+                            json += `"${input.data.author.name}"`;
+                        } else {
+                            json += JSON.stringify(input.data.author.name);
+                        }
                         if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":"${input.data.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            json += `,"bio":`;
+                            if (input.data.author.bio.length < 42) {
+                                let __result__ = "";
+                                let __last__ = -1;
+                                let __point__ = 255;
+                                let __finished__ = false;
+                                for (
+                                    let i = 0;
+                                    i < input.data.author.bio.length;
+                                    i++
+                                ) {
+                                    __point__ =
+                                        input.data.author.bio.charCodeAt(i);
+                                    if (
+                                        __point__ < 32 ||
+                                        (__point__ >= 0xd800 &&
+                                            __point__ <= 0xdfff)
+                                    ) {
+                                        json += JSON.stringify(
+                                            input.data.author.bio,
+                                        );
+                                        __finished__ = true;
+                                        break;
+                                    }
+                                    if (
+                                        __point__ === 0x22 ||
+                                        __point__ === 0x5c
+                                    ) {
+                                        __last__ === -1 && (__last__ = 0);
+                                        __result__ +=
+                                            input.data.author.bio.slice(
+                                                __last__,
+                                                i,
+                                            ) + "\\";
+                                        __last__ = i;
+                                    }
+                                }
+                                if (!__finished__) {
+                                    if (__last__ === -1) {
+                                        json += `"${input.data.author.bio}"`;
+                                    } else {
+                                        json += `"${__result__}${input.data.author.bio.slice(__last__)}"`;
+                                    }
+                                }
+                            } else if (
+                                input.data.author.bio.length < 5000 &&
+                                !STR_ESCAPE.test(input.data.author.bio)
+                            ) {
+                                json += `"${input.data.author.bio}"`;
+                            } else {
+                                json += JSON.stringify(input.data.author.bio);
+                            }
                         } else {
                             json += ',"bio":null';
                         }
@@ -9462,10 +13419,154 @@ const $$PostEvent = {
                         json += "}";
                     } else {
                         json += '"author":{';
-                        json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"name":"${input.data.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (input.data.author.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.author.id.length;
+                                i++
+                            ) {
+                                __point__ = input.data.author.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.data.author.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.author.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.author.id}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.author.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.author.id.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.author.id)
+                        ) {
+                            json += `"${input.data.author.id}"`;
+                        } else {
+                            json += JSON.stringify(input.data.author.id);
+                        }
+                        json += `,"name":`;
+                        if (input.data.author.name.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.data.author.name.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.data.author.name.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.data.author.name,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.data.author.name.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.data.author.name}"`;
+                                } else {
+                                    json += `"${__result__}${input.data.author.name.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.data.author.name.length < 5000 &&
+                            !STR_ESCAPE.test(input.data.author.name)
+                        ) {
+                            json += `"${input.data.author.name}"`;
+                        } else {
+                            json += JSON.stringify(input.data.author.name);
+                        }
                         if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":"${input.data.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            json += `,"bio":`;
+                            if (input.data.author.bio.length < 42) {
+                                let __result__ = "";
+                                let __last__ = -1;
+                                let __point__ = 255;
+                                let __finished__ = false;
+                                for (
+                                    let i = 0;
+                                    i < input.data.author.bio.length;
+                                    i++
+                                ) {
+                                    __point__ =
+                                        input.data.author.bio.charCodeAt(i);
+                                    if (
+                                        __point__ < 32 ||
+                                        (__point__ >= 0xd800 &&
+                                            __point__ <= 0xdfff)
+                                    ) {
+                                        json += JSON.stringify(
+                                            input.data.author.bio,
+                                        );
+                                        __finished__ = true;
+                                        break;
+                                    }
+                                    if (
+                                        __point__ === 0x22 ||
+                                        __point__ === 0x5c
+                                    ) {
+                                        __last__ === -1 && (__last__ = 0);
+                                        __result__ +=
+                                            input.data.author.bio.slice(
+                                                __last__,
+                                                i,
+                                            ) + "\\";
+                                        __last__ = i;
+                                    }
+                                }
+                                if (!__finished__) {
+                                    if (__last__ === -1) {
+                                        json += `"${input.data.author.bio}"`;
+                                    } else {
+                                        json += `"${__result__}${input.data.author.bio.slice(__last__)}"`;
+                                    }
+                                }
+                            } else if (
+                                input.data.author.bio.length < 5000 &&
+                                !STR_ESCAPE.test(input.data.author.bio)
+                            ) {
+                                json += `"${input.data.author.bio}"`;
+                            } else {
+                                json += JSON.stringify(input.data.author.bio);
+                            }
                         } else {
                             json += ',"bio":null';
                         }
@@ -9498,9 +13599,83 @@ const $$PostEvent = {
             case "POST_LIKED": {
                 json += "{";
                 json += `"eventType":"POST_LIKED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"postId":`;
+                if (input.postId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.postId.length; i++) {
+                        __point__ = input.postId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.postId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.postId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.postId}"`;
+                        } else {
+                            json += `"${__result__}${input.postId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.postId.length < 5000 &&
+                    !STR_ESCAPE.test(input.postId)
+                ) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += JSON.stringify(input.postId);
+                }
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"postLikeId":"${input.postLikeId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"postLikeId":`;
+                if (input.postLikeId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.postLikeId.length; i++) {
+                        __point__ = input.postLikeId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.postLikeId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.postLikeId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.postLikeId}"`;
+                        } else {
+                            json += `"${__result__}${input.postLikeId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.postLikeId.length < 5000 &&
+                    !STR_ESCAPE.test(input.postLikeId)
+                ) {
+                    json += `"${input.postLikeId}"`;
+                } else {
+                    json += JSON.stringify(input.postLikeId);
+                }
 
                 if (Number.isNaN(input.postLikeCount)) {
                     throw new Error(
@@ -9514,10 +13689,121 @@ const $$PostEvent = {
             case "POST_COMMENTED": {
                 json += "{";
                 json += `"eventType":"POST_COMMENTED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"postId":`;
+                if (input.postId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.postId.length; i++) {
+                        __point__ = input.postId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.postId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.postId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.postId}"`;
+                        } else {
+                            json += `"${__result__}${input.postId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.postId.length < 5000 &&
+                    !STR_ESCAPE.test(input.postId)
+                ) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += JSON.stringify(input.postId);
+                }
                 json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"commentId":"${input.commentId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"commentText":"${input.commentText.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"commentId":`;
+                if (input.commentId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.commentId.length; i++) {
+                        __point__ = input.commentId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.commentId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.commentId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.commentId}"`;
+                        } else {
+                            json += `"${__result__}${input.commentId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.commentId.length < 5000 &&
+                    !STR_ESCAPE.test(input.commentId)
+                ) {
+                    json += `"${input.commentId}"`;
+                } else {
+                    json += JSON.stringify(input.commentId);
+                }
+                json += `,"commentText":`;
+                if (input.commentText.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.commentText.length; i++) {
+                        __point__ = input.commentText.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.commentText);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.commentText.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.commentText}"`;
+                        } else {
+                            json += `"${__result__}${input.commentText.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.commentText.length < 5000 &&
+                    !STR_ESCAPE.test(input.commentText)
+                ) {
+                    json += `"${input.commentText}"`;
+                } else {
+                    json += JSON.stringify(input.commentText);
+                }
 
                 if (Number.isNaN(input.commentCount)) {
                     throw new Error("Expected number at /commentCount got NaN");
@@ -9649,9 +13935,47 @@ const $$LogPostEventResponse = {
     },
     serialize(input: LogPostEventResponse): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
         json += `"success":${input.success}`;
-        json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
         json += "}";
         return json;
     },
@@ -9861,28 +14185,224 @@ const $$UpdatePostParams = {
     },
     serialize(input: UpdatePostParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"postId":`;
+        if (input.postId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.postId.length; i++) {
+                __point__ = input.postId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.postId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.postId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.postId}"`;
+                } else {
+                    json += `"${__result__}${input.postId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.postId.length < 5000 &&
+            !STR_ESCAPE.test(input.postId)
+        ) {
+            json += `"${input.postId}"`;
+        } else {
+            json += JSON.stringify(input.postId);
+        }
         json += ',"data":{';
         let dataHasFields = false;
         if (typeof input.data.title !== "undefined") {
             if (dataHasFields) {
-                json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"title":`;
+                if (input.data.title.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.title.length; i++) {
+                        __point__ = input.data.title.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.title);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.title.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.title}"`;
+                        } else {
+                            json += `"${__result__}${input.data.title.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.title.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.title)
+                ) {
+                    json += `"${input.data.title}"`;
+                } else {
+                    json += JSON.stringify(input.data.title);
+                }
             } else {
-                json += `"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"title":`;
+                if (input.data.title.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.title.length; i++) {
+                        __point__ = input.data.title.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.title);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.title.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.title}"`;
+                        } else {
+                            json += `"${__result__}${input.data.title.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.title.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.title)
+                ) {
+                    json += `"${input.data.title}"`;
+                } else {
+                    json += JSON.stringify(input.data.title);
+                }
                 dataHasFields = true;
             }
         }
         if (typeof input.data.description !== "undefined") {
             if (dataHasFields) {
                 if (typeof input.data.description === "string") {
-                    json += `,"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `,"description":`;
+                    if (input.data.description.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (
+                            let i = 0;
+                            i < input.data.description.length;
+                            i++
+                        ) {
+                            __point__ = input.data.description.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(input.data.description);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.data.description.slice(__last__, i) +
+                                    "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.data.description}"`;
+                            } else {
+                                json += `"${__result__}${input.data.description.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.data.description.length < 5000 &&
+                        !STR_ESCAPE.test(input.data.description)
+                    ) {
+                        json += `"${input.data.description}"`;
+                    } else {
+                        json += JSON.stringify(input.data.description);
+                    }
                 } else {
                     json += ',"description":null';
                 }
             } else {
                 if (typeof input.data.description === "string") {
-                    json += `"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `"description":`;
+                    if (input.data.description.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (
+                            let i = 0;
+                            i < input.data.description.length;
+                            i++
+                        ) {
+                            __point__ = input.data.description.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(input.data.description);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.data.description.slice(__last__, i) +
+                                    "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.data.description}"`;
+                            } else {
+                                json += `"${__result__}${input.data.description.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.data.description.length < 5000 &&
+                        !STR_ESCAPE.test(input.data.description)
+                    ) {
+                        json += `"${input.data.description}"`;
+                    } else {
+                        json += JSON.stringify(input.data.description);
+                    }
                 } else {
                     json += '"description":null';
                 }
@@ -9891,9 +14411,83 @@ const $$UpdatePostParams = {
         }
         if (typeof input.data.content !== "undefined") {
             if (dataHasFields) {
-                json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"content":`;
+                if (input.data.content.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.content.length; i++) {
+                        __point__ = input.data.content.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.content);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.content.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.content}"`;
+                        } else {
+                            json += `"${__result__}${input.data.content.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.content.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.content)
+                ) {
+                    json += `"${input.data.content}"`;
+                } else {
+                    json += JSON.stringify(input.data.content);
+                }
             } else {
-                json += `"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"content":`;
+                if (input.data.content.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.content.length; i++) {
+                        __point__ = input.data.content.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.content);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.content.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.content}"`;
+                        } else {
+                            json += `"${__result__}${input.data.content.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.content.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.content)
+                ) {
+                    json += `"${input.data.content}"`;
+                } else {
+                    json += JSON.stringify(input.data.content);
+                }
                 dataHasFields = true;
             }
         }
@@ -9905,7 +14499,44 @@ const $$UpdatePostParams = {
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += ``;
+                    if (inputDataTagsItem.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < inputDataTagsItem.length; i++) {
+                            __point__ = inputDataTagsItem.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(inputDataTagsItem);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    inputDataTagsItem.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${inputDataTagsItem}"`;
+                            } else {
+                                json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        inputDataTagsItem.length < 5000 &&
+                        !STR_ESCAPE.test(inputDataTagsItem)
+                    ) {
+                        json += `"${inputDataTagsItem}"`;
+                    } else {
+                        json += JSON.stringify(inputDataTagsItem);
+                    }
                 }
                 json += "]";
             } else {
@@ -9915,7 +14546,44 @@ const $$UpdatePostParams = {
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += ``;
+                    if (inputDataTagsItem.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < inputDataTagsItem.length; i++) {
+                            __point__ = inputDataTagsItem.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(inputDataTagsItem);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    inputDataTagsItem.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${inputDataTagsItem}"`;
+                            } else {
+                                json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        inputDataTagsItem.length < 5000 &&
+                        !STR_ESCAPE.test(inputDataTagsItem)
+                    ) {
+                        json += `"${inputDataTagsItem}"`;
+                    } else {
+                        json += JSON.stringify(inputDataTagsItem);
+                    }
                 }
                 json += "]";
                 dataHasFields = true;
@@ -10003,9 +14671,80 @@ const $$AnnotationId = {
     },
     serialize(input: AnnotationId): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"version":"${input.version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.id.length; i++) {
+                __point__ = input.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += `"${__result__}${input.id.slice(__last__)}"`;
+                }
+            }
+        } else if (input.id.length < 5000 && !STR_ESCAPE.test(input.id)) {
+            json += `"${input.id}"`;
+        } else {
+            json += JSON.stringify(input.id);
+        }
+        json += `,"version":`;
+        if (input.version.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.version.length; i++) {
+                __point__ = input.version.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.version);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.version.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.version}"`;
+                } else {
+                    json += `"${__result__}${input.version.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.version.length < 5000 &&
+            !STR_ESCAPE.test(input.version)
+        ) {
+            json += `"${input.version}"`;
+        } else {
+            json += JSON.stringify(input.version);
+        }
         json += "}";
         return json;
     },
@@ -10446,14 +15185,127 @@ const $$Annotation = {
     },
     serialize(input: Annotation): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
         json += '"annotation_id":{';
-        json += `"id":"${input.annotation_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"version":"${input.annotation_id.version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"id":`;
+        if (input.annotation_id.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.annotation_id.id.length; i++) {
+                __point__ = input.annotation_id.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.annotation_id.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.annotation_id.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.annotation_id.id}"`;
+                } else {
+                    json += `"${__result__}${input.annotation_id.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.annotation_id.id.length < 5000 &&
+            !STR_ESCAPE.test(input.annotation_id.id)
+        ) {
+            json += `"${input.annotation_id.id}"`;
+        } else {
+            json += JSON.stringify(input.annotation_id.id);
+        }
+        json += `,"version":`;
+        if (input.annotation_id.version.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.annotation_id.version.length; i++) {
+                __point__ = input.annotation_id.version.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.annotation_id.version);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.annotation_id.version.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.annotation_id.version}"`;
+                } else {
+                    json += `"${__result__}${input.annotation_id.version.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.annotation_id.version.length < 5000 &&
+            !STR_ESCAPE.test(input.annotation_id.version)
+        ) {
+            json += `"${input.annotation_id.version}"`;
+        } else {
+            json += JSON.stringify(input.annotation_id.version);
+        }
         json += "}";
         json += ',"associated_id":{';
         json += `"entity_type":"${input.associated_id.entity_type}"`;
-        json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"id":`;
+        if (input.associated_id.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.associated_id.id.length; i++) {
+                __point__ = input.associated_id.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.associated_id.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.associated_id.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.associated_id.id}"`;
+                } else {
+                    json += `"${__result__}${input.associated_id.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.associated_id.id.length < 5000 &&
+            !STR_ESCAPE.test(input.associated_id.id)
+        ) {
+            json += `"${input.associated_id.id}"`;
+        } else {
+            json += JSON.stringify(input.associated_id.id);
+        }
         json += "}";
         json += `,"annotation_type":"${input.annotation_type}"`;
 
@@ -10978,21 +15830,180 @@ const $$UpdateAnnotationParams = {
     },
     serialize(input: UpdateAnnotationParams): string {
         let json = "";
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         json += "{";
-        json += `"annotation_id":"${input.annotation_id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"annotation_id_version":"${input.annotation_id_version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"annotation_id":`;
+        if (input.annotation_id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.annotation_id.length; i++) {
+                __point__ = input.annotation_id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.annotation_id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.annotation_id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.annotation_id}"`;
+                } else {
+                    json += `"${__result__}${input.annotation_id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.annotation_id.length < 5000 &&
+            !STR_ESCAPE.test(input.annotation_id)
+        ) {
+            json += `"${input.annotation_id}"`;
+        } else {
+            json += JSON.stringify(input.annotation_id);
+        }
+        json += `,"annotation_id_version":`;
+        if (input.annotation_id_version.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.annotation_id_version.length; i++) {
+                __point__ = input.annotation_id_version.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.annotation_id_version);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.annotation_id_version.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.annotation_id_version}"`;
+                } else {
+                    json += `"${__result__}${input.annotation_id_version.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.annotation_id_version.length < 5000 &&
+            !STR_ESCAPE.test(input.annotation_id_version)
+        ) {
+            json += `"${input.annotation_id_version}"`;
+        } else {
+            json += JSON.stringify(input.annotation_id_version);
+        }
         json += ',"data":{';
         let dataHasFields = false;
         if (typeof input.data.associated_id !== "undefined") {
             if (dataHasFields) {
                 json += ',"associated_id":{';
                 json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.data.associated_id.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.data.associated_id.id.length;
+                        i++
+                    ) {
+                        __point__ = input.data.associated_id.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.associated_id.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.associated_id.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.associated_id.id}"`;
+                        } else {
+                            json += `"${__result__}${input.data.associated_id.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.associated_id.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.associated_id.id)
+                ) {
+                    json += `"${input.data.associated_id.id}"`;
+                } else {
+                    json += JSON.stringify(input.data.associated_id.id);
+                }
                 json += "}";
             } else {
                 json += '"associated_id":{';
                 json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.data.associated_id.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.data.associated_id.id.length;
+                        i++
+                    ) {
+                        __point__ = input.data.associated_id.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.associated_id.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.associated_id.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.associated_id.id}"`;
+                        } else {
+                            json += `"${__result__}${input.data.associated_id.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.associated_id.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.associated_id.id)
+                ) {
+                    json += `"${input.data.associated_id.id}"`;
+                } else {
+                    json += JSON.stringify(input.data.associated_id.id);
+                }
                 json += "}";
                 dataHasFields = true;
             }

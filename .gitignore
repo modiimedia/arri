@@ -47,5 +47,8 @@ build
 /**/.arri
 /.arri
 **/.temp
+**/.tmp
 **/*.dart_tool
 .nx/cache
+
+**/target

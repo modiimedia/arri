@@ -88,16 +88,16 @@ export function discriminator<
                 serialize(input, data) {
                     const discriminatorVal = input[discriminator];
                     const targetSchema = mapping[discriminatorVal];
-                    return targetSchema.metadata[SCHEMA_METADATA].serialize(
-                        input,
-                        {
-                            instancePath: data.instancePath,
-                            schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
-                            errors: data.errors,
-                            discriminatorKey: discriminator,
-                            discriminatorValue: discriminatorVal,
-                        },
-                    );
+                    const result = targetSchema.metadata[
+                        SCHEMA_METADATA
+                    ].serialize(input, {
+                        instancePath: data.instancePath,
+                        schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
+                        errors: data.errors,
+                        discriminatorKey: discriminator,
+                        discriminatorValue: discriminatorVal,
+                    });
+                    return result;
                 },
             },
         },

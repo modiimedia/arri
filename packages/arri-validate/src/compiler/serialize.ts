@@ -20,13 +20,14 @@ import { type TemplateInput } from "./common";
 interface SerializeTemplateInput<TSchema extends Schema = any>
     extends TemplateInput<TSchema> {
     outputPrefix: string;
+    needsSanitization: string[];
 }
 
 export function createSerializationV2Template(
     inputName: string,
     schema: Schema,
 ) {
-    const result = template({
+    const context: SerializeTemplateInput<any> = {
         val: inputName,
         targetVal: "json",
         schema,
@@ -35,11 +36,14 @@ export function createSerializationV2Template(
         subFunctionBodies: [],
         subFunctionNames: [],
         outputPrefix: "",
-    });
+        needsSanitization: [],
+    };
+    const result = template(context);
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
         return result;
     }
     return `let json = '';
+    ${context.needsSanitization.length > 0 ? `const STR_ESCAPE = /[\\u0000-\\u001f\\u0022\\u005c\\ud800-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?:[^\\ud800-\\udbff]|^)[\\udc00-\\udfff]/;` : ""}
     ${result}
     return json;`;
 }
@@ -91,6 +95,9 @@ export function scalarTemplate(
         case "uint16":
         case "uint8":
             return numberTemplate(input);
+        default:
+            input.schema.type satisfies never;
+            throw new Error("Invalid value in 'type'");
     }
 }
 
@@ -106,9 +113,38 @@ export function stringTemplate(
         }
         return `return ${input.val};`;
     }
-    const mainTemplate = `${input.targetVal} += \`${
-        input.outputPrefix ?? ""
-    }"\${${input.val}.replace(/[\\n]/g, "\\\\n").replace(/"/g, '\\\\"')}"\`;`;
+    input.needsSanitization.push(input.instancePath);
+    const mainTemplate = `${input.targetVal} += \`${input.outputPrefix ?? ""}\`;
+if (${input.val}.length < 42) {
+    let __result__ = "";
+    let __last__ = -1;
+    let __point__ = 255;
+    let __finished__ = false;
+    for (let i = 0; i < ${input.val}.length; i++) {
+        __point__ = ${input.val}.charCodeAt(i);
+        if (__point__ < 32 || (__point__ >= 0xd800 && __point__ <= 0xdfff)) {
+            ${input.targetVal} += JSON.stringify(${input.val});
+            __finished__ = true;
+            break;
+        }
+        if (__point__ === 0x22 || __point__ === 0x5c) {
+            __last__ === -1 && (__last__ = 0);
+            __result__ += ${input.val}.slice(__last__, i) + '\\\\';
+            __last__ = i;
+        }
+    }
+    if(!__finished__) {
+        if (__last__ === -1) {
+            ${input.targetVal} += \`"\${${input.val}}"\`;
+        } else {
+            ${input.targetVal} += \`"\${__result__}\${${input.val}.slice(__last__)}"\`;
+        }
+    }
+} else if (${input.val}.length < 5000 && !STR_ESCAPE.test(${input.val})) {
+    ${input.targetVal} += \`"\${${input.val}}"\`;
+} else {
+    ${input.targetVal} += JSON.stringify(${input.val});
+}`;
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'string') {
             ${mainTemplate}
@@ -268,6 +304,7 @@ export function objectTemplate(
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
             outputPrefix: includeComma ? `,"${key}":` : `"${key}":`,
+            needsSanitization: input.needsSanitization,
         });
         templateParts.push(innerTemplate);
     }
@@ -300,6 +337,7 @@ export function objectTemplate(
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
                 outputPrefix: `"${key}":`,
+                needsSanitization: input.needsSanitization,
             });
             const innerTemplateWithComma = template({
                 schema: optionalPropSchema,
@@ -310,6 +348,7 @@ export function objectTemplate(
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
                 outputPrefix: `,"${key}":`,
+                needsSanitization: input.needsSanitization,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
                 if (${hasFieldsVar}) {
@@ -337,6 +376,7 @@ export function objectTemplate(
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
                 outputPrefix: `,"${key}":`,
+                needsSanitization: input.needsSanitization,
             });
             const completeInnerTemplate = `if (typeof ${innerVal} !== 'undefined') {
                 ${innerTemplate}
@@ -372,6 +412,7 @@ export function arrayTemplate(
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
         outputPrefix: "",
+        needsSanitization: input.needsSanitization,
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
         const ${itemVarName} = ${input.val}[i];
@@ -411,6 +452,7 @@ export function recordTemplate(
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
         outputPrefix: "",
+        needsSanitization: input.needsSanitization,
     });
     templateParts.push(`for (let i = 0; i < ${keysVarName}.length; i++) {
         const key = ${keysVarName}[i];
@@ -453,6 +495,7 @@ function discriminatorTemplate(
             discriminatorKey,
             discriminatorValue: val,
             outputPrefix: input.outputPrefix,
+            needsSanitization: input.needsSanitization,
         });
         templateParts.push(`case '${val}': {
             ${innerTemplate}

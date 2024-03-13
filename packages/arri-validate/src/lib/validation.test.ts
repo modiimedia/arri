@@ -1,6 +1,10 @@
 import { isEqual } from "lodash";
 import { a } from "../_index";
-import { parsingTestSuites, validationTestSuites } from "../testSuites";
+import {
+    parsingTestSuites,
+    serializationTestSuites,
+    validationTestSuites,
+} from "../testSuites";
 
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key];
@@ -28,6 +32,26 @@ describe("parsing test suites", () => {
             }
             for (const input of suite.badInputs) {
                 expect(!a.safeParse(suite.schema, input).success);
+            }
+        });
+    }
+});
+
+describe("serialization test suites", () => {
+    for (const key of Object.keys(serializationTestSuites)) {
+        const suite = serializationTestSuites[key];
+        test(key, () => {
+            for (const input of suite.inputs) {
+                const result = a.serialize(suite.schema, input);
+
+                const parseResult = a.safeParse(suite.schema, result);
+                if (!parseResult.success) {
+                    console.error(parseResult.error);
+                    console.log(result);
+                }
+
+                expect(parseResult.success).toBe(true);
+                JSON.parse(result);
             }
         });
     }
