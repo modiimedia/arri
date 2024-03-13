@@ -242,7 +242,3 @@ export function defineClientGeneratorPlugin<
 >(plugin: ClientGeneratorPlugin<TOptions>) {
     return plugin;
 }
-
-export function defineAppDef(def: AppDefinition) {
-    return def;
-}
