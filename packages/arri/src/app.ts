@@ -40,6 +40,8 @@ export type ModelMap = Record<
     SchemaFormProperties | SchemaFormDiscriminator | SchemaFormValues
 >;
 
+export const createAppDefinition = (def: AppDefinition) => def;
+
 export class ArriApp implements ArriRouterBase {
     __isArri__ = true;
     readonly h3App: App;
