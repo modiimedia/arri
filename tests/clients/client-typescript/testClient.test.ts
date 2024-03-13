@@ -1,5 +1,6 @@
 import { type ArriRequestError, ArriRequestErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
+import { test, expect, describe } from "vitest";
 import {
     TestClient,
     type ObjectWithEveryType,

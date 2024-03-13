@@ -77,7 +77,9 @@ export async function createTypescriptClient(
         const item = services[key];
         if (isRpcDefinition(item)) {
             const rpc = tsRpcFromDefinition(key, item, rpcOptions);
-            procedureParts.push(rpc);
+            if (rpc) {
+                procedureParts.push(rpc);
+            }
             return;
         }
         if (isServiceDefinition(item)) {
@@ -99,8 +101,7 @@ export async function createTypescriptClient(
         const schema = def.models[key];
         if (
             isSchemaFormProperties(schema) ||
-            isSchemaFormDiscriminator(schema) ||
-            isSchemaFormValues(schema)
+            isSchemaFormDiscriminator(schema)
         ) {
             const type = tsTypeFromJtdSchema(key, schema, rpcOptions, {
                 isOptional: false,
@@ -170,7 +171,13 @@ export function tsRpcFromDefinition(
     key: string,
     schema: RpcDefinition,
     options: RpcOptions,
-) {
+): string {
+    if (schema.transport !== "http") {
+        console.warn(
+            "[codegen-ts] WARNING: Non-http RPCs are not supported at this time",
+        );
+        return "";
+    }
     const paramName = pascalCase(schema.params ?? "");
     const responseName = pascalCase(schema.response ?? "");
     const paramsInput = schema.params ? `params: ${paramName}` : "";
@@ -230,7 +237,9 @@ export function tsServiceFromDefinition(
         const def = schema[key];
         if (isRpcDefinition(def)) {
             const rpc = tsRpcFromDefinition(key, def, options);
-            rpcContent.push(rpc);
+            if (rpc) {
+                rpcContent.push(rpc);
+            }
             return;
         }
         if (isServiceDefinition(def)) {
@@ -463,9 +472,9 @@ export function tsScalarFromJtdSchema(
         case "int8":
         case "int16":
         case "int32":
+        case "uint8":
         case "uint16":
         case "uint32":
-        case "uint8":
             return {
                 tsType: "number",
                 schema: def,
@@ -513,6 +522,9 @@ export function tsScalarFromJtdSchema(
                 },
                 content: "",
             };
+        default:
+            def.type satisfies never;
+            throw new Error(`Invalid type in SchemaFormType`);
     }
 }
 

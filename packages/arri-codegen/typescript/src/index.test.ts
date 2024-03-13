@@ -26,6 +26,7 @@ describe("Service Creation", () => {
     test("Basic Service", async () => {
         const Service: ServiceDefinition = {
             getUser: {
+                transport: "http",
                 description: "Fetch a user by id",
                 path: "/get-user",
                 method: "get",
@@ -34,6 +35,7 @@ describe("Service Creation", () => {
                 isDeprecated: true,
             },
             updateUser: {
+                transport: "http",
                 description: "Update a user",
                 path: "/update-user",
                 method: "post",
@@ -41,6 +43,7 @@ describe("Service Creation", () => {
                 response: "User",
             },
             watchUser: {
+                transport: "http",
                 description: "Watch a user",
                 path: "/watch-user",
                 method: "get",

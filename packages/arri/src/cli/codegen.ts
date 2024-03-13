@@ -71,7 +71,15 @@ export default defineCommand({
         consola.info(`Generating ${config.clientGenerators.length} clients`);
         await Promise.allSettled(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            config.clientGenerators.map((gen) => gen.generator(def!)),
+            config.clientGenerators.map((gen) =>
+                gen.generator(
+                    def ?? {
+                        arriSchemaVersion: "0.0.4",
+                        procedures: {},
+                        models: {},
+                    },
+                ),
+            ),
         );
     },
 });
