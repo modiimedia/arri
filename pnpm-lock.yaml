@@ -274,9 +274,6 @@ importers:
 
   packages/arri-validate:
     dependencies:
-      ajv:
-        specifier: ^8.12.0
-        version: 8.12.0
       jtd-utils:
         specifier: workspace:*
         version: link:../jtd-utils
@@ -290,6 +287,9 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
+      ajv:
+        specifier: ^8.12.0
+        version: 8.12.0
       benny:
         specifier: ^3.7.1
         version: 3.7.1
