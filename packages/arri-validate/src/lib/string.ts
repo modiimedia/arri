@@ -29,9 +29,13 @@ export function string(
                     if (data.instancePath.length === 0) {
                         return input;
                     }
-                    return `"${input
-                        .replace(/[\n]/g, "\\n")
-                        .replace(/"/g, '\\"')}"`;
+                    if (input.length < 42) {
+                        return serializeSmallString(input);
+                    }
+                    if (input.length < 5000 && !STR_ESCAPE.test(input)) {
+                        return `"${input}"`;
+                    }
+                    return JSON.stringify(input);
                 },
             },
         },
@@ -58,4 +62,38 @@ function parse(input: unknown, context: ValidationContext) {
 
 function coerce(input: unknown, context: ValidationContext) {
     return parse(input, context);
+}
+
+// Everything below was taken from https://github.com/fastify/fast-json-stringify in "./lib/serializer.js"
+// I was having trouble figuring out a performant way to check if string values need escaping and fortunately they've already solved it.
+const STR_ESCAPE =
+    // eslint-disable-next-line no-control-regex
+    /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+export function serializeSmallString(input: string) {
+    const len = input.length;
+    let result = "";
+    let last = -1;
+    let point = 255;
+
+    for (let i = 0; i < len; i++) {
+        point = input.charCodeAt(i);
+        if (point < 32 || (point >= 0xd800 && point <= 0xdfff)) {
+            // The current character is non-printable characters or a surrogate.
+            return JSON.stringify(input);
+        }
+        if (
+            point === 0x22 || // '"'
+            point === 0x5c // '\'
+        ) {
+            if (last === -1) {
+                last = 0;
+            }
+            result += input.slice(last, i) + "\\";
+            last = i;
+        }
+    }
+    if (last === -1) {
+        return `"${input}"`;
+    }
+    return `"${result}${input.slice(last)}"`;
 }

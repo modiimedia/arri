@@ -5,8 +5,9 @@ import { validationTestSuites } from "../testSuites";
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key];
     const Compiled = compile(suite.schema);
-    for (const input of suite.goodInputs) {
-        test(key, () => {
+    for (let i = 0; i < suite.goodInputs.length; i++) {
+        const input = suite.goodInputs[i];
+        test(`${key} - ${i + 1}`, () => {
             const result = Compiled.serialize(input);
             expect(typeof result === "string");
             if (
