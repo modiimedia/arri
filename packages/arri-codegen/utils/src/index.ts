@@ -246,7 +246,3 @@ export function defineClientGeneratorPlugin<
 export function defineAppDef(def: AppDefinition) {
     return def;
 }
-
-export function defineRpcDef(rpc: RpcDefinition) {
-    return rpc;
-}
