@@ -9,10 +9,8 @@ import {
     type InferType,
     isAObjectSchema,
     a,
-    type ARecordSchema,
     type ADiscriminatorSchema,
     type ASchema,
-    isARecordSchema,
     isADiscriminatorSchema,
 } from "arri-validate";
 import {
@@ -35,21 +33,12 @@ import {
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 
-export type RpcParamSchema<
-    TObjectInner = any,
-    TRecordInner extends ASchema = any,
-    TDiscriminatorInner = any,
-> =
+export type RpcParamSchema<TObjectInner = any, TDiscriminatorInner = any> =
     | AObjectSchema<TObjectInner>
-    | ARecordSchema<TRecordInner>
     | ADiscriminatorSchema<TDiscriminatorInner>;
 
 export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
-    return (
-        isAObjectSchema(input) ||
-        isARecordSchema(input) ||
-        isADiscriminatorSchema(input)
-    );
+    return isAObjectSchema(input) || isADiscriminatorSchema(input);
 }
 
 export interface NamedRpc<
