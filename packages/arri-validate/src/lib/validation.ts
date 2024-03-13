@@ -1,5 +1,14 @@
 import { type ASchema, SCHEMA_METADATA, type ValidationData } from "../schemas";
 
+export function sanitizeJson(json: string) {
+    return json
+        .replace(/[\b]/g, "\\b")
+        .replace(/[\f]/g, "\\f")
+        .replace(/[\n]/g, "\\n")
+        .replace(/[\r]/g, "\\r")
+        .replace(/[\t]/g, "\\t");
+}
+
 /**
  * Check if the input matches the specified schema. This is a type guard.
  */
