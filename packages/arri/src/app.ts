@@ -23,7 +23,7 @@ import { type MiddlewareEvent, type Middleware } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
 import { ArriRouter, type ArriRouterBase } from "./router";
 import {
-    createRpcDefinition,
+    createHttpRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
@@ -130,7 +130,7 @@ export class ArriApp implements ArriRouterBase {
     >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
         const path =
             procedure.path ?? getRpcPath(procedure.name, this.rpcRoutePrefix);
-        this.procedures[procedure.name] = createRpcDefinition(
+        this.procedures[procedure.name] = createHttpRpcDefinition(
             procedure.name,
             path,
             procedure,

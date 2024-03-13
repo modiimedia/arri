@@ -3,6 +3,7 @@ import {
     removeDisallowedChars,
     isRpcHttpMethod,
     type RpcHttpMethod,
+    type HttpRpcDefinition,
 } from "arri-codegen-utils";
 import {
     type AObjectSchema,
@@ -142,11 +143,11 @@ export function defineRpc<
     return config;
 }
 
-export function createRpcDefinition(
+export function createHttpRpcDefinition(
     rpcName: string,
     httpPath: string,
     procedure: Rpc<any, any, any>,
-): RpcDefinition {
+): HttpRpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
         method = procedure.method ?? "get";
@@ -154,6 +155,7 @@ export function createRpcDefinition(
         method = procedure.method ?? "post";
     }
     return {
+        transport: "http",
         description: procedure.description,
         path: httpPath,
         method,

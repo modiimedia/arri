@@ -18,12 +18,14 @@ describe("Service Generation", () => {
             "User",
             {
                 getUser: {
+                    transport: "http",
                     path: "/users/get-user",
                     method: "get",
                     params: "UsersGetUserParams",
                     response: "User",
                 },
                 updateUser: {
+                    transport: "http",
                     path: "/users/update-user",
                     method: "post",
                     params: "UserUpdateData",
@@ -31,6 +33,7 @@ describe("Service Generation", () => {
                 },
                 settings: {
                     getUserSettings: {
+                        transport: "http",
                         path: "/users/settings/get-user-settings",
                         method: "get",
                         params: "UserSettingsGetUserSettingsParams",
@@ -116,6 +119,7 @@ class UserSettingsService {
             "Posts",
             {
                 getPost: {
+                    transport: "http",
                     path: "/posts/get-post",
                     method: "get",
                     params: undefined,

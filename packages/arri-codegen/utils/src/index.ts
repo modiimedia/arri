@@ -1,6 +1,5 @@
 import {
     type SchemaFormDiscriminator,
-    type SchemaFormValues,
     type SchemaFormProperties,
 } from "jtd-utils";
 export * from "jtd-utils";
@@ -24,11 +23,12 @@ export const isHttpMethod = (input: any): input is HttpMethod => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return HttpMethodValues.includes(input as any);
 };
+
 export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== "head";
 };
 
-export const SCHEMA_VERSION = "0.0.3" as const;
+export const SCHEMA_VERSION = "0.0.4" as const;
 
 export interface AppDefinition {
     arriSchemaVersion: typeof SCHEMA_VERSION;
@@ -42,10 +42,7 @@ export interface AppDefinition {
         url: string;
     };
     procedures: Record<string, RpcDefinition>;
-    models: Record<
-        string,
-        SchemaFormProperties | SchemaFormDiscriminator | SchemaFormValues
-    >;
+    models: Record<string, SchemaFormProperties | SchemaFormDiscriminator>;
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {
@@ -65,30 +62,79 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
     return true;
 }
 
-export interface RpcDefinition {
+export interface RpcDefinitionBase {
     path: string;
-    method: RpcHttpMethod;
     params?: string;
     response?: string;
     description?: string;
     isDeprecated?: boolean;
+}
+
+export interface HttpRpcDefinition extends RpcDefinitionBase {
+    transport: "http";
+    method: RpcHttpMethod;
     isEventStream?: boolean;
 }
-export function isRpcDefinition(input: unknown): input is RpcDefinition {
-    if (typeof input !== "object") {
+export interface WsRpcDefinition extends RpcDefinitionBase {
+    transport: "ws";
+}
+export interface CustomRpcDefinition extends RpcDefinitionBase {
+    transport: `custom:${string}`;
+    [key: string]: unknown;
+}
+export type RpcDefinition =
+    | HttpRpcDefinition
+    | WsRpcDefinition
+    | CustomRpcDefinition;
+
+export function isRpcDefinitionBase(
+    input: unknown,
+): input is RpcDefinitionBase {
+    if (typeof input !== "object" || input === null) {
         return false;
     }
-    const inputObj = input as Record<any, any>;
+    if (
+        "params" in input &&
+        typeof input.params !== "undefined" &&
+        typeof input.params !== "string"
+    ) {
+        return false;
+    }
+    if (
+        "response" in input &&
+        typeof input.response !== "undefined" &&
+        typeof input.response !== "string"
+    ) {
+        return false;
+    }
+
     return (
-        typeof inputObj.path === "string" &&
-        isRpcHttpMethod(inputObj.method) &&
-        (typeof inputObj.params === "string" ||
-            typeof inputObj.params === "undefined") &&
-        (typeof inputObj.response === "string" ||
-            typeof inputObj.response === "undefined") &&
-        (typeof inputObj.isEventStream === "boolean" ||
-            typeof inputObj.isEventStream === "undefined")
+        "transport" in input &&
+        typeof input.transport === "string" &&
+        input.transport.length > 0 &&
+        "path" in input &&
+        typeof input.path === "string" &&
+        input.path.length > 0
     );
+}
+
+export function isRpcDefinition(input: unknown): input is RpcDefinition {
+    if (!isRpcDefinitionBase(input)) {
+        return false;
+    }
+    if (!("transport" in input) || typeof input.transport !== "string") {
+        return false;
+    }
+    if (input.transport === "http") {
+        return "method" in input && isRpcHttpMethod(input.method);
+    }
+    if (input.transport === "ws") {
+        return true;
+    }
+    if (input.transport.startsWith("custom:")) {
+        return true;
+    }
+    return false;
 }
 
 export interface ServiceDefinition {
@@ -195,4 +241,12 @@ export function defineClientGeneratorPlugin<
     TOptions extends Record<string, any> | undefined,
 >(plugin: ClientGeneratorPlugin<TOptions>) {
     return plugin;
+}
+
+export function defineAppDef(def: AppDefinition) {
+    return def;
+}
+
+export function defineRpcDef(rpc: RpcDefinition) {
+    return rpc;
 }

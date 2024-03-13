@@ -1,8 +1,8 @@
 import {
-    type RpcDefinition,
     unflattenObject,
     setNestedObjectProperty,
     removeDisallowedChars,
+    type RpcDefinition,
 } from "./index";
 
 describe("unflattenObject()", () => {
@@ -28,24 +28,28 @@ describe("unflattenObject()", () => {
     test("Complex Unflatten", () => {
         const input: Record<string, RpcDefinition> = {
             "posts.getPost": {
+                transport: "http",
                 method: "get",
                 path: "/posts/get-post",
                 params: "PostsGetPostParams",
                 response: "PostsGetPostResponse",
             },
             "posts.updatePost": {
+                transport: "http",
                 method: "post",
                 path: "/posts/update-post",
                 params: "PostsUpdatePostParams",
                 response: "PostsUpdatePostResponse",
             },
             "posts.comments.getComment": {
+                transport: "http",
                 method: "get",
                 path: "/posts/comments/get-comment",
                 params: "GetCommentParams",
                 response: "GetCommentResponse",
             },
             "users.getUser": {
+                transport: "http",
                 method: "get",
                 path: "/users/getUser",
                 params: "UserParams",
@@ -56,12 +60,14 @@ describe("unflattenObject()", () => {
             JSON.stringify({
                 posts: {
                     getPost: {
+                        transport: "http",
                         method: "get",
                         path: "/posts/get-post",
                         params: "PostsGetPostParams",
                         response: "PostsGetPostResponse",
                     },
                     updatePost: {
+                        transport: "http",
                         method: "post",
                         path: "/posts/update-post",
                         params: "PostsUpdatePostParams",
@@ -69,6 +75,7 @@ describe("unflattenObject()", () => {
                     },
                     comments: {
                         getComment: {
+                            transport: "http",
                             method: "get",
                             path: "/posts/comments/get-comment",
                             params: "GetCommentParams",
@@ -78,6 +85,7 @@ describe("unflattenObject()", () => {
                 },
                 users: {
                     getUser: {
+                        transport: "http",
                         method: "get",
                         path: "/users/getUser",
                         params: "UserParams",

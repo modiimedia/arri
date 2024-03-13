@@ -105,13 +105,14 @@ export function createDartClient(
     const serviceGetterParts: string[] = [];
     const serviceParts: string[] = [];
     const modelParts: string[] = [];
-
-    Object.keys(services).forEach((key) => {
+    for (const key of Object.keys(services)) {
         const item = services[key];
         if (isRpcDefinition(item)) {
             const rpc = dartRpcFromDefinition(key, item, opts);
-            rpcParts.push(rpc);
-            return;
+            if (rpc) {
+                rpcParts.push(rpc);
+            }
+            continue;
         }
         if (isServiceDefinition(item)) {
             const serviceName: string = pascalCase(`${opts.clientName}_${key}`);
@@ -128,7 +129,8 @@ export function createDartClient(
   );
 }`);
         }
-    });
+    }
+
     for (const key of Object.keys(def.models)) {
         const item = def.models[key];
         if (
@@ -184,7 +186,7 @@ export function dartServiceFromDefinition(
     name: string,
     def: ServiceDefinition,
     opts: ServiceOptions,
-) {
+): string {
     const rpcParts: string[] = [];
     const subServiceParts: Array<{
         name: string;
@@ -195,20 +197,25 @@ export function dartServiceFromDefinition(
     Object.keys(def).forEach((key) => {
         const item = def[key];
         if (isRpcDefinition(item)) {
-            rpcParts.push(dartRpcFromDefinition(key, item, opts));
+            const rpc = dartRpcFromDefinition(key, item, opts);
+            if (rpc) {
+                rpcParts.push(rpc);
+            }
             return;
         }
-        const subServiceName = pascalCase(`${serviceName}_${key}`);
-        const subService = dartServiceFromDefinition(
-            subServiceName,
-            item,
-            opts,
-        );
-        subServiceParts.push({
-            name: subServiceName,
-            key,
-            content: subService,
-        });
+        if (isServiceDefinition(item)) {
+            const subServiceName = pascalCase(`${serviceName}_${key}`);
+            const subService = dartServiceFromDefinition(
+                subServiceName,
+                item,
+                opts,
+            );
+            subServiceParts.push({
+                name: subServiceName,
+                key,
+                content: subService,
+            });
+        }
     });
     return `class ${serviceName}Service {
   final http.Client? _httpClient;
@@ -243,6 +250,12 @@ export function dartRpcFromDefinition(
     def: RpcDefinition,
     opts: DartClientGeneratorOptions,
 ): string {
+    if (def.transport !== "http") {
+        console.warn(
+            `[codegen-dart] WARNING: non-http RPCs not supported at this time`,
+        );
+        return "";
+    }
     let returnType:
         | `Future<String>`
         | "Future<int>"
