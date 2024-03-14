@@ -34,16 +34,19 @@ export function isArriConfig(input: unknown): input is ArriConfig {
         return false;
     }
     if ("generators" in input) {
-        if (!Array.isArray(input)) {
+        if (!Array.isArray(input.generators)) {
             return false;
         }
     }
-    if ("port" in input && typeof input.port !== "number") {
-        return false;
+    if ("port" in input) {
+        if (typeof input.port !== "number") {
+            return false;
+        }
+        if (Number.isNaN(input.port)) {
+            return false;
+        }
     }
-    if (Number.isNaN((input as any).port)) {
-        return false;
-    }
+
     if ("entry" in input && typeof input.entry !== "string") {
         return false;
     }
@@ -61,11 +64,7 @@ export function isResolvedArriConfig(
         (typeof input.procedureDir === "string" ||
             typeof input.procedureDir === "boolean") &&
         Array.isArray(input.procedureGlobPatterns) &&
-        Array.isArray(input.generators) &&
-        typeof input.buildDir === "string" &&
-        typeof input.esbuild === "object" &&
-        input.esbuild &&
-        !Array.isArray(input.esbuild)
+        Array.isArray(input.generators)
     );
 }
 
