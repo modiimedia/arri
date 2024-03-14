@@ -229,7 +229,7 @@ export function normalizeWhitespace(input: string) {
 export interface ClientGenerator<
     TOptions extends Record<string, any> | undefined,
 > {
-    generator: (def: AppDefinition) => any;
+    generator: (def: AppDefinition, isDevServer?: boolean) => any;
     options: TOptions;
 }
 

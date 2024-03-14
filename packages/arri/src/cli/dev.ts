@@ -179,7 +179,9 @@ async function generateClients(config: ResolvedArriConfig) {
         logger.log(`Generating client code...`);
         const clientCount = config.generators.length;
         await Promise.all(
-            config.generators.map((generator) => generator.generator(result)),
+            config.generators.map((generator) =>
+                generator.generator(result, true),
+            ),
         );
         logger.success(
             `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,
