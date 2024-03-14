@@ -1,13 +1,11 @@
 import fs, { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { defineCommand } from "citty";
-import { createConsola } from "consola";
 import Degit from "degit";
 import enquirer from "enquirer";
 import path from "pathe";
 import prettier from "prettier";
 import { kebabCase } from "scule";
-
-const logger = createConsola();
+import { logger } from "./_common";
 
 export default defineCommand({
     meta: {
@@ -46,19 +44,27 @@ export default defineCommand({
         }
         if (!type) {
             const { projectType } = await enquirer.prompt<{
-                projectType: "app" | "plugin";
+                projectType: "application" | "generator plugin";
             }>([
                 {
                     type: "select",
                     name: "projectType",
                     message: "What kind of project do you want to initialize?",
-                    choices: [
-                        { name: "application", value: "app" },
-                        { name: "generator plugin", value: "plugin" },
-                    ],
+                    choices: ["application", "generator plugin"],
                 },
             ]);
-            type = projectType;
+            switch (projectType) {
+                case "application":
+                    type = "app";
+                    break;
+                case "generator plugin":
+                    type = "plugin";
+                    break;
+                default:
+                    throw new Error(
+                        `Unknown project type "${projectType as any}"`,
+                    );
+            }
         }
         const dir = path.resolve(context.args.dir);
         if (!fs.existsSync(dir)) {
@@ -80,6 +86,7 @@ export default defineCommand({
                 await initPlugin(context.args.dir, context.args.force);
                 break;
             default:
+                logger.error(`Unknown app type: '${type as any}'"`);
                 break;
         }
         process.exit(0);
@@ -87,12 +94,9 @@ export default defineCommand({
 });
 
 async function initApp(dir: string, force: boolean) {
-    const degit = Degit(
-        "https://github.com/modiimedia/arri-starters/app-starter-ts",
-        {
-            force,
-        },
-    );
+    const degit = Degit("modiimedia/arri-starters/app-starter-ts", {
+        force,
+    });
     await degit.clone(dir);
     rmSync(path.resolve(dir, "pnpm-lock.yaml"));
     const packageJson = JSON.parse(
@@ -117,19 +121,15 @@ async function initApp(dir: string, force: boolean) {
             trailingComma: "all",
         }),
     );
-    logger.log(
-        `Project initialized in ${dir}. To get started:\ncd ${dir}\nnpm install\nnpm run dev`,
-    );
+    logger.success(`Project initialized in ${dir}!`);
+    logger.info(`To get started:\n- cd ${dir}\n- pnpm install\n- pnpm run dev`);
 }
 
 async function initPlugin(dir: string, force: boolean) {
     const name = kebabCase(dir);
-    const degit = Degit(
-        "https://github.com/modiimedia/arri-starters/generator-starter",
-        {
-            force,
-        },
-    );
+    const degit = Degit("modiimedia/arri-starters/generator-starter", {
+        force,
+    });
     await degit.clone(dir);
     rmSync(path.resolve(dir, "pnpm-lock.yaml"));
     let packageJson = readFileSync(path.resolve(dir, "package.json"), {
@@ -137,7 +137,6 @@ async function initPlugin(dir: string, force: boolean) {
     });
     packageJson = packageJson.replace(`"arri-generator-name"`, `"${name}"`);
     writeFileSync(path.resolve(dir, "package.json"), packageJson);
-    logger.log(
-        `Project initialized in ${dir}. To get started:\ncd ${dir}\nnpm install`,
-    );
+    logger.success(`Project initialized in ${dir}!`);
+    logger.info(`To get started:\n- cd ${dir}\n- pnpm install`);
 }
