@@ -597,7 +597,7 @@ $$User.compiledCode.serialize; // the generated serialization code
 
 ## Benchmarks
 
-_Last Updated: 2024-02-17_
+_Last Updated: 2024-03-14_
 
 All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
 
@@ -667,11 +667,11 @@ The following data was used in these benchmarks. Relevant schemas were created i
 
 | Library                                    | op/s      |
 | ------------------------------------------ | --------- |
-| Ajv - JTD (Compiled)                       | 2,125,422 |
-| **Arri (Compiled)**                        | 1,963,027 |
-| **Arri (Compiled) Validate and Serialize** | 1,873,083 |
-| JSON.stringify                             | 981,663   |
-| Arri                                       | 224,707   |
+| **Arri (Compiled)**                        | 4,892,713 |
+| **Arri (Compiled) Validate and Serialize** | 4,710,745 |
+| Ajv - JTD (Compiled)                       | 2,222,308 |
+| JSON.stringify                             | 1,318,842 |
+| Arri                                       | 582,747   |
 
 #### Coercion
 
