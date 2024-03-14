@@ -2,10 +2,10 @@ import fs from "node:fs";
 import { isAppDefinition, type AppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
-import consola from "consola";
 import { ofetch } from "ofetch";
 import path from "pathe";
-import { isResolvedArriConfig } from "../config";
+import { isArriConfig } from "../config";
+import { logger } from "./_common";
 
 export default defineCommand({
     args: {
@@ -65,13 +65,17 @@ export default defineCommand({
         }
         const configPath = path.resolve(args.config);
         const { config } = await loadConfig({ configFile: configPath });
-        if (!isResolvedArriConfig(config)) {
+        if (!isArriConfig(config)) {
             throw new Error(`Invalid arri config at ${args.config}`);
         }
-        consola.info(`Generating ${config.clientGenerators.length} clients`);
+        if (!config.generators?.length) {
+            logger.warn(`No generators specified in ${args.config}`);
+            process.exit(1);
+        }
+        logger.info(`Generating ${config.generators?.length} client(s)`);
         await Promise.allSettled(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            config.clientGenerators.map((gen) =>
+            config.generators.map((gen) =>
                 gen.generator(
                     def ?? {
                         arriSchemaVersion: "0.0.4",
@@ -81,5 +85,6 @@ export default defineCommand({
                 ),
             ),
         );
+        process.exit(0);
     },
 });

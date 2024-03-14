@@ -1,10 +1,10 @@
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { listenAndWatch } from "@joshmossas/listhen";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import chokidar from "chokidar";
 import { defineCommand } from "citty";
-import { createConsola } from "consola";
 import * as esbuild from "esbuild";
 import { ofetch } from "ofetch";
 import path from "pathe";
@@ -14,13 +14,12 @@ import {
     createAppWithRoutesModule,
     GEN_APP_FILE,
     GEN_SERVER_ENTRY_FILE,
+    logger,
     OUT_APP_FILE,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
     transpileFiles,
 } from "./_common";
-
-const logger = createConsola().withTag("arri");
 
 export default defineCommand({
     meta: {
@@ -42,6 +41,14 @@ export default defineCommand({
         });
         if (!isResolvedArriConfig(config)) {
             throw new Error("Unable to find config");
+        }
+        const appEntry = path.resolve(
+            config.rootDir,
+            config.srcDir,
+            config.entry,
+        );
+        if (!existsSync(appEntry)) {
+            throw new Error(`Unable to find entry at ${appEntry}`);
         }
         await startDevServer(config);
     },
@@ -138,7 +145,7 @@ async function startDevServer(config: ResolvedArriConfig) {
                     logger.error("ERROR", err);
                     bundleCreated = false;
                 }
-                if (bundleCreated && config.clientGenerators.length) {
+                if (bundleCreated && config.generators.length) {
                     setTimeout(async () => {
                         await generateClients(config);
                         bundleCreated = false;
@@ -170,11 +177,9 @@ async function generateClients(config: ResolvedArriConfig) {
             return;
         }
         logger.log(`Generating client code...`);
-        const clientCount = config.clientGenerators.length;
+        const clientCount = config.generators.length;
         await Promise.all(
-            config.clientGenerators.map((generator) =>
-                generator.generator(result),
-            ),
+            config.generators.map((generator) => generator.generator(result)),
         );
         logger.success(
             `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,

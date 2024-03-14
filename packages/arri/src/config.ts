@@ -3,8 +3,8 @@ import { type BuildOptions } from "esbuild";
 
 /* eslint-disable spaced-comment */
 export interface ArriConfig {
-    port: number;
-    entry: string;
+    port?: number;
+    entry?: string;
     serverEntry?: string;
     rootDir?: string;
     srcDir?: string;
@@ -13,7 +13,7 @@ export interface ArriConfig {
      * this defaults to ["***\/*\*.rpc.ts"]
      */
     procedureGlobPatterns?: string[];
-    clientGenerators?: Array<ClientGenerator<any>>;
+    generators?: Array<ClientGenerator<any>>;
     buildDir?: string;
     esbuild?: Omit<
         BuildOptions,
@@ -30,16 +30,24 @@ export interface ArriConfig {
 }
 
 export function isArriConfig(input: unknown): input is ArriConfig {
-    if (typeof input !== "object" || !input) {
+    if (typeof input !== "object" || input === null) {
         return false;
     }
-    return (
-        "port" in input &&
-        typeof input.port === "number" &&
-        !Number.isNaN(input.port) &&
-        "entry" in input &&
-        typeof input.entry === "string"
-    );
+    if ("generators" in input) {
+        if (!Array.isArray(input)) {
+            return false;
+        }
+    }
+    if ("port" in input && typeof input.port !== "number") {
+        return false;
+    }
+    if (Number.isNaN((input as any).port)) {
+        return false;
+    }
+    if ("entry" in input && typeof input.entry !== "string") {
+        return false;
+    }
+    return true;
 }
 export function isResolvedArriConfig(
     input: unknown,
@@ -53,7 +61,7 @@ export function isResolvedArriConfig(
         (typeof input.procedureDir === "string" ||
             typeof input.procedureDir === "boolean") &&
         Array.isArray(input.procedureGlobPatterns) &&
-        Array.isArray(input.clientGenerators) &&
+        Array.isArray(input.generators) &&
         typeof input.buildDir === "string" &&
         typeof input.esbuild === "object" &&
         input.esbuild &&
@@ -68,11 +76,11 @@ export const defaultConfig: Required<ArriConfig> = {
     rootDir: ".",
     srcDir: "src",
     entry: "app.ts",
+    serverEntry: "",
     procedureDir: "procedures",
     procedureGlobPatterns: ["**/*.rpc.ts"],
-    clientGenerators: [],
+    generators: [],
     buildDir: ".arri",
-    serverEntry: "",
     esbuild: {},
     https: false,
     http2: false,
@@ -87,8 +95,7 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
         procedureDir: config.procedureDir ?? defaultConfig.procedureDir,
         procedureGlobPatterns:
             config.procedureGlobPatterns ?? defaultConfig.procedureGlobPatterns,
-        clientGenerators:
-            config.clientGenerators ?? defaultConfig.clientGenerators,
+        generators: config.generators ?? defaultConfig.generators,
         buildDir: config.buildDir ?? defaultConfig.buildDir,
         esbuild: config.esbuild ?? defaultConfig.esbuild,
         serverEntry: config.serverEntry ?? "",
