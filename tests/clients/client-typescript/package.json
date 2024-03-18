@@ -6,7 +6,5 @@
     "arri-validate": "workspace:*",
     "ofetch": "^1.3.3"
   },
-  "devDependencies": {
-    "vitest": "1.3.1"
-  }
+  "devDependencies": {}
 }
