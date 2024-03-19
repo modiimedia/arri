@@ -5,7 +5,7 @@ import {
     arriRequest,
     arriSseRequest,
     type SseOptions,
-    arriWebsocketRequest,
+    arriWsRequest,
     type WsOptions,
 } from "arri-client";
 
@@ -203,8 +203,8 @@ export class TestClientMiscTestsService {
             options,
         );
     }
-    websocketRpc(options: WsOptions<WsMessageResponse>) {
-        return arriWebsocketRequest<WsMessageParams, WsMessageResponse>({
+    websocketRpc(options: WsOptions<WsMessageResponse> = {}) {
+        return arriWsRequest<WsMessageParams, WsMessageResponse>({
             url: `${this.baseUrl}/rpcs/misc-tests/websocket-rpc`,
             headers: this.headers,
             parser: $$WsMessageResponse.parse,

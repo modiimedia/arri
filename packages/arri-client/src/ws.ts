@@ -9,11 +9,11 @@ interface WsControllerOptions<TParams, TResponse> {
     url: string;
     serializer: (input: TParams) => string;
     parser: (input: unknown) => TResponse;
-    onMessage: WsMessageHook<TResponse>;
-    onError: WsErrorHook;
-    onConnectionError: WsErrorHook;
-    onOpen: () => any;
-    onClose: () => any;
+    onMessage?: WsMessageHook<TResponse>;
+    onError?: WsErrorHook;
+    onConnectionError?: WsErrorHook;
+    onOpen?: () => any;
+    onClose?: () => any;
 }
 
 export interface WsOptions<TResponse> {
@@ -46,7 +46,7 @@ function connectWebsocket(url: string, protocol?: string) {
     });
 }
 
-export function arriWebsocketRequest<
+export function arriWsRequest<
     TParams extends Record<any, any> | undefined = undefined,
     TResponse = any,
 >(
@@ -68,11 +68,11 @@ export function arriWebsocketRequest<
             url,
             parser: opts.parser,
             serializer: opts.serializer ?? ((_) => ""),
-            onOpen: opts.onOpen ?? (() => {}),
-            onClose: opts.onClose ?? (() => {}),
-            onMessage: opts.onMessage ?? (() => {}),
-            onError: opts.onError ?? (() => {}),
-            onConnectionError: opts.onConnectionError ?? (() => {}),
+            onOpen: opts.onOpen,
+            onClose: opts.onClose,
+            onMessage: opts.onMessage,
+            onError: opts.onError,
+            onConnectionError: opts.onConnectionError,
         });
         return controller;
     } catch (err) {
@@ -81,7 +81,7 @@ export function arriWebsocketRequest<
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             opts.onConnectionError(err as any);
         }
-        return arriWebsocketRequest(opts, retryCount + 1);
+        return arriWsRequest(opts, retryCount + 1);
     }
 }
 
@@ -198,7 +198,7 @@ function parsedWsResponse(input: string): {
             continue;
         }
         if (trimmedLine.startsWith("data: ")) {
-            data = trimmedLine.substring(5);
+            data = trimmedLine.substring(5).trim();
             continue;
         }
     }

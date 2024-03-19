@@ -472,7 +472,21 @@ test("Websocket Requests", async () => {
     let messageCount = 0;
     const errorCount = 0;
     const msgMap: Record<string, WsMessageResponse> = {};
-    const controller = client.miscTests.websocketRpc({});
+    const controller = client.miscTests.websocketRpc({
+        onMessage(msg) {
+            messageCount++;
+            msgMap[msg.entityId] = msg;
+        },
+        onConnectionError(err) {
+            console.error(err);
+            throw new ArriRequestErrorInstance({
+                statusCode: err.statusCode,
+                statusMessage: err.statusMessage,
+                data: err.data,
+                stack: err.stack,
+            });
+        },
+    });
     controller.onOpen = () => {
         connectionCount++;
         controller.send({
@@ -494,19 +508,15 @@ test("Websocket Requests", async () => {
             y: -5,
         });
     };
-    controller.onMessage = (msg) => {
-        messageCount++;
-        msgMap[msg.entityId] = msg;
-    };
     controller.connect();
     await new Promise((resolve) => {
         setTimeout(() => {
             resolve(true);
-        }, 500);
+        }, 2000);
     });
     controller.close();
-    expect(messageCount).toBe(3);
     expect(connectionCount).toBe(1);
+    expect(messageCount).toBe(3);
     expect(errorCount).toBe(0);
     expect(msgMap["1"].x).toBe(100);
     expect(msgMap["1"].y).toBe(200);

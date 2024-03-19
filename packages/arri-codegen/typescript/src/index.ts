@@ -119,7 +119,7 @@ export async function createTypescriptClient(
         importParts.push("type SseOptions");
     }
     if (rpcOptions.hasWsProcedures) {
-        importParts.push("arriWebsocketRequest");
+        importParts.push("arriWsRequest");
         importParts.push("type WsOptions");
     }
 
@@ -259,8 +259,8 @@ export function tsWsRpcFromDefinition(
     if (hasOutput) {
         parserPart = `$$${responseName}.parse`;
     }
-    return `${getJsDocComment(schema)}${key}(options: WsOptions<${responseName}>) {
-        return arriWebsocketRequest<${paramName}, ${responseName}>({
+    return `${getJsDocComment(schema)}${key}(options: WsOptions<${responseName}> = {}) {
+        return arriWsRequest<${paramName}, ${responseName}>({
             url: \`\${this.baseUrl}${schema.path}\`,
             headers: this.headers,
             parser: ${parserPart},

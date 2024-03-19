@@ -153,6 +153,7 @@ export function registerWebsocketRpc(
     }
 
     const handler = defineWebSocketHandler({
+        upgrade(req) {},
         open(peer) {
             const urlParts = peer.url.split("?");
             const context: WsPeerContext = {
@@ -212,36 +213,5 @@ export function createWsRpcDefinition(
         response: getRpcResponseName(rpcName, rpc),
         isDeprecated: rpc.isDeprecated,
         description: rpc.description,
-    };
-}
-
-export function parseWsPayload(input: string): {
-    type: "error" | "message" | "unknown";
-    data: string;
-} {
-    const lines = input.split("\n");
-    let type: "error" | "message" | "unknown" = "unknown";
-    let data = "";
-    for (const line of lines) {
-        if (line.startsWith("type: ")) {
-            switch (line.replace("type: ", "").trim().toLowerCase()) {
-                case "error":
-                    type = "error";
-                    break;
-                case "message":
-                    type = "message";
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (line.startsWith("data: ")) {
-            const content = line.substring(5).trim();
-            data = content;
-        }
-    }
-    return {
-        type,
-        data,
     };
 }
