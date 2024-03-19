@@ -37,9 +37,7 @@ export default defineWebsocketRpc({
     response: ResponseSchema,
     handler: {
         onClose: (peer) => {},
-        onOpen: (peer) => {
-            console.log(peer.url);
-        },
+        onOpen: (peer) => {},
         onMessage: async (peer, message) => {
             switch (message.type) {
                 case "CREATE_ENTITY":

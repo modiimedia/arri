@@ -45,7 +45,7 @@ interface WsPeerOpts<TResponse> {
 
 export interface WsPeerContext extends Record<string, any> {
     rpcName: string;
-    query?: Record<string, string>;
+    queryParams?: Record<string, string>;
     clientAddress?: string;
 }
 
@@ -71,10 +71,43 @@ export class WsPeer<TResponse> {
             return;
         }
         const payload = this._validator.serialize(data);
-        return this._peer.send(payload);
+        return this._peer.send(`type: message\ndata: ${payload}`);
     }
 
-    close() {}
+    sendError(err: ErrorResponse) {
+        return this._peer.send(`type: error\ndata: ${JSON.stringify(err)}`);
+    }
+
+    close() {
+        throw new Error("close() is not yet implemented on WsPeer");
+    }
+
+    subscribe(channel: string) {
+        this._peer.subscribe(channel);
+    }
+
+    unsubscribe(channel: string) {
+        this._peer.unsubscribe(channel);
+    }
+
+    publish(channel: string, message: TResponse) {
+        if (!this._validator) {
+            return;
+        }
+        if (!this._validator.validate(message)) {
+            const err: ErrorResponse = {
+                statusCode: 500,
+                statusMessage: `Error serializing message on server. The payload doesn't match the specified schema.`,
+                data: {
+                    payload: message,
+                },
+            };
+            this.sendError(err);
+            return;
+        }
+        const payload = this._validator.serialize(message);
+        this._peer.publish(channel, payload);
+    }
 
     readyState() {
         return this._peer.readyState;
@@ -84,7 +117,10 @@ export class WsPeer<TResponse> {
 export interface WebSocketRpcHandler<TParams, TResponse> {
     onOpen: (peer: WsPeer<TResponse>) => void;
     onMessage: (peer: WsPeer<TResponse>, message: TParams) => void;
-    onClose: (peer: WsPeer<TResponse>) => void;
+    onClose: (
+        peer: WsPeer<TResponse>,
+        details: { code?: number; reason?: string },
+    ) => void;
     onError: (peer: WsPeer<TResponse>, error: WSError) => void;
 }
 
@@ -124,22 +160,20 @@ export function registerWebsocketRpc(
                 clientAddress: peer.addr,
             };
             if (urlParts.length > 1) {
-                const queryStr = urlParts[urlParts.length - 1];
-                const queryParts = queryStr.split("&");
+                urlParts.shift();
+                const queryStr = new URLSearchParams(urlParts.join("?"));
                 const query: Record<string, string> = {};
-                for (const part of queryParts) {
-                    const [key, val] = part.split("=");
-                    query[key.trim()] = val.trim();
+                for (const [key, val] of queryStr.entries()) {
+                    query[key] = val;
                 }
-                context.query = query;
+                context.queryParams = query;
             }
             const wsPeer = new WsPeer(peer, {
                 validator: responseValidator,
                 context,
             });
             peer.ctx.__wsPeer = wsPeer;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            rpc.handler.onOpen(peer.ctx.__wsPeer);
+            rpc.handler.onOpen(peer.ctx.__wsPeer as WsPeer<any>);
         },
         message(peer, message) {
             if (!paramValidator) {
@@ -148,20 +182,18 @@ export function registerWebsocketRpc(
             const data = paramValidator.safeParse(message.text());
             if (!data.success) {
                 const errorResponse: ErrorResponse = {
-                    statusCode: 4000,
+                    statusCode: 400,
                     statusMessage: data.error.message,
                     data: data.error.errors,
                     stack: data.error.stack,
                 };
-                peer.send(JSON.stringify(errorResponse));
+                (peer.ctx.__wsPeer as WsPeer<any>).sendError(errorResponse);
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            rpc.handler.onMessage(peer.ctx.__wsPeer, data.value);
+            rpc.handler.onMessage(peer.ctx.__wsPeer as WsPeer<any>, data.value);
         },
         close(peer, details) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            rpc.handler.onClose(peer.ctx.__wsPeer);
+            rpc.handler.onClose(peer.ctx.__wsPeer as WsPeer<any>, details);
         },
     });
 
@@ -180,5 +212,36 @@ export function createWsRpcDefinition(
         response: getRpcResponseName(rpcName, rpc),
         isDeprecated: rpc.isDeprecated,
         description: rpc.description,
+    };
+}
+
+export function parseWsPayload(input: string): {
+    type: "error" | "message" | "unknown";
+    data: string;
+} {
+    const lines = input.split("\n");
+    let type: "error" | "message" | "unknown" = "unknown";
+    let data = "";
+    for (const line of lines) {
+        if (line.startsWith("type: ")) {
+            switch (line.replace("type: ", "").trim().toLowerCase()) {
+                case "error":
+                    type = "error";
+                    break;
+                case "message":
+                    type = "message";
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (line.startsWith("data: ")) {
+            const content = line.substring(5).trim();
+            data = content;
+        }
+    }
+    return {
+        type,
+        data,
     };
 }
