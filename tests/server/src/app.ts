@@ -2,6 +2,7 @@ import {
     ArriApp,
     defineError,
     defineMiddleware,
+    defineWebSocketHandler,
     getHeader,
     handleCors,
 } from "arri";
@@ -20,8 +21,29 @@ const app = new ArriApp({
     },
 });
 
+app.h3Router.use(
+    "/_ws",
+    defineWebSocketHandler({
+        open(peer) {
+            console.log("[ws] open", peer);
+        },
+        message(peer, message) {
+            console.log("[ws] message", peer, message);
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            peer.send(`you sent "${message}"`);
+        },
+        close(peer, event) {
+            console.log("[ws] close", peer, event);
+        },
+        error(peer, error) {
+            console.log("[ws] error", peer, error);
+        },
+    }),
+);
+
 app.use(
     defineMiddleware((event) => {
+        console.log(event);
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&

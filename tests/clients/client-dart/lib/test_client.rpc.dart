@@ -2629,6 +2629,62 @@ class ChatMessageUrl implements ChatMessage {
   }
 }
 
+class MiscTestsWsRpcParams {
+  final String name;
+  const MiscTestsWsRpcParams({
+    required this.name,
+  });
+  factory MiscTestsWsRpcParams.fromJson(Map<String, dynamic> json) {
+    return MiscTestsWsRpcParams(
+      name: typeFromDynamic<String>(json["name"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "name": name,
+    };
+
+    return __result;
+  }
+
+  MiscTestsWsRpcParams copyWith({
+    String? name,
+  }) {
+    return MiscTestsWsRpcParams(
+      name: name ?? this.name,
+    );
+  }
+}
+
+class MiscTestsWsRpcResponse {
+  final String message;
+  const MiscTestsWsRpcResponse({
+    required this.message,
+  });
+  factory MiscTestsWsRpcResponse.fromJson(Map<String, dynamic> json) {
+    return MiscTestsWsRpcResponse(
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "message": message,
+    };
+
+    return __result;
+  }
+
+  MiscTestsWsRpcResponse copyWith({
+    String? message,
+  }) {
+    return MiscTestsWsRpcResponse(
+      message: message ?? this.message,
+    );
+  }
+}
+
 class PostParams {
   final String postId;
   const PostParams({

@@ -1,7 +1,8 @@
 import { type ASchema, type AObjectSchema } from "arri-validate";
 import { type ModelMap } from "./app";
 import { type ArriRoute } from "./route";
-import { type NamedRpc } from "./rpc";
+import { type RpcParamSchema, type NamedRpc } from "./rpc";
+import { type NamedWebsocketRpc } from "./websocketRpc";
 
 export interface ArriRouterBase {
     rpc: <
@@ -10,6 +11,12 @@ export interface ArriRouterBase {
         TResponse extends AObjectSchema<any, any> | undefined,
     >(
         procedure: NamedRpc<TIsEventStream, TParams, TResponse>,
+    ) => void;
+    wsRpc: <
+        TParams extends RpcParamSchema | undefined,
+        TResponse extends RpcParamSchema | undefined,
+    >(
+        procedure: NamedWebsocketRpc<TParams, TResponse>,
     ) => void;
     route: <
         TPath extends string,
@@ -24,7 +31,9 @@ export interface ArriRouterBase {
 }
 
 export class ArriRouter implements ArriRouterBase {
-    private readonly procedures: Array<NamedRpc<any, any, any>> = [];
+    private readonly procedures: Array<
+        NamedRpc<any, any, any> | NamedWebsocketRpc<any, any>
+    > = [];
 
     private readonly routes: Array<ArriRoute<any>> = [];
 
@@ -35,6 +44,13 @@ export class ArriRouter implements ArriRouterBase {
         TParams extends AObjectSchema<any, any> | undefined = undefined,
         TResponse extends AObjectSchema<any, any> | undefined = undefined,
     >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
+        this.procedures.push(procedure);
+    }
+
+    wsRpc<
+        TParams extends RpcParamSchema | undefined,
+        TResponse extends RpcParamSchema | undefined,
+    >(procedure: NamedWebsocketRpc<TParams, TResponse>) {
         this.procedures.push(procedure);
     }
 

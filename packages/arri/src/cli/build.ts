@@ -171,6 +171,7 @@ import app from './${OUT_APP_FILE}';
 void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? ${config.port},
     public: true,
+    ws: true,
     http2: ${config.http2 ?? false},
     ${httpsString}
 });`;
