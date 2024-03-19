@@ -5,8 +5,9 @@ import {
     a,
     type InferType,
 } from "arri-validate";
-import { type WSError } from "crossws";
+import { type Peer, type WSError } from "crossws";
 import { defineWebSocketHandler, type Router } from "h3";
+import { type ErrorResponse } from "./errors";
 import {
     getRpcParamName,
     getRpcResponseName,
@@ -37,22 +38,29 @@ export interface WebsocketRpc<
     >;
 }
 
-interface WsSender {
-    send: (data: string) => any;
-}
-
 interface WsPeerOpts<TResponse> {
     validator?: CompiledValidator<ASchema<TResponse>>;
-    sender: WsSender;
+    context: WsPeerContext;
+}
+
+export interface WsPeerContext extends Record<string, any> {
+    rpcName: string;
+    query?: Record<string, string>;
+    clientAddress?: string;
 }
 
 export class WsPeer<TResponse> {
-    _sender: WsSender;
-    _validator?: CompiledValidator<ASchema<TResponse>>;
+    private readonly _peer: Peer;
+    private readonly _validator?: CompiledValidator<ASchema<TResponse>>;
 
-    constructor(opts: WsPeerOpts<TResponse>) {
+    context: WsPeerContext;
+    url: string;
+
+    constructor(peer: Peer, opts: WsPeerOpts<TResponse>) {
+        this._peer = peer;
         this._validator = opts.validator;
-        this._sender = opts.sender;
+        this.url = peer.url;
+        this.context = opts.context;
     }
 
     send(data: TResponse) {
@@ -63,7 +71,13 @@ export class WsPeer<TResponse> {
             return;
         }
         const payload = this._validator.serialize(data);
-        return this._sender.send(payload);
+        return this._peer.send(payload);
+    }
+
+    close() {}
+
+    readyState() {
+        return this._peer.readyState;
     }
 }
 
@@ -104,23 +118,46 @@ export function registerWebsocketRpc(
 
     const handler = defineWebSocketHandler({
         open(peer) {
-            const sender: WsSender = {
-                send: (data) => peer.send(data),
+            const urlParts = peer.url.split("?");
+            const context: WsPeerContext = {
+                rpcName: rpc.name,
+                clientAddress: peer.addr,
             };
-            peer.ctx.__wsPeer = new WsPeer({
+            if (urlParts.length > 1) {
+                const queryStr = urlParts[urlParts.length - 1];
+                const queryParts = queryStr.split("&");
+                const query: Record<string, string> = {};
+                for (const part of queryParts) {
+                    const [key, val] = part.split("=");
+                    query[key.trim()] = val.trim();
+                }
+                context.query = query;
+            }
+            const wsPeer = new WsPeer(peer, {
                 validator: responseValidator,
-                sender,
+                context,
             });
+            peer.ctx.__wsPeer = wsPeer;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             rpc.handler.onOpen(peer.ctx.__wsPeer);
         },
         message(peer, message) {
-            const data = paramValidator?.parse(message.text());
-            if (!data) {
+            if (!paramValidator) {
+                return;
+            }
+            const data = paramValidator.safeParse(message.text());
+            if (!data.success) {
+                const errorResponse: ErrorResponse = {
+                    statusCode: 4000,
+                    statusMessage: data.error.message,
+                    data: data.error.errors,
+                    stack: data.error.stack,
+                };
+                peer.send(JSON.stringify(errorResponse));
                 return;
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            rpc.handler.onMessage(peer.ctx.__wsPeer, data);
+            rpc.handler.onMessage(peer.ctx.__wsPeer, data.value);
         },
         close(peer, details) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

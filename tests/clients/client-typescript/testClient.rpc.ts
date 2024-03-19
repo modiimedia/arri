@@ -9542,11 +9542,12 @@ export interface ChatMessageUrl {
     url: string;
 }
 
-export interface MiscTestsWsRpcParams {
-    name: string;
-}
-const $$MiscTestsWsRpcParams = {
-    parse(input: Record<any, any>): MiscTestsWsRpcParams {
+export type WsMessageParams =
+    | WsMessageParamsCreateEntity
+    | WsMessageParamsUpdateEntity
+    | WsMessageParamsDisconnect;
+const $$WsMessageParams = {
+    parse(input: Record<any, any>): WsMessageParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
                 `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
@@ -9557,89 +9558,431 @@ const $$MiscTestsWsRpcParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.name === "string") {
-                    __D1.name = json.name;
-                } else {
-                    $fallback(
-                        "/name",
-                        "/properties/name/type",
-                        "Expected string at /name",
-                    );
+                switch (json.type) {
+                    case "CREATE_ENTITY": {
+                        if (typeof json === "object" && json !== null) {
+                            const __D1 = {};
+                            __D1.type = "CREATE_ENTITY";
+                            if (typeof json.entityId === "string") {
+                                __D1.entityId = json.entityId;
+                            } else {
+                                $fallback(
+                                    "/entityId",
+                                    "/mapping/properties/entityId/type",
+                                    "Expected string at /entityId",
+                                );
+                            }
+                            if (
+                                typeof json.x === "number" &&
+                                !Number.isNaN(json.x)
+                            ) {
+                                __D1.x = json.x;
+                            } else {
+                                $fallback(
+                                    "/x",
+                                    "/mapping/properties/x/type",
+                                    "Expected number at /x",
+                                );
+                            }
+                            if (
+                                typeof json.y === "number" &&
+                                !Number.isNaN(json.y)
+                            ) {
+                                __D1.y = json.y;
+                            } else {
+                                $fallback(
+                                    "/y",
+                                    "/mapping/properties/y/type",
+                                    "Expected number at /y",
+                                );
+                            }
+                            result = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "UPDATE_ENTITY": {
+                        if (typeof json === "object" && json !== null) {
+                            const __D1 = {};
+                            __D1.type = "UPDATE_ENTITY";
+                            if (typeof json.entityId === "string") {
+                                __D1.entityId = json.entityId;
+                            } else {
+                                $fallback(
+                                    "/entityId",
+                                    "/mapping/properties/entityId/type",
+                                    "Expected string at /entityId",
+                                );
+                            }
+                            if (
+                                typeof json.x === "number" &&
+                                !Number.isNaN(json.x)
+                            ) {
+                                __D1.x = json.x;
+                            } else {
+                                $fallback(
+                                    "/x",
+                                    "/mapping/properties/x/type",
+                                    "Expected number at /x",
+                                );
+                            }
+                            if (
+                                typeof json.y === "number" &&
+                                !Number.isNaN(json.y)
+                            ) {
+                                __D1.y = json.y;
+                            } else {
+                                $fallback(
+                                    "/y",
+                                    "/mapping/properties/y/type",
+                                    "Expected number at /y",
+                                );
+                            }
+                            result = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "DISCONNECT": {
+                        if (typeof json === "object" && json !== null) {
+                            const __D1 = {};
+                            __D1.type = "DISCONNECT";
+                            if (typeof json.reason === "string") {
+                                __D1.reason = json.reason;
+                            } else {
+                                $fallback(
+                                    "/reason",
+                                    "/mapping/properties/reason/type",
+                                    "Expected string at /reason",
+                                );
+                            }
+                            result = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    default:
+                        $fallback(
+                            "",
+                            "/mapping",
+                            "json.type did not match one of the specified values",
+                        );
+                        break;
                 }
-                result = __D1;
             } else {
-                $fallback("", "", "Expected object");
+                $fallback("", "", "Expected Object.");
             }
             return result;
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.name === "string") {
-                __D1.name = input.name;
-            } else {
-                $fallback(
-                    "/name",
-                    "/properties/name/type",
-                    "Expected string at /name",
-                );
+            switch (input.type) {
+                case "CREATE_ENTITY": {
+                    if (typeof input === "object" && input !== null) {
+                        const __D1 = {};
+                        __D1.type = "CREATE_ENTITY";
+                        if (typeof input.entityId === "string") {
+                            __D1.entityId = input.entityId;
+                        } else {
+                            $fallback(
+                                "/entityId",
+                                "/mapping/properties/entityId/type",
+                                "Expected string at /entityId",
+                            );
+                        }
+                        if (
+                            typeof input.x === "number" &&
+                            !Number.isNaN(input.x)
+                        ) {
+                            __D1.x = input.x;
+                        } else {
+                            $fallback(
+                                "/x",
+                                "/mapping/properties/x/type",
+                                "Expected number at /x",
+                            );
+                        }
+                        if (
+                            typeof input.y === "number" &&
+                            !Number.isNaN(input.y)
+                        ) {
+                            __D1.y = input.y;
+                        } else {
+                            $fallback(
+                                "/y",
+                                "/mapping/properties/y/type",
+                                "Expected number at /y",
+                            );
+                        }
+                        result = __D1;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                case "UPDATE_ENTITY": {
+                    if (typeof input === "object" && input !== null) {
+                        const __D1 = {};
+                        __D1.type = "UPDATE_ENTITY";
+                        if (typeof input.entityId === "string") {
+                            __D1.entityId = input.entityId;
+                        } else {
+                            $fallback(
+                                "/entityId",
+                                "/mapping/properties/entityId/type",
+                                "Expected string at /entityId",
+                            );
+                        }
+                        if (
+                            typeof input.x === "number" &&
+                            !Number.isNaN(input.x)
+                        ) {
+                            __D1.x = input.x;
+                        } else {
+                            $fallback(
+                                "/x",
+                                "/mapping/properties/x/type",
+                                "Expected number at /x",
+                            );
+                        }
+                        if (
+                            typeof input.y === "number" &&
+                            !Number.isNaN(input.y)
+                        ) {
+                            __D1.y = input.y;
+                        } else {
+                            $fallback(
+                                "/y",
+                                "/mapping/properties/y/type",
+                                "Expected number at /y",
+                            );
+                        }
+                        result = __D1;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                case "DISCONNECT": {
+                    if (typeof input === "object" && input !== null) {
+                        const __D1 = {};
+                        __D1.type = "DISCONNECT";
+                        if (typeof input.reason === "string") {
+                            __D1.reason = input.reason;
+                        } else {
+                            $fallback(
+                                "/reason",
+                                "/mapping/properties/reason/type",
+                                "Expected string at /reason",
+                            );
+                        }
+                        result = __D1;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                default:
+                    $fallback(
+                        "",
+                        "/mapping",
+                        "input.type did not match one of the specified values",
+                    );
+                    break;
             }
-            result = __D1;
         } else {
-            $fallback("", "", "Expected object");
+            $fallback("", "", "Expected Object.");
         }
         return result;
     },
-    serialize(input: MiscTestsWsRpcParams): string {
+    serialize(input: WsMessageParams): string {
         let json = "";
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"name":`;
-        if (input.name.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.name.length; i++) {
-                __point__ = input.name.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+        switch (input.type) {
+            case "CREATE_ENTITY": {
+                json += "{";
+                json += `"type":"CREATE_ENTITY"`;
+                json += `,"entityId":`;
+                if (input.entityId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.entityId.length; i++) {
+                        __point__ = input.entityId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.entityId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.entityId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.entityId}"`;
+                        } else {
+                            json += `"${__result__}${input.entityId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.entityId.length < 5000 &&
+                    !STR_ESCAPE.test(input.entityId)
                 ) {
-                    json += JSON.stringify(input.name);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.name.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.name}"`;
+                    json += `"${input.entityId}"`;
                 } else {
-                    json += `"${__result__}${input.name.slice(__last__)}"`;
+                    json += JSON.stringify(input.entityId);
                 }
+
+                if (Number.isNaN(input.x)) {
+                    throw new Error("Expected number at /x got NaN");
+                }
+                json += `,"x":${input.x}`;
+
+                if (Number.isNaN(input.y)) {
+                    throw new Error("Expected number at /y got NaN");
+                }
+                json += `,"y":${input.y}`;
+                json += "}";
+                break;
             }
-        } else if (input.name.length < 5000 && !STR_ESCAPE.test(input.name)) {
-            json += `"${input.name}"`;
-        } else {
-            json += JSON.stringify(input.name);
+            case "UPDATE_ENTITY": {
+                json += "{";
+                json += `"type":"UPDATE_ENTITY"`;
+                json += `,"entityId":`;
+                if (input.entityId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.entityId.length; i++) {
+                        __point__ = input.entityId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.entityId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.entityId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.entityId}"`;
+                        } else {
+                            json += `"${__result__}${input.entityId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.entityId.length < 5000 &&
+                    !STR_ESCAPE.test(input.entityId)
+                ) {
+                    json += `"${input.entityId}"`;
+                } else {
+                    json += JSON.stringify(input.entityId);
+                }
+
+                if (Number.isNaN(input.x)) {
+                    throw new Error("Expected number at /x got NaN");
+                }
+                json += `,"x":${input.x}`;
+
+                if (Number.isNaN(input.y)) {
+                    throw new Error("Expected number at /y got NaN");
+                }
+                json += `,"y":${input.y}`;
+                json += "}";
+                break;
+            }
+            case "DISCONNECT": {
+                json += "{";
+                json += `"type":"DISCONNECT"`;
+                json += `,"reason":`;
+                if (input.reason.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.reason.length; i++) {
+                        __point__ = input.reason.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.reason);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.reason.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.reason}"`;
+                        } else {
+                            json += `"${__result__}${input.reason.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.reason.length < 5000 &&
+                    !STR_ESCAPE.test(input.reason)
+                ) {
+                    json += `"${input.reason}"`;
+                } else {
+                    json += JSON.stringify(input.reason);
+                }
+                json += "}";
+                break;
+            }
         }
-        json += "}";
         return json;
     },
 };
-
-export interface MiscTestsWsRpcResponse {
-    message: string;
+export interface WsMessageParamsCreateEntity {
+    type: "CREATE_ENTITY";
+    entityId: string;
+    x: number;
+    y: number;
 }
-const $$MiscTestsWsRpcResponse = {
-    parse(input: Record<any, any>): MiscTestsWsRpcResponse {
+
+export interface WsMessageParamsUpdateEntity {
+    type: "UPDATE_ENTITY";
+    entityId: string;
+    x: number;
+    y: number;
+}
+
+export interface WsMessageParamsDisconnect {
+    type: "DISCONNECT";
+    reason: string;
+}
+
+export type WsMessageResponse =
+    | WsMessageResponseEntityCreated
+    | WsMessageResponseEntityUpdated;
+const $$WsMessageResponse = {
+    parse(input: Record<any, any>): WsMessageResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
                 `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
@@ -9650,86 +9993,338 @@ const $$MiscTestsWsRpcResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.message === "string") {
-                    __D1.message = json.message;
-                } else {
-                    $fallback(
-                        "/message",
-                        "/properties/message/type",
-                        "Expected string at /message",
-                    );
+                switch (json.type) {
+                    case "ENTITY_CREATED": {
+                        if (typeof json === "object" && json !== null) {
+                            const __D1 = {};
+                            __D1.type = "ENTITY_CREATED";
+                            if (typeof json.entityId === "string") {
+                                __D1.entityId = json.entityId;
+                            } else {
+                                $fallback(
+                                    "/entityId",
+                                    "/mapping/properties/entityId/type",
+                                    "Expected string at /entityId",
+                                );
+                            }
+                            if (
+                                typeof json.x === "number" &&
+                                !Number.isNaN(json.x)
+                            ) {
+                                __D1.x = json.x;
+                            } else {
+                                $fallback(
+                                    "/x",
+                                    "/mapping/properties/x/type",
+                                    "Expected number at /x",
+                                );
+                            }
+                            if (
+                                typeof json.y === "number" &&
+                                !Number.isNaN(json.y)
+                            ) {
+                                __D1.y = json.y;
+                            } else {
+                                $fallback(
+                                    "/y",
+                                    "/mapping/properties/y/type",
+                                    "Expected number at /y",
+                                );
+                            }
+                            result = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "ENTITY_UPDATED": {
+                        if (typeof json === "object" && json !== null) {
+                            const __D1 = {};
+                            __D1.type = "ENTITY_UPDATED";
+                            if (typeof json.entityId === "string") {
+                                __D1.entityId = json.entityId;
+                            } else {
+                                $fallback(
+                                    "/entityId",
+                                    "/mapping/properties/entityId/type",
+                                    "Expected string at /entityId",
+                                );
+                            }
+                            if (
+                                typeof json.x === "number" &&
+                                !Number.isNaN(json.x)
+                            ) {
+                                __D1.x = json.x;
+                            } else {
+                                $fallback(
+                                    "/x",
+                                    "/mapping/properties/x/type",
+                                    "Expected number at /x",
+                                );
+                            }
+                            if (
+                                typeof json.y === "number" &&
+                                !Number.isNaN(json.y)
+                            ) {
+                                __D1.y = json.y;
+                            } else {
+                                $fallback(
+                                    "/y",
+                                    "/mapping/properties/y/type",
+                                    "Expected number at /y",
+                                );
+                            }
+                            result = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    default:
+                        $fallback(
+                            "",
+                            "/mapping",
+                            "json.type did not match one of the specified values",
+                        );
+                        break;
                 }
-                result = __D1;
             } else {
-                $fallback("", "", "Expected object");
+                $fallback("", "", "Expected Object.");
             }
             return result;
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.message === "string") {
-                __D1.message = input.message;
-            } else {
-                $fallback(
-                    "/message",
-                    "/properties/message/type",
-                    "Expected string at /message",
-                );
+            switch (input.type) {
+                case "ENTITY_CREATED": {
+                    if (typeof input === "object" && input !== null) {
+                        const __D1 = {};
+                        __D1.type = "ENTITY_CREATED";
+                        if (typeof input.entityId === "string") {
+                            __D1.entityId = input.entityId;
+                        } else {
+                            $fallback(
+                                "/entityId",
+                                "/mapping/properties/entityId/type",
+                                "Expected string at /entityId",
+                            );
+                        }
+                        if (
+                            typeof input.x === "number" &&
+                            !Number.isNaN(input.x)
+                        ) {
+                            __D1.x = input.x;
+                        } else {
+                            $fallback(
+                                "/x",
+                                "/mapping/properties/x/type",
+                                "Expected number at /x",
+                            );
+                        }
+                        if (
+                            typeof input.y === "number" &&
+                            !Number.isNaN(input.y)
+                        ) {
+                            __D1.y = input.y;
+                        } else {
+                            $fallback(
+                                "/y",
+                                "/mapping/properties/y/type",
+                                "Expected number at /y",
+                            );
+                        }
+                        result = __D1;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                case "ENTITY_UPDATED": {
+                    if (typeof input === "object" && input !== null) {
+                        const __D1 = {};
+                        __D1.type = "ENTITY_UPDATED";
+                        if (typeof input.entityId === "string") {
+                            __D1.entityId = input.entityId;
+                        } else {
+                            $fallback(
+                                "/entityId",
+                                "/mapping/properties/entityId/type",
+                                "Expected string at /entityId",
+                            );
+                        }
+                        if (
+                            typeof input.x === "number" &&
+                            !Number.isNaN(input.x)
+                        ) {
+                            __D1.x = input.x;
+                        } else {
+                            $fallback(
+                                "/x",
+                                "/mapping/properties/x/type",
+                                "Expected number at /x",
+                            );
+                        }
+                        if (
+                            typeof input.y === "number" &&
+                            !Number.isNaN(input.y)
+                        ) {
+                            __D1.y = input.y;
+                        } else {
+                            $fallback(
+                                "/y",
+                                "/mapping/properties/y/type",
+                                "Expected number at /y",
+                            );
+                        }
+                        result = __D1;
+                    } else {
+                        $fallback("", "/mapping", "Expected object");
+                    }
+                    break;
+                }
+                default:
+                    $fallback(
+                        "",
+                        "/mapping",
+                        "input.type did not match one of the specified values",
+                    );
+                    break;
             }
-            result = __D1;
         } else {
-            $fallback("", "", "Expected object");
+            $fallback("", "", "Expected Object.");
         }
         return result;
     },
-    serialize(input: MiscTestsWsRpcResponse): string {
+    serialize(input: WsMessageResponse): string {
         let json = "";
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"message":`;
-        if (input.message.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.message.length; i++) {
-                __point__ = input.message.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+        switch (input.type) {
+            case "ENTITY_CREATED": {
+                json += "{";
+                json += `"type":"ENTITY_CREATED"`;
+                json += `,"entityId":`;
+                if (input.entityId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.entityId.length; i++) {
+                        __point__ = input.entityId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.entityId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.entityId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.entityId}"`;
+                        } else {
+                            json += `"${__result__}${input.entityId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.entityId.length < 5000 &&
+                    !STR_ESCAPE.test(input.entityId)
                 ) {
-                    json += JSON.stringify(input.message);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.message.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.message}"`;
+                    json += `"${input.entityId}"`;
                 } else {
-                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                    json += JSON.stringify(input.entityId);
                 }
+
+                if (Number.isNaN(input.x)) {
+                    throw new Error("Expected number at /x got NaN");
+                }
+                json += `,"x":${input.x}`;
+
+                if (Number.isNaN(input.y)) {
+                    throw new Error("Expected number at /y got NaN");
+                }
+                json += `,"y":${input.y}`;
+                json += "}";
+                break;
             }
-        } else if (
-            input.message.length < 5000 &&
-            !STR_ESCAPE.test(input.message)
-        ) {
-            json += `"${input.message}"`;
-        } else {
-            json += JSON.stringify(input.message);
+            case "ENTITY_UPDATED": {
+                json += "{";
+                json += `"type":"ENTITY_UPDATED"`;
+                json += `,"entityId":`;
+                if (input.entityId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.entityId.length; i++) {
+                        __point__ = input.entityId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.entityId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.entityId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.entityId}"`;
+                        } else {
+                            json += `"${__result__}${input.entityId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.entityId.length < 5000 &&
+                    !STR_ESCAPE.test(input.entityId)
+                ) {
+                    json += `"${input.entityId}"`;
+                } else {
+                    json += JSON.stringify(input.entityId);
+                }
+
+                if (Number.isNaN(input.x)) {
+                    throw new Error("Expected number at /x got NaN");
+                }
+                json += `,"x":${input.x}`;
+
+                if (Number.isNaN(input.y)) {
+                    throw new Error("Expected number at /y got NaN");
+                }
+                json += `,"y":${input.y}`;
+                json += "}";
+                break;
+            }
         }
-        json += "}";
         return json;
     },
 };
+export interface WsMessageResponseEntityCreated {
+    type: "ENTITY_CREATED";
+    entityId: string;
+    x: number;
+    y: number;
+}
+
+export interface WsMessageResponseEntityUpdated {
+    type: "ENTITY_UPDATED";
+    entityId: string;
+    x: number;
+    y: number;
+}
 
 export interface PostParams {
     postId: string;
