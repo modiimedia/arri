@@ -22,6 +22,8 @@ import {
     isRpcDefinition,
     isServiceDefinition,
     type ServiceDefinition,
+    type HttpRpcDefinition,
+    type WsRpcDefinition,
 } from "arri-codegen-utils";
 import {
     getSchemaParsingCode,
@@ -72,6 +74,7 @@ export async function createTypescriptClient(
         versionNumber: def.info?.version ?? "",
         typesNeedingParser: Object.keys(def.models),
         hasSseProcedures: false,
+        hasWsProcedures: false,
     };
     Object.keys(services).forEach((key) => {
         const item = services[key];
@@ -114,6 +117,10 @@ export async function createTypescriptClient(
     if (rpcOptions.hasSseProcedures) {
         importParts.push("arriSseRequest");
         importParts.push("type SseOptions");
+    }
+    if (rpcOptions.hasWsProcedures) {
+        importParts.push("arriWebsocketRequest");
+        importParts.push("type WsOptions");
     }
 
     // generated only types if no procedures are found
@@ -165,6 +172,7 @@ interface RpcOptions extends GeneratorOptions {
     versionNumber: string;
     typesNeedingParser: string[];
     hasSseProcedures: boolean;
+    hasWsProcedures: boolean;
 }
 
 export function tsRpcFromDefinition(
@@ -172,12 +180,23 @@ export function tsRpcFromDefinition(
     schema: RpcDefinition,
     options: RpcOptions,
 ): string {
-    if (schema.transport !== "http") {
-        console.warn(
-            "[codegen-ts] WARNING: Non-http RPCs are not supported at this time",
-        );
-        return "";
+    if (schema.transport === "http") {
+        return tsHttpRpcFromDefinition(key, schema, options);
     }
+    if (schema.transport === "ws") {
+        return tsWsRpcFromDefinition(key, schema, options);
+    }
+    console.warn(
+        `[codegen-ts] Unsupported transport "${schema.transport}". Ignoring rpc.`,
+    );
+    return "";
+}
+
+export function tsHttpRpcFromDefinition(
+    key: string,
+    schema: HttpRpcDefinition,
+    options: RpcOptions,
+) {
     const paramName = pascalCase(schema.params ?? "");
     const responseName = pascalCase(schema.response ?? "");
     const paramsInput = schema.params ? `params: ${paramName}` : "";
@@ -220,6 +239,38 @@ export function tsRpcFromDefinition(
             parser: ${parserPart},
             serializer: ${serializerPart},
         });
+    }`;
+}
+export function tsWsRpcFromDefinition(
+    key: string,
+    schema: WsRpcDefinition,
+    options: RpcOptions,
+): string {
+    options.hasWsProcedures = true;
+    const paramName = pascalCase(schema.params ?? "undefined");
+    const responseName = pascalCase(schema.response ?? "undefined");
+    const hasInput = paramName.length > 0;
+    const hasOutput = responseName.length > 0;
+    let serializerPart = `(_) => {}`;
+    let parserPart = `(_) => {}`;
+    if (hasInput) {
+        serializerPart = `$$${paramName}.serialize`;
+    }
+    if (hasOutput) {
+        parserPart = `$$${responseName}.parse`;
+    }
+    return `${getJsDocComment(schema)}${key}(options: WsOptions<${responseName}>) {
+        return arriWebsocketRequest<${paramName}, ${responseName}>({
+            url: \`\${this.baseUrl}${schema.path}\`,
+            headers: this.headers,
+            parser: ${parserPart},
+            serializer: ${serializerPart},
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+        })
     }`;
 }
 

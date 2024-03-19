@@ -36,9 +36,14 @@ export default defineWebsocketRpc({
     params: ParamsSchema,
     response: ResponseSchema,
     handler: {
-        onClose: (peer) => {},
-        onOpen: (peer) => {},
+        onClose: (peer) => {
+            console.log("CLOSED!");
+        },
+        onOpen: (peer) => {
+            console.log("OPENED", peer.context.clientAddress);
+        },
         onMessage: async (peer, message) => {
+            console.log("MESSAGE", peer.context.clientAddress);
             switch (message.type) {
                 case "CREATE_ENTITY":
                     peer.send({
