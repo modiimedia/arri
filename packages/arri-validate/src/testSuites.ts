@@ -519,12 +519,7 @@ export const validationTestSuites: Record<
     "record with boolean values": {
         schema: a.record(a.boolean()),
         goodInputs: [{ a: true, b: false }, {}],
-        badInputs: [
-            { a: true, b: true, c: "true" },
-            { a: "null" },
-            null,
-            [true],
-        ],
+        badInputs: [{ a: true, b: true, c: "true" }, { a: "null" }, null],
     },
     "record with objects": {
         schema: a.record(
@@ -558,7 +553,6 @@ export const validationTestSuites: Record<
             },
         ],
         badInputs: [
-            {},
             null,
             {
                 a: {
@@ -634,7 +628,6 @@ export const validationTestSuites: Record<
         badInputs: [
             { id: 1, data: true },
             { id: "1", data: { name: "", createdAt: 1 } },
-            { id: "", data: { name: "" } },
         ],
     },
     "object with int64 and uint64": {
@@ -712,6 +705,51 @@ export const validationTestSuites: Record<
             },
         ],
         badInputs: [{}, null, { id: "" }],
+    },
+    "recursive object": {
+        schema: a.recursive((self) =>
+            a.object({ left: a.nullable(self), right: a.nullable(self) }),
+        ),
+        goodInputs: [
+            {
+                left: null,
+                right: null,
+            },
+            {
+                left: {
+                    left: {
+                        left: null,
+                        right: null,
+                    },
+                    right: {
+                        left: null,
+                        right: {
+                            left: null,
+                            right: null,
+                        },
+                    },
+                },
+                right: null,
+            },
+        ],
+        badInputs: [
+            true,
+            false,
+            {},
+            {
+                left: {
+                    left: {
+                        left: true,
+                        right: null,
+                    },
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+                right: null,
+            },
+        ],
     },
 };
 

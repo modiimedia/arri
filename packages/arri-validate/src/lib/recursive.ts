@@ -8,28 +8,28 @@ import {
     type ValidationData,
 } from "../schemas";
 
-type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
-
 let recursiveTypeCount = 0;
-
-const recursiveFns: Record<
-    string,
-    {
-        validate: (input: unknown) => any;
-        parse: (input: unknown, data: ValidationData) => any;
-        coerce: (input: unknown, data: ValidationData) => any;
-        serialize: (input: unknown, data: ValidationData) => any;
-    }
-> = {};
 
 export function recursive<T>(
     callback: (
         self: ARefSchema<T>,
     ) => AObjectSchema<T> | ADiscriminatorSchema<T>,
-    options: WithRequired<ASchemaOptions, "id">,
+    options?: ASchemaOptions,
 ): ASchema<T> {
+    const recursiveFns: Record<
+        string,
+        {
+            validate: (input: unknown) => any;
+            parse: (input: unknown, data: ValidationData) => any;
+            coerce: (input: unknown, data: ValidationData) => any;
+            serialize: (input: unknown, data: ValidationData) => any;
+        }
+    > = {};
     if (!options?.id) {
         recursiveTypeCount++;
+        console.warn(
+            `[arri-validate] WARNING: It is highly recommended to specify an ID for recursive types.`,
+        );
     }
     const id = options?.id ?? `TypeRef${recursiveTypeCount}`;
     const mainSchema = callback({
@@ -64,9 +64,9 @@ export function recursive<T>(
     });
     mainSchema.metadata.id = id;
     mainSchema.metadata.description =
-        options.description ?? mainSchema.metadata.description;
+        options?.description ?? mainSchema.metadata.description;
     mainSchema.metadata.isDeprecated =
-        options.isDeprecated ?? mainSchema.metadata.isDeprecated;
+        options?.isDeprecated ?? mainSchema.metadata.isDeprecated;
     recursiveFns[id] = {
         validate: mainSchema.metadata[SCHEMA_METADATA].validate,
         parse: mainSchema.metadata[SCHEMA_METADATA].parse,

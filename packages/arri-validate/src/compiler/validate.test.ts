@@ -7,10 +7,20 @@ Object.keys(validationTestSuites).forEach((key) => {
         const suite = validationTestSuites[key];
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
-            expect(Compiled.validate(input));
+            if (!Compiled.validate(input)) {
+                console.log(suite.schema);
+                console.log(input, "Should be TRUE");
+                console.log(Compiled.compiledCode.validate);
+            }
+            expect(Compiled.validate(input)).toBe(true);
         }
         for (const input of suite.badInputs) {
-            expect(!Compiled.validate(input));
+            if (Compiled.validate(input)) {
+                console.log(suite.schema);
+                console.log(input, "Should be FALSE");
+                console.log(Compiled.compiledCode.validate);
+            }
+            expect(Compiled.validate(input)).toBe(false);
         }
     });
 });
