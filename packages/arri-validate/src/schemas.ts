@@ -6,6 +6,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormValues,
     TypeValues,
+    isSchemaFormRef,
 } from "jtd-utils";
 import { type ValueError } from "./lib/validation";
 
@@ -241,4 +242,8 @@ export function isObject(input: unknown): input is Record<any, any> {
 // recursive types
 export interface ARefSchema<T> extends ASchema<T> {
     ref: string;
+}
+
+export function isARefSchema(input: unknown): input is ARefSchema<any> {
+    return isASchema(input) && isSchemaFormRef(input);
 }

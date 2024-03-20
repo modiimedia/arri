@@ -40,6 +40,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
 
     const functionBodyParts: string[] = [];
     const functionNameParts: string[] = [];
+    const subFunctions: Record<string, string> = {};
     const template = schemaTemplate({
         val: input,
         targetVal: "result",
@@ -48,6 +49,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         schemaPath: "",
         subFunctionBodies: functionBodyParts,
         subFunctionNames: functionNameParts,
+        subFunctions,
     });
     const jsonTemplate = schemaTemplate({
         val: "json",
@@ -57,6 +59,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         schemaPath: "",
         subFunctionBodies: functionBodyParts,
         subFunctionNames: functionNameParts,
+        subFunctions,
     });
 
     if (
@@ -421,6 +424,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             schemaPath: `${input.schemaPath}/properties/${key}`,
             subFunctionBodies: input.subFunctionBodies,
             subFunctionNames: input.subFunctionNames,
+            subFunctions: input.subFunctions,
         });
         parsingParts.push(innerTemplate);
     }
@@ -435,6 +439,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
                 subFunctionBodies: input.subFunctionBodies,
                 subFunctionNames: input.subFunctionNames,
+                subFunctions: input.subFunctions,
             });
             parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
                 // ignore undefined
@@ -478,6 +483,7 @@ export function arrayTemplate(
         schema: input.schema.elements,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
+        subFunctions: input.subFunctions,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
         const ${resultVar} = [];
@@ -518,6 +524,7 @@ export function discriminatorTemplate(
             subFunctionNames: input.subFunctionNames,
             discriminatorKey: input.schema.discriminator,
             discriminatorValue: type,
+            subFunctions: input.subFunctions,
         });
         switchParts.push(`case "${type}": {
             ${template}
@@ -571,6 +578,7 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         schema: input.schema.values,
         subFunctionBodies: input.subFunctionBodies,
         subFunctionNames: input.subFunctionNames,
+        subFunctions: input.subFunctions,
     });
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
         const ${resultVal} = {};

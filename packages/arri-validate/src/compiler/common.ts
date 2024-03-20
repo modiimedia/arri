@@ -10,5 +10,6 @@ export interface TemplateInput<TSchema extends Schema = any> {
     discriminatorValue?: string;
     subFunctionNames: string[];
     subFunctionBodies: string[];
+    subFunctions: Record<string, string>;
     finalFunctionBody?: string;
 }

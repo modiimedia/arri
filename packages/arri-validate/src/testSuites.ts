@@ -58,6 +58,44 @@ const Post = a.object({
 
 type Post = a.infer<typeof Post>;
 
+interface BinaryTree {
+    left: BinaryTree | null;
+    right: BinaryTree | null;
+}
+const BinaryTree = a.recursive<BinaryTree>((self) =>
+    a.object({
+        left: a.nullable(self),
+        right: a.nullable(self),
+    }),
+);
+
+type RecursiveUnion =
+    | { type: "CHILD"; data: RecursiveUnion }
+    | { type: "CHILDREN"; data: RecursiveUnion[] }
+    | { type: "TEXT"; data: string }
+    | { type: "SHAPE"; data: { width: number; height: number } };
+const RecursiveUnion = a.recursive<RecursiveUnion>(
+    (self) =>
+        a.discriminator("type", {
+            CHILD: a.object({ data: self }),
+            CHILDREN: a.object({
+                data: a.array(self),
+            }),
+            TEXT: a.object({
+                data: a.string(),
+            }),
+            SHAPE: a.object({
+                data: a.object({
+                    width: a.number(),
+                    height: a.number(),
+                }),
+            }),
+        }),
+    {
+        id: "RecursiveUnion",
+    },
+);
+
 export const validationTestSuites: Record<
     string,
     {
@@ -707,9 +745,7 @@ export const validationTestSuites: Record<
         badInputs: [{}, null, { id: "" }],
     },
     "recursive object": {
-        schema: a.recursive((self) =>
-            a.object({ left: a.nullable(self), right: a.nullable(self) }),
-        ),
+        schema: BinaryTree,
         goodInputs: [
             {
                 left: null,
@@ -748,6 +784,56 @@ export const validationTestSuites: Record<
                     },
                 },
                 right: null,
+            },
+        ],
+    },
+    "recursive discriminator": {
+        schema: RecursiveUnion,
+        goodInputs: [
+            {
+                type: "CHILD",
+                data: {
+                    type: "CHILDREN",
+                    data: [
+                        {
+                            type: "TEXT",
+                            data: "Hello world",
+                        },
+                        {
+                            type: "SHAPE",
+                            data: {
+                                width: 1,
+                                height: 2,
+                            },
+                        },
+                        {
+                            type: "CHILD",
+                            data: {
+                                type: "TEXT",
+                                data: "Hello world",
+                            },
+                        },
+                    ],
+                },
+            },
+        ],
+        badInputs: [
+            {},
+            null,
+            {
+                type: "CHILD",
+                data: {
+                    type: "CHILDREN",
+                    data: [
+                        {
+                            type: "CIRCLE",
+                            data: {
+                                width: 1,
+                                height: 2,
+                            },
+                        },
+                    ],
+                },
             },
         ],
     },
@@ -1121,6 +1207,112 @@ export const parsingTestSuites: Record<
             },
         ],
         badInputs: [],
+    },
+    "recursive object": {
+        schema: BinaryTree,
+        goodInputs: [
+            {
+                left: {
+                    left: {
+                        left: null,
+                        right: null,
+                    },
+                    right: null,
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+            },
+            JSON.stringify({
+                left: {
+                    left: {
+                        left: null,
+                        right: null,
+                    },
+                    right: null,
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+                middle: null,
+            }),
+        ],
+        expectedResults: [
+            {
+                left: {
+                    left: {
+                        left: null,
+                        right: null,
+                    },
+                    right: null,
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+            },
+            {
+                left: {
+                    left: {
+                        left: null,
+                        right: null,
+                    },
+                    right: null,
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+            },
+        ],
+        badInputs: [
+            {
+                left: {
+                    left: {
+                        left: null,
+                        right: false,
+                    },
+                    right: null,
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+            },
+            JSON.stringify({
+                left: {
+                    left: {
+                        left: true,
+                        right: null,
+                    },
+                    right: null,
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                    },
+                },
+            }),
+        ],
     },
 };
 
