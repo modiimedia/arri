@@ -683,6 +683,8 @@ The following data was used in these benchmarks. Relevant schemas were created i
 
 ### Integers
 
+The following benchmarks measure how quickly each library operates on a single integer value.
+
 #### Validation
 
 | Library                      | op/s        |
