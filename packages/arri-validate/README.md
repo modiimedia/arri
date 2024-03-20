@@ -23,12 +23,14 @@ To represent the data-models in a language agnostic way this library heavily rel
 -   [Installation](#installation)
 -   [Basic Example](#basic-example)
 -   [Supported Types](#supported-types)
+
     -   [Primitives](#primitives)
     -   [Enums](#enums)
     -   [Arrays / Lists](#arrays--lists)
     -   [Objects](#objects)
     -   [Records / Maps](#records--maps)
     -   [Discriminated Unions](#discriminated-unions)
+
 -   [Modifiers](#modifiers)
     -   [Optional](#optional)
     -   [Nullable](#nullable)
@@ -45,6 +47,7 @@ To represent the data-models in a language agnostic way this library heavily rel
     -   [Serialize](#serialize)
     -   [Errors](#errors)
 -   [Compiled Validators](#compiled-validators)
+-   [Metadata](#metadata)
 -   [Benchmarks](#benchmarks)
 -   [Development](#development)
 
@@ -637,6 +640,87 @@ You can also use `a.compile` for code generation. The compiler result gives you 
 $$User.compiledCode.validate; // the generated validation code
 $$User.compiledCode.parse; // the generated parsing code
 $$User.compiledCode.serialize; // the generated serialization code
+```
+
+## Metadata
+
+Metadata is used during cross-language code generation. Arri schemas allow you to specify the following metadata fields:
+
+-   id - Will be used as the type name in any arri client generators
+-   description - Will be added as a description comment above any generated types
+-   isDeprecated - Will mark any generated code with the deprecation annotation of target language
+
+### Examples
+
+A schema with this metadata:
+
+```ts
+const BookSchema = a.object(
+    {
+        title: a.string(),
+        author: a.string(),
+        publishDate: a.timestamp(),
+    },
+    {
+        id: "Book",
+        description: "This is a book",
+    },
+);
+```
+
+will produce types that look something like this during codegen.
+
+**Typescript**
+
+```ts
+/**
+ * This is a book
+ */
+interface Book {
+    title: string;
+    author: string;
+    publishDate: Date;
+}
+```
+
+**Rust**
+
+```rust
+/// This is a book
+struct Book {
+    title: String,
+    author: String,
+    publish_date: DateTime<FixedOffset>
+}
+```
+
+**Dart**
+
+```dart
+/// This is a book
+class Book {
+    final String title;
+    final String author;
+    final DateTime publishDate;
+    const Book({
+        required this.title,
+        required this.author,
+        required this.publishDate,
+    });
+}
+```
+
+**Kotlin**
+
+```kotlin
+/**
+ * This is a book
+ */
+data class Book(
+    val title: String,
+    val author: String,
+    val publishDate: Instant,
+)
 ```
 
 ## Benchmarks
