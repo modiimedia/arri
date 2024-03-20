@@ -38,8 +38,6 @@ export function createParsingTemplate(input: string, schema: Schema): string {
     }`;
     let jsonParseCheck = "";
 
-    const functionBodyParts: string[] = [];
-    const functionNameParts: string[] = [];
     const subFunctions: Record<string, string> = {};
     const template = schemaTemplate({
         val: input,
@@ -47,8 +45,6 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         schema,
         instancePath: "",
         schemaPath: "",
-        subFunctionBodies: functionBodyParts,
-        subFunctionNames: functionNameParts,
         subFunctions,
     });
     const jsonTemplate = schemaTemplate({
@@ -57,8 +53,6 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         schema,
         instancePath: "",
         schemaPath: "",
-        subFunctionBodies: functionBodyParts,
-        subFunctionNames: functionNameParts,
         subFunctions,
     });
 
@@ -75,6 +69,9 @@ export function createParsingTemplate(input: string, schema: Schema): string {
             return result;
         }`;
     }
+    const functionBodyParts = Object.keys(subFunctions).map(
+        (key) => subFunctions[key],
+    );
     const finalTemplate = `${fallbackTemplate}
     ${functionBodyParts.join("\n")}
     ${jsonParseCheck}
@@ -422,8 +419,6 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             schema: subSchema,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
-            subFunctionBodies: input.subFunctionBodies,
-            subFunctionNames: input.subFunctionNames,
             subFunctions: input.subFunctions,
         });
         parsingParts.push(innerTemplate);
@@ -437,8 +432,6 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
                 schema: subSchema,
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 subFunctions: input.subFunctions,
             });
             parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
@@ -481,8 +474,6 @@ export function arrayTemplate(
         instancePath: `${input.instancePath}/[0]`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
         subFunctions: input.subFunctions,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
@@ -520,8 +511,6 @@ export function discriminatorTemplate(
             schema: innerSchema,
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
-            subFunctionBodies: input.subFunctionBodies,
-            subFunctionNames: input.subFunctionNames,
             discriminatorKey: input.schema.discriminator,
             discriminatorValue: type,
             subFunctions: input.subFunctions,
@@ -576,8 +565,6 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         instancePath: `${input.instancePath}/[key]`,
         schemaPath: `${input.schemaPath}/values`,
         schema: input.schema.values,
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
         subFunctions: input.subFunctions,
     });
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
