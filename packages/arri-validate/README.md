@@ -4,37 +4,19 @@ A type builder and validation library built on top of the [Json Type Definition 
 
 A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
 
-## Philosophy
+## Project Philosophy
 
-Schemas created with arri-validate are designed to be easily converted to types in other languages. Portability is top priority as it allows us to reliably create quality code generators for different languages. Because of this, we have to limit the expressiveness of JSON and Typescript. For example the following union type is impossible to represent with arri-validate:
+The goals of this project are as follows:
 
-```ts
-type MyUnion = string | number | string[] | number[];
-```
+-   Portable type definitions
+-   High performance validation, parsing, and serialization
+-   Consistent error reporting for parsing and serialization errors
 
-This is because you cannot reliably represent it using the type system of most programming languages, and even if it could be represented, a union like this creates a lot of headaches for serialization and validation. Arri does have union types, but it imposes restrictions on them. Unions must be a union of objects and all of the objects must share a discriminator field. (See [discriminated unions](#discriminated-unions) for details) So in this case we have limited the type system in favor of portability and consistency.
+I am not looking to support every feature of Typescript's type system or even every possible representation of JSON. The goal is that the data models defined through this library can be used as a source of truth across multiple programming languages. Both JSON and Typescript have to be limited to accomplish this.
 
-```ts
-// this union can be represented with arri-validate
-type MyUnion =
-    | { type: "string"; data: string }
-    | { type: "number"; data: number }
-    | { type: "string-array"; data: string[] }
-    | { type: "number-array"; data: number[] };
-```
+### Adherence to RFC 8927
 
-This is typically how we will approach features. In any case where a feature conflicts with the portability of a schema we will favor portability.
-
-In addition to portability a lot of work has been put into making this library as performant as possible. Arri-validate is [among the fastest](#benchmarks) typescript validators in the ecosystem. We are able to do this because we ship a [JIT compiler](#compiled-validators) that let's us generate highly optimized parser, validators, and serializers.
-
-### Non-Goals
-
-The following are non-goals for this library
-
--   Represent every type feature of JSON / Typescript
--   Allow for custom validations that would not be portable across languages. (Such as accepting custom validator functions)
--   Feature parity with other libraries in the ecosystem such as Zod.
--   Smallest possible bundle size (We are bundle conscious, but it doesn't come at the sacrifice of ergonomics)
+To represent the data-models in a language agnostic way this library heavily relies on JSON Type Definition (JTD). However, this library does not strictly comply with the JTD specification. The reason for this is because JTD does not support 64-bit integers. I believe sharing large integers across languages is a huge pain point especially when going to and from Javascript. For this reason alone, I have opted to break away from the JTD spec and add support for `int64` and `uint64`. So while I have no intention to break further away from the spec I am open to it if a large enough issue arises (in my view). If you use this library be aware that I'm using a superset of JTD rather than a strict spec compliant implementation.
 
 ## Table of Contents
 
@@ -101,20 +83,6 @@ a.validate(User, { id: "1", name: null });
 // outputs valid json
 a.serialize(User, { id: "1", name: "John Doe" });
 ```
-
-## Project Philosophy
-
-The goals of this project are as follows:
-
--   Portable type definitions
--   High performance validation, parsing, and serialization
--   Consistent error reporting for parsing and serialization errors
-
-I am not looking to support every feature of Typescript's type system or even every possible representation of JSON. The goal is that the data models defined through this library can be used as a source of truth across multiple programming languages. Both JSON and Typescript have to be limited to accomplish this.
-
-### Adherence to RFC 8927
-
-To represent the data-models in a language agnostic way this library heavily relies on JSON Type Definition (JTD). However, this library does not strictly comply with the JTD specification. The reason for this is because JTD does not support 64-bit integers. I believe sharing large integers across languages is a huge pain point especially when going to and from Javascript. For this reason alone, I have opted to break away from the JTD spec and add support for `int64` and `uint64`. So while I have no intention to break further away from the spec I am open to it if a large enough issue arises (in my view). If you use this library be aware that I'm using a superset of JTD rather than a strict spec compliant implementation.
 
 ## Supported Types
 
