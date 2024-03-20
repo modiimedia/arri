@@ -126,6 +126,7 @@ export function isAScalarSchema(input: unknown): input is AScalarSchema {
     return (
         isASchema(input) &&
         "type" in input &&
+        typeof input.type === "string" &&
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         (TypeValues.includes(input.type as any) ||
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -235,4 +236,9 @@ export type InferObjectRawType<TInput> =
 
 export function isObject(input: unknown): input is Record<any, any> {
     return typeof input === "object" && input !== null;
+}
+
+// recursive types
+export interface ARefSchema<T> extends ASchema<T> {
+    ref: string;
 }
