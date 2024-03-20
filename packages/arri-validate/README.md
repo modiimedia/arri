@@ -597,7 +597,7 @@ $$User.compiledCode.serialize; // the generated serialization code
 
 ## Benchmarks
 
-_Last Updated: 2024-03-14_
+_Last Updated: 2024-03-19_
 
 All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
 
@@ -644,42 +644,42 @@ The following data was used in these benchmarks. Relevant schemas were created i
 
 | Library                      | op/s        |
 | ---------------------------- | ----------- |
-| **Arri (Compiled)**          | 135,577,679 |
-| Typebox (Compiled)           | 59,141,334  |
-| Ajv -JTD (Compiled)          | 38,308,645  |
-| Ajv - JTD                    | 30,481,986  |
-| Ajv - JSON Schema (Compiled) | 12,266,309  |
-| Ajv -JSON Schema             | 10,430,898  |
-| **Arri**                     | 2,243,081   |
-| Typebox                      | 98,2233     |
-| Zod                          | 52,9865     |
+| **Arri (Compiled)**          | 122,753,978 |
+| Typebox (Compiled)           | 63,131,651  |
+| Ajv -JTD (Compiled)          | 37,814,896  |
+| Ajv - JTD                    | 29,402,413  |
+| Ajv - JSON Schema (Compiled) | 12,003,432  |
+| Ajv -JSON Schema             | 10,057,501  |
+| **Arri**                     | 2,131,823   |
+| Typebox                      | 93,5599     |
+| Zod                          | 52,1357     |
 
 #### Parsing
 
 | Library             | op/s    |
 | ------------------- | ------- |
-| JSON.parse          | 777,989 |
-| **Arri (Compiled)** | 729,225 |
-| **Arri**            | 376,368 |
-| Ajv -JTD (Compiled) | 245,730 |
+| JSON.parse          | 749,534 |
+| **Arri (Compiled)** | 728,382 |
+| **Arri**            | 378,175 |
+| Ajv -JTD (Compiled) | 241,107 |
 
 #### Serialization
 
 | Library                                    | op/s      |
 | ------------------------------------------ | --------- |
-| **Arri (Compiled)**                        | 4,892,713 |
-| **Arri (Compiled) Validate and Serialize** | 4,710,745 |
-| Ajv - JTD (Compiled)                       | 2,222,308 |
-| JSON.stringify                             | 1,318,842 |
-| Arri                                       | 582,747   |
+| **Arri (Compiled)**                        | 4,272,430 |
+| **Arri (Compiled) Validate and Serialize** | 3,846,453 |
+| Ajv - JTD (Compiled)                       | 2,012,894 |
+| JSON.stringify                             | 938,289   |
+| Arri                                       | 481,985   |
 
 #### Coercion
 
 | Library  | op/s    |
 | -------- | ------- |
-| **Arri** | 839,642 |
-| Typebox  | 212,706 |
-| Zod      | 488,505 |
+| **Arri** | 818,963 |
+| Zod      | 466,092 |
+| Typebox  | 209,363 |
 
 ### Integers
 
@@ -687,24 +687,42 @@ The following data was used in these benchmarks. Relevant schemas were created i
 
 | Library                      | op/s        |
 | ---------------------------- | ----------- |
-| **Arri**                     | 210,933,339 |
-| **Arri (Compiled)**          | 207,119,519 |
-| Ajv - JSON Schema (Compiled) | 193,992,382 |
-| Ajv - JTD (Compiled)         | 169,603,655 |
-| Typebox (Compiled)           | 113,166,065 |
-| Ajv - JSON Schema            | 55,942,777  |
-| Ajv - JTD                    | 51,083,383  |
-| Typebox                      | 45,753,844  |
-| Zod                          | 1,163,445   |
+| Ajv - JSON Schema (Compiled) | 329,332,736 |
+| **Arri (Compiled)**          | 201,644,167 |
+| **Arri**                     | 186,634,732 |
+| Ajv - JTD (Compiled)         | 151,044,902 |
+| Typebox (Compiled)           | 110,692,029 |
+| Ajv - JTD                    | 48,200,004  |
+| Ajv - JSON Schema            | 47,840,571  |
+| Typebox                      | 42,363,980  |
+| Zod                          | 1,266,268   |
 
 #### Parsing
 
 | Library              | op/s        |
 | -------------------- | ----------- |
-| **Arri (Compiled)**  | 153,161,724 |
-| **Arri**             | 138,649,162 |
-| JSON.parse()         | 19,045,882  |
-| Ajv - JTD (Compiled) | 9,363,809   |
+| **Arri (Compiled)**  | 138,189,123 |
+| **Arri**             | 136,995,619 |
+| JSON.parse()         | 19,911,721  |
+| Ajv - JTD (Compiled) | 8,996,081   |
+
+#### Serialization
+
+| Library              | op/s        |
+| -------------------- | ----------- |
+| Ajv - JTD (Compiled) | 198,980,679 |
+| **Arri (Compiled)**  | 190,386,426 |
+| **Arri**             | 114,799,692 |
+| JSON.stringify       | 21,433,854  |
+
+#### Coercion
+
+| Library           | op/s        |
+| ----------------- | ----------- |
+| Arri              | 117,854,219 |
+| TypeBox           | 34,633,126  |
+| Ajv - JSON Schema | 28,016,735  |
+| Zod               | 1,586,546   |
 
 ## Development
 
