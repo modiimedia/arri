@@ -29,6 +29,7 @@ To represent the data-models in a language agnostic way this library heavily rel
     -   [Objects](#objects)
     -   [Records / Maps](#records--maps)
     -   [Discriminated Unions](#discriminated-unions)
+    -   [Recursive Types](#recursive-types)
 -   [Modifiers](#modifiers)
     -   [Optional](#optional)
     -   [Nullable](#nullable)
@@ -324,6 +325,85 @@ a.validate(Shape, {
             },
             "additionalProperties": true
         }
+    }
+}
+```
+
+### Recursive Types
+
+You can define recursive schemas by using the `a.recursive` helper. This function accepts another function that outputs an object schema or a discriminator schema.
+
+An important thing to note is that type inference doesn't work correctly for Recursive schemas. In order to satisfy Typescript you will need to define the type and then pass it to the function as a generic.
+
+Additionally it is recommended to define an ID for any recursive schemas. If one is not specified arri will auto generate one.
+
+---
+
+_If some TS wizard knows how to get type inference to work automatically for these recursive schemas, feel free to open a PR although I fear it will require a major refactor the existing type system._
+
+**Usage**
+
+```ts
+// the recursive type must be defined first
+type BinaryTree = {
+    left: BinaryTree | null;
+    right: BinaryTree | null;
+};
+
+// pass the type to the helper
+const BinaryTree = a.recursive<BinaryTree>(
+    (self) =>
+        // the resulting schema must be an object or discriminator
+        // it also must match the type you pass into the generic parameter
+        // or TS will yell at you
+        a.object({
+            left: a.nullable(self),
+            right: a.nullable(self),
+        }),
+    {
+        id: "BinaryTree",
+    },
+);
+
+a.validate(BinaryTree, {
+    left: {
+        left: null,
+        right: {
+            left: null,
+            right: null,
+        },
+    },
+    right: null,
+}); // true
+a.validate(BinaryTree, {
+    left: {
+        left: null,
+        right: {
+            left: true,
+            right: null,
+        },
+    },
+    right: null,
+}); // false
+```
+
+**Outputted JTD**
+
+```json
+{
+    "properties": {
+        "left": {
+            "ref": "BinaryTree",
+            "nullable": true
+        },
+        "right": {
+            "ref": "BinaryTree",
+            "nullable": true
+        }
+    },
+    "additionalProperties": true,
+    "metadata": {
+        "id": "BinaryTree"
     }
 }
 ```
