@@ -187,7 +187,51 @@ a.validate({
         "created": {
             "type": "timestamp"
         }
-    }
+    },
+    "additionalProperties": true
+}
+```
+
+#### Strict Mode
+
+By default arri-validate will ignore and strip out any additional properties when validating objects. If you want validation to fail when additional properties are present then modify the `additionalProperties` option.
+
+```ts
+const UserStrict = a.object(
+    {
+        id: a.string(),
+        name: a.string(),
+        created: a.timestamp(),
+    },
+    {
+        additionalProperties: false,
+    },
+);
+
+a.parse(UserStrict, {
+    id: "1",
+    name: "johndoe",
+    created: new Date(),
+    bio: "my name is joe",
+}); // fails parsing because of the additional field "bio"
+```
+
+**Outputted JTD**
+
+```json
+{
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "created": {
+            "type": "timestamp"
+        }
+    },
+    "additionalProperties": false
 }
 ```
 
@@ -268,14 +312,16 @@ a.validate(Shape, {
                 "height": {
                     "type": "float32"
                 }
-            }
+            },
+            "additionalProperties": true
         },
         "CIRCLE": {
             "properties": {
                 "radius": {
                     "type": "float32"
                 }
-            }
+            },
+            "additionalProperties": true
         }
     }
 }
@@ -583,11 +629,9 @@ $$User.parse(someJson);
 $$User.serialize({ id: "1", email: null, created: new Date() });
 ```
 
-In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once.
+In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
 
-Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
-
-You can use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
+You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
 
 ```ts
 $$User.compiledCode.validate; // the generated validation code
