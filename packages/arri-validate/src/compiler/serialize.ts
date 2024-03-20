@@ -27,16 +27,16 @@ export function createSerializationV2Template(
     inputName: string,
     schema: Schema,
 ) {
+    const subFunctions: Record<string, string> = {};
     const context: SerializeTemplateInput<any> = {
         val: inputName,
         targetVal: "json",
         schema,
         schemaPath: "",
         instancePath: "",
-        subFunctionBodies: [],
-        subFunctionNames: [],
         outputPrefix: "",
         needsSanitization: [],
+        subFunctions,
     };
     const result = template(context);
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
@@ -301,10 +301,9 @@ export function objectTemplate(
             targetVal: input.targetVal,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
-            subFunctionBodies: input.subFunctionBodies,
-            subFunctionNames: input.subFunctionNames,
             outputPrefix: includeComma ? `,"${key}":` : `"${key}":`,
             needsSanitization: input.needsSanitization,
+            subFunctions: input.subFunctions,
         });
         templateParts.push(innerTemplate);
     }
@@ -334,10 +333,9 @@ export function objectTemplate(
                 instancePath: `${input.instancePath}/${key}`,
                 val: innerVal,
                 targetVal: input.targetVal,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 outputPrefix: `"${key}":`,
                 needsSanitization: input.needsSanitization,
+                subFunctions: input.subFunctions,
             });
             const innerTemplateWithComma = template({
                 schema: optionalPropSchema,
@@ -345,10 +343,9 @@ export function objectTemplate(
                 instancePath: `${input.instancePath}/${key}`,
                 val: innerVal,
                 targetVal: input.targetVal,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
+                subFunctions: input.subFunctions,
             });
             templateParts.push(`if (typeof ${innerVal} !== 'undefined') {
                 if (${hasFieldsVar}) {
@@ -373,10 +370,9 @@ export function objectTemplate(
                 instancePath: `${input.instancePath}/${key}`,
                 val: innerVal,
                 targetVal: "json",
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 outputPrefix: `,"${key}":`,
                 needsSanitization: input.needsSanitization,
+                subFunctions: input.subFunctions,
             });
             const completeInnerTemplate = `if (typeof ${innerVal} !== 'undefined') {
                 ${innerTemplate}
@@ -409,10 +405,9 @@ export function arrayTemplate(
         instancePath: `${input.instancePath}/i`,
         val: itemVarName,
         targetVal: input.targetVal,
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
         outputPrefix: "",
         needsSanitization: input.needsSanitization,
+        subFunctions: input.subFunctions,
     });
     templateParts.push(`for (let i = 0; i < ${input.val}.length; i++) {
         const ${itemVarName} = ${input.val}[i];
@@ -449,10 +444,9 @@ export function recordTemplate(
         instancePath: `${input.instancePath}/key`,
         val: `innerVal`,
         targetVal: input.targetVal,
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
         outputPrefix: "",
         needsSanitization: input.needsSanitization,
+        subFunctions: input.subFunctions,
     });
     templateParts.push(`for (let i = 0; i < ${keysVarName}.length; i++) {
         const key = ${keysVarName}[i];
@@ -490,12 +484,11 @@ function discriminatorTemplate(
             instancePath: `${input.instancePath}`,
             val: input.val,
             targetVal: input.targetVal,
-            subFunctionBodies: input.subFunctionBodies,
-            subFunctionNames: input.subFunctionNames,
             discriminatorKey,
             discriminatorValue: val,
             outputPrefix: input.outputPrefix,
             needsSanitization: input.needsSanitization,
+            subFunctions: input.subFunctions,
         });
         templateParts.push(`case '${val}': {
             ${innerTemplate}

@@ -43,8 +43,6 @@ export function createValidationTemplate(
         schema,
         schemaPath: ``,
         instancePath: "",
-        subFunctionBodies: [],
-        subFunctionNames: [],
         subFunctions,
     });
 
@@ -196,8 +194,6 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
                 targetVal: "",
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 subFunctions: input.subFunctions,
             }),
         );
@@ -211,8 +207,6 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
                 targetVal: "",
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 subFunctions: input.subFunctions,
             });
             parts.push(
@@ -257,8 +251,6 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         targetVal: "",
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
         subFunctions: input.subFunctions,
     });
 
@@ -275,8 +267,6 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         schemaPath: `${input.schemaPath}/values`,
         val: `${input.val}[key]`,
         targetVal: "",
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
         subFunctions: input.subFunctions,
     });
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
@@ -301,8 +291,6 @@ function discriminatorTemplate(
                 instancePath: input.instancePath,
                 discriminatorKey: input.schema.discriminator,
                 discriminatorValue: discriminatorVal,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
                 subFunctions: input.subFunctions,
             }),
         );
