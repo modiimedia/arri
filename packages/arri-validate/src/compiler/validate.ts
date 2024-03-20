@@ -221,9 +221,6 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         }
     }
     let mainTemplate = parts.join(" && ");
-    if (input.schema.nullable) {
-        mainTemplate = `((${mainTemplate}) || ${input.val} === null)`;
-    }
     const fnName = refFunctionName(input.schema.metadata.id ?? "");
     if (Object.keys(input.subFunctions).includes(fnName)) {
         if (!input.subFunctions[fnName]) {
@@ -231,8 +228,13 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
             return ${mainTemplate}
         }`;
         }
-        return `${fnName}(${input.val})`;
+        mainTemplate = `${fnName}(${input.val})`;
     }
+
+    if (input.schema.nullable) {
+        return `((${mainTemplate}) || ${input.val} === null)`;
+    }
+
     return mainTemplate;
 }
 
@@ -308,9 +310,6 @@ function discriminatorTemplate(
     let mainTemplate = `typeof ${input.val} === 'object' && ${
         input.val
     } !== null && (${parts.join(" || ")})`;
-    if (input.schema.nullable) {
-        mainTemplate = `((${mainTemplate}) || ${input.val} === null)`;
-    }
     const fnName = refFunctionName(input.schema.metadata.id ?? "");
 
     if (Object.keys(input.subFunctions).includes(fnName)) {
@@ -319,7 +318,11 @@ function discriminatorTemplate(
             return ${mainTemplate}
         }`;
         }
-        return `${fnName}(${input.val})`;
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+
+    if (input.schema.nullable) {
+        return `((${mainTemplate}) || ${input.val} === null)`;
     }
     return mainTemplate;
 }
