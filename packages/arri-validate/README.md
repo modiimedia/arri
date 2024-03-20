@@ -2,7 +2,39 @@
 
 A type builder and validation library built on top of the [Json Type Definition (RFC 8927)](https://jsontypedef.com) This library is pretty similar to [Typebox](https://github.com/sinclairzx81/typebox) except that it creates Json Type Definition (JTD) objects instead of Json Schema objects.
 
-A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library
+A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
+
+## Philosophy
+
+Schemas created with arri-validate are designed to be easily converted to types in other languages. Portability is top priority as it allows us to reliably create quality code generators for different languages. Because of this, we have to limit the expressiveness of JSON and Typescript. For example the following union type is impossible to represent with arri-validate:
+
+```ts
+type MyUnion = string | number | string[] | number[];
+```
+
+This is because you cannot reliably represent it using the type system of most programming languages, and even if it could be represented, a union like this creates a lot of headaches for serialization and validation. Arri does have union types, but it imposes restrictions on them. Unions must be a union of objects and all of the objects must share a discriminator field. (See [discriminated unions](#discriminated-unions) for details) So in this case we have limited the type system in favor of portability and consistency.
+
+```ts
+// this union can be represented with arri-validate
+type MyUnion =
+    | { type: "string"; data: string }
+    | { type: "number"; data: number }
+    | { type: "string-array"; data: string[] }
+    | { type: "number-array"; data: number[] };
+```
+
+This is typically how we will approach features. In any case where a feature conflicts with the portability of a schema we will favor portability.
+
+In addition to portability a lot of work has been put into making this library as performant as possible. Arri-validate is [among the fastest](#benchmarks) typescript validators in the ecosystem. We are able to do this because we ship a [JIT compiler](#compiled-validators) that let's us generate highly optimized parser, validators, and serializers.
+
+### Non-Goals
+
+The following are non-goals for this library
+
+-   Represent every type feature of JSON / Typescript
+-   Allow for custom validations that would not be portable across languages. (Such as accepting custom validator functions)
+-   Feature parity with other libraries in the ecosystem such as Zod.
+-   Smallest possible bundle size (We are bundle conscious, but it doesn't come at the sacrifice of ergonomics)
 
 ## Table of Contents
 
