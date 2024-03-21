@@ -12,13 +12,15 @@ router.route({
     },
 });
 
-const UpdateUserData = a.partial(a.omit(Author, ["id"]));
-type UpdateUserData = a.infer<typeof UpdateUserData>;
+const UpdateAuthorData = a.partial(a.omit(Author, ["id"]), {
+    id: "UpdateAuthorData",
+});
+type UpdateAuthorData = a.infer<typeof UpdateAuthorData>;
 
 router.route({
     path: "/routes/authors/:authorId",
     method: "post",
-    body: UpdateUserData,
+    body: UpdateAuthorData,
     async handler(event) {
         const body = event.context.body;
         return getRandomAuthor({
@@ -27,6 +29,24 @@ router.route({
             bio: body.bio,
             createdAt: body.createdAt,
             updatedAt: body.updatedAt,
+        });
+    },
+});
+
+router.rpc({
+    name: "authors.updateAuthor",
+    params: a.object({
+        authorId: a.string(),
+        data: UpdateAuthorData,
+    }),
+    response: Author,
+    async handler({ params }) {
+        return getRandomAuthor({
+            id: params.authorId,
+            name: params.data.name,
+            bio: params.data.bio,
+            createdAt: params.data.createdAt,
+            updatedAt: params.data.updatedAt,
         });
     },
 });

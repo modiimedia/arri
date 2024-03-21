@@ -16,8 +16,8 @@ for (const key of Object.keys(validationTestSuites)) {
             }
         }
         for (const input of suite.badInputs) {
-            expect(!Compiled.safeParse(input).success);
-            expect(!a.safeParse(suite.schema, input).success);
+            expect(Compiled.safeParse(input).success).toBe(false);
+            expect(a.safeParse(suite.schema, input).success).toBe(false);
         }
     });
 }
@@ -29,15 +29,33 @@ describe("parsing test suites", () => {
             const Compiled = compile(suite.schema);
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
-                const expectResult = suite.expectedResults[i];
-                const actualResult = Compiled.parse(input);
-                const serializedResult = Compiled.serialize(actualResult);
-                expect(isEqual(actualResult, expectResult));
-                expect(isEqual(Compiled.parse(serializedResult), expectResult));
-                expect(isEqual(actualResult, a.parse(suite.schema, input)));
+                const expectedResult = suite.expectedResults[i];
+                const actualResult = Compiled.safeParse(input);
+                if (!actualResult.success) {
+                    console.log(Compiled.compiledCode.parse);
+                    console.log(input, "Should parse");
+                }
+                expect(actualResult.success).toBe(true);
+                if (actualResult.success) {
+                    const serializedResult = Compiled.serialize(
+                        actualResult.value,
+                    );
+                    expect(actualResult.value).toStrictEqual(expectedResult);
+                    expect(Compiled.parse(serializedResult)).toStrictEqual(
+                        expectedResult,
+                    );
+                    expect(actualResult.value).toStrictEqual(
+                        a.parse(suite.schema, input),
+                    );
+                }
             }
             for (const input of suite.badInputs) {
-                expect(!Compiled.safeParse(input).success);
+                const result = Compiled.safeParse(input);
+                if (result.success) {
+                    console.log(Compiled.compiledCode.parse);
+                    console.log(input, "Should NOT parse");
+                }
+                expect(result.success).toBe(false);
             }
         });
     }

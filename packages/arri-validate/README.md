@@ -2,7 +2,21 @@
 
 A type builder and validation library built on top of the [Json Type Definition (RFC 8927)](https://jsontypedef.com) This library is pretty similar to [Typebox](https://github.com/sinclairzx81/typebox) except that it creates Json Type Definition (JTD) objects instead of Json Schema objects.
 
-A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library
+A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
+
+## Project Philosophy
+
+The goals of this project are as follows:
+
+-   Portable type definitions
+-   High performance validation, parsing, and serialization
+-   Consistent error reporting for parsing and serialization errors
+
+I am not looking to support every feature of Typescript's type system or even every possible representation of JSON. The goal is that the data models defined through this library can be used as a source of truth across multiple programming languages. Both JSON and Typescript have to be limited to accomplish this.
+
+### Adherence to RFC 8927
+
+To represent the data-models in a language agnostic way this library heavily relies on JSON Type Definition (JTD). However, this library does not strictly comply with the JTD specification. The reason for this is because JTD does not support 64-bit integers. I believe sharing large integers across languages is a huge pain point especially when going to and from Javascript. For this reason alone, I have opted to break away from the JTD spec and add support for `int64` and `uint64`. So while I have no intention to break further away from the spec I am open to it if a large enough issue arises (in my view). If you use this library be aware that I'm using a superset of JTD rather than a strict spec compliant implementation.
 
 ## Table of Contents
 
@@ -15,6 +29,7 @@ A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx
     -   [Objects](#objects)
     -   [Records / Maps](#records--maps)
     -   [Discriminated Unions](#discriminated-unions)
+    -   [Recursive Types](#recursive-types)
 -   [Modifiers](#modifiers)
     -   [Optional](#optional)
     -   [Nullable](#nullable)
@@ -31,6 +46,7 @@ A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx
     -   [Serialize](#serialize)
     -   [Errors](#errors)
 -   [Compiled Validators](#compiled-validators)
+-   [Metadata](#metadata)
 -   [Benchmarks](#benchmarks)
 -   [Development](#development)
 
@@ -69,20 +85,6 @@ a.validate(User, { id: "1", name: null });
 // outputs valid json
 a.serialize(User, { id: "1", name: "John Doe" });
 ```
-
-## Project Philosophy
-
-The goals of this project are as follows:
-
--   Portable type definitions
--   High performance validation, parsing, and serialization
--   Consistent error reporting for parsing and serialization errors
-
-I am not looking to support every feature of Typescript's type system or even every possible representation of JSON. The goal is that the data models defined through this library can be used as a source of truth across multiple programming languages. Both JSON and Typescript have to be limited to accomplish this.
-
-### Adherence to RFC 8927
-
-To represent the data-models in a language agnostic way this library heavily relies on JSON Type Definition (JTD). However, this library does not strictly comply with the JTD specification. The reason for this is because JTD does not support 64-bit integers. I believe sharing large integers across languages is a huge pain point especially when going to and from Javascript. For this reason alone, I have opted to break away from the JTD spec and add support for `int64` and `uint64`. So while I have no intention to break further away from the spec I am open to it if a large enough issue arises (in my view). If you use this library be aware that I'm using a superset of JTD rather than a strict spec compliant implementation.
 
 ## Supported Types
 
@@ -187,7 +189,51 @@ a.validate({
         "created": {
             "type": "timestamp"
         }
-    }
+    },
+    "additionalProperties": true
+}
+```
+
+#### Strict Mode
+
+By default arri-validate will ignore and strip out any additional properties when validating objects. If you want validation to fail when additional properties are present then modify the `additionalProperties` option.
+
+```ts
+const UserStrict = a.object(
+    {
+        id: a.string(),
+        name: a.string(),
+        created: a.timestamp(),
+    },
+    {
+        additionalProperties: false,
+    },
+);
+
+a.parse(UserStrict, {
+    id: "1",
+    name: "johndoe",
+    created: new Date(),
+    bio: "my name is joe",
+}); // fails parsing because of the additional field "bio"
+```
+
+**Outputted JTD**
+
+```json
+{
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "created": {
+            "type": "timestamp"
+        }
+    },
+    "additionalProperties": false
 }
 ```
 
@@ -268,15 +314,96 @@ a.validate(Shape, {
                 "height": {
                     "type": "float32"
                 }
-            }
+            },
+            "additionalProperties": true
         },
         "CIRCLE": {
             "properties": {
                 "radius": {
                     "type": "float32"
                 }
-            }
+            },
+            "additionalProperties": true
         }
+    }
+}
+```
+
+### Recursive Types
+
+You can define recursive schemas by using the `a.recursive` helper. This function accepts another function that outputs an object schema or a discriminator schema.
+
+An important thing to note is that type inference doesn't work correctly for Recursive schemas. In order to satisfy Typescript you will need to define the type and then pass it to the function as a generic.
+
+Additionally it is recommended to define an ID for any recursive schemas. If one is not specified arri will auto generate one.
+
+---
+
+_If some TS wizard knows how to get type inference to work automatically for these recursive schemas, feel free to open a PR although I fear it will require a major refactor the existing type system._
+
+**Usage**
+
+```ts
+// the recursive type must be defined first
+type BinaryTree = {
+    left: BinaryTree | null;
+    right: BinaryTree | null;
+};
+
+// pass the type to the helper
+const BinaryTree = a.recursive<BinaryTree>(
+    (self) =>
+        // the resulting schema must be an object or discriminator
+        // it also must match the type you pass into the generic parameter
+        // or TS will yell at you
+        a.object({
+            left: a.nullable(self),
+            right: a.nullable(self),
+        }),
+    {
+        id: "BinaryTree",
+    },
+);
+
+a.validate(BinaryTree, {
+    left: {
+        left: null,
+        right: {
+            left: null,
+            right: null,
+        },
+    },
+    right: null,
+}); // true
+a.validate(BinaryTree, {
+    left: {
+        left: null,
+        right: {
+            left: true,
+            right: null,
+        },
+    },
+    right: null,
+}); // false
+```
+
+**Outputted JTD**
+
+```json
+{
+    "properties": {
+        "left": {
+            "ref": "BinaryTree",
+            "nullable": true
+        },
+        "right": {
+            "ref": "BinaryTree",
+            "nullable": true
+        }
+    },
+    "additionalProperties": true,
+    "metadata": {
+        "id": "BinaryTree"
     }
 }
 ```
@@ -583,11 +710,9 @@ $$User.parse(someJson);
 $$User.serialize({ id: "1", email: null, created: new Date() });
 ```
 
-In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once.
+In most cases, the compiled validators will be much faster than the standard utilities. However there is some overhead with compiling the schemas so ideally each validator would be compiled once. Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
 
-Additionally the resulting methods make use of eval so they can only be used in an environment that you control such as a backend server. They WILL NOT work in a browser environment.
-
-You can use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
+You can also use `a.compile` for code generation. The compiler result gives you access to the generated function bodies.
 
 ```ts
 $$User.compiledCode.validate; // the generated validation code
@@ -595,9 +720,90 @@ $$User.compiledCode.parse; // the generated parsing code
 $$User.compiledCode.serialize; // the generated serialization code
 ```
 
+## Metadata
+
+Metadata is used during cross-language code generation. Arri schemas allow you to specify the following metadata fields:
+
+-   id - Will be used as the type name in any arri client generators
+-   description - Will be added as a description comment above any generated types
+-   isDeprecated - Will mark any generated code with the deprecation annotation of target language
+
+### Examples
+
+A schema with this metadata:
+
+```ts
+const BookSchema = a.object(
+    {
+        title: a.string(),
+        author: a.string(),
+        publishDate: a.timestamp(),
+    },
+    {
+        id: "Book",
+        description: "This is a book",
+    },
+);
+```
+
+will produce types that look something like this during codegen.
+
+**Typescript**
+
+```ts
+/**
+ * This is a book
+ */
+interface Book {
+    title: string;
+    author: string;
+    publishDate: Date;
+}
+```
+
+**Rust**
+
+```rust
+/// This is a book
+struct Book {
+    title: String,
+    author: String,
+    publish_date: DateTime<FixedOffset>
+}
+```
+
+**Dart**
+
+```dart
+/// This is a book
+class Book {
+    final String title;
+    final String author;
+    final DateTime publishDate;
+    const Book({
+        required this.title,
+        required this.author,
+        required this.publishDate,
+    });
+}
+```
+
+**Kotlin**
+
+```kotlin
+/**
+ * This is a book
+ */
+data class Book(
+    val title: String,
+    val author: String,
+    val publishDate: Instant,
+)
+```
+
 ## Benchmarks
 
-_Last Updated: 2024-03-14_
+_Last Updated: 2024-03-19_
 
 All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
 
@@ -644,67 +850,87 @@ The following data was used in these benchmarks. Relevant schemas were created i
 
 | Library                      | op/s        |
 | ---------------------------- | ----------- |
-| **Arri (Compiled)**          | 135,577,679 |
-| Typebox (Compiled)           | 59,141,334  |
-| Ajv -JTD (Compiled)          | 38,308,645  |
-| Ajv - JTD                    | 30,481,986  |
-| Ajv - JSON Schema (Compiled) | 12,266,309  |
-| Ajv -JSON Schema             | 10,430,898  |
-| **Arri**                     | 2,243,081   |
-| Typebox                      | 98,2233     |
-| Zod                          | 52,9865     |
+| **Arri (Compiled)**          | 122,753,978 |
+| Typebox (Compiled)           | 63,131,651  |
+| Ajv -JTD (Compiled)          | 37,814,896  |
+| Ajv - JTD                    | 29,402,413  |
+| Ajv - JSON Schema (Compiled) | 12,003,432  |
+| Ajv -JSON Schema             | 10,057,501  |
+| **Arri**                     | 2,131,823   |
+| Typebox                      | 93,5599     |
+| Zod                          | 52,1357     |
 
 #### Parsing
 
 | Library             | op/s    |
 | ------------------- | ------- |
-| JSON.parse          | 777,989 |
-| **Arri (Compiled)** | 729,225 |
-| **Arri**            | 376,368 |
-| Ajv -JTD (Compiled) | 245,730 |
+| JSON.parse          | 749,534 |
+| **Arri (Compiled)** | 728,382 |
+| **Arri**            | 378,175 |
+| Ajv -JTD (Compiled) | 241,107 |
 
 #### Serialization
 
 | Library                                    | op/s      |
 | ------------------------------------------ | --------- |
-| **Arri (Compiled)**                        | 4,892,713 |
-| **Arri (Compiled) Validate and Serialize** | 4,710,745 |
-| Ajv - JTD (Compiled)                       | 2,222,308 |
-| JSON.stringify                             | 1,318,842 |
-| Arri                                       | 582,747   |
+| **Arri (Compiled)**                        | 4,272,430 |
+| **Arri (Compiled) Validate and Serialize** | 3,846,453 |
+| Ajv - JTD (Compiled)                       | 2,012,894 |
+| JSON.stringify                             | 938,289   |
+| Arri                                       | 481,985   |
 
 #### Coercion
 
 | Library  | op/s    |
 | -------- | ------- |
-| **Arri** | 839,642 |
-| Typebox  | 212,706 |
-| Zod      | 488,505 |
+| **Arri** | 818,963 |
+| Zod      | 466,092 |
+| Typebox  | 209,363 |
 
 ### Integers
+
+The following benchmarks measure how quickly each library operates on a single integer value.
 
 #### Validation
 
 | Library                      | op/s        |
 | ---------------------------- | ----------- |
-| **Arri**                     | 210,933,339 |
-| **Arri (Compiled)**          | 207,119,519 |
-| Ajv - JSON Schema (Compiled) | 193,992,382 |
-| Ajv - JTD (Compiled)         | 169,603,655 |
-| Typebox (Compiled)           | 113,166,065 |
-| Ajv - JSON Schema            | 55,942,777  |
-| Ajv - JTD                    | 51,083,383  |
-| Typebox                      | 45,753,844  |
-| Zod                          | 1,163,445   |
+| Ajv - JSON Schema (Compiled) | 329,332,736 |
+| **Arri (Compiled)**          | 201,644,167 |
+| **Arri**                     | 186,634,732 |
+| Ajv - JTD (Compiled)         | 151,044,902 |
+| Typebox (Compiled)           | 110,692,029 |
+| Ajv - JTD                    | 48,200,004  |
+| Ajv - JSON Schema            | 47,840,571  |
+| Typebox                      | 42,363,980  |
+| Zod                          | 1,266,268   |
 
 #### Parsing
 
 | Library              | op/s        |
 | -------------------- | ----------- |
-| **Arri (Compiled)**  | 153,161,724 |
-| **Arri**             | 138,649,162 |
-| JSON.parse()         | 19,045,882  |
-| Ajv - JTD (Compiled) | 9,363,809   |
+| **Arri (Compiled)**  | 138,189,123 |
+| **Arri**             | 136,995,619 |
+| JSON.parse()         | 19,911,721  |
+| Ajv - JTD (Compiled) | 8,996,081   |
+
+#### Serialization
+
+| Library              | op/s        |
+| -------------------- | ----------- |
+| Ajv - JTD (Compiled) | 198,980,679 |
+| **Arri (Compiled)**  | 190,386,426 |
+| **Arri**             | 114,799,692 |
+| JSON.stringify       | 21,433,854  |
+
+#### Coercion
+
+| Library           | op/s        |
+| ----------------- | ----------- |
+| Arri              | 117,854,219 |
+| TypeBox           | 34,633,126  |
+| Ajv - JSON Schema | 28,016,735  |
+| Zod               | 1,586,546   |
 
 ## Development
 

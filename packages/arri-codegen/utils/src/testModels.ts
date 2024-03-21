@@ -58,6 +58,14 @@ export const TestUserSchema = a.object(
         bio: a.optional(a.string()),
         metadata: a.record(a.any()),
         randomList: a.array(a.any()),
+        binaryTree: a.recursive(
+            (self) =>
+                a.object({
+                    left: a.nullable(self),
+                    right: a.nullable(self),
+                }),
+            { id: "BinaryTree" },
+        ),
     },
     { id: "User" },
 );
