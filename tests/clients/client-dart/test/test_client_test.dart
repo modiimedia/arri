@@ -165,6 +165,51 @@ Future<void> main() async {
         equals(true),
       );
     });
+    test("sendRecursiveObject", () async {
+      final input = RecursiveObject(
+        left: RecursiveObject(
+          left: RecursiveObject(
+            left: null,
+            right: null,
+            value: "depth2",
+          ),
+          right: null,
+          value: "depth1",
+        ),
+        right: RecursiveObject(
+          left: null,
+          right: null,
+          value: "depth1,",
+        ),
+        value: "depth0",
+      );
+      final result = await client.miscTests.sendRecursiveObject(input);
+      expect(result.left?.left?.left, equals(null));
+      expect(result.left?.left?.value, equals("depth2"));
+    });
+    test("sendRecursiveUnion", () async {
+      final input = RecursiveUnionChildren(
+        data: [
+          RecursiveUnionChild(
+            data: RecursiveUnionText(
+              data: "hello world",
+            ),
+          ),
+          RecursiveUnionShape(
+            data: RecursiveUnionShapeData(
+              width: 1,
+              height: 1,
+              color: "blue",
+            ),
+          ),
+        ],
+      );
+      final result = await client.miscTests.sendRecursiveUnion(input);
+      expect(result is RecursiveUnionChildren, equals(true));
+      expect((result as RecursiveUnionChildren).data.length, equals(2));
+      expect((result.data[0] as RecursiveUnionChild).data is RecursiveUnionText,
+          equals(true));
+    });
   });
 
   group("stream requests", () {

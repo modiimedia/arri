@@ -2239,8 +2239,8 @@ class ObjectWithEveryOptionalTypeNestedArrayItemItem {
 }
 
 class RecursiveObject {
-  final dynamic left;
-  final dynamic right;
+  final RecursiveObject? left;
+  final RecursiveObject? right;
   final String value;
   const RecursiveObject({
     required this.left,
@@ -2249,16 +2249,20 @@ class RecursiveObject {
   });
   factory RecursiveObject.fromJson(Map<String, dynamic> json) {
     return RecursiveObject(
-      left: json["left"],
-      right: json["right"],
+      left: json["left"] is Map<String, dynamic>
+          ? RecursiveObject.fromJson(json["left"])
+          : null,
+      right: json["right"] is Map<String, dynamic>
+          ? RecursiveObject.fromJson(json["right"])
+          : null,
       value: typeFromDynamic<String>(json["value"], ""),
     );
   }
 
   Map<String, dynamic> toJson() {
     final __result = <String, dynamic>{
-      "left": left,
-      "right": right,
+      "left": left?.toJson(),
+      "right": right?.toJson(),
       "value": value,
     };
 
@@ -2266,8 +2270,8 @@ class RecursiveObject {
   }
 
   RecursiveObject copyWith({
-    dynamic left,
-    dynamic right,
+    RecursiveObject? left,
+    RecursiveObject? right,
     String? value,
   }) {
     return RecursiveObject(
@@ -2309,27 +2313,27 @@ sealed class RecursiveUnion {
 class RecursiveUnionChild implements RecursiveUnion {
   @override
   final String type = "CHILD";
-  final dynamic data;
+  final RecursiveUnion data;
   const RecursiveUnionChild({
     required this.data,
   });
   factory RecursiveUnionChild.fromJson(Map<String, dynamic> json) {
     return RecursiveUnionChild(
-      data: json["data"],
+      data: RecursiveUnion.fromJson(json["data"]),
     );
   }
   @override
   Map<String, dynamic> toJson() {
     final __result = <String, dynamic>{
       "type": type,
-      "data": data,
+      "data": data.toJson(),
     };
 
     return __result;
   }
 
   RecursiveUnionChild copyWith({
-    dynamic data,
+    RecursiveUnion? data,
   }) {
     return RecursiveUnionChild(
       data: data ?? this.data,
@@ -2340,7 +2344,7 @@ class RecursiveUnionChild implements RecursiveUnion {
 class RecursiveUnionChildren implements RecursiveUnion {
   @override
   final String type = "CHILDREN";
-  final List<dynamic> data;
+  final List<RecursiveUnion> data;
   const RecursiveUnionChildren({
     required this.data,
   });
@@ -2349,22 +2353,24 @@ class RecursiveUnionChildren implements RecursiveUnion {
       data: json["data"] is List
           ?
           // ignore: unnecessary_cast
-          (json["data"] as List).map((item) => item).toList() as List<dynamic>
-          : <dynamic>[],
+          (json["data"] as List)
+              .map((item) => RecursiveUnion.fromJson(item))
+              .toList() as List<RecursiveUnion>
+          : <RecursiveUnion>[],
     );
   }
   @override
   Map<String, dynamic> toJson() {
     final __result = <String, dynamic>{
       "type": type,
-      "data": data.map((item) => item).toList(),
+      "data": data.map((item) => item.toJson()).toList(),
     };
 
     return __result;
   }
 
   RecursiveUnionChildren copyWith({
-    List<dynamic>? data,
+    List<RecursiveUnion>? data,
   }) {
     return RecursiveUnionChildren(
       data: data ?? this.data,
