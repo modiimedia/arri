@@ -3,16 +3,15 @@ import {
     removeDisallowedChars,
     isRpcHttpMethod,
     type RpcHttpMethod,
+    type HttpRpcDefinition,
 } from "arri-codegen-utils";
 import {
     type AObjectSchema,
     type InferType,
     isAObjectSchema,
     a,
-    type ARecordSchema,
     type ADiscriminatorSchema,
     type ASchema,
-    isARecordSchema,
     isADiscriminatorSchema,
 } from "arri-validate";
 import {
@@ -35,21 +34,12 @@ import {
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 
-export type RpcParamSchema<
-    TObjectInner = any,
-    TRecordInner extends ASchema = any,
-    TDiscriminatorInner = any,
-> =
+export type RpcParamSchema<TObjectInner = any, TDiscriminatorInner = any> =
     | AObjectSchema<TObjectInner>
-    | ARecordSchema<TRecordInner>
     | ADiscriminatorSchema<TDiscriminatorInner>;
 
 export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
-    return (
-        isAObjectSchema(input) ||
-        isARecordSchema(input) ||
-        isADiscriminatorSchema(input)
-    );
+    return isAObjectSchema(input) || isADiscriminatorSchema(input);
 }
 
 export interface NamedRpc<
@@ -153,11 +143,11 @@ export function defineRpc<
     return config;
 }
 
-export function createRpcDefinition(
+export function createHttpRpcDefinition(
     rpcName: string,
     httpPath: string,
     procedure: Rpc<any, any, any>,
-): RpcDefinition {
+): HttpRpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
         method = procedure.method ?? "get";
@@ -165,6 +155,7 @@ export function createRpcDefinition(
         method = procedure.method ?? "post";
     }
     return {
+        transport: "http",
         description: procedure.description,
         path: httpPath,
         method,

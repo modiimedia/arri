@@ -11,20 +11,36 @@ interface TestClientOptions {
 export class TestClient {
     private readonly baseUrl: string;
     private readonly headers: Record<string, string>;
+    authors: TestClientAuthorsService;
     adapters: TestClientAdaptersService;
     miscTests: TestClientMiscTestsService;
-    posts: TestClientPostsService;
-    users: TestClientUsersService;
-    videos: TestClientVideosService;
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
+        this.authors = new TestClientAuthorsService(options);
         this.adapters = new TestClientAdaptersService(options);
         this.miscTests = new TestClientMiscTestsService(options);
-        this.posts = new TestClientPostsService(options);
-        this.users = new TestClientUsersService(options);
-        this.videos = new TestClientVideosService(options);
+    }
+}
+
+export class TestClientAuthorsService {
+    private readonly baseUrl: string;
+    private readonly headers: Record<string, string>;
+
+    constructor(options: TestClientOptions = {}) {
+        this.baseUrl = options.baseUrl ?? "";
+        this.headers = { "client-version": "10", ...options.headers };
+    }
+    updateAuthor(params: AuthorsUpdateAuthorParams) {
+        return arriRequest<Author, AuthorsUpdateAuthorParams>({
+            url: `${this.baseUrl}/rpcs/authors/update-author`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: $$Author.parse,
+            serializer: $$AuthorsUpdateAuthorParams.serialize,
+        });
     }
 }
 
@@ -36,17 +52,14 @@ export class TestClientAdaptersService {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
     }
-    typeboxAdapter(params: AdaptersTypeboxAdapterParams) {
-        return arriRequest<
-            AdaptersTypeboxAdapterResponse,
-            AdaptersTypeboxAdapterParams
-        >({
-            url: `${this.baseUrl}/rpcs/adapters/typebox-adapter`,
+    typebox(params: TypeBoxObject) {
+        return arriRequest<TypeBoxObject, TypeBoxObject>({
+            url: `${this.baseUrl}/rpcs/adapters/typebox`,
             method: "post",
             headers: this.headers,
             params,
-            parser: $$AdaptersTypeboxAdapterResponse.parse,
-            serializer: $$AdaptersTypeboxAdapterParams.serialize,
+            parser: $$TypeBoxObject.parse,
+            serializer: $$TypeBoxObject.serialize,
         });
     }
 }
@@ -107,6 +120,26 @@ export class TestClientMiscTestsService {
             params,
             parser: $$ObjectWithEveryOptionalType.parse,
             serializer: $$ObjectWithEveryOptionalType.serialize,
+        });
+    }
+    sendRecursiveObject(params: RecursiveObject) {
+        return arriRequest<RecursiveObject, RecursiveObject>({
+            url: `${this.baseUrl}/rpcs/misc-tests/send-recursive-object`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: $$RecursiveObject.parse,
+            serializer: $$RecursiveObject.serialize,
+        });
+    }
+    sendRecursiveUnion(params: RecursiveUnion) {
+        return arriRequest<RecursiveUnion, RecursiveUnion>({
+            url: `${this.baseUrl}/rpcs/misc-tests/send-recursive-union`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: $$RecursiveUnion.parse,
+            serializer: $$RecursiveUnion.serialize,
         });
     }
     streamAutoReconnect(
@@ -201,112 +234,6 @@ export class TestClientMiscTestsService {
     }
 }
 
-export class TestClientPostsService {
-    private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
-
-    constructor(options: TestClientOptions = {}) {
-        this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
-    }
-    getPost(params: PostParams) {
-        return arriRequest<Post, PostParams>({
-            url: `${this.baseUrl}/rpcs/posts/get-post`,
-            method: "get",
-            headers: this.headers,
-            params,
-            parser: $$Post.parse,
-            serializer: $$PostParams.serialize,
-        });
-    }
-    getPosts(params: PostListParams) {
-        return arriRequest<PostListResponse, PostListParams>({
-            url: `${this.baseUrl}/rpcs/posts/get-posts`,
-            method: "get",
-            headers: this.headers,
-            params,
-            parser: $$PostListResponse.parse,
-            serializer: $$PostListParams.serialize,
-        });
-    }
-    logEvent(params: PostEvent) {
-        return arriRequest<LogPostEventResponse, PostEvent>({
-            url: `${this.baseUrl}/rpcs/posts/log-event`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$LogPostEventResponse.parse,
-            serializer: $$PostEvent.serialize,
-        });
-    }
-    updatePost(params: UpdatePostParams) {
-        return arriRequest<Post, UpdatePostParams>({
-            url: `${this.baseUrl}/rpcs/posts/update-post`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$Post.parse,
-            serializer: $$UpdatePostParams.serialize,
-        });
-    }
-}
-
-export class TestClientUsersService {
-    private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
-
-    constructor(options: TestClientOptions = {}) {
-        this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
-    }
-    watchUser(
-        params: UsersWatchUserParams,
-        options: SseOptions<UsersWatchUserResponse>,
-    ) {
-        return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
-            {
-                url: `${this.baseUrl}/rpcs/users/watch-user`,
-                method: "get",
-                headers: this.headers,
-                params,
-                parser: $$UsersWatchUserResponse.parse,
-                serializer: $$UsersWatchUserParams.serialize,
-            },
-            options,
-        );
-    }
-}
-
-export class TestClientVideosService {
-    private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
-
-    constructor(options: TestClientOptions = {}) {
-        this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
-    }
-    getAnnotation(params: AnnotationId) {
-        return arriRequest<Annotation, AnnotationId>({
-            url: `${this.baseUrl}/rpcs/videos/get-annotation`,
-            method: "get",
-            headers: this.headers,
-            params,
-            parser: $$Annotation.parse,
-            serializer: $$AnnotationId.serialize,
-        });
-    }
-    updateAnnotation(params: UpdateAnnotationParams) {
-        return arriRequest<Annotation, UpdateAnnotationParams>({
-            url: `${this.baseUrl}/rpcs/videos/update-annotation`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$Annotation.parse,
-            serializer: $$UpdateAnnotationParams.serialize,
-        });
-    }
-}
-
 export interface ManuallyAddedModel {
     hello: string;
 }
@@ -322,9 +249,9 @@ const $$ManuallyAddedModel = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.hello === "string") {
-                    jsonInnerVal.hello = json.hello;
+                    __D1.hello = json.hello;
                 } else {
                     $fallback(
                         "/hello",
@@ -332,7 +259,7 @@ const $$ManuallyAddedModel = {
                         "Expected string at /hello",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -340,9 +267,9 @@ const $$ManuallyAddedModel = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.hello === "string") {
-                inputInnerVal.hello = input.hello;
+                __D1.hello = input.hello;
             } else {
                 $fallback(
                     "/hello",
@@ -350,7 +277,7 @@ const $$ManuallyAddedModel = {
                     "Expected string at /hello",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -358,25 +285,57 @@ const $$ManuallyAddedModel = {
     },
     serialize(input: ManuallyAddedModel): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
-        json += `"hello":"${input.hello.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"hello":`;
+        if (input.hello.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.hello.length; i++) {
+                __point__ = input.hello.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.hello);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.hello.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.hello}"`;
+                } else {
+                    json += `"${__result__}${input.hello.slice(__last__)}"`;
+                }
+            }
+        } else if (input.hello.length < 5000 && !STR_ESCAPE.test(input.hello)) {
+            json += `"${input.hello}"`;
+        } else {
+            json += JSON.stringify(input.hello);
+        }
         json += "}";
         return json;
     },
 };
 
-export interface AdaptersTypeboxAdapterParams {
-    string: string;
-    boolean: boolean;
-    integer: number;
-    number: number;
-    enumField: AdaptersTypeboxAdapterParamsEnumField;
-    object: AdaptersTypeboxAdapterParamsObject;
-    array: Array<boolean>;
-    optionalString?: string;
+export interface AuthorsUpdateAuthorParams {
+    authorId: string;
+    data: UpdateAuthorData;
 }
-const $$AdaptersTypeboxAdapterParams = {
-    parse(input: Record<any, any>): AdaptersTypeboxAdapterParams {
+const $$AuthorsUpdateAuthorParams = {
+    parse(input: Record<any, any>): AuthorsUpdateAuthorParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
                 `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
@@ -387,9 +346,732 @@ const $$AdaptersTypeboxAdapterParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
+                if (typeof json.authorId === "string") {
+                    __D1.authorId = json.authorId;
+                } else {
+                    $fallback(
+                        "/authorId",
+                        "/properties/authorId/type",
+                        "Expected string at /authorId",
+                    );
+                }
+                if (typeof json.data === "object" && json.data !== null) {
+                    const __D2 = {};
+                    if (typeof json.data.name === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (typeof json.data.name === "string") {
+                            __D2.name = json.data.name;
+                        } else {
+                            $fallback(
+                                "/data/name",
+                                "/properties/data/optionalProperties/name/type",
+                                "Expected string at /data/name",
+                            );
+                        }
+                    }
+                    if (typeof json.data.bio === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (json.data.bio === null) {
+                            __D2.bio = json.data.bio;
+                        } else {
+                            if (typeof json.data.bio === "string") {
+                                __D2.bio = json.data.bio;
+                            } else {
+                                $fallback(
+                                    "/data/bio",
+                                    "/properties/data/optionalProperties/bio/type",
+                                    "Expected string at /data/bio",
+                                );
+                            }
+                        }
+                    }
+                    if (typeof json.data.createdAt === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (
+                            typeof json.data.createdAt === "object" &&
+                            json.data.createdAt instanceof Date
+                        ) {
+                            __D2.createdAt = json.data.createdAt;
+                        } else if (typeof json.data.createdAt === "string") {
+                            __D2.createdAt = new Date(json.data.createdAt);
+                        } else {
+                            $fallback(
+                                "/data/createdAt",
+                                "/properties/data/optionalProperties/createdAt",
+                                "Expected instanceof Date or ISO Date string at /data/createdAt",
+                            );
+                        }
+                    }
+                    if (typeof json.data.updatedAt === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (
+                            typeof json.data.updatedAt === "object" &&
+                            json.data.updatedAt instanceof Date
+                        ) {
+                            __D2.updatedAt = json.data.updatedAt;
+                        } else if (typeof json.data.updatedAt === "string") {
+                            __D2.updatedAt = new Date(json.data.updatedAt);
+                        } else {
+                            $fallback(
+                                "/data/updatedAt",
+                                "/properties/data/optionalProperties/updatedAt",
+                                "Expected instanceof Date or ISO Date string at /data/updatedAt",
+                            );
+                        }
+                    }
+                    __D1.data = __D2;
+                } else {
+                    $fallback("/data", "/properties/data", "Expected object");
+                }
+                result = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const __D1 = {};
+            if (typeof input.authorId === "string") {
+                __D1.authorId = input.authorId;
+            } else {
+                $fallback(
+                    "/authorId",
+                    "/properties/authorId/type",
+                    "Expected string at /authorId",
+                );
+            }
+            if (typeof input.data === "object" && input.data !== null) {
+                const __D2 = {};
+                if (typeof input.data.name === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (typeof input.data.name === "string") {
+                        __D2.name = input.data.name;
+                    } else {
+                        $fallback(
+                            "/data/name",
+                            "/properties/data/optionalProperties/name/type",
+                            "Expected string at /data/name",
+                        );
+                    }
+                }
+                if (typeof input.data.bio === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (input.data.bio === null) {
+                        __D2.bio = input.data.bio;
+                    } else {
+                        if (typeof input.data.bio === "string") {
+                            __D2.bio = input.data.bio;
+                        } else {
+                            $fallback(
+                                "/data/bio",
+                                "/properties/data/optionalProperties/bio/type",
+                                "Expected string at /data/bio",
+                            );
+                        }
+                    }
+                }
+                if (typeof input.data.createdAt === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (
+                        typeof input.data.createdAt === "object" &&
+                        input.data.createdAt instanceof Date
+                    ) {
+                        __D2.createdAt = input.data.createdAt;
+                    } else if (typeof input.data.createdAt === "string") {
+                        __D2.createdAt = new Date(input.data.createdAt);
+                    } else {
+                        $fallback(
+                            "/data/createdAt",
+                            "/properties/data/optionalProperties/createdAt",
+                            "Expected instanceof Date or ISO Date string at /data/createdAt",
+                        );
+                    }
+                }
+                if (typeof input.data.updatedAt === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (
+                        typeof input.data.updatedAt === "object" &&
+                        input.data.updatedAt instanceof Date
+                    ) {
+                        __D2.updatedAt = input.data.updatedAt;
+                    } else if (typeof input.data.updatedAt === "string") {
+                        __D2.updatedAt = new Date(input.data.updatedAt);
+                    } else {
+                        $fallback(
+                            "/data/updatedAt",
+                            "/properties/data/optionalProperties/updatedAt",
+                            "Expected instanceof Date or ISO Date string at /data/updatedAt",
+                        );
+                    }
+                }
+                __D1.data = __D2;
+            } else {
+                $fallback("/data", "/properties/data", "Expected object");
+            }
+            result = __D1;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: AuthorsUpdateAuthorParams): string {
+        let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        json += "{";
+        json += `"authorId":`;
+        if (input.authorId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.authorId.length; i++) {
+                __point__ = input.authorId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.authorId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.authorId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.authorId}"`;
+                } else {
+                    json += `"${__result__}${input.authorId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.authorId.length < 5000 &&
+            !STR_ESCAPE.test(input.authorId)
+        ) {
+            json += `"${input.authorId}"`;
+        } else {
+            json += JSON.stringify(input.authorId);
+        }
+
+        json += ',"data":';
+        json += "{";
+        let dataHasFields = false;
+        if (typeof input.data.name !== "undefined") {
+            if (dataHasFields) {
+                json += `,"name":`;
+                if (input.data.name.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.name.length; i++) {
+                        __point__ = input.data.name.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.name);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.name.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.name}"`;
+                        } else {
+                            json += `"${__result__}${input.data.name.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.name.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.name)
+                ) {
+                    json += `"${input.data.name}"`;
+                } else {
+                    json += JSON.stringify(input.data.name);
+                }
+            } else {
+                json += `"name":`;
+                if (input.data.name.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.name.length; i++) {
+                        __point__ = input.data.name.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.name);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.name.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.name}"`;
+                        } else {
+                            json += `"${__result__}${input.data.name.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.name.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.name)
+                ) {
+                    json += `"${input.data.name}"`;
+                } else {
+                    json += JSON.stringify(input.data.name);
+                }
+                dataHasFields = true;
+            }
+        }
+        if (typeof input.data.bio !== "undefined") {
+            if (dataHasFields) {
+                if (typeof input.data.bio === "string") {
+                    json += `,"bio":`;
+                    if (input.data.bio.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < input.data.bio.length; i++) {
+                            __point__ = input.data.bio.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(input.data.bio);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.data.bio.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.data.bio}"`;
+                            } else {
+                                json += `"${__result__}${input.data.bio.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.data.bio.length < 5000 &&
+                        !STR_ESCAPE.test(input.data.bio)
+                    ) {
+                        json += `"${input.data.bio}"`;
+                    } else {
+                        json += JSON.stringify(input.data.bio);
+                    }
+                } else {
+                    json += ',"bio":null';
+                }
+            } else {
+                if (typeof input.data.bio === "string") {
+                    json += `"bio":`;
+                    if (input.data.bio.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < input.data.bio.length; i++) {
+                            __point__ = input.data.bio.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(input.data.bio);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.data.bio.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.data.bio}"`;
+                            } else {
+                                json += `"${__result__}${input.data.bio.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.data.bio.length < 5000 &&
+                        !STR_ESCAPE.test(input.data.bio)
+                    ) {
+                        json += `"${input.data.bio}"`;
+                    } else {
+                        json += JSON.stringify(input.data.bio);
+                    }
+                } else {
+                    json += '"bio":null';
+                }
+                dataHasFields = true;
+            }
+        }
+        if (typeof input.data.createdAt !== "undefined") {
+            if (dataHasFields) {
+                json += `,"createdAt":"${input.data.createdAt.toISOString()}"`;
+            } else {
+                json += `"createdAt":"${input.data.createdAt.toISOString()}"`;
+                dataHasFields = true;
+            }
+        }
+        if (typeof input.data.updatedAt !== "undefined") {
+            if (dataHasFields) {
+                json += `,"updatedAt":"${input.data.updatedAt.toISOString()}"`;
+            } else {
+                json += `"updatedAt":"${input.data.updatedAt.toISOString()}"`;
+                dataHasFields = true;
+            }
+        }
+        json += "}";
+        json += "}";
+        return json;
+    },
+};
+export interface UpdateAuthorData {
+    name?: string;
+    bio?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface Author {
+    id: string;
+    name: string;
+    bio: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+}
+const $$Author = {
+    parse(input: Record<any, any>): Author {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const __D1 = {};
+                if (typeof json.id === "string") {
+                    __D1.id = json.id;
+                } else {
+                    $fallback(
+                        "/id",
+                        "/properties/id/type",
+                        "Expected string at /id",
+                    );
+                }
+                if (typeof json.name === "string") {
+                    __D1.name = json.name;
+                } else {
+                    $fallback(
+                        "/name",
+                        "/properties/name/type",
+                        "Expected string at /name",
+                    );
+                }
+                if (json.bio === null) {
+                    __D1.bio = json.bio;
+                } else {
+                    if (typeof json.bio === "string") {
+                        __D1.bio = json.bio;
+                    } else {
+                        $fallback(
+                            "/bio",
+                            "/properties/bio/type",
+                            "Expected string at /bio",
+                        );
+                    }
+                }
+                if (
+                    typeof json.createdAt === "object" &&
+                    json.createdAt instanceof Date
+                ) {
+                    __D1.createdAt = json.createdAt;
+                } else if (typeof json.createdAt === "string") {
+                    __D1.createdAt = new Date(json.createdAt);
+                } else {
+                    $fallback(
+                        "/createdAt",
+                        "/properties/createdAt",
+                        "Expected instanceof Date or ISO Date string at /createdAt",
+                    );
+                }
+                if (
+                    typeof json.updatedAt === "object" &&
+                    json.updatedAt instanceof Date
+                ) {
+                    __D1.updatedAt = json.updatedAt;
+                } else if (typeof json.updatedAt === "string") {
+                    __D1.updatedAt = new Date(json.updatedAt);
+                } else {
+                    $fallback(
+                        "/updatedAt",
+                        "/properties/updatedAt",
+                        "Expected instanceof Date or ISO Date string at /updatedAt",
+                    );
+                }
+                result = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const __D1 = {};
+            if (typeof input.id === "string") {
+                __D1.id = input.id;
+            } else {
+                $fallback(
+                    "/id",
+                    "/properties/id/type",
+                    "Expected string at /id",
+                );
+            }
+            if (typeof input.name === "string") {
+                __D1.name = input.name;
+            } else {
+                $fallback(
+                    "/name",
+                    "/properties/name/type",
+                    "Expected string at /name",
+                );
+            }
+            if (input.bio === null) {
+                __D1.bio = input.bio;
+            } else {
+                if (typeof input.bio === "string") {
+                    __D1.bio = input.bio;
+                } else {
+                    $fallback(
+                        "/bio",
+                        "/properties/bio/type",
+                        "Expected string at /bio",
+                    );
+                }
+            }
+            if (
+                typeof input.createdAt === "object" &&
+                input.createdAt instanceof Date
+            ) {
+                __D1.createdAt = input.createdAt;
+            } else if (typeof input.createdAt === "string") {
+                __D1.createdAt = new Date(input.createdAt);
+            } else {
+                $fallback(
+                    "/createdAt",
+                    "/properties/createdAt",
+                    "Expected instanceof Date or ISO Date string at /createdAt",
+                );
+            }
+            if (
+                typeof input.updatedAt === "object" &&
+                input.updatedAt instanceof Date
+            ) {
+                __D1.updatedAt = input.updatedAt;
+            } else if (typeof input.updatedAt === "string") {
+                __D1.updatedAt = new Date(input.updatedAt);
+            } else {
+                $fallback(
+                    "/updatedAt",
+                    "/properties/updatedAt",
+                    "Expected instanceof Date or ISO Date string at /updatedAt",
+                );
+            }
+            result = __D1;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: Author): string {
+        let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        json += "{";
+        json += `"id":`;
+        if (input.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.id.length; i++) {
+                __point__ = input.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += `"${__result__}${input.id.slice(__last__)}"`;
+                }
+            }
+        } else if (input.id.length < 5000 && !STR_ESCAPE.test(input.id)) {
+            json += `"${input.id}"`;
+        } else {
+            json += JSON.stringify(input.id);
+        }
+        json += `,"name":`;
+        if (input.name.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.name.length; i++) {
+                __point__ = input.name.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.name);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.name.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.name}"`;
+                } else {
+                    json += `"${__result__}${input.name.slice(__last__)}"`;
+                }
+            }
+        } else if (input.name.length < 5000 && !STR_ESCAPE.test(input.name)) {
+            json += `"${input.name}"`;
+        } else {
+            json += JSON.stringify(input.name);
+        }
+        if (typeof input.bio === "string") {
+            json += `,"bio":`;
+            if (input.bio.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.bio.length; i++) {
+                    __point__ = input.bio.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.bio);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ += input.bio.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.bio}"`;
+                    } else {
+                        json += `"${__result__}${input.bio.slice(__last__)}"`;
+                    }
+                }
+            } else if (input.bio.length < 5000 && !STR_ESCAPE.test(input.bio)) {
+                json += `"${input.bio}"`;
+            } else {
+                json += JSON.stringify(input.bio);
+            }
+        } else {
+            json += ',"bio":null';
+        }
+        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
+        json += `,"updatedAt":"${input.updatedAt.toISOString()}"`;
+        json += "}";
+        return json;
+    },
+};
+
+export interface TypeBoxObject {
+    string: string;
+    boolean: boolean;
+    integer: number;
+    number: number;
+    enumField: TypeBoxObjectEnumField;
+    object: TypeBoxObjectObject;
+    array: Array<boolean>;
+    optionalString?: string;
+}
+const $$TypeBoxObject = {
+    parse(input: Record<any, any>): TypeBoxObject {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const __D1 = {};
                 if (typeof json.string === "string") {
-                    jsonInnerVal.string = json.string;
+                    __D1.string = json.string;
                 } else {
                     $fallback(
                         "/string",
@@ -398,7 +1080,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (typeof json.boolean === "boolean") {
-                    jsonInnerVal.boolean = json.boolean;
+                    __D1.boolean = json.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -412,7 +1094,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     json.integer >= -2147483648 &&
                     json.integer <= 2147483647
                 ) {
-                    jsonInnerVal.integer = json.integer;
+                    __D1.integer = json.integer;
                 } else {
                     $fallback(
                         "/integer",
@@ -424,7 +1106,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     typeof json.number === "number" &&
                     !Number.isNaN(json.number)
                 ) {
-                    jsonInnerVal.number = json.number;
+                    __D1.number = json.number;
                 } else {
                     $fallback(
                         "/number",
@@ -438,7 +1120,7 @@ const $$AdaptersTypeboxAdapterParams = {
                         json.enumField === "B" ||
                         json.enumField === "C"
                     ) {
-                        jsonInnerVal.enumField = json.enumField;
+                        __D1.enumField = json.enumField;
                     } else {
                         $fallback(
                             "/enumField",
@@ -454,9 +1136,9 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (typeof json.object === "object" && json.object !== null) {
-                    const jsonObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.object.string === "string") {
-                        jsonObjectInnerVal.string = json.object.string;
+                        __D2.string = json.object.string;
                     } else {
                         $fallback(
                             "/object/string",
@@ -464,7 +1146,7 @@ const $$AdaptersTypeboxAdapterParams = {
                             "Expected string at /object/string",
                         );
                     }
-                    jsonInnerVal.object = jsonObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -473,15 +1155,11 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
                 if (Array.isArray(json.array)) {
-                    const jsonInnerValArrayInnerResult = [];
-                    for (const jsonInnerValArrayInnerResultItem of json.array) {
-                        let jsonInnerValArrayInnerResultItemResult;
-                        if (
-                            typeof jsonInnerValArrayInnerResultItem ===
-                            "boolean"
-                        ) {
-                            jsonInnerValArrayInnerResultItemResult =
-                                jsonInnerValArrayInnerResultItem;
+                    const __D2 = [];
+                    for (const __D2AItem of json.array) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "boolean") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -489,11 +1167,9 @@ const $$AdaptersTypeboxAdapterParams = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        jsonInnerValArrayInnerResult.push(
-                            jsonInnerValArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                    __D1.array = __D2;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
@@ -501,7 +1177,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     // ignore undefined
                 } else {
                     if (typeof json.optionalString === "string") {
-                        jsonInnerVal.optionalString = json.optionalString;
+                        __D1.optionalString = json.optionalString;
                     } else {
                         $fallback(
                             "/optionalString",
@@ -510,7 +1186,7 @@ const $$AdaptersTypeboxAdapterParams = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -518,9 +1194,9 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.string === "string") {
-                inputInnerVal.string = input.string;
+                __D1.string = input.string;
             } else {
                 $fallback(
                     "/string",
@@ -529,7 +1205,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 );
             }
             if (typeof input.boolean === "boolean") {
-                inputInnerVal.boolean = input.boolean;
+                __D1.boolean = input.boolean;
             } else {
                 $fallback(
                     "/boolean",
@@ -543,7 +1219,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 input.integer >= -2147483648 &&
                 input.integer <= 2147483647
             ) {
-                inputInnerVal.integer = input.integer;
+                __D1.integer = input.integer;
             } else {
                 $fallback(
                     "/integer",
@@ -555,7 +1231,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 typeof input.number === "number" &&
                 !Number.isNaN(input.number)
             ) {
-                inputInnerVal.number = input.number;
+                __D1.number = input.number;
             } else {
                 $fallback(
                     "/number",
@@ -569,7 +1245,7 @@ const $$AdaptersTypeboxAdapterParams = {
                     input.enumField === "B" ||
                     input.enumField === "C"
                 ) {
-                    inputInnerVal.enumField = input.enumField;
+                    __D1.enumField = input.enumField;
                 } else {
                     $fallback(
                         "/enumField",
@@ -585,9 +1261,9 @@ const $$AdaptersTypeboxAdapterParams = {
                 );
             }
             if (typeof input.object === "object" && input.object !== null) {
-                const inputObjectInnerVal = {};
+                const __D2 = {};
                 if (typeof input.object.string === "string") {
-                    inputObjectInnerVal.string = input.object.string;
+                    __D2.string = input.object.string;
                 } else {
                     $fallback(
                         "/object/string",
@@ -595,19 +1271,16 @@ const $$AdaptersTypeboxAdapterParams = {
                         "Expected string at /object/string",
                     );
                 }
-                inputInnerVal.object = inputObjectInnerVal;
+                __D1.object = __D2;
             } else {
                 $fallback("/object", "/properties/object", "Expected object");
             }
             if (Array.isArray(input.array)) {
-                const inputInnerValArrayInnerResult = [];
-                for (const inputInnerValArrayInnerResultItem of input.array) {
-                    let inputInnerValArrayInnerResultItemResult;
-                    if (
-                        typeof inputInnerValArrayInnerResultItem === "boolean"
-                    ) {
-                        inputInnerValArrayInnerResultItemResult =
-                            inputInnerValArrayInnerResultItem;
+                const __D2 = [];
+                for (const __D2AItem of input.array) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "boolean") {
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/array/[0]",
@@ -615,11 +1288,9 @@ const $$AdaptersTypeboxAdapterParams = {
                             "Expected boolean for /array/[0]",
                         );
                     }
-                    inputInnerValArrayInnerResult.push(
-                        inputInnerValArrayInnerResultItemResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.array = inputInnerValArrayInnerResult;
+                __D1.array = __D2;
             } else {
                 $fallback("/array", "/properties/array", "Expected Array");
             }
@@ -627,7 +1298,7 @@ const $$AdaptersTypeboxAdapterParams = {
                 // ignore undefined
             } else {
                 if (typeof input.optionalString === "string") {
-                    inputInnerVal.optionalString = input.optionalString;
+                    __D1.optionalString = input.optionalString;
                 } else {
                     $fallback(
                         "/optionalString",
@@ -636,16 +1307,57 @@ const $$AdaptersTypeboxAdapterParams = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
         return result;
     },
-    serialize(input: AdaptersTypeboxAdapterParams): string {
+    serialize(input: TypeBoxObject): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
-        json += `"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"string":`;
+        if (input.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.string.length; i++) {
+                __point__ = input.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += `"${__result__}${input.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.string.length < 5000 &&
+            !STR_ESCAPE.test(input.string)
+        ) {
+            json += `"${input.string}"`;
+        } else {
+            json += JSON.stringify(input.string);
+        }
         json += `,"boolean":${input.boolean}`;
 
         if (Number.isNaN(input.integer)) {
@@ -658,87 +1370,104 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         json += `,"number":${input.number}`;
         json += `,"enumField":"${input.enumField}"`;
-        json += ',"object":{';
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+        json += ',"object":';
+        json += "{";
+        json += `"string":`;
+        if (input.object.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.object.string.length; i++) {
+                __point__ = input.object.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.object.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.object.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.object.string.length < 5000 &&
+            !STR_ESCAPE.test(input.object.string)
+        ) {
+            json += `"${input.object.string}"`;
+        } else {
+            json += JSON.stringify(input.object.string);
+        }
         json += "}";
         json += ',"array":[';
         for (let i = 0; i < input.array.length; i++) {
-            const inputArrayItem = input.array[i];
+            const valArrayItem = input.array[i];
             if (i !== 0) {
                 json += ",";
             }
-            json += `${inputArrayItem}`;
+            json += `${valArrayItem}`;
         }
         json += "]";
         if (typeof input.optionalString !== "undefined") {
-            json += `,"optionalString":"${input.optionalString.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"optionalString":`;
+            if (input.optionalString.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.optionalString.length; i++) {
+                    __point__ = input.optionalString.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.optionalString);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            input.optionalString.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.optionalString}"`;
+                    } else {
+                        json += `"${__result__}${input.optionalString.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                input.optionalString.length < 5000 &&
+                !STR_ESCAPE.test(input.optionalString)
+            ) {
+                json += `"${input.optionalString}"`;
+            } else {
+                json += JSON.stringify(input.optionalString);
+            }
         }
         json += "}";
         return json;
     },
 };
-export type AdaptersTypeboxAdapterParamsEnumField = "A" | "B" | "C";
-export interface AdaptersTypeboxAdapterParamsObject {
+export type TypeBoxObjectEnumField = "A" | "B" | "C";
+export interface TypeBoxObjectObject {
     string: string;
 }
-
-export interface AdaptersTypeboxAdapterResponse {
-    message: string;
-}
-const $$AdaptersTypeboxAdapterResponse = {
-    parse(input: Record<any, any>): AdaptersTypeboxAdapterResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
-                } else {
-                    $fallback(
-                        "/message",
-                        "/properties/message/type",
-                        "Expected string at /message",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
-            } else {
-                $fallback(
-                    "/message",
-                    "/properties/message/type",
-                    "Expected string at /message",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: AdaptersTypeboxAdapterResponse): string {
-        let json = "";
-        json += "{";
-        json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        return json;
-    },
-};
 
 /**
  * @deprecated
@@ -761,9 +1490,9 @@ const $$DeprecatedRpcParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.deprecatedField === "string") {
-                    jsonInnerVal.deprecatedField = json.deprecatedField;
+                    __D1.deprecatedField = json.deprecatedField;
                 } else {
                     $fallback(
                         "/deprecatedField",
@@ -771,7 +1500,7 @@ const $$DeprecatedRpcParams = {
                         "Expected string at /deprecatedField",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -779,9 +1508,9 @@ const $$DeprecatedRpcParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.deprecatedField === "string") {
-                inputInnerVal.deprecatedField = input.deprecatedField;
+                __D1.deprecatedField = input.deprecatedField;
             } else {
                 $fallback(
                     "/deprecatedField",
@@ -789,7 +1518,7 @@ const $$DeprecatedRpcParams = {
                     "Expected string at /deprecatedField",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -797,8 +1526,50 @@ const $$DeprecatedRpcParams = {
     },
     serialize(input: DeprecatedRpcParams): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
-        json += `"deprecatedField":"${input.deprecatedField.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"deprecatedField":`;
+        if (input.deprecatedField.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.deprecatedField.length; i++) {
+                __point__ = input.deprecatedField.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.deprecatedField);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.deprecatedField.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.deprecatedField}"`;
+                } else {
+                    json += `"${__result__}${input.deprecatedField.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.deprecatedField.length < 5000 &&
+            !STR_ESCAPE.test(input.deprecatedField)
+        ) {
+            json += `"${input.deprecatedField}"`;
+        } else {
+            json += JSON.stringify(input.deprecatedField);
+        }
         json += "}";
         return json;
     },
@@ -839,10 +1610,10 @@ const $$ObjectWithEveryType = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                jsonInnerVal.any = json.any;
+                const __D1 = {};
+                __D1.any = json.any;
                 if (typeof json.boolean === "boolean") {
-                    jsonInnerVal.boolean = json.boolean;
+                    __D1.boolean = json.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -851,7 +1622,7 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof json.string === "string") {
-                    jsonInnerVal.string = json.string;
+                    __D1.string = json.string;
                 } else {
                     $fallback(
                         "/string",
@@ -863,9 +1634,9 @@ const $$ObjectWithEveryType = {
                     typeof json.timestamp === "object" &&
                     json.timestamp instanceof Date
                 ) {
-                    jsonInnerVal.timestamp = json.timestamp;
+                    __D1.timestamp = json.timestamp;
                 } else if (typeof json.timestamp === "string") {
-                    jsonInnerVal.timestamp = new Date(json.timestamp);
+                    __D1.timestamp = new Date(json.timestamp);
                 } else {
                     $fallback(
                         "/timestamp",
@@ -877,7 +1648,7 @@ const $$ObjectWithEveryType = {
                     typeof json.float32 === "number" &&
                     !Number.isNaN(json.float32)
                 ) {
-                    jsonInnerVal.float32 = json.float32;
+                    __D1.float32 = json.float32;
                 } else {
                     $fallback(
                         "/float32",
@@ -889,7 +1660,7 @@ const $$ObjectWithEveryType = {
                     typeof json.float64 === "number" &&
                     !Number.isNaN(json.float64)
                 ) {
-                    jsonInnerVal.float64 = json.float64;
+                    __D1.float64 = json.float64;
                 } else {
                     $fallback(
                         "/float64",
@@ -903,7 +1674,7 @@ const $$ObjectWithEveryType = {
                     json.int8 >= -128 &&
                     json.int8 <= 127
                 ) {
-                    jsonInnerVal.int8 = json.int8;
+                    __D1.int8 = json.int8;
                 } else {
                     $fallback(
                         "/int8",
@@ -917,7 +1688,7 @@ const $$ObjectWithEveryType = {
                     json.uint8 >= 0 &&
                     json.uint8 <= 255
                 ) {
-                    jsonInnerVal.uint8 = json.uint8;
+                    __D1.uint8 = json.uint8;
                 } else {
                     $fallback(
                         "/uint8",
@@ -931,7 +1702,7 @@ const $$ObjectWithEveryType = {
                     json.int16 >= -32768 &&
                     json.int16 <= 32767
                 ) {
-                    jsonInnerVal.int16 = json.int16;
+                    __D1.int16 = json.int16;
                 } else {
                     $fallback(
                         "/int16",
@@ -945,7 +1716,7 @@ const $$ObjectWithEveryType = {
                     json.uint16 >= 0 &&
                     json.uint16 <= 65535
                 ) {
-                    jsonInnerVal.uint16 = json.uint16;
+                    __D1.uint16 = json.uint16;
                 } else {
                     $fallback(
                         "/uint16",
@@ -959,7 +1730,7 @@ const $$ObjectWithEveryType = {
                     json.int32 >= -2147483648 &&
                     json.int32 <= 2147483647
                 ) {
-                    jsonInnerVal.int32 = json.int32;
+                    __D1.int32 = json.int32;
                 } else {
                     $fallback(
                         "/int32",
@@ -973,7 +1744,7 @@ const $$ObjectWithEveryType = {
                     json.uint32 >= 0 &&
                     json.uint32 <= 4294967295
                 ) {
-                    jsonInnerVal.uint32 = json.uint32;
+                    __D1.uint32 = json.uint32;
                 } else {
                     $fallback(
                         "/uint32",
@@ -987,7 +1758,7 @@ const $$ObjectWithEveryType = {
                 ) {
                     try {
                         const val = BigInt(json.int64);
-                        jsonInnerVal.int64 = val;
+                        __D1.int64 = val;
                     } catch (err) {
                         $fallback(
                             "/int64",
@@ -996,7 +1767,7 @@ const $$ObjectWithEveryType = {
                         );
                     }
                 } else if (typeof json.int64 === "bigint") {
-                    jsonInnerVal.int64 = json.int64;
+                    __D1.int64 = json.int64;
                 } else {
                     $fallback(
                         "/int64",
@@ -1011,7 +1782,7 @@ const $$ObjectWithEveryType = {
                     try {
                         const val = BigInt(json.uint64);
                         if (val >= BigInt("0")) {
-                            jsonInnerVal.uint64 = val;
+                            __D1.uint64 = val;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -1028,7 +1799,7 @@ const $$ObjectWithEveryType = {
                     }
                 } else if (typeof json.uint64 === "bigint") {
                     if (json.uint64 >= BigInt("0")) {
-                        jsonInnerVal.uint64 = json.uint64;
+                        __D1.uint64 = json.uint64;
                     } else {
                         $fallback(
                             "/uint64",
@@ -1049,7 +1820,7 @@ const $$ObjectWithEveryType = {
                         json.enumerator === "B" ||
                         json.enumerator === "C"
                     ) {
-                        jsonInnerVal.enumerator = json.enumerator;
+                        __D1.enumerator = json.enumerator;
                     } else {
                         $fallback(
                             "/enumerator",
@@ -1065,15 +1836,11 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (Array.isArray(json.array)) {
-                    const jsonInnerValArrayInnerResult = [];
-                    for (const jsonInnerValArrayInnerResultItem of json.array) {
-                        let jsonInnerValArrayInnerResultItemResult;
-                        if (
-                            typeof jsonInnerValArrayInnerResultItem ===
-                            "boolean"
-                        ) {
-                            jsonInnerValArrayInnerResultItemResult =
-                                jsonInnerValArrayInnerResultItem;
+                    const __D2 = [];
+                    for (const __D2AItem of json.array) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "boolean") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -1081,18 +1848,16 @@ const $$ObjectWithEveryType = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        jsonInnerValArrayInnerResult.push(
-                            jsonInnerValArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                    __D1.array = __D2;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
                 if (typeof json.object === "object" && json.object !== null) {
-                    const jsonObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.object.string === "string") {
-                        jsonObjectInnerVal.string = json.object.string;
+                        __D2.string = json.object.string;
                     } else {
                         $fallback(
                             "/object/string",
@@ -1101,7 +1866,7 @@ const $$ObjectWithEveryType = {
                         );
                     }
                     if (typeof json.object.boolean === "boolean") {
-                        jsonObjectInnerVal.boolean = json.object.boolean;
+                        __D2.boolean = json.object.boolean;
                     } else {
                         $fallback(
                             "/object/boolean",
@@ -1113,11 +1878,9 @@ const $$ObjectWithEveryType = {
                         typeof json.object.timestamp === "object" &&
                         json.object.timestamp instanceof Date
                     ) {
-                        jsonObjectInnerVal.timestamp = json.object.timestamp;
+                        __D2.timestamp = json.object.timestamp;
                     } else if (typeof json.object.timestamp === "string") {
-                        jsonObjectInnerVal.timestamp = new Date(
-                            json.object.timestamp,
-                        );
+                        __D2.timestamp = new Date(json.object.timestamp);
                     } else {
                         $fallback(
                             "/object/timestamp",
@@ -1125,7 +1888,7 @@ const $$ObjectWithEveryType = {
                             "Expected instanceof Date or ISO Date string at /object/timestamp",
                         );
                     }
-                    jsonInnerVal.object = jsonObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -1134,11 +1897,11 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof json.record === "object" && json.record !== null) {
-                    const jsonRecordResult = {};
-                    for (const jsonRecordKey of Object.keys(json.record)) {
-                        let jsonRecordKeyVal;
-                        if (typeof json.record[jsonRecordKey] === "boolean") {
-                            jsonRecordKeyVal = json.record[jsonRecordKey];
+                    const __D2RResult = {};
+                    for (const __D2RKey of Object.keys(json.record)) {
+                        let __D2RKeyRVal;
+                        if (typeof json.record[__D2RKey] === "boolean") {
+                            __D2RKeyRVal = json.record[__D2RKey];
                         } else {
                             $fallback(
                                 "/record/[key]",
@@ -1146,9 +1909,9 @@ const $$ObjectWithEveryType = {
                                 "Expected boolean for /record/[key]",
                             );
                         }
-                        jsonRecordResult[jsonRecordKey] = jsonRecordKeyVal;
+                        __D2RResult[__D2RKey] = __D2RKeyRVal;
                     }
-                    jsonInnerVal.record = jsonRecordResult;
+                    __D1.record = __D2RResult;
                 } else {
                     $fallback(
                         "/record",
@@ -1166,13 +1929,12 @@ const $$ObjectWithEveryType = {
                                 typeof json.discriminator === "object" &&
                                 json.discriminator !== null
                             ) {
-                                const jsonDiscriminatorInnerVal = {};
-                                jsonDiscriminatorInnerVal.type = "A";
+                                const __D2 = {};
+                                __D2.type = "A";
                                 if (
                                     typeof json.discriminator.title === "string"
                                 ) {
-                                    jsonDiscriminatorInnerVal.title =
-                                        json.discriminator.title;
+                                    __D2.title = json.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -1180,8 +1942,7 @@ const $$ObjectWithEveryType = {
                                         "Expected string at /discriminator/title",
                                     );
                                 }
-                                jsonInnerVal.discriminator =
-                                    jsonDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -1196,13 +1957,12 @@ const $$ObjectWithEveryType = {
                                 typeof json.discriminator === "object" &&
                                 json.discriminator !== null
                             ) {
-                                const jsonDiscriminatorInnerVal = {};
-                                jsonDiscriminatorInnerVal.type = "B";
+                                const __D2 = {};
+                                __D2.type = "B";
                                 if (
                                     typeof json.discriminator.title === "string"
                                 ) {
-                                    jsonDiscriminatorInnerVal.title =
-                                        json.discriminator.title;
+                                    __D2.title = json.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -1214,7 +1974,7 @@ const $$ObjectWithEveryType = {
                                     typeof json.discriminator.description ===
                                     "string"
                                 ) {
-                                    jsonDiscriminatorInnerVal.description =
+                                    __D2.description =
                                         json.discriminator.description;
                                 } else {
                                     $fallback(
@@ -1223,8 +1983,7 @@ const $$ObjectWithEveryType = {
                                         "Expected string at /discriminator/description",
                                     );
                                 }
-                                jsonInnerVal.discriminator =
-                                    jsonDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -1253,9 +2012,9 @@ const $$ObjectWithEveryType = {
                     typeof json.nestedObject === "object" &&
                     json.nestedObject !== null
                 ) {
-                    const jsonNestedObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof json.nestedObject.id === "string") {
-                        jsonNestedObjectInnerVal.id = json.nestedObject.id;
+                        __D2.id = json.nestedObject.id;
                     } else {
                         $fallback(
                             "/nestedObject/id",
@@ -1267,14 +2026,11 @@ const $$ObjectWithEveryType = {
                         typeof json.nestedObject.timestamp === "object" &&
                         json.nestedObject.timestamp instanceof Date
                     ) {
-                        jsonNestedObjectInnerVal.timestamp =
-                            json.nestedObject.timestamp;
+                        __D2.timestamp = json.nestedObject.timestamp;
                     } else if (
                         typeof json.nestedObject.timestamp === "string"
                     ) {
-                        jsonNestedObjectInnerVal.timestamp = new Date(
-                            json.nestedObject.timestamp,
-                        );
+                        __D2.timestamp = new Date(json.nestedObject.timestamp);
                     } else {
                         $fallback(
                             "/nestedObject/timestamp",
@@ -1286,10 +2042,9 @@ const $$ObjectWithEveryType = {
                         typeof json.nestedObject.data === "object" &&
                         json.nestedObject.data !== null
                     ) {
-                        const jsonNestedObjectDataInnerVal = {};
+                        const __D3 = {};
                         if (typeof json.nestedObject.data.id === "string") {
-                            jsonNestedObjectDataInnerVal.id =
-                                json.nestedObject.data.id;
+                            __D3.id = json.nestedObject.data.id;
                         } else {
                             $fallback(
                                 "/nestedObject/data/id",
@@ -1302,12 +2057,11 @@ const $$ObjectWithEveryType = {
                                 "object" &&
                             json.nestedObject.data.timestamp instanceof Date
                         ) {
-                            jsonNestedObjectDataInnerVal.timestamp =
-                                json.nestedObject.data.timestamp;
+                            __D3.timestamp = json.nestedObject.data.timestamp;
                         } else if (
                             typeof json.nestedObject.data.timestamp === "string"
                         ) {
-                            jsonNestedObjectDataInnerVal.timestamp = new Date(
+                            __D3.timestamp = new Date(
                                 json.nestedObject.data.timestamp,
                             );
                         } else {
@@ -1321,13 +2075,12 @@ const $$ObjectWithEveryType = {
                             typeof json.nestedObject.data.data === "object" &&
                             json.nestedObject.data.data !== null
                         ) {
-                            const jsonNestedObjectDataDataInnerVal = {};
+                            const __D4 = {};
                             if (
                                 typeof json.nestedObject.data.data.id ===
                                 "string"
                             ) {
-                                jsonNestedObjectDataDataInnerVal.id =
-                                    json.nestedObject.data.data.id;
+                                __D4.id = json.nestedObject.data.data.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/id",
@@ -1341,16 +2094,15 @@ const $$ObjectWithEveryType = {
                                 json.nestedObject.data.data.timestamp instanceof
                                     Date
                             ) {
-                                jsonNestedObjectDataDataInnerVal.timestamp =
+                                __D4.timestamp =
                                     json.nestedObject.data.data.timestamp;
                             } else if (
                                 typeof json.nestedObject.data.data.timestamp ===
                                 "string"
                             ) {
-                                jsonNestedObjectDataDataInnerVal.timestamp =
-                                    new Date(
-                                        json.nestedObject.data.data.timestamp,
-                                    );
+                                __D4.timestamp = new Date(
+                                    json.nestedObject.data.data.timestamp,
+                                );
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/timestamp",
@@ -1358,8 +2110,7 @@ const $$ObjectWithEveryType = {
                                     "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                                 );
                             }
-                            jsonNestedObjectDataInnerVal.data =
-                                jsonNestedObjectDataDataInnerVal;
+                            __D3.data = __D4;
                         } else {
                             $fallback(
                                 "/nestedObject/data/data",
@@ -1367,8 +2118,7 @@ const $$ObjectWithEveryType = {
                                 "Expected object",
                             );
                         }
-                        jsonNestedObjectInnerVal.data =
-                            jsonNestedObjectDataInnerVal;
+                        __D2.data = __D3;
                     } else {
                         $fallback(
                             "/nestedObject/data",
@@ -1376,7 +2126,7 @@ const $$ObjectWithEveryType = {
                             "Expected object",
                         );
                     }
-                    jsonInnerVal.nestedObject = jsonNestedObjectInnerVal;
+                    __D1.nestedObject = __D2;
                 } else {
                     $fallback(
                         "/nestedObject",
@@ -1385,32 +2135,20 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (Array.isArray(json.nestedArray)) {
-                    const jsonInnerValNestedArrayInnerResult = [];
-                    for (const jsonInnerValNestedArrayInnerResultItem of json.nestedArray) {
-                        let jsonInnerValNestedArrayInnerResultItemResult;
-                        if (
-                            Array.isArray(
-                                jsonInnerValNestedArrayInnerResultItem,
-                            )
-                        ) {
-                            const jsonInnerValNestedArrayInnerResultItemResultInnerResult =
-                                [];
-                            for (const jsonInnerValNestedArrayInnerResultItemResultInnerResultItem of jsonInnerValNestedArrayInnerResultItem) {
-                                let jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.nestedArray) {
+                        let __D2AItemAResult;
+                        if (Array.isArray(__D2AItem)) {
+                            const __D3 = [];
+                            for (const __D3AItem of __D2AItem) {
+                                let __D3AItemAResult;
                                 if (
-                                    typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                        "object" &&
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem !==
-                                        null
+                                    typeof __D3AItem === "object" &&
+                                    __D3AItem !== null
                                 ) {
-                                    const jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
-                                        {};
-                                    if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
-                                        "string"
-                                    ) {
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                    const __D4 = {};
+                                    if (typeof __D3AItem.id === "string") {
+                                        __D4.id = __D3AItem.id;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/id",
@@ -1419,21 +2157,17 @@ const $$ObjectWithEveryType = {
                                         );
                                     }
                                     if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                        typeof __D3AItem.timestamp ===
                                             "object" &&
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
-                                            Date
+                                        __D3AItem.timestamp instanceof Date
                                     ) {
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                        __D4.timestamp = __D3AItem.timestamp;
                                     } else if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
-                                        "string"
+                                        typeof __D3AItem.timestamp === "string"
                                     ) {
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                            new Date(
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
-                                            );
+                                        __D4.timestamp = new Date(
+                                            __D3AItem.timestamp,
+                                        );
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/timestamp",
@@ -1441,8 +2175,7 @@ const $$ObjectWithEveryType = {
                                             "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                         );
                                     }
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                    __D3AItemAResult = __D4;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]",
@@ -1450,12 +2183,9 @@ const $$ObjectWithEveryType = {
                                         "Expected object",
                                     );
                                 }
-                                jsonInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
-                                );
+                                __D3.push(__D3AItemAResult);
                             }
-                            jsonInnerValNestedArrayInnerResultItemResult =
-                                jsonInnerValNestedArrayInnerResultItemResultInnerResult;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/nestedArray/[0]",
@@ -1463,12 +2193,9 @@ const $$ObjectWithEveryType = {
                                 "Expected Array",
                             );
                         }
-                        jsonInnerValNestedArrayInnerResult.push(
-                            jsonInnerValNestedArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.nestedArray =
-                        jsonInnerValNestedArrayInnerResult;
+                    __D1.nestedArray = __D2;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -1476,7 +2203,7 @@ const $$ObjectWithEveryType = {
                         "Expected Array",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -1484,10 +2211,10 @@ const $$ObjectWithEveryType = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            inputInnerVal.any = input.any;
+            const __D1 = {};
+            __D1.any = input.any;
             if (typeof input.boolean === "boolean") {
-                inputInnerVal.boolean = input.boolean;
+                __D1.boolean = input.boolean;
             } else {
                 $fallback(
                     "/boolean",
@@ -1496,7 +2223,7 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (typeof input.string === "string") {
-                inputInnerVal.string = input.string;
+                __D1.string = input.string;
             } else {
                 $fallback(
                     "/string",
@@ -1508,9 +2235,9 @@ const $$ObjectWithEveryType = {
                 typeof input.timestamp === "object" &&
                 input.timestamp instanceof Date
             ) {
-                inputInnerVal.timestamp = input.timestamp;
+                __D1.timestamp = input.timestamp;
             } else if (typeof input.timestamp === "string") {
-                inputInnerVal.timestamp = new Date(input.timestamp);
+                __D1.timestamp = new Date(input.timestamp);
             } else {
                 $fallback(
                     "/timestamp",
@@ -1522,7 +2249,7 @@ const $$ObjectWithEveryType = {
                 typeof input.float32 === "number" &&
                 !Number.isNaN(input.float32)
             ) {
-                inputInnerVal.float32 = input.float32;
+                __D1.float32 = input.float32;
             } else {
                 $fallback(
                     "/float32",
@@ -1534,7 +2261,7 @@ const $$ObjectWithEveryType = {
                 typeof input.float64 === "number" &&
                 !Number.isNaN(input.float64)
             ) {
-                inputInnerVal.float64 = input.float64;
+                __D1.float64 = input.float64;
             } else {
                 $fallback(
                     "/float64",
@@ -1548,7 +2275,7 @@ const $$ObjectWithEveryType = {
                 input.int8 >= -128 &&
                 input.int8 <= 127
             ) {
-                inputInnerVal.int8 = input.int8;
+                __D1.int8 = input.int8;
             } else {
                 $fallback(
                     "/int8",
@@ -1562,7 +2289,7 @@ const $$ObjectWithEveryType = {
                 input.uint8 >= 0 &&
                 input.uint8 <= 255
             ) {
-                inputInnerVal.uint8 = input.uint8;
+                __D1.uint8 = input.uint8;
             } else {
                 $fallback(
                     "/uint8",
@@ -1576,7 +2303,7 @@ const $$ObjectWithEveryType = {
                 input.int16 >= -32768 &&
                 input.int16 <= 32767
             ) {
-                inputInnerVal.int16 = input.int16;
+                __D1.int16 = input.int16;
             } else {
                 $fallback(
                     "/int16",
@@ -1590,7 +2317,7 @@ const $$ObjectWithEveryType = {
                 input.uint16 >= 0 &&
                 input.uint16 <= 65535
             ) {
-                inputInnerVal.uint16 = input.uint16;
+                __D1.uint16 = input.uint16;
             } else {
                 $fallback(
                     "/uint16",
@@ -1604,7 +2331,7 @@ const $$ObjectWithEveryType = {
                 input.int32 >= -2147483648 &&
                 input.int32 <= 2147483647
             ) {
-                inputInnerVal.int32 = input.int32;
+                __D1.int32 = input.int32;
             } else {
                 $fallback(
                     "/int32",
@@ -1618,7 +2345,7 @@ const $$ObjectWithEveryType = {
                 input.uint32 >= 0 &&
                 input.uint32 <= 4294967295
             ) {
-                inputInnerVal.uint32 = input.uint32;
+                __D1.uint32 = input.uint32;
             } else {
                 $fallback(
                     "/uint32",
@@ -1632,7 +2359,7 @@ const $$ObjectWithEveryType = {
             ) {
                 try {
                     const val = BigInt(input.int64);
-                    inputInnerVal.int64 = val;
+                    __D1.int64 = val;
                 } catch (err) {
                     $fallback(
                         "/int64",
@@ -1641,7 +2368,7 @@ const $$ObjectWithEveryType = {
                     );
                 }
             } else if (typeof input.int64 === "bigint") {
-                inputInnerVal.int64 = input.int64;
+                __D1.int64 = input.int64;
             } else {
                 $fallback(
                     "/int64",
@@ -1656,7 +2383,7 @@ const $$ObjectWithEveryType = {
                 try {
                     const val = BigInt(input.uint64);
                     if (val >= BigInt("0")) {
-                        inputInnerVal.uint64 = val;
+                        __D1.uint64 = val;
                     } else {
                         $fallback(
                             "/uint64",
@@ -1673,7 +2400,7 @@ const $$ObjectWithEveryType = {
                 }
             } else if (typeof input.uint64 === "bigint") {
                 if (input.uint64 >= BigInt("0")) {
-                    inputInnerVal.uint64 = input.uint64;
+                    __D1.uint64 = input.uint64;
                 } else {
                     $fallback(
                         "/uint64",
@@ -1694,7 +2421,7 @@ const $$ObjectWithEveryType = {
                     input.enumerator === "B" ||
                     input.enumerator === "C"
                 ) {
-                    inputInnerVal.enumerator = input.enumerator;
+                    __D1.enumerator = input.enumerator;
                 } else {
                     $fallback(
                         "/enumerator",
@@ -1710,14 +2437,11 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (Array.isArray(input.array)) {
-                const inputInnerValArrayInnerResult = [];
-                for (const inputInnerValArrayInnerResultItem of input.array) {
-                    let inputInnerValArrayInnerResultItemResult;
-                    if (
-                        typeof inputInnerValArrayInnerResultItem === "boolean"
-                    ) {
-                        inputInnerValArrayInnerResultItemResult =
-                            inputInnerValArrayInnerResultItem;
+                const __D2 = [];
+                for (const __D2AItem of input.array) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "boolean") {
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/array/[0]",
@@ -1725,18 +2449,16 @@ const $$ObjectWithEveryType = {
                             "Expected boolean for /array/[0]",
                         );
                     }
-                    inputInnerValArrayInnerResult.push(
-                        inputInnerValArrayInnerResultItemResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.array = inputInnerValArrayInnerResult;
+                __D1.array = __D2;
             } else {
                 $fallback("/array", "/properties/array", "Expected Array");
             }
             if (typeof input.object === "object" && input.object !== null) {
-                const inputObjectInnerVal = {};
+                const __D2 = {};
                 if (typeof input.object.string === "string") {
-                    inputObjectInnerVal.string = input.object.string;
+                    __D2.string = input.object.string;
                 } else {
                     $fallback(
                         "/object/string",
@@ -1745,7 +2467,7 @@ const $$ObjectWithEveryType = {
                     );
                 }
                 if (typeof input.object.boolean === "boolean") {
-                    inputObjectInnerVal.boolean = input.object.boolean;
+                    __D2.boolean = input.object.boolean;
                 } else {
                     $fallback(
                         "/object/boolean",
@@ -1757,11 +2479,9 @@ const $$ObjectWithEveryType = {
                     typeof input.object.timestamp === "object" &&
                     input.object.timestamp instanceof Date
                 ) {
-                    inputObjectInnerVal.timestamp = input.object.timestamp;
+                    __D2.timestamp = input.object.timestamp;
                 } else if (typeof input.object.timestamp === "string") {
-                    inputObjectInnerVal.timestamp = new Date(
-                        input.object.timestamp,
-                    );
+                    __D2.timestamp = new Date(input.object.timestamp);
                 } else {
                     $fallback(
                         "/object/timestamp",
@@ -1769,16 +2489,16 @@ const $$ObjectWithEveryType = {
                         "Expected instanceof Date or ISO Date string at /object/timestamp",
                     );
                 }
-                inputInnerVal.object = inputObjectInnerVal;
+                __D1.object = __D2;
             } else {
                 $fallback("/object", "/properties/object", "Expected object");
             }
             if (typeof input.record === "object" && input.record !== null) {
-                const inputRecordResult = {};
-                for (const inputRecordKey of Object.keys(input.record)) {
-                    let inputRecordKeyVal;
-                    if (typeof input.record[inputRecordKey] === "boolean") {
-                        inputRecordKeyVal = input.record[inputRecordKey];
+                const __D2RResult = {};
+                for (const __D2RKey of Object.keys(input.record)) {
+                    let __D2RKeyRVal;
+                    if (typeof input.record[__D2RKey] === "boolean") {
+                        __D2RKeyRVal = input.record[__D2RKey];
                     } else {
                         $fallback(
                             "/record/[key]",
@@ -1786,9 +2506,9 @@ const $$ObjectWithEveryType = {
                             "Expected boolean for /record/[key]",
                         );
                     }
-                    inputRecordResult[inputRecordKey] = inputRecordKeyVal;
+                    __D2RResult[__D2RKey] = __D2RKeyRVal;
                 }
-                inputInnerVal.record = inputRecordResult;
+                __D1.record = __D2RResult;
             } else {
                 $fallback("/record", "/properties/record", "Expected object.");
             }
@@ -1802,11 +2522,10 @@ const $$ObjectWithEveryType = {
                             typeof input.discriminator === "object" &&
                             input.discriminator !== null
                         ) {
-                            const inputDiscriminatorInnerVal = {};
-                            inputDiscriminatorInnerVal.type = "A";
+                            const __D2 = {};
+                            __D2.type = "A";
                             if (typeof input.discriminator.title === "string") {
-                                inputDiscriminatorInnerVal.title =
-                                    input.discriminator.title;
+                                __D2.title = input.discriminator.title;
                             } else {
                                 $fallback(
                                     "/discriminator/title",
@@ -1814,8 +2533,7 @@ const $$ObjectWithEveryType = {
                                     "Expected string at /discriminator/title",
                                 );
                             }
-                            inputInnerVal.discriminator =
-                                inputDiscriminatorInnerVal;
+                            __D1.discriminator = __D2;
                         } else {
                             $fallback(
                                 "/discriminator",
@@ -1830,11 +2548,10 @@ const $$ObjectWithEveryType = {
                             typeof input.discriminator === "object" &&
                             input.discriminator !== null
                         ) {
-                            const inputDiscriminatorInnerVal = {};
-                            inputDiscriminatorInnerVal.type = "B";
+                            const __D2 = {};
+                            __D2.type = "B";
                             if (typeof input.discriminator.title === "string") {
-                                inputDiscriminatorInnerVal.title =
-                                    input.discriminator.title;
+                                __D2.title = input.discriminator.title;
                             } else {
                                 $fallback(
                                     "/discriminator/title",
@@ -1846,7 +2563,7 @@ const $$ObjectWithEveryType = {
                                 typeof input.discriminator.description ===
                                 "string"
                             ) {
-                                inputDiscriminatorInnerVal.description =
+                                __D2.description =
                                     input.discriminator.description;
                             } else {
                                 $fallback(
@@ -1855,8 +2572,7 @@ const $$ObjectWithEveryType = {
                                     "Expected string at /discriminator/description",
                                 );
                             }
-                            inputInnerVal.discriminator =
-                                inputDiscriminatorInnerVal;
+                            __D1.discriminator = __D2;
                         } else {
                             $fallback(
                                 "/discriminator",
@@ -1885,9 +2601,9 @@ const $$ObjectWithEveryType = {
                 typeof input.nestedObject === "object" &&
                 input.nestedObject !== null
             ) {
-                const inputNestedObjectInnerVal = {};
+                const __D2 = {};
                 if (typeof input.nestedObject.id === "string") {
-                    inputNestedObjectInnerVal.id = input.nestedObject.id;
+                    __D2.id = input.nestedObject.id;
                 } else {
                     $fallback(
                         "/nestedObject/id",
@@ -1899,12 +2615,9 @@ const $$ObjectWithEveryType = {
                     typeof input.nestedObject.timestamp === "object" &&
                     input.nestedObject.timestamp instanceof Date
                 ) {
-                    inputNestedObjectInnerVal.timestamp =
-                        input.nestedObject.timestamp;
+                    __D2.timestamp = input.nestedObject.timestamp;
                 } else if (typeof input.nestedObject.timestamp === "string") {
-                    inputNestedObjectInnerVal.timestamp = new Date(
-                        input.nestedObject.timestamp,
-                    );
+                    __D2.timestamp = new Date(input.nestedObject.timestamp);
                 } else {
                     $fallback(
                         "/nestedObject/timestamp",
@@ -1916,10 +2629,9 @@ const $$ObjectWithEveryType = {
                     typeof input.nestedObject.data === "object" &&
                     input.nestedObject.data !== null
                 ) {
-                    const inputNestedObjectDataInnerVal = {};
+                    const __D3 = {};
                     if (typeof input.nestedObject.data.id === "string") {
-                        inputNestedObjectDataInnerVal.id =
-                            input.nestedObject.data.id;
+                        __D3.id = input.nestedObject.data.id;
                     } else {
                         $fallback(
                             "/nestedObject/data/id",
@@ -1931,12 +2643,11 @@ const $$ObjectWithEveryType = {
                         typeof input.nestedObject.data.timestamp === "object" &&
                         input.nestedObject.data.timestamp instanceof Date
                     ) {
-                        inputNestedObjectDataInnerVal.timestamp =
-                            input.nestedObject.data.timestamp;
+                        __D3.timestamp = input.nestedObject.data.timestamp;
                     } else if (
                         typeof input.nestedObject.data.timestamp === "string"
                     ) {
-                        inputNestedObjectDataInnerVal.timestamp = new Date(
+                        __D3.timestamp = new Date(
                             input.nestedObject.data.timestamp,
                         );
                     } else {
@@ -1950,12 +2661,11 @@ const $$ObjectWithEveryType = {
                         typeof input.nestedObject.data.data === "object" &&
                         input.nestedObject.data.data !== null
                     ) {
-                        const inputNestedObjectDataDataInnerVal = {};
+                        const __D4 = {};
                         if (
                             typeof input.nestedObject.data.data.id === "string"
                         ) {
-                            inputNestedObjectDataDataInnerVal.id =
-                                input.nestedObject.data.data.id;
+                            __D4.id = input.nestedObject.data.data.id;
                         } else {
                             $fallback(
                                 "/nestedObject/data/data/id",
@@ -1969,16 +2679,15 @@ const $$ObjectWithEveryType = {
                             input.nestedObject.data.data.timestamp instanceof
                                 Date
                         ) {
-                            inputNestedObjectDataDataInnerVal.timestamp =
+                            __D4.timestamp =
                                 input.nestedObject.data.data.timestamp;
                         } else if (
                             typeof input.nestedObject.data.data.timestamp ===
                             "string"
                         ) {
-                            inputNestedObjectDataDataInnerVal.timestamp =
-                                new Date(
-                                    input.nestedObject.data.data.timestamp,
-                                );
+                            __D4.timestamp = new Date(
+                                input.nestedObject.data.data.timestamp,
+                            );
                         } else {
                             $fallback(
                                 "/nestedObject/data/data/timestamp",
@@ -1986,8 +2695,7 @@ const $$ObjectWithEveryType = {
                                 "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                             );
                         }
-                        inputNestedObjectDataInnerVal.data =
-                            inputNestedObjectDataDataInnerVal;
+                        __D3.data = __D4;
                     } else {
                         $fallback(
                             "/nestedObject/data/data",
@@ -1995,8 +2703,7 @@ const $$ObjectWithEveryType = {
                             "Expected object",
                         );
                     }
-                    inputNestedObjectInnerVal.data =
-                        inputNestedObjectDataInnerVal;
+                    __D2.data = __D3;
                 } else {
                     $fallback(
                         "/nestedObject/data",
@@ -2004,7 +2711,7 @@ const $$ObjectWithEveryType = {
                         "Expected object",
                     );
                 }
-                inputInnerVal.nestedObject = inputNestedObjectInnerVal;
+                __D1.nestedObject = __D2;
             } else {
                 $fallback(
                     "/nestedObject",
@@ -2013,30 +2720,20 @@ const $$ObjectWithEveryType = {
                 );
             }
             if (Array.isArray(input.nestedArray)) {
-                const inputInnerValNestedArrayInnerResult = [];
-                for (const inputInnerValNestedArrayInnerResultItem of input.nestedArray) {
-                    let inputInnerValNestedArrayInnerResultItemResult;
-                    if (
-                        Array.isArray(inputInnerValNestedArrayInnerResultItem)
-                    ) {
-                        const inputInnerValNestedArrayInnerResultItemResultInnerResult =
-                            [];
-                        for (const inputInnerValNestedArrayInnerResultItemResultInnerResultItem of inputInnerValNestedArrayInnerResultItem) {
-                            let inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                const __D2 = [];
+                for (const __D2AItem of input.nestedArray) {
+                    let __D2AItemAResult;
+                    if (Array.isArray(__D2AItem)) {
+                        const __D3 = [];
+                        for (const __D3AItem of __D2AItem) {
+                            let __D3AItemAResult;
                             if (
-                                typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                    "object" &&
-                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem !==
-                                    null
+                                typeof __D3AItem === "object" &&
+                                __D3AItem !== null
                             ) {
-                                const inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
-                                    {};
-                                if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
-                                    "string"
-                                ) {
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                const __D4 = {};
+                                if (typeof __D3AItem.id === "string") {
+                                    __D4.id = __D3AItem.id;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]/id",
@@ -2045,21 +2742,16 @@ const $$ObjectWithEveryType = {
                                     );
                                 }
                                 if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
-                                        "object" &&
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
-                                        Date
+                                    typeof __D3AItem.timestamp === "object" &&
+                                    __D3AItem.timestamp instanceof Date
                                 ) {
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                    __D4.timestamp = __D3AItem.timestamp;
                                 } else if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
-                                    "string"
+                                    typeof __D3AItem.timestamp === "string"
                                 ) {
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                        new Date(
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
-                                        );
+                                    __D4.timestamp = new Date(
+                                        __D3AItem.timestamp,
+                                    );
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]/timestamp",
@@ -2067,8 +2759,7 @@ const $$ObjectWithEveryType = {
                                         "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                     );
                                 }
-                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                __D3AItemAResult = __D4;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]/[0]",
@@ -2076,12 +2767,9 @@ const $$ObjectWithEveryType = {
                                     "Expected object",
                                 );
                             }
-                            inputInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
-                            );
+                            __D3.push(__D3AItemAResult);
                         }
-                        inputInnerValNestedArrayInnerResultItemResult =
-                            inputInnerValNestedArrayInnerResultItemResultInnerResult;
+                        __D2AItemAResult = __D3;
                     } else {
                         $fallback(
                             "/nestedArray/[0]",
@@ -2089,11 +2777,9 @@ const $$ObjectWithEveryType = {
                             "Expected Array",
                         );
                     }
-                    inputInnerValNestedArrayInnerResult.push(
-                        inputInnerValNestedArrayInnerResultItemResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.nestedArray = inputInnerValNestedArrayInnerResult;
+                __D1.nestedArray = __D2;
             } else {
                 $fallback(
                     "/nestedArray",
@@ -2101,7 +2787,7 @@ const $$ObjectWithEveryType = {
                     "Expected Array",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -2109,12 +2795,53 @@ const $$ObjectWithEveryType = {
     },
     serialize(input: ObjectWithEveryType): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         if (typeof input.any !== "undefined") {
             json += '"any":' + JSON.stringify(input.any);
         }
         json += `,"boolean":${input.boolean}`;
-        json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"string":`;
+        if (input.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.string.length; i++) {
+                __point__ = input.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += `"${__result__}${input.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.string.length < 5000 &&
+            !STR_ESCAPE.test(input.string)
+        ) {
+            json += `"${input.string}"`;
+        } else {
+            json += JSON.stringify(input.string);
+        }
         json += `,"timestamp":"${input.timestamp.toISOString()}"`;
 
         if (Number.isNaN(input.float32)) {
@@ -2161,15 +2888,53 @@ const $$ObjectWithEveryType = {
         json += `,"enumerator":"${input.enumerator}"`;
         json += ',"array":[';
         for (let i = 0; i < input.array.length; i++) {
-            const inputArrayItem = input.array[i];
+            const valArrayItem = input.array[i];
             if (i !== 0) {
                 json += ",";
             }
-            json += `${inputArrayItem}`;
+            json += `${valArrayItem}`;
         }
         json += "]";
-        json += ',"object":{';
-        json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+        json += ',"object":';
+        json += "{";
+        json += `"string":`;
+        if (input.object.string.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.object.string.length; i++) {
+                __point__ = input.object.string.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.object.string);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.object.string.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.object.string.length < 5000 &&
+            !STR_ESCAPE.test(input.object.string)
+        ) {
+            json += `"${input.object.string}"`;
+        } else {
+            json += JSON.stringify(input.object.string);
+        }
         json += `,"boolean":${input.object.boolean}`;
         json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
         json += "}";
@@ -2188,48 +2953,331 @@ const $$ObjectWithEveryType = {
         json += "}";
         switch (input.discriminator.type) {
             case "A": {
-                json += ',"discriminator":{';
+                json += ',"discriminator":';
+                json += "{";
                 json += `"type":"A"`;
-                json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"title":`;
+                if (input.discriminator.title.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.discriminator.title.length; i++) {
+                        __point__ = input.discriminator.title.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.discriminator.title);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.discriminator.title.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.discriminator.title.length < 5000 &&
+                    !STR_ESCAPE.test(input.discriminator.title)
+                ) {
+                    json += `"${input.discriminator.title}"`;
+                } else {
+                    json += JSON.stringify(input.discriminator.title);
+                }
                 json += "}";
                 break;
             }
             case "B": {
-                json += ',"discriminator":{';
+                json += ',"discriminator":';
+                json += "{";
                 json += `"type":"B"`;
-                json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"title":`;
+                if (input.discriminator.title.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.discriminator.title.length; i++) {
+                        __point__ = input.discriminator.title.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.discriminator.title);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.discriminator.title.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.discriminator.title.length < 5000 &&
+                    !STR_ESCAPE.test(input.discriminator.title)
+                ) {
+                    json += `"${input.discriminator.title}"`;
+                } else {
+                    json += JSON.stringify(input.discriminator.title);
+                }
+                json += `,"description":`;
+                if (input.discriminator.description.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.discriminator.description.length;
+                        i++
+                    ) {
+                        __point__ =
+                            input.discriminator.description.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.discriminator.description.slice(
+                                    __last__,
+                                    i,
+                                ) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.discriminator.description.length < 5000 &&
+                    !STR_ESCAPE.test(input.discriminator.description)
+                ) {
+                    json += `"${input.discriminator.description}"`;
+                } else {
+                    json += JSON.stringify(input.discriminator.description);
+                }
                 json += "}";
                 break;
             }
         }
-        json += ',"nestedObject":{';
-        json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+        json += ',"nestedObject":';
+        json += "{";
+        json += `"id":`;
+        if (input.nestedObject.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.nestedObject.id.length; i++) {
+                __point__ = input.nestedObject.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.nestedObject.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.nestedObject.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.nestedObject.id.length < 5000 &&
+            !STR_ESCAPE.test(input.nestedObject.id)
+        ) {
+            json += `"${input.nestedObject.id}"`;
+        } else {
+            json += JSON.stringify(input.nestedObject.id);
+        }
         json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
-        json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+        json += ',"data":';
+        json += "{";
+        json += `"id":`;
+        if (input.nestedObject.data.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.nestedObject.data.id.length; i++) {
+                __point__ = input.nestedObject.data.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.nestedObject.data.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.nestedObject.data.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.nestedObject.data.id}"`;
+                } else {
+                    json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.nestedObject.data.id.length < 5000 &&
+            !STR_ESCAPE.test(input.nestedObject.data.id)
+        ) {
+            json += `"${input.nestedObject.data.id}"`;
+        } else {
+            json += JSON.stringify(input.nestedObject.data.id);
+        }
         json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
-        json += ',"data":{';
-        json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+        json += ',"data":';
+        json += "{";
+        json += `"id":`;
+        if (input.nestedObject.data.data.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.nestedObject.data.data.id.length; i++) {
+                __point__ = input.nestedObject.data.data.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.nestedObject.data.data.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ +=
+                        input.nestedObject.data.data.id.slice(__last__, i) +
+                        "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.nestedObject.data.data.id}"`;
+                } else {
+                    json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.nestedObject.data.data.id.length < 5000 &&
+            !STR_ESCAPE.test(input.nestedObject.data.data.id)
+        ) {
+            json += `"${input.nestedObject.data.data.id}"`;
+        } else {
+            json += JSON.stringify(input.nestedObject.data.data.id);
+        }
         json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
         json += "}";
         json += "}";
         json += "}";
         json += ',"nestedArray":[';
         for (let i = 0; i < input.nestedArray.length; i++) {
-            const inputNestedArrayItem = input.nestedArray[i];
+            const valNestedArrayItem = input.nestedArray[i];
             if (i !== 0) {
                 json += ",";
             }
             json += "[";
-            for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                const inputNestedArrayItemItem = inputNestedArrayItem[i];
+            for (let i = 0; i < valNestedArrayItem.length; i++) {
+                const valNestedArrayItemItem = valNestedArrayItem[i];
                 if (i !== 0) {
                     json += ",";
                 }
+
+                json += "";
                 json += "{";
-                json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                json += `"id":`;
+                if (valNestedArrayItemItem.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < valNestedArrayItemItem.id.length; i++) {
+                        __point__ = valNestedArrayItemItem.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(valNestedArrayItemItem.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                valNestedArrayItemItem.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${valNestedArrayItemItem.id}"`;
+                        } else {
+                            json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    valNestedArrayItemItem.id.length < 5000 &&
+                    !STR_ESCAPE.test(valNestedArrayItemItem.id)
+                ) {
+                    json += `"${valNestedArrayItemItem.id}"`;
+                } else {
+                    json += JSON.stringify(valNestedArrayItemItem.id);
+                }
+                json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                 json += "}";
             }
             json += "]";
@@ -2320,13 +3368,13 @@ const $$ObjectWithEveryNullableType = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                jsonInnerVal.any = json.any;
+                const __D1 = {};
+                __D1.any = json.any;
                 if (json.boolean === null) {
-                    jsonInnerVal.boolean = null;
+                    __D1.boolean = null;
                 } else {
                     if (typeof json.boolean === "boolean") {
-                        jsonInnerVal.boolean = json.boolean;
+                        __D1.boolean = json.boolean;
                     } else {
                         $fallback(
                             "/boolean",
@@ -2336,10 +3384,10 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.string === null) {
-                    jsonInnerVal.string = json.string;
+                    __D1.string = json.string;
                 } else {
                     if (typeof json.string === "string") {
-                        jsonInnerVal.string = json.string;
+                        __D1.string = json.string;
                     } else {
                         $fallback(
                             "/string",
@@ -2349,15 +3397,15 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.timestamp === null) {
-                    jsonInnerVal.timestamp = null;
+                    __D1.timestamp = null;
                 } else {
                     if (
                         typeof json.timestamp === "object" &&
                         json.timestamp instanceof Date
                     ) {
-                        jsonInnerVal.timestamp = json.timestamp;
+                        __D1.timestamp = json.timestamp;
                     } else if (typeof json.timestamp === "string") {
-                        jsonInnerVal.timestamp = new Date(json.timestamp);
+                        __D1.timestamp = new Date(json.timestamp);
                     } else {
                         $fallback(
                             "/timestamp",
@@ -2367,13 +3415,13 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.float32 === null) {
-                    jsonInnerVal.float32 = null;
+                    __D1.float32 = null;
                 } else {
                     if (
                         typeof json.float32 === "number" &&
                         !Number.isNaN(json.float32)
                     ) {
-                        jsonInnerVal.float32 = json.float32;
+                        __D1.float32 = json.float32;
                     } else {
                         $fallback(
                             "/float32",
@@ -2383,13 +3431,13 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.float64 === null) {
-                    jsonInnerVal.float64 = null;
+                    __D1.float64 = null;
                 } else {
                     if (
                         typeof json.float64 === "number" &&
                         !Number.isNaN(json.float64)
                     ) {
-                        jsonInnerVal.float64 = json.float64;
+                        __D1.float64 = json.float64;
                     } else {
                         $fallback(
                             "/float64",
@@ -2399,7 +3447,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.int8 === null) {
-                    jsonInnerVal.int8 = null;
+                    __D1.int8 = null;
                 } else {
                     if (
                         typeof json.int8 === "number" &&
@@ -2407,7 +3455,7 @@ const $$ObjectWithEveryNullableType = {
                         json.int8 >= -128 &&
                         json.int8 <= 127
                     ) {
-                        jsonInnerVal.int8 = json.int8;
+                        __D1.int8 = json.int8;
                     } else {
                         $fallback(
                             "/int8",
@@ -2417,7 +3465,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.uint8 === null) {
-                    jsonInnerVal.uint8 = null;
+                    __D1.uint8 = null;
                 } else {
                     if (
                         typeof json.uint8 === "number" &&
@@ -2425,7 +3473,7 @@ const $$ObjectWithEveryNullableType = {
                         json.uint8 >= 0 &&
                         json.uint8 <= 255
                     ) {
-                        jsonInnerVal.uint8 = json.uint8;
+                        __D1.uint8 = json.uint8;
                     } else {
                         $fallback(
                             "/uint8",
@@ -2435,7 +3483,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.int16 === null) {
-                    jsonInnerVal.int16 = null;
+                    __D1.int16 = null;
                 } else {
                     if (
                         typeof json.int16 === "number" &&
@@ -2443,7 +3491,7 @@ const $$ObjectWithEveryNullableType = {
                         json.int16 >= -32768 &&
                         json.int16 <= 32767
                     ) {
-                        jsonInnerVal.int16 = json.int16;
+                        __D1.int16 = json.int16;
                     } else {
                         $fallback(
                             "/int16",
@@ -2453,7 +3501,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.uint16 === null) {
-                    jsonInnerVal.uint16 = null;
+                    __D1.uint16 = null;
                 } else {
                     if (
                         typeof json.uint16 === "number" &&
@@ -2461,7 +3509,7 @@ const $$ObjectWithEveryNullableType = {
                         json.uint16 >= 0 &&
                         json.uint16 <= 65535
                     ) {
-                        jsonInnerVal.uint16 = json.uint16;
+                        __D1.uint16 = json.uint16;
                     } else {
                         $fallback(
                             "/uint16",
@@ -2471,7 +3519,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.int32 === null) {
-                    jsonInnerVal.int32 = null;
+                    __D1.int32 = null;
                 } else {
                     if (
                         typeof json.int32 === "number" &&
@@ -2479,7 +3527,7 @@ const $$ObjectWithEveryNullableType = {
                         json.int32 >= -2147483648 &&
                         json.int32 <= 2147483647
                     ) {
-                        jsonInnerVal.int32 = json.int32;
+                        __D1.int32 = json.int32;
                     } else {
                         $fallback(
                             "/int32",
@@ -2489,7 +3537,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.uint32 === null) {
-                    jsonInnerVal.uint32 = null;
+                    __D1.uint32 = null;
                 } else {
                     if (
                         typeof json.uint32 === "number" &&
@@ -2497,7 +3545,7 @@ const $$ObjectWithEveryNullableType = {
                         json.uint32 >= 0 &&
                         json.uint32 <= 4294967295
                     ) {
-                        jsonInnerVal.uint32 = json.uint32;
+                        __D1.uint32 = json.uint32;
                     } else {
                         $fallback(
                             "/uint32",
@@ -2512,7 +3560,7 @@ const $$ObjectWithEveryNullableType = {
                 ) {
                     try {
                         const val = BigInt(json.int64);
-                        jsonInnerVal.int64 = val;
+                        __D1.int64 = val;
                     } catch (err) {
                         $fallback(
                             "/int64",
@@ -2521,9 +3569,9 @@ const $$ObjectWithEveryNullableType = {
                         );
                     }
                 } else if (typeof json.int64 === "bigint") {
-                    jsonInnerVal.int64 = json.int64;
+                    __D1.int64 = json.int64;
                 } else if (json.int64 === null) {
-                    jsonInnerVal.int64 = null;
+                    __D1.int64 = null;
                 } else {
                     $fallback(
                         "/int64",
@@ -2538,7 +3586,7 @@ const $$ObjectWithEveryNullableType = {
                     try {
                         const val = BigInt(json.uint64);
                         if (val >= BigInt("0")) {
-                            jsonInnerVal.uint64 = val;
+                            __D1.uint64 = val;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -2555,7 +3603,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 } else if (typeof json.uint64 === "bigint") {
                     if (json.uint64 >= BigInt("0")) {
-                        jsonInnerVal.uint64 = json.uint64;
+                        __D1.uint64 = json.uint64;
                     } else {
                         $fallback(
                             "/uint64",
@@ -2564,7 +3612,7 @@ const $$ObjectWithEveryNullableType = {
                         );
                     }
                 } else if (json.uint64 === null) {
-                    jsonInnerVal.uint64 = null;
+                    __D1.uint64 = null;
                 } else {
                     $fallback(
                         "/uint64",
@@ -2573,7 +3621,7 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
                 if (json.enumerator === null) {
-                    jsonInnerVal.enumerator = null;
+                    __D1.enumerator = null;
                 } else {
                     if (typeof json.enumerator === "string") {
                         if (
@@ -2581,7 +3629,7 @@ const $$ObjectWithEveryNullableType = {
                             json.enumerator === "B" ||
                             json.enumerator === "C"
                         ) {
-                            jsonInnerVal.enumerator = json.enumerator;
+                            __D1.enumerator = json.enumerator;
                         } else {
                             $fallback(
                                 "/enumerator",
@@ -2598,21 +3646,17 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.array === null) {
-                    jsonInnerVal.array = null;
+                    __D1.array = null;
                 } else {
                     if (Array.isArray(json.array)) {
-                        const jsonInnerValArrayInnerResult = [];
-                        for (const jsonInnerValArrayInnerResultItem of json.array) {
-                            let jsonInnerValArrayInnerResultItemResult;
-                            if (jsonInnerValArrayInnerResultItem === null) {
-                                jsonInnerValArrayInnerResultItemResult = null;
+                        const __D2 = [];
+                        for (const __D2AItem of json.array) {
+                            let __D2AItemAResult;
+                            if (__D2AItem === null) {
+                                __D2AItemAResult = null;
                             } else {
-                                if (
-                                    typeof jsonInnerValArrayInnerResultItem ===
-                                    "boolean"
-                                ) {
-                                    jsonInnerValArrayInnerResultItemResult =
-                                        jsonInnerValArrayInnerResultItem;
+                                if (typeof __D2AItem === "boolean") {
+                                    __D2AItemAResult = __D2AItem;
                                 } else {
                                     $fallback(
                                         "/array/[0]",
@@ -2621,11 +3665,9 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonInnerValArrayInnerResult.push(
-                                jsonInnerValArrayInnerResultItemResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                        __D1.array = __D2;
                     } else {
                         $fallback(
                             "/array",
@@ -2635,18 +3677,18 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.object === null) {
-                    jsonInnerVal.object = null;
+                    __D1.object = null;
                 } else {
                     if (
                         typeof json.object === "object" &&
                         json.object !== null
                     ) {
-                        const jsonObjectInnerVal = {};
+                        const __D2 = {};
                         if (json.object.string === null) {
-                            jsonObjectInnerVal.string = json.object.string;
+                            __D2.string = json.object.string;
                         } else {
                             if (typeof json.object.string === "string") {
-                                jsonObjectInnerVal.string = json.object.string;
+                                __D2.string = json.object.string;
                             } else {
                                 $fallback(
                                     "/object/string",
@@ -2656,11 +3698,10 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.object.boolean === null) {
-                            jsonObjectInnerVal.boolean = null;
+                            __D2.boolean = null;
                         } else {
                             if (typeof json.object.boolean === "boolean") {
-                                jsonObjectInnerVal.boolean =
-                                    json.object.boolean;
+                                __D2.boolean = json.object.boolean;
                             } else {
                                 $fallback(
                                     "/object/boolean",
@@ -2670,18 +3711,17 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.object.timestamp === null) {
-                            jsonObjectInnerVal.timestamp = null;
+                            __D2.timestamp = null;
                         } else {
                             if (
                                 typeof json.object.timestamp === "object" &&
                                 json.object.timestamp instanceof Date
                             ) {
-                                jsonObjectInnerVal.timestamp =
-                                    json.object.timestamp;
+                                __D2.timestamp = json.object.timestamp;
                             } else if (
                                 typeof json.object.timestamp === "string"
                             ) {
-                                jsonObjectInnerVal.timestamp = new Date(
+                                __D2.timestamp = new Date(
                                     json.object.timestamp,
                                 );
                             } else {
@@ -2692,7 +3732,7 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        jsonInnerVal.object = jsonObjectInnerVal;
+                        __D1.object = __D2;
                     } else {
                         $fallback(
                             "/object",
@@ -2702,24 +3742,22 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.record === null) {
-                    jsonInnerVal.record = null;
+                    __D1.record = null;
                 } else {
                     if (
                         typeof json.record === "object" &&
                         json.record !== null
                     ) {
-                        const jsonRecordResult = {};
-                        for (const jsonRecordKey of Object.keys(json.record)) {
-                            let jsonRecordKeyVal;
-                            if (json.record[jsonRecordKey] === null) {
-                                jsonRecordKeyVal = null;
+                        const __D2RResult = {};
+                        for (const __D2RKey of Object.keys(json.record)) {
+                            let __D2RKeyRVal;
+                            if (json.record[__D2RKey] === null) {
+                                __D2RKeyRVal = null;
                             } else {
                                 if (
-                                    typeof json.record[jsonRecordKey] ===
-                                    "boolean"
+                                    typeof json.record[__D2RKey] === "boolean"
                                 ) {
-                                    jsonRecordKeyVal =
-                                        json.record[jsonRecordKey];
+                                    __D2RKeyRVal = json.record[__D2RKey];
                                 } else {
                                     $fallback(
                                         "/record/[key]",
@@ -2728,9 +3766,9 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonRecordResult[jsonRecordKey] = jsonRecordKeyVal;
+                            __D2RResult[__D2RKey] = __D2RKeyRVal;
                         }
-                        jsonInnerVal.record = jsonRecordResult;
+                        __D1.record = __D2RResult;
                     } else {
                         $fallback(
                             "/record",
@@ -2740,7 +3778,7 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.discriminator === null) {
-                    jsonInnerVal.discriminator = null;
+                    __D1.discriminator = null;
                 } else {
                     if (
                         typeof json.discriminator === "object" &&
@@ -2752,17 +3790,16 @@ const $$ObjectWithEveryNullableType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "A";
+                                    const __D2 = {};
+                                    __D2.type = "A";
                                     if (json.discriminator.title === null) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         if (
                                             typeof json.discriminator.title ===
                                             "string"
                                         ) {
-                                            jsonDiscriminatorInnerVal.title =
+                                            __D2.title =
                                                 json.discriminator.title;
                                         } else {
                                             $fallback(
@@ -2772,8 +3809,7 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -2788,17 +3824,16 @@ const $$ObjectWithEveryNullableType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "B";
+                                    const __D2 = {};
+                                    __D2.type = "B";
                                     if (json.discriminator.title === null) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         if (
                                             typeof json.discriminator.title ===
                                             "string"
                                         ) {
-                                            jsonDiscriminatorInnerVal.title =
+                                            __D2.title =
                                                 json.discriminator.title;
                                         } else {
                                             $fallback(
@@ -2811,14 +3846,14 @@ const $$ObjectWithEveryNullableType = {
                                     if (
                                         json.discriminator.description === null
                                     ) {
-                                        jsonDiscriminatorInnerVal.description =
+                                        __D2.description =
                                             json.discriminator.description;
                                     } else {
                                         if (
                                             typeof json.discriminator
                                                 .description === "string"
                                         ) {
-                                            jsonDiscriminatorInnerVal.description =
+                                            __D2.description =
                                                 json.discriminator.description;
                                         } else {
                                             $fallback(
@@ -2828,8 +3863,7 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -2856,19 +3890,18 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.nestedObject === null) {
-                    jsonInnerVal.nestedObject = null;
+                    __D1.nestedObject = null;
                 } else {
                     if (
                         typeof json.nestedObject === "object" &&
                         json.nestedObject !== null
                     ) {
-                        const jsonNestedObjectInnerVal = {};
+                        const __D2 = {};
                         if (json.nestedObject.id === null) {
-                            jsonNestedObjectInnerVal.id = json.nestedObject.id;
+                            __D2.id = json.nestedObject.id;
                         } else {
                             if (typeof json.nestedObject.id === "string") {
-                                jsonNestedObjectInnerVal.id =
-                                    json.nestedObject.id;
+                                __D2.id = json.nestedObject.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/id",
@@ -2878,19 +3911,18 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.nestedObject.timestamp === null) {
-                            jsonNestedObjectInnerVal.timestamp = null;
+                            __D2.timestamp = null;
                         } else {
                             if (
                                 typeof json.nestedObject.timestamp ===
                                     "object" &&
                                 json.nestedObject.timestamp instanceof Date
                             ) {
-                                jsonNestedObjectInnerVal.timestamp =
-                                    json.nestedObject.timestamp;
+                                __D2.timestamp = json.nestedObject.timestamp;
                             } else if (
                                 typeof json.nestedObject.timestamp === "string"
                             ) {
-                                jsonNestedObjectInnerVal.timestamp = new Date(
+                                __D2.timestamp = new Date(
                                     json.nestedObject.timestamp,
                                 );
                             } else {
@@ -2902,23 +3934,21 @@ const $$ObjectWithEveryNullableType = {
                             }
                         }
                         if (json.nestedObject.data === null) {
-                            jsonNestedObjectInnerVal.data = null;
+                            __D2.data = null;
                         } else {
                             if (
                                 typeof json.nestedObject.data === "object" &&
                                 json.nestedObject.data !== null
                             ) {
-                                const jsonNestedObjectDataInnerVal = {};
+                                const __D3 = {};
                                 if (json.nestedObject.data.id === null) {
-                                    jsonNestedObjectDataInnerVal.id =
-                                        json.nestedObject.data.id;
+                                    __D3.id = json.nestedObject.data.id;
                                 } else {
                                     if (
                                         typeof json.nestedObject.data.id ===
                                         "string"
                                     ) {
-                                        jsonNestedObjectDataInnerVal.id =
-                                            json.nestedObject.data.id;
+                                        __D3.id = json.nestedObject.data.id;
                                     } else {
                                         $fallback(
                                             "/nestedObject/data/id",
@@ -2928,8 +3958,7 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                 }
                                 if (json.nestedObject.data.timestamp === null) {
-                                    jsonNestedObjectDataInnerVal.timestamp =
-                                        null;
+                                    __D3.timestamp = null;
                                 } else {
                                     if (
                                         typeof json.nestedObject.data
@@ -2937,16 +3966,15 @@ const $$ObjectWithEveryNullableType = {
                                         json.nestedObject.data
                                             .timestamp instanceof Date
                                     ) {
-                                        jsonNestedObjectDataInnerVal.timestamp =
+                                        __D3.timestamp =
                                             json.nestedObject.data.timestamp;
                                     } else if (
                                         typeof json.nestedObject.data
                                             .timestamp === "string"
                                     ) {
-                                        jsonNestedObjectDataInnerVal.timestamp =
-                                            new Date(
-                                                json.nestedObject.data.timestamp,
-                                            );
+                                        __D3.timestamp = new Date(
+                                            json.nestedObject.data.timestamp,
+                                        );
                                     } else {
                                         $fallback(
                                             "/nestedObject/data/timestamp",
@@ -2956,27 +3984,26 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                 }
                                 if (json.nestedObject.data.data === null) {
-                                    jsonNestedObjectDataInnerVal.data = null;
+                                    __D3.data = null;
                                 } else {
                                     if (
                                         typeof json.nestedObject.data.data ===
                                             "object" &&
                                         json.nestedObject.data.data !== null
                                     ) {
-                                        const jsonNestedObjectDataDataInnerVal =
-                                            {};
+                                        const __D4 = {};
                                         if (
                                             json.nestedObject.data.data.id ===
                                             null
                                         ) {
-                                            jsonNestedObjectDataDataInnerVal.id =
+                                            __D4.id =
                                                 json.nestedObject.data.data.id;
                                         } else {
                                             if (
                                                 typeof json.nestedObject.data
                                                     .data.id === "string"
                                             ) {
-                                                jsonNestedObjectDataDataInnerVal.id =
+                                                __D4.id =
                                                     json.nestedObject.data.data.id;
                                             } else {
                                                 $fallback(
@@ -2990,8 +4017,7 @@ const $$ObjectWithEveryNullableType = {
                                             json.nestedObject.data.data
                                                 .timestamp === null
                                         ) {
-                                            jsonNestedObjectDataDataInnerVal.timestamp =
-                                                null;
+                                            __D4.timestamp = null;
                                         } else {
                                             if (
                                                 typeof json.nestedObject.data
@@ -3000,16 +4026,15 @@ const $$ObjectWithEveryNullableType = {
                                                 json.nestedObject.data.data
                                                     .timestamp instanceof Date
                                             ) {
-                                                jsonNestedObjectDataDataInnerVal.timestamp =
+                                                __D4.timestamp =
                                                     json.nestedObject.data.data.timestamp;
                                             } else if (
                                                 typeof json.nestedObject.data
                                                     .data.timestamp === "string"
                                             ) {
-                                                jsonNestedObjectDataDataInnerVal.timestamp =
-                                                    new Date(
-                                                        json.nestedObject.data.data.timestamp,
-                                                    );
+                                                __D4.timestamp = new Date(
+                                                    json.nestedObject.data.data.timestamp,
+                                                );
                                             } else {
                                                 $fallback(
                                                     "/nestedObject/data/data/timestamp",
@@ -3018,8 +4043,7 @@ const $$ObjectWithEveryNullableType = {
                                                 );
                                             }
                                         }
-                                        jsonNestedObjectDataInnerVal.data =
-                                            jsonNestedObjectDataDataInnerVal;
+                                        __D3.data = __D4;
                                     } else {
                                         $fallback(
                                             "/nestedObject/data/data",
@@ -3028,8 +4052,7 @@ const $$ObjectWithEveryNullableType = {
                                         );
                                     }
                                 }
-                                jsonNestedObjectInnerVal.data =
-                                    jsonNestedObjectDataInnerVal;
+                                __D2.data = __D3;
                             } else {
                                 $fallback(
                                     "/nestedObject/data",
@@ -3038,7 +4061,7 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        jsonInnerVal.nestedObject = jsonNestedObjectInnerVal;
+                        __D1.nestedObject = __D2;
                     } else {
                         $fallback(
                             "/nestedObject",
@@ -3048,55 +4071,35 @@ const $$ObjectWithEveryNullableType = {
                     }
                 }
                 if (json.nestedArray === null) {
-                    jsonInnerVal.nestedArray = null;
+                    __D1.nestedArray = null;
                 } else {
                     if (Array.isArray(json.nestedArray)) {
-                        const jsonInnerValNestedArrayInnerResult = [];
-                        for (const jsonInnerValNestedArrayInnerResultItem of json.nestedArray) {
-                            let jsonInnerValNestedArrayInnerResultItemResult;
-                            if (
-                                jsonInnerValNestedArrayInnerResultItem === null
-                            ) {
-                                jsonInnerValNestedArrayInnerResultItemResult =
-                                    null;
+                        const __D2 = [];
+                        for (const __D2AItem of json.nestedArray) {
+                            let __D2AItemAResult;
+                            if (__D2AItem === null) {
+                                __D2AItemAResult = null;
                             } else {
-                                if (
-                                    Array.isArray(
-                                        jsonInnerValNestedArrayInnerResultItem,
-                                    )
-                                ) {
-                                    const jsonInnerValNestedArrayInnerResultItemResultInnerResult =
-                                        [];
-                                    for (const jsonInnerValNestedArrayInnerResultItemResultInnerResultItem of jsonInnerValNestedArrayInnerResultItem) {
-                                        let jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
-                                        if (
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                            null
-                                        ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                                null;
+                                if (Array.isArray(__D2AItem)) {
+                                    const __D3 = [];
+                                    for (const __D3AItem of __D2AItem) {
+                                        let __D3AItemAResult;
+                                        if (__D3AItem === null) {
+                                            __D3AItemAResult = null;
                                         } else {
                                             if (
-                                                typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                                    "object" &&
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem !==
-                                                    null
+                                                typeof __D3AItem === "object" &&
+                                                __D3AItem !== null
                                             ) {
-                                                const jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
-                                                    {};
-                                                if (
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
-                                                    null
-                                                ) {
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                const __D4 = {};
+                                                if (__D3AItem.id === null) {
+                                                    __D4.id = __D3AItem.id;
                                                 } else {
                                                     if (
-                                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                                        typeof __D3AItem.id ===
                                                         "string"
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                        __D4.id = __D3AItem.id;
                                                     } else {
                                                         $fallback(
                                                             "/nestedArray/[0]/[0]/id",
@@ -3106,27 +4109,25 @@ const $$ObjectWithEveryNullableType = {
                                                     }
                                                 }
                                                 if (
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
-                                                    null
+                                                    __D3AItem.timestamp === null
                                                 ) {
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                        null;
+                                                    __D4.timestamp = null;
                                                 } else {
                                                     if (
-                                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                        typeof __D3AItem.timestamp ===
                                                             "object" &&
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                                        __D3AItem.timestamp instanceof
                                                             Date
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                                        __D4.timestamp =
+                                                            __D3AItem.timestamp;
                                                     } else if (
-                                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                        typeof __D3AItem.timestamp ===
                                                         "string"
                                                     ) {
-                                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
+                                                        __D4.timestamp =
                                                             new Date(
-                                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
+                                                                __D3AItem.timestamp,
                                                             );
                                                     } else {
                                                         $fallback(
@@ -3136,8 +4137,7 @@ const $$ObjectWithEveryNullableType = {
                                                         );
                                                     }
                                                 }
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                                __D3AItemAResult = __D4;
                                             } else {
                                                 $fallback(
                                                     "/nestedArray/[0]/[0]",
@@ -3146,12 +4146,9 @@ const $$ObjectWithEveryNullableType = {
                                                 );
                                             }
                                         }
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
-                                        );
+                                        __D3.push(__D3AItemAResult);
                                     }
-                                    jsonInnerValNestedArrayInnerResultItemResult =
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResult;
+                                    __D2AItemAResult = __D3;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]",
@@ -3160,12 +4157,9 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            jsonInnerValNestedArrayInnerResult.push(
-                                jsonInnerValNestedArrayInnerResultItemResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.nestedArray =
-                            jsonInnerValNestedArrayInnerResult;
+                        __D1.nestedArray = __D2;
                     } else {
                         $fallback(
                             "/nestedArray",
@@ -3174,7 +4168,7 @@ const $$ObjectWithEveryNullableType = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -3182,13 +4176,13 @@ const $$ObjectWithEveryNullableType = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            inputInnerVal.any = input.any;
+            const __D1 = {};
+            __D1.any = input.any;
             if (input.boolean === null) {
-                inputInnerVal.boolean = null;
+                __D1.boolean = null;
             } else {
                 if (typeof input.boolean === "boolean") {
-                    inputInnerVal.boolean = input.boolean;
+                    __D1.boolean = input.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -3198,10 +4192,10 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.string === null) {
-                inputInnerVal.string = input.string;
+                __D1.string = input.string;
             } else {
                 if (typeof input.string === "string") {
-                    inputInnerVal.string = input.string;
+                    __D1.string = input.string;
                 } else {
                     $fallback(
                         "/string",
@@ -3211,15 +4205,15 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.timestamp === null) {
-                inputInnerVal.timestamp = null;
+                __D1.timestamp = null;
             } else {
                 if (
                     typeof input.timestamp === "object" &&
                     input.timestamp instanceof Date
                 ) {
-                    inputInnerVal.timestamp = input.timestamp;
+                    __D1.timestamp = input.timestamp;
                 } else if (typeof input.timestamp === "string") {
-                    inputInnerVal.timestamp = new Date(input.timestamp);
+                    __D1.timestamp = new Date(input.timestamp);
                 } else {
                     $fallback(
                         "/timestamp",
@@ -3229,13 +4223,13 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.float32 === null) {
-                inputInnerVal.float32 = null;
+                __D1.float32 = null;
             } else {
                 if (
                     typeof input.float32 === "number" &&
                     !Number.isNaN(input.float32)
                 ) {
-                    inputInnerVal.float32 = input.float32;
+                    __D1.float32 = input.float32;
                 } else {
                     $fallback(
                         "/float32",
@@ -3245,13 +4239,13 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.float64 === null) {
-                inputInnerVal.float64 = null;
+                __D1.float64 = null;
             } else {
                 if (
                     typeof input.float64 === "number" &&
                     !Number.isNaN(input.float64)
                 ) {
-                    inputInnerVal.float64 = input.float64;
+                    __D1.float64 = input.float64;
                 } else {
                     $fallback(
                         "/float64",
@@ -3261,7 +4255,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.int8 === null) {
-                inputInnerVal.int8 = null;
+                __D1.int8 = null;
             } else {
                 if (
                     typeof input.int8 === "number" &&
@@ -3269,7 +4263,7 @@ const $$ObjectWithEveryNullableType = {
                     input.int8 >= -128 &&
                     input.int8 <= 127
                 ) {
-                    inputInnerVal.int8 = input.int8;
+                    __D1.int8 = input.int8;
                 } else {
                     $fallback(
                         "/int8",
@@ -3279,7 +4273,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.uint8 === null) {
-                inputInnerVal.uint8 = null;
+                __D1.uint8 = null;
             } else {
                 if (
                     typeof input.uint8 === "number" &&
@@ -3287,7 +4281,7 @@ const $$ObjectWithEveryNullableType = {
                     input.uint8 >= 0 &&
                     input.uint8 <= 255
                 ) {
-                    inputInnerVal.uint8 = input.uint8;
+                    __D1.uint8 = input.uint8;
                 } else {
                     $fallback(
                         "/uint8",
@@ -3297,7 +4291,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.int16 === null) {
-                inputInnerVal.int16 = null;
+                __D1.int16 = null;
             } else {
                 if (
                     typeof input.int16 === "number" &&
@@ -3305,7 +4299,7 @@ const $$ObjectWithEveryNullableType = {
                     input.int16 >= -32768 &&
                     input.int16 <= 32767
                 ) {
-                    inputInnerVal.int16 = input.int16;
+                    __D1.int16 = input.int16;
                 } else {
                     $fallback(
                         "/int16",
@@ -3315,7 +4309,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.uint16 === null) {
-                inputInnerVal.uint16 = null;
+                __D1.uint16 = null;
             } else {
                 if (
                     typeof input.uint16 === "number" &&
@@ -3323,7 +4317,7 @@ const $$ObjectWithEveryNullableType = {
                     input.uint16 >= 0 &&
                     input.uint16 <= 65535
                 ) {
-                    inputInnerVal.uint16 = input.uint16;
+                    __D1.uint16 = input.uint16;
                 } else {
                     $fallback(
                         "/uint16",
@@ -3333,7 +4327,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.int32 === null) {
-                inputInnerVal.int32 = null;
+                __D1.int32 = null;
             } else {
                 if (
                     typeof input.int32 === "number" &&
@@ -3341,7 +4335,7 @@ const $$ObjectWithEveryNullableType = {
                     input.int32 >= -2147483648 &&
                     input.int32 <= 2147483647
                 ) {
-                    inputInnerVal.int32 = input.int32;
+                    __D1.int32 = input.int32;
                 } else {
                     $fallback(
                         "/int32",
@@ -3351,7 +4345,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.uint32 === null) {
-                inputInnerVal.uint32 = null;
+                __D1.uint32 = null;
             } else {
                 if (
                     typeof input.uint32 === "number" &&
@@ -3359,7 +4353,7 @@ const $$ObjectWithEveryNullableType = {
                     input.uint32 >= 0 &&
                     input.uint32 <= 4294967295
                 ) {
-                    inputInnerVal.uint32 = input.uint32;
+                    __D1.uint32 = input.uint32;
                 } else {
                     $fallback(
                         "/uint32",
@@ -3374,7 +4368,7 @@ const $$ObjectWithEveryNullableType = {
             ) {
                 try {
                     const val = BigInt(input.int64);
-                    inputInnerVal.int64 = val;
+                    __D1.int64 = val;
                 } catch (err) {
                     $fallback(
                         "/int64",
@@ -3383,9 +4377,9 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
             } else if (typeof input.int64 === "bigint") {
-                inputInnerVal.int64 = input.int64;
+                __D1.int64 = input.int64;
             } else if (input.int64 === null) {
-                inputInnerVal.int64 = null;
+                __D1.int64 = null;
             } else {
                 $fallback(
                     "/int64",
@@ -3400,7 +4394,7 @@ const $$ObjectWithEveryNullableType = {
                 try {
                     const val = BigInt(input.uint64);
                     if (val >= BigInt("0")) {
-                        inputInnerVal.uint64 = val;
+                        __D1.uint64 = val;
                     } else {
                         $fallback(
                             "/uint64",
@@ -3417,7 +4411,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             } else if (typeof input.uint64 === "bigint") {
                 if (input.uint64 >= BigInt("0")) {
-                    inputInnerVal.uint64 = input.uint64;
+                    __D1.uint64 = input.uint64;
                 } else {
                     $fallback(
                         "/uint64",
@@ -3426,7 +4420,7 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
             } else if (input.uint64 === null) {
-                inputInnerVal.uint64 = null;
+                __D1.uint64 = null;
             } else {
                 $fallback(
                     "/uint64",
@@ -3435,7 +4429,7 @@ const $$ObjectWithEveryNullableType = {
                 );
             }
             if (input.enumerator === null) {
-                inputInnerVal.enumerator = null;
+                __D1.enumerator = null;
             } else {
                 if (typeof input.enumerator === "string") {
                     if (
@@ -3443,7 +4437,7 @@ const $$ObjectWithEveryNullableType = {
                         input.enumerator === "B" ||
                         input.enumerator === "C"
                     ) {
-                        inputInnerVal.enumerator = input.enumerator;
+                        __D1.enumerator = input.enumerator;
                     } else {
                         $fallback(
                             "/enumerator",
@@ -3460,21 +4454,17 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.array === null) {
-                inputInnerVal.array = null;
+                __D1.array = null;
             } else {
                 if (Array.isArray(input.array)) {
-                    const inputInnerValArrayInnerResult = [];
-                    for (const inputInnerValArrayInnerResultItem of input.array) {
-                        let inputInnerValArrayInnerResultItemResult;
-                        if (inputInnerValArrayInnerResultItem === null) {
-                            inputInnerValArrayInnerResultItemResult = null;
+                    const __D2 = [];
+                    for (const __D2AItem of input.array) {
+                        let __D2AItemAResult;
+                        if (__D2AItem === null) {
+                            __D2AItemAResult = null;
                         } else {
-                            if (
-                                typeof inputInnerValArrayInnerResultItem ===
-                                "boolean"
-                            ) {
-                                inputInnerValArrayInnerResultItemResult =
-                                    inputInnerValArrayInnerResultItem;
+                            if (typeof __D2AItem === "boolean") {
+                                __D2AItemAResult = __D2AItem;
                             } else {
                                 $fallback(
                                     "/array/[0]",
@@ -3483,25 +4473,23 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputInnerValArrayInnerResult.push(
-                            inputInnerValArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.array = inputInnerValArrayInnerResult;
+                    __D1.array = __D2;
                 } else {
                     $fallback("/array", "/properties/array", "Expected Array");
                 }
             }
             if (input.object === null) {
-                inputInnerVal.object = null;
+                __D1.object = null;
             } else {
                 if (typeof input.object === "object" && input.object !== null) {
-                    const inputObjectInnerVal = {};
+                    const __D2 = {};
                     if (input.object.string === null) {
-                        inputObjectInnerVal.string = input.object.string;
+                        __D2.string = input.object.string;
                     } else {
                         if (typeof input.object.string === "string") {
-                            inputObjectInnerVal.string = input.object.string;
+                            __D2.string = input.object.string;
                         } else {
                             $fallback(
                                 "/object/string",
@@ -3511,10 +4499,10 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.object.boolean === null) {
-                        inputObjectInnerVal.boolean = null;
+                        __D2.boolean = null;
                     } else {
                         if (typeof input.object.boolean === "boolean") {
-                            inputObjectInnerVal.boolean = input.object.boolean;
+                            __D2.boolean = input.object.boolean;
                         } else {
                             $fallback(
                                 "/object/boolean",
@@ -3524,18 +4512,15 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.object.timestamp === null) {
-                        inputObjectInnerVal.timestamp = null;
+                        __D2.timestamp = null;
                     } else {
                         if (
                             typeof input.object.timestamp === "object" &&
                             input.object.timestamp instanceof Date
                         ) {
-                            inputObjectInnerVal.timestamp =
-                                input.object.timestamp;
+                            __D2.timestamp = input.object.timestamp;
                         } else if (typeof input.object.timestamp === "string") {
-                            inputObjectInnerVal.timestamp = new Date(
-                                input.object.timestamp,
-                            );
+                            __D2.timestamp = new Date(input.object.timestamp);
                         } else {
                             $fallback(
                                 "/object/timestamp",
@@ -3544,7 +4529,7 @@ const $$ObjectWithEveryNullableType = {
                             );
                         }
                     }
-                    inputInnerVal.object = inputObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -3554,21 +4539,17 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.record === null) {
-                inputInnerVal.record = null;
+                __D1.record = null;
             } else {
                 if (typeof input.record === "object" && input.record !== null) {
-                    const inputRecordResult = {};
-                    for (const inputRecordKey of Object.keys(input.record)) {
-                        let inputRecordKeyVal;
-                        if (input.record[inputRecordKey] === null) {
-                            inputRecordKeyVal = null;
+                    const __D2RResult = {};
+                    for (const __D2RKey of Object.keys(input.record)) {
+                        let __D2RKeyRVal;
+                        if (input.record[__D2RKey] === null) {
+                            __D2RKeyRVal = null;
                         } else {
-                            if (
-                                typeof input.record[inputRecordKey] ===
-                                "boolean"
-                            ) {
-                                inputRecordKeyVal =
-                                    input.record[inputRecordKey];
+                            if (typeof input.record[__D2RKey] === "boolean") {
+                                __D2RKeyRVal = input.record[__D2RKey];
                             } else {
                                 $fallback(
                                     "/record/[key]",
@@ -3577,9 +4558,9 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputRecordResult[inputRecordKey] = inputRecordKeyVal;
+                        __D2RResult[__D2RKey] = __D2RKeyRVal;
                     }
-                    inputInnerVal.record = inputRecordResult;
+                    __D1.record = __D2RResult;
                 } else {
                     $fallback(
                         "/record",
@@ -3589,7 +4570,7 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.discriminator === null) {
-                inputInnerVal.discriminator = null;
+                __D1.discriminator = null;
             } else {
                 if (
                     typeof input.discriminator === "object" &&
@@ -3601,18 +4582,16 @@ const $$ObjectWithEveryNullableType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "A";
+                                const __D2 = {};
+                                __D2.type = "A";
                                 if (input.discriminator.title === null) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     if (
                                         typeof input.discriminator.title ===
                                         "string"
                                     ) {
-                                        inputDiscriminatorInnerVal.title =
-                                            input.discriminator.title;
+                                        __D2.title = input.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -3621,8 +4600,7 @@ const $$ObjectWithEveryNullableType = {
                                         );
                                     }
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -3637,18 +4615,16 @@ const $$ObjectWithEveryNullableType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "B";
+                                const __D2 = {};
+                                __D2.type = "B";
                                 if (input.discriminator.title === null) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     if (
                                         typeof input.discriminator.title ===
                                         "string"
                                     ) {
-                                        inputDiscriminatorInnerVal.title =
-                                            input.discriminator.title;
+                                        __D2.title = input.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -3658,14 +4634,14 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                 }
                                 if (input.discriminator.description === null) {
-                                    inputDiscriminatorInnerVal.description =
+                                    __D2.description =
                                         input.discriminator.description;
                                 } else {
                                     if (
                                         typeof input.discriminator
                                             .description === "string"
                                     ) {
-                                        inputDiscriminatorInnerVal.description =
+                                        __D2.description =
                                             input.discriminator.description;
                                     } else {
                                         $fallback(
@@ -3675,8 +4651,7 @@ const $$ObjectWithEveryNullableType = {
                                         );
                                     }
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -3703,19 +4678,18 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.nestedObject === null) {
-                inputInnerVal.nestedObject = null;
+                __D1.nestedObject = null;
             } else {
                 if (
                     typeof input.nestedObject === "object" &&
                     input.nestedObject !== null
                 ) {
-                    const inputNestedObjectInnerVal = {};
+                    const __D2 = {};
                     if (input.nestedObject.id === null) {
-                        inputNestedObjectInnerVal.id = input.nestedObject.id;
+                        __D2.id = input.nestedObject.id;
                     } else {
                         if (typeof input.nestedObject.id === "string") {
-                            inputNestedObjectInnerVal.id =
-                                input.nestedObject.id;
+                            __D2.id = input.nestedObject.id;
                         } else {
                             $fallback(
                                 "/nestedObject/id",
@@ -3725,18 +4699,17 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.nestedObject.timestamp === null) {
-                        inputNestedObjectInnerVal.timestamp = null;
+                        __D2.timestamp = null;
                     } else {
                         if (
                             typeof input.nestedObject.timestamp === "object" &&
                             input.nestedObject.timestamp instanceof Date
                         ) {
-                            inputNestedObjectInnerVal.timestamp =
-                                input.nestedObject.timestamp;
+                            __D2.timestamp = input.nestedObject.timestamp;
                         } else if (
                             typeof input.nestedObject.timestamp === "string"
                         ) {
-                            inputNestedObjectInnerVal.timestamp = new Date(
+                            __D2.timestamp = new Date(
                                 input.nestedObject.timestamp,
                             );
                         } else {
@@ -3748,23 +4721,21 @@ const $$ObjectWithEveryNullableType = {
                         }
                     }
                     if (input.nestedObject.data === null) {
-                        inputNestedObjectInnerVal.data = null;
+                        __D2.data = null;
                     } else {
                         if (
                             typeof input.nestedObject.data === "object" &&
                             input.nestedObject.data !== null
                         ) {
-                            const inputNestedObjectDataInnerVal = {};
+                            const __D3 = {};
                             if (input.nestedObject.data.id === null) {
-                                inputNestedObjectDataInnerVal.id =
-                                    input.nestedObject.data.id;
+                                __D3.id = input.nestedObject.data.id;
                             } else {
                                 if (
                                     typeof input.nestedObject.data.id ===
                                     "string"
                                 ) {
-                                    inputNestedObjectDataInnerVal.id =
-                                        input.nestedObject.data.id;
+                                    __D3.id = input.nestedObject.data.id;
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/id",
@@ -3774,7 +4745,7 @@ const $$ObjectWithEveryNullableType = {
                                 }
                             }
                             if (input.nestedObject.data.timestamp === null) {
-                                inputNestedObjectDataInnerVal.timestamp = null;
+                                __D3.timestamp = null;
                             } else {
                                 if (
                                     typeof input.nestedObject.data.timestamp ===
@@ -3782,16 +4753,15 @@ const $$ObjectWithEveryNullableType = {
                                     input.nestedObject.data.timestamp instanceof
                                         Date
                                 ) {
-                                    inputNestedObjectDataInnerVal.timestamp =
+                                    __D3.timestamp =
                                         input.nestedObject.data.timestamp;
                                 } else if (
                                     typeof input.nestedObject.data.timestamp ===
                                     "string"
                                 ) {
-                                    inputNestedObjectDataInnerVal.timestamp =
-                                        new Date(
-                                            input.nestedObject.data.timestamp,
-                                        );
+                                    __D3.timestamp = new Date(
+                                        input.nestedObject.data.timestamp,
+                                    );
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/timestamp",
@@ -3801,26 +4771,25 @@ const $$ObjectWithEveryNullableType = {
                                 }
                             }
                             if (input.nestedObject.data.data === null) {
-                                inputNestedObjectDataInnerVal.data = null;
+                                __D3.data = null;
                             } else {
                                 if (
                                     typeof input.nestedObject.data.data ===
                                         "object" &&
                                     input.nestedObject.data.data !== null
                                 ) {
-                                    const inputNestedObjectDataDataInnerVal =
-                                        {};
+                                    const __D4 = {};
                                     if (
                                         input.nestedObject.data.data.id === null
                                     ) {
-                                        inputNestedObjectDataDataInnerVal.id =
+                                        __D4.id =
                                             input.nestedObject.data.data.id;
                                     } else {
                                         if (
                                             typeof input.nestedObject.data.data
                                                 .id === "string"
                                         ) {
-                                            inputNestedObjectDataDataInnerVal.id =
+                                            __D4.id =
                                                 input.nestedObject.data.data.id;
                                         } else {
                                             $fallback(
@@ -3834,8 +4803,7 @@ const $$ObjectWithEveryNullableType = {
                                         input.nestedObject.data.data
                                             .timestamp === null
                                     ) {
-                                        inputNestedObjectDataDataInnerVal.timestamp =
-                                            null;
+                                        __D4.timestamp = null;
                                     } else {
                                         if (
                                             typeof input.nestedObject.data.data
@@ -3843,16 +4811,15 @@ const $$ObjectWithEveryNullableType = {
                                             input.nestedObject.data.data
                                                 .timestamp instanceof Date
                                         ) {
-                                            inputNestedObjectDataDataInnerVal.timestamp =
+                                            __D4.timestamp =
                                                 input.nestedObject.data.data.timestamp;
                                         } else if (
                                             typeof input.nestedObject.data.data
                                                 .timestamp === "string"
                                         ) {
-                                            inputNestedObjectDataDataInnerVal.timestamp =
-                                                new Date(
-                                                    input.nestedObject.data.data.timestamp,
-                                                );
+                                            __D4.timestamp = new Date(
+                                                input.nestedObject.data.data.timestamp,
+                                            );
                                         } else {
                                             $fallback(
                                                 "/nestedObject/data/data/timestamp",
@@ -3861,8 +4828,7 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    inputNestedObjectDataInnerVal.data =
-                                        inputNestedObjectDataDataInnerVal;
+                                    __D3.data = __D4;
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/data",
@@ -3871,8 +4837,7 @@ const $$ObjectWithEveryNullableType = {
                                     );
                                 }
                             }
-                            inputNestedObjectInnerVal.data =
-                                inputNestedObjectDataInnerVal;
+                            __D2.data = __D3;
                         } else {
                             $fallback(
                                 "/nestedObject/data",
@@ -3881,7 +4846,7 @@ const $$ObjectWithEveryNullableType = {
                             );
                         }
                     }
-                    inputInnerVal.nestedObject = inputNestedObjectInnerVal;
+                    __D1.nestedObject = __D2;
                 } else {
                     $fallback(
                         "/nestedObject",
@@ -3891,53 +4856,35 @@ const $$ObjectWithEveryNullableType = {
                 }
             }
             if (input.nestedArray === null) {
-                inputInnerVal.nestedArray = null;
+                __D1.nestedArray = null;
             } else {
                 if (Array.isArray(input.nestedArray)) {
-                    const inputInnerValNestedArrayInnerResult = [];
-                    for (const inputInnerValNestedArrayInnerResultItem of input.nestedArray) {
-                        let inputInnerValNestedArrayInnerResultItemResult;
-                        if (inputInnerValNestedArrayInnerResultItem === null) {
-                            inputInnerValNestedArrayInnerResultItemResult =
-                                null;
+                    const __D2 = [];
+                    for (const __D2AItem of input.nestedArray) {
+                        let __D2AItemAResult;
+                        if (__D2AItem === null) {
+                            __D2AItemAResult = null;
                         } else {
-                            if (
-                                Array.isArray(
-                                    inputInnerValNestedArrayInnerResultItem,
-                                )
-                            ) {
-                                const inputInnerValNestedArrayInnerResultItemResultInnerResult =
-                                    [];
-                                for (const inputInnerValNestedArrayInnerResultItemResultInnerResultItem of inputInnerValNestedArrayInnerResultItem) {
-                                    let inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
-                                    if (
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                        null
-                                    ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                            null;
+                            if (Array.isArray(__D2AItem)) {
+                                const __D3 = [];
+                                for (const __D3AItem of __D2AItem) {
+                                    let __D3AItemAResult;
+                                    if (__D3AItem === null) {
+                                        __D3AItemAResult = null;
                                     } else {
                                         if (
-                                            typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                                "object" &&
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem !==
-                                                null
+                                            typeof __D3AItem === "object" &&
+                                            __D3AItem !== null
                                         ) {
-                                            const inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
-                                                {};
-                                            if (
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
-                                                null
-                                            ) {
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                            const __D4 = {};
+                                            if (__D3AItem.id === null) {
+                                                __D4.id = __D3AItem.id;
                                             } else {
                                                 if (
-                                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
+                                                    typeof __D3AItem.id ===
                                                     "string"
                                                 ) {
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                                    __D4.id = __D3AItem.id;
                                                 } else {
                                                     $fallback(
                                                         "/nestedArray/[0]/[0]/id",
@@ -3946,29 +4893,24 @@ const $$ObjectWithEveryNullableType = {
                                                     );
                                                 }
                                             }
-                                            if (
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
-                                                null
-                                            ) {
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                    null;
+                                            if (__D3AItem.timestamp === null) {
+                                                __D4.timestamp = null;
                                             } else {
                                                 if (
-                                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                    typeof __D3AItem.timestamp ===
                                                         "object" &&
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
+                                                    __D3AItem.timestamp instanceof
                                                         Date
                                                 ) {
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                                    __D4.timestamp =
+                                                        __D3AItem.timestamp;
                                                 } else if (
-                                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                                    typeof __D3AItem.timestamp ===
                                                     "string"
                                                 ) {
-                                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                        new Date(
-                                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
-                                                        );
+                                                    __D4.timestamp = new Date(
+                                                        __D3AItem.timestamp,
+                                                    );
                                                 } else {
                                                     $fallback(
                                                         "/nestedArray/[0]/[0]/timestamp",
@@ -3977,8 +4919,7 @@ const $$ObjectWithEveryNullableType = {
                                                     );
                                                 }
                                             }
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                            __D3AItemAResult = __D4;
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]",
@@ -3987,12 +4928,9 @@ const $$ObjectWithEveryNullableType = {
                                             );
                                         }
                                     }
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
-                                    );
+                                    __D3.push(__D3AItemAResult);
                                 }
-                                inputInnerValNestedArrayInnerResultItemResult =
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResult;
+                                __D2AItemAResult = __D3;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]",
@@ -4001,12 +4939,9 @@ const $$ObjectWithEveryNullableType = {
                                 );
                             }
                         }
-                        inputInnerValNestedArrayInnerResult.push(
-                            inputInnerValNestedArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.nestedArray =
-                        inputInnerValNestedArrayInnerResult;
+                    __D1.nestedArray = __D2;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -4015,7 +4950,7 @@ const $$ObjectWithEveryNullableType = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -4023,6 +4958,11 @@ const $$ObjectWithEveryNullableType = {
     },
     serialize(input: ObjectWithEveryNullableType): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         if (input.any === null) {
             json += '"any":null';
@@ -4037,7 +4977,43 @@ const $$ObjectWithEveryNullableType = {
             json += ',"boolean":null';
         }
         if (typeof input.string === "string") {
-            json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `,"string":`;
+            if (input.string.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.string.length; i++) {
+                    __point__ = input.string.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.string);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ += input.string.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.string}"`;
+                    } else {
+                        json += `"${__result__}${input.string.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                input.string.length < 5000 &&
+                !STR_ESCAPE.test(input.string)
+            ) {
+                json += `"${input.string}"`;
+            } else {
+                json += JSON.stringify(input.string);
+            }
         } else {
             json += ',"string":null';
         }
@@ -4131,12 +5107,12 @@ const $$ObjectWithEveryNullableType = {
         if (Array.isArray(input.array)) {
             json += ',"array":[';
             for (let i = 0; i < input.array.length; i++) {
-                const inputArrayItem = input.array[i];
+                const valArrayItem = input.array[i];
                 if (i !== 0) {
                     json += ",";
                 }
-                if (typeof inputArrayItem === "boolean") {
-                    json += `${inputArrayItem}`;
+                if (typeof valArrayItem === "boolean") {
+                    json += `${valArrayItem}`;
                 } else {
                     json += "null";
                 }
@@ -4146,9 +5122,47 @@ const $$ObjectWithEveryNullableType = {
             json += ',"array":null';
         }
         if (typeof input.object === "object" && input.object !== null) {
-            json += ',"object":{';
+            json += ',"object":';
+            json += "{";
             if (typeof input.object.string === "string") {
-                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"string":`;
+                if (input.object.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.object.string.length; i++) {
+                        __point__ = input.object.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.object.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.object.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.object.string}"`;
+                        } else {
+                            json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.object.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.object.string)
+                ) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += JSON.stringify(input.object.string);
+                }
             } else {
                 json += '"string":null';
             }
@@ -4196,10 +5210,58 @@ const $$ObjectWithEveryNullableType = {
         ) {
             switch (input.discriminator.type) {
                 case "A": {
-                    json += ',"discriminator":{';
+                    json += ',"discriminator":';
+                    json += "{";
                     json += `"type":"A"`;
                     if (typeof input.discriminator.title === "string") {
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                     } else {
                         json += ',"title":null';
                     }
@@ -4207,15 +5269,114 @@ const $$ObjectWithEveryNullableType = {
                     break;
                 }
                 case "B": {
-                    json += ',"discriminator":{';
+                    json += ',"discriminator":';
+                    json += "{";
                     json += `"type":"B"`;
                     if (typeof input.discriminator.title === "string") {
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                     } else {
                         json += ',"title":null';
                     }
                     if (typeof input.discriminator.description === "string") {
-                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"description":`;
+                        if (input.discriminator.description.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.description.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.description.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.description,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.description.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.description}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.description.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.description)
+                        ) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                        }
                     } else {
                         json += ',"description":null';
                     }
@@ -4230,9 +5391,47 @@ const $$ObjectWithEveryNullableType = {
             typeof input.nestedObject === "object" &&
             input.nestedObject !== null
         ) {
-            json += ',"nestedObject":{';
+            json += ',"nestedObject":';
+            json += "{";
             if (typeof input.nestedObject.id === "string") {
-                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"id":`;
+                if (input.nestedObject.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.nestedObject.id.length; i++) {
+                        __point__ = input.nestedObject.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.id)
+                ) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.id);
+                }
             } else {
                 json += '"id":null';
             }
@@ -4248,9 +5447,57 @@ const $$ObjectWithEveryNullableType = {
                 typeof input.nestedObject.data === "object" &&
                 input.nestedObject.data !== null
             ) {
-                json += ',"data":{';
+                json += ',"data":';
+                json += "{";
                 if (typeof input.nestedObject.data.id === "string") {
-                    json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                    json += `"id":`;
+                    if (input.nestedObject.data.id.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (
+                            let i = 0;
+                            i < input.nestedObject.data.id.length;
+                            i++
+                        ) {
+                            __point__ =
+                                input.nestedObject.data.id.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(
+                                    input.nestedObject.data.id,
+                                );
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.nestedObject.data.id.slice(
+                                        __last__,
+                                        i,
+                                    ) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.nestedObject.data.id}"`;
+                            } else {
+                                json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.nestedObject.data.id.length < 5000 &&
+                        !STR_ESCAPE.test(input.nestedObject.data.id)
+                    ) {
+                        json += `"${input.nestedObject.data.id}"`;
+                    } else {
+                        json += JSON.stringify(input.nestedObject.data.id);
+                    }
                 } else {
                     json += '"id":null';
                 }
@@ -4266,9 +5513,61 @@ const $$ObjectWithEveryNullableType = {
                     typeof input.nestedObject.data.data === "object" &&
                     input.nestedObject.data.data !== null
                 ) {
-                    json += ',"data":{';
+                    json += ',"data":';
+                    json += "{";
                     if (typeof input.nestedObject.data.data.id === "string") {
-                        json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `"id":`;
+                        if (input.nestedObject.data.data.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.nestedObject.data.data.id.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.nestedObject.data.data.id.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.nestedObject.data.data.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.nestedObject.data.data.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.nestedObject.data.data.id}"`;
+                                } else {
+                                    json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.nestedObject.data.data.id.length < 5000 &&
+                            !STR_ESCAPE.test(input.nestedObject.data.data.id)
+                        ) {
+                            json += `"${input.nestedObject.data.data.id}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.nestedObject.data.data.id,
+                            );
+                        }
                     } else {
                         json += '"id":null';
                     }
@@ -4296,37 +5595,89 @@ const $$ObjectWithEveryNullableType = {
         if (Array.isArray(input.nestedArray)) {
             json += ',"nestedArray":[';
             for (let i = 0; i < input.nestedArray.length; i++) {
-                const inputNestedArrayItem = input.nestedArray[i];
+                const valNestedArrayItem = input.nestedArray[i];
                 if (i !== 0) {
                     json += ",";
                 }
-                if (Array.isArray(inputNestedArrayItem)) {
+                if (Array.isArray(valNestedArrayItem)) {
                     json += "[";
-                    for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                        const inputNestedArrayItemItem =
-                            inputNestedArrayItem[i];
+                    for (let i = 0; i < valNestedArrayItem.length; i++) {
+                        const valNestedArrayItemItem = valNestedArrayItem[i];
                         if (i !== 0) {
                             json += ",";
                         }
                         if (
-                            typeof inputNestedArrayItemItem === "object" &&
-                            inputNestedArrayItemItem !== null
+                            typeof valNestedArrayItemItem === "object" &&
+                            valNestedArrayItemItem !== null
                         ) {
+                            json += "";
                             json += "{";
-                            if (
-                                typeof inputNestedArrayItemItem.id === "string"
-                            ) {
-                                json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                            if (typeof valNestedArrayItemItem.id === "string") {
+                                json += `"id":`;
+                                if (valNestedArrayItemItem.id.length < 42) {
+                                    let __result__ = "";
+                                    let __last__ = -1;
+                                    let __point__ = 255;
+                                    let __finished__ = false;
+                                    for (
+                                        let i = 0;
+                                        i < valNestedArrayItemItem.id.length;
+                                        i++
+                                    ) {
+                                        __point__ =
+                                            valNestedArrayItemItem.id.charCodeAt(
+                                                i,
+                                            );
+                                        if (
+                                            __point__ < 32 ||
+                                            (__point__ >= 0xd800 &&
+                                                __point__ <= 0xdfff)
+                                        ) {
+                                            json += JSON.stringify(
+                                                valNestedArrayItemItem.id,
+                                            );
+                                            __finished__ = true;
+                                            break;
+                                        }
+                                        if (
+                                            __point__ === 0x22 ||
+                                            __point__ === 0x5c
+                                        ) {
+                                            __last__ === -1 && (__last__ = 0);
+                                            __result__ +=
+                                                valNestedArrayItemItem.id.slice(
+                                                    __last__,
+                                                    i,
+                                                ) + "\\";
+                                            __last__ = i;
+                                        }
+                                    }
+                                    if (!__finished__) {
+                                        if (__last__ === -1) {
+                                            json += `"${valNestedArrayItemItem.id}"`;
+                                        } else {
+                                            json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
+                                        }
+                                    }
+                                } else if (
+                                    valNestedArrayItemItem.id.length < 5000 &&
+                                    !STR_ESCAPE.test(valNestedArrayItemItem.id)
+                                ) {
+                                    json += `"${valNestedArrayItemItem.id}"`;
+                                } else {
+                                    json += JSON.stringify(
+                                        valNestedArrayItemItem.id,
+                                    );
+                                }
                             } else {
                                 json += '"id":null';
                             }
                             if (
-                                typeof inputNestedArrayItemItem.timestamp ===
+                                typeof valNestedArrayItemItem.timestamp ===
                                     "object" &&
-                                inputNestedArrayItemItem.timestamp instanceof
-                                    Date
+                                valNestedArrayItemItem.timestamp instanceof Date
                             ) {
-                                json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                                json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                             } else {
                                 json += ',"timestamp":null';
                             }
@@ -4429,17 +5780,17 @@ const $$ObjectWithEveryOptionalType = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.any === "undefined") {
                     // ignore undefined
                 } else {
-                    jsonInnerVal.any = json.any;
+                    __D1.any = json.any;
                 }
                 if (typeof json.boolean === "undefined") {
                     // ignore undefined
                 } else {
                     if (typeof json.boolean === "boolean") {
-                        jsonInnerVal.boolean = json.boolean;
+                        __D1.boolean = json.boolean;
                     } else {
                         $fallback(
                             "/boolean",
@@ -4452,7 +5803,7 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (typeof json.string === "string") {
-                        jsonInnerVal.string = json.string;
+                        __D1.string = json.string;
                     } else {
                         $fallback(
                             "/string",
@@ -4468,9 +5819,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.timestamp === "object" &&
                         json.timestamp instanceof Date
                     ) {
-                        jsonInnerVal.timestamp = json.timestamp;
+                        __D1.timestamp = json.timestamp;
                     } else if (typeof json.timestamp === "string") {
-                        jsonInnerVal.timestamp = new Date(json.timestamp);
+                        __D1.timestamp = new Date(json.timestamp);
                     } else {
                         $fallback(
                             "/timestamp",
@@ -4486,7 +5837,7 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.float32 === "number" &&
                         !Number.isNaN(json.float32)
                     ) {
-                        jsonInnerVal.float32 = json.float32;
+                        __D1.float32 = json.float32;
                     } else {
                         $fallback(
                             "/float32",
@@ -4502,7 +5853,7 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.float64 === "number" &&
                         !Number.isNaN(json.float64)
                     ) {
-                        jsonInnerVal.float64 = json.float64;
+                        __D1.float64 = json.float64;
                     } else {
                         $fallback(
                             "/float64",
@@ -4520,7 +5871,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.int8 >= -128 &&
                         json.int8 <= 127
                     ) {
-                        jsonInnerVal.int8 = json.int8;
+                        __D1.int8 = json.int8;
                     } else {
                         $fallback(
                             "/int8",
@@ -4538,7 +5889,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.uint8 >= 0 &&
                         json.uint8 <= 255
                     ) {
-                        jsonInnerVal.uint8 = json.uint8;
+                        __D1.uint8 = json.uint8;
                     } else {
                         $fallback(
                             "/uint8",
@@ -4556,7 +5907,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.int16 >= -32768 &&
                         json.int16 <= 32767
                     ) {
-                        jsonInnerVal.int16 = json.int16;
+                        __D1.int16 = json.int16;
                     } else {
                         $fallback(
                             "/int16",
@@ -4574,7 +5925,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.uint16 >= 0 &&
                         json.uint16 <= 65535
                     ) {
-                        jsonInnerVal.uint16 = json.uint16;
+                        __D1.uint16 = json.uint16;
                     } else {
                         $fallback(
                             "/uint16",
@@ -4592,7 +5943,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.int32 >= -2147483648 &&
                         json.int32 <= 2147483647
                     ) {
-                        jsonInnerVal.int32 = json.int32;
+                        __D1.int32 = json.int32;
                     } else {
                         $fallback(
                             "/int32",
@@ -4610,7 +5961,7 @@ const $$ObjectWithEveryOptionalType = {
                         json.uint32 >= 0 &&
                         json.uint32 <= 4294967295
                     ) {
-                        jsonInnerVal.uint32 = json.uint32;
+                        __D1.uint32 = json.uint32;
                     } else {
                         $fallback(
                             "/uint32",
@@ -4628,7 +5979,7 @@ const $$ObjectWithEveryOptionalType = {
                     ) {
                         try {
                             const val = BigInt(json.int64);
-                            jsonInnerVal.int64 = val;
+                            __D1.int64 = val;
                         } catch (err) {
                             $fallback(
                                 "/int64",
@@ -4637,7 +5988,7 @@ const $$ObjectWithEveryOptionalType = {
                             );
                         }
                     } else if (typeof json.int64 === "bigint") {
-                        jsonInnerVal.int64 = json.int64;
+                        __D1.int64 = json.int64;
                     } else {
                         $fallback(
                             "/int64",
@@ -4656,7 +6007,7 @@ const $$ObjectWithEveryOptionalType = {
                         try {
                             const val = BigInt(json.uint64);
                             if (val >= BigInt("0")) {
-                                jsonInnerVal.uint64 = val;
+                                __D1.uint64 = val;
                             } else {
                                 $fallback(
                                     "/uint64",
@@ -4673,7 +6024,7 @@ const $$ObjectWithEveryOptionalType = {
                         }
                     } else if (typeof json.uint64 === "bigint") {
                         if (json.uint64 >= BigInt("0")) {
-                            jsonInnerVal.uint64 = json.uint64;
+                            __D1.uint64 = json.uint64;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -4698,7 +6049,7 @@ const $$ObjectWithEveryOptionalType = {
                             json.enumerator === "B" ||
                             json.enumerator === "C"
                         ) {
-                            jsonInnerVal.enumerator = json.enumerator;
+                            __D1.enumerator = json.enumerator;
                         } else {
                             $fallback(
                                 "/enumerator",
@@ -4718,15 +6069,11 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(json.array)) {
-                        const jsonInnerValArrayInnerResult = [];
-                        for (const jsonInnerValArrayInnerResultItem of json.array) {
-                            let jsonInnerValArrayInnerResultItemResult;
-                            if (
-                                typeof jsonInnerValArrayInnerResultItem ===
-                                "boolean"
-                            ) {
-                                jsonInnerValArrayInnerResultItemResult =
-                                    jsonInnerValArrayInnerResultItem;
+                        const __D2 = [];
+                        for (const __D2AItem of json.array) {
+                            let __D2AItemAResult;
+                            if (typeof __D2AItem === "boolean") {
+                                __D2AItemAResult = __D2AItem;
                             } else {
                                 $fallback(
                                     "/array/[0]",
@@ -4734,11 +6081,9 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected boolean for /array/[0]",
                                 );
                             }
-                            jsonInnerValArrayInnerResult.push(
-                                jsonInnerValArrayInnerResultItemResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.array = jsonInnerValArrayInnerResult;
+                        __D1.array = __D2;
                     } else {
                         $fallback(
                             "/array",
@@ -4754,9 +6099,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.object === "object" &&
                         json.object !== null
                     ) {
-                        const jsonObjectInnerVal = {};
+                        const __D2 = {};
                         if (typeof json.object.string === "string") {
-                            jsonObjectInnerVal.string = json.object.string;
+                            __D2.string = json.object.string;
                         } else {
                             $fallback(
                                 "/object/string",
@@ -4765,7 +6110,7 @@ const $$ObjectWithEveryOptionalType = {
                             );
                         }
                         if (typeof json.object.boolean === "boolean") {
-                            jsonObjectInnerVal.boolean = json.object.boolean;
+                            __D2.boolean = json.object.boolean;
                         } else {
                             $fallback(
                                 "/object/boolean",
@@ -4777,12 +6122,9 @@ const $$ObjectWithEveryOptionalType = {
                             typeof json.object.timestamp === "object" &&
                             json.object.timestamp instanceof Date
                         ) {
-                            jsonObjectInnerVal.timestamp =
-                                json.object.timestamp;
+                            __D2.timestamp = json.object.timestamp;
                         } else if (typeof json.object.timestamp === "string") {
-                            jsonObjectInnerVal.timestamp = new Date(
-                                json.object.timestamp,
-                            );
+                            __D2.timestamp = new Date(json.object.timestamp);
                         } else {
                             $fallback(
                                 "/object/timestamp",
@@ -4790,7 +6132,7 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected instanceof Date or ISO Date string at /object/timestamp",
                             );
                         }
-                        jsonInnerVal.object = jsonObjectInnerVal;
+                        __D1.object = __D2;
                     } else {
                         $fallback(
                             "/object",
@@ -4806,13 +6148,11 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.record === "object" &&
                         json.record !== null
                     ) {
-                        const jsonRecordResult = {};
-                        for (const jsonRecordKey of Object.keys(json.record)) {
-                            let jsonRecordKeyVal;
-                            if (
-                                typeof json.record[jsonRecordKey] === "boolean"
-                            ) {
-                                jsonRecordKeyVal = json.record[jsonRecordKey];
+                        const __D2RResult = {};
+                        for (const __D2RKey of Object.keys(json.record)) {
+                            let __D2RKeyRVal;
+                            if (typeof json.record[__D2RKey] === "boolean") {
+                                __D2RKeyRVal = json.record[__D2RKey];
                             } else {
                                 $fallback(
                                     "/record/[key]",
@@ -4820,9 +6160,9 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected boolean for /record/[key]",
                                 );
                             }
-                            jsonRecordResult[jsonRecordKey] = jsonRecordKeyVal;
+                            __D2RResult[__D2RKey] = __D2RKeyRVal;
                         }
-                        jsonInnerVal.record = jsonRecordResult;
+                        __D1.record = __D2RResult;
                     } else {
                         $fallback(
                             "/record",
@@ -4844,14 +6184,13 @@ const $$ObjectWithEveryOptionalType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "A";
+                                    const __D2 = {};
+                                    __D2.type = "A";
                                     if (
                                         typeof json.discriminator.title ===
                                         "string"
                                     ) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -4859,8 +6198,7 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected string at /discriminator/title",
                                         );
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -4875,14 +6213,13 @@ const $$ObjectWithEveryOptionalType = {
                                     typeof json.discriminator === "object" &&
                                     json.discriminator !== null
                                 ) {
-                                    const jsonDiscriminatorInnerVal = {};
-                                    jsonDiscriminatorInnerVal.type = "B";
+                                    const __D2 = {};
+                                    __D2.type = "B";
                                     if (
                                         typeof json.discriminator.title ===
                                         "string"
                                     ) {
-                                        jsonDiscriminatorInnerVal.title =
-                                            json.discriminator.title;
+                                        __D2.title = json.discriminator.title;
                                     } else {
                                         $fallback(
                                             "/discriminator/title",
@@ -4894,7 +6231,7 @@ const $$ObjectWithEveryOptionalType = {
                                         typeof json.discriminator
                                             .description === "string"
                                     ) {
-                                        jsonDiscriminatorInnerVal.description =
+                                        __D2.description =
                                             json.discriminator.description;
                                     } else {
                                         $fallback(
@@ -4903,8 +6240,7 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected string at /discriminator/description",
                                         );
                                     }
-                                    jsonInnerVal.discriminator =
-                                        jsonDiscriminatorInnerVal;
+                                    __D1.discriminator = __D2;
                                 } else {
                                     $fallback(
                                         "/discriminator",
@@ -4937,9 +6273,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof json.nestedObject === "object" &&
                         json.nestedObject !== null
                     ) {
-                        const jsonNestedObjectInnerVal = {};
+                        const __D2 = {};
                         if (typeof json.nestedObject.id === "string") {
-                            jsonNestedObjectInnerVal.id = json.nestedObject.id;
+                            __D2.id = json.nestedObject.id;
                         } else {
                             $fallback(
                                 "/nestedObject/id",
@@ -4951,12 +6287,11 @@ const $$ObjectWithEveryOptionalType = {
                             typeof json.nestedObject.timestamp === "object" &&
                             json.nestedObject.timestamp instanceof Date
                         ) {
-                            jsonNestedObjectInnerVal.timestamp =
-                                json.nestedObject.timestamp;
+                            __D2.timestamp = json.nestedObject.timestamp;
                         } else if (
                             typeof json.nestedObject.timestamp === "string"
                         ) {
-                            jsonNestedObjectInnerVal.timestamp = new Date(
+                            __D2.timestamp = new Date(
                                 json.nestedObject.timestamp,
                             );
                         } else {
@@ -4970,10 +6305,9 @@ const $$ObjectWithEveryOptionalType = {
                             typeof json.nestedObject.data === "object" &&
                             json.nestedObject.data !== null
                         ) {
-                            const jsonNestedObjectDataInnerVal = {};
+                            const __D3 = {};
                             if (typeof json.nestedObject.data.id === "string") {
-                                jsonNestedObjectDataInnerVal.id =
-                                    json.nestedObject.data.id;
+                                __D3.id = json.nestedObject.data.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/id",
@@ -4986,14 +6320,15 @@ const $$ObjectWithEveryOptionalType = {
                                     "object" &&
                                 json.nestedObject.data.timestamp instanceof Date
                             ) {
-                                jsonNestedObjectDataInnerVal.timestamp =
+                                __D3.timestamp =
                                     json.nestedObject.data.timestamp;
                             } else if (
                                 typeof json.nestedObject.data.timestamp ===
                                 "string"
                             ) {
-                                jsonNestedObjectDataInnerVal.timestamp =
-                                    new Date(json.nestedObject.data.timestamp);
+                                __D3.timestamp = new Date(
+                                    json.nestedObject.data.timestamp,
+                                );
                             } else {
                                 $fallback(
                                     "/nestedObject/data/timestamp",
@@ -5006,13 +6341,12 @@ const $$ObjectWithEveryOptionalType = {
                                     "object" &&
                                 json.nestedObject.data.data !== null
                             ) {
-                                const jsonNestedObjectDataDataInnerVal = {};
+                                const __D4 = {};
                                 if (
                                     typeof json.nestedObject.data.data.id ===
                                     "string"
                                 ) {
-                                    jsonNestedObjectDataDataInnerVal.id =
-                                        json.nestedObject.data.data.id;
+                                    __D4.id = json.nestedObject.data.data.id;
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/data/id",
@@ -5026,16 +6360,15 @@ const $$ObjectWithEveryOptionalType = {
                                     json.nestedObject.data.data
                                         .timestamp instanceof Date
                                 ) {
-                                    jsonNestedObjectDataDataInnerVal.timestamp =
+                                    __D4.timestamp =
                                         json.nestedObject.data.data.timestamp;
                                 } else if (
                                     typeof json.nestedObject.data.data
                                         .timestamp === "string"
                                 ) {
-                                    jsonNestedObjectDataDataInnerVal.timestamp =
-                                        new Date(
-                                            json.nestedObject.data.data.timestamp,
-                                        );
+                                    __D4.timestamp = new Date(
+                                        json.nestedObject.data.data.timestamp,
+                                    );
                                 } else {
                                     $fallback(
                                         "/nestedObject/data/data/timestamp",
@@ -5043,8 +6376,7 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                                     );
                                 }
-                                jsonNestedObjectDataInnerVal.data =
-                                    jsonNestedObjectDataDataInnerVal;
+                                __D3.data = __D4;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data",
@@ -5052,8 +6384,7 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected object",
                                 );
                             }
-                            jsonNestedObjectInnerVal.data =
-                                jsonNestedObjectDataInnerVal;
+                            __D2.data = __D3;
                         } else {
                             $fallback(
                                 "/nestedObject/data",
@@ -5061,7 +6392,7 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerVal.nestedObject = jsonNestedObjectInnerVal;
+                        __D1.nestedObject = __D2;
                     } else {
                         $fallback(
                             "/nestedObject",
@@ -5074,32 +6405,20 @@ const $$ObjectWithEveryOptionalType = {
                     // ignore undefined
                 } else {
                     if (Array.isArray(json.nestedArray)) {
-                        const jsonInnerValNestedArrayInnerResult = [];
-                        for (const jsonInnerValNestedArrayInnerResultItem of json.nestedArray) {
-                            let jsonInnerValNestedArrayInnerResultItemResult;
-                            if (
-                                Array.isArray(
-                                    jsonInnerValNestedArrayInnerResultItem,
-                                )
-                            ) {
-                                const jsonInnerValNestedArrayInnerResultItemResultInnerResult =
-                                    [];
-                                for (const jsonInnerValNestedArrayInnerResultItemResultInnerResultItem of jsonInnerValNestedArrayInnerResultItem) {
-                                    let jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                        const __D2 = [];
+                        for (const __D2AItem of json.nestedArray) {
+                            let __D2AItemAResult;
+                            if (Array.isArray(__D2AItem)) {
+                                const __D3 = [];
+                                for (const __D3AItem of __D2AItem) {
+                                    let __D3AItemAResult;
                                     if (
-                                        typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                            "object" &&
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItem !==
-                                            null
+                                        typeof __D3AItem === "object" &&
+                                        __D3AItem !== null
                                     ) {
-                                        const jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
-                                            {};
-                                        if (
-                                            typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                        const __D4 = {};
+                                        if (typeof __D3AItem.id === "string") {
+                                            __D4.id = __D3AItem.id;
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]/id",
@@ -5108,21 +6427,19 @@ const $$ObjectWithEveryOptionalType = {
                                             );
                                         }
                                         if (
-                                            typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                            typeof __D3AItem.timestamp ===
                                                 "object" &&
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
-                                                Date
+                                            __D3AItem.timestamp instanceof Date
                                         ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                            __D4.timestamp =
+                                                __D3AItem.timestamp;
                                         } else if (
-                                            typeof jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                            typeof __D3AItem.timestamp ===
                                             "string"
                                         ) {
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                                new Date(
-                                                    jsonInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
-                                                );
+                                            __D4.timestamp = new Date(
+                                                __D3AItem.timestamp,
+                                            );
                                         } else {
                                             $fallback(
                                                 "/nestedArray/[0]/[0]/timestamp",
@@ -5130,8 +6447,7 @@ const $$ObjectWithEveryOptionalType = {
                                                 "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                             );
                                         }
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                            jsonInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                        __D3AItemAResult = __D4;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]",
@@ -5139,12 +6455,9 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected object",
                                         );
                                     }
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                        jsonInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
-                                    );
+                                    __D3.push(__D3AItemAResult);
                                 }
-                                jsonInnerValNestedArrayInnerResultItemResult =
-                                    jsonInnerValNestedArrayInnerResultItemResultInnerResult;
+                                __D2AItemAResult = __D3;
                             } else {
                                 $fallback(
                                     "/nestedArray/[0]",
@@ -5152,12 +6465,9 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected Array",
                                 );
                             }
-                            jsonInnerValNestedArrayInnerResult.push(
-                                jsonInnerValNestedArrayInnerResultItemResult,
-                            );
+                            __D2.push(__D2AItemAResult);
                         }
-                        jsonInnerVal.nestedArray =
-                            jsonInnerValNestedArrayInnerResult;
+                        __D1.nestedArray = __D2;
                     } else {
                         $fallback(
                             "/nestedArray",
@@ -5166,7 +6476,7 @@ const $$ObjectWithEveryOptionalType = {
                         );
                     }
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -5174,17 +6484,17 @@ const $$ObjectWithEveryOptionalType = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.any === "undefined") {
                 // ignore undefined
             } else {
-                inputInnerVal.any = input.any;
+                __D1.any = input.any;
             }
             if (typeof input.boolean === "undefined") {
                 // ignore undefined
             } else {
                 if (typeof input.boolean === "boolean") {
-                    inputInnerVal.boolean = input.boolean;
+                    __D1.boolean = input.boolean;
                 } else {
                     $fallback(
                         "/boolean",
@@ -5197,7 +6507,7 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.string === "string") {
-                    inputInnerVal.string = input.string;
+                    __D1.string = input.string;
                 } else {
                     $fallback(
                         "/string",
@@ -5213,9 +6523,9 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.timestamp === "object" &&
                     input.timestamp instanceof Date
                 ) {
-                    inputInnerVal.timestamp = input.timestamp;
+                    __D1.timestamp = input.timestamp;
                 } else if (typeof input.timestamp === "string") {
-                    inputInnerVal.timestamp = new Date(input.timestamp);
+                    __D1.timestamp = new Date(input.timestamp);
                 } else {
                     $fallback(
                         "/timestamp",
@@ -5231,7 +6541,7 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.float32 === "number" &&
                     !Number.isNaN(input.float32)
                 ) {
-                    inputInnerVal.float32 = input.float32;
+                    __D1.float32 = input.float32;
                 } else {
                     $fallback(
                         "/float32",
@@ -5247,7 +6557,7 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.float64 === "number" &&
                     !Number.isNaN(input.float64)
                 ) {
-                    inputInnerVal.float64 = input.float64;
+                    __D1.float64 = input.float64;
                 } else {
                     $fallback(
                         "/float64",
@@ -5265,7 +6575,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.int8 >= -128 &&
                     input.int8 <= 127
                 ) {
-                    inputInnerVal.int8 = input.int8;
+                    __D1.int8 = input.int8;
                 } else {
                     $fallback(
                         "/int8",
@@ -5283,7 +6593,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.uint8 >= 0 &&
                     input.uint8 <= 255
                 ) {
-                    inputInnerVal.uint8 = input.uint8;
+                    __D1.uint8 = input.uint8;
                 } else {
                     $fallback(
                         "/uint8",
@@ -5301,7 +6611,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.int16 >= -32768 &&
                     input.int16 <= 32767
                 ) {
-                    inputInnerVal.int16 = input.int16;
+                    __D1.int16 = input.int16;
                 } else {
                     $fallback(
                         "/int16",
@@ -5319,7 +6629,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.uint16 >= 0 &&
                     input.uint16 <= 65535
                 ) {
-                    inputInnerVal.uint16 = input.uint16;
+                    __D1.uint16 = input.uint16;
                 } else {
                     $fallback(
                         "/uint16",
@@ -5337,7 +6647,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.int32 >= -2147483648 &&
                     input.int32 <= 2147483647
                 ) {
-                    inputInnerVal.int32 = input.int32;
+                    __D1.int32 = input.int32;
                 } else {
                     $fallback(
                         "/int32",
@@ -5355,7 +6665,7 @@ const $$ObjectWithEveryOptionalType = {
                     input.uint32 >= 0 &&
                     input.uint32 <= 4294967295
                 ) {
-                    inputInnerVal.uint32 = input.uint32;
+                    __D1.uint32 = input.uint32;
                 } else {
                     $fallback(
                         "/uint32",
@@ -5373,7 +6683,7 @@ const $$ObjectWithEveryOptionalType = {
                 ) {
                     try {
                         const val = BigInt(input.int64);
-                        inputInnerVal.int64 = val;
+                        __D1.int64 = val;
                     } catch (err) {
                         $fallback(
                             "/int64",
@@ -5382,7 +6692,7 @@ const $$ObjectWithEveryOptionalType = {
                         );
                     }
                 } else if (typeof input.int64 === "bigint") {
-                    inputInnerVal.int64 = input.int64;
+                    __D1.int64 = input.int64;
                 } else {
                     $fallback(
                         "/int64",
@@ -5401,7 +6711,7 @@ const $$ObjectWithEveryOptionalType = {
                     try {
                         const val = BigInt(input.uint64);
                         if (val >= BigInt("0")) {
-                            inputInnerVal.uint64 = val;
+                            __D1.uint64 = val;
                         } else {
                             $fallback(
                                 "/uint64",
@@ -5418,7 +6728,7 @@ const $$ObjectWithEveryOptionalType = {
                     }
                 } else if (typeof input.uint64 === "bigint") {
                     if (input.uint64 >= BigInt("0")) {
-                        inputInnerVal.uint64 = input.uint64;
+                        __D1.uint64 = input.uint64;
                     } else {
                         $fallback(
                             "/uint64",
@@ -5443,7 +6753,7 @@ const $$ObjectWithEveryOptionalType = {
                         input.enumerator === "B" ||
                         input.enumerator === "C"
                     ) {
-                        inputInnerVal.enumerator = input.enumerator;
+                        __D1.enumerator = input.enumerator;
                     } else {
                         $fallback(
                             "/enumerator",
@@ -5463,15 +6773,11 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (Array.isArray(input.array)) {
-                    const inputInnerValArrayInnerResult = [];
-                    for (const inputInnerValArrayInnerResultItem of input.array) {
-                        let inputInnerValArrayInnerResultItemResult;
-                        if (
-                            typeof inputInnerValArrayInnerResultItem ===
-                            "boolean"
-                        ) {
-                            inputInnerValArrayInnerResultItemResult =
-                                inputInnerValArrayInnerResultItem;
+                    const __D2 = [];
+                    for (const __D2AItem of input.array) {
+                        let __D2AItemAResult;
+                        if (typeof __D2AItem === "boolean") {
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/array/[0]",
@@ -5479,11 +6785,9 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected boolean for /array/[0]",
                             );
                         }
-                        inputInnerValArrayInnerResult.push(
-                            inputInnerValArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.array = inputInnerValArrayInnerResult;
+                    __D1.array = __D2;
                 } else {
                     $fallback(
                         "/array",
@@ -5496,9 +6800,9 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.object === "object" && input.object !== null) {
-                    const inputObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof input.object.string === "string") {
-                        inputObjectInnerVal.string = input.object.string;
+                        __D2.string = input.object.string;
                     } else {
                         $fallback(
                             "/object/string",
@@ -5507,7 +6811,7 @@ const $$ObjectWithEveryOptionalType = {
                         );
                     }
                     if (typeof input.object.boolean === "boolean") {
-                        inputObjectInnerVal.boolean = input.object.boolean;
+                        __D2.boolean = input.object.boolean;
                     } else {
                         $fallback(
                             "/object/boolean",
@@ -5519,11 +6823,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof input.object.timestamp === "object" &&
                         input.object.timestamp instanceof Date
                     ) {
-                        inputObjectInnerVal.timestamp = input.object.timestamp;
+                        __D2.timestamp = input.object.timestamp;
                     } else if (typeof input.object.timestamp === "string") {
-                        inputObjectInnerVal.timestamp = new Date(
-                            input.object.timestamp,
-                        );
+                        __D2.timestamp = new Date(input.object.timestamp);
                     } else {
                         $fallback(
                             "/object/timestamp",
@@ -5531,7 +6833,7 @@ const $$ObjectWithEveryOptionalType = {
                             "Expected instanceof Date or ISO Date string at /object/timestamp",
                         );
                     }
-                    inputInnerVal.object = inputObjectInnerVal;
+                    __D1.object = __D2;
                 } else {
                     $fallback(
                         "/object",
@@ -5544,11 +6846,11 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (typeof input.record === "object" && input.record !== null) {
-                    const inputRecordResult = {};
-                    for (const inputRecordKey of Object.keys(input.record)) {
-                        let inputRecordKeyVal;
-                        if (typeof input.record[inputRecordKey] === "boolean") {
-                            inputRecordKeyVal = input.record[inputRecordKey];
+                    const __D2RResult = {};
+                    for (const __D2RKey of Object.keys(input.record)) {
+                        let __D2RKeyRVal;
+                        if (typeof input.record[__D2RKey] === "boolean") {
+                            __D2RKeyRVal = input.record[__D2RKey];
                         } else {
                             $fallback(
                                 "/record/[key]",
@@ -5556,9 +6858,9 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected boolean for /record/[key]",
                             );
                         }
-                        inputRecordResult[inputRecordKey] = inputRecordKeyVal;
+                        __D2RResult[__D2RKey] = __D2RKeyRVal;
                     }
-                    inputInnerVal.record = inputRecordResult;
+                    __D1.record = __D2RResult;
                 } else {
                     $fallback(
                         "/record",
@@ -5580,14 +6882,13 @@ const $$ObjectWithEveryOptionalType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "A";
+                                const __D2 = {};
+                                __D2.type = "A";
                                 if (
                                     typeof input.discriminator.title ===
                                     "string"
                                 ) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -5595,8 +6896,7 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected string at /discriminator/title",
                                     );
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -5611,14 +6911,13 @@ const $$ObjectWithEveryOptionalType = {
                                 typeof input.discriminator === "object" &&
                                 input.discriminator !== null
                             ) {
-                                const inputDiscriminatorInnerVal = {};
-                                inputDiscriminatorInnerVal.type = "B";
+                                const __D2 = {};
+                                __D2.type = "B";
                                 if (
                                     typeof input.discriminator.title ===
                                     "string"
                                 ) {
-                                    inputDiscriminatorInnerVal.title =
-                                        input.discriminator.title;
+                                    __D2.title = input.discriminator.title;
                                 } else {
                                     $fallback(
                                         "/discriminator/title",
@@ -5630,7 +6929,7 @@ const $$ObjectWithEveryOptionalType = {
                                     typeof input.discriminator.description ===
                                     "string"
                                 ) {
-                                    inputDiscriminatorInnerVal.description =
+                                    __D2.description =
                                         input.discriminator.description;
                                 } else {
                                     $fallback(
@@ -5639,8 +6938,7 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected string at /discriminator/description",
                                     );
                                 }
-                                inputInnerVal.discriminator =
-                                    inputDiscriminatorInnerVal;
+                                __D1.discriminator = __D2;
                             } else {
                                 $fallback(
                                     "/discriminator",
@@ -5673,9 +6971,9 @@ const $$ObjectWithEveryOptionalType = {
                     typeof input.nestedObject === "object" &&
                     input.nestedObject !== null
                 ) {
-                    const inputNestedObjectInnerVal = {};
+                    const __D2 = {};
                     if (typeof input.nestedObject.id === "string") {
-                        inputNestedObjectInnerVal.id = input.nestedObject.id;
+                        __D2.id = input.nestedObject.id;
                     } else {
                         $fallback(
                             "/nestedObject/id",
@@ -5687,14 +6985,11 @@ const $$ObjectWithEveryOptionalType = {
                         typeof input.nestedObject.timestamp === "object" &&
                         input.nestedObject.timestamp instanceof Date
                     ) {
-                        inputNestedObjectInnerVal.timestamp =
-                            input.nestedObject.timestamp;
+                        __D2.timestamp = input.nestedObject.timestamp;
                     } else if (
                         typeof input.nestedObject.timestamp === "string"
                     ) {
-                        inputNestedObjectInnerVal.timestamp = new Date(
-                            input.nestedObject.timestamp,
-                        );
+                        __D2.timestamp = new Date(input.nestedObject.timestamp);
                     } else {
                         $fallback(
                             "/nestedObject/timestamp",
@@ -5706,10 +7001,9 @@ const $$ObjectWithEveryOptionalType = {
                         typeof input.nestedObject.data === "object" &&
                         input.nestedObject.data !== null
                     ) {
-                        const inputNestedObjectDataInnerVal = {};
+                        const __D3 = {};
                         if (typeof input.nestedObject.data.id === "string") {
-                            inputNestedObjectDataInnerVal.id =
-                                input.nestedObject.data.id;
+                            __D3.id = input.nestedObject.data.id;
                         } else {
                             $fallback(
                                 "/nestedObject/data/id",
@@ -5722,13 +7016,12 @@ const $$ObjectWithEveryOptionalType = {
                                 "object" &&
                             input.nestedObject.data.timestamp instanceof Date
                         ) {
-                            inputNestedObjectDataInnerVal.timestamp =
-                                input.nestedObject.data.timestamp;
+                            __D3.timestamp = input.nestedObject.data.timestamp;
                         } else if (
                             typeof input.nestedObject.data.timestamp ===
                             "string"
                         ) {
-                            inputNestedObjectDataInnerVal.timestamp = new Date(
+                            __D3.timestamp = new Date(
                                 input.nestedObject.data.timestamp,
                             );
                         } else {
@@ -5742,13 +7035,12 @@ const $$ObjectWithEveryOptionalType = {
                             typeof input.nestedObject.data.data === "object" &&
                             input.nestedObject.data.data !== null
                         ) {
-                            const inputNestedObjectDataDataInnerVal = {};
+                            const __D4 = {};
                             if (
                                 typeof input.nestedObject.data.data.id ===
                                 "string"
                             ) {
-                                inputNestedObjectDataDataInnerVal.id =
-                                    input.nestedObject.data.data.id;
+                                __D4.id = input.nestedObject.data.data.id;
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/id",
@@ -5762,16 +7054,15 @@ const $$ObjectWithEveryOptionalType = {
                                 input.nestedObject.data.data
                                     .timestamp instanceof Date
                             ) {
-                                inputNestedObjectDataDataInnerVal.timestamp =
+                                __D4.timestamp =
                                     input.nestedObject.data.data.timestamp;
                             } else if (
                                 typeof input.nestedObject.data.data
                                     .timestamp === "string"
                             ) {
-                                inputNestedObjectDataDataInnerVal.timestamp =
-                                    new Date(
-                                        input.nestedObject.data.data.timestamp,
-                                    );
+                                __D4.timestamp = new Date(
+                                    input.nestedObject.data.data.timestamp,
+                                );
                             } else {
                                 $fallback(
                                     "/nestedObject/data/data/timestamp",
@@ -5779,8 +7070,7 @@ const $$ObjectWithEveryOptionalType = {
                                     "Expected instanceof Date or ISO Date string at /nestedObject/data/data/timestamp",
                                 );
                             }
-                            inputNestedObjectDataInnerVal.data =
-                                inputNestedObjectDataDataInnerVal;
+                            __D3.data = __D4;
                         } else {
                             $fallback(
                                 "/nestedObject/data/data",
@@ -5788,8 +7078,7 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected object",
                             );
                         }
-                        inputNestedObjectInnerVal.data =
-                            inputNestedObjectDataInnerVal;
+                        __D2.data = __D3;
                     } else {
                         $fallback(
                             "/nestedObject/data",
@@ -5797,7 +7086,7 @@ const $$ObjectWithEveryOptionalType = {
                             "Expected object",
                         );
                     }
-                    inputInnerVal.nestedObject = inputNestedObjectInnerVal;
+                    __D1.nestedObject = __D2;
                 } else {
                     $fallback(
                         "/nestedObject",
@@ -5810,32 +7099,20 @@ const $$ObjectWithEveryOptionalType = {
                 // ignore undefined
             } else {
                 if (Array.isArray(input.nestedArray)) {
-                    const inputInnerValNestedArrayInnerResult = [];
-                    for (const inputInnerValNestedArrayInnerResultItem of input.nestedArray) {
-                        let inputInnerValNestedArrayInnerResultItemResult;
-                        if (
-                            Array.isArray(
-                                inputInnerValNestedArrayInnerResultItem,
-                            )
-                        ) {
-                            const inputInnerValNestedArrayInnerResultItemResultInnerResult =
-                                [];
-                            for (const inputInnerValNestedArrayInnerResultItemResultInnerResultItem of inputInnerValNestedArrayInnerResultItem) {
-                                let inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult;
+                    const __D2 = [];
+                    for (const __D2AItem of input.nestedArray) {
+                        let __D2AItemAResult;
+                        if (Array.isArray(__D2AItem)) {
+                            const __D3 = [];
+                            for (const __D3AItem of __D2AItem) {
+                                let __D3AItemAResult;
                                 if (
-                                    typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem ===
-                                        "object" &&
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItem !==
-                                        null
+                                    typeof __D3AItem === "object" &&
+                                    __D3AItem !== null
                                 ) {
-                                    const inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal =
-                                        {};
-                                    if (
-                                        typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id ===
-                                        "string"
-                                    ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.id =
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.id;
+                                    const __D4 = {};
+                                    if (typeof __D3AItem.id === "string") {
+                                        __D4.id = __D3AItem.id;
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/id",
@@ -5844,21 +7121,17 @@ const $$ObjectWithEveryOptionalType = {
                                         );
                                     }
                                     if (
-                                        typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
+                                        typeof __D3AItem.timestamp ===
                                             "object" &&
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp instanceof
-                                            Date
+                                        __D3AItem.timestamp instanceof Date
                                     ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                            inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp;
+                                        __D4.timestamp = __D3AItem.timestamp;
                                     } else if (
-                                        typeof inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp ===
-                                        "string"
+                                        typeof __D3AItem.timestamp === "string"
                                     ) {
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal.timestamp =
-                                            new Date(
-                                                inputInnerValNestedArrayInnerResultItemResultInnerResultItem.timestamp,
-                                            );
+                                        __D4.timestamp = new Date(
+                                            __D3AItem.timestamp,
+                                        );
                                     } else {
                                         $fallback(
                                             "/nestedArray/[0]/[0]/timestamp",
@@ -5866,8 +7139,7 @@ const $$ObjectWithEveryOptionalType = {
                                             "Expected instanceof Date or ISO Date string at /nestedArray/[0]/[0]/timestamp",
                                         );
                                     }
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult =
-                                        inputInnerValNestedArrayInnerResultItemResultInnerResultItemInnerVal;
+                                    __D3AItemAResult = __D4;
                                 } else {
                                     $fallback(
                                         "/nestedArray/[0]/[0]",
@@ -5875,12 +7147,9 @@ const $$ObjectWithEveryOptionalType = {
                                         "Expected object",
                                     );
                                 }
-                                inputInnerValNestedArrayInnerResultItemResultInnerResult.push(
-                                    inputInnerValNestedArrayInnerResultItemResultInnerResultItemResult,
-                                );
+                                __D3.push(__D3AItemAResult);
                             }
-                            inputInnerValNestedArrayInnerResultItemResult =
-                                inputInnerValNestedArrayInnerResultItemResultInnerResult;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/nestedArray/[0]",
@@ -5888,12 +7157,9 @@ const $$ObjectWithEveryOptionalType = {
                                 "Expected Array",
                             );
                         }
-                        inputInnerValNestedArrayInnerResult.push(
-                            inputInnerValNestedArrayInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    inputInnerVal.nestedArray =
-                        inputInnerValNestedArrayInnerResult;
+                    __D1.nestedArray = __D2;
                 } else {
                     $fallback(
                         "/nestedArray",
@@ -5902,7 +7168,7 @@ const $$ObjectWithEveryOptionalType = {
                     );
                 }
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -5910,6 +7176,11 @@ const $$ObjectWithEveryOptionalType = {
     },
     serialize(input: ObjectWithEveryOptionalType): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         let inputHasFields = false;
         if (typeof input.any !== "undefined") {
@@ -5934,9 +7205,83 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.string !== "undefined") {
             if (inputHasFields) {
-                json += `,"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"string":`;
+                if (input.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.string.length; i++) {
+                        __point__ = input.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.string}"`;
+                        } else {
+                            json += `"${__result__}${input.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.string)
+                ) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += JSON.stringify(input.string);
+                }
             } else {
-                json += `"string":"${input.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `"string":`;
+                if (input.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.string.length; i++) {
+                        __point__ = input.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.string}"`;
+                        } else {
+                            json += `"${__result__}${input.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.string)
+                ) {
+                    json += `"${input.string}"`;
+                } else {
+                    json += JSON.stringify(input.string);
+                }
                 inputHasFields = true;
             }
         }
@@ -6088,21 +7433,21 @@ const $$ObjectWithEveryOptionalType = {
             if (inputHasFields) {
                 json += ',"array":[';
                 for (let i = 0; i < input.array.length; i++) {
-                    const inputArrayItem = input.array[i];
+                    const valArrayItem = input.array[i];
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `${inputArrayItem}`;
+                    json += `${valArrayItem}`;
                 }
                 json += "]";
             } else {
                 json += '"array":[';
                 for (let i = 0; i < input.array.length; i++) {
-                    const inputArrayItem = input.array[i];
+                    const valArrayItem = input.array[i];
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `${inputArrayItem}`;
+                    json += `${valArrayItem}`;
                 }
                 json += "]";
                 inputHasFields = true;
@@ -6110,14 +7455,90 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.object !== "undefined") {
             if (inputHasFields) {
-                json += ',"object":{';
-                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += ',"object":';
+                json += "{";
+                json += `"string":`;
+                if (input.object.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.object.string.length; i++) {
+                        __point__ = input.object.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.object.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.object.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.object.string}"`;
+                        } else {
+                            json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.object.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.object.string)
+                ) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += JSON.stringify(input.object.string);
+                }
                 json += `,"boolean":${input.object.boolean}`;
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
             } else {
-                json += '"object":{';
-                json += `"string":"${input.object.string.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += '"object":';
+                json += "{";
+                json += `"string":`;
+                if (input.object.string.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.object.string.length; i++) {
+                        __point__ = input.object.string.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.object.string);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.object.string.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.object.string}"`;
+                        } else {
+                            json += `"${__result__}${input.object.string.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.object.string.length < 5000 &&
+                    !STR_ESCAPE.test(input.object.string)
+                ) {
+                    json += `"${input.object.string}"`;
+                } else {
+                    json += JSON.stringify(input.object.string);
+                }
                 json += `,"boolean":${input.object.boolean}`;
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
@@ -6160,17 +7581,164 @@ const $$ObjectWithEveryOptionalType = {
             if (inputHasFields) {
                 switch (input.discriminator.type) {
                     case "A": {
-                        json += ',"discriminator":{';
+                        json += ',"discriminator":';
+                        json += "{";
                         json += `"type":"A"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                         json += "}";
                         break;
                     }
                     case "B": {
-                        json += ',"discriminator":{';
+                        json += ',"discriminator":';
+                        json += "{";
                         json += `"type":"B"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
+                        json += `,"description":`;
+                        if (input.discriminator.description.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.description.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.description.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.description,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.description.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.description}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.description.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.description)
+                        ) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                        }
                         json += "}";
                         break;
                     }
@@ -6178,17 +7746,164 @@ const $$ObjectWithEveryOptionalType = {
             } else {
                 switch (input.discriminator.type) {
                     case "A": {
-                        json += '"discriminator":{';
+                        json += '"discriminator":';
+                        json += "{";
                         json += `"type":"A"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
                         json += "}";
                         break;
                     }
                     case "B": {
-                        json += '"discriminator":{';
+                        json += '"discriminator":';
+                        json += "{";
                         json += `"type":"B"`;
-                        json += `,"title":"${input.discriminator.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"description":"${input.discriminator.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                        json += `,"title":`;
+                        if (input.discriminator.title.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.title.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.title.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.title,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.title.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.title}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.title.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.title.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.title)
+                        ) {
+                            json += `"${input.discriminator.title}"`;
+                        } else {
+                            json += JSON.stringify(input.discriminator.title);
+                        }
+                        json += `,"description":`;
+                        if (input.discriminator.description.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < input.discriminator.description.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    input.discriminator.description.charCodeAt(
+                                        i,
+                                    );
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        input.discriminator.description,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        input.discriminator.description.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${input.discriminator.description}"`;
+                                } else {
+                                    json += `"${__result__}${input.discriminator.description.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            input.discriminator.description.length < 5000 &&
+                            !STR_ESCAPE.test(input.discriminator.description)
+                        ) {
+                            json += `"${input.discriminator.description}"`;
+                        } else {
+                            json += JSON.stringify(
+                                input.discriminator.description,
+                            );
+                        }
                         json += "}";
                         break;
                     }
@@ -6198,27 +7913,289 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.nestedObject !== "undefined") {
             if (inputHasFields) {
-                json += ',"nestedObject":{';
-                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += ',"nestedObject":';
+                json += "{";
+                json += `"id":`;
+                if (input.nestedObject.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.nestedObject.id.length; i++) {
+                        __point__ = input.nestedObject.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.id)
+                ) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
-                json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+                json += ',"data":';
+                json += "{";
+                json += `"id":`;
+                if (input.nestedObject.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.id.length;
+                        i++
+                    ) {
+                        __point__ = input.nestedObject.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.data.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
-                json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+                json += ',"data":';
+                json += "{";
+                json += `"id":`;
+                if (input.nestedObject.data.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.data.id.length;
+                        i++
+                    ) {
+                        __point__ =
+                            input.nestedObject.data.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(
+                                input.nestedObject.data.data.id,
+                            );
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.data.id.slice(
+                                    __last__,
+                                    i,
+                                ) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
                 json += "}";
                 json += "}";
                 json += "}";
             } else {
-                json += '"nestedObject":{';
-                json += `"id":"${input.nestedObject.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += '"nestedObject":';
+                json += "{";
+                json += `"id":`;
+                if (input.nestedObject.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.nestedObject.id.length; i++) {
+                        __point__ = input.nestedObject.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.id)
+                ) {
+                    json += `"${input.nestedObject.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
-                json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+                json += ',"data":';
+                json += "{";
+                json += `"id":`;
+                if (input.nestedObject.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.id.length;
+                        i++
+                    ) {
+                        __point__ = input.nestedObject.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.nestedObject.data.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.id.slice(__last__, i) +
+                                "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
-                json += ',"data":{';
-                json += `"id":"${input.nestedObject.data.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+
+                json += ',"data":';
+                json += "{";
+                json += `"id":`;
+                if (input.nestedObject.data.data.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (
+                        let i = 0;
+                        i < input.nestedObject.data.data.id.length;
+                        i++
+                    ) {
+                        __point__ =
+                            input.nestedObject.data.data.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(
+                                input.nestedObject.data.data.id,
+                            );
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.nestedObject.data.data.id.slice(
+                                    __last__,
+                                    i,
+                                ) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.nestedObject.data.data.id}"`;
+                        } else {
+                            json += `"${__result__}${input.nestedObject.data.data.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.nestedObject.data.data.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.nestedObject.data.data.id)
+                ) {
+                    json += `"${input.nestedObject.data.data.id}"`;
+                } else {
+                    json += JSON.stringify(input.nestedObject.data.data.id);
+                }
                 json += `,"timestamp":"${input.nestedObject.data.data.timestamp.toISOString()}"`;
                 json += "}";
                 json += "}";
@@ -6230,20 +8207,68 @@ const $$ObjectWithEveryOptionalType = {
             if (inputHasFields) {
                 json += ',"nestedArray":[';
                 for (let i = 0; i < input.nestedArray.length; i++) {
-                    const inputNestedArrayItem = input.nestedArray[i];
+                    const valNestedArrayItem = input.nestedArray[i];
                     if (i !== 0) {
                         json += ",";
                     }
                     json += "[";
-                    for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                        const inputNestedArrayItemItem =
-                            inputNestedArrayItem[i];
+                    for (let i = 0; i < valNestedArrayItem.length; i++) {
+                        const valNestedArrayItemItem = valNestedArrayItem[i];
                         if (i !== 0) {
                             json += ",";
                         }
+
+                        json += "";
                         json += "{";
-                        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                        json += `"id":`;
+                        if (valNestedArrayItemItem.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < valNestedArrayItemItem.id.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    valNestedArrayItemItem.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        valNestedArrayItemItem.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        valNestedArrayItemItem.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${valNestedArrayItemItem.id}"`;
+                                } else {
+                                    json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            valNestedArrayItemItem.id.length < 5000 &&
+                            !STR_ESCAPE.test(valNestedArrayItemItem.id)
+                        ) {
+                            json += `"${valNestedArrayItemItem.id}"`;
+                        } else {
+                            json += JSON.stringify(valNestedArrayItemItem.id);
+                        }
+                        json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
                     json += "]";
@@ -6252,20 +8277,68 @@ const $$ObjectWithEveryOptionalType = {
             } else {
                 json += '"nestedArray":[';
                 for (let i = 0; i < input.nestedArray.length; i++) {
-                    const inputNestedArrayItem = input.nestedArray[i];
+                    const valNestedArrayItem = input.nestedArray[i];
                     if (i !== 0) {
                         json += ",";
                     }
                     json += "[";
-                    for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                        const inputNestedArrayItemItem =
-                            inputNestedArrayItem[i];
+                    for (let i = 0; i < valNestedArrayItem.length; i++) {
+                        const valNestedArrayItemItem = valNestedArrayItem[i];
                         if (i !== 0) {
                             json += ",";
                         }
+
+                        json += "";
                         json += "{";
-                        json += `"id":"${inputNestedArrayItemItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                        json += `"id":`;
+                        if (valNestedArrayItemItem.id.length < 42) {
+                            let __result__ = "";
+                            let __last__ = -1;
+                            let __point__ = 255;
+                            let __finished__ = false;
+                            for (
+                                let i = 0;
+                                i < valNestedArrayItemItem.id.length;
+                                i++
+                            ) {
+                                __point__ =
+                                    valNestedArrayItemItem.id.charCodeAt(i);
+                                if (
+                                    __point__ < 32 ||
+                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                                ) {
+                                    json += JSON.stringify(
+                                        valNestedArrayItemItem.id,
+                                    );
+                                    __finished__ = true;
+                                    break;
+                                }
+                                if (__point__ === 0x22 || __point__ === 0x5c) {
+                                    __last__ === -1 && (__last__ = 0);
+                                    __result__ +=
+                                        valNestedArrayItemItem.id.slice(
+                                            __last__,
+                                            i,
+                                        ) + "\\";
+                                    __last__ = i;
+                                }
+                            }
+                            if (!__finished__) {
+                                if (__last__ === -1) {
+                                    json += `"${valNestedArrayItemItem.id}"`;
+                                } else {
+                                    json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
+                                }
+                            }
+                        } else if (
+                            valNestedArrayItemItem.id.length < 5000 &&
+                            !STR_ESCAPE.test(valNestedArrayItemItem.id)
+                        ) {
+                            json += `"${valNestedArrayItemItem.id}"`;
+                        } else {
+                            json += JSON.stringify(valNestedArrayItemItem.id);
+                        }
+                        json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
                     json += "]";
@@ -6324,6 +8397,450 @@ export interface ObjectWithEveryOptionalTypeNestedArrayItemItem {
     timestamp: Date;
 }
 
+export interface RecursiveObject {
+    left: RecursiveObject | null;
+    right: RecursiveObject | null;
+    value: string;
+}
+const $$RecursiveObject = {
+    parse(input: Record<any, any>): RecursiveObject {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+        function __parse_RecursiveObject(_fnVal) {
+            let _fnTarget;
+            if (typeof _fnVal === "object" && _fnVal !== null) {
+                const __D1 = {};
+                if (_fnVal.left === null) {
+                    __D1.left = null;
+                } else {
+                    __D1.left = __parse_RecursiveObject(_fnVal.left);
+                }
+                if (_fnVal.right === null) {
+                    __D1.right = null;
+                } else {
+                    __D1.right = __parse_RecursiveObject(_fnVal.right);
+                }
+                if (typeof _fnVal.value === "string") {
+                    __D1.value = _fnVal.value;
+                } else {
+                    $fallback(
+                        "/value",
+                        "/properties/value/type",
+                        "Expected string at /value",
+                    );
+                }
+                _fnTarget = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return _fnTarget;
+        }
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            result = __parse_RecursiveObject(json);
+            return result;
+        }
+        let result = {};
+        result = __parse_RecursiveObject(input);
+        return result;
+    },
+    serialize(input: RecursiveObject): string {
+        let json = "";
+        function __serialize_RecursiveObject(__inputVal__) {
+            json += "{";
+            if (__inputVal__.left === null) {
+                json += '"left":null';
+            } else {
+                json += '"left":';
+                __serialize_RecursiveObject(__inputVal__.left);
+            }
+            if (__inputVal__.right === null) {
+                json += ',"right":null';
+            } else {
+                json += ',"right":';
+                __serialize_RecursiveObject(__inputVal__.right);
+            }
+            json += `,"value":`;
+            if (__inputVal__.value.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < __inputVal__.value.length; i++) {
+                    __point__ = __inputVal__.value.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(__inputVal__.value);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            __inputVal__.value.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${__inputVal__.value}"`;
+                    } else {
+                        json += `"${__result__}${__inputVal__.value.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                __inputVal__.value.length < 5000 &&
+                !STR_ESCAPE.test(__inputVal__.value)
+            ) {
+                json += `"${__inputVal__.value}"`;
+            } else {
+                json += JSON.stringify(__inputVal__.value);
+            }
+            json += "}";
+        }
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        __serialize_RecursiveObject(input);
+        return json;
+    },
+};
+
+export type RecursiveUnion =
+    | RecursiveUnionChild
+    | RecursiveUnionChildren
+    | RecursiveUnionText
+    | RecursiveUnionShape;
+const $$RecursiveUnion = {
+    parse(input: Record<any, any>): RecursiveUnion {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+        function __parse_RecursiveUnion(_fnVal) {
+            let _fnTarget;
+            if (typeof _fnVal === "object" && _fnVal !== null) {
+                switch (_fnVal.type) {
+                    case "CHILD": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "CHILD";
+                            __D1.data = __parse_RecursiveUnion(_fnVal.data);
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "CHILDREN": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "CHILDREN";
+                            if (Array.isArray(_fnVal.data)) {
+                                const __D2 = [];
+                                for (const __D2AItem of _fnVal.data) {
+                                    let __D2AItemAResult;
+                                    __D2AItemAResult =
+                                        __parse_RecursiveUnion(__D2AItem);
+                                    __D2.push(__D2AItemAResult);
+                                }
+                                __D1.data = __D2;
+                            } else {
+                                $fallback(
+                                    "/data",
+                                    "/mapping/properties/data",
+                                    "Expected Array",
+                                );
+                            }
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "TEXT": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "TEXT";
+                            if (typeof _fnVal.data === "string") {
+                                __D1.data = _fnVal.data;
+                            } else {
+                                $fallback(
+                                    "/data",
+                                    "/mapping/properties/data/type",
+                                    "Expected string at /data",
+                                );
+                            }
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "SHAPE": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "SHAPE";
+                            if (
+                                typeof _fnVal.data === "object" &&
+                                _fnVal.data !== null
+                            ) {
+                                const __D2 = {};
+                                if (
+                                    typeof _fnVal.data.width === "number" &&
+                                    !Number.isNaN(_fnVal.data.width)
+                                ) {
+                                    __D2.width = _fnVal.data.width;
+                                } else {
+                                    $fallback(
+                                        "/data/width",
+                                        "/mapping/properties/data/properties/width/type",
+                                        "Expected number at /data/width",
+                                    );
+                                }
+                                if (
+                                    typeof _fnVal.data.height === "number" &&
+                                    !Number.isNaN(_fnVal.data.height)
+                                ) {
+                                    __D2.height = _fnVal.data.height;
+                                } else {
+                                    $fallback(
+                                        "/data/height",
+                                        "/mapping/properties/data/properties/height/type",
+                                        "Expected number at /data/height",
+                                    );
+                                }
+                                if (typeof _fnVal.data.color === "string") {
+                                    __D2.color = _fnVal.data.color;
+                                } else {
+                                    $fallback(
+                                        "/data/color",
+                                        "/mapping/properties/data/properties/color/type",
+                                        "Expected string at /data/color",
+                                    );
+                                }
+                                __D1.data = __D2;
+                            } else {
+                                $fallback(
+                                    "/data",
+                                    "/mapping/properties/data",
+                                    "Expected object",
+                                );
+                            }
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    default:
+                        $fallback(
+                            "",
+                            "/mapping",
+                            "input.type did not match one of the specified values",
+                        );
+                        break;
+                }
+            } else {
+                $fallback("", "", "Expected Object.");
+            }
+            return _fnTarget;
+        }
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            result = __parse_RecursiveUnion(json);
+            return result;
+        }
+        let result = {};
+        result = __parse_RecursiveUnion(input);
+        return result;
+    },
+    serialize(input: RecursiveUnion): string {
+        let json = "";
+        function __serialize_RecursiveUnion(__fnInput__) {
+            switch (__fnInput__.type) {
+                case "CHILD": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"CHILD"`;
+                    json += ',"data":';
+                    __serialize_RecursiveUnion(__fnInput__.data);
+                    json += "}";
+                    break;
+                }
+                case "CHILDREN": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"CHILDREN"`;
+                    json += ',"data":[';
+                    for (let i = 0; i < __fnInput__.data.length; i++) {
+                        const valDataItem = __fnInput__.data[i];
+                        if (i !== 0) {
+                            json += ",";
+                        }
+                        json += "";
+                        __serialize_RecursiveUnion(valDataItem);
+                    }
+                    json += "]";
+                    json += "}";
+                    break;
+                }
+                case "TEXT": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"TEXT"`;
+                    json += `,"data":`;
+                    if (__fnInput__.data.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < __fnInput__.data.length; i++) {
+                            __point__ = __fnInput__.data.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(__fnInput__.data);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    __fnInput__.data.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${__fnInput__.data}"`;
+                            } else {
+                                json += `"${__result__}${__fnInput__.data.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        __fnInput__.data.length < 5000 &&
+                        !STR_ESCAPE.test(__fnInput__.data)
+                    ) {
+                        json += `"${__fnInput__.data}"`;
+                    } else {
+                        json += JSON.stringify(__fnInput__.data);
+                    }
+                    json += "}";
+                    break;
+                }
+                case "SHAPE": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"SHAPE"`;
+
+                    json += ',"data":';
+                    json += "{";
+
+                    if (Number.isNaN(__fnInput__.data.width)) {
+                        throw new Error(
+                            "Expected number at /data/width got NaN",
+                        );
+                    }
+                    json += `"width":${__fnInput__.data.width}`;
+
+                    if (Number.isNaN(__fnInput__.data.height)) {
+                        throw new Error(
+                            "Expected number at /data/height got NaN",
+                        );
+                    }
+                    json += `,"height":${__fnInput__.data.height}`;
+                    json += `,"color":`;
+                    if (__fnInput__.data.color.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (
+                            let i = 0;
+                            i < __fnInput__.data.color.length;
+                            i++
+                        ) {
+                            __point__ = __fnInput__.data.color.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(__fnInput__.data.color);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    __fnInput__.data.color.slice(__last__, i) +
+                                    "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${__fnInput__.data.color}"`;
+                            } else {
+                                json += `"${__result__}${__fnInput__.data.color.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        __fnInput__.data.color.length < 5000 &&
+                        !STR_ESCAPE.test(__fnInput__.data.color)
+                    ) {
+                        json += `"${__fnInput__.data.color}"`;
+                    } else {
+                        json += JSON.stringify(__fnInput__.data.color);
+                    }
+                    json += "}";
+                    json += "}";
+                    break;
+                }
+            }
+        }
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+        __serialize_RecursiveUnion(input);
+        return json;
+    },
+};
+export interface RecursiveUnionChild {
+    type: "CHILD";
+    data: RecursiveUnion;
+}
+
+export interface RecursiveUnionChildren {
+    type: "CHILDREN";
+    data: Array<RecursiveUnion>;
+}
+
+export interface RecursiveUnionText {
+    type: "TEXT";
+    data: string;
+}
+
+export interface RecursiveUnionShape {
+    type: "SHAPE";
+    data: RecursiveUnionShapeData;
+}
+
+export interface RecursiveUnionShapeData {
+    width: number;
+    height: number;
+    color: string;
+}
+
 export interface AutoReconnectParams {
     messageCount: number;
 }
@@ -6339,14 +8856,14 @@ const $$AutoReconnectParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.messageCount === "number" &&
                     Number.isInteger(json.messageCount) &&
                     json.messageCount >= 0 &&
                     json.messageCount <= 255
                 ) {
-                    jsonInnerVal.messageCount = json.messageCount;
+                    __D1.messageCount = json.messageCount;
                 } else {
                     $fallback(
                         "/messageCount",
@@ -6354,7 +8871,7 @@ const $$AutoReconnectParams = {
                         "Expected valid integer between 0 and 255",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6362,14 +8879,14 @@ const $$AutoReconnectParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.messageCount === "number" &&
                 Number.isInteger(input.messageCount) &&
                 input.messageCount >= 0 &&
                 input.messageCount <= 255
             ) {
-                inputInnerVal.messageCount = input.messageCount;
+                __D1.messageCount = input.messageCount;
             } else {
                 $fallback(
                     "/messageCount",
@@ -6377,7 +8894,7 @@ const $$AutoReconnectParams = {
                     "Expected valid integer between 0 and 255",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6385,6 +8902,8 @@ const $$AutoReconnectParams = {
     },
     serialize(input: AutoReconnectParams): string {
         let json = "";
+
+        json += "";
         json += "{";
 
         if (Number.isNaN(input.messageCount)) {
@@ -6412,14 +8931,14 @@ const $$AutoReconnectResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.count === "number" &&
                     Number.isInteger(json.count) &&
                     json.count >= 0 &&
                     json.count <= 255
                 ) {
-                    jsonInnerVal.count = json.count;
+                    __D1.count = json.count;
                 } else {
                     $fallback(
                         "/count",
@@ -6428,7 +8947,7 @@ const $$AutoReconnectResponse = {
                     );
                 }
                 if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                    __D1.message = json.message;
                 } else {
                     $fallback(
                         "/message",
@@ -6436,7 +8955,7 @@ const $$AutoReconnectResponse = {
                         "Expected string at /message",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6444,14 +8963,14 @@ const $$AutoReconnectResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.count === "number" &&
                 Number.isInteger(input.count) &&
                 input.count >= 0 &&
                 input.count <= 255
             ) {
-                inputInnerVal.count = input.count;
+                __D1.count = input.count;
             } else {
                 $fallback(
                     "/count",
@@ -6460,7 +8979,7 @@ const $$AutoReconnectResponse = {
                 );
             }
             if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+                __D1.message = input.message;
             } else {
                 $fallback(
                     "/message",
@@ -6468,7 +8987,7 @@ const $$AutoReconnectResponse = {
                     "Expected string at /message",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6476,13 +8995,54 @@ const $$AutoReconnectResponse = {
     },
     serialize(input: AutoReconnectResponse): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
 
         if (Number.isNaN(input.count)) {
             throw new Error("Expected number at /count got NaN");
         }
         json += `"count":${input.count}`;
-        json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
         json += "}";
         return json;
     },
@@ -6504,14 +9064,14 @@ const $$StreamConnectionErrorTestParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (
                     typeof json.statusCode === "number" &&
                     Number.isInteger(json.statusCode) &&
                     json.statusCode >= 0 &&
                     json.statusCode <= 65535
                 ) {
-                    jsonInnerVal.statusCode = json.statusCode;
+                    __D1.statusCode = json.statusCode;
                 } else {
                     $fallback(
                         "/statusCode",
@@ -6520,7 +9080,7 @@ const $$StreamConnectionErrorTestParams = {
                     );
                 }
                 if (typeof json.statusMessage === "string") {
-                    jsonInnerVal.statusMessage = json.statusMessage;
+                    __D1.statusMessage = json.statusMessage;
                 } else {
                     $fallback(
                         "/statusMessage",
@@ -6528,7 +9088,7 @@ const $$StreamConnectionErrorTestParams = {
                         "Expected string at /statusMessage",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6536,14 +9096,14 @@ const $$StreamConnectionErrorTestParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (
                 typeof input.statusCode === "number" &&
                 Number.isInteger(input.statusCode) &&
                 input.statusCode >= 0 &&
                 input.statusCode <= 65535
             ) {
-                inputInnerVal.statusCode = input.statusCode;
+                __D1.statusCode = input.statusCode;
             } else {
                 $fallback(
                     "/statusCode",
@@ -6552,7 +9112,7 @@ const $$StreamConnectionErrorTestParams = {
                 );
             }
             if (typeof input.statusMessage === "string") {
-                inputInnerVal.statusMessage = input.statusMessage;
+                __D1.statusMessage = input.statusMessage;
             } else {
                 $fallback(
                     "/statusMessage",
@@ -6560,7 +9120,7 @@ const $$StreamConnectionErrorTestParams = {
                     "Expected string at /statusMessage",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6568,13 +9128,54 @@ const $$StreamConnectionErrorTestParams = {
     },
     serialize(input: StreamConnectionErrorTestParams): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
 
         if (Number.isNaN(input.statusCode)) {
             throw new Error("Expected number at /statusCode got NaN");
         }
         json += `"statusCode":${input.statusCode}`;
-        json += `,"statusMessage":"${input.statusMessage.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `,"statusMessage":`;
+        if (input.statusMessage.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.statusMessage.length; i++) {
+                __point__ = input.statusMessage.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.statusMessage);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.statusMessage.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.statusMessage}"`;
+                } else {
+                    json += `"${__result__}${input.statusMessage.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.statusMessage.length < 5000 &&
+            !STR_ESCAPE.test(input.statusMessage)
+        ) {
+            json += `"${input.statusMessage}"`;
+        } else {
+            json += JSON.stringify(input.statusMessage);
+        }
         json += "}";
         return json;
     },
@@ -6595,9 +9196,9 @@ const $$StreamConnectionErrorTestResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
+                    __D1.message = json.message;
                 } else {
                     $fallback(
                         "/message",
@@ -6605,7 +9206,7 @@ const $$StreamConnectionErrorTestResponse = {
                         "Expected string at /message",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6613,9 +9214,9 @@ const $$StreamConnectionErrorTestResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
+                __D1.message = input.message;
             } else {
                 $fallback(
                     "/message",
@@ -6623,7 +9224,7 @@ const $$StreamConnectionErrorTestResponse = {
                     "Expected string at /message",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6631,8 +9232,49 @@ const $$StreamConnectionErrorTestResponse = {
     },
     serialize(input: StreamConnectionErrorTestResponse): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
-        json += `"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
         json += "}";
         return json;
     },
@@ -6654,18 +9296,16 @@ const $$StreamLargeObjectsResponse = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (Array.isArray(json.numbers)) {
-                    const jsonInnerValNumbersInnerResult = [];
-                    for (const jsonInnerValNumbersInnerResultItem of json.numbers) {
-                        let jsonInnerValNumbersInnerResultItemResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.numbers) {
+                        let __D2AItemAResult;
                         if (
-                            typeof jsonInnerValNumbersInnerResultItem ===
-                                "number" &&
-                            !Number.isNaN(jsonInnerValNumbersInnerResultItem)
+                            typeof __D2AItem === "number" &&
+                            !Number.isNaN(__D2AItem)
                         ) {
-                            jsonInnerValNumbersInnerResultItemResult =
-                                jsonInnerValNumbersInnerResultItem;
+                            __D2AItemAResult = __D2AItem;
                         } else {
                             $fallback(
                                 "/numbers/[0]",
@@ -6673,11 +9313,9 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected number at /numbers/[0]",
                             );
                         }
-                        jsonInnerValNumbersInnerResult.push(
-                            jsonInnerValNumbersInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.numbers = jsonInnerValNumbersInnerResult;
+                    __D1.numbers = __D2;
                 } else {
                     $fallback(
                         "/numbers",
@@ -6686,22 +9324,16 @@ const $$StreamLargeObjectsResponse = {
                     );
                 }
                 if (Array.isArray(json.objects)) {
-                    const jsonInnerValObjectsInnerResult = [];
-                    for (const jsonInnerValObjectsInnerResultItem of json.objects) {
-                        let jsonInnerValObjectsInnerResultItemResult;
+                    const __D2 = [];
+                    for (const __D2AItem of json.objects) {
+                        let __D2AItemAResult;
                         if (
-                            typeof jsonInnerValObjectsInnerResultItem ===
-                                "object" &&
-                            jsonInnerValObjectsInnerResultItem !== null
+                            typeof __D2AItem === "object" &&
+                            __D2AItem !== null
                         ) {
-                            const jsonInnerValObjectsInnerResultItemInnerVal =
-                                {};
-                            if (
-                                typeof jsonInnerValObjectsInnerResultItem.id ===
-                                "string"
-                            ) {
-                                jsonInnerValObjectsInnerResultItemInnerVal.id =
-                                    jsonInnerValObjectsInnerResultItem.id;
+                            const __D3 = {};
+                            if (typeof __D2AItem.id === "string") {
+                                __D3.id = __D2AItem.id;
                             } else {
                                 $fallback(
                                     "/objects/[0]/id",
@@ -6709,12 +9341,8 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/id",
                                 );
                             }
-                            if (
-                                typeof jsonInnerValObjectsInnerResultItem.name ===
-                                "string"
-                            ) {
-                                jsonInnerValObjectsInnerResultItemInnerVal.name =
-                                    jsonInnerValObjectsInnerResultItem.name;
+                            if (typeof __D2AItem.name === "string") {
+                                __D3.name = __D2AItem.name;
                             } else {
                                 $fallback(
                                     "/objects/[0]/name",
@@ -6722,12 +9350,8 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/name",
                                 );
                             }
-                            if (
-                                typeof jsonInnerValObjectsInnerResultItem.email ===
-                                "string"
-                            ) {
-                                jsonInnerValObjectsInnerResultItemInnerVal.email =
-                                    jsonInnerValObjectsInnerResultItem.email;
+                            if (typeof __D2AItem.email === "string") {
+                                __D3.email = __D2AItem.email;
                             } else {
                                 $fallback(
                                     "/objects/[0]/email",
@@ -6735,8 +9359,7 @@ const $$StreamLargeObjectsResponse = {
                                     "Expected string at /objects/[0]/email",
                                 );
                             }
-                            jsonInnerValObjectsInnerResultItemResult =
-                                jsonInnerValObjectsInnerResultItemInnerVal;
+                            __D2AItemAResult = __D3;
                         } else {
                             $fallback(
                                 "/objects/[0]",
@@ -6744,11 +9367,9 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected object",
                             );
                         }
-                        jsonInnerValObjectsInnerResult.push(
-                            jsonInnerValObjectsInnerResultItemResult,
-                        );
+                        __D2.push(__D2AItemAResult);
                     }
-                    jsonInnerVal.objects = jsonInnerValObjectsInnerResult;
+                    __D1.objects = __D2;
                 } else {
                     $fallback(
                         "/objects",
@@ -6756,7 +9377,7 @@ const $$StreamLargeObjectsResponse = {
                         "Expected Array",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6764,18 +9385,16 @@ const $$StreamLargeObjectsResponse = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (Array.isArray(input.numbers)) {
-                const inputInnerValNumbersInnerResult = [];
-                for (const inputInnerValNumbersInnerResultItem of input.numbers) {
-                    let inputInnerValNumbersInnerResultItemResult;
+                const __D2 = [];
+                for (const __D2AItem of input.numbers) {
+                    let __D2AItemAResult;
                     if (
-                        typeof inputInnerValNumbersInnerResultItem ===
-                            "number" &&
-                        !Number.isNaN(inputInnerValNumbersInnerResultItem)
+                        typeof __D2AItem === "number" &&
+                        !Number.isNaN(__D2AItem)
                     ) {
-                        inputInnerValNumbersInnerResultItemResult =
-                            inputInnerValNumbersInnerResultItem;
+                        __D2AItemAResult = __D2AItem;
                     } else {
                         $fallback(
                             "/numbers/[0]",
@@ -6783,30 +9402,20 @@ const $$StreamLargeObjectsResponse = {
                             "Expected number at /numbers/[0]",
                         );
                     }
-                    inputInnerValNumbersInnerResult.push(
-                        inputInnerValNumbersInnerResultItemResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.numbers = inputInnerValNumbersInnerResult;
+                __D1.numbers = __D2;
             } else {
                 $fallback("/numbers", "/properties/numbers", "Expected Array");
             }
             if (Array.isArray(input.objects)) {
-                const inputInnerValObjectsInnerResult = [];
-                for (const inputInnerValObjectsInnerResultItem of input.objects) {
-                    let inputInnerValObjectsInnerResultItemResult;
-                    if (
-                        typeof inputInnerValObjectsInnerResultItem ===
-                            "object" &&
-                        inputInnerValObjectsInnerResultItem !== null
-                    ) {
-                        const inputInnerValObjectsInnerResultItemInnerVal = {};
-                        if (
-                            typeof inputInnerValObjectsInnerResultItem.id ===
-                            "string"
-                        ) {
-                            inputInnerValObjectsInnerResultItemInnerVal.id =
-                                inputInnerValObjectsInnerResultItem.id;
+                const __D2 = [];
+                for (const __D2AItem of input.objects) {
+                    let __D2AItemAResult;
+                    if (typeof __D2AItem === "object" && __D2AItem !== null) {
+                        const __D3 = {};
+                        if (typeof __D2AItem.id === "string") {
+                            __D3.id = __D2AItem.id;
                         } else {
                             $fallback(
                                 "/objects/[0]/id",
@@ -6814,12 +9423,8 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/id",
                             );
                         }
-                        if (
-                            typeof inputInnerValObjectsInnerResultItem.name ===
-                            "string"
-                        ) {
-                            inputInnerValObjectsInnerResultItemInnerVal.name =
-                                inputInnerValObjectsInnerResultItem.name;
+                        if (typeof __D2AItem.name === "string") {
+                            __D3.name = __D2AItem.name;
                         } else {
                             $fallback(
                                 "/objects/[0]/name",
@@ -6827,12 +9432,8 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/name",
                             );
                         }
-                        if (
-                            typeof inputInnerValObjectsInnerResultItem.email ===
-                            "string"
-                        ) {
-                            inputInnerValObjectsInnerResultItemInnerVal.email =
-                                inputInnerValObjectsInnerResultItem.email;
+                        if (typeof __D2AItem.email === "string") {
+                            __D3.email = __D2AItem.email;
                         } else {
                             $fallback(
                                 "/objects/[0]/email",
@@ -6840,8 +9441,7 @@ const $$StreamLargeObjectsResponse = {
                                 "Expected string at /objects/[0]/email",
                             );
                         }
-                        inputInnerValObjectsInnerResultItemResult =
-                            inputInnerValObjectsInnerResultItemInnerVal;
+                        __D2AItemAResult = __D3;
                     } else {
                         $fallback(
                             "/objects/[0]",
@@ -6849,15 +9449,13 @@ const $$StreamLargeObjectsResponse = {
                             "Expected object",
                         );
                     }
-                    inputInnerValObjectsInnerResult.push(
-                        inputInnerValObjectsInnerResultItemResult,
-                    );
+                    __D2.push(__D2AItemAResult);
                 }
-                inputInnerVal.objects = inputInnerValObjectsInnerResult;
+                __D1.objects = __D2;
             } else {
                 $fallback("/objects", "/properties/objects", "Expected Array");
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6865,30 +9463,148 @@ const $$StreamLargeObjectsResponse = {
     },
     serialize(input: StreamLargeObjectsResponse): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += '"numbers":[';
         for (let i = 0; i < input.numbers.length; i++) {
-            const inputNumbersItem = input.numbers[i];
+            const valNumbersItem = input.numbers[i];
             if (i !== 0) {
                 json += ",";
             }
 
-            if (Number.isNaN(inputNumbersItem)) {
+            if (Number.isNaN(valNumbersItem)) {
                 throw new Error("Expected number at /numbers/i got NaN");
             }
-            json += `${inputNumbersItem}`;
+            json += `${valNumbersItem}`;
         }
         json += "]";
         json += ',"objects":[';
         for (let i = 0; i < input.objects.length; i++) {
-            const inputObjectsItem = input.objects[i];
+            const valObjectsItem = input.objects[i];
             if (i !== 0) {
                 json += ",";
             }
+
+            json += "";
             json += "{";
-            json += `"id":"${inputObjectsItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"name":"${inputObjectsItem.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"email":"${inputObjectsItem.email.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+            json += `"id":`;
+            if (valObjectsItem.id.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < valObjectsItem.id.length; i++) {
+                    __point__ = valObjectsItem.id.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(valObjectsItem.id);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            valObjectsItem.id.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${valObjectsItem.id}"`;
+                    } else {
+                        json += `"${__result__}${valObjectsItem.id.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                valObjectsItem.id.length < 5000 &&
+                !STR_ESCAPE.test(valObjectsItem.id)
+            ) {
+                json += `"${valObjectsItem.id}"`;
+            } else {
+                json += JSON.stringify(valObjectsItem.id);
+            }
+            json += `,"name":`;
+            if (valObjectsItem.name.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < valObjectsItem.name.length; i++) {
+                    __point__ = valObjectsItem.name.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(valObjectsItem.name);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            valObjectsItem.name.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${valObjectsItem.name}"`;
+                    } else {
+                        json += `"${__result__}${valObjectsItem.name.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                valObjectsItem.name.length < 5000 &&
+                !STR_ESCAPE.test(valObjectsItem.name)
+            ) {
+                json += `"${valObjectsItem.name}"`;
+            } else {
+                json += JSON.stringify(valObjectsItem.name);
+            }
+            json += `,"email":`;
+            if (valObjectsItem.email.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < valObjectsItem.email.length; i++) {
+                    __point__ = valObjectsItem.email.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(valObjectsItem.email);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            valObjectsItem.email.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${valObjectsItem.email}"`;
+                    } else {
+                        json += `"${__result__}${valObjectsItem.email.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                valObjectsItem.email.length < 5000 &&
+                !STR_ESCAPE.test(valObjectsItem.email)
+            ) {
+                json += `"${valObjectsItem.email}"`;
+            } else {
+                json += JSON.stringify(valObjectsItem.email);
+            }
             json += "}";
         }
         json += "]";
@@ -6917,9 +9633,9 @@ const $$ChatMessageParams = {
             const json = JSON.parse(input);
             let result = {};
             if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
+                const __D1 = {};
                 if (typeof json.channelId === "string") {
-                    jsonInnerVal.channelId = json.channelId;
+                    __D1.channelId = json.channelId;
                 } else {
                     $fallback(
                         "/channelId",
@@ -6927,7 +9643,7 @@ const $$ChatMessageParams = {
                         "Expected string at /channelId",
                     );
                 }
-                result = jsonInnerVal;
+                result = __D1;
             } else {
                 $fallback("", "", "Expected object");
             }
@@ -6935,9 +9651,9 @@ const $$ChatMessageParams = {
         }
         let result = {};
         if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
+            const __D1 = {};
             if (typeof input.channelId === "string") {
-                inputInnerVal.channelId = input.channelId;
+                __D1.channelId = input.channelId;
             } else {
                 $fallback(
                     "/channelId",
@@ -6945,7 +9661,7 @@ const $$ChatMessageParams = {
                     "Expected string at /channelId",
                 );
             }
-            result = inputInnerVal;
+            result = __D1;
         } else {
             $fallback("", "", "Expected object");
         }
@@ -6953,8 +9669,49 @@ const $$ChatMessageParams = {
     },
     serialize(input: ChatMessageParams): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
-        json += `"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+        json += `"channelId":`;
+        if (input.channelId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.channelId.length; i++) {
+                __point__ = input.channelId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.channelId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.channelId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.channelId.length < 5000 &&
+            !STR_ESCAPE.test(input.channelId)
+        ) {
+            json += `"${input.channelId}"`;
+        } else {
+            json += JSON.stringify(input.channelId);
+        }
         json += "}";
         return json;
     },
@@ -6976,10 +9733,10 @@ const $$ChatMessage = {
                 switch (json.messageType) {
                     case "TEXT": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "TEXT";
+                            const __D1 = {};
+                            __D1.messageType = "TEXT";
                             if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
+                                __D1.id = json.id;
                             } else {
                                 $fallback(
                                     "/id",
@@ -6988,7 +9745,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
+                                __D1.channelId = json.channelId;
                             } else {
                                 $fallback(
                                     "/channelId",
@@ -6997,7 +9754,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
+                                __D1.userId = json.userId;
                             } else {
                                 $fallback(
                                     "/userId",
@@ -7009,9 +9766,9 @@ const $$ChatMessage = {
                                 typeof json.date === "object" &&
                                 json.date instanceof Date
                             ) {
-                                jsonInnerVal.date = json.date;
+                                __D1.date = json.date;
                             } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
+                                __D1.date = new Date(json.date);
                             } else {
                                 $fallback(
                                     "/date",
@@ -7020,7 +9777,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.text === "string") {
-                                jsonInnerVal.text = json.text;
+                                __D1.text = json.text;
                             } else {
                                 $fallback(
                                     "/text",
@@ -7028,7 +9785,7 @@ const $$ChatMessage = {
                                     "Expected string at /text",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -7036,10 +9793,10 @@ const $$ChatMessage = {
                     }
                     case "IMAGE": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "IMAGE";
+                            const __D1 = {};
+                            __D1.messageType = "IMAGE";
                             if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
+                                __D1.id = json.id;
                             } else {
                                 $fallback(
                                     "/id",
@@ -7048,7 +9805,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
+                                __D1.channelId = json.channelId;
                             } else {
                                 $fallback(
                                     "/channelId",
@@ -7057,7 +9814,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
+                                __D1.userId = json.userId;
                             } else {
                                 $fallback(
                                     "/userId",
@@ -7069,9 +9826,9 @@ const $$ChatMessage = {
                                 typeof json.date === "object" &&
                                 json.date instanceof Date
                             ) {
-                                jsonInnerVal.date = json.date;
+                                __D1.date = json.date;
                             } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
+                                __D1.date = new Date(json.date);
                             } else {
                                 $fallback(
                                     "/date",
@@ -7080,7 +9837,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.image === "string") {
-                                jsonInnerVal.image = json.image;
+                                __D1.image = json.image;
                             } else {
                                 $fallback(
                                     "/image",
@@ -7088,7 +9845,7 @@ const $$ChatMessage = {
                                     "Expected string at /image",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -7096,10 +9853,10 @@ const $$ChatMessage = {
                     }
                     case "URL": {
                         if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.messageType = "URL";
+                            const __D1 = {};
+                            __D1.messageType = "URL";
                             if (typeof json.id === "string") {
-                                jsonInnerVal.id = json.id;
+                                __D1.id = json.id;
                             } else {
                                 $fallback(
                                     "/id",
@@ -7108,7 +9865,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.channelId === "string") {
-                                jsonInnerVal.channelId = json.channelId;
+                                __D1.channelId = json.channelId;
                             } else {
                                 $fallback(
                                     "/channelId",
@@ -7117,7 +9874,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.userId === "string") {
-                                jsonInnerVal.userId = json.userId;
+                                __D1.userId = json.userId;
                             } else {
                                 $fallback(
                                     "/userId",
@@ -7129,9 +9886,9 @@ const $$ChatMessage = {
                                 typeof json.date === "object" &&
                                 json.date instanceof Date
                             ) {
-                                jsonInnerVal.date = json.date;
+                                __D1.date = json.date;
                             } else if (typeof json.date === "string") {
-                                jsonInnerVal.date = new Date(json.date);
+                                __D1.date = new Date(json.date);
                             } else {
                                 $fallback(
                                     "/date",
@@ -7140,7 +9897,7 @@ const $$ChatMessage = {
                                 );
                             }
                             if (typeof json.url === "string") {
-                                jsonInnerVal.url = json.url;
+                                __D1.url = json.url;
                             } else {
                                 $fallback(
                                     "/url",
@@ -7148,7 +9905,7 @@ const $$ChatMessage = {
                                     "Expected string at /url",
                                 );
                             }
-                            result = jsonInnerVal;
+                            result = __D1;
                         } else {
                             $fallback("", "/mapping", "Expected object");
                         }
@@ -7172,10 +9929,10 @@ const $$ChatMessage = {
             switch (input.messageType) {
                 case "TEXT": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "TEXT";
+                        const __D1 = {};
+                        __D1.messageType = "TEXT";
                         if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
+                            __D1.id = input.id;
                         } else {
                             $fallback(
                                 "/id",
@@ -7184,7 +9941,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
+                            __D1.channelId = input.channelId;
                         } else {
                             $fallback(
                                 "/channelId",
@@ -7193,7 +9950,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
+                            __D1.userId = input.userId;
                         } else {
                             $fallback(
                                 "/userId",
@@ -7205,9 +9962,9 @@ const $$ChatMessage = {
                             typeof input.date === "object" &&
                             input.date instanceof Date
                         ) {
-                            inputInnerVal.date = input.date;
+                            __D1.date = input.date;
                         } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
+                            __D1.date = new Date(input.date);
                         } else {
                             $fallback(
                                 "/date",
@@ -7216,7 +9973,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.text === "string") {
-                            inputInnerVal.text = input.text;
+                            __D1.text = input.text;
                         } else {
                             $fallback(
                                 "/text",
@@ -7224,7 +9981,7 @@ const $$ChatMessage = {
                                 "Expected string at /text",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -7232,10 +9989,10 @@ const $$ChatMessage = {
                 }
                 case "IMAGE": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "IMAGE";
+                        const __D1 = {};
+                        __D1.messageType = "IMAGE";
                         if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
+                            __D1.id = input.id;
                         } else {
                             $fallback(
                                 "/id",
@@ -7244,7 +10001,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
+                            __D1.channelId = input.channelId;
                         } else {
                             $fallback(
                                 "/channelId",
@@ -7253,7 +10010,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
+                            __D1.userId = input.userId;
                         } else {
                             $fallback(
                                 "/userId",
@@ -7265,9 +10022,9 @@ const $$ChatMessage = {
                             typeof input.date === "object" &&
                             input.date instanceof Date
                         ) {
-                            inputInnerVal.date = input.date;
+                            __D1.date = input.date;
                         } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
+                            __D1.date = new Date(input.date);
                         } else {
                             $fallback(
                                 "/date",
@@ -7276,7 +10033,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.image === "string") {
-                            inputInnerVal.image = input.image;
+                            __D1.image = input.image;
                         } else {
                             $fallback(
                                 "/image",
@@ -7284,7 +10041,7 @@ const $$ChatMessage = {
                                 "Expected string at /image",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -7292,10 +10049,10 @@ const $$ChatMessage = {
                 }
                 case "URL": {
                     if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.messageType = "URL";
+                        const __D1 = {};
+                        __D1.messageType = "URL";
                         if (typeof input.id === "string") {
-                            inputInnerVal.id = input.id;
+                            __D1.id = input.id;
                         } else {
                             $fallback(
                                 "/id",
@@ -7304,7 +10061,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.channelId === "string") {
-                            inputInnerVal.channelId = input.channelId;
+                            __D1.channelId = input.channelId;
                         } else {
                             $fallback(
                                 "/channelId",
@@ -7313,7 +10070,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.userId === "string") {
-                            inputInnerVal.userId = input.userId;
+                            __D1.userId = input.userId;
                         } else {
                             $fallback(
                                 "/userId",
@@ -7325,9 +10082,9 @@ const $$ChatMessage = {
                             typeof input.date === "object" &&
                             input.date instanceof Date
                         ) {
-                            inputInnerVal.date = input.date;
+                            __D1.date = input.date;
                         } else if (typeof input.date === "string") {
-                            inputInnerVal.date = new Date(input.date);
+                            __D1.date = new Date(input.date);
                         } else {
                             $fallback(
                                 "/date",
@@ -7336,7 +10093,7 @@ const $$ChatMessage = {
                             );
                         }
                         if (typeof input.url === "string") {
-                            inputInnerVal.url = input.url;
+                            __D1.url = input.url;
                         } else {
                             $fallback(
                                 "/url",
@@ -7344,7 +10101,7 @@ const $$ChatMessage = {
                                 "Expected string at /url",
                             );
                         }
-                        result = inputInnerVal;
+                        result = __D1;
                     } else {
                         $fallback("", "/mapping", "Expected object");
                     }
@@ -7365,37 +10122,481 @@ const $$ChatMessage = {
     },
     serialize(input: ChatMessage): string {
         let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         switch (input.messageType) {
             case "TEXT": {
+                json += "";
                 json += "{";
                 json += `"messageType":"TEXT"`;
-                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.id.length; i++) {
+                        __point__ = input.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.id}"`;
+                        } else {
+                            json += `"${__result__}${input.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.id)
+                ) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += JSON.stringify(input.id);
+                }
+                json += `,"channelId":`;
+                if (input.channelId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.channelId.length; i++) {
+                        __point__ = input.channelId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.channelId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.channelId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.channelId}"`;
+                        } else {
+                            json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.channelId.length < 5000 &&
+                    !STR_ESCAPE.test(input.channelId)
+                ) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += JSON.stringify(input.channelId);
+                }
+                json += `,"userId":`;
+                if (input.userId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.userId.length; i++) {
+                        __point__ = input.userId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.userId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.userId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.userId}"`;
+                        } else {
+                            json += `"${__result__}${input.userId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.userId.length < 5000 &&
+                    !STR_ESCAPE.test(input.userId)
+                ) {
+                    json += `"${input.userId}"`;
+                } else {
+                    json += JSON.stringify(input.userId);
+                }
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"text":"${input.text.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"text":`;
+                if (input.text.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.text.length; i++) {
+                        __point__ = input.text.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.text);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.text.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.text}"`;
+                        } else {
+                            json += `"${__result__}${input.text.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.text.length < 5000 &&
+                    !STR_ESCAPE.test(input.text)
+                ) {
+                    json += `"${input.text}"`;
+                } else {
+                    json += JSON.stringify(input.text);
+                }
                 json += "}";
                 break;
             }
             case "IMAGE": {
+                json += "";
                 json += "{";
                 json += `"messageType":"IMAGE"`;
-                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.id.length; i++) {
+                        __point__ = input.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.id}"`;
+                        } else {
+                            json += `"${__result__}${input.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.id)
+                ) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += JSON.stringify(input.id);
+                }
+                json += `,"channelId":`;
+                if (input.channelId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.channelId.length; i++) {
+                        __point__ = input.channelId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.channelId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.channelId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.channelId}"`;
+                        } else {
+                            json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.channelId.length < 5000 &&
+                    !STR_ESCAPE.test(input.channelId)
+                ) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += JSON.stringify(input.channelId);
+                }
+                json += `,"userId":`;
+                if (input.userId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.userId.length; i++) {
+                        __point__ = input.userId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.userId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.userId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.userId}"`;
+                        } else {
+                            json += `"${__result__}${input.userId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.userId.length < 5000 &&
+                    !STR_ESCAPE.test(input.userId)
+                ) {
+                    json += `"${input.userId}"`;
+                } else {
+                    json += JSON.stringify(input.userId);
+                }
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"image":"${input.image.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"image":`;
+                if (input.image.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.image.length; i++) {
+                        __point__ = input.image.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.image);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.image.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.image}"`;
+                        } else {
+                            json += `"${__result__}${input.image.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.image.length < 5000 &&
+                    !STR_ESCAPE.test(input.image)
+                ) {
+                    json += `"${input.image}"`;
+                } else {
+                    json += JSON.stringify(input.image);
+                }
                 json += "}";
                 break;
             }
             case "URL": {
+                json += "";
                 json += "{";
                 json += `"messageType":"URL"`;
-                json += `,"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"channelId":"${input.channelId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"id":`;
+                if (input.id.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.id.length; i++) {
+                        __point__ = input.id.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.id);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.id.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.id}"`;
+                        } else {
+                            json += `"${__result__}${input.id.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.id.length < 5000 &&
+                    !STR_ESCAPE.test(input.id)
+                ) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += JSON.stringify(input.id);
+                }
+                json += `,"channelId":`;
+                if (input.channelId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.channelId.length; i++) {
+                        __point__ = input.channelId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.channelId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.channelId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.channelId}"`;
+                        } else {
+                            json += `"${__result__}${input.channelId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.channelId.length < 5000 &&
+                    !STR_ESCAPE.test(input.channelId)
+                ) {
+                    json += `"${input.channelId}"`;
+                } else {
+                    json += JSON.stringify(input.channelId);
+                }
+                json += `,"userId":`;
+                if (input.userId.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.userId.length; i++) {
+                        __point__ = input.userId.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.userId);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.userId.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.userId}"`;
+                        } else {
+                            json += `"${__result__}${input.userId.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.userId.length < 5000 &&
+                    !STR_ESCAPE.test(input.userId)
+                ) {
+                    json += `"${input.userId}"`;
+                } else {
+                    json += JSON.stringify(input.userId);
+                }
                 json += `,"date":"${input.date.toISOString()}"`;
-                json += `,"url":"${input.url.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
+                json += `,"url":`;
+                if (input.url.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.url.length; i++) {
+                        __point__ = input.url.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.url);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ += input.url.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.url}"`;
+                        } else {
+                            json += `"${__result__}${input.url.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.url.length < 5000 &&
+                    !STR_ESCAPE.test(input.url)
+                ) {
+                    json += `"${input.url}"`;
+                } else {
+                    json += JSON.stringify(input.url);
+                }
                 json += "}";
                 break;
             }
@@ -7428,5480 +10629,4 @@ export interface ChatMessageUrl {
     userId: string;
     date: Date;
     url: string;
-}
-
-export interface PostParams {
-    postId: string;
-}
-const $$PostParams = {
-    parse(input: Record<any, any>): PostParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.postId === "string") {
-                    jsonInnerVal.postId = json.postId;
-                } else {
-                    $fallback(
-                        "/postId",
-                        "/properties/postId/type",
-                        "Expected string at /postId",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.postId === "string") {
-                inputInnerVal.postId = input.postId;
-            } else {
-                $fallback(
-                    "/postId",
-                    "/properties/postId/type",
-                    "Expected string at /postId",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: PostParams): string {
-        let json = "";
-        json += "{";
-        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        return json;
-    },
-};
-
-export interface Post {
-    id: string;
-    title: string;
-    type: PostType;
-    description: string | null;
-    content: string;
-    tags: Array<string>;
-    authorId: string;
-    author: Author;
-    createdAt: Date;
-    updatedAt: Date;
-}
-const $$Post = {
-    parse(input: Record<any, any>): Post {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.id === "string") {
-                    jsonInnerVal.id = json.id;
-                } else {
-                    $fallback(
-                        "/id",
-                        "/properties/id/type",
-                        "Expected string at /id",
-                    );
-                }
-                if (typeof json.title === "string") {
-                    jsonInnerVal.title = json.title;
-                } else {
-                    $fallback(
-                        "/title",
-                        "/properties/title/type",
-                        "Expected string at /title",
-                    );
-                }
-                if (typeof json.type === "string") {
-                    if (
-                        json.type === "text" ||
-                        json.type === "image" ||
-                        json.type === "video"
-                    ) {
-                        jsonInnerVal.type = json.type;
-                    } else {
-                        $fallback(
-                            "/type",
-                            "/properties/type",
-                            "Expected one of the following values: [text, image, video] at /type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/type",
-                        "/properties/type",
-                        "Expected one of the following values: [text, image, video] at /type.",
-                    );
-                }
-                if (json.description === null) {
-                    jsonInnerVal.description = json.description;
-                } else {
-                    if (typeof json.description === "string") {
-                        jsonInnerVal.description = json.description;
-                    } else {
-                        $fallback(
-                            "/description",
-                            "/properties/description/type",
-                            "Expected string at /description",
-                        );
-                    }
-                }
-                if (typeof json.content === "string") {
-                    jsonInnerVal.content = json.content;
-                } else {
-                    $fallback(
-                        "/content",
-                        "/properties/content/type",
-                        "Expected string at /content",
-                    );
-                }
-                if (Array.isArray(json.tags)) {
-                    const jsonInnerValTagsInnerResult = [];
-                    for (const jsonInnerValTagsInnerResultItem of json.tags) {
-                        let jsonInnerValTagsInnerResultItemResult;
-                        if (
-                            typeof jsonInnerValTagsInnerResultItem === "string"
-                        ) {
-                            jsonInnerValTagsInnerResultItemResult =
-                                jsonInnerValTagsInnerResultItem;
-                        } else {
-                            $fallback(
-                                "/tags/[0]",
-                                "/properties/tags/elements/type",
-                                "Expected string at /tags/[0]",
-                            );
-                        }
-                        jsonInnerValTagsInnerResult.push(
-                            jsonInnerValTagsInnerResultItemResult,
-                        );
-                    }
-                    jsonInnerVal.tags = jsonInnerValTagsInnerResult;
-                } else {
-                    $fallback("/tags", "/properties/tags", "Expected Array");
-                }
-                if (typeof json.authorId === "string") {
-                    jsonInnerVal.authorId = json.authorId;
-                } else {
-                    $fallback(
-                        "/authorId",
-                        "/properties/authorId/type",
-                        "Expected string at /authorId",
-                    );
-                }
-                if (typeof json.author === "object" && json.author !== null) {
-                    const jsonAuthorInnerVal = {};
-                    if (typeof json.author.id === "string") {
-                        jsonAuthorInnerVal.id = json.author.id;
-                    } else {
-                        $fallback(
-                            "/author/id",
-                            "/properties/author/properties/id/type",
-                            "Expected string at /author/id",
-                        );
-                    }
-                    if (typeof json.author.name === "string") {
-                        jsonAuthorInnerVal.name = json.author.name;
-                    } else {
-                        $fallback(
-                            "/author/name",
-                            "/properties/author/properties/name/type",
-                            "Expected string at /author/name",
-                        );
-                    }
-                    if (json.author.bio === null) {
-                        jsonAuthorInnerVal.bio = json.author.bio;
-                    } else {
-                        if (typeof json.author.bio === "string") {
-                            jsonAuthorInnerVal.bio = json.author.bio;
-                        } else {
-                            $fallback(
-                                "/author/bio",
-                                "/properties/author/properties/bio/type",
-                                "Expected string at /author/bio",
-                            );
-                        }
-                    }
-                    if (
-                        typeof json.author.createdAt === "object" &&
-                        json.author.createdAt instanceof Date
-                    ) {
-                        jsonAuthorInnerVal.createdAt = json.author.createdAt;
-                    } else if (typeof json.author.createdAt === "string") {
-                        jsonAuthorInnerVal.createdAt = new Date(
-                            json.author.createdAt,
-                        );
-                    } else {
-                        $fallback(
-                            "/author/createdAt",
-                            "/properties/author/properties/createdAt",
-                            "Expected instanceof Date or ISO Date string at /author/createdAt",
-                        );
-                    }
-                    if (
-                        typeof json.author.updatedAt === "object" &&
-                        json.author.updatedAt instanceof Date
-                    ) {
-                        jsonAuthorInnerVal.updatedAt = json.author.updatedAt;
-                    } else if (typeof json.author.updatedAt === "string") {
-                        jsonAuthorInnerVal.updatedAt = new Date(
-                            json.author.updatedAt,
-                        );
-                    } else {
-                        $fallback(
-                            "/author/updatedAt",
-                            "/properties/author/properties/updatedAt",
-                            "Expected instanceof Date or ISO Date string at /author/updatedAt",
-                        );
-                    }
-                    jsonInnerVal.author = jsonAuthorInnerVal;
-                } else {
-                    $fallback(
-                        "/author",
-                        "/properties/author",
-                        "Expected object",
-                    );
-                }
-                if (
-                    typeof json.createdAt === "object" &&
-                    json.createdAt instanceof Date
-                ) {
-                    jsonInnerVal.createdAt = json.createdAt;
-                } else if (typeof json.createdAt === "string") {
-                    jsonInnerVal.createdAt = new Date(json.createdAt);
-                } else {
-                    $fallback(
-                        "/createdAt",
-                        "/properties/createdAt",
-                        "Expected instanceof Date or ISO Date string at /createdAt",
-                    );
-                }
-                if (
-                    typeof json.updatedAt === "object" &&
-                    json.updatedAt instanceof Date
-                ) {
-                    jsonInnerVal.updatedAt = json.updatedAt;
-                } else if (typeof json.updatedAt === "string") {
-                    jsonInnerVal.updatedAt = new Date(json.updatedAt);
-                } else {
-                    $fallback(
-                        "/updatedAt",
-                        "/properties/updatedAt",
-                        "Expected instanceof Date or ISO Date string at /updatedAt",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.id === "string") {
-                inputInnerVal.id = input.id;
-            } else {
-                $fallback(
-                    "/id",
-                    "/properties/id/type",
-                    "Expected string at /id",
-                );
-            }
-            if (typeof input.title === "string") {
-                inputInnerVal.title = input.title;
-            } else {
-                $fallback(
-                    "/title",
-                    "/properties/title/type",
-                    "Expected string at /title",
-                );
-            }
-            if (typeof input.type === "string") {
-                if (
-                    input.type === "text" ||
-                    input.type === "image" ||
-                    input.type === "video"
-                ) {
-                    inputInnerVal.type = input.type;
-                } else {
-                    $fallback(
-                        "/type",
-                        "/properties/type",
-                        "Expected one of the following values: [text, image, video] at /type.",
-                    );
-                }
-            } else {
-                $fallback(
-                    "/type",
-                    "/properties/type",
-                    "Expected one of the following values: [text, image, video] at /type.",
-                );
-            }
-            if (input.description === null) {
-                inputInnerVal.description = input.description;
-            } else {
-                if (typeof input.description === "string") {
-                    inputInnerVal.description = input.description;
-                } else {
-                    $fallback(
-                        "/description",
-                        "/properties/description/type",
-                        "Expected string at /description",
-                    );
-                }
-            }
-            if (typeof input.content === "string") {
-                inputInnerVal.content = input.content;
-            } else {
-                $fallback(
-                    "/content",
-                    "/properties/content/type",
-                    "Expected string at /content",
-                );
-            }
-            if (Array.isArray(input.tags)) {
-                const inputInnerValTagsInnerResult = [];
-                for (const inputInnerValTagsInnerResultItem of input.tags) {
-                    let inputInnerValTagsInnerResultItemResult;
-                    if (typeof inputInnerValTagsInnerResultItem === "string") {
-                        inputInnerValTagsInnerResultItemResult =
-                            inputInnerValTagsInnerResultItem;
-                    } else {
-                        $fallback(
-                            "/tags/[0]",
-                            "/properties/tags/elements/type",
-                            "Expected string at /tags/[0]",
-                        );
-                    }
-                    inputInnerValTagsInnerResult.push(
-                        inputInnerValTagsInnerResultItemResult,
-                    );
-                }
-                inputInnerVal.tags = inputInnerValTagsInnerResult;
-            } else {
-                $fallback("/tags", "/properties/tags", "Expected Array");
-            }
-            if (typeof input.authorId === "string") {
-                inputInnerVal.authorId = input.authorId;
-            } else {
-                $fallback(
-                    "/authorId",
-                    "/properties/authorId/type",
-                    "Expected string at /authorId",
-                );
-            }
-            if (typeof input.author === "object" && input.author !== null) {
-                const inputAuthorInnerVal = {};
-                if (typeof input.author.id === "string") {
-                    inputAuthorInnerVal.id = input.author.id;
-                } else {
-                    $fallback(
-                        "/author/id",
-                        "/properties/author/properties/id/type",
-                        "Expected string at /author/id",
-                    );
-                }
-                if (typeof input.author.name === "string") {
-                    inputAuthorInnerVal.name = input.author.name;
-                } else {
-                    $fallback(
-                        "/author/name",
-                        "/properties/author/properties/name/type",
-                        "Expected string at /author/name",
-                    );
-                }
-                if (input.author.bio === null) {
-                    inputAuthorInnerVal.bio = input.author.bio;
-                } else {
-                    if (typeof input.author.bio === "string") {
-                        inputAuthorInnerVal.bio = input.author.bio;
-                    } else {
-                        $fallback(
-                            "/author/bio",
-                            "/properties/author/properties/bio/type",
-                            "Expected string at /author/bio",
-                        );
-                    }
-                }
-                if (
-                    typeof input.author.createdAt === "object" &&
-                    input.author.createdAt instanceof Date
-                ) {
-                    inputAuthorInnerVal.createdAt = input.author.createdAt;
-                } else if (typeof input.author.createdAt === "string") {
-                    inputAuthorInnerVal.createdAt = new Date(
-                        input.author.createdAt,
-                    );
-                } else {
-                    $fallback(
-                        "/author/createdAt",
-                        "/properties/author/properties/createdAt",
-                        "Expected instanceof Date or ISO Date string at /author/createdAt",
-                    );
-                }
-                if (
-                    typeof input.author.updatedAt === "object" &&
-                    input.author.updatedAt instanceof Date
-                ) {
-                    inputAuthorInnerVal.updatedAt = input.author.updatedAt;
-                } else if (typeof input.author.updatedAt === "string") {
-                    inputAuthorInnerVal.updatedAt = new Date(
-                        input.author.updatedAt,
-                    );
-                } else {
-                    $fallback(
-                        "/author/updatedAt",
-                        "/properties/author/properties/updatedAt",
-                        "Expected instanceof Date or ISO Date string at /author/updatedAt",
-                    );
-                }
-                inputInnerVal.author = inputAuthorInnerVal;
-            } else {
-                $fallback("/author", "/properties/author", "Expected object");
-            }
-            if (
-                typeof input.createdAt === "object" &&
-                input.createdAt instanceof Date
-            ) {
-                inputInnerVal.createdAt = input.createdAt;
-            } else if (typeof input.createdAt === "string") {
-                inputInnerVal.createdAt = new Date(input.createdAt);
-            } else {
-                $fallback(
-                    "/createdAt",
-                    "/properties/createdAt",
-                    "Expected instanceof Date or ISO Date string at /createdAt",
-                );
-            }
-            if (
-                typeof input.updatedAt === "object" &&
-                input.updatedAt instanceof Date
-            ) {
-                inputInnerVal.updatedAt = input.updatedAt;
-            } else if (typeof input.updatedAt === "string") {
-                inputInnerVal.updatedAt = new Date(input.updatedAt);
-            } else {
-                $fallback(
-                    "/updatedAt",
-                    "/properties/updatedAt",
-                    "Expected instanceof Date or ISO Date string at /updatedAt",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: Post): string {
-        let json = "";
-        json += "{";
-        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"title":"${input.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"type":"${input.type}"`;
-        if (typeof input.description === "string") {
-            json += `,"description":"${input.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        } else {
-            json += ',"description":null';
-        }
-        json += `,"content":"${input.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += ',"tags":[';
-        for (let i = 0; i < input.tags.length; i++) {
-            const inputTagsItem = input.tags[i];
-            if (i !== 0) {
-                json += ",";
-            }
-            json += `"${inputTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        }
-        json += "]";
-        json += `,"authorId":"${input.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += ',"author":{';
-        json += `"id":"${input.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"name":"${input.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        if (typeof input.author.bio === "string") {
-            json += `,"bio":"${input.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        } else {
-            json += ',"bio":null';
-        }
-        json += `,"createdAt":"${input.author.createdAt.toISOString()}"`;
-        json += `,"updatedAt":"${input.author.updatedAt.toISOString()}"`;
-        json += "}";
-        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
-        json += `,"updatedAt":"${input.updatedAt.toISOString()}"`;
-        json += "}";
-        return json;
-    },
-};
-export type PostType = "text" | "image" | "video";
-export interface Author {
-    id: string;
-    name: string;
-    bio: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface PostListParams {
-    limit: number;
-    type?: PostType;
-}
-const $$PostListParams = {
-    parse(input: Record<any, any>): PostListParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (
-                    typeof json.limit === "number" &&
-                    Number.isInteger(json.limit) &&
-                    json.limit >= -128 &&
-                    json.limit <= 127
-                ) {
-                    jsonInnerVal.limit = json.limit;
-                } else {
-                    $fallback(
-                        "/limit",
-                        "/properties/limit",
-                        "Expected valid integer between -128 and 127",
-                    );
-                }
-                if (typeof json.type === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof json.type === "string") {
-                        if (
-                            json.type === "text" ||
-                            json.type === "image" ||
-                            json.type === "video"
-                        ) {
-                            jsonInnerVal.type = json.type;
-                        } else {
-                            $fallback(
-                                "/type",
-                                "/optionalProperties/type",
-                                "Expected one of the following values: [text, image, video] at /type.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/type",
-                            "/optionalProperties/type",
-                            "Expected one of the following values: [text, image, video] at /type.",
-                        );
-                    }
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (
-                typeof input.limit === "number" &&
-                Number.isInteger(input.limit) &&
-                input.limit >= -128 &&
-                input.limit <= 127
-            ) {
-                inputInnerVal.limit = input.limit;
-            } else {
-                $fallback(
-                    "/limit",
-                    "/properties/limit",
-                    "Expected valid integer between -128 and 127",
-                );
-            }
-            if (typeof input.type === "undefined") {
-                // ignore undefined
-            } else {
-                if (typeof input.type === "string") {
-                    if (
-                        input.type === "text" ||
-                        input.type === "image" ||
-                        input.type === "video"
-                    ) {
-                        inputInnerVal.type = input.type;
-                    } else {
-                        $fallback(
-                            "/type",
-                            "/optionalProperties/type",
-                            "Expected one of the following values: [text, image, video] at /type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/type",
-                        "/optionalProperties/type",
-                        "Expected one of the following values: [text, image, video] at /type.",
-                    );
-                }
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: PostListParams): string {
-        let json = "";
-        json += "{";
-
-        if (Number.isNaN(input.limit)) {
-            throw new Error("Expected number at /limit got NaN");
-        }
-        json += `"limit":${input.limit}`;
-        if (typeof input.type !== "undefined") {
-            json += `,"type":"${input.type}"`;
-        }
-        json += "}";
-        return json;
-    },
-};
-
-export interface PostListResponse {
-    total: number;
-    items: Array<Post>;
-}
-const $$PostListResponse = {
-    parse(input: Record<any, any>): PostListResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (
-                    typeof json.total === "number" &&
-                    Number.isInteger(json.total) &&
-                    json.total >= -2147483648 &&
-                    json.total <= 2147483647
-                ) {
-                    jsonInnerVal.total = json.total;
-                } else {
-                    $fallback(
-                        "/total",
-                        "/properties/total",
-                        "Expected valid integer between -2147483648 and 2147483647",
-                    );
-                }
-                if (Array.isArray(json.items)) {
-                    const jsonInnerValItemsInnerResult = [];
-                    for (const jsonInnerValItemsInnerResultItem of json.items) {
-                        let jsonInnerValItemsInnerResultItemResult;
-                        if (
-                            typeof jsonInnerValItemsInnerResultItem ===
-                                "object" &&
-                            jsonInnerValItemsInnerResultItem !== null
-                        ) {
-                            const jsonInnerValItemsInnerResultItemInnerVal = {};
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.id ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.id =
-                                    jsonInnerValItemsInnerResultItem.id;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/id",
-                                    "/properties/items/elements/properties/id/type",
-                                    "Expected string at /items/[0]/id",
-                                );
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.title ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.title =
-                                    jsonInnerValItemsInnerResultItem.title;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/title",
-                                    "/properties/items/elements/properties/title/type",
-                                    "Expected string at /items/[0]/title",
-                                );
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.type ===
-                                "string"
-                            ) {
-                                if (
-                                    jsonInnerValItemsInnerResultItem.type ===
-                                        "text" ||
-                                    jsonInnerValItemsInnerResultItem.type ===
-                                        "image" ||
-                                    jsonInnerValItemsInnerResultItem.type ===
-                                        "video"
-                                ) {
-                                    jsonInnerValItemsInnerResultItemInnerVal.type =
-                                        jsonInnerValItemsInnerResultItem.type;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/type",
-                                        "/properties/items/elements/properties/type",
-                                        "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                                    );
-                                }
-                            } else {
-                                $fallback(
-                                    "/items/[0]/type",
-                                    "/properties/items/elements/properties/type",
-                                    "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                                );
-                            }
-                            if (
-                                jsonInnerValItemsInnerResultItem.description ===
-                                null
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.description =
-                                    jsonInnerValItemsInnerResultItem.description;
-                            } else {
-                                if (
-                                    typeof jsonInnerValItemsInnerResultItem.description ===
-                                    "string"
-                                ) {
-                                    jsonInnerValItemsInnerResultItemInnerVal.description =
-                                        jsonInnerValItemsInnerResultItem.description;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/description",
-                                        "/properties/items/elements/properties/description/type",
-                                        "Expected string at /items/[0]/description",
-                                    );
-                                }
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.content ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.content =
-                                    jsonInnerValItemsInnerResultItem.content;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/content",
-                                    "/properties/items/elements/properties/content/type",
-                                    "Expected string at /items/[0]/content",
-                                );
-                            }
-                            if (
-                                Array.isArray(
-                                    jsonInnerValItemsInnerResultItem.tags,
-                                )
-                            ) {
-                                const jsonInnerValItemsInnerResultItemInnerValTagsInnerResult =
-                                    [];
-                                for (const jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItem of jsonInnerValItemsInnerResultItem.tags) {
-                                    let jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult;
-                                    if (
-                                        typeof jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItem ===
-                                        "string"
-                                    ) {
-                                        jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult =
-                                            jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItem;
-                                    } else {
-                                        $fallback(
-                                            "/items/[0]/tags/[0]",
-                                            "/properties/items/elements/properties/tags/elements/type",
-                                            "Expected string at /items/[0]/tags/[0]",
-                                        );
-                                    }
-                                    jsonInnerValItemsInnerResultItemInnerValTagsInnerResult.push(
-                                        jsonInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult,
-                                    );
-                                }
-                                jsonInnerValItemsInnerResultItemInnerVal.tags =
-                                    jsonInnerValItemsInnerResultItemInnerValTagsInnerResult;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/tags",
-                                    "/properties/items/elements/properties/tags",
-                                    "Expected Array",
-                                );
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.authorId ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.authorId =
-                                    jsonInnerValItemsInnerResultItem.authorId;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/authorId",
-                                    "/properties/items/elements/properties/authorId/type",
-                                    "Expected string at /items/[0]/authorId",
-                                );
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.author ===
-                                    "object" &&
-                                jsonInnerValItemsInnerResultItem.author !== null
-                            ) {
-                                const jsonInnerValItemsInnerResultItemAuthorInnerVal =
-                                    {};
-                                if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.id === "string"
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.id =
-                                        jsonInnerValItemsInnerResultItem.author.id;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/id",
-                                        "/properties/items/elements/properties/author/properties/id/type",
-                                        "Expected string at /items/[0]/author/id",
-                                    );
-                                }
-                                if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.name === "string"
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.name =
-                                        jsonInnerValItemsInnerResultItem.author.name;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/name",
-                                        "/properties/items/elements/properties/author/properties/name/type",
-                                        "Expected string at /items/[0]/author/name",
-                                    );
-                                }
-                                if (
-                                    jsonInnerValItemsInnerResultItem.author
-                                        .bio === null
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                        jsonInnerValItemsInnerResultItem.author.bio;
-                                } else {
-                                    if (
-                                        typeof jsonInnerValItemsInnerResultItem
-                                            .author.bio === "string"
-                                    ) {
-                                        jsonInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                            jsonInnerValItemsInnerResultItem.author.bio;
-                                    } else {
-                                        $fallback(
-                                            "/items/[0]/author/bio",
-                                            "/properties/items/elements/properties/author/properties/bio/type",
-                                            "Expected string at /items/[0]/author/bio",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.createdAt === "object" &&
-                                    jsonInnerValItemsInnerResultItem.author
-                                        .createdAt instanceof Date
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
-                                        jsonInnerValItemsInnerResultItem.author.createdAt;
-                                } else if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.createdAt === "string"
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
-                                        new Date(
-                                            jsonInnerValItemsInnerResultItem.author.createdAt,
-                                        );
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/createdAt",
-                                        "/properties/items/elements/properties/author/properties/createdAt",
-                                        "Expected instanceof Date or ISO Date string at /items/[0]/author/createdAt",
-                                    );
-                                }
-                                if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.updatedAt === "object" &&
-                                    jsonInnerValItemsInnerResultItem.author
-                                        .updatedAt instanceof Date
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
-                                        jsonInnerValItemsInnerResultItem.author.updatedAt;
-                                } else if (
-                                    typeof jsonInnerValItemsInnerResultItem
-                                        .author.updatedAt === "string"
-                                ) {
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
-                                        new Date(
-                                            jsonInnerValItemsInnerResultItem.author.updatedAt,
-                                        );
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/updatedAt",
-                                        "/properties/items/elements/properties/author/properties/updatedAt",
-                                        "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
-                                    );
-                                }
-                                jsonInnerValItemsInnerResultItemInnerVal.author =
-                                    jsonInnerValItemsInnerResultItemAuthorInnerVal;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author",
-                                    "/properties/items/elements/properties/author",
-                                    "Expected object",
-                                );
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.createdAt ===
-                                    "object" &&
-                                jsonInnerValItemsInnerResultItem.createdAt instanceof
-                                    Date
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.createdAt =
-                                    jsonInnerValItemsInnerResultItem.createdAt;
-                            } else if (
-                                typeof jsonInnerValItemsInnerResultItem.createdAt ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.createdAt =
-                                    new Date(
-                                        jsonInnerValItemsInnerResultItem.createdAt,
-                                    );
-                            } else {
-                                $fallback(
-                                    "/items/[0]/createdAt",
-                                    "/properties/items/elements/properties/createdAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/createdAt",
-                                );
-                            }
-                            if (
-                                typeof jsonInnerValItemsInnerResultItem.updatedAt ===
-                                    "object" &&
-                                jsonInnerValItemsInnerResultItem.updatedAt instanceof
-                                    Date
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.updatedAt =
-                                    jsonInnerValItemsInnerResultItem.updatedAt;
-                            } else if (
-                                typeof jsonInnerValItemsInnerResultItem.updatedAt ===
-                                "string"
-                            ) {
-                                jsonInnerValItemsInnerResultItemInnerVal.updatedAt =
-                                    new Date(
-                                        jsonInnerValItemsInnerResultItem.updatedAt,
-                                    );
-                            } else {
-                                $fallback(
-                                    "/items/[0]/updatedAt",
-                                    "/properties/items/elements/properties/updatedAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
-                                );
-                            }
-                            jsonInnerValItemsInnerResultItemResult =
-                                jsonInnerValItemsInnerResultItemInnerVal;
-                        } else {
-                            $fallback(
-                                "/items/[0]",
-                                "/properties/items/elements",
-                                "Expected object",
-                            );
-                        }
-                        jsonInnerValItemsInnerResult.push(
-                            jsonInnerValItemsInnerResultItemResult,
-                        );
-                    }
-                    jsonInnerVal.items = jsonInnerValItemsInnerResult;
-                } else {
-                    $fallback("/items", "/properties/items", "Expected Array");
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (
-                typeof input.total === "number" &&
-                Number.isInteger(input.total) &&
-                input.total >= -2147483648 &&
-                input.total <= 2147483647
-            ) {
-                inputInnerVal.total = input.total;
-            } else {
-                $fallback(
-                    "/total",
-                    "/properties/total",
-                    "Expected valid integer between -2147483648 and 2147483647",
-                );
-            }
-            if (Array.isArray(input.items)) {
-                const inputInnerValItemsInnerResult = [];
-                for (const inputInnerValItemsInnerResultItem of input.items) {
-                    let inputInnerValItemsInnerResultItemResult;
-                    if (
-                        typeof inputInnerValItemsInnerResultItem === "object" &&
-                        inputInnerValItemsInnerResultItem !== null
-                    ) {
-                        const inputInnerValItemsInnerResultItemInnerVal = {};
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.id ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.id =
-                                inputInnerValItemsInnerResultItem.id;
-                        } else {
-                            $fallback(
-                                "/items/[0]/id",
-                                "/properties/items/elements/properties/id/type",
-                                "Expected string at /items/[0]/id",
-                            );
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.title ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.title =
-                                inputInnerValItemsInnerResultItem.title;
-                        } else {
-                            $fallback(
-                                "/items/[0]/title",
-                                "/properties/items/elements/properties/title/type",
-                                "Expected string at /items/[0]/title",
-                            );
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.type ===
-                            "string"
-                        ) {
-                            if (
-                                inputInnerValItemsInnerResultItem.type ===
-                                    "text" ||
-                                inputInnerValItemsInnerResultItem.type ===
-                                    "image" ||
-                                inputInnerValItemsInnerResultItem.type ===
-                                    "video"
-                            ) {
-                                inputInnerValItemsInnerResultItemInnerVal.type =
-                                    inputInnerValItemsInnerResultItem.type;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/type",
-                                    "/properties/items/elements/properties/type",
-                                    "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/items/[0]/type",
-                                "/properties/items/elements/properties/type",
-                                "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                            );
-                        }
-                        if (
-                            inputInnerValItemsInnerResultItem.description ===
-                            null
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.description =
-                                inputInnerValItemsInnerResultItem.description;
-                        } else {
-                            if (
-                                typeof inputInnerValItemsInnerResultItem.description ===
-                                "string"
-                            ) {
-                                inputInnerValItemsInnerResultItemInnerVal.description =
-                                    inputInnerValItemsInnerResultItem.description;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/description",
-                                    "/properties/items/elements/properties/description/type",
-                                    "Expected string at /items/[0]/description",
-                                );
-                            }
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.content ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.content =
-                                inputInnerValItemsInnerResultItem.content;
-                        } else {
-                            $fallback(
-                                "/items/[0]/content",
-                                "/properties/items/elements/properties/content/type",
-                                "Expected string at /items/[0]/content",
-                            );
-                        }
-                        if (
-                            Array.isArray(
-                                inputInnerValItemsInnerResultItem.tags,
-                            )
-                        ) {
-                            const inputInnerValItemsInnerResultItemInnerValTagsInnerResult =
-                                [];
-                            for (const inputInnerValItemsInnerResultItemInnerValTagsInnerResultItem of inputInnerValItemsInnerResultItem.tags) {
-                                let inputInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult;
-                                if (
-                                    typeof inputInnerValItemsInnerResultItemInnerValTagsInnerResultItem ===
-                                    "string"
-                                ) {
-                                    inputInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult =
-                                        inputInnerValItemsInnerResultItemInnerValTagsInnerResultItem;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/tags/[0]",
-                                        "/properties/items/elements/properties/tags/elements/type",
-                                        "Expected string at /items/[0]/tags/[0]",
-                                    );
-                                }
-                                inputInnerValItemsInnerResultItemInnerValTagsInnerResult.push(
-                                    inputInnerValItemsInnerResultItemInnerValTagsInnerResultItemResult,
-                                );
-                            }
-                            inputInnerValItemsInnerResultItemInnerVal.tags =
-                                inputInnerValItemsInnerResultItemInnerValTagsInnerResult;
-                        } else {
-                            $fallback(
-                                "/items/[0]/tags",
-                                "/properties/items/elements/properties/tags",
-                                "Expected Array",
-                            );
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.authorId ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.authorId =
-                                inputInnerValItemsInnerResultItem.authorId;
-                        } else {
-                            $fallback(
-                                "/items/[0]/authorId",
-                                "/properties/items/elements/properties/authorId/type",
-                                "Expected string at /items/[0]/authorId",
-                            );
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.author ===
-                                "object" &&
-                            inputInnerValItemsInnerResultItem.author !== null
-                        ) {
-                            const inputInnerValItemsInnerResultItemAuthorInnerVal =
-                                {};
-                            if (
-                                typeof inputInnerValItemsInnerResultItem.author
-                                    .id === "string"
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.id =
-                                    inputInnerValItemsInnerResultItem.author.id;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/id",
-                                    "/properties/items/elements/properties/author/properties/id/type",
-                                    "Expected string at /items/[0]/author/id",
-                                );
-                            }
-                            if (
-                                typeof inputInnerValItemsInnerResultItem.author
-                                    .name === "string"
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.name =
-                                    inputInnerValItemsInnerResultItem.author.name;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/name",
-                                    "/properties/items/elements/properties/author/properties/name/type",
-                                    "Expected string at /items/[0]/author/name",
-                                );
-                            }
-                            if (
-                                inputInnerValItemsInnerResultItem.author.bio ===
-                                null
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                    inputInnerValItemsInnerResultItem.author.bio;
-                            } else {
-                                if (
-                                    typeof inputInnerValItemsInnerResultItem
-                                        .author.bio === "string"
-                                ) {
-                                    inputInnerValItemsInnerResultItemAuthorInnerVal.bio =
-                                        inputInnerValItemsInnerResultItem.author.bio;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/bio",
-                                        "/properties/items/elements/properties/author/properties/bio/type",
-                                        "Expected string at /items/[0]/author/bio",
-                                    );
-                                }
-                            }
-                            if (
-                                typeof inputInnerValItemsInnerResultItem.author
-                                    .createdAt === "object" &&
-                                inputInnerValItemsInnerResultItem.author
-                                    .createdAt instanceof Date
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
-                                    inputInnerValItemsInnerResultItem.author.createdAt;
-                            } else if (
-                                typeof inputInnerValItemsInnerResultItem.author
-                                    .createdAt === "string"
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.createdAt =
-                                    new Date(
-                                        inputInnerValItemsInnerResultItem.author.createdAt,
-                                    );
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/createdAt",
-                                    "/properties/items/elements/properties/author/properties/createdAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/author/createdAt",
-                                );
-                            }
-                            if (
-                                typeof inputInnerValItemsInnerResultItem.author
-                                    .updatedAt === "object" &&
-                                inputInnerValItemsInnerResultItem.author
-                                    .updatedAt instanceof Date
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
-                                    inputInnerValItemsInnerResultItem.author.updatedAt;
-                            } else if (
-                                typeof inputInnerValItemsInnerResultItem.author
-                                    .updatedAt === "string"
-                            ) {
-                                inputInnerValItemsInnerResultItemAuthorInnerVal.updatedAt =
-                                    new Date(
-                                        inputInnerValItemsInnerResultItem.author.updatedAt,
-                                    );
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/updatedAt",
-                                    "/properties/items/elements/properties/author/properties/updatedAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
-                                );
-                            }
-                            inputInnerValItemsInnerResultItemInnerVal.author =
-                                inputInnerValItemsInnerResultItemAuthorInnerVal;
-                        } else {
-                            $fallback(
-                                "/items/[0]/author",
-                                "/properties/items/elements/properties/author",
-                                "Expected object",
-                            );
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.createdAt ===
-                                "object" &&
-                            inputInnerValItemsInnerResultItem.createdAt instanceof
-                                Date
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.createdAt =
-                                inputInnerValItemsInnerResultItem.createdAt;
-                        } else if (
-                            typeof inputInnerValItemsInnerResultItem.createdAt ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.createdAt =
-                                new Date(
-                                    inputInnerValItemsInnerResultItem.createdAt,
-                                );
-                        } else {
-                            $fallback(
-                                "/items/[0]/createdAt",
-                                "/properties/items/elements/properties/createdAt",
-                                "Expected instanceof Date or ISO Date string at /items/[0]/createdAt",
-                            );
-                        }
-                        if (
-                            typeof inputInnerValItemsInnerResultItem.updatedAt ===
-                                "object" &&
-                            inputInnerValItemsInnerResultItem.updatedAt instanceof
-                                Date
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.updatedAt =
-                                inputInnerValItemsInnerResultItem.updatedAt;
-                        } else if (
-                            typeof inputInnerValItemsInnerResultItem.updatedAt ===
-                            "string"
-                        ) {
-                            inputInnerValItemsInnerResultItemInnerVal.updatedAt =
-                                new Date(
-                                    inputInnerValItemsInnerResultItem.updatedAt,
-                                );
-                        } else {
-                            $fallback(
-                                "/items/[0]/updatedAt",
-                                "/properties/items/elements/properties/updatedAt",
-                                "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
-                            );
-                        }
-                        inputInnerValItemsInnerResultItemResult =
-                            inputInnerValItemsInnerResultItemInnerVal;
-                    } else {
-                        $fallback(
-                            "/items/[0]",
-                            "/properties/items/elements",
-                            "Expected object",
-                        );
-                    }
-                    inputInnerValItemsInnerResult.push(
-                        inputInnerValItemsInnerResultItemResult,
-                    );
-                }
-                inputInnerVal.items = inputInnerValItemsInnerResult;
-            } else {
-                $fallback("/items", "/properties/items", "Expected Array");
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: PostListResponse): string {
-        let json = "";
-        json += "{";
-
-        if (Number.isNaN(input.total)) {
-            throw new Error("Expected number at /total got NaN");
-        }
-        json += `"total":${input.total}`;
-        json += ',"items":[';
-        for (let i = 0; i < input.items.length; i++) {
-            const inputItemsItem = input.items[i];
-            if (i !== 0) {
-                json += ",";
-            }
-            json += "{";
-            json += `"id":"${inputItemsItem.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"title":"${inputItemsItem.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"type":"${inputItemsItem.type}"`;
-            if (typeof inputItemsItem.description === "string") {
-                json += `,"description":"${inputItemsItem.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            } else {
-                json += ',"description":null';
-            }
-            json += `,"content":"${inputItemsItem.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += ',"tags":[';
-            for (let i = 0; i < inputItemsItem.tags.length; i++) {
-                const inputItemsItemTagsItem = inputItemsItem.tags[i];
-                if (i !== 0) {
-                    json += ",";
-                }
-                json += `"${inputItemsItemTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            }
-            json += "]";
-            json += `,"authorId":"${inputItemsItem.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += ',"author":{';
-            json += `"id":"${inputItemsItem.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"name":"${inputItemsItem.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            if (typeof inputItemsItem.author.bio === "string") {
-                json += `,"bio":"${inputItemsItem.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            } else {
-                json += ',"bio":null';
-            }
-            json += `,"createdAt":"${inputItemsItem.author.createdAt.toISOString()}"`;
-            json += `,"updatedAt":"${inputItemsItem.author.updatedAt.toISOString()}"`;
-            json += "}";
-            json += `,"createdAt":"${inputItemsItem.createdAt.toISOString()}"`;
-            json += `,"updatedAt":"${inputItemsItem.updatedAt.toISOString()}"`;
-            json += "}";
-        }
-        json += "]";
-        json += "}";
-        return json;
-    },
-};
-
-export type PostEvent =
-    | PostEventPostCreated
-    | PostEventPostDeleted
-    | PostEventPostUpdated
-    | PostEventPostLiked
-    | PostEventPostCommented;
-const $$PostEvent = {
-    parse(input: Record<any, any>): PostEvent {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                switch (json.eventType) {
-                    case "POST_CREATED": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_CREATED";
-                            if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                jsonInnerVal.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_DELETED": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_DELETED";
-                            if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                jsonInnerVal.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_UPDATED": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_UPDATED";
-                            if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                jsonInnerVal.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            if (
-                                typeof json.data === "object" &&
-                                json.data !== null
-                            ) {
-                                const jsonDataInnerVal = {};
-                                if (typeof json.data.id === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.id === "string") {
-                                        jsonDataInnerVal.id = json.data.id;
-                                    } else {
-                                        $fallback(
-                                            "/data/id",
-                                            "/mapping/properties/data/optionalProperties/id/type",
-                                            "Expected string at /data/id",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.title === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.title === "string") {
-                                        jsonDataInnerVal.title =
-                                            json.data.title;
-                                    } else {
-                                        $fallback(
-                                            "/data/title",
-                                            "/mapping/properties/data/optionalProperties/title/type",
-                                            "Expected string at /data/title",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.type === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.type === "string") {
-                                        if (
-                                            json.data.type === "text" ||
-                                            json.data.type === "image" ||
-                                            json.data.type === "video"
-                                        ) {
-                                            jsonDataInnerVal.type =
-                                                json.data.type;
-                                        } else {
-                                            $fallback(
-                                                "/data/type",
-                                                "/mapping/properties/data/optionalProperties/type",
-                                                "Expected one of the following values: [text, image, video] at /data/type.",
-                                            );
-                                        }
-                                    } else {
-                                        $fallback(
-                                            "/data/type",
-                                            "/mapping/properties/data/optionalProperties/type",
-                                            "Expected one of the following values: [text, image, video] at /data/type.",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof json.data.description === "undefined"
-                                ) {
-                                    // ignore undefined
-                                } else {
-                                    if (json.data.description === null) {
-                                        jsonDataInnerVal.description =
-                                            json.data.description;
-                                    } else {
-                                        if (
-                                            typeof json.data.description ===
-                                            "string"
-                                        ) {
-                                            jsonDataInnerVal.description =
-                                                json.data.description;
-                                        } else {
-                                            $fallback(
-                                                "/data/description",
-                                                "/mapping/properties/data/optionalProperties/description/type",
-                                                "Expected string at /data/description",
-                                            );
-                                        }
-                                    }
-                                }
-                                if (typeof json.data.content === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.content === "string") {
-                                        jsonDataInnerVal.content =
-                                            json.data.content;
-                                    } else {
-                                        $fallback(
-                                            "/data/content",
-                                            "/mapping/properties/data/optionalProperties/content/type",
-                                            "Expected string at /data/content",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.tags === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (Array.isArray(json.data.tags)) {
-                                        const jsonDataInnerValTagsInnerResult =
-                                            [];
-                                        for (const jsonDataInnerValTagsInnerResultItem of json
-                                            .data.tags) {
-                                            let jsonDataInnerValTagsInnerResultItemResult;
-                                            if (
-                                                typeof jsonDataInnerValTagsInnerResultItem ===
-                                                "string"
-                                            ) {
-                                                jsonDataInnerValTagsInnerResultItemResult =
-                                                    jsonDataInnerValTagsInnerResultItem;
-                                            } else {
-                                                $fallback(
-                                                    "/data/tags/[0]",
-                                                    "/mapping/properties/data/optionalProperties/tags/elements/type",
-                                                    "Expected string at /data/tags/[0]",
-                                                );
-                                            }
-                                            jsonDataInnerValTagsInnerResult.push(
-                                                jsonDataInnerValTagsInnerResultItemResult,
-                                            );
-                                        }
-                                        jsonDataInnerVal.tags =
-                                            jsonDataInnerValTagsInnerResult;
-                                    } else {
-                                        $fallback(
-                                            "/data/tags",
-                                            "/mapping/properties/data/optionalProperties/tags",
-                                            "Expected Array",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.authorId === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.authorId === "string"
-                                    ) {
-                                        jsonDataInnerVal.authorId =
-                                            json.data.authorId;
-                                    } else {
-                                        $fallback(
-                                            "/data/authorId",
-                                            "/mapping/properties/data/optionalProperties/authorId/type",
-                                            "Expected string at /data/authorId",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.author === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.author === "object" &&
-                                        json.data.author !== null
-                                    ) {
-                                        const jsonDataAuthorInnerVal = {};
-                                        if (
-                                            typeof json.data.author.id ===
-                                            "string"
-                                        ) {
-                                            jsonDataAuthorInnerVal.id =
-                                                json.data.author.id;
-                                        } else {
-                                            $fallback(
-                                                "/data/author/id",
-                                                "/mapping/properties/data/optionalProperties/author/properties/id/type",
-                                                "Expected string at /data/author/id",
-                                            );
-                                        }
-                                        if (
-                                            typeof json.data.author.name ===
-                                            "string"
-                                        ) {
-                                            jsonDataAuthorInnerVal.name =
-                                                json.data.author.name;
-                                        } else {
-                                            $fallback(
-                                                "/data/author/name",
-                                                "/mapping/properties/data/optionalProperties/author/properties/name/type",
-                                                "Expected string at /data/author/name",
-                                            );
-                                        }
-                                        if (json.data.author.bio === null) {
-                                            jsonDataAuthorInnerVal.bio =
-                                                json.data.author.bio;
-                                        } else {
-                                            if (
-                                                typeof json.data.author.bio ===
-                                                "string"
-                                            ) {
-                                                jsonDataAuthorInnerVal.bio =
-                                                    json.data.author.bio;
-                                            } else {
-                                                $fallback(
-                                                    "/data/author/bio",
-                                                    "/mapping/properties/data/optionalProperties/author/properties/bio/type",
-                                                    "Expected string at /data/author/bio",
-                                                );
-                                            }
-                                        }
-                                        if (
-                                            typeof json.data.author
-                                                .createdAt === "object" &&
-                                            json.data.author
-                                                .createdAt instanceof Date
-                                        ) {
-                                            jsonDataAuthorInnerVal.createdAt =
-                                                json.data.author.createdAt;
-                                        } else if (
-                                            typeof json.data.author
-                                                .createdAt === "string"
-                                        ) {
-                                            jsonDataAuthorInnerVal.createdAt =
-                                                new Date(
-                                                    json.data.author.createdAt,
-                                                );
-                                        } else {
-                                            $fallback(
-                                                "/data/author/createdAt",
-                                                "/mapping/properties/data/optionalProperties/author/properties/createdAt",
-                                                "Expected instanceof Date or ISO Date string at /data/author/createdAt",
-                                            );
-                                        }
-                                        if (
-                                            typeof json.data.author
-                                                .updatedAt === "object" &&
-                                            json.data.author
-                                                .updatedAt instanceof Date
-                                        ) {
-                                            jsonDataAuthorInnerVal.updatedAt =
-                                                json.data.author.updatedAt;
-                                        } else if (
-                                            typeof json.data.author
-                                                .updatedAt === "string"
-                                        ) {
-                                            jsonDataAuthorInnerVal.updatedAt =
-                                                new Date(
-                                                    json.data.author.updatedAt,
-                                                );
-                                        } else {
-                                            $fallback(
-                                                "/data/author/updatedAt",
-                                                "/mapping/properties/data/optionalProperties/author/properties/updatedAt",
-                                                "Expected instanceof Date or ISO Date string at /data/author/updatedAt",
-                                            );
-                                        }
-                                        jsonDataInnerVal.author =
-                                            jsonDataAuthorInnerVal;
-                                    } else {
-                                        $fallback(
-                                            "/data/author",
-                                            "/mapping/properties/data/optionalProperties/author",
-                                            "Expected object",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof json.data.createdAt === "undefined"
-                                ) {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.createdAt ===
-                                            "object" &&
-                                        json.data.createdAt instanceof Date
-                                    ) {
-                                        jsonDataInnerVal.createdAt =
-                                            json.data.createdAt;
-                                    } else if (
-                                        typeof json.data.createdAt === "string"
-                                    ) {
-                                        jsonDataInnerVal.createdAt = new Date(
-                                            json.data.createdAt,
-                                        );
-                                    } else {
-                                        $fallback(
-                                            "/data/createdAt",
-                                            "/mapping/properties/data/optionalProperties/createdAt",
-                                            "Expected instanceof Date or ISO Date string at /data/createdAt",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof json.data.updatedAt === "undefined"
-                                ) {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.updatedAt ===
-                                            "object" &&
-                                        json.data.updatedAt instanceof Date
-                                    ) {
-                                        jsonDataInnerVal.updatedAt =
-                                            json.data.updatedAt;
-                                    } else if (
-                                        typeof json.data.updatedAt === "string"
-                                    ) {
-                                        jsonDataInnerVal.updatedAt = new Date(
-                                            json.data.updatedAt,
-                                        );
-                                    } else {
-                                        $fallback(
-                                            "/data/updatedAt",
-                                            "/mapping/properties/data/optionalProperties/updatedAt",
-                                            "Expected instanceof Date or ISO Date string at /data/updatedAt",
-                                        );
-                                    }
-                                }
-                                jsonInnerVal.data = jsonDataInnerVal;
-                            } else {
-                                $fallback(
-                                    "/data",
-                                    "/mapping/properties/data",
-                                    "Expected object",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_LIKED": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_LIKED";
-                            if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                jsonInnerVal.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            if (typeof json.postLikeId === "string") {
-                                jsonInnerVal.postLikeId = json.postLikeId;
-                            } else {
-                                $fallback(
-                                    "/postLikeId",
-                                    "/mapping/properties/postLikeId/type",
-                                    "Expected string at /postLikeId",
-                                );
-                            }
-                            if (
-                                typeof json.postLikeCount === "number" &&
-                                Number.isInteger(json.postLikeCount) &&
-                                json.postLikeCount >= 0 &&
-                                json.postLikeCount <= 4294967295
-                            ) {
-                                jsonInnerVal.postLikeCount = json.postLikeCount;
-                            } else {
-                                $fallback(
-                                    "/postLikeCount",
-                                    "/mapping/properties/postLikeCount",
-                                    "Expected valid integer between 0 and 4294967295",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_COMMENTED": {
-                        if (typeof json === "object" && json !== null) {
-                            const jsonInnerVal = {};
-                            jsonInnerVal.eventType = "POST_COMMENTED";
-                            if (typeof json.postId === "string") {
-                                jsonInnerVal.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                jsonInnerVal.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                jsonInnerVal.timestamp = new Date(
-                                    json.timestamp,
-                                );
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            if (typeof json.commentId === "string") {
-                                jsonInnerVal.commentId = json.commentId;
-                            } else {
-                                $fallback(
-                                    "/commentId",
-                                    "/mapping/properties/commentId/type",
-                                    "Expected string at /commentId",
-                                );
-                            }
-                            if (typeof json.commentText === "string") {
-                                jsonInnerVal.commentText = json.commentText;
-                            } else {
-                                $fallback(
-                                    "/commentText",
-                                    "/mapping/properties/commentText/type",
-                                    "Expected string at /commentText",
-                                );
-                            }
-                            if (
-                                typeof json.commentCount === "number" &&
-                                Number.isInteger(json.commentCount) &&
-                                json.commentCount >= 0 &&
-                                json.commentCount <= 4294967295
-                            ) {
-                                jsonInnerVal.commentCount = json.commentCount;
-                            } else {
-                                $fallback(
-                                    "/commentCount",
-                                    "/mapping/properties/commentCount",
-                                    "Expected valid integer between 0 and 4294967295",
-                                );
-                            }
-                            result = jsonInnerVal;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    default:
-                        $fallback(
-                            "",
-                            "/mapping",
-                            "json.eventType did not match one of the specified values",
-                        );
-                        break;
-                }
-            } else {
-                $fallback("", "", "Expected Object.");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            switch (input.eventType) {
-                case "POST_CREATED": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_CREATED";
-                        if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            inputInnerVal.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_DELETED": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_DELETED";
-                        if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            inputInnerVal.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_UPDATED": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_UPDATED";
-                        if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            inputInnerVal.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        if (
-                            typeof input.data === "object" &&
-                            input.data !== null
-                        ) {
-                            const inputDataInnerVal = {};
-                            if (typeof input.data.id === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.id === "string") {
-                                    inputDataInnerVal.id = input.data.id;
-                                } else {
-                                    $fallback(
-                                        "/data/id",
-                                        "/mapping/properties/data/optionalProperties/id/type",
-                                        "Expected string at /data/id",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.title === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.title === "string") {
-                                    inputDataInnerVal.title = input.data.title;
-                                } else {
-                                    $fallback(
-                                        "/data/title",
-                                        "/mapping/properties/data/optionalProperties/title/type",
-                                        "Expected string at /data/title",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.type === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.type === "string") {
-                                    if (
-                                        input.data.type === "text" ||
-                                        input.data.type === "image" ||
-                                        input.data.type === "video"
-                                    ) {
-                                        inputDataInnerVal.type =
-                                            input.data.type;
-                                    } else {
-                                        $fallback(
-                                            "/data/type",
-                                            "/mapping/properties/data/optionalProperties/type",
-                                            "Expected one of the following values: [text, image, video] at /data/type.",
-                                        );
-                                    }
-                                } else {
-                                    $fallback(
-                                        "/data/type",
-                                        "/mapping/properties/data/optionalProperties/type",
-                                        "Expected one of the following values: [text, image, video] at /data/type.",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.description === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (input.data.description === null) {
-                                    inputDataInnerVal.description =
-                                        input.data.description;
-                                } else {
-                                    if (
-                                        typeof input.data.description ===
-                                        "string"
-                                    ) {
-                                        inputDataInnerVal.description =
-                                            input.data.description;
-                                    } else {
-                                        $fallback(
-                                            "/data/description",
-                                            "/mapping/properties/data/optionalProperties/description/type",
-                                            "Expected string at /data/description",
-                                        );
-                                    }
-                                }
-                            }
-                            if (typeof input.data.content === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.content === "string") {
-                                    inputDataInnerVal.content =
-                                        input.data.content;
-                                } else {
-                                    $fallback(
-                                        "/data/content",
-                                        "/mapping/properties/data/optionalProperties/content/type",
-                                        "Expected string at /data/content",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.tags === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (Array.isArray(input.data.tags)) {
-                                    const inputDataInnerValTagsInnerResult = [];
-                                    for (const inputDataInnerValTagsInnerResultItem of input
-                                        .data.tags) {
-                                        let inputDataInnerValTagsInnerResultItemResult;
-                                        if (
-                                            typeof inputDataInnerValTagsInnerResultItem ===
-                                            "string"
-                                        ) {
-                                            inputDataInnerValTagsInnerResultItemResult =
-                                                inputDataInnerValTagsInnerResultItem;
-                                        } else {
-                                            $fallback(
-                                                "/data/tags/[0]",
-                                                "/mapping/properties/data/optionalProperties/tags/elements/type",
-                                                "Expected string at /data/tags/[0]",
-                                            );
-                                        }
-                                        inputDataInnerValTagsInnerResult.push(
-                                            inputDataInnerValTagsInnerResultItemResult,
-                                        );
-                                    }
-                                    inputDataInnerVal.tags =
-                                        inputDataInnerValTagsInnerResult;
-                                } else {
-                                    $fallback(
-                                        "/data/tags",
-                                        "/mapping/properties/data/optionalProperties/tags",
-                                        "Expected Array",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.authorId === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.authorId === "string") {
-                                    inputDataInnerVal.authorId =
-                                        input.data.authorId;
-                                } else {
-                                    $fallback(
-                                        "/data/authorId",
-                                        "/mapping/properties/data/optionalProperties/authorId/type",
-                                        "Expected string at /data/authorId",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.author === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (
-                                    typeof input.data.author === "object" &&
-                                    input.data.author !== null
-                                ) {
-                                    const inputDataAuthorInnerVal = {};
-                                    if (
-                                        typeof input.data.author.id === "string"
-                                    ) {
-                                        inputDataAuthorInnerVal.id =
-                                            input.data.author.id;
-                                    } else {
-                                        $fallback(
-                                            "/data/author/id",
-                                            "/mapping/properties/data/optionalProperties/author/properties/id/type",
-                                            "Expected string at /data/author/id",
-                                        );
-                                    }
-                                    if (
-                                        typeof input.data.author.name ===
-                                        "string"
-                                    ) {
-                                        inputDataAuthorInnerVal.name =
-                                            input.data.author.name;
-                                    } else {
-                                        $fallback(
-                                            "/data/author/name",
-                                            "/mapping/properties/data/optionalProperties/author/properties/name/type",
-                                            "Expected string at /data/author/name",
-                                        );
-                                    }
-                                    if (input.data.author.bio === null) {
-                                        inputDataAuthorInnerVal.bio =
-                                            input.data.author.bio;
-                                    } else {
-                                        if (
-                                            typeof input.data.author.bio ===
-                                            "string"
-                                        ) {
-                                            inputDataAuthorInnerVal.bio =
-                                                input.data.author.bio;
-                                        } else {
-                                            $fallback(
-                                                "/data/author/bio",
-                                                "/mapping/properties/data/optionalProperties/author/properties/bio/type",
-                                                "Expected string at /data/author/bio",
-                                            );
-                                        }
-                                    }
-                                    if (
-                                        typeof input.data.author.createdAt ===
-                                            "object" &&
-                                        input.data.author.createdAt instanceof
-                                            Date
-                                    ) {
-                                        inputDataAuthorInnerVal.createdAt =
-                                            input.data.author.createdAt;
-                                    } else if (
-                                        typeof input.data.author.createdAt ===
-                                        "string"
-                                    ) {
-                                        inputDataAuthorInnerVal.createdAt =
-                                            new Date(
-                                                input.data.author.createdAt,
-                                            );
-                                    } else {
-                                        $fallback(
-                                            "/data/author/createdAt",
-                                            "/mapping/properties/data/optionalProperties/author/properties/createdAt",
-                                            "Expected instanceof Date or ISO Date string at /data/author/createdAt",
-                                        );
-                                    }
-                                    if (
-                                        typeof input.data.author.updatedAt ===
-                                            "object" &&
-                                        input.data.author.updatedAt instanceof
-                                            Date
-                                    ) {
-                                        inputDataAuthorInnerVal.updatedAt =
-                                            input.data.author.updatedAt;
-                                    } else if (
-                                        typeof input.data.author.updatedAt ===
-                                        "string"
-                                    ) {
-                                        inputDataAuthorInnerVal.updatedAt =
-                                            new Date(
-                                                input.data.author.updatedAt,
-                                            );
-                                    } else {
-                                        $fallback(
-                                            "/data/author/updatedAt",
-                                            "/mapping/properties/data/optionalProperties/author/properties/updatedAt",
-                                            "Expected instanceof Date or ISO Date string at /data/author/updatedAt",
-                                        );
-                                    }
-                                    inputDataInnerVal.author =
-                                        inputDataAuthorInnerVal;
-                                } else {
-                                    $fallback(
-                                        "/data/author",
-                                        "/mapping/properties/data/optionalProperties/author",
-                                        "Expected object",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.createdAt === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (
-                                    typeof input.data.createdAt === "object" &&
-                                    input.data.createdAt instanceof Date
-                                ) {
-                                    inputDataInnerVal.createdAt =
-                                        input.data.createdAt;
-                                } else if (
-                                    typeof input.data.createdAt === "string"
-                                ) {
-                                    inputDataInnerVal.createdAt = new Date(
-                                        input.data.createdAt,
-                                    );
-                                } else {
-                                    $fallback(
-                                        "/data/createdAt",
-                                        "/mapping/properties/data/optionalProperties/createdAt",
-                                        "Expected instanceof Date or ISO Date string at /data/createdAt",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.updatedAt === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (
-                                    typeof input.data.updatedAt === "object" &&
-                                    input.data.updatedAt instanceof Date
-                                ) {
-                                    inputDataInnerVal.updatedAt =
-                                        input.data.updatedAt;
-                                } else if (
-                                    typeof input.data.updatedAt === "string"
-                                ) {
-                                    inputDataInnerVal.updatedAt = new Date(
-                                        input.data.updatedAt,
-                                    );
-                                } else {
-                                    $fallback(
-                                        "/data/updatedAt",
-                                        "/mapping/properties/data/optionalProperties/updatedAt",
-                                        "Expected instanceof Date or ISO Date string at /data/updatedAt",
-                                    );
-                                }
-                            }
-                            inputInnerVal.data = inputDataInnerVal;
-                        } else {
-                            $fallback(
-                                "/data",
-                                "/mapping/properties/data",
-                                "Expected object",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_LIKED": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_LIKED";
-                        if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            inputInnerVal.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        if (typeof input.postLikeId === "string") {
-                            inputInnerVal.postLikeId = input.postLikeId;
-                        } else {
-                            $fallback(
-                                "/postLikeId",
-                                "/mapping/properties/postLikeId/type",
-                                "Expected string at /postLikeId",
-                            );
-                        }
-                        if (
-                            typeof input.postLikeCount === "number" &&
-                            Number.isInteger(input.postLikeCount) &&
-                            input.postLikeCount >= 0 &&
-                            input.postLikeCount <= 4294967295
-                        ) {
-                            inputInnerVal.postLikeCount = input.postLikeCount;
-                        } else {
-                            $fallback(
-                                "/postLikeCount",
-                                "/mapping/properties/postLikeCount",
-                                "Expected valid integer between 0 and 4294967295",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_COMMENTED": {
-                    if (typeof input === "object" && input !== null) {
-                        const inputInnerVal = {};
-                        inputInnerVal.eventType = "POST_COMMENTED";
-                        if (typeof input.postId === "string") {
-                            inputInnerVal.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            inputInnerVal.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            inputInnerVal.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        if (typeof input.commentId === "string") {
-                            inputInnerVal.commentId = input.commentId;
-                        } else {
-                            $fallback(
-                                "/commentId",
-                                "/mapping/properties/commentId/type",
-                                "Expected string at /commentId",
-                            );
-                        }
-                        if (typeof input.commentText === "string") {
-                            inputInnerVal.commentText = input.commentText;
-                        } else {
-                            $fallback(
-                                "/commentText",
-                                "/mapping/properties/commentText/type",
-                                "Expected string at /commentText",
-                            );
-                        }
-                        if (
-                            typeof input.commentCount === "number" &&
-                            Number.isInteger(input.commentCount) &&
-                            input.commentCount >= 0 &&
-                            input.commentCount <= 4294967295
-                        ) {
-                            inputInnerVal.commentCount = input.commentCount;
-                        } else {
-                            $fallback(
-                                "/commentCount",
-                                "/mapping/properties/commentCount",
-                                "Expected valid integer between 0 and 4294967295",
-                            );
-                        }
-                        result = inputInnerVal;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                default:
-                    $fallback(
-                        "",
-                        "/mapping",
-                        "input.eventType did not match one of the specified values",
-                    );
-                    break;
-            }
-        } else {
-            $fallback("", "", "Expected Object.");
-        }
-        return result;
-    },
-    serialize(input: PostEvent): string {
-        let json = "";
-        switch (input.eventType) {
-            case "POST_CREATED": {
-                json += "{";
-                json += `"eventType":"POST_CREATED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += "}";
-                break;
-            }
-            case "POST_DELETED": {
-                json += "{";
-                json += `"eventType":"POST_DELETED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += "}";
-                break;
-            }
-            case "POST_UPDATED": {
-                json += "{";
-                json += `"eventType":"POST_UPDATED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += ',"data":{';
-                let dataHasFields = false;
-                if (typeof input.data.id !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"id":"${input.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    } else {
-                        json += `"id":"${input.data.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.title !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    } else {
-                        json += `"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.type !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"type":"${input.data.type}"`;
-                    } else {
-                        json += `"type":"${input.data.type}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.description !== "undefined") {
-                    if (dataHasFields) {
-                        if (typeof input.data.description === "string") {
-                            json += `,"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        } else {
-                            json += ',"description":null';
-                        }
-                    } else {
-                        if (typeof input.data.description === "string") {
-                            json += `"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        } else {
-                            json += '"description":null';
-                        }
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.content !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    } else {
-                        json += `"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.tags !== "undefined") {
-                    if (dataHasFields) {
-                        json += ',"tags":[';
-                        for (let i = 0; i < input.data.tags.length; i++) {
-                            const inputDataTagsItem = input.data.tags[i];
-                            if (i !== 0) {
-                                json += ",";
-                            }
-                            json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        }
-                        json += "]";
-                    } else {
-                        json += '"tags":[';
-                        for (let i = 0; i < input.data.tags.length; i++) {
-                            const inputDataTagsItem = input.data.tags[i];
-                            if (i !== 0) {
-                                json += ",";
-                            }
-                            json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        }
-                        json += "]";
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.authorId !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"authorId":"${input.data.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    } else {
-                        json += `"authorId":"${input.data.authorId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.author !== "undefined") {
-                    if (dataHasFields) {
-                        json += ',"author":{';
-                        json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"name":"${input.data.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":"${input.data.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        } else {
-                            json += ',"bio":null';
-                        }
-                        json += `,"createdAt":"${input.data.author.createdAt.toISOString()}"`;
-                        json += `,"updatedAt":"${input.data.author.updatedAt.toISOString()}"`;
-                        json += "}";
-                    } else {
-                        json += '"author":{';
-                        json += `"id":"${input.data.author.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        json += `,"name":"${input.data.author.name.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":"${input.data.author.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                        } else {
-                            json += ',"bio":null';
-                        }
-                        json += `,"createdAt":"${input.data.author.createdAt.toISOString()}"`;
-                        json += `,"updatedAt":"${input.data.author.updatedAt.toISOString()}"`;
-                        json += "}";
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.createdAt !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"createdAt":"${input.data.createdAt.toISOString()}"`;
-                    } else {
-                        json += `"createdAt":"${input.data.createdAt.toISOString()}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.updatedAt !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"updatedAt":"${input.data.updatedAt.toISOString()}"`;
-                    } else {
-                        json += `"updatedAt":"${input.data.updatedAt.toISOString()}"`;
-                        dataHasFields = true;
-                    }
-                }
-                json += "}";
-                json += "}";
-                break;
-            }
-            case "POST_LIKED": {
-                json += "{";
-                json += `"eventType":"POST_LIKED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"postLikeId":"${input.postLikeId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-
-                if (Number.isNaN(input.postLikeCount)) {
-                    throw new Error(
-                        "Expected number at /postLikeCount got NaN",
-                    );
-                }
-                json += `,"postLikeCount":${input.postLikeCount}`;
-                json += "}";
-                break;
-            }
-            case "POST_COMMENTED": {
-                json += "{";
-                json += `"eventType":"POST_COMMENTED"`;
-                json += `,"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"commentId":"${input.commentId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += `,"commentText":"${input.commentText.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-
-                if (Number.isNaN(input.commentCount)) {
-                    throw new Error("Expected number at /commentCount got NaN");
-                }
-                json += `,"commentCount":${input.commentCount}`;
-                json += "}";
-                break;
-            }
-        }
-        return json;
-    },
-};
-export interface PostEventPostCreated {
-    eventType: "POST_CREATED";
-    postId: string;
-    timestamp: Date;
-}
-
-export interface PostEventPostDeleted {
-    eventType: "POST_DELETED";
-    postId: string;
-    timestamp: Date;
-}
-
-export interface PostEventPostUpdated {
-    eventType: "POST_UPDATED";
-    postId: string;
-    timestamp: Date;
-    data: PostEventPostUpdatedData;
-}
-
-export interface PostEventPostUpdatedData {
-    id?: string;
-    title?: string;
-    type?: PostType;
-    description?: string | null;
-    content?: string;
-    tags?: Array<string>;
-    authorId?: string;
-    author?: Author;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
-export interface PostEventPostLiked {
-    eventType: "POST_LIKED";
-    postId: string;
-    timestamp: Date;
-    postLikeId: string;
-    postLikeCount: number;
-}
-
-export interface PostEventPostCommented {
-    eventType: "POST_COMMENTED";
-    postId: string;
-    timestamp: Date;
-    commentId: string;
-    commentText: string;
-    commentCount: number;
-}
-
-export interface LogPostEventResponse {
-    success: boolean;
-    message: string;
-}
-const $$LogPostEventResponse = {
-    parse(input: Record<any, any>): LogPostEventResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.success === "boolean") {
-                    jsonInnerVal.success = json.success;
-                } else {
-                    $fallback(
-                        "/success",
-                        "/properties/success/type",
-                        "Expected boolean for /success",
-                    );
-                }
-                if (typeof json.message === "string") {
-                    jsonInnerVal.message = json.message;
-                } else {
-                    $fallback(
-                        "/message",
-                        "/properties/message/type",
-                        "Expected string at /message",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.success === "boolean") {
-                inputInnerVal.success = input.success;
-            } else {
-                $fallback(
-                    "/success",
-                    "/properties/success/type",
-                    "Expected boolean for /success",
-                );
-            }
-            if (typeof input.message === "string") {
-                inputInnerVal.message = input.message;
-            } else {
-                $fallback(
-                    "/message",
-                    "/properties/message/type",
-                    "Expected string at /message",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: LogPostEventResponse): string {
-        let json = "";
-        json += "{";
-        json += `"success":${input.success}`;
-        json += `,"message":"${input.message.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        return json;
-    },
-};
-
-export interface UpdatePostParams {
-    postId: string;
-    data: UpdatePostParamsData;
-}
-const $$UpdatePostParams = {
-    parse(input: Record<any, any>): UpdatePostParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.postId === "string") {
-                    jsonInnerVal.postId = json.postId;
-                } else {
-                    $fallback(
-                        "/postId",
-                        "/properties/postId/type",
-                        "Expected string at /postId",
-                    );
-                }
-                if (typeof json.data === "object" && json.data !== null) {
-                    const jsonDataInnerVal = {};
-                    if (typeof json.data.title === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (typeof json.data.title === "string") {
-                            jsonDataInnerVal.title = json.data.title;
-                        } else {
-                            $fallback(
-                                "/data/title",
-                                "/properties/data/optionalProperties/title/type",
-                                "Expected string at /data/title",
-                            );
-                        }
-                    }
-                    if (typeof json.data.description === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (json.data.description === null) {
-                            jsonDataInnerVal.description =
-                                json.data.description;
-                        } else {
-                            if (typeof json.data.description === "string") {
-                                jsonDataInnerVal.description =
-                                    json.data.description;
-                            } else {
-                                $fallback(
-                                    "/data/description",
-                                    "/properties/data/optionalProperties/description/type",
-                                    "Expected string at /data/description",
-                                );
-                            }
-                        }
-                    }
-                    if (typeof json.data.content === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (typeof json.data.content === "string") {
-                            jsonDataInnerVal.content = json.data.content;
-                        } else {
-                            $fallback(
-                                "/data/content",
-                                "/properties/data/optionalProperties/content/type",
-                                "Expected string at /data/content",
-                            );
-                        }
-                    }
-                    if (typeof json.data.tags === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (Array.isArray(json.data.tags)) {
-                            const jsonDataInnerValTagsInnerResult = [];
-                            for (const jsonDataInnerValTagsInnerResultItem of json
-                                .data.tags) {
-                                let jsonDataInnerValTagsInnerResultItemResult;
-                                if (
-                                    typeof jsonDataInnerValTagsInnerResultItem ===
-                                    "string"
-                                ) {
-                                    jsonDataInnerValTagsInnerResultItemResult =
-                                        jsonDataInnerValTagsInnerResultItem;
-                                } else {
-                                    $fallback(
-                                        "/data/tags/[0]",
-                                        "/properties/data/optionalProperties/tags/elements/type",
-                                        "Expected string at /data/tags/[0]",
-                                    );
-                                }
-                                jsonDataInnerValTagsInnerResult.push(
-                                    jsonDataInnerValTagsInnerResultItemResult,
-                                );
-                            }
-                            jsonDataInnerVal.tags =
-                                jsonDataInnerValTagsInnerResult;
-                        } else {
-                            $fallback(
-                                "/data/tags",
-                                "/properties/data/optionalProperties/tags",
-                                "Expected Array",
-                            );
-                        }
-                    }
-                    jsonInnerVal.data = jsonDataInnerVal;
-                } else {
-                    $fallback("/data", "/properties/data", "Expected object");
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.postId === "string") {
-                inputInnerVal.postId = input.postId;
-            } else {
-                $fallback(
-                    "/postId",
-                    "/properties/postId/type",
-                    "Expected string at /postId",
-                );
-            }
-            if (typeof input.data === "object" && input.data !== null) {
-                const inputDataInnerVal = {};
-                if (typeof input.data.title === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof input.data.title === "string") {
-                        inputDataInnerVal.title = input.data.title;
-                    } else {
-                        $fallback(
-                            "/data/title",
-                            "/properties/data/optionalProperties/title/type",
-                            "Expected string at /data/title",
-                        );
-                    }
-                }
-                if (typeof input.data.description === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (input.data.description === null) {
-                        inputDataInnerVal.description = input.data.description;
-                    } else {
-                        if (typeof input.data.description === "string") {
-                            inputDataInnerVal.description =
-                                input.data.description;
-                        } else {
-                            $fallback(
-                                "/data/description",
-                                "/properties/data/optionalProperties/description/type",
-                                "Expected string at /data/description",
-                            );
-                        }
-                    }
-                }
-                if (typeof input.data.content === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof input.data.content === "string") {
-                        inputDataInnerVal.content = input.data.content;
-                    } else {
-                        $fallback(
-                            "/data/content",
-                            "/properties/data/optionalProperties/content/type",
-                            "Expected string at /data/content",
-                        );
-                    }
-                }
-                if (typeof input.data.tags === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (Array.isArray(input.data.tags)) {
-                        const inputDataInnerValTagsInnerResult = [];
-                        for (const inputDataInnerValTagsInnerResultItem of input
-                            .data.tags) {
-                            let inputDataInnerValTagsInnerResultItemResult;
-                            if (
-                                typeof inputDataInnerValTagsInnerResultItem ===
-                                "string"
-                            ) {
-                                inputDataInnerValTagsInnerResultItemResult =
-                                    inputDataInnerValTagsInnerResultItem;
-                            } else {
-                                $fallback(
-                                    "/data/tags/[0]",
-                                    "/properties/data/optionalProperties/tags/elements/type",
-                                    "Expected string at /data/tags/[0]",
-                                );
-                            }
-                            inputDataInnerValTagsInnerResult.push(
-                                inputDataInnerValTagsInnerResultItemResult,
-                            );
-                        }
-                        inputDataInnerVal.tags =
-                            inputDataInnerValTagsInnerResult;
-                    } else {
-                        $fallback(
-                            "/data/tags",
-                            "/properties/data/optionalProperties/tags",
-                            "Expected Array",
-                        );
-                    }
-                }
-                inputInnerVal.data = inputDataInnerVal;
-            } else {
-                $fallback("/data", "/properties/data", "Expected object");
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: UpdatePostParams): string {
-        let json = "";
-        json += "{";
-        json += `"postId":"${input.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += ',"data":{';
-        let dataHasFields = false;
-        if (typeof input.data.title !== "undefined") {
-            if (dataHasFields) {
-                json += `,"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            } else {
-                json += `"title":"${input.data.title.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.description !== "undefined") {
-            if (dataHasFields) {
-                if (typeof input.data.description === "string") {
-                    json += `,"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                } else {
-                    json += ',"description":null';
-                }
-            } else {
-                if (typeof input.data.description === "string") {
-                    json += `"description":"${input.data.description.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                } else {
-                    json += '"description":null';
-                }
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.content !== "undefined") {
-            if (dataHasFields) {
-                json += `,"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            } else {
-                json += `"content":"${input.data.content.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.tags !== "undefined") {
-            if (dataHasFields) {
-                json += ',"tags":[';
-                for (let i = 0; i < input.data.tags.length; i++) {
-                    const inputDataTagsItem = input.data.tags[i];
-                    if (i !== 0) {
-                        json += ",";
-                    }
-                    json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                }
-                json += "]";
-            } else {
-                json += '"tags":[';
-                for (let i = 0; i < input.data.tags.length; i++) {
-                    const inputDataTagsItem = input.data.tags[i];
-                    if (i !== 0) {
-                        json += ",";
-                    }
-                    json += `"${inputDataTagsItem.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                }
-                json += "]";
-                dataHasFields = true;
-            }
-        }
-        json += "}";
-        json += "}";
-        return json;
-    },
-};
-export interface UpdatePostParamsData {
-    title?: string;
-    description?: string | null;
-    content?: string;
-    tags?: Array<string>;
-}
-
-export interface UsersWatchUserParams {
-    userId: string;
-}
-const $$UsersWatchUserParams = {
-    parse(input: Record<any, any>): UsersWatchUserParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.userId === "string") {
-                    jsonInnerVal.userId = json.userId;
-                } else {
-                    $fallback(
-                        "/userId",
-                        "/properties/userId/type",
-                        "Expected string at /userId",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.userId === "string") {
-                inputInnerVal.userId = input.userId;
-            } else {
-                $fallback(
-                    "/userId",
-                    "/properties/userId/type",
-                    "Expected string at /userId",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: UsersWatchUserParams): string {
-        let json = "";
-        json += "{";
-        json += `"userId":"${input.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        return json;
-    },
-};
-
-export interface UsersWatchUserResponse {
-    id: string;
-    role: UsersWatchUserResponseRole;
-    photo: UserPhoto | null;
-    createdAt: Date;
-    numFollowers: number;
-    settings: UserSettings;
-    recentNotifications: Array<UsersWatchUserResponseRecentNotificationsItem>;
-    bookmarks: UsersWatchUserResponseBookmarks;
-    metadata: UsersWatchUserResponseMetadata;
-    randomList: Array<any>;
-    bio?: string;
-}
-const $$UsersWatchUserResponse = {
-    parse(input: Record<any, any>): UsersWatchUserResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.id === "string") {
-                    jsonInnerVal.id = json.id;
-                } else {
-                    $fallback(
-                        "/id",
-                        "/properties/id/type",
-                        "Expected string at /id",
-                    );
-                }
-                if (typeof json.role === "string") {
-                    if (json.role === "standard" || json.role === "admin") {
-                        jsonInnerVal.role = json.role;
-                    } else {
-                        $fallback(
-                            "/role",
-                            "/properties/role",
-                            "Expected one of the following values: [standard, admin] at /role.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/role",
-                        "/properties/role",
-                        "Expected one of the following values: [standard, admin] at /role.",
-                    );
-                }
-                if (json.photo === null) {
-                    jsonInnerVal.photo = null;
-                } else {
-                    if (typeof json.photo === "object" && json.photo !== null) {
-                        const jsonPhotoInnerVal = {};
-                        if (typeof json.photo.url === "string") {
-                            jsonPhotoInnerVal.url = json.photo.url;
-                        } else {
-                            $fallback(
-                                "/photo/url",
-                                "/properties/photo/properties/url/type",
-                                "Expected string at /photo/url",
-                            );
-                        }
-                        if (
-                            typeof json.photo.width === "number" &&
-                            !Number.isNaN(json.photo.width)
-                        ) {
-                            jsonPhotoInnerVal.width = json.photo.width;
-                        } else {
-                            $fallback(
-                                "/photo/width",
-                                "/properties/photo/properties/width/type",
-                                "Expected number at /photo/width",
-                            );
-                        }
-                        if (
-                            typeof json.photo.height === "number" &&
-                            !Number.isNaN(json.photo.height)
-                        ) {
-                            jsonPhotoInnerVal.height = json.photo.height;
-                        } else {
-                            $fallback(
-                                "/photo/height",
-                                "/properties/photo/properties/height/type",
-                                "Expected number at /photo/height",
-                            );
-                        }
-                        if (
-                            typeof json.photo.bytes === "string" ||
-                            typeof json.photo.bytes === "number"
-                        ) {
-                            try {
-                                const val = BigInt(json.photo.bytes);
-                                jsonPhotoInnerVal.bytes = val;
-                            } catch (err) {
-                                $fallback(
-                                    "/photo/bytes",
-                                    "/properties/photo/properties/bytes",
-                                    "Unable to parse BigInt from json.photo.bytes.",
-                                );
-                            }
-                        } else if (typeof json.photo.bytes === "bigint") {
-                            jsonPhotoInnerVal.bytes = json.photo.bytes;
-                        } else {
-                            $fallback(
-                                "/photo/bytes",
-                                "/properties/photo/properties/bytes",
-                                "Expected BigInt or Integer string. Got ${json.photo.bytes}",
-                            );
-                        }
-                        if (
-                            typeof json.photo.nanoseconds === "string" ||
-                            typeof json.photo.nanoseconds === "number"
-                        ) {
-                            try {
-                                const val = BigInt(json.photo.nanoseconds);
-                                if (val >= BigInt("0")) {
-                                    jsonPhotoInnerVal.nanoseconds = val;
-                                } else {
-                                    $fallback(
-                                        "/photo/nanoseconds",
-                                        "/properties/photo/properties/nanoseconds",
-                                        "Unsigned int must be greater than or equal to 0.",
-                                    );
-                                }
-                            } catch (err) {
-                                $fallback(
-                                    "/photo/nanoseconds",
-                                    "/properties/photo/properties/nanoseconds",
-                                    "Unable to parse BigInt from json.photo.nanoseconds.",
-                                );
-                            }
-                        } else if (typeof json.photo.nanoseconds === "bigint") {
-                            if (json.photo.nanoseconds >= BigInt("0")) {
-                                jsonPhotoInnerVal.nanoseconds =
-                                    json.photo.nanoseconds;
-                            } else {
-                                $fallback(
-                                    "/photo/nanoseconds",
-                                    "/properties/photo/properties/nanoseconds",
-                                    "Unsigned int must be greater than or equal to 0.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/photo/nanoseconds",
-                                "/properties/photo/properties/nanoseconds",
-                                "Expected BigInt or Integer string. Got ${json.photo.nanoseconds}",
-                            );
-                        }
-                        jsonInnerVal.photo = jsonPhotoInnerVal;
-                    } else {
-                        $fallback(
-                            "/photo",
-                            "/properties/photo",
-                            "Expected object",
-                        );
-                    }
-                }
-                if (
-                    typeof json.createdAt === "object" &&
-                    json.createdAt instanceof Date
-                ) {
-                    jsonInnerVal.createdAt = json.createdAt;
-                } else if (typeof json.createdAt === "string") {
-                    jsonInnerVal.createdAt = new Date(json.createdAt);
-                } else {
-                    $fallback(
-                        "/createdAt",
-                        "/properties/createdAt",
-                        "Expected instanceof Date or ISO Date string at /createdAt",
-                    );
-                }
-                if (
-                    typeof json.numFollowers === "number" &&
-                    Number.isInteger(json.numFollowers) &&
-                    json.numFollowers >= -2147483648 &&
-                    json.numFollowers <= 2147483647
-                ) {
-                    jsonInnerVal.numFollowers = json.numFollowers;
-                } else {
-                    $fallback(
-                        "/numFollowers",
-                        "/properties/numFollowers",
-                        "Expected valid integer between -2147483648 and 2147483647",
-                    );
-                }
-                if (
-                    typeof json.settings === "object" &&
-                    json.settings !== null
-                ) {
-                    const jsonSettingsInnerVal = {};
-                    if (
-                        typeof json.settings.notificationsEnabled === "boolean"
-                    ) {
-                        jsonSettingsInnerVal.notificationsEnabled =
-                            json.settings.notificationsEnabled;
-                    } else {
-                        $fallback(
-                            "/settings/notificationsEnabled",
-                            "/properties/settings/properties/notificationsEnabled/type",
-                            "Expected boolean for /settings/notificationsEnabled",
-                        );
-                    }
-                    if (typeof json.settings.preferredTheme === "string") {
-                        if (
-                            json.settings.preferredTheme === "dark-mode" ||
-                            json.settings.preferredTheme === "light-mode" ||
-                            json.settings.preferredTheme === "system"
-                        ) {
-                            jsonSettingsInnerVal.preferredTheme =
-                                json.settings.preferredTheme;
-                        } else {
-                            $fallback(
-                                "/settings/preferredTheme",
-                                "/properties/settings/properties/preferredTheme",
-                                "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/settings/preferredTheme",
-                            "/properties/settings/properties/preferredTheme",
-                            "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
-                        );
-                    }
-                    jsonInnerVal.settings = jsonSettingsInnerVal;
-                } else {
-                    $fallback(
-                        "/settings",
-                        "/properties/settings",
-                        "Expected object",
-                    );
-                }
-                if (Array.isArray(json.recentNotifications)) {
-                    const jsonInnerValRecentNotificationsInnerResult = [];
-                    for (const jsonInnerValRecentNotificationsInnerResultItem of json.recentNotifications) {
-                        let jsonInnerValRecentNotificationsInnerResultItemResult;
-                        if (
-                            typeof jsonInnerValRecentNotificationsInnerResultItem ===
-                                "object" &&
-                            jsonInnerValRecentNotificationsInnerResultItem !==
-                                null
-                        ) {
-                            switch (
-                                jsonInnerValRecentNotificationsInnerResultItem.notificationType
-                            ) {
-                                case "POST_LIKE": {
-                                    if (
-                                        typeof jsonInnerValRecentNotificationsInnerResultItem ===
-                                            "object" &&
-                                        jsonInnerValRecentNotificationsInnerResultItem !==
-                                            null
-                                    ) {
-                                        const jsonInnerValRecentNotificationsInnerResultItemInnerVal =
-                                            {};
-                                        jsonInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
-                                            "POST_LIKE";
-                                        if (
-                                            typeof jsonInnerValRecentNotificationsInnerResultItem.postId ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.postId =
-                                                jsonInnerValRecentNotificationsInnerResultItem.postId;
-                                        } else {
-                                            $fallback(
-                                                "/recentNotifications/[0]/postId",
-                                                "/properties/recentNotifications/elements/mapping/properties/postId/type",
-                                                "Expected string at /recentNotifications/[0]/postId",
-                                            );
-                                        }
-                                        if (
-                                            typeof jsonInnerValRecentNotificationsInnerResultItem.userId ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.userId =
-                                                jsonInnerValRecentNotificationsInnerResultItem.userId;
-                                        } else {
-                                            $fallback(
-                                                "/recentNotifications/[0]/userId",
-                                                "/properties/recentNotifications/elements/mapping/properties/userId/type",
-                                                "Expected string at /recentNotifications/[0]/userId",
-                                            );
-                                        }
-                                        jsonInnerValRecentNotificationsInnerResultItemResult =
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]",
-                                            "/properties/recentNotifications/elements/mapping",
-                                            "Expected object",
-                                        );
-                                    }
-                                    break;
-                                }
-                                case "POST_COMMENT": {
-                                    if (
-                                        typeof jsonInnerValRecentNotificationsInnerResultItem ===
-                                            "object" &&
-                                        jsonInnerValRecentNotificationsInnerResultItem !==
-                                            null
-                                    ) {
-                                        const jsonInnerValRecentNotificationsInnerResultItemInnerVal =
-                                            {};
-                                        jsonInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
-                                            "POST_COMMENT";
-                                        if (
-                                            typeof jsonInnerValRecentNotificationsInnerResultItem.postId ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.postId =
-                                                jsonInnerValRecentNotificationsInnerResultItem.postId;
-                                        } else {
-                                            $fallback(
-                                                "/recentNotifications/[0]/postId",
-                                                "/properties/recentNotifications/elements/mapping/properties/postId/type",
-                                                "Expected string at /recentNotifications/[0]/postId",
-                                            );
-                                        }
-                                        if (
-                                            typeof jsonInnerValRecentNotificationsInnerResultItem.userId ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.userId =
-                                                jsonInnerValRecentNotificationsInnerResultItem.userId;
-                                        } else {
-                                            $fallback(
-                                                "/recentNotifications/[0]/userId",
-                                                "/properties/recentNotifications/elements/mapping/properties/userId/type",
-                                                "Expected string at /recentNotifications/[0]/userId",
-                                            );
-                                        }
-                                        if (
-                                            typeof jsonInnerValRecentNotificationsInnerResultItem.commentText ===
-                                            "string"
-                                        ) {
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal.commentText =
-                                                jsonInnerValRecentNotificationsInnerResultItem.commentText;
-                                        } else {
-                                            $fallback(
-                                                "/recentNotifications/[0]/commentText",
-                                                "/properties/recentNotifications/elements/mapping/properties/commentText/type",
-                                                "Expected string at /recentNotifications/[0]/commentText",
-                                            );
-                                        }
-                                        jsonInnerValRecentNotificationsInnerResultItemResult =
-                                            jsonInnerValRecentNotificationsInnerResultItemInnerVal;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]",
-                                            "/properties/recentNotifications/elements/mapping",
-                                            "Expected object",
-                                        );
-                                    }
-                                    break;
-                                }
-                                default:
-                                    $fallback(
-                                        "/recentNotifications/[0]",
-                                        "/properties/recentNotifications/elements/mapping",
-                                        "jsonInnerValRecentNotificationsInnerResultItem.notificationType did not match one of the specified values",
-                                    );
-                                    break;
-                            }
-                        } else {
-                            $fallback(
-                                "/recentNotifications/[0]",
-                                "/properties/recentNotifications/elements",
-                                "Expected Object.",
-                            );
-                        }
-                        jsonInnerValRecentNotificationsInnerResult.push(
-                            jsonInnerValRecentNotificationsInnerResultItemResult,
-                        );
-                    }
-                    jsonInnerVal.recentNotifications =
-                        jsonInnerValRecentNotificationsInnerResult;
-                } else {
-                    $fallback(
-                        "/recentNotifications",
-                        "/properties/recentNotifications",
-                        "Expected Array",
-                    );
-                }
-                if (
-                    typeof json.bookmarks === "object" &&
-                    json.bookmarks !== null
-                ) {
-                    const jsonBookmarksResult = {};
-                    for (const jsonBookmarksKey of Object.keys(
-                        json.bookmarks,
-                    )) {
-                        let jsonBookmarksKeyVal;
-                        if (
-                            typeof json.bookmarks[jsonBookmarksKey] ===
-                                "object" &&
-                            json.bookmarks[jsonBookmarksKey] !== null
-                        ) {
-                            const jsonBookmarksJsonBookmarksKeyInnerVal = {};
-                            if (
-                                typeof json.bookmarks[jsonBookmarksKey]
-                                    .postId === "string"
-                            ) {
-                                jsonBookmarksJsonBookmarksKeyInnerVal.postId =
-                                    json.bookmarks[jsonBookmarksKey].postId;
-                            } else {
-                                $fallback(
-                                    "/bookmarks/[key]/postId",
-                                    "/properties/bookmarks/values/properties/postId/type",
-                                    "Expected string at /bookmarks/[key]/postId",
-                                );
-                            }
-                            if (
-                                typeof json.bookmarks[jsonBookmarksKey]
-                                    .userId === "string"
-                            ) {
-                                jsonBookmarksJsonBookmarksKeyInnerVal.userId =
-                                    json.bookmarks[jsonBookmarksKey].userId;
-                            } else {
-                                $fallback(
-                                    "/bookmarks/[key]/userId",
-                                    "/properties/bookmarks/values/properties/userId/type",
-                                    "Expected string at /bookmarks/[key]/userId",
-                                );
-                            }
-                            jsonBookmarksKeyVal =
-                                jsonBookmarksJsonBookmarksKeyInnerVal;
-                        } else {
-                            $fallback(
-                                "/bookmarks/[key]",
-                                "/properties/bookmarks/values",
-                                "Expected object",
-                            );
-                        }
-                        jsonBookmarksResult[jsonBookmarksKey] =
-                            jsonBookmarksKeyVal;
-                    }
-                    jsonInnerVal.bookmarks = jsonBookmarksResult;
-                } else {
-                    $fallback(
-                        "/bookmarks",
-                        "/properties/bookmarks",
-                        "Expected object.",
-                    );
-                }
-                if (
-                    typeof json.metadata === "object" &&
-                    json.metadata !== null
-                ) {
-                    const jsonMetadataResult = {};
-                    for (const jsonMetadataKey of Object.keys(json.metadata)) {
-                        let jsonMetadataKeyVal;
-                        jsonMetadataKeyVal = json.metadata[jsonMetadataKey];
-                        jsonMetadataResult[jsonMetadataKey] =
-                            jsonMetadataKeyVal;
-                    }
-                    jsonInnerVal.metadata = jsonMetadataResult;
-                } else {
-                    $fallback(
-                        "/metadata",
-                        "/properties/metadata",
-                        "Expected object.",
-                    );
-                }
-                if (Array.isArray(json.randomList)) {
-                    const jsonInnerValRandomListInnerResult = [];
-                    for (const jsonInnerValRandomListInnerResultItem of json.randomList) {
-                        let jsonInnerValRandomListInnerResultItemResult;
-                        jsonInnerValRandomListInnerResultItemResult =
-                            jsonInnerValRandomListInnerResultItem;
-                        jsonInnerValRandomListInnerResult.push(
-                            jsonInnerValRandomListInnerResultItemResult,
-                        );
-                    }
-                    jsonInnerVal.randomList = jsonInnerValRandomListInnerResult;
-                } else {
-                    $fallback(
-                        "/randomList",
-                        "/properties/randomList",
-                        "Expected Array",
-                    );
-                }
-                if (typeof json.bio === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof json.bio === "string") {
-                        jsonInnerVal.bio = json.bio;
-                    } else {
-                        $fallback(
-                            "/bio",
-                            "/optionalProperties/bio/type",
-                            "Expected string at /bio",
-                        );
-                    }
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.id === "string") {
-                inputInnerVal.id = input.id;
-            } else {
-                $fallback(
-                    "/id",
-                    "/properties/id/type",
-                    "Expected string at /id",
-                );
-            }
-            if (typeof input.role === "string") {
-                if (input.role === "standard" || input.role === "admin") {
-                    inputInnerVal.role = input.role;
-                } else {
-                    $fallback(
-                        "/role",
-                        "/properties/role",
-                        "Expected one of the following values: [standard, admin] at /role.",
-                    );
-                }
-            } else {
-                $fallback(
-                    "/role",
-                    "/properties/role",
-                    "Expected one of the following values: [standard, admin] at /role.",
-                );
-            }
-            if (input.photo === null) {
-                inputInnerVal.photo = null;
-            } else {
-                if (typeof input.photo === "object" && input.photo !== null) {
-                    const inputPhotoInnerVal = {};
-                    if (typeof input.photo.url === "string") {
-                        inputPhotoInnerVal.url = input.photo.url;
-                    } else {
-                        $fallback(
-                            "/photo/url",
-                            "/properties/photo/properties/url/type",
-                            "Expected string at /photo/url",
-                        );
-                    }
-                    if (
-                        typeof input.photo.width === "number" &&
-                        !Number.isNaN(input.photo.width)
-                    ) {
-                        inputPhotoInnerVal.width = input.photo.width;
-                    } else {
-                        $fallback(
-                            "/photo/width",
-                            "/properties/photo/properties/width/type",
-                            "Expected number at /photo/width",
-                        );
-                    }
-                    if (
-                        typeof input.photo.height === "number" &&
-                        !Number.isNaN(input.photo.height)
-                    ) {
-                        inputPhotoInnerVal.height = input.photo.height;
-                    } else {
-                        $fallback(
-                            "/photo/height",
-                            "/properties/photo/properties/height/type",
-                            "Expected number at /photo/height",
-                        );
-                    }
-                    if (
-                        typeof input.photo.bytes === "string" ||
-                        typeof input.photo.bytes === "number"
-                    ) {
-                        try {
-                            const val = BigInt(input.photo.bytes);
-                            inputPhotoInnerVal.bytes = val;
-                        } catch (err) {
-                            $fallback(
-                                "/photo/bytes",
-                                "/properties/photo/properties/bytes",
-                                "Unable to parse BigInt from input.photo.bytes.",
-                            );
-                        }
-                    } else if (typeof input.photo.bytes === "bigint") {
-                        inputPhotoInnerVal.bytes = input.photo.bytes;
-                    } else {
-                        $fallback(
-                            "/photo/bytes",
-                            "/properties/photo/properties/bytes",
-                            "Expected BigInt or Integer string. Got ${input.photo.bytes}",
-                        );
-                    }
-                    if (
-                        typeof input.photo.nanoseconds === "string" ||
-                        typeof input.photo.nanoseconds === "number"
-                    ) {
-                        try {
-                            const val = BigInt(input.photo.nanoseconds);
-                            if (val >= BigInt("0")) {
-                                inputPhotoInnerVal.nanoseconds = val;
-                            } else {
-                                $fallback(
-                                    "/photo/nanoseconds",
-                                    "/properties/photo/properties/nanoseconds",
-                                    "Unsigned int must be greater than or equal to 0.",
-                                );
-                            }
-                        } catch (err) {
-                            $fallback(
-                                "/photo/nanoseconds",
-                                "/properties/photo/properties/nanoseconds",
-                                "Unable to parse BigInt from input.photo.nanoseconds.",
-                            );
-                        }
-                    } else if (typeof input.photo.nanoseconds === "bigint") {
-                        if (input.photo.nanoseconds >= BigInt("0")) {
-                            inputPhotoInnerVal.nanoseconds =
-                                input.photo.nanoseconds;
-                        } else {
-                            $fallback(
-                                "/photo/nanoseconds",
-                                "/properties/photo/properties/nanoseconds",
-                                "Unsigned int must be greater than or equal to 0.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/photo/nanoseconds",
-                            "/properties/photo/properties/nanoseconds",
-                            "Expected BigInt or Integer string. Got ${input.photo.nanoseconds}",
-                        );
-                    }
-                    inputInnerVal.photo = inputPhotoInnerVal;
-                } else {
-                    $fallback("/photo", "/properties/photo", "Expected object");
-                }
-            }
-            if (
-                typeof input.createdAt === "object" &&
-                input.createdAt instanceof Date
-            ) {
-                inputInnerVal.createdAt = input.createdAt;
-            } else if (typeof input.createdAt === "string") {
-                inputInnerVal.createdAt = new Date(input.createdAt);
-            } else {
-                $fallback(
-                    "/createdAt",
-                    "/properties/createdAt",
-                    "Expected instanceof Date or ISO Date string at /createdAt",
-                );
-            }
-            if (
-                typeof input.numFollowers === "number" &&
-                Number.isInteger(input.numFollowers) &&
-                input.numFollowers >= -2147483648 &&
-                input.numFollowers <= 2147483647
-            ) {
-                inputInnerVal.numFollowers = input.numFollowers;
-            } else {
-                $fallback(
-                    "/numFollowers",
-                    "/properties/numFollowers",
-                    "Expected valid integer between -2147483648 and 2147483647",
-                );
-            }
-            if (typeof input.settings === "object" && input.settings !== null) {
-                const inputSettingsInnerVal = {};
-                if (typeof input.settings.notificationsEnabled === "boolean") {
-                    inputSettingsInnerVal.notificationsEnabled =
-                        input.settings.notificationsEnabled;
-                } else {
-                    $fallback(
-                        "/settings/notificationsEnabled",
-                        "/properties/settings/properties/notificationsEnabled/type",
-                        "Expected boolean for /settings/notificationsEnabled",
-                    );
-                }
-                if (typeof input.settings.preferredTheme === "string") {
-                    if (
-                        input.settings.preferredTheme === "dark-mode" ||
-                        input.settings.preferredTheme === "light-mode" ||
-                        input.settings.preferredTheme === "system"
-                    ) {
-                        inputSettingsInnerVal.preferredTheme =
-                            input.settings.preferredTheme;
-                    } else {
-                        $fallback(
-                            "/settings/preferredTheme",
-                            "/properties/settings/properties/preferredTheme",
-                            "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/settings/preferredTheme",
-                        "/properties/settings/properties/preferredTheme",
-                        "Expected one of the following values: [dark-mode, light-mode, system] at /settings/preferredTheme.",
-                    );
-                }
-                inputInnerVal.settings = inputSettingsInnerVal;
-            } else {
-                $fallback(
-                    "/settings",
-                    "/properties/settings",
-                    "Expected object",
-                );
-            }
-            if (Array.isArray(input.recentNotifications)) {
-                const inputInnerValRecentNotificationsInnerResult = [];
-                for (const inputInnerValRecentNotificationsInnerResultItem of input.recentNotifications) {
-                    let inputInnerValRecentNotificationsInnerResultItemResult;
-                    if (
-                        typeof inputInnerValRecentNotificationsInnerResultItem ===
-                            "object" &&
-                        inputInnerValRecentNotificationsInnerResultItem !== null
-                    ) {
-                        switch (
-                            inputInnerValRecentNotificationsInnerResultItem.notificationType
-                        ) {
-                            case "POST_LIKE": {
-                                if (
-                                    typeof inputInnerValRecentNotificationsInnerResultItem ===
-                                        "object" &&
-                                    inputInnerValRecentNotificationsInnerResultItem !==
-                                        null
-                                ) {
-                                    const inputInnerValRecentNotificationsInnerResultItemInnerVal =
-                                        {};
-                                    inputInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
-                                        "POST_LIKE";
-                                    if (
-                                        typeof inputInnerValRecentNotificationsInnerResultItem.postId ===
-                                        "string"
-                                    ) {
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.postId =
-                                            inputInnerValRecentNotificationsInnerResultItem.postId;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]/postId",
-                                            "/properties/recentNotifications/elements/mapping/properties/postId/type",
-                                            "Expected string at /recentNotifications/[0]/postId",
-                                        );
-                                    }
-                                    if (
-                                        typeof inputInnerValRecentNotificationsInnerResultItem.userId ===
-                                        "string"
-                                    ) {
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.userId =
-                                            inputInnerValRecentNotificationsInnerResultItem.userId;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]/userId",
-                                            "/properties/recentNotifications/elements/mapping/properties/userId/type",
-                                            "Expected string at /recentNotifications/[0]/userId",
-                                        );
-                                    }
-                                    inputInnerValRecentNotificationsInnerResultItemResult =
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal;
-                                } else {
-                                    $fallback(
-                                        "/recentNotifications/[0]",
-                                        "/properties/recentNotifications/elements/mapping",
-                                        "Expected object",
-                                    );
-                                }
-                                break;
-                            }
-                            case "POST_COMMENT": {
-                                if (
-                                    typeof inputInnerValRecentNotificationsInnerResultItem ===
-                                        "object" &&
-                                    inputInnerValRecentNotificationsInnerResultItem !==
-                                        null
-                                ) {
-                                    const inputInnerValRecentNotificationsInnerResultItemInnerVal =
-                                        {};
-                                    inputInnerValRecentNotificationsInnerResultItemInnerVal.notificationType =
-                                        "POST_COMMENT";
-                                    if (
-                                        typeof inputInnerValRecentNotificationsInnerResultItem.postId ===
-                                        "string"
-                                    ) {
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.postId =
-                                            inputInnerValRecentNotificationsInnerResultItem.postId;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]/postId",
-                                            "/properties/recentNotifications/elements/mapping/properties/postId/type",
-                                            "Expected string at /recentNotifications/[0]/postId",
-                                        );
-                                    }
-                                    if (
-                                        typeof inputInnerValRecentNotificationsInnerResultItem.userId ===
-                                        "string"
-                                    ) {
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.userId =
-                                            inputInnerValRecentNotificationsInnerResultItem.userId;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]/userId",
-                                            "/properties/recentNotifications/elements/mapping/properties/userId/type",
-                                            "Expected string at /recentNotifications/[0]/userId",
-                                        );
-                                    }
-                                    if (
-                                        typeof inputInnerValRecentNotificationsInnerResultItem.commentText ===
-                                        "string"
-                                    ) {
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal.commentText =
-                                            inputInnerValRecentNotificationsInnerResultItem.commentText;
-                                    } else {
-                                        $fallback(
-                                            "/recentNotifications/[0]/commentText",
-                                            "/properties/recentNotifications/elements/mapping/properties/commentText/type",
-                                            "Expected string at /recentNotifications/[0]/commentText",
-                                        );
-                                    }
-                                    inputInnerValRecentNotificationsInnerResultItemResult =
-                                        inputInnerValRecentNotificationsInnerResultItemInnerVal;
-                                } else {
-                                    $fallback(
-                                        "/recentNotifications/[0]",
-                                        "/properties/recentNotifications/elements/mapping",
-                                        "Expected object",
-                                    );
-                                }
-                                break;
-                            }
-                            default:
-                                $fallback(
-                                    "/recentNotifications/[0]",
-                                    "/properties/recentNotifications/elements/mapping",
-                                    "inputInnerValRecentNotificationsInnerResultItem.notificationType did not match one of the specified values",
-                                );
-                                break;
-                        }
-                    } else {
-                        $fallback(
-                            "/recentNotifications/[0]",
-                            "/properties/recentNotifications/elements",
-                            "Expected Object.",
-                        );
-                    }
-                    inputInnerValRecentNotificationsInnerResult.push(
-                        inputInnerValRecentNotificationsInnerResultItemResult,
-                    );
-                }
-                inputInnerVal.recentNotifications =
-                    inputInnerValRecentNotificationsInnerResult;
-            } else {
-                $fallback(
-                    "/recentNotifications",
-                    "/properties/recentNotifications",
-                    "Expected Array",
-                );
-            }
-            if (
-                typeof input.bookmarks === "object" &&
-                input.bookmarks !== null
-            ) {
-                const inputBookmarksResult = {};
-                for (const inputBookmarksKey of Object.keys(input.bookmarks)) {
-                    let inputBookmarksKeyVal;
-                    if (
-                        typeof input.bookmarks[inputBookmarksKey] ===
-                            "object" &&
-                        input.bookmarks[inputBookmarksKey] !== null
-                    ) {
-                        const inputBookmarksInputBookmarksKeyInnerVal = {};
-                        if (
-                            typeof input.bookmarks[inputBookmarksKey].postId ===
-                            "string"
-                        ) {
-                            inputBookmarksInputBookmarksKeyInnerVal.postId =
-                                input.bookmarks[inputBookmarksKey].postId;
-                        } else {
-                            $fallback(
-                                "/bookmarks/[key]/postId",
-                                "/properties/bookmarks/values/properties/postId/type",
-                                "Expected string at /bookmarks/[key]/postId",
-                            );
-                        }
-                        if (
-                            typeof input.bookmarks[inputBookmarksKey].userId ===
-                            "string"
-                        ) {
-                            inputBookmarksInputBookmarksKeyInnerVal.userId =
-                                input.bookmarks[inputBookmarksKey].userId;
-                        } else {
-                            $fallback(
-                                "/bookmarks/[key]/userId",
-                                "/properties/bookmarks/values/properties/userId/type",
-                                "Expected string at /bookmarks/[key]/userId",
-                            );
-                        }
-                        inputBookmarksKeyVal =
-                            inputBookmarksInputBookmarksKeyInnerVal;
-                    } else {
-                        $fallback(
-                            "/bookmarks/[key]",
-                            "/properties/bookmarks/values",
-                            "Expected object",
-                        );
-                    }
-                    inputBookmarksResult[inputBookmarksKey] =
-                        inputBookmarksKeyVal;
-                }
-                inputInnerVal.bookmarks = inputBookmarksResult;
-            } else {
-                $fallback(
-                    "/bookmarks",
-                    "/properties/bookmarks",
-                    "Expected object.",
-                );
-            }
-            if (typeof input.metadata === "object" && input.metadata !== null) {
-                const inputMetadataResult = {};
-                for (const inputMetadataKey of Object.keys(input.metadata)) {
-                    let inputMetadataKeyVal;
-                    inputMetadataKeyVal = input.metadata[inputMetadataKey];
-                    inputMetadataResult[inputMetadataKey] = inputMetadataKeyVal;
-                }
-                inputInnerVal.metadata = inputMetadataResult;
-            } else {
-                $fallback(
-                    "/metadata",
-                    "/properties/metadata",
-                    "Expected object.",
-                );
-            }
-            if (Array.isArray(input.randomList)) {
-                const inputInnerValRandomListInnerResult = [];
-                for (const inputInnerValRandomListInnerResultItem of input.randomList) {
-                    let inputInnerValRandomListInnerResultItemResult;
-                    inputInnerValRandomListInnerResultItemResult =
-                        inputInnerValRandomListInnerResultItem;
-                    inputInnerValRandomListInnerResult.push(
-                        inputInnerValRandomListInnerResultItemResult,
-                    );
-                }
-                inputInnerVal.randomList = inputInnerValRandomListInnerResult;
-            } else {
-                $fallback(
-                    "/randomList",
-                    "/properties/randomList",
-                    "Expected Array",
-                );
-            }
-            if (typeof input.bio === "undefined") {
-                // ignore undefined
-            } else {
-                if (typeof input.bio === "string") {
-                    inputInnerVal.bio = input.bio;
-                } else {
-                    $fallback(
-                        "/bio",
-                        "/optionalProperties/bio/type",
-                        "Expected string at /bio",
-                    );
-                }
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: UsersWatchUserResponse): string {
-        let json = "";
-        json += "{";
-        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"role":"${input.role}"`;
-        if (typeof input.photo === "object" && input.photo !== null) {
-            json += ',"photo":{';
-            json += `"url":"${input.photo.url.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-
-            if (Number.isNaN(input.photo.width)) {
-                throw new Error("Expected number at /photo/width got NaN");
-            }
-            json += `,"width":${input.photo.width}`;
-
-            if (Number.isNaN(input.photo.height)) {
-                throw new Error("Expected number at /photo/height got NaN");
-            }
-            json += `,"height":${input.photo.height}`;
-            json += `,"bytes":"${input.photo.bytes.toString()}"`;
-            json += `,"nanoseconds":"${input.photo.nanoseconds.toString()}"`;
-            json += "}";
-        } else {
-            json += ',"photo":null';
-        }
-        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
-
-        if (Number.isNaN(input.numFollowers)) {
-            throw new Error("Expected number at /numFollowers got NaN");
-        }
-        json += `,"numFollowers":${input.numFollowers}`;
-        json += ',"settings":{';
-        json += `"notificationsEnabled":${input.settings.notificationsEnabled}`;
-        json += `,"preferredTheme":"${input.settings.preferredTheme}"`;
-        json += "}";
-        json += ',"recentNotifications":[';
-        for (let i = 0; i < input.recentNotifications.length; i++) {
-            const inputRecentNotificationsItem = input.recentNotifications[i];
-            if (i !== 0) {
-                json += ",";
-            }
-            switch (inputRecentNotificationsItem.notificationType) {
-                case "POST_LIKE": {
-                    json += "{";
-                    json += `"notificationType":"POST_LIKE"`;
-                    json += `,"postId":"${inputRecentNotificationsItem.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    json += `,"userId":"${inputRecentNotificationsItem.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    json += "}";
-                    break;
-                }
-                case "POST_COMMENT": {
-                    json += "{";
-                    json += `"notificationType":"POST_COMMENT"`;
-                    json += `,"postId":"${inputRecentNotificationsItem.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    json += `,"userId":"${inputRecentNotificationsItem.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    json += `,"commentText":"${inputRecentNotificationsItem.commentText.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                    json += "}";
-                    break;
-                }
-            }
-        }
-        json += "]";
-        const bookmarksKeys = Object.keys(input.bookmarks);
-        json += ',"bookmarks":{';
-        for (let i = 0; i < bookmarksKeys.length; i++) {
-            const key = bookmarksKeys[i];
-            const innerVal = input.bookmarks[key];
-            if (i !== 0) {
-                json += `,"${key}":`;
-            } else {
-                json += `"${key}":`;
-            }
-            json += "{";
-            json += `"postId":"${innerVal.postId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += `,"userId":"${innerVal.userId.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-            json += "}";
-        }
-        json += "}";
-        const metadataKeys = Object.keys(input.metadata);
-        json += ',"metadata":{';
-        for (let i = 0; i < metadataKeys.length; i++) {
-            const key = metadataKeys[i];
-            const innerVal = input.metadata[key];
-            if (i !== 0) {
-                json += `,"${key}":`;
-            } else {
-                json += `"${key}":`;
-            }
-            if (typeof innerVal !== "undefined") {
-                json += JSON.stringify(innerVal);
-            }
-        }
-        json += "}";
-        json += ',"randomList":[';
-        for (let i = 0; i < input.randomList.length; i++) {
-            const inputRandomListItem = input.randomList[i];
-            if (i !== 0) {
-                json += ",";
-            }
-            if (typeof inputRandomListItem !== "undefined") {
-                json += JSON.stringify(inputRandomListItem);
-            }
-        }
-        json += "]";
-        if (typeof input.bio !== "undefined") {
-            json += `,"bio":"${input.bio.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        }
-        json += "}";
-        return json;
-    },
-};
-export type UsersWatchUserResponseRole = "standard" | "admin";
-export interface UserPhoto {
-    url: string;
-    width: number;
-    height: number;
-    bytes: bigint;
-    nanoseconds: bigint;
-}
-
-export interface UserSettings {
-    notificationsEnabled: boolean;
-    preferredTheme: UsersWatchUserResponseSettingsPreferredTheme;
-}
-
-export type UsersWatchUserResponseSettingsPreferredTheme =
-    | "dark-mode"
-    | "light-mode"
-    | "system";
-export type UsersWatchUserResponseRecentNotificationsItem =
-    | UsersWatchUserResponseRecentNotificationsItemPostLike
-    | UsersWatchUserResponseRecentNotificationsItemPostComment;
-
-export interface UsersWatchUserResponseRecentNotificationsItemPostLike {
-    notificationType: "POST_LIKE";
-    postId: string;
-    userId: string;
-}
-
-export interface UsersWatchUserResponseRecentNotificationsItemPostComment {
-    notificationType: "POST_COMMENT";
-    postId: string;
-    userId: string;
-    commentText: string;
-}
-
-export type UsersWatchUserResponseBookmarks = Record<
-    string,
-    UsersWatchUserResponseBookmarksValue
->;
-
-export interface UsersWatchUserResponseBookmarksValue {
-    postId: string;
-    userId: string;
-}
-
-export type UsersWatchUserResponseMetadata = Record<string, any>;
-
-export interface AnnotationId {
-    id: string;
-    version: string;
-}
-const $$AnnotationId = {
-    parse(input: Record<any, any>): AnnotationId {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.id === "string") {
-                    jsonInnerVal.id = json.id;
-                } else {
-                    $fallback(
-                        "/id",
-                        "/properties/id/type",
-                        "Expected string at /id",
-                    );
-                }
-                if (typeof json.version === "string") {
-                    jsonInnerVal.version = json.version;
-                } else {
-                    $fallback(
-                        "/version",
-                        "/properties/version/type",
-                        "Expected string at /version",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.id === "string") {
-                inputInnerVal.id = input.id;
-            } else {
-                $fallback(
-                    "/id",
-                    "/properties/id/type",
-                    "Expected string at /id",
-                );
-            }
-            if (typeof input.version === "string") {
-                inputInnerVal.version = input.version;
-            } else {
-                $fallback(
-                    "/version",
-                    "/properties/version/type",
-                    "Expected string at /version",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: AnnotationId): string {
-        let json = "";
-        json += "{";
-        json += `"id":"${input.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"version":"${input.version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        return json;
-    },
-};
-
-export interface Annotation {
-    annotation_id: AnnotationId;
-    associated_id: AssociatedId;
-    annotation_type: AnnotationAnnotationType;
-    annotation_type_version: number;
-    metadata: any;
-    box_type_range: AnnotationBoxTypeRange;
-}
-const $$Annotation = {
-    parse(input: Record<any, any>): Annotation {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (
-                    typeof json.annotation_id === "object" &&
-                    json.annotation_id !== null
-                ) {
-                    const jsonAnnotationIdInnerVal = {};
-                    if (typeof json.annotation_id.id === "string") {
-                        jsonAnnotationIdInnerVal.id = json.annotation_id.id;
-                    } else {
-                        $fallback(
-                            "/annotation_id/id",
-                            "/properties/annotation_id/properties/id/type",
-                            "Expected string at /annotation_id/id",
-                        );
-                    }
-                    if (typeof json.annotation_id.version === "string") {
-                        jsonAnnotationIdInnerVal.version =
-                            json.annotation_id.version;
-                    } else {
-                        $fallback(
-                            "/annotation_id/version",
-                            "/properties/annotation_id/properties/version/type",
-                            "Expected string at /annotation_id/version",
-                        );
-                    }
-                    jsonInnerVal.annotation_id = jsonAnnotationIdInnerVal;
-                } else {
-                    $fallback(
-                        "/annotation_id",
-                        "/properties/annotation_id",
-                        "Expected object",
-                    );
-                }
-                if (
-                    typeof json.associated_id === "object" &&
-                    json.associated_id !== null
-                ) {
-                    const jsonAssociatedIdInnerVal = {};
-                    if (typeof json.associated_id.entity_type === "string") {
-                        if (
-                            json.associated_id.entity_type === "MOVIE_ID" ||
-                            json.associated_id.entity_type === "SHOW_ID"
-                        ) {
-                            jsonAssociatedIdInnerVal.entity_type =
-                                json.associated_id.entity_type;
-                        } else {
-                            $fallback(
-                                "/associated_id/entity_type",
-                                "/properties/associated_id/properties/entity_type",
-                                "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/associated_id/entity_type",
-                            "/properties/associated_id/properties/entity_type",
-                            "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                        );
-                    }
-                    if (typeof json.associated_id.id === "string") {
-                        jsonAssociatedIdInnerVal.id = json.associated_id.id;
-                    } else {
-                        $fallback(
-                            "/associated_id/id",
-                            "/properties/associated_id/properties/id/type",
-                            "Expected string at /associated_id/id",
-                        );
-                    }
-                    jsonInnerVal.associated_id = jsonAssociatedIdInnerVal;
-                } else {
-                    $fallback(
-                        "/associated_id",
-                        "/properties/associated_id",
-                        "Expected object",
-                    );
-                }
-                if (typeof json.annotation_type === "string") {
-                    if (json.annotation_type === "ANNOTATION_BOUNDINGBOX") {
-                        jsonInnerVal.annotation_type = json.annotation_type;
-                    } else {
-                        $fallback(
-                            "/annotation_type",
-                            "/properties/annotation_type",
-                            "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/annotation_type",
-                        "/properties/annotation_type",
-                        "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                    );
-                }
-                if (
-                    typeof json.annotation_type_version === "number" &&
-                    Number.isInteger(json.annotation_type_version) &&
-                    json.annotation_type_version >= 0 &&
-                    json.annotation_type_version <= 65535
-                ) {
-                    jsonInnerVal.annotation_type_version =
-                        json.annotation_type_version;
-                } else {
-                    $fallback(
-                        "/annotation_type_version",
-                        "/properties/annotation_type_version",
-                        "Expected valid integer between 0 and 65535",
-                    );
-                }
-                jsonInnerVal.metadata = json.metadata;
-                if (
-                    typeof json.box_type_range === "object" &&
-                    json.box_type_range !== null
-                ) {
-                    const jsonBoxTypeRangeInnerVal = {};
-                    if (
-                        typeof json.box_type_range.start_time_in_nano_sec ===
-                            "string" ||
-                        typeof json.box_type_range.start_time_in_nano_sec ===
-                            "number"
-                    ) {
-                        try {
-                            const val = BigInt(
-                                json.box_type_range.start_time_in_nano_sec,
-                            );
-                            jsonBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                val;
-                        } catch (err) {
-                            $fallback(
-                                "/box_type_range/start_time_in_nano_sec",
-                                "/properties/box_type_range/properties/start_time_in_nano_sec",
-                                "Unable to parse BigInt from json.box_type_range.start_time_in_nano_sec.",
-                            );
-                        }
-                    } else if (
-                        typeof json.box_type_range.start_time_in_nano_sec ===
-                        "bigint"
-                    ) {
-                        jsonBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                            json.box_type_range.start_time_in_nano_sec;
-                    } else {
-                        $fallback(
-                            "/box_type_range/start_time_in_nano_sec",
-                            "/properties/box_type_range/properties/start_time_in_nano_sec",
-                            "Expected BigInt or Integer string. Got ${json.box_type_range.start_time_in_nano_sec}",
-                        );
-                    }
-                    if (
-                        typeof json.box_type_range.end_time_in_nano_sec ===
-                            "string" ||
-                        typeof json.box_type_range.end_time_in_nano_sec ===
-                            "number"
-                    ) {
-                        try {
-                            const val = BigInt(
-                                json.box_type_range.end_time_in_nano_sec,
-                            );
-                            if (val >= BigInt("0")) {
-                                jsonBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                    val;
-                            } else {
-                                $fallback(
-                                    "/box_type_range/end_time_in_nano_sec",
-                                    "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Unsigned int must be greater than or equal to 0.",
-                                );
-                            }
-                        } catch (err) {
-                            $fallback(
-                                "/box_type_range/end_time_in_nano_sec",
-                                "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                "Unable to parse BigInt from json.box_type_range.end_time_in_nano_sec.",
-                            );
-                        }
-                    } else if (
-                        typeof json.box_type_range.end_time_in_nano_sec ===
-                        "bigint"
-                    ) {
-                        if (
-                            json.box_type_range.end_time_in_nano_sec >=
-                            BigInt("0")
-                        ) {
-                            jsonBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                json.box_type_range.end_time_in_nano_sec;
-                        } else {
-                            $fallback(
-                                "/box_type_range/end_time_in_nano_sec",
-                                "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                "Unsigned int must be greater than or equal to 0.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/box_type_range/end_time_in_nano_sec",
-                            "/properties/box_type_range/properties/end_time_in_nano_sec",
-                            "Expected BigInt or Integer string. Got ${json.box_type_range.end_time_in_nano_sec}",
-                        );
-                    }
-                    jsonInnerVal.box_type_range = jsonBoxTypeRangeInnerVal;
-                } else {
-                    $fallback(
-                        "/box_type_range",
-                        "/properties/box_type_range",
-                        "Expected object",
-                    );
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (
-                typeof input.annotation_id === "object" &&
-                input.annotation_id !== null
-            ) {
-                const inputAnnotationIdInnerVal = {};
-                if (typeof input.annotation_id.id === "string") {
-                    inputAnnotationIdInnerVal.id = input.annotation_id.id;
-                } else {
-                    $fallback(
-                        "/annotation_id/id",
-                        "/properties/annotation_id/properties/id/type",
-                        "Expected string at /annotation_id/id",
-                    );
-                }
-                if (typeof input.annotation_id.version === "string") {
-                    inputAnnotationIdInnerVal.version =
-                        input.annotation_id.version;
-                } else {
-                    $fallback(
-                        "/annotation_id/version",
-                        "/properties/annotation_id/properties/version/type",
-                        "Expected string at /annotation_id/version",
-                    );
-                }
-                inputInnerVal.annotation_id = inputAnnotationIdInnerVal;
-            } else {
-                $fallback(
-                    "/annotation_id",
-                    "/properties/annotation_id",
-                    "Expected object",
-                );
-            }
-            if (
-                typeof input.associated_id === "object" &&
-                input.associated_id !== null
-            ) {
-                const inputAssociatedIdInnerVal = {};
-                if (typeof input.associated_id.entity_type === "string") {
-                    if (
-                        input.associated_id.entity_type === "MOVIE_ID" ||
-                        input.associated_id.entity_type === "SHOW_ID"
-                    ) {
-                        inputAssociatedIdInnerVal.entity_type =
-                            input.associated_id.entity_type;
-                    } else {
-                        $fallback(
-                            "/associated_id/entity_type",
-                            "/properties/associated_id/properties/entity_type",
-                            "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/associated_id/entity_type",
-                        "/properties/associated_id/properties/entity_type",
-                        "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                    );
-                }
-                if (typeof input.associated_id.id === "string") {
-                    inputAssociatedIdInnerVal.id = input.associated_id.id;
-                } else {
-                    $fallback(
-                        "/associated_id/id",
-                        "/properties/associated_id/properties/id/type",
-                        "Expected string at /associated_id/id",
-                    );
-                }
-                inputInnerVal.associated_id = inputAssociatedIdInnerVal;
-            } else {
-                $fallback(
-                    "/associated_id",
-                    "/properties/associated_id",
-                    "Expected object",
-                );
-            }
-            if (typeof input.annotation_type === "string") {
-                if (input.annotation_type === "ANNOTATION_BOUNDINGBOX") {
-                    inputInnerVal.annotation_type = input.annotation_type;
-                } else {
-                    $fallback(
-                        "/annotation_type",
-                        "/properties/annotation_type",
-                        "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                    );
-                }
-            } else {
-                $fallback(
-                    "/annotation_type",
-                    "/properties/annotation_type",
-                    "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                );
-            }
-            if (
-                typeof input.annotation_type_version === "number" &&
-                Number.isInteger(input.annotation_type_version) &&
-                input.annotation_type_version >= 0 &&
-                input.annotation_type_version <= 65535
-            ) {
-                inputInnerVal.annotation_type_version =
-                    input.annotation_type_version;
-            } else {
-                $fallback(
-                    "/annotation_type_version",
-                    "/properties/annotation_type_version",
-                    "Expected valid integer between 0 and 65535",
-                );
-            }
-            inputInnerVal.metadata = input.metadata;
-            if (
-                typeof input.box_type_range === "object" &&
-                input.box_type_range !== null
-            ) {
-                const inputBoxTypeRangeInnerVal = {};
-                if (
-                    typeof input.box_type_range.start_time_in_nano_sec ===
-                        "string" ||
-                    typeof input.box_type_range.start_time_in_nano_sec ===
-                        "number"
-                ) {
-                    try {
-                        const val = BigInt(
-                            input.box_type_range.start_time_in_nano_sec,
-                        );
-                        inputBoxTypeRangeInnerVal.start_time_in_nano_sec = val;
-                    } catch (err) {
-                        $fallback(
-                            "/box_type_range/start_time_in_nano_sec",
-                            "/properties/box_type_range/properties/start_time_in_nano_sec",
-                            "Unable to parse BigInt from input.box_type_range.start_time_in_nano_sec.",
-                        );
-                    }
-                } else if (
-                    typeof input.box_type_range.start_time_in_nano_sec ===
-                    "bigint"
-                ) {
-                    inputBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                        input.box_type_range.start_time_in_nano_sec;
-                } else {
-                    $fallback(
-                        "/box_type_range/start_time_in_nano_sec",
-                        "/properties/box_type_range/properties/start_time_in_nano_sec",
-                        "Expected BigInt or Integer string. Got ${input.box_type_range.start_time_in_nano_sec}",
-                    );
-                }
-                if (
-                    typeof input.box_type_range.end_time_in_nano_sec ===
-                        "string" ||
-                    typeof input.box_type_range.end_time_in_nano_sec ===
-                        "number"
-                ) {
-                    try {
-                        const val = BigInt(
-                            input.box_type_range.end_time_in_nano_sec,
-                        );
-                        if (val >= BigInt("0")) {
-                            inputBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                val;
-                        } else {
-                            $fallback(
-                                "/box_type_range/end_time_in_nano_sec",
-                                "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                "Unsigned int must be greater than or equal to 0.",
-                            );
-                        }
-                    } catch (err) {
-                        $fallback(
-                            "/box_type_range/end_time_in_nano_sec",
-                            "/properties/box_type_range/properties/end_time_in_nano_sec",
-                            "Unable to parse BigInt from input.box_type_range.end_time_in_nano_sec.",
-                        );
-                    }
-                } else if (
-                    typeof input.box_type_range.end_time_in_nano_sec ===
-                    "bigint"
-                ) {
-                    if (
-                        input.box_type_range.end_time_in_nano_sec >= BigInt("0")
-                    ) {
-                        inputBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                            input.box_type_range.end_time_in_nano_sec;
-                    } else {
-                        $fallback(
-                            "/box_type_range/end_time_in_nano_sec",
-                            "/properties/box_type_range/properties/end_time_in_nano_sec",
-                            "Unsigned int must be greater than or equal to 0.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/box_type_range/end_time_in_nano_sec",
-                        "/properties/box_type_range/properties/end_time_in_nano_sec",
-                        "Expected BigInt or Integer string. Got ${input.box_type_range.end_time_in_nano_sec}",
-                    );
-                }
-                inputInnerVal.box_type_range = inputBoxTypeRangeInnerVal;
-            } else {
-                $fallback(
-                    "/box_type_range",
-                    "/properties/box_type_range",
-                    "Expected object",
-                );
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: Annotation): string {
-        let json = "";
-        json += "{";
-        json += '"annotation_id":{';
-        json += `"id":"${input.annotation_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"version":"${input.annotation_id.version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        json += ',"associated_id":{';
-        json += `"entity_type":"${input.associated_id.entity_type}"`;
-        json += `,"id":"${input.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += "}";
-        json += `,"annotation_type":"${input.annotation_type}"`;
-
-        if (Number.isNaN(input.annotation_type_version)) {
-            throw new Error(
-                "Expected number at /annotation_type_version got NaN",
-            );
-        }
-        json += `,"annotation_type_version":${input.annotation_type_version}`;
-        if (typeof input.metadata !== "undefined") {
-            json += ',"metadata":' + JSON.stringify(input.metadata);
-        }
-        json += ',"box_type_range":{';
-        json += `"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}"`;
-        json += `,"end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"`;
-        json += "}";
-        json += "}";
-        return json;
-    },
-};
-export interface AssociatedId {
-    entity_type: AnnotationAssociatedIdEntityType;
-    id: string;
-}
-
-export type AnnotationAssociatedIdEntityType = "MOVIE_ID" | "SHOW_ID";
-export type AnnotationAnnotationType = "ANNOTATION_BOUNDINGBOX";
-export interface AnnotationBoxTypeRange {
-    start_time_in_nano_sec: bigint;
-    end_time_in_nano_sec: bigint;
-}
-
-export interface UpdateAnnotationParams {
-    annotation_id: string;
-    annotation_id_version: string;
-    data: UpdateAnnotationData;
-}
-const $$UpdateAnnotationParams = {
-    parse(input: Record<any, any>): UpdateAnnotationParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const jsonInnerVal = {};
-                if (typeof json.annotation_id === "string") {
-                    jsonInnerVal.annotation_id = json.annotation_id;
-                } else {
-                    $fallback(
-                        "/annotation_id",
-                        "/properties/annotation_id/type",
-                        "Expected string at /annotation_id",
-                    );
-                }
-                if (typeof json.annotation_id_version === "string") {
-                    jsonInnerVal.annotation_id_version =
-                        json.annotation_id_version;
-                } else {
-                    $fallback(
-                        "/annotation_id_version",
-                        "/properties/annotation_id_version/type",
-                        "Expected string at /annotation_id_version",
-                    );
-                }
-                if (typeof json.data === "object" && json.data !== null) {
-                    const jsonDataInnerVal = {};
-                    if (typeof json.data.associated_id === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (
-                            typeof json.data.associated_id === "object" &&
-                            json.data.associated_id !== null
-                        ) {
-                            const jsonDataAssociatedIdInnerVal = {};
-                            if (
-                                typeof json.data.associated_id.entity_type ===
-                                "string"
-                            ) {
-                                if (
-                                    json.data.associated_id.entity_type ===
-                                        "MOVIE_ID" ||
-                                    json.data.associated_id.entity_type ===
-                                        "SHOW_ID"
-                                ) {
-                                    jsonDataAssociatedIdInnerVal.entity_type =
-                                        json.data.associated_id.entity_type;
-                                } else {
-                                    $fallback(
-                                        "/data/associated_id/entity_type",
-                                        "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                        "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                                    );
-                                }
-                            } else {
-                                $fallback(
-                                    "/data/associated_id/entity_type",
-                                    "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                    "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                                );
-                            }
-                            if (
-                                typeof json.data.associated_id.id === "string"
-                            ) {
-                                jsonDataAssociatedIdInnerVal.id =
-                                    json.data.associated_id.id;
-                            } else {
-                                $fallback(
-                                    "/data/associated_id/id",
-                                    "/properties/data/optionalProperties/associated_id/properties/id/type",
-                                    "Expected string at /data/associated_id/id",
-                                );
-                            }
-                            jsonDataInnerVal.associated_id =
-                                jsonDataAssociatedIdInnerVal;
-                        } else {
-                            $fallback(
-                                "/data/associated_id",
-                                "/properties/data/optionalProperties/associated_id",
-                                "Expected object",
-                            );
-                        }
-                    }
-                    if (typeof json.data.annotation_type === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (typeof json.data.annotation_type === "string") {
-                            if (
-                                json.data.annotation_type ===
-                                "ANNOTATION_BOUNDINGBOX"
-                            ) {
-                                jsonDataInnerVal.annotation_type =
-                                    json.data.annotation_type;
-                            } else {
-                                $fallback(
-                                    "/data/annotation_type",
-                                    "/properties/data/optionalProperties/annotation_type",
-                                    "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/data/annotation_type",
-                                "/properties/data/optionalProperties/annotation_type",
-                                "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                            );
-                        }
-                    }
-                    if (
-                        typeof json.data.annotation_type_version === "undefined"
-                    ) {
-                        // ignore undefined
-                    } else {
-                        if (
-                            typeof json.data.annotation_type_version ===
-                                "number" &&
-                            Number.isInteger(
-                                json.data.annotation_type_version,
-                            ) &&
-                            json.data.annotation_type_version >= 0 &&
-                            json.data.annotation_type_version <= 65535
-                        ) {
-                            jsonDataInnerVal.annotation_type_version =
-                                json.data.annotation_type_version;
-                        } else {
-                            $fallback(
-                                "/data/annotation_type_version",
-                                "/properties/data/optionalProperties/annotation_type_version",
-                                "Expected valid integer between 0 and 65535",
-                            );
-                        }
-                    }
-                    if (typeof json.data.metadata === "undefined") {
-                        // ignore undefined
-                    } else {
-                        jsonDataInnerVal.metadata = json.data.metadata;
-                    }
-                    if (typeof json.data.box_type_range === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (
-                            typeof json.data.box_type_range === "object" &&
-                            json.data.box_type_range !== null
-                        ) {
-                            const jsonDataBoxTypeRangeInnerVal = {};
-                            if (
-                                typeof json.data.box_type_range
-                                    .start_time_in_nano_sec === "string" ||
-                                typeof json.data.box_type_range
-                                    .start_time_in_nano_sec === "number"
-                            ) {
-                                try {
-                                    const val = BigInt(
-                                        json.data.box_type_range
-                                            .start_time_in_nano_sec,
-                                    );
-                                    jsonDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                        val;
-                                } catch (err) {
-                                    $fallback(
-                                        "/data/box_type_range/start_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                        "Unable to parse BigInt from json.data.box_type_range.start_time_in_nano_sec.",
-                                    );
-                                }
-                            } else if (
-                                typeof json.data.box_type_range
-                                    .start_time_in_nano_sec === "bigint"
-                            ) {
-                                jsonDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                    json.data.box_type_range.start_time_in_nano_sec;
-                            } else {
-                                $fallback(
-                                    "/data/box_type_range/start_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                    "Expected BigInt or Integer string. Got ${json.data.box_type_range.start_time_in_nano_sec}",
-                                );
-                            }
-                            if (
-                                typeof json.data.box_type_range
-                                    .end_time_in_nano_sec === "string" ||
-                                typeof json.data.box_type_range
-                                    .end_time_in_nano_sec === "number"
-                            ) {
-                                try {
-                                    const val = BigInt(
-                                        json.data.box_type_range
-                                            .end_time_in_nano_sec,
-                                    );
-                                    if (val >= BigInt("0")) {
-                                        jsonDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                            val;
-                                    } else {
-                                        $fallback(
-                                            "/data/box_type_range/end_time_in_nano_sec",
-                                            "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                            "Unsigned int must be greater than or equal to 0.",
-                                        );
-                                    }
-                                } catch (err) {
-                                    $fallback(
-                                        "/data/box_type_range/end_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                        "Unable to parse BigInt from json.data.box_type_range.end_time_in_nano_sec.",
-                                    );
-                                }
-                            } else if (
-                                typeof json.data.box_type_range
-                                    .end_time_in_nano_sec === "bigint"
-                            ) {
-                                if (
-                                    json.data.box_type_range
-                                        .end_time_in_nano_sec >= BigInt("0")
-                                ) {
-                                    jsonDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                        json.data.box_type_range.end_time_in_nano_sec;
-                                } else {
-                                    $fallback(
-                                        "/data/box_type_range/end_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                        "Unsigned int must be greater than or equal to 0.",
-                                    );
-                                }
-                            } else {
-                                $fallback(
-                                    "/data/box_type_range/end_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Expected BigInt or Integer string. Got ${json.data.box_type_range.end_time_in_nano_sec}",
-                                );
-                            }
-                            jsonDataInnerVal.box_type_range =
-                                jsonDataBoxTypeRangeInnerVal;
-                        } else {
-                            $fallback(
-                                "/data/box_type_range",
-                                "/properties/data/optionalProperties/box_type_range",
-                                "Expected object",
-                            );
-                        }
-                    }
-                    jsonInnerVal.data = jsonDataInnerVal;
-                } else {
-                    $fallback("/data", "/properties/data", "Expected object");
-                }
-                result = jsonInnerVal;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const inputInnerVal = {};
-            if (typeof input.annotation_id === "string") {
-                inputInnerVal.annotation_id = input.annotation_id;
-            } else {
-                $fallback(
-                    "/annotation_id",
-                    "/properties/annotation_id/type",
-                    "Expected string at /annotation_id",
-                );
-            }
-            if (typeof input.annotation_id_version === "string") {
-                inputInnerVal.annotation_id_version =
-                    input.annotation_id_version;
-            } else {
-                $fallback(
-                    "/annotation_id_version",
-                    "/properties/annotation_id_version/type",
-                    "Expected string at /annotation_id_version",
-                );
-            }
-            if (typeof input.data === "object" && input.data !== null) {
-                const inputDataInnerVal = {};
-                if (typeof input.data.associated_id === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (
-                        typeof input.data.associated_id === "object" &&
-                        input.data.associated_id !== null
-                    ) {
-                        const inputDataAssociatedIdInnerVal = {};
-                        if (
-                            typeof input.data.associated_id.entity_type ===
-                            "string"
-                        ) {
-                            if (
-                                input.data.associated_id.entity_type ===
-                                    "MOVIE_ID" ||
-                                input.data.associated_id.entity_type ===
-                                    "SHOW_ID"
-                            ) {
-                                inputDataAssociatedIdInnerVal.entity_type =
-                                    input.data.associated_id.entity_type;
-                            } else {
-                                $fallback(
-                                    "/data/associated_id/entity_type",
-                                    "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                    "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/data/associated_id/entity_type",
-                                "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                            );
-                        }
-                        if (typeof input.data.associated_id.id === "string") {
-                            inputDataAssociatedIdInnerVal.id =
-                                input.data.associated_id.id;
-                        } else {
-                            $fallback(
-                                "/data/associated_id/id",
-                                "/properties/data/optionalProperties/associated_id/properties/id/type",
-                                "Expected string at /data/associated_id/id",
-                            );
-                        }
-                        inputDataInnerVal.associated_id =
-                            inputDataAssociatedIdInnerVal;
-                    } else {
-                        $fallback(
-                            "/data/associated_id",
-                            "/properties/data/optionalProperties/associated_id",
-                            "Expected object",
-                        );
-                    }
-                }
-                if (typeof input.data.annotation_type === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof input.data.annotation_type === "string") {
-                        if (
-                            input.data.annotation_type ===
-                            "ANNOTATION_BOUNDINGBOX"
-                        ) {
-                            inputDataInnerVal.annotation_type =
-                                input.data.annotation_type;
-                        } else {
-                            $fallback(
-                                "/data/annotation_type",
-                                "/properties/data/optionalProperties/annotation_type",
-                                "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/data/annotation_type",
-                            "/properties/data/optionalProperties/annotation_type",
-                            "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                        );
-                    }
-                }
-                if (typeof input.data.annotation_type_version === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (
-                        typeof input.data.annotation_type_version ===
-                            "number" &&
-                        Number.isInteger(input.data.annotation_type_version) &&
-                        input.data.annotation_type_version >= 0 &&
-                        input.data.annotation_type_version <= 65535
-                    ) {
-                        inputDataInnerVal.annotation_type_version =
-                            input.data.annotation_type_version;
-                    } else {
-                        $fallback(
-                            "/data/annotation_type_version",
-                            "/properties/data/optionalProperties/annotation_type_version",
-                            "Expected valid integer between 0 and 65535",
-                        );
-                    }
-                }
-                if (typeof input.data.metadata === "undefined") {
-                    // ignore undefined
-                } else {
-                    inputDataInnerVal.metadata = input.data.metadata;
-                }
-                if (typeof input.data.box_type_range === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (
-                        typeof input.data.box_type_range === "object" &&
-                        input.data.box_type_range !== null
-                    ) {
-                        const inputDataBoxTypeRangeInnerVal = {};
-                        if (
-                            typeof input.data.box_type_range
-                                .start_time_in_nano_sec === "string" ||
-                            typeof input.data.box_type_range
-                                .start_time_in_nano_sec === "number"
-                        ) {
-                            try {
-                                const val = BigInt(
-                                    input.data.box_type_range
-                                        .start_time_in_nano_sec,
-                                );
-                                inputDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                    val;
-                            } catch (err) {
-                                $fallback(
-                                    "/data/box_type_range/start_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                    "Unable to parse BigInt from input.data.box_type_range.start_time_in_nano_sec.",
-                                );
-                            }
-                        } else if (
-                            typeof input.data.box_type_range
-                                .start_time_in_nano_sec === "bigint"
-                        ) {
-                            inputDataBoxTypeRangeInnerVal.start_time_in_nano_sec =
-                                input.data.box_type_range.start_time_in_nano_sec;
-                        } else {
-                            $fallback(
-                                "/data/box_type_range/start_time_in_nano_sec",
-                                "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                "Expected BigInt or Integer string. Got ${input.data.box_type_range.start_time_in_nano_sec}",
-                            );
-                        }
-                        if (
-                            typeof input.data.box_type_range
-                                .end_time_in_nano_sec === "string" ||
-                            typeof input.data.box_type_range
-                                .end_time_in_nano_sec === "number"
-                        ) {
-                            try {
-                                const val = BigInt(
-                                    input.data.box_type_range
-                                        .end_time_in_nano_sec,
-                                );
-                                if (val >= BigInt("0")) {
-                                    inputDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                        val;
-                                } else {
-                                    $fallback(
-                                        "/data/box_type_range/end_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                        "Unsigned int must be greater than or equal to 0.",
-                                    );
-                                }
-                            } catch (err) {
-                                $fallback(
-                                    "/data/box_type_range/end_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Unable to parse BigInt from input.data.box_type_range.end_time_in_nano_sec.",
-                                );
-                            }
-                        } else if (
-                            typeof input.data.box_type_range
-                                .end_time_in_nano_sec === "bigint"
-                        ) {
-                            if (
-                                input.data.box_type_range
-                                    .end_time_in_nano_sec >= BigInt("0")
-                            ) {
-                                inputDataBoxTypeRangeInnerVal.end_time_in_nano_sec =
-                                    input.data.box_type_range.end_time_in_nano_sec;
-                            } else {
-                                $fallback(
-                                    "/data/box_type_range/end_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Unsigned int must be greater than or equal to 0.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/data/box_type_range/end_time_in_nano_sec",
-                                "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                "Expected BigInt or Integer string. Got ${input.data.box_type_range.end_time_in_nano_sec}",
-                            );
-                        }
-                        inputDataInnerVal.box_type_range =
-                            inputDataBoxTypeRangeInnerVal;
-                    } else {
-                        $fallback(
-                            "/data/box_type_range",
-                            "/properties/data/optionalProperties/box_type_range",
-                            "Expected object",
-                        );
-                    }
-                }
-                inputInnerVal.data = inputDataInnerVal;
-            } else {
-                $fallback("/data", "/properties/data", "Expected object");
-            }
-            result = inputInnerVal;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: UpdateAnnotationParams): string {
-        let json = "";
-        json += "{";
-        json += `"annotation_id":"${input.annotation_id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += `,"annotation_id_version":"${input.annotation_id_version.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-        json += ',"data":{';
-        let dataHasFields = false;
-        if (typeof input.data.associated_id !== "undefined") {
-            if (dataHasFields) {
-                json += ',"associated_id":{';
-                json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += "}";
-            } else {
-                json += '"associated_id":{';
-                json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":"${input.data.associated_id.id.replace(/[\n]/g, "\\n").replace(/"/g, '\\"')}"`;
-                json += "}";
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.annotation_type !== "undefined") {
-            if (dataHasFields) {
-                json += `,"annotation_type":"${input.data.annotation_type}"`;
-            } else {
-                json += `"annotation_type":"${input.data.annotation_type}"`;
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.annotation_type_version !== "undefined") {
-            if (dataHasFields) {
-                if (Number.isNaN(input.data.annotation_type_version)) {
-                    throw new Error(
-                        "Expected number at /data/annotation_type_version got NaN",
-                    );
-                }
-                json += `,"annotation_type_version":${input.data.annotation_type_version}`;
-            } else {
-                if (Number.isNaN(input.data.annotation_type_version)) {
-                    throw new Error(
-                        "Expected number at /data/annotation_type_version got NaN",
-                    );
-                }
-                json += `"annotation_type_version":${input.data.annotation_type_version}`;
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.metadata !== "undefined") {
-            if (dataHasFields) {
-                if (typeof input.data.metadata !== "undefined") {
-                    json +=
-                        ',"metadata":' + JSON.stringify(input.data.metadata);
-                }
-            } else {
-                if (typeof input.data.metadata !== "undefined") {
-                    json += '"metadata":' + JSON.stringify(input.data.metadata);
-                }
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.box_type_range !== "undefined") {
-            if (dataHasFields) {
-                json += ',"box_type_range":{';
-                json += `"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}"`;
-                json += `,"end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"`;
-                json += "}";
-            } else {
-                json += '"box_type_range":{';
-                json += `"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}"`;
-                json += `,"end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"`;
-                json += "}";
-                dataHasFields = true;
-            }
-        }
-        json += "}";
-        json += "}";
-        return json;
-    },
-};
-export interface UpdateAnnotationData {
-    associated_id?: AssociatedId;
-    annotation_type?: UpdateAnnotationParamsDataAnnotationType;
-    annotation_type_version?: number;
-    metadata?: any;
-    box_type_range?: UpdateAnnotationParamsDataBoxTypeRange;
-}
-
-export type UpdateAnnotationParamsDataAnnotationType = "ANNOTATION_BOUNDINGBOX";
-export interface UpdateAnnotationParamsDataBoxTypeRange {
-    start_time_in_nano_sec: bigint;
-    end_time_in_nano_sec: bigint;
 }

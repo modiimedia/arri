@@ -5,17 +5,36 @@ import { validationTestSuites } from "../testSuites";
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key];
     const Compiled = compile(suite.schema);
-    for (const input of suite.goodInputs) {
-        test(key, () => {
-            const result = Compiled.serialize(input);
-            expect(typeof result === "string");
-            if (
-                !isAScalarSchema(suite.schema) &&
-                !isAStringEnumSchema(suite.schema)
-            ) {
-                JSON.parse(result);
+    for (let i = 0; i < suite.goodInputs.length; i++) {
+        const input = suite.goodInputs[i];
+        test(`${key} - ${i + 1}`, () => {
+            try {
+                const result = Compiled.serialize(input);
+                expect(typeof result === "string").toBe(true);
+                if (
+                    !isAScalarSchema(suite.schema) &&
+                    !isAStringEnumSchema(suite.schema)
+                ) {
+                    try {
+                        JSON.parse(result);
+                    } catch (err) {
+                        console.log("RESULT", result);
+                        throw err;
+                    }
+                }
+                const parseResult = a.safeParse(suite.schema, result);
+                expect(parseResult.success).toBe(true);
+                if (!parseResult.success) {
+                    console.error(parseResult.error);
+                    console.error(Compiled.compiledCode.serialize);
+                    console.error(result, "SHOULD BE VALID");
+                }
+            } catch (err) {
+                console.error(err);
+                console.log(Compiled.compiledCode.serialize);
+                console.log(input, "SHOULD NOT THROW");
+                throw err;
             }
-            expect(a.safeParse(suite.schema, result).success);
         });
     }
 }

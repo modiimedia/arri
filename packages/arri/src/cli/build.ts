@@ -1,10 +1,9 @@
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
-import { createConsola } from "consola";
 import { build } from "esbuild";
 import { replace } from "esbuild-plugin-replace";
 import path from "pathe";
@@ -18,6 +17,7 @@ import {
     transpileFiles,
     GEN_APP_FILE,
     OUT_APP_FILE,
+    logger,
 } from "./_common";
 
 export default defineCommand({
@@ -45,10 +45,15 @@ export default defineCommand({
     },
 });
 
-const logger = createConsola().withTag("arri");
-
 async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     logger.log("Bundling server....");
+    const appEntry = path.resolve(config.rootDir, config.srcDir, config.entry);
+    if (
+        !existsSync(path.resolve(config.rootDir, config.srcDir, config.entry))
+    ) {
+        logger.error(`Unabled to find entry at ${appEntry}`);
+        process.exit(1);
+    }
     await setupWorkingDir(config);
     await Promise.all([
         createAppWithRoutesModule(config),
@@ -58,7 +63,7 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     ]);
     await bundleAppEntry(config);
     logger.log("Finished bundling");
-    const clientCount = config.clientGenerators.length;
+    const clientCount = config.generators.length;
     const codegenModule = path.resolve(config.rootDir, ".output", OUT_CODEGEN);
     if (!skipCodeGen) {
         logger.log("Generating Arri app definition (__definition.json)");
@@ -72,7 +77,7 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
         if (isAppDefinition(def) && clientCount > 0) {
             logger.log(`Generating ${clientCount} clients`);
             await Promise.all(
-                config.clientGenerators.map((plugin) => plugin.generator(def)),
+                config.generators.map((plugin) => plugin.generator(def)),
             );
             logger.log(`${clientCount} clients generated`);
         } else {

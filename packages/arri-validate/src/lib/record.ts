@@ -7,6 +7,7 @@ import {
     isObject,
     type ValidationData,
 } from "../schemas";
+import { sanitizeJson } from "./validation";
 
 /**
  * Create a schema for a record with strings keys
@@ -71,7 +72,11 @@ export function record<TInnerSchema extends ASchema<any>>(
                             })}`,
                         );
                     }
-                    return `{${strParts.join(",")}}`;
+                    const result = `{${strParts.join(",")}}`;
+                    if (data.instancePath.length === 0) {
+                        return sanitizeJson(result);
+                    }
+                    return result;
                 },
             },
         },

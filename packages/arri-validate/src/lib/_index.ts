@@ -8,6 +8,7 @@ export * from "./numberConstants";
 export * from "./numbers";
 export * from "./object";
 export * from "./record";
+export * from "./recursive";
 export * from "./string";
 export * from "./timestamp";
 export * from "./validation";

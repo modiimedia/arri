@@ -6,7 +6,7 @@ import {
     handleCors,
 } from "arri";
 import { a } from "arri-validate";
-import usersRouter from "./routes/users";
+import usersRouter from "./routes/authors";
 
 const app = new ArriApp({
     rpcRoutePrefix: "rpcs",

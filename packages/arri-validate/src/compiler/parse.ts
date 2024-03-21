@@ -13,6 +13,9 @@ import {
     type SchemaFormElements,
     type SchemaFormDiscriminator,
     type SchemaFormEmpty,
+    type SchemaFormRef,
+    isSchemaFormRef,
+    isSchemaFormEmpty,
 } from "jtd-utils";
 import { camelCase } from "scule";
 import {
@@ -38,16 +41,14 @@ export function createParsingTemplate(input: string, schema: Schema): string {
     }`;
     let jsonParseCheck = "";
 
-    const functionBodyParts: string[] = [];
-    const functionNameParts: string[] = [];
+    const subFunctions: Record<string, string> = {};
     const template = schemaTemplate({
         val: input,
         targetVal: "result",
         schema,
         instancePath: "",
         schemaPath: "",
-        subFunctionBodies: functionBodyParts,
-        subFunctionNames: functionNameParts,
+        subFunctions,
     });
     const jsonTemplate = schemaTemplate({
         val: "json",
@@ -55,8 +56,7 @@ export function createParsingTemplate(input: string, schema: Schema): string {
         schema,
         instancePath: "",
         schemaPath: "",
-        subFunctionBodies: functionBodyParts,
-        subFunctionNames: functionNameParts,
+        subFunctions,
     });
 
     if (
@@ -72,6 +72,19 @@ export function createParsingTemplate(input: string, schema: Schema): string {
             return result;
         }`;
     }
+
+    if (isSchemaFormEmpty(schema)) {
+        jsonParseCheck = `try {
+            const json = JSON.parse(${input});
+            return json;
+        } catch {
+            return ${input};
+        }`;
+    }
+
+    const functionBodyParts = Object.keys(subFunctions).map(
+        (key) => subFunctions[key],
+    );
     const finalTemplate = `${fallbackTemplate}
     ${functionBodyParts.join("\n")}
     ${jsonParseCheck}
@@ -126,10 +139,20 @@ export function schemaTemplate(input: TemplateInput): string {
     if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
     }
+    if (isSchemaFormRef(input.schema)) {
+        return refTemplate(input);
+    }
     return anyTemplate(input);
 }
 
 export function anyTemplate(input: TemplateInput<SchemaFormEmpty>): string {
+    if (input.instancePath.length === 0) {
+        return `try {
+            ${input.targetVal} = JSON.parse(${input.val});
+        } catch {
+            ${input.targetVal} = ${input.val};
+        }`;
+    }
     return `${input.targetVal} = ${input.val}`;
 }
 
@@ -404,19 +427,32 @@ function enumTemplate(input: TemplateInput<SchemaFormEnum>): string {
 }
 
 function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
-    const innerTargetVal = camelCase(
-        `${input.val
-            .split(".")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("")}_innerVal`,
-    );
+    const depthStr = getDepthStr(input.instancePath);
+    const innerTargetVal = `__${depthStr}`;
     const parsingParts: string[] = [];
     if (input.discriminatorKey && input.discriminatorValue) {
         parsingParts.push(
             `${innerTargetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
+        );
+    }
+    if (!input.schema.additionalProperties) {
+        const keyVal = `_${depthStr}_keys`;
+        const optionalKeyVal = `_${depthStr}_optionalKeys`;
+        const keys = Object.keys(input.schema.properties)
+            .map((key) => `"${key}"`)
+            .join(",");
+        const optionalKeys = Object.keys(input.schema.optionalProperties ?? {})
+            .map((key) => `"${key}"`)
+            .join(",");
+        parsingParts.push(
+            `const ${keyVal} = [${keys}];
+            const ${optionalKeyVal} = [${optionalKeys}];
+            for (let _key of Object.keys(${input.val})) {
+                if(!${keyVal}.includes(_key) && !${optionalKeyVal}.includes(_key) && _key !== "${input.discriminatorKey ?? ""}") {
+                    $fallback("${input.instancePath}", "${input.schemaPath}/additionalProperties", \`The following key is now allowed by the schema "\${_key}".\`);
+                }
+            }
+                `,
         );
     }
     for (const key of Object.keys(input.schema.properties)) {
@@ -427,8 +463,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             schema: subSchema,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
-            subFunctionBodies: input.subFunctionBodies,
-            subFunctionNames: input.subFunctionNames,
+            subFunctions: input.subFunctions,
         });
         parsingParts.push(innerTemplate);
     }
@@ -441,8 +476,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
                 schema: subSchema,
                 instancePath: `${input.instancePath}/${key}`,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
+                subFunctions: input.subFunctions,
             });
             parsingParts.push(`if (typeof ${input.val}.${key} === 'undefined') {
                 // ignore undefined
@@ -451,7 +485,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             }`);
         }
     }
-    const mainTemplate = `if (typeof ${input.val} === 'object' && ${
+    let mainTemplate = `if (typeof ${input.val} === 'object' && ${
         input.val
     } !== null) {
         const ${innerTargetVal} = {};
@@ -462,6 +496,25 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             input.schemaPath
         }", "Expected object");
     }`;
+    const fnName = refFunctionName(input.schema.metadata?.id ?? "");
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
+                    let _fnTarget
+                ${mainTemplate
+                    .split(` ${input.val}`)
+                    .join(" _fnVal")
+                    .split(`(${input.val}`)
+                    .join(`(_fnVal`)
+                    .split(` ${input.targetVal}`)
+                    .join(` _fnTarget`)
+                    .split(`(${input.targetVal}`)
+                    .join("(_fnTarget")}
+                return _fnTarget;
+            }`;
+        }
+        mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
+    }
     if (input.schema.nullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
@@ -475,26 +528,16 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
 export function arrayTemplate(
     input: TemplateInput<SchemaFormElements>,
 ): string {
-    const resultVar = camelCase(
-        `${input.targetVal
-            .split(".")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("_")}_innerResult`,
-    );
-    const itemVar = `${resultVar}Item`;
-    const itemResultVar = `${itemVar}Result`;
-
+    const resultVar = `__${getDepthStr(input.instancePath)}`;
+    const itemVar = `${resultVar}AItem`;
+    const itemResultVar = `${itemVar}AResult`;
     const innerTemplate = schemaTemplate({
         val: itemVar,
         targetVal: itemResultVar,
         instancePath: `${input.instancePath}/[0]`,
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
+        subFunctions: input.subFunctions,
     });
     const mainTemplate = `if (Array.isArray(${input.val})) {
         const ${resultVar} = [];
@@ -531,17 +574,16 @@ export function discriminatorTemplate(
             schema: innerSchema,
             schemaPath: `${input.schemaPath}/mapping`,
             instancePath: `${input.instancePath}`,
-            subFunctionBodies: input.subFunctionBodies,
-            subFunctionNames: input.subFunctionNames,
             discriminatorKey: input.schema.discriminator,
             discriminatorValue: type,
+            subFunctions: input.subFunctions,
         });
         switchParts.push(`case "${type}": {
             ${template}
             break;
         }`);
     }
-    const mainTemplate = `if (typeof ${input.val} === 'object' && ${
+    let mainTemplate = `if (typeof ${input.val} === 'object' && ${
         input.val
     } !== null) {
         switch(${input.val}.${input.schema.discriminator}) {
@@ -559,6 +601,25 @@ export function discriminatorTemplate(
             input.schemaPath
         }", "Expected Object.");
     }`;
+    const fnName = refFunctionName(input.schema.metadata?.id ?? "");
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(_fnVal) {
+                let _fnTarget;
+                ${mainTemplate
+                    .split(` ${input.val}`)
+                    .join(` _fnVal`)
+                    .split(`(${input.val}`)
+                    .join(`(_fnVal`)
+                    .split(` ${input.targetVal}`)
+                    .join(` _fnTarget`)
+                    .split(`(${input.targetVal}`)
+                    .join(`(_fnTarget`)}
+                return _fnTarget;
+            }`;
+        }
+        mainTemplate = `${input.targetVal} = ${fnName}(${input.val});`;
+    }
     if (input.schema.nullable) {
         return `if (${input.val} === null) {
             ${input.targetVal} = null;
@@ -569,27 +630,24 @@ export function discriminatorTemplate(
     return mainTemplate;
 }
 
+function getDepthStr(instancePath: string) {
+    const parts = instancePath.split("/");
+    const depth = parts.length;
+    return `D${depth}`;
+}
+
 export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
-    const valPrefix = camelCase(
-        input.val
-            .split(".")
-            .join("_")
-            .split("[")
-            .join("_")
-            .split("]")
-            .join("_"),
-    );
-    const resultVal = `${valPrefix}Result`;
-    const loopVal = `${valPrefix}Key`;
-    const loopResultVal = `${loopVal}Val`;
+    const valPrefix = getDepthStr(input.instancePath);
+    const resultVal = `__${valPrefix}RResult`;
+    const loopVal = `__${valPrefix}RKey`;
+    const loopResultVal = `${loopVal}RVal`;
     const innerTemplate = schemaTemplate({
         val: `${input.val}[${loopVal}]`,
         targetVal: loopResultVal,
         instancePath: `${input.instancePath}/[key]`,
         schemaPath: `${input.schemaPath}/values`,
         schema: input.schema.values,
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
+        subFunctions: input.subFunctions,
     });
     const mainTemplate = `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
         const ${resultVal} = {};
@@ -610,4 +668,23 @@ export function recordTemplate(input: TemplateInput<SchemaFormValues>): string {
         }`;
     }
     return mainTemplate;
+}
+
+function refFunctionName(id: string) {
+    return `__parse_${id}`;
+}
+
+export function refTemplate(input: TemplateInput<SchemaFormRef>): string {
+    const fnName = refFunctionName(input.schema.ref);
+    if (!Object.keys(input.subFunctions).includes(fnName)) {
+        input.subFunctions[fnName] = "";
+    }
+    if (input.schema.nullable) {
+        return `if (${input.val} === null) {
+            ${input.targetVal} = null;
+        } else {
+            ${input.targetVal} = ${fnName}(${input.val});
+        }`;
+    }
+    return `${input.targetVal} = ${fnName}(${input.val})`;
 }

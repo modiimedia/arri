@@ -19,7 +19,7 @@ export default defineConfig({
     entry: "app.ts",
     serverEntry: "server.ts",
     http2: true,
-    clientGenerators: [
+    generators: [
         typescriptClientGenerator({
             clientName: "TestClient",
             outputFile: path.resolve(

@@ -4,6 +4,6 @@
   "dependencies": {
     "arri-client": "workspace:*",
     "arri-validate": "workspace:*",
-    "ofetch": "^1.3.3"
+    "ofetch": "^1.3.4"
   }
 }

@@ -1,12 +1,15 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { removeDisallowedChars } from "arri-codegen-utils";
+import { createConsola } from "consola";
 import * as esbuild from "esbuild";
 import { globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
 import { type ResolvedArriConfig } from "../config";
+
+export const logger = createConsola().withTag("arri");
 
 export const GEN_APP_FILE = "__arri_app.js";
 export const GEN_SERVER_ENTRY_FILE = "__arri_server.js";

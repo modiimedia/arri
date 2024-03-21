@@ -58,6 +58,14 @@ export const TestUserSchema = a.object(
         bio: a.optional(a.string()),
         metadata: a.record(a.any()),
         randomList: a.array(a.any()),
+        binaryTree: a.recursive(
+            (self) =>
+                a.object({
+                    left: a.nullable(self),
+                    right: a.nullable(self),
+                }),
+            { id: "BinaryTree" },
+        ),
     },
     { id: "User" },
 );
@@ -85,7 +93,7 @@ export const TestErrorResponse = a.object({
 });
 
 export const TestAppDefinition: AppDefinition = {
-    arriSchemaVersion: "0.0.3",
+    arriSchemaVersion: "0.0.4",
     info: {
         title: "Test App Client",
         description: "This is a example app definition",
@@ -93,34 +101,45 @@ export const TestAppDefinition: AppDefinition = {
     },
     procedures: {
         getStatus: {
+            transport: "http",
             path: "/status",
             method: "get",
             params: undefined,
             response: "GetStatusResponse",
         },
         "users.getUser": {
-            description: "Get a user by id",
+            transport: "http",
             path: "/users/get-user",
             method: "get",
             params: "UserParams",
             response: "User",
+            description: "Get a user by id",
         },
         "users.updateUser": {
-            description: "Update a user",
+            transport: "http",
             path: "/users/update-user",
             method: "post",
             params: "UpdateUserParams",
             response: "User",
+            description: "Update a user",
         },
         "users.watchUser": {
-            description: "Watch a user",
+            transport: "http",
             path: "/users/watch-user",
             method: "get",
             params: "UserParams",
             response: "User",
             isEventStream: true,
+            description: "Watch a user",
+        },
+        "users.createConnection": {
+            transport: "ws",
+            path: "/users/create-connection",
+            params: "UserParams",
+            response: "User",
         },
         "users.settings.getUserSettings": {
+            transport: "http",
             path: "/users/settings/get-user-settings",
             method: "get",
             params: undefined,

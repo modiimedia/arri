@@ -18,7 +18,7 @@ module.exports = {
         "**/**/dist/*.d.ts",
     ],
     extends: [
-        "standard-with-typescript",
+        "love",
         "plugin:import/recommended",
         // "json",
         "prettier",
