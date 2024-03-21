@@ -4,6 +4,7 @@ import app from "virtual:arri/app";
 
 void listen(toNodeListener(app.h3App), {
     port: process.env.PORT ?? 2020,
+    ws: true,
     public: true,
     http2: true,
 });

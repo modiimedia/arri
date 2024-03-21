@@ -27,12 +27,16 @@ export function defineEventStreamRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined | never = undefined,
 >(
-    config: Omit<EventStreamRpc<TParams, TResponse>, "isEventStream">,
+    config: Omit<
+        EventStreamRpc<TParams, TResponse>,
+        "isEventStream" | "transport"
+    >,
 ): EventStreamRpc<TParams, TResponse> {
     return {
         ...config,
         method: config.method ?? "get",
         isEventStream: true,
+        transport: "http",
     };
 }
 

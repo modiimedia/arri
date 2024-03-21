@@ -62,6 +62,7 @@ const startListener = (config: ResolvedArriConfig, showQr = false) =>
         qr: showQr,
         https: config.https,
         http2: config.http2,
+        ws: true,
     });
 
 async function bundleFilesContext(config: ResolvedArriConfig) {
