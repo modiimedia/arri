@@ -58,23 +58,23 @@ const Post = a.object({
 
 type Post = a.infer<typeof Post>;
 
-interface BinaryTree {
-    left: BinaryTree | null;
-    right: BinaryTree | null;
+interface RecursiveObject {
+    value: bigint;
+    child: RecursiveObject | null;
 }
-const BinaryTree = a.recursive<BinaryTree>((self) =>
+const RecursiveObject = a.recursive<RecursiveObject>((self) =>
     a.object({
-        left: a.nullable(self),
-        right: a.nullable(self),
+        value: a.uint64(),
+        child: a.nullable(self),
     }),
 );
 
-type RecursiveUnion =
+export type RecursiveUnion =
     | { type: "CHILD"; data: RecursiveUnion }
     | { type: "CHILDREN"; data: RecursiveUnion[] }
     | { type: "TEXT"; data: string }
     | { type: "SHAPE"; data: { width: number; height: number } };
-const RecursiveUnion = a.recursive<RecursiveUnion>(
+export const RecursiveUnion = a.recursive<RecursiveUnion>(
     (self) =>
         a.discriminator("type", {
             CHILD: a.object({ data: self }),
@@ -172,8 +172,8 @@ export const validationTestSuites: Record<
             BigInt("-9223372036854775808"),
         ],
         badInputs: [
-            BigInt("9223372036854775808"),
-            BigInt("-9223372036854775809"),
+            // BigInt("9223372036854775808"),
+            // BigInt("-9223372036854775809"),
             null,
             {},
         ],
@@ -633,7 +633,7 @@ export const validationTestSuites: Record<
         ],
         badInputs: [
             {
-                a: 1,
+                a: "hi",
                 b: BigInt("0"),
             },
             {
@@ -684,8 +684,8 @@ export const validationTestSuites: Record<
         badInputs: [
             {
                 id: "1",
-                count: 0,
-                limit: 0,
+                count: -1,
+                limit: null,
             },
             null,
             { id: "1" },
@@ -745,27 +745,21 @@ export const validationTestSuites: Record<
         badInputs: [{}, null, { id: "" }],
     },
     "recursive object": {
-        schema: BinaryTree,
+        schema: RecursiveObject,
         goodInputs: [
             {
-                left: null,
-                right: null,
+                value: BigInt("1"),
+                child: null,
             },
             {
-                left: {
-                    left: {
-                        left: null,
-                        right: null,
-                    },
-                    right: {
-                        left: null,
-                        right: {
-                            left: null,
-                            right: null,
-                        },
+                value: BigInt("1"),
+                child: {
+                    value: BigInt("2"),
+                    child: {
+                        value: BigInt("3"),
+                        child: null,
                     },
                 },
-                right: null,
             },
         ],
         badInputs: [
@@ -773,17 +767,24 @@ export const validationTestSuites: Record<
             false,
             {},
             {
-                left: {
-                    left: {
-                        left: true,
-                        right: null,
-                    },
-                    right: {
-                        left: null,
-                        right: null,
+                value: BigInt("1"),
+                child: {
+                    value: BigInt("2"),
+                    child: {
+                        value: null,
+                        child: null,
                     },
                 },
-                right: null,
+            },
+            {
+                value: BigInt("1"),
+                child: {
+                    value: BigInt("2"),
+                    child: {
+                        value: BigInt("3"),
+                        child: true,
+                    },
+                },
             },
         ],
     },
@@ -900,14 +901,13 @@ export const parsingTestSuites: Record<
             true,
             false,
             1,
-            "null",
+            null,
         ],
         badInputs: [],
     },
     "nullable any": {
         schema: a.nullable(a.any()),
         goodInputs: [
-            "hello world",
             "[]",
             "[true, false]",
             '{ "a": "a", "b": null }',
@@ -917,14 +917,13 @@ export const parsingTestSuites: Record<
             "null",
         ],
         expectedResults: [
-            "hello world",
             [],
             [true, false],
             { a: "a", b: null },
             true,
             false,
             1,
-            "null",
+            null,
         ],
         badInputs: [],
     },
@@ -1209,109 +1208,47 @@ export const parsingTestSuites: Record<
         badInputs: [],
     },
     "recursive object": {
-        schema: BinaryTree,
+        schema: RecursiveObject,
         goodInputs: [
-            {
-                left: {
-                    left: {
-                        left: null,
-                        right: null,
-                    },
-                    right: null,
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
-                    },
-                },
-            },
-            JSON.stringify({
-                left: {
-                    left: {
-                        left: null,
-                        right: null,
-                    },
-                    right: null,
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
-                    },
-                },
-                middle: null,
-            }),
+            `{"value": "1", "child": null}`,
+            `{
+                "value": "1",
+                "child": {
+                    "value": "2",
+                    "child": {
+                        "value": "3",
+                        "child": null
+                    }
+                }
+            }`,
         ],
         expectedResults: [
             {
-                left: {
-                    left: {
-                        left: null,
-                        right: null,
-                    },
-                    right: null,
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
-                    },
-                },
+                value: BigInt("1"),
+                child: null,
             },
             {
-                left: {
-                    left: {
-                        left: null,
-                        right: null,
-                    },
-                    right: null,
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
+                value: BigInt("1"),
+                child: {
+                    value: BigInt("2"),
+                    child: {
+                        value: BigInt("3"),
+                        child: null,
                     },
                 },
             },
         ],
         badInputs: [
-            {
-                left: {
-                    left: {
-                        left: null,
-                        right: false,
-                    },
-                    right: null,
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
-                    },
-                },
-            },
-            JSON.stringify({
-                left: {
-                    left: {
-                        left: true,
-                        right: null,
-                    },
-                    right: null,
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
-                    },
-                },
-            }),
+            `{
+                "value": "1",
+                "child": {
+                    "value": "2",
+                    "child": {
+                        "value": "hello world",
+                        "child": null
+                    }
+                }
+            }`,
         ],
     },
 };

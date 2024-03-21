@@ -13,6 +13,8 @@ import {
     isSchemaFormDiscriminator,
     type SchemaFormDiscriminator,
     type SchemaFormEmpty,
+    type SchemaFormRef,
+    isSchemaFormRef,
 } from "jtd-utils";
 import { camelCase } from "scule";
 import { type TemplateInput } from "./common";
@@ -42,7 +44,12 @@ export function createSerializationV2Template(
     if (isSchemaFormType(schema) || isSchemaFormEnum(schema)) {
         return result;
     }
-    return `let json = '';
+    const subFunctionParts = Object.keys(subFunctions).map(
+        (key) => subFunctions[key],
+    );
+    return `
+    let json = '';
+    ${subFunctionParts.join("\n")}
     ${context.needsSanitization.length > 0 ? `const STR_ESCAPE = /[\\u0000-\\u001f\\u0022\\u005c\\ud800-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?:[^\\ud800-\\udbff]|^)[\\udc00-\\udfff]/;` : ""}
     ${result}
     return json;`;
@@ -66,6 +73,9 @@ export function template(input: SerializeTemplateInput): string {
     }
     if (isSchemaFormDiscriminator(input.schema)) {
         return discriminatorTemplate(input);
+    }
+    if (isSchemaFormRef(input.schema)) {
+        return refTemplate(input);
     }
     return anyTemplate(input);
 }
@@ -271,9 +281,7 @@ export function enumTemplate(
 export function objectTemplate(
     input: SerializeTemplateInput<SchemaFormProperties>,
 ): string {
-    const templateParts: string[] = [
-        `${input.targetVal} += '${input.outputPrefix}{';`,
-    ];
+    const templateParts: string[] = [`${input.targetVal} += '{';`];
     if (input.discriminatorKey && input.discriminatorValue) {
         templateParts.push(
             `${input.targetVal} += \`"${input.discriminatorKey}":"${input.discriminatorValue}"\`;`,
@@ -297,7 +305,7 @@ export function objectTemplate(
         // }
         const innerTemplate = template({
             schema: propSchema,
-            val: `${input.val}.${key}`,
+            val: `___val___.${key}`,
             targetVal: input.targetVal,
             instancePath: `${input.instancePath}/${key}`,
             schemaPath: `${input.schemaPath}/properties/${key}`,
@@ -326,7 +334,7 @@ export function objectTemplate(
             if (!optionalPropSchema) {
                 continue;
             }
-            const innerVal = `${input.val}.${key}`;
+            const innerVal = `___val___.${key}`;
             const innerTemplate = template({
                 schema: optionalPropSchema,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
@@ -363,7 +371,7 @@ export function objectTemplate(
             if (!optionalPropSchema) {
                 continue;
             }
-            const innerVal = `${input.val}.${key}`;
+            const innerVal = `___val___.${key}`;
             const innerTemplate = template({
                 schema: optionalPropSchema,
                 schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
@@ -381,15 +389,35 @@ export function objectTemplate(
         }
     }
     templateParts.push(`${input.targetVal} += '}';`);
-    const mainTemplate = templateParts.join("\n");
+    let mainTemplate = templateParts.join("\n");
+    const fnName = refFnName(input.schema.metadata?.id ?? "");
+    if (hasFunctionName(fnName, input.subFunctions)) {
+        if (!hasFunctionBody(fnName, input.subFunctions)) {
+            input.subFunctions[fnName] = `function ${fnName}(__inputVal__) {
+                ${mainTemplate.split("___val___").join("__inputVal__")}
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val});`;
+    }
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
-            ${mainTemplate}
+            ${input.targetVal} += '${input.outputPrefix}';
+            ${mainTemplate.split("___val___").join(input.val)}
         } else {
             ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
-    return mainTemplate;
+    return `
+    ${input.targetVal} += '${input.outputPrefix}';
+    ${mainTemplate.split("___val___").join(input.val)}`;
+}
+
+function hasFunctionName(name: string, fns: Record<string, string>) {
+    return typeof fns[name] === "string";
+}
+
+function hasFunctionBody(name: string, fns: Record<string, string>) {
+    return typeof fns[name] === "string" && fns[name].length > 0;
 }
 
 export function arrayTemplate(
@@ -475,14 +503,15 @@ function discriminatorTemplate(
 ): string {
     const discriminatorKey = input.schema.discriminator;
     const discriminatorVals = Object.keys(input.schema.mapping);
-    const templateParts = [`switch(${input.val}.${discriminatorKey}) {`];
+    const inputPlaceholder = "<<<tempval>>>";
+    const templateParts = [`switch(${inputPlaceholder}.${discriminatorKey}) {`];
     for (const val of discriminatorVals) {
         const valSchema = input.schema.mapping[val];
         const innerTemplate = template({
             schema: valSchema,
             schemaPath: `${input.schemaPath}/mapping/${val}`,
             instancePath: `${input.instancePath}`,
-            val: input.val,
+            val: inputPlaceholder,
             targetVal: input.targetVal,
             discriminatorKey,
             discriminatorValue: val,
@@ -496,15 +525,25 @@ function discriminatorTemplate(
         }`);
     }
     templateParts.push("}");
-    const mainTemplate = templateParts.join("\n");
+    let mainTemplate = templateParts.join("\n");
+    const fnName = refFnName(input.schema.metadata?.id ?? "");
+    if (hasFunctionName(fnName, input.subFunctions)) {
+        if (!hasFunctionBody(fnName, input.subFunctions)) {
+            input.subFunctions[fnName] = `function ${fnName}(__fnInput__){
+                ${mainTemplate.split(inputPlaceholder).join("__fnInput__")}
+            }`;
+        }
+        mainTemplate = `${fnName}(${input.val});`;
+    }
+
     if (input.schema.nullable) {
         return `if (typeof ${input.val} === 'object' && ${input.val} !== null) {
-            ${mainTemplate}
+            ${mainTemplate.split(inputPlaceholder).join(input.val)}
         } else {
             ${input.targetVal} += '${input.outputPrefix}null';
         }`;
     }
-    return mainTemplate;
+    return mainTemplate.split(inputPlaceholder).join(input.val);
 }
 
 export function anyTemplate(
@@ -526,4 +565,27 @@ export function anyTemplate(
     return `if (typeof ${input.val} !== 'undefined') {
         ${input.targetVal} += JSON.stringify(${input.val});
     }`;
+}
+
+function refFnName(id: string) {
+    return `__serialize_${id}`;
+}
+
+export function refTemplate(
+    input: SerializeTemplateInput<SchemaFormRef>,
+): string {
+    const fnName = refFnName(input.schema.ref);
+    if (!Object.keys(input.subFunctions).includes(fnName)) {
+        input.subFunctions[fnName] = "";
+    }
+    if (input.schema.nullable) {
+        return `if (${input.val} === null) {
+            ${input.targetVal} += '${input.outputPrefix}null';
+        } else {
+            ${input.targetVal} += '${input.outputPrefix}';
+            ${fnName}(${input.val});
+        }`;
+    }
+    return `${input.targetVal} += '${input.outputPrefix}';
+    ${fnName}(${input.val});`;
 }
