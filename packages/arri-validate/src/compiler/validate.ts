@@ -27,6 +27,8 @@ import {
     type ARecordSchema,
     isADiscriminatorSchema,
     type ADiscriminatorSchema,
+    type ARefSchema,
+    isARefSchema,
 } from "../schemas";
 import { type TemplateInput } from "./common";
 
@@ -34,18 +36,19 @@ export function createValidationTemplate(
     inputName: string,
     schema: ASchema<any>,
 ) {
-    const subFunctionNames: string[] = [];
-    const subFunctionBodies: string[] = [];
+    const subFunctions: Record<string, string> = {};
     const template = schemaTemplate({
         val: inputName,
         targetVal: "",
         schema,
         schemaPath: ``,
         instancePath: "",
-        subFunctionBodies,
-        subFunctionNames,
+        subFunctions,
     });
 
+    const subFunctionBodies = Object.keys(subFunctions).map(
+        (key) => subFunctions[key],
+    );
     return `${subFunctionBodies.join("\n")}
     return ${template}`;
 }
@@ -95,7 +98,9 @@ function schemaTemplate(input: TemplateInput): string {
     if (isADiscriminatorSchema(input.schema)) {
         return discriminatorTemplate(input);
     }
-
+    if (isARefSchema(input.schema)) {
+        return refTemplate(input);
+    }
     // any types always return true
     return "true";
 }
@@ -139,7 +144,7 @@ function bigIntTemplate(
 ) {
     const mainTemplate = isUnsigned
         ? `typeof ${input.val} === 'bigint' && ${input.val} >= BigInt("0")`
-        : `typeof ${input.val} === 'bigint'`;
+        : `typeof ${input.val} === 'bigint' && ${input.val} < BigInt("9223372036854775808") && ${input.val} > BigInt("-9223372036854775809")`;
     if (input.schema.nullable) {
         return `(${mainTemplate}) || ${input.val} === null`;
     }
@@ -168,6 +173,17 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
         parts.push(
             `${input.val}.${input.discriminatorKey} === "${input.discriminatorValue}"`,
         );
+    } else {
+        parts.push(`typeof ${input.val} === 'object' && ${input.val} !== null`);
+    }
+    if (!input.schema.additionalProperties) {
+        const allowedKeys = Object.keys(input.schema.properties);
+        for (const key of Object.keys(input.schema.optionalProperties ?? {})) {
+            allowedKeys.push(key);
+        }
+        parts.push(
+            `Object.keys(${input.val}).every((key) => "${input.discriminatorKey}" === key || ${JSON.stringify(allowedKeys)}.includes(key))`,
+        );
     }
     for (const key of Object.keys(input.schema.properties)) {
         const prop = input.schema.properties[key];
@@ -178,33 +194,41 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
                 instancePath: `${input.instancePath}/${key}`,
                 val: `${input.val}.${key}`,
                 targetVal: "",
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
+                subFunctions: input.subFunctions,
             }),
         );
     }
     if (input.schema.optionalProperties) {
         for (const key of Object.keys(input.schema.optionalProperties)) {
-            const prop = input.schema.optionalProperties;
+            const prop = input.schema.optionalProperties[key];
+            const template = schemaTemplate({
+                schema: prop,
+                schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
+                instancePath: `${input.instancePath}/${key}`,
+                val: `${input.val}.${key}`,
+                targetVal: "",
+                subFunctions: input.subFunctions,
+            });
             parts.push(
-                schemaTemplate({
-                    schema: prop,
-                    schemaPath: `${input.schemaPath}/optionalProperties/${key}`,
-                    instancePath: `${input.instancePath}/${key}`,
-                    val: `${input.val}.${key}`,
-                    targetVal: "",
-                    subFunctionBodies: input.subFunctionBodies,
-                    subFunctionNames: input.subFunctionNames,
-                }),
+                `(typeof ${input.val}.${key} === 'undefined' || (${template}))`,
             );
         }
     }
-    const mainTemplate = `typeof ${input.val} === 'object' && ${
-        input.val
-    } !== null && ${parts.join(" && ")}`;
+    let mainTemplate = parts.join(" && ");
+    const fnName = refFunctionName(input.schema.metadata.id ?? "");
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(input) {
+            return ${mainTemplate}
+        }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+
     if (input.schema.nullable) {
         return `((${mainTemplate}) || ${input.val} === null)`;
     }
+
     return mainTemplate;
 }
 
@@ -227,8 +251,7 @@ function arrayTemplate(input: TemplateInput<AArraySchema<any>>) {
         schemaPath: `${input.schemaPath}/elements`,
         schema: input.schema.elements,
         targetVal: "",
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
+        subFunctions: input.subFunctions,
     });
 
     if (input.schema.nullable) {
@@ -244,8 +267,7 @@ function recordTemplate(input: TemplateInput<ARecordSchema<any>>): string {
         schemaPath: `${input.schemaPath}/values`,
         val: `${input.val}[key]`,
         targetVal: "",
-        subFunctionBodies: input.subFunctionBodies,
-        subFunctionNames: input.subFunctionNames,
+        subFunctions: input.subFunctions,
     });
     const mainTemplate = `typeof ${input.val} === 'object' && ${input.val} !== null && Object.keys(${input.val}).every((key) => ${subTemplate})`;
     if (input.schema.nullable) {
@@ -267,18 +289,43 @@ function discriminatorTemplate(
                 schema: subSchema,
                 schemaPath: `${input.schemaPath}/mapping/${discriminatorVal}`,
                 instancePath: input.instancePath,
-                discriminatorKey: input.discriminatorKey,
+                discriminatorKey: input.schema.discriminator,
                 discriminatorValue: discriminatorVal,
-                subFunctionBodies: input.subFunctionBodies,
-                subFunctionNames: input.subFunctionNames,
+                subFunctions: input.subFunctions,
             }),
         );
     }
-    const mainTemplate = `typeof ${input.val} === 'object' && ${
+    let mainTemplate = `typeof ${input.val} === 'object' && ${
         input.val
     } !== null && (${parts.join(" || ")})`;
+    const fnName = refFunctionName(input.schema.metadata.id ?? "");
+
+    if (Object.keys(input.subFunctions).includes(fnName)) {
+        if (!input.subFunctions[fnName]) {
+            input.subFunctions[fnName] = `function ${fnName}(input) {
+            return ${mainTemplate}
+        }`;
+        }
+        mainTemplate = `${fnName}(${input.val})`;
+    }
+
     if (input.schema.nullable) {
         return `((${mainTemplate}) || ${input.val} === null)`;
     }
     return mainTemplate;
+}
+
+function refFunctionName(id: string) {
+    return `__validate_${id}`;
+}
+
+function refTemplate(input: TemplateInput<ARefSchema<any>>) {
+    const fnName = refFunctionName(input.schema.ref);
+    if (!Object.keys(input.subFunctions).includes(fnName)) {
+        input.subFunctions[fnName] = "";
+    }
+    if (input.schema.nullable) {
+        return `(${input.val} === null || ${fnName}(${input.val}))`;
+    }
+    return `${fnName}(${input.val})`;
 }
