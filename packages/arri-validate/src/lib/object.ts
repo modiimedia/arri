@@ -63,13 +63,23 @@ export function object<
                     TAdditionalProps
                 >,
                 parse(input, data) {
-                    return parse(schema as AObjectSchema, input, data, false);
+                    return parseObjectSchema(
+                        schema as AObjectSchema,
+                        input,
+                        data,
+                        false,
+                    );
                 },
                 coerce(input: unknown, data) {
-                    return parse(schema as AObjectSchema, input, data, true);
+                    return parseObjectSchema(
+                        schema as AObjectSchema,
+                        input,
+                        data,
+                        true,
+                    );
                 },
                 validate(input) {
-                    return validate(schema as AObjectSchema, input);
+                    return validateObjectSchema(schema as AObjectSchema, input);
                 },
                 serialize(input, data) {
                     return serializeObject(
@@ -84,7 +94,7 @@ export function object<
     return result;
 }
 
-function parse<T>(
+export function parseObjectSchema<T>(
     schema: AObjectSchema<T>,
     input: unknown,
     data: ValidationData,
@@ -183,7 +193,10 @@ function parse<T>(
     return result;
 }
 
-function validate(schema: AObjectSchema, input: unknown): boolean {
+export function validateObjectSchema(
+    schema: AObjectSchema,
+    input: unknown,
+): boolean {
     if (!isObject(input)) {
         return false;
     }
@@ -263,16 +276,16 @@ export function pick<
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
                 parse: (input, data) => {
-                    return parse(schema as any, input, data, true);
+                    return parseObjectSchema(schema as any, input, data, true);
                 },
                 coerce(input, data) {
-                    return parse(schema as any, input, data, false);
+                    return parseObjectSchema(schema as any, input, data, false);
                 },
                 validate(input) {
-                    return validate(schema as any, input);
+                    return validateObjectSchema(schema as any, input);
                 },
-                serialize(input) {
-                    return JSON.stringify(input);
+                serialize(input, data) {
+                    return serializeObject(schema as any, input, data);
                 },
             },
         },
@@ -340,16 +353,16 @@ export function omit<
             [SCHEMA_METADATA]: {
                 output: {} as any,
                 validate(input) {
-                    return validate(schema as any, input);
+                    return validateObjectSchema(schema as any, input);
                 },
                 parse(input: unknown, data) {
-                    return parse(schema as any, input, data, false);
+                    return parseObjectSchema(schema as any, input, data, false);
                 },
                 serialize(input, data) {
                     return serializeObject(schema as any, input, data);
                 },
                 coerce(input, data) {
-                    return parse(schema as any, input, data, true);
+                    return parseObjectSchema(schema as any, input, data, true);
                 },
             },
         },
@@ -428,17 +441,17 @@ export function extend<
     const isType = (
         input: unknown,
     ): input is InferType<TBaseSchema> & InferType<TSchema> =>
-        validate(schema as any, input);
+        validateObjectSchema(schema as any, input);
     const meta: ASchema["metadata"] = {
         id: opts.id,
         description: opts.description,
         [SCHEMA_METADATA]: {
             output: {} as any as InferType<TBaseSchema> & InferType<TSchema>,
             parse(input: unknown, data) {
-                return parse(schema as any, input, data, false);
+                return parseObjectSchema(schema as any, input, data, false);
             },
             coerce(input: unknown, data) {
-                return parse(schema as any, input, data, true);
+                return parseObjectSchema(schema as any, input, data, true);
             },
             validate: isType,
             serialize(input, data) {
@@ -487,13 +500,13 @@ export function partial<
             output: {} as any,
             optional: schema.metadata[SCHEMA_METADATA].optional,
             validate(input): input is Partial<InferType<TSchema>> {
-                return validate(newSchema as any, input);
+                return validateObjectSchema(newSchema as any, input);
             },
             parse(input, data) {
-                return parse(newSchema as any, input, data, false);
+                return parseObjectSchema(newSchema as any, input, data, false);
             },
             coerce(input, data) {
-                return parse(newSchema as any, input, data, true);
+                return parseObjectSchema(newSchema as any, input, data, true);
             },
             serialize(input, data) {
                 return serializeObject(schema, input, data);

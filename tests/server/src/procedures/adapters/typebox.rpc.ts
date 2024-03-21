@@ -2,9 +2,9 @@ import { Type } from "@sinclair/typebox";
 import { defineRpc } from "arri";
 import { typeboxAdapter } from "arri-adapter-typebox";
 
-export default defineRpc({
-    params: typeboxAdapter(
-        Type.Object({
+const TypeBoxObject = typeboxAdapter(
+    Type.Object(
+        {
             string: Type.String(),
             boolean: Type.Boolean(),
             integer: Type.Integer(),
@@ -19,16 +19,17 @@ export default defineRpc({
             }),
             array: Type.Array(Type.Boolean()),
             optionalString: Type.Optional(Type.String()),
-        }),
+        },
+        {
+            $id: "TypeBoxObject",
+        },
     ),
-    response: typeboxAdapter(
-        Type.Object({
-            message: Type.String(),
-        }),
-    ),
-    handler() {
-        return {
-            message: "ok",
-        };
+);
+
+export default defineRpc({
+    params: TypeBoxObject,
+    response: TypeBoxObject,
+    handler({ params }) {
+        return params;
     },
 });

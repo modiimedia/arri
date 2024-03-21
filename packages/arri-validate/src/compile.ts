@@ -67,6 +67,7 @@ export function compile<TSchema extends ASchema<any>>(
     const parser = getCompiledParser("input", schema);
     const parseFn = parser.fn;
     const serializer = getCompiledSerializer(schema);
+
     const serializeFn = serializer.fn;
     const validate = new Function(
         "input",

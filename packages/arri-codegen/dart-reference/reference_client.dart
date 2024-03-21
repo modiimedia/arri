@@ -185,6 +185,7 @@ class User {
   final Map<String, UserBookmarksValue> bookmarks;
   final Map<String, dynamic> metadata;
   final List<dynamic> randomList;
+  final BinaryTree binaryTree;
   final String? bio;
   const User({
     required this.id,
@@ -198,6 +199,7 @@ class User {
     required this.bookmarks,
     required this.metadata,
     required this.randomList,
+    required this.binaryTree,
     this.bio,
   });
 
@@ -238,6 +240,7 @@ class User {
           (json["randomList"] as List).map((item) => item).toList()
               as List<dynamic>
           : <dynamic>[],
+      binaryTree: BinaryTree.fromJson(json["binaryTree"]),
       bio: nullableTypeFromDynamic<String>(json["bio"]),
     );
   }
@@ -256,6 +259,7 @@ class User {
       "bookmarks": bookmarks.map((key, value) => MapEntry(key, value.toJson())),
       "metadata": metadata.map((key, value) => MapEntry(key, value)),
       "randomList": randomList.map((item) => item).toList(),
+      "binaryTree": binaryTree.toJson(),
     };
     if (bio != null) {
       __result["bio"] = bio;
@@ -275,6 +279,7 @@ class User {
     Map<String, UserBookmarksValue>? bookmarks,
     Map<String, dynamic>? metadata,
     List<dynamic>? randomList,
+    BinaryTree? binaryTree,
     String? bio,
   }) {
     return User(
@@ -289,6 +294,7 @@ class User {
       bookmarks: bookmarks ?? this.bookmarks,
       metadata: metadata ?? this.metadata,
       randomList: randomList ?? this.randomList,
+      binaryTree: binaryTree ?? this.binaryTree,
       bio: bio ?? this.bio,
     );
   }
@@ -563,6 +569,42 @@ class UserBookmarksValue {
     return UserBookmarksValue(
       postId: postId ?? this.postId,
       userId: userId ?? this.userId,
+    );
+  }
+}
+
+class BinaryTree {
+  final BinaryTree? left;
+  final BinaryTree? right;
+  const BinaryTree({
+    required this.left,
+    required this.right,
+  });
+  factory BinaryTree.fromJson(Map<String, dynamic> json) {
+    return BinaryTree(
+      left: json["left"] is Map<String, dynamic>
+          ? BinaryTree.fromJson(json["left"])
+          : null,
+      right: json["right"] is Map<String, dynamic>
+          ? BinaryTree.fromJson(json["right"])
+          : null,
+    );
+  }
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "left": left?.toJson(),
+      "right": right?.toJson(),
+    };
+    return __result;
+  }
+
+  BinaryTree copyWith({
+    BinaryTree? left,
+    BinaryTree? right,
+  }) {
+    return BinaryTree(
+      left: left ?? this.left,
+      right: right ?? this.right,
     );
   }
 }

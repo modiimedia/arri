@@ -11,10 +11,37 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
             isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: undefined as any,
-                parse: (input, _) => input,
-                coerce: (input, _) => input,
+                parse: (input, data) => {
+                    if (
+                        data.instancePath.length === 0 &&
+                        typeof input === "string"
+                    ) {
+                        try {
+                            return JSON.parse(input);
+                        } catch {
+                            return input;
+                        }
+                    }
+                    return input;
+                },
+                coerce: (input, data) => {
+                    if (
+                        data.instancePath.length === 0 &&
+                        typeof input === "string"
+                    ) {
+                        try {
+                            return JSON.parse(input);
+                        } catch {
+                            return input;
+                        }
+                    }
+                    return input;
+                },
                 validate: (input): input is any => true,
                 serialize(input) {
+                    if (typeof input === "string") {
+                        return input;
+                    }
                     return JSON.stringify(input);
                 },
             },

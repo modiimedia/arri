@@ -20,6 +20,7 @@ export {
 } from "./numbers";
 export { object, partial, pick, extend, omit } from "./object";
 export { record } from "./record";
+export { recursive } from "./recursive";
 export { string } from "./string";
 export { timestamp } from "./timestamp";
 export {

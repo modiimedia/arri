@@ -1,10 +1,15 @@
 import { type ArriRequestError, ArriRequestErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
+import { test, expect, describe } from "vitest";
 import {
     TestClient,
     type ObjectWithEveryType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryNullableType,
+    type RecursiveObject,
+    type RecursiveUnion,
+    type TypeBoxObject,
+    type UpdateAuthorData,
 } from "./testClient.rpc";
 
 const baseUrl = "http://127.0.0.1:2020";
@@ -18,99 +23,6 @@ const client = new TestClient({
 });
 const unauthenticatedClient = new TestClient({
     baseUrl,
-});
-test("posts.getPost", async () => {
-    const result = await client.posts.getPost({ postId: "1" });
-    expect(result.id).toBe("1");
-});
-
-test("posts.getPosts", async () => {
-    const result = await client.posts.getPosts({ limit: 50 });
-    expect(result.items.length).toBe(50);
-    const result2 = await client.posts.getPosts({ limit: 100, type: "video" });
-    expect(result2.items.length).toBe(100);
-    for (const item of result2.items) {
-        expect(item.type).toBe("video");
-    }
-    try {
-        await client.posts.getPosts({ limit: 1000 });
-        expect(false);
-    } catch (err) {
-        expect(err !== undefined);
-        expect(err instanceof ArriRequestErrorInstance);
-        if (err instanceof ArriRequestErrorInstance) {
-            expect(err.statusCode).toBe(400);
-        }
-    }
-});
-
-test("posts.updatePost", async () => {
-    const result = await client.posts.updatePost({
-        postId: "1",
-        data: {
-            title: "Hello world",
-            description: null,
-            content: `John said to Sarah, "Why are you here?"`,
-            tags: ["1", "2", "3"],
-        },
-    });
-    expect(result.id).toBe("1");
-    expect(result.title).toBe("Hello world");
-    expect(result.description).toBe(null);
-    expect(result.content).toBe(`John said to Sarah, "Why are you here?"`);
-    expect(result.tags.length).toBe(3);
-    expect(result.tags[0]).toBe("1");
-    expect(result.tags[1]).toBe("2");
-    expect(result.tags[2]).toBe("3");
-
-    const result2 = await client.posts.updatePost({
-        postId: "1",
-        data: {
-            title: "hi",
-        },
-    });
-    expect(result2.id).toBe("1");
-    expect(result2.title).toBe("hi");
-});
-
-test("post.logEvent()", async () => {
-    const createResult = await client.posts.logEvent({
-        eventType: "POST_CREATED",
-        postId: "1",
-        timestamp: new Date(),
-    });
-    expect(createResult.success);
-    const deleteResult = await client.posts.logEvent({
-        eventType: "POST_DELETED",
-        postId: "1",
-        timestamp: new Date(),
-    });
-    expect(deleteResult.success);
-    const updateResult = await client.posts.logEvent({
-        eventType: "POST_UPDATED",
-        postId: "1",
-        timestamp: new Date(),
-        data: {
-            title: "Hello World",
-            tags: ["1", "2"],
-            updatedAt: new Date(),
-        },
-    });
-    expect(updateResult.success);
-});
-
-test("unauthenticated request", async () => {
-    try {
-        await unauthenticatedClient.posts.getPost({
-            postId: "1",
-        });
-        expect(false);
-    } catch (err) {
-        expect(err instanceof ArriRequestErrorInstance);
-        if (err instanceof ArriRequestErrorInstance) {
-            expect(err.statusCode).toBe(401);
-        }
-    }
 });
 
 test("route request", async () => {
@@ -239,6 +151,17 @@ describe("miscTests", () => {
         const result = await client.miscTests.sendObject(input);
         expect(result).toStrictEqual(input);
     });
+    test("sendObject() unauthenticated", async () => {
+        try {
+            await unauthenticatedClient.miscTests.sendObject(input);
+            expect(true).toBe(false);
+        } catch (err) {
+            expect(err instanceof ArriRequestErrorInstance);
+            if (err instanceof ArriRequestErrorInstance) {
+                expect(err.statusCode).toBe(401);
+            }
+        }
+    });
     test("sendPartialObject()", async () => {
         const fullObjectResult =
             await client.miscTests.sendPartialObject(input);
@@ -291,6 +214,66 @@ describe("miscTests", () => {
             await client.miscTests.sendObjectWithNullableFields(nullableInput);
         expect(nullableResult).toStrictEqual(nullableInput);
     });
+
+    test("recursive object", async () => {
+        const payload: RecursiveObject = {
+            left: {
+                left: {
+                    left: null,
+                    right: null,
+                    value: "depth3",
+                },
+                right: {
+                    left: null,
+                    right: {
+                        left: null,
+                        right: null,
+                        value: "depth4",
+                    },
+                    value: "depth3",
+                },
+                value: "depth2",
+            },
+            right: null,
+            value: "depth1",
+        };
+        const result = await client.miscTests.sendRecursiveObject(payload);
+        expect(result).toStrictEqual(payload);
+    });
+
+    test("recursive union", async () => {
+        const payload: RecursiveUnion = {
+            type: "CHILDREN",
+            data: [
+                {
+                    type: "CHILD",
+                    data: {
+                        type: "TEXT",
+                        data: "Hello world",
+                    },
+                },
+                {
+                    type: "SHAPE",
+                    data: {
+                        width: 1,
+                        height: 2,
+                        color: "blue",
+                    },
+                },
+                {
+                    type: "CHILDREN",
+                    data: [
+                        {
+                            type: "TEXT",
+                            data: "Hello world",
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = await client.miscTests.sendRecursiveUnion(payload);
+        expect(result).toStrictEqual(payload);
+    });
 });
 
 test("unauthorized route request", async () => {
@@ -308,37 +291,6 @@ test("unauthorized route request", async () => {
             expect(err.statusCode).toBe(401);
         }
     }
-});
-
-describe("bigint requests", () => {
-    test("get request", async () => {
-        const result = await client.videos.getAnnotation({
-            id: "100",
-            version: "1",
-        });
-        expect(result.annotation_id.id).toBe("100");
-        expect(result.annotation_id.version).toBe("1");
-    });
-    test("post request", async () => {
-        const result = await client.videos.updateAnnotation({
-            annotation_id: "12345",
-            annotation_id_version: "2",
-            data: {
-                box_type_range: {
-                    start_time_in_nano_sec: BigInt("123456789"),
-                    end_time_in_nano_sec: BigInt("1234567890"),
-                },
-            },
-        });
-        expect(result.annotation_id.id).toBe("12345");
-        expect(result.annotation_id.version).toBe("2");
-        expect(result.box_type_range.start_time_in_nano_sec).toBe(
-            BigInt("123456789"),
-        );
-        expect(result.box_type_range.end_time_in_nano_sec).toBe(
-            BigInt("1234567890"),
-        );
-    });
 });
 
 test("SSE request", async () => {
@@ -463,4 +415,36 @@ test("SSE Requests Auto-Reconnect", async () => {
     expect(connectionCount > 0).toBe(true);
     expect(errorCount).toBe(0);
     controller.abort();
+});
+
+describe("arri adapters", () => {
+    test("typebox adapter", async () => {
+        const input: TypeBoxObject = {
+            string: "hello world",
+            boolean: false,
+            integer: 100,
+            number: 10.5,
+            enumField: "B",
+            object: {
+                string: "hello world",
+            },
+            array: [true, false],
+        };
+        const result = await client.adapters.typebox(input);
+        expect(result).toStrictEqual(input);
+    });
+});
+
+describe("manually added rpcs", () => {
+    test("updateAuthor()", async () => {
+        const input: UpdateAuthorData = {
+            name: "John Doe",
+        };
+        const result = await client.authors.updateAuthor({
+            authorId: "1",
+            data: input,
+        });
+        expect(result.id).toBe("1");
+        expect(result.name).toBe("John Doe");
+    });
 });

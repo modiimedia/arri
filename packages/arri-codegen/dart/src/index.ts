@@ -24,6 +24,8 @@ import {
     pascalCase,
     camelCase,
     type SchemaMetadata,
+    isSchemaFormRef,
+    type SchemaFormRef,
 } from "arri-codegen-utils";
 import { a } from "arri-validate";
 
@@ -105,13 +107,14 @@ export function createDartClient(
     const serviceGetterParts: string[] = [];
     const serviceParts: string[] = [];
     const modelParts: string[] = [];
-
-    Object.keys(services).forEach((key) => {
+    for (const key of Object.keys(services)) {
         const item = services[key];
         if (isRpcDefinition(item)) {
             const rpc = dartRpcFromDefinition(key, item, opts);
-            rpcParts.push(rpc);
-            return;
+            if (rpc) {
+                rpcParts.push(rpc);
+            }
+            continue;
         }
         if (isServiceDefinition(item)) {
             const serviceName: string = pascalCase(`${opts.clientName}_${key}`);
@@ -128,7 +131,8 @@ export function createDartClient(
   );
 }`);
         }
-    });
+    }
+
     for (const key of Object.keys(def.models)) {
         const item = def.models[key];
         if (
@@ -184,7 +188,7 @@ export function dartServiceFromDefinition(
     name: string,
     def: ServiceDefinition,
     opts: ServiceOptions,
-) {
+): string {
     const rpcParts: string[] = [];
     const subServiceParts: Array<{
         name: string;
@@ -195,20 +199,25 @@ export function dartServiceFromDefinition(
     Object.keys(def).forEach((key) => {
         const item = def[key];
         if (isRpcDefinition(item)) {
-            rpcParts.push(dartRpcFromDefinition(key, item, opts));
+            const rpc = dartRpcFromDefinition(key, item, opts);
+            if (rpc) {
+                rpcParts.push(rpc);
+            }
             return;
         }
-        const subServiceName = pascalCase(`${serviceName}_${key}`);
-        const subService = dartServiceFromDefinition(
-            subServiceName,
-            item,
-            opts,
-        );
-        subServiceParts.push({
-            name: subServiceName,
-            key,
-            content: subService,
-        });
+        if (isServiceDefinition(item)) {
+            const subServiceName = pascalCase(`${serviceName}_${key}`);
+            const subService = dartServiceFromDefinition(
+                subServiceName,
+                item,
+                opts,
+            );
+            subServiceParts.push({
+                name: subServiceName,
+                key,
+                content: subService,
+            });
+        }
     });
     return `class ${serviceName}Service {
   final http.Client? _httpClient;
@@ -243,6 +252,12 @@ export function dartRpcFromDefinition(
     def: RpcDefinition,
     opts: DartClientGeneratorOptions,
 ): string {
+    if (def.transport !== "http") {
+        console.warn(
+            `[codegen-dart] WARNING: non-http RPCs not supported at this time`,
+        );
+        return "";
+    }
     let returnType:
         | `Future<String>`
         | "Future<int>"
@@ -364,6 +379,9 @@ export function dartTypeFromJtdSchema(
     }
     if (isSchemaFormDiscriminator(def)) {
         return dartSealedClassFromJtdSchema(nodePath, def, additionalOptions);
+    }
+    if (isSchemaFormRef(def)) {
+        return dartRefFromJtdSchema(nodePath, def, additionalOptions);
     }
     return dartDynamicFromAny(nodePath, a.any(), additionalOptions);
 }
@@ -1113,5 +1131,42 @@ ${childContentParts.join("\n")}`;
             return `${input}.toJson()`;
         },
         content,
+    };
+}
+
+function dartRefFromJtdSchema(
+    nodePath: string,
+    def: SchemaFormRef,
+    additionalOptions: ConversionAdditionalOptions,
+): DartProperty {
+    const jsonKey = nodePath.split(".").pop() ?? "";
+    const key = camelCaseWrapper(jsonKey);
+    const className = pascalCase(def.ref, { normalize: true });
+    const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
+    const typeName = `${className}${isNullable ? "?" : ""}`;
+    return {
+        typeName,
+        fieldTemplate: fieldTemplateString(
+            typeName,
+            key,
+            def.metadata?.description,
+            def.metadata?.isDeprecated,
+        ),
+        constructorTemplate: additionalOptions.isOptional
+            ? `this.${key}`
+            : `required this.${key}`,
+        fromJsonTemplate(input) {
+            if (isNullable) {
+                return `${input} is Map<String, dynamic> ? ${className}.fromJson(${input}) : null`;
+            }
+            return `${className}.fromJson(${input})`;
+        },
+        toJsonTemplate(input) {
+            if (isNullable) {
+                return `${input}?.toJson()`;
+            }
+            return `${input}.toJson()`;
+        },
+        content: "",
     };
 }
