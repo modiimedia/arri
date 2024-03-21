@@ -21,7 +21,6 @@ export default defineRpc({
     params: RecursiveObject,
     response: RecursiveObject,
     async handler({ params }) {
-        console.log("NEW PAYLOAD", params);
         return params;
     },
 });

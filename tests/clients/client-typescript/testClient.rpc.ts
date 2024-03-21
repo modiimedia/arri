@@ -11,14 +11,36 @@ interface TestClientOptions {
 export class TestClient {
     private readonly baseUrl: string;
     private readonly headers: Record<string, string>;
+    authors: TestClientAuthorsService;
     adapters: TestClientAdaptersService;
     miscTests: TestClientMiscTestsService;
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
+        this.authors = new TestClientAuthorsService(options);
         this.adapters = new TestClientAdaptersService(options);
         this.miscTests = new TestClientMiscTestsService(options);
+    }
+}
+
+export class TestClientAuthorsService {
+    private readonly baseUrl: string;
+    private readonly headers: Record<string, string>;
+
+    constructor(options: TestClientOptions = {}) {
+        this.baseUrl = options.baseUrl ?? "";
+        this.headers = { "client-version": "10", ...options.headers };
+    }
+    updateAuthor(params: AuthorsUpdateAuthorParams) {
+        return arriRequest<Author, AuthorsUpdateAuthorParams>({
+            url: `${this.baseUrl}/rpcs/authors/update-author`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: $$Author.parse,
+            serializer: $$AuthorsUpdateAuthorParams.serialize,
+        });
     }
 }
 
@@ -30,17 +52,14 @@ export class TestClientAdaptersService {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
     }
-    typeboxAdapter(params: AdaptersTypeboxAdapterParams) {
-        return arriRequest<
-            AdaptersTypeboxAdapterResponse,
-            AdaptersTypeboxAdapterParams
-        >({
-            url: `${this.baseUrl}/rpcs/adapters/typebox-adapter`,
+    typebox(params: TypeBoxObject) {
+        return arriRequest<TypeBoxObject, TypeBoxObject>({
+            url: `${this.baseUrl}/rpcs/adapters/typebox`,
             method: "post",
             headers: this.headers,
             params,
-            parser: $$AdaptersTypeboxAdapterResponse.parse,
-            serializer: $$AdaptersTypeboxAdapterParams.serialize,
+            parser: $$TypeBoxObject.parse,
+            serializer: $$TypeBoxObject.serialize,
         });
     }
 }
@@ -311,18 +330,735 @@ const $$ManuallyAddedModel = {
     },
 };
 
-export interface AdaptersTypeboxAdapterParams {
+export interface AuthorsUpdateAuthorParams {
+    authorId: string;
+    data: UpdateAuthorData;
+}
+const $$AuthorsUpdateAuthorParams = {
+    parse(input: Record<any, any>): AuthorsUpdateAuthorParams {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const __D1 = {};
+                if (typeof json.authorId === "string") {
+                    __D1.authorId = json.authorId;
+                } else {
+                    $fallback(
+                        "/authorId",
+                        "/properties/authorId/type",
+                        "Expected string at /authorId",
+                    );
+                }
+                if (typeof json.data === "object" && json.data !== null) {
+                    const __D2 = {};
+                    if (typeof json.data.name === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (typeof json.data.name === "string") {
+                            __D2.name = json.data.name;
+                        } else {
+                            $fallback(
+                                "/data/name",
+                                "/properties/data/optionalProperties/name/type",
+                                "Expected string at /data/name",
+                            );
+                        }
+                    }
+                    if (typeof json.data.bio === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (json.data.bio === null) {
+                            __D2.bio = json.data.bio;
+                        } else {
+                            if (typeof json.data.bio === "string") {
+                                __D2.bio = json.data.bio;
+                            } else {
+                                $fallback(
+                                    "/data/bio",
+                                    "/properties/data/optionalProperties/bio/type",
+                                    "Expected string at /data/bio",
+                                );
+                            }
+                        }
+                    }
+                    if (typeof json.data.createdAt === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (
+                            typeof json.data.createdAt === "object" &&
+                            json.data.createdAt instanceof Date
+                        ) {
+                            __D2.createdAt = json.data.createdAt;
+                        } else if (typeof json.data.createdAt === "string") {
+                            __D2.createdAt = new Date(json.data.createdAt);
+                        } else {
+                            $fallback(
+                                "/data/createdAt",
+                                "/properties/data/optionalProperties/createdAt",
+                                "Expected instanceof Date or ISO Date string at /data/createdAt",
+                            );
+                        }
+                    }
+                    if (typeof json.data.updatedAt === "undefined") {
+                        // ignore undefined
+                    } else {
+                        if (
+                            typeof json.data.updatedAt === "object" &&
+                            json.data.updatedAt instanceof Date
+                        ) {
+                            __D2.updatedAt = json.data.updatedAt;
+                        } else if (typeof json.data.updatedAt === "string") {
+                            __D2.updatedAt = new Date(json.data.updatedAt);
+                        } else {
+                            $fallback(
+                                "/data/updatedAt",
+                                "/properties/data/optionalProperties/updatedAt",
+                                "Expected instanceof Date or ISO Date string at /data/updatedAt",
+                            );
+                        }
+                    }
+                    __D1.data = __D2;
+                } else {
+                    $fallback("/data", "/properties/data", "Expected object");
+                }
+                result = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const __D1 = {};
+            if (typeof input.authorId === "string") {
+                __D1.authorId = input.authorId;
+            } else {
+                $fallback(
+                    "/authorId",
+                    "/properties/authorId/type",
+                    "Expected string at /authorId",
+                );
+            }
+            if (typeof input.data === "object" && input.data !== null) {
+                const __D2 = {};
+                if (typeof input.data.name === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (typeof input.data.name === "string") {
+                        __D2.name = input.data.name;
+                    } else {
+                        $fallback(
+                            "/data/name",
+                            "/properties/data/optionalProperties/name/type",
+                            "Expected string at /data/name",
+                        );
+                    }
+                }
+                if (typeof input.data.bio === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (input.data.bio === null) {
+                        __D2.bio = input.data.bio;
+                    } else {
+                        if (typeof input.data.bio === "string") {
+                            __D2.bio = input.data.bio;
+                        } else {
+                            $fallback(
+                                "/data/bio",
+                                "/properties/data/optionalProperties/bio/type",
+                                "Expected string at /data/bio",
+                            );
+                        }
+                    }
+                }
+                if (typeof input.data.createdAt === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (
+                        typeof input.data.createdAt === "object" &&
+                        input.data.createdAt instanceof Date
+                    ) {
+                        __D2.createdAt = input.data.createdAt;
+                    } else if (typeof input.data.createdAt === "string") {
+                        __D2.createdAt = new Date(input.data.createdAt);
+                    } else {
+                        $fallback(
+                            "/data/createdAt",
+                            "/properties/data/optionalProperties/createdAt",
+                            "Expected instanceof Date or ISO Date string at /data/createdAt",
+                        );
+                    }
+                }
+                if (typeof input.data.updatedAt === "undefined") {
+                    // ignore undefined
+                } else {
+                    if (
+                        typeof input.data.updatedAt === "object" &&
+                        input.data.updatedAt instanceof Date
+                    ) {
+                        __D2.updatedAt = input.data.updatedAt;
+                    } else if (typeof input.data.updatedAt === "string") {
+                        __D2.updatedAt = new Date(input.data.updatedAt);
+                    } else {
+                        $fallback(
+                            "/data/updatedAt",
+                            "/properties/data/optionalProperties/updatedAt",
+                            "Expected instanceof Date or ISO Date string at /data/updatedAt",
+                        );
+                    }
+                }
+                __D1.data = __D2;
+            } else {
+                $fallback("/data", "/properties/data", "Expected object");
+            }
+            result = __D1;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: AuthorsUpdateAuthorParams): string {
+        let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        json += "{";
+        json += `"authorId":`;
+        if (input.authorId.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.authorId.length; i++) {
+                __point__ = input.authorId.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.authorId);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.authorId.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.authorId}"`;
+                } else {
+                    json += `"${__result__}${input.authorId.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.authorId.length < 5000 &&
+            !STR_ESCAPE.test(input.authorId)
+        ) {
+            json += `"${input.authorId}"`;
+        } else {
+            json += JSON.stringify(input.authorId);
+        }
+
+        json += ',"data":';
+        json += "{";
+        let dataHasFields = false;
+        if (typeof input.data.name !== "undefined") {
+            if (dataHasFields) {
+                json += `,"name":`;
+                if (input.data.name.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.name.length; i++) {
+                        __point__ = input.data.name.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.name);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.name.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.name}"`;
+                        } else {
+                            json += `"${__result__}${input.data.name.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.name.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.name)
+                ) {
+                    json += `"${input.data.name}"`;
+                } else {
+                    json += JSON.stringify(input.data.name);
+                }
+            } else {
+                json += `"name":`;
+                if (input.data.name.length < 42) {
+                    let __result__ = "";
+                    let __last__ = -1;
+                    let __point__ = 255;
+                    let __finished__ = false;
+                    for (let i = 0; i < input.data.name.length; i++) {
+                        __point__ = input.data.name.charCodeAt(i);
+                        if (
+                            __point__ < 32 ||
+                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                        ) {
+                            json += JSON.stringify(input.data.name);
+                            __finished__ = true;
+                            break;
+                        }
+                        if (__point__ === 0x22 || __point__ === 0x5c) {
+                            __last__ === -1 && (__last__ = 0);
+                            __result__ +=
+                                input.data.name.slice(__last__, i) + "\\";
+                            __last__ = i;
+                        }
+                    }
+                    if (!__finished__) {
+                        if (__last__ === -1) {
+                            json += `"${input.data.name}"`;
+                        } else {
+                            json += `"${__result__}${input.data.name.slice(__last__)}"`;
+                        }
+                    }
+                } else if (
+                    input.data.name.length < 5000 &&
+                    !STR_ESCAPE.test(input.data.name)
+                ) {
+                    json += `"${input.data.name}"`;
+                } else {
+                    json += JSON.stringify(input.data.name);
+                }
+                dataHasFields = true;
+            }
+        }
+        if (typeof input.data.bio !== "undefined") {
+            if (dataHasFields) {
+                if (typeof input.data.bio === "string") {
+                    json += `,"bio":`;
+                    if (input.data.bio.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < input.data.bio.length; i++) {
+                            __point__ = input.data.bio.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(input.data.bio);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.data.bio.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.data.bio}"`;
+                            } else {
+                                json += `"${__result__}${input.data.bio.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.data.bio.length < 5000 &&
+                        !STR_ESCAPE.test(input.data.bio)
+                    ) {
+                        json += `"${input.data.bio}"`;
+                    } else {
+                        json += JSON.stringify(input.data.bio);
+                    }
+                } else {
+                    json += ',"bio":null';
+                }
+            } else {
+                if (typeof input.data.bio === "string") {
+                    json += `"bio":`;
+                    if (input.data.bio.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < input.data.bio.length; i++) {
+                            __point__ = input.data.bio.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(input.data.bio);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    input.data.bio.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${input.data.bio}"`;
+                            } else {
+                                json += `"${__result__}${input.data.bio.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        input.data.bio.length < 5000 &&
+                        !STR_ESCAPE.test(input.data.bio)
+                    ) {
+                        json += `"${input.data.bio}"`;
+                    } else {
+                        json += JSON.stringify(input.data.bio);
+                    }
+                } else {
+                    json += '"bio":null';
+                }
+                dataHasFields = true;
+            }
+        }
+        if (typeof input.data.createdAt !== "undefined") {
+            if (dataHasFields) {
+                json += `,"createdAt":"${input.data.createdAt.toISOString()}"`;
+            } else {
+                json += `"createdAt":"${input.data.createdAt.toISOString()}"`;
+                dataHasFields = true;
+            }
+        }
+        if (typeof input.data.updatedAt !== "undefined") {
+            if (dataHasFields) {
+                json += `,"updatedAt":"${input.data.updatedAt.toISOString()}"`;
+            } else {
+                json += `"updatedAt":"${input.data.updatedAt.toISOString()}"`;
+                dataHasFields = true;
+            }
+        }
+        json += "}";
+        json += "}";
+        return json;
+    },
+};
+export interface UpdateAuthorData {
+    name?: string;
+    bio?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface Author {
+    id: string;
+    name: string;
+    bio: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+}
+const $$Author = {
+    parse(input: Record<any, any>): Author {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const __D1 = {};
+                if (typeof json.id === "string") {
+                    __D1.id = json.id;
+                } else {
+                    $fallback(
+                        "/id",
+                        "/properties/id/type",
+                        "Expected string at /id",
+                    );
+                }
+                if (typeof json.name === "string") {
+                    __D1.name = json.name;
+                } else {
+                    $fallback(
+                        "/name",
+                        "/properties/name/type",
+                        "Expected string at /name",
+                    );
+                }
+                if (json.bio === null) {
+                    __D1.bio = json.bio;
+                } else {
+                    if (typeof json.bio === "string") {
+                        __D1.bio = json.bio;
+                    } else {
+                        $fallback(
+                            "/bio",
+                            "/properties/bio/type",
+                            "Expected string at /bio",
+                        );
+                    }
+                }
+                if (
+                    typeof json.createdAt === "object" &&
+                    json.createdAt instanceof Date
+                ) {
+                    __D1.createdAt = json.createdAt;
+                } else if (typeof json.createdAt === "string") {
+                    __D1.createdAt = new Date(json.createdAt);
+                } else {
+                    $fallback(
+                        "/createdAt",
+                        "/properties/createdAt",
+                        "Expected instanceof Date or ISO Date string at /createdAt",
+                    );
+                }
+                if (
+                    typeof json.updatedAt === "object" &&
+                    json.updatedAt instanceof Date
+                ) {
+                    __D1.updatedAt = json.updatedAt;
+                } else if (typeof json.updatedAt === "string") {
+                    __D1.updatedAt = new Date(json.updatedAt);
+                } else {
+                    $fallback(
+                        "/updatedAt",
+                        "/properties/updatedAt",
+                        "Expected instanceof Date or ISO Date string at /updatedAt",
+                    );
+                }
+                result = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const __D1 = {};
+            if (typeof input.id === "string") {
+                __D1.id = input.id;
+            } else {
+                $fallback(
+                    "/id",
+                    "/properties/id/type",
+                    "Expected string at /id",
+                );
+            }
+            if (typeof input.name === "string") {
+                __D1.name = input.name;
+            } else {
+                $fallback(
+                    "/name",
+                    "/properties/name/type",
+                    "Expected string at /name",
+                );
+            }
+            if (input.bio === null) {
+                __D1.bio = input.bio;
+            } else {
+                if (typeof input.bio === "string") {
+                    __D1.bio = input.bio;
+                } else {
+                    $fallback(
+                        "/bio",
+                        "/properties/bio/type",
+                        "Expected string at /bio",
+                    );
+                }
+            }
+            if (
+                typeof input.createdAt === "object" &&
+                input.createdAt instanceof Date
+            ) {
+                __D1.createdAt = input.createdAt;
+            } else if (typeof input.createdAt === "string") {
+                __D1.createdAt = new Date(input.createdAt);
+            } else {
+                $fallback(
+                    "/createdAt",
+                    "/properties/createdAt",
+                    "Expected instanceof Date or ISO Date string at /createdAt",
+                );
+            }
+            if (
+                typeof input.updatedAt === "object" &&
+                input.updatedAt instanceof Date
+            ) {
+                __D1.updatedAt = input.updatedAt;
+            } else if (typeof input.updatedAt === "string") {
+                __D1.updatedAt = new Date(input.updatedAt);
+            } else {
+                $fallback(
+                    "/updatedAt",
+                    "/properties/updatedAt",
+                    "Expected instanceof Date or ISO Date string at /updatedAt",
+                );
+            }
+            result = __D1;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: Author): string {
+        let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        json += "{";
+        json += `"id":`;
+        if (input.id.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.id.length; i++) {
+                __point__ = input.id.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.id);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.id.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.id}"`;
+                } else {
+                    json += `"${__result__}${input.id.slice(__last__)}"`;
+                }
+            }
+        } else if (input.id.length < 5000 && !STR_ESCAPE.test(input.id)) {
+            json += `"${input.id}"`;
+        } else {
+            json += JSON.stringify(input.id);
+        }
+        json += `,"name":`;
+        if (input.name.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.name.length; i++) {
+                __point__ = input.name.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.name);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.name.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.name}"`;
+                } else {
+                    json += `"${__result__}${input.name.slice(__last__)}"`;
+                }
+            }
+        } else if (input.name.length < 5000 && !STR_ESCAPE.test(input.name)) {
+            json += `"${input.name}"`;
+        } else {
+            json += JSON.stringify(input.name);
+        }
+        if (typeof input.bio === "string") {
+            json += `,"bio":`;
+            if (input.bio.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < input.bio.length; i++) {
+                    __point__ = input.bio.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(input.bio);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ += input.bio.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${input.bio}"`;
+                    } else {
+                        json += `"${__result__}${input.bio.slice(__last__)}"`;
+                    }
+                }
+            } else if (input.bio.length < 5000 && !STR_ESCAPE.test(input.bio)) {
+                json += `"${input.bio}"`;
+            } else {
+                json += JSON.stringify(input.bio);
+            }
+        } else {
+            json += ',"bio":null';
+        }
+        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
+        json += `,"updatedAt":"${input.updatedAt.toISOString()}"`;
+        json += "}";
+        return json;
+    },
+};
+
+export interface TypeBoxObject {
     string: string;
     boolean: boolean;
     integer: number;
     number: number;
-    enumField: AdaptersTypeboxAdapterParamsEnumField;
-    object: AdaptersTypeboxAdapterParamsObject;
+    enumField: TypeBoxObjectEnumField;
+    object: TypeBoxObjectObject;
     array: Array<boolean>;
     optionalString?: string;
 }
-const $$AdaptersTypeboxAdapterParams = {
-    parse(input: Record<any, any>): AdaptersTypeboxAdapterParams {
+const $$TypeBoxObject = {
+    parse(input: Record<any, any>): TypeBoxObject {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
                 `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
@@ -577,7 +1313,7 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         return result;
     },
-    serialize(input: AdaptersTypeboxAdapterParams): string {
+    serialize(input: TypeBoxObject): string {
         let json = "";
 
         const STR_ESCAPE =
@@ -728,109 +1464,10 @@ const $$AdaptersTypeboxAdapterParams = {
         return json;
     },
 };
-export type AdaptersTypeboxAdapterParamsEnumField = "A" | "B" | "C";
-export interface AdaptersTypeboxAdapterParamsObject {
+export type TypeBoxObjectEnumField = "A" | "B" | "C";
+export interface TypeBoxObjectObject {
     string: string;
 }
-
-export interface AdaptersTypeboxAdapterResponse {
-    message: string;
-}
-const $$AdaptersTypeboxAdapterResponse = {
-    parse(input: Record<any, any>): AdaptersTypeboxAdapterResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.message === "string") {
-                    __D1.message = json.message;
-                } else {
-                    $fallback(
-                        "/message",
-                        "/properties/message/type",
-                        "Expected string at /message",
-                    );
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.message === "string") {
-                __D1.message = input.message;
-            } else {
-                $fallback(
-                    "/message",
-                    "/properties/message/type",
-                    "Expected string at /message",
-                );
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: AdaptersTypeboxAdapterResponse): string {
-        let json = "";
-
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-
-        json += "";
-        json += "{";
-        json += `"message":`;
-        if (input.message.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.message.length; i++) {
-                __point__ = input.message.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.message);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.message.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.message}"`;
-                } else {
-                    json += `"${__result__}${input.message.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.message.length < 5000 &&
-            !STR_ESCAPE.test(input.message)
-        ) {
-            json += `"${input.message}"`;
-        } else {
-            json += JSON.stringify(input.message);
-        }
-        json += "}";
-        return json;
-    },
-};
 
 /**
  * @deprecated

@@ -8,6 +8,8 @@ import {
     type ObjectWithEveryNullableType,
     type RecursiveObject,
     type RecursiveUnion,
+    type TypeBoxObject,
+    type UpdateAuthorData,
 } from "./testClient.rpc";
 
 const baseUrl = "http://127.0.0.1:2020";
@@ -413,4 +415,36 @@ test("SSE Requests Auto-Reconnect", async () => {
     expect(connectionCount > 0).toBe(true);
     expect(errorCount).toBe(0);
     controller.abort();
+});
+
+describe("arri adapters", () => {
+    test("typebox adapter", async () => {
+        const input: TypeBoxObject = {
+            string: "hello world",
+            boolean: false,
+            integer: 100,
+            number: 10.5,
+            enumField: "B",
+            object: {
+                string: "hello world",
+            },
+            array: [true, false],
+        };
+        const result = await client.adapters.typebox(input);
+        expect(result).toStrictEqual(input);
+    });
+});
+
+describe("manually added rpcs", () => {
+    test("updateAuthor()", async () => {
+        const input: UpdateAuthorData = {
+            name: "John Doe",
+        };
+        const result = await client.authors.updateAuthor({
+            authorId: "1",
+            data: input,
+        });
+        expect(result.id).toBe("1");
+        expect(result.name).toBe("John Doe");
+    });
 });

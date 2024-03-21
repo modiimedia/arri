@@ -17,6 +17,14 @@ class TestClient {
     _headers = {"client-version": "10", ...headers};
   }
 
+  TestClientAuthorsService get authors {
+    return TestClientAuthorsService(
+      httpClient: _httpClient,
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
+
   TestClientAdaptersService get adapters {
     return TestClientAdaptersService(
       httpClient: _httpClient,
@@ -34,6 +42,33 @@ class TestClient {
   }
 }
 
+class TestClientAuthorsService {
+  final http.Client? _httpClient;
+  final String _baseUrl;
+  late final Map<String, String> _headers;
+  TestClientAuthorsService({
+    http.Client? httpClient,
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl {
+    _headers = {"client-version": "10", ...headers};
+  }
+
+  Future<Author> updateAuthor(AuthorsUpdateAuthorParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/authors/update-author",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => Author.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+}
+
 class TestClientAdaptersService {
   final http.Client? _httpClient;
   final String _baseUrl;
@@ -47,15 +82,14 @@ class TestClientAdaptersService {
     _headers = {"client-version": "10", ...headers};
   }
 
-  Future<AdaptersTypeboxAdapterResponse> typeboxAdapter(
-      AdaptersTypeboxAdapterParams params) {
+  Future<TypeBoxObject> typebox(TypeBoxObject params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/adapters/typebox-adapter",
+      "$_baseUrl/rpcs/adapters/typebox",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => AdaptersTypeboxAdapterResponse.fromJson(
+      parser: (body) => TypeBoxObject.fromJson(
         json.decode(body),
       ),
     );
@@ -344,16 +378,160 @@ class ManuallyAddedModel {
   }
 }
 
-class AdaptersTypeboxAdapterParams {
+class AuthorsUpdateAuthorParams {
+  final String authorId;
+  final UpdateAuthorData data;
+  const AuthorsUpdateAuthorParams({
+    required this.authorId,
+    required this.data,
+  });
+  factory AuthorsUpdateAuthorParams.fromJson(Map<String, dynamic> json) {
+    return AuthorsUpdateAuthorParams(
+      authorId: typeFromDynamic<String>(json["authorId"], ""),
+      data: UpdateAuthorData.fromJson(json["data"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "authorId": authorId,
+      "data": data.toJson(),
+    };
+
+    return __result;
+  }
+
+  AuthorsUpdateAuthorParams copyWith({
+    String? authorId,
+    UpdateAuthorData? data,
+  }) {
+    return AuthorsUpdateAuthorParams(
+      authorId: authorId ?? this.authorId,
+      data: data ?? this.data,
+    );
+  }
+}
+
+class UpdateAuthorData {
+  final String? name;
+  final String? bio;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const UpdateAuthorData({
+    this.name,
+    this.bio,
+    this.createdAt,
+    this.updatedAt,
+  });
+  factory UpdateAuthorData.fromJson(Map<String, dynamic> json) {
+    return UpdateAuthorData(
+      name: nullableTypeFromDynamic<String>(json["name"]),
+      bio: nullableTypeFromDynamic<String>(json["bio"]),
+      createdAt: nullableDateTimeFromDynamic(json["createdAt"]),
+      updatedAt: nullableDateTimeFromDynamic(json["updatedAt"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{};
+    if (name != null) {
+      __result["name"] = name;
+    }
+    if (bio != null) {
+      __result["bio"] = bio;
+    }
+    if (createdAt != null) {
+      __result["createdAt"] = createdAt?.toUtc().toIso8601String();
+    }
+    if (updatedAt != null) {
+      __result["updatedAt"] = updatedAt?.toUtc().toIso8601String();
+    }
+    return __result;
+  }
+
+  UpdateAuthorData copyWith({
+    String? name,
+    String? bio,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UpdateAuthorData(
+      name: name ?? this.name,
+      bio: bio ?? this.bio,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class Author {
+  final String id;
+  final String name;
+  final String? bio;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Author({
+    required this.id,
+    required this.name,
+    required this.bio,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  factory Author.fromJson(Map<String, dynamic> json) {
+    return Author(
+      id: typeFromDynamic<String>(json["id"], ""),
+      name: typeFromDynamic<String>(json["name"], ""),
+      bio: nullableTypeFromDynamic<String>(json["bio"]),
+      createdAt: dateTimeFromDynamic(
+        json["createdAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      updatedAt: dateTimeFromDynamic(
+        json["updatedAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "id": id,
+      "name": name,
+      "bio": bio,
+      "createdAt": createdAt.toUtc().toIso8601String(),
+      "updatedAt": updatedAt.toUtc().toIso8601String(),
+    };
+
+    return __result;
+  }
+
+  Author copyWith({
+    String? id,
+    String? name,
+    String? bio,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Author(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      bio: bio ?? this.bio,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class TypeBoxObject {
   final String string;
   final bool boolean;
   final int integer;
   final double number;
-  final AdaptersTypeboxAdapterParamsEnumField enumField;
-  final AdaptersTypeboxAdapterParamsObject object;
+  final TypeBoxObjectEnumField enumField;
+  final TypeBoxObjectObject object;
   final List<bool> array;
   final String? optionalString;
-  const AdaptersTypeboxAdapterParams({
+  const TypeBoxObject({
     required this.string,
     required this.boolean,
     required this.integer,
@@ -363,15 +541,14 @@ class AdaptersTypeboxAdapterParams {
     required this.array,
     this.optionalString,
   });
-  factory AdaptersTypeboxAdapterParams.fromJson(Map<String, dynamic> json) {
-    return AdaptersTypeboxAdapterParams(
+  factory TypeBoxObject.fromJson(Map<String, dynamic> json) {
+    return TypeBoxObject(
       string: typeFromDynamic<String>(json["string"], ""),
       boolean: typeFromDynamic<bool>(json["boolean"], false),
       integer: intFromDynamic(json["integer"], 0),
       number: doubleFromDynamic(json["number"], 0),
-      enumField:
-          AdaptersTypeboxAdapterParamsEnumField.fromJson(json["enumField"]),
-      object: AdaptersTypeboxAdapterParamsObject.fromJson(json["object"]),
+      enumField: TypeBoxObjectEnumField.fromJson(json["enumField"]),
+      object: TypeBoxObjectObject.fromJson(json["object"]),
       array: json["array"] is List
           ?
           // ignore: unnecessary_cast
@@ -399,17 +576,17 @@ class AdaptersTypeboxAdapterParams {
     return __result;
   }
 
-  AdaptersTypeboxAdapterParams copyWith({
+  TypeBoxObject copyWith({
     String? string,
     bool? boolean,
     int? integer,
     double? number,
-    AdaptersTypeboxAdapterParamsEnumField? enumField,
-    AdaptersTypeboxAdapterParamsObject? object,
+    TypeBoxObjectEnumField? enumField,
+    TypeBoxObjectObject? object,
     List<bool>? array,
     String? optionalString,
   }) {
-    return AdaptersTypeboxAdapterParams(
+    return TypeBoxObject(
       string: string ?? this.string,
       boolean: boolean ?? this.boolean,
       integer: integer ?? this.integer,
@@ -422,16 +599,15 @@ class AdaptersTypeboxAdapterParams {
   }
 }
 
-enum AdaptersTypeboxAdapterParamsEnumField
-    implements Comparable<AdaptersTypeboxAdapterParamsEnumField> {
+enum TypeBoxObjectEnumField implements Comparable<TypeBoxObjectEnumField> {
   a("A"),
   b("B"),
   c("C");
 
-  const AdaptersTypeboxAdapterParamsEnumField(this.value);
+  const TypeBoxObjectEnumField(this.value);
   final String value;
 
-  factory AdaptersTypeboxAdapterParamsEnumField.fromJson(dynamic json) {
+  factory TypeBoxObjectEnumField.fromJson(dynamic json) {
     for (final v in values) {
       if (v.value == json) {
         return v;
@@ -441,18 +617,16 @@ enum AdaptersTypeboxAdapterParamsEnumField
   }
 
   @override
-  compareTo(AdaptersTypeboxAdapterParamsEnumField other) =>
-      name.compareTo(other.name);
+  compareTo(TypeBoxObjectEnumField other) => name.compareTo(other.name);
 }
 
-class AdaptersTypeboxAdapterParamsObject {
+class TypeBoxObjectObject {
   final String string;
-  const AdaptersTypeboxAdapterParamsObject({
+  const TypeBoxObjectObject({
     required this.string,
   });
-  factory AdaptersTypeboxAdapterParamsObject.fromJson(
-      Map<String, dynamic> json) {
-    return AdaptersTypeboxAdapterParamsObject(
+  factory TypeBoxObjectObject.fromJson(Map<String, dynamic> json) {
+    return TypeBoxObjectObject(
       string: typeFromDynamic<String>(json["string"], ""),
     );
   }
@@ -465,39 +639,11 @@ class AdaptersTypeboxAdapterParamsObject {
     return __result;
   }
 
-  AdaptersTypeboxAdapterParamsObject copyWith({
+  TypeBoxObjectObject copyWith({
     String? string,
   }) {
-    return AdaptersTypeboxAdapterParamsObject(
+    return TypeBoxObjectObject(
       string: string ?? this.string,
-    );
-  }
-}
-
-class AdaptersTypeboxAdapterResponse {
-  final String message;
-  const AdaptersTypeboxAdapterResponse({
-    required this.message,
-  });
-  factory AdaptersTypeboxAdapterResponse.fromJson(Map<String, dynamic> json) {
-    return AdaptersTypeboxAdapterResponse(
-      message: typeFromDynamic<String>(json["message"], ""),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final __result = <String, dynamic>{
-      "message": message,
-    };
-
-    return __result;
-  }
-
-  AdaptersTypeboxAdapterResponse copyWith({
-    String? message,
-  }) {
-    return AdaptersTypeboxAdapterResponse(
-      message: message ?? this.message,
     );
   }
 }
