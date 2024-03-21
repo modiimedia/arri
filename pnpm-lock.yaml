@@ -131,6 +131,9 @@ importers:
       arri-codegen-dart:
         specifier: workspace:*
         version: link:../arri-codegen/dart
+      arri-codegen-kotlin:
+        specifier: workspace:*
+        version: link:../arri-codegen/kotlin
       arri-codegen-ts:
         specifier: workspace:*
         version: link:../arri-codegen/typescript
@@ -241,9 +244,15 @@ importers:
       arri-codegen-utils:
         specifier: workspace:*
         version: link:../utils
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../arri-validate
       json-schema-to-jtd:
         specifier: workspace:*
         version: link:../../json-schema-to-jtd
+      jtd-utils:
+        specifier: workspace:*
+        version: link:../../jtd-utils
 
   packages/arri-codegen/typescript:
     dependencies:

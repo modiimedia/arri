@@ -35,6 +35,13 @@
         "command": "dart",
         "cwd": "packages/arri-client-dart"
       }
+    },
+    "pub-get": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub get",
+        "cwd": "packages/arri-client-dart"
+      }
     }
   }
 }
