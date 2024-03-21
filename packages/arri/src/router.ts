@@ -10,13 +10,16 @@ export interface ArriRouterBase {
         TParams extends AObjectSchema<any, any> | undefined,
         TResponse extends AObjectSchema<any, any> | undefined,
     >(
-        procedure: NamedRpc<TIsEventStream, TParams, TResponse>,
+        procedure: Omit<
+            NamedRpc<TIsEventStream, TParams, TResponse>,
+            "transport"
+        >,
     ) => void;
     wsRpc: <
         TParams extends RpcParamSchema | undefined,
         TResponse extends RpcParamSchema | undefined,
     >(
-        procedure: NamedWebsocketRpc<TParams, TResponse>,
+        procedure: Omit<NamedWebsocketRpc<TParams, TResponse>, "transport">,
     ) => void;
     route: <
         TPath extends string,
@@ -43,15 +46,24 @@ export class ArriRouter implements ArriRouterBase {
         TIsEventStream extends boolean = false,
         TParams extends AObjectSchema<any, any> | undefined = undefined,
         TResponse extends AObjectSchema<any, any> | undefined = undefined,
-    >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
-        this.procedures.push(procedure);
+    >(
+        procedure: Omit<
+            NamedRpc<TIsEventStream, TParams, TResponse>,
+            "transport"
+        >,
+    ) {
+        (procedure as any).transport = "http";
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.procedures.push(procedure as any);
     }
 
     wsRpc<
         TParams extends RpcParamSchema | undefined,
         TResponse extends RpcParamSchema | undefined,
-    >(procedure: NamedWebsocketRpc<TParams, TResponse>) {
-        this.procedures.push(procedure);
+    >(procedure: Omit<NamedWebsocketRpc<TParams, TResponse>, "transport">) {
+        (procedure as any).transport = "ws";
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.procedures.push(procedure as any);
     }
 
     route<

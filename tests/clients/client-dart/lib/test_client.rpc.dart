@@ -54,6 +54,19 @@ class TestClientAuthorsService {
         _baseUrl = baseUrl {
     _headers = {"client-version": "10", ...headers};
   }
+
+  Future<Author> updateAuthor(AuthorsUpdateAuthorParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/authors/update-author",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => Author.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
 }
 
 class TestClientAdaptersService {

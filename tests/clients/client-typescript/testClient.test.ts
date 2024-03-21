@@ -475,6 +475,8 @@ test("Websocket Requests", async () => {
     expect(msgMap["2"].y).toBe(2);
     expect(msgMap["3"].x).toBe(5);
     expect(msgMap["3"].y).toBe(-5);
+});
+
 describe("arri adapters", () => {
     test("typebox adapter", async () => {
         const input: TypeBoxObject = {

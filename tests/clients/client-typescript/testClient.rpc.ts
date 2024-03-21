@@ -38,17 +38,14 @@ export class TestClientAuthorsService {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
     }
-    updateAuthor(options: WsOptions<Author> = {}) {
-        return arriWsRequest<AuthorsUpdateAuthorParams, Author>({
+    updateAuthor(params: AuthorsUpdateAuthorParams) {
+        return arriRequest<Author, AuthorsUpdateAuthorParams>({
             url: `${this.baseUrl}/rpcs/authors/update-author`,
+            method: "post",
             headers: this.headers,
+            params,
             parser: $$Author.parse,
             serializer: $$AuthorsUpdateAuthorParams.serialize,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
         });
     }
 }
