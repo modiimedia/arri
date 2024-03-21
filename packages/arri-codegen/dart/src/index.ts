@@ -24,6 +24,8 @@ import {
     pascalCase,
     camelCase,
     type SchemaMetadata,
+    isSchemaFormRef,
+    type SchemaFormRef,
 } from "arri-codegen-utils";
 import { a } from "arri-validate";
 
@@ -377,6 +379,9 @@ export function dartTypeFromJtdSchema(
     }
     if (isSchemaFormDiscriminator(def)) {
         return dartSealedClassFromJtdSchema(nodePath, def, additionalOptions);
+    }
+    if (isSchemaFormRef(def)) {
+        return dartRefFromJtdSchema(nodePath, def, additionalOptions);
     }
     return dartDynamicFromAny(nodePath, a.any(), additionalOptions);
 }
@@ -1126,5 +1131,42 @@ ${childContentParts.join("\n")}`;
             return `${input}.toJson()`;
         },
         content,
+    };
+}
+
+function dartRefFromJtdSchema(
+    nodePath: string,
+    def: SchemaFormRef,
+    additionalOptions: ConversionAdditionalOptions,
+): DartProperty {
+    const jsonKey = nodePath.split(".").pop() ?? "";
+    const key = camelCaseWrapper(jsonKey);
+    const className = pascalCase(def.ref, { normalize: true });
+    const isNullable = additionalOptions.isOptional || (def.nullable ?? false);
+    const typeName = `${className}${isNullable ? "?" : ""}`;
+    return {
+        typeName,
+        fieldTemplate: fieldTemplateString(
+            typeName,
+            key,
+            def.metadata?.description,
+            def.metadata?.isDeprecated,
+        ),
+        constructorTemplate: additionalOptions.isOptional
+            ? `this.${key}`
+            : `required this.${key}`,
+        fromJsonTemplate(input) {
+            if (isNullable) {
+                return `${input} is Map<String, dynamic> ? ${className}.fromJson(${input}) : null`;
+            }
+            return `${className}.fromJson(${input})`;
+        },
+        toJsonTemplate(input) {
+            if (isNullable) {
+                return `${input}?.toJson()`;
+            }
+            return `${input}.toJson()`;
+        },
+        content: "",
     };
 }
