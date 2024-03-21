@@ -245,6 +245,7 @@ data class Schema(
 describe("procedures", () => {
     it("handles standard procedures", () => {
         const input: RpcDefinition = {
+            transport: "http",
             method: "post",
             path: "/say-hello",
             params: "SayHelloParams",
@@ -268,6 +269,7 @@ describe("procedures", () => {
     });
     it("handles standard procedures with undefined params", () => {
         const input: RpcDefinition = {
+            transport: "http",
             method: "get",
             path: "/get-status",
             params: undefined,
@@ -291,6 +293,7 @@ describe("procedures", () => {
     });
     it("handles standard procedures with undefined response", () => {
         const input: RpcDefinition = {
+            transport: "http",
             method: "put",
             path: "/create-user",
             params: "CreateUserParams",
@@ -318,18 +321,21 @@ describe("services", () => {
     it("handles nested services", () => {
         const input: ServiceDefinition = {
             getUser: {
+                transport: "http",
                 method: "get",
                 path: "/users/get-user",
                 params: "UserParams",
                 response: "User",
             },
             updateUser: {
+                transport: "http",
                 method: "patch",
                 path: "/users/update-user",
                 params: "UpdateUserParams",
                 response: undefined,
             },
             watchUser: {
+                transport: "http",
                 method: "get",
                 path: "/users/watch-user",
                 params: "UserParams",
@@ -338,6 +344,7 @@ describe("services", () => {
             },
             settings: {
                 getSettings: {
+                    transport: "http",
                     method: "get",
                     path: "/users/settings/get-settings",
                     params: "UserSettingsParams",

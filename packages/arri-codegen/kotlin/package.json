@@ -22,6 +22,7 @@
     "dist"
   ],
   "dependencies": {
+    "arri-validate": "workspace:*",
     "arri-codegen-utils": "workspace:*",
     "json-schema-to-jtd": "workspace:*",
     "jtd-utils": "workspace:*"

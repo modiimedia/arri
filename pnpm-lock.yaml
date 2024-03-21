@@ -244,6 +244,9 @@ importers:
       arri-codegen-utils:
         specifier: workspace:*
         version: link:../utils
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../arri-validate
       json-schema-to-jtd:
         specifier: workspace:*
         version: link:../../json-schema-to-jtd
