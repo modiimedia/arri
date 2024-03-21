@@ -13,16 +13,12 @@ export class TestClient {
     private readonly headers: Record<string, string>;
     adapters: TestClientAdaptersService;
     miscTests: TestClientMiscTestsService;
-    posts: TestClientPostsService;
-    videos: TestClientVideosService;
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
         this.headers = { "client-version": "10", ...options.headers };
         this.adapters = new TestClientAdaptersService(options);
         this.miscTests = new TestClientMiscTestsService(options);
-        this.posts = new TestClientPostsService(options);
-        this.videos = new TestClientVideosService(options);
     }
 }
 
@@ -105,6 +101,26 @@ export class TestClientMiscTestsService {
             params,
             parser: $$ObjectWithEveryOptionalType.parse,
             serializer: $$ObjectWithEveryOptionalType.serialize,
+        });
+    }
+    sendRecursiveObject(params: RecursiveObject) {
+        return arriRequest<RecursiveObject, RecursiveObject>({
+            url: `${this.baseUrl}/rpcs/misc-tests/send-recursive-object`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: $$RecursiveObject.parse,
+            serializer: $$RecursiveObject.serialize,
+        });
+    }
+    sendRecursiveUnion(params: RecursiveUnion) {
+        return arriRequest<RecursiveUnion, RecursiveUnion>({
+            url: `${this.baseUrl}/rpcs/misc-tests/send-recursive-union`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: $$RecursiveUnion.parse,
+            serializer: $$RecursiveUnion.serialize,
         });
     }
     streamAutoReconnect(
@@ -199,86 +215,6 @@ export class TestClientMiscTestsService {
     }
 }
 
-export class TestClientPostsService {
-    private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
-
-    constructor(options: TestClientOptions = {}) {
-        this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
-    }
-    getPost(params: PostParams) {
-        return arriRequest<Post, PostParams>({
-            url: `${this.baseUrl}/rpcs/posts/get-post`,
-            method: "get",
-            headers: this.headers,
-            params,
-            parser: $$Post.parse,
-            serializer: $$PostParams.serialize,
-        });
-    }
-    getPosts(params: PostListParams) {
-        return arriRequest<PostListResponse, PostListParams>({
-            url: `${this.baseUrl}/rpcs/posts/get-posts`,
-            method: "get",
-            headers: this.headers,
-            params,
-            parser: $$PostListResponse.parse,
-            serializer: $$PostListParams.serialize,
-        });
-    }
-    logEvent(params: PostEvent) {
-        return arriRequest<LogPostEventResponse, PostEvent>({
-            url: `${this.baseUrl}/rpcs/posts/log-event`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$LogPostEventResponse.parse,
-            serializer: $$PostEvent.serialize,
-        });
-    }
-    updatePost(params: UpdatePostParams) {
-        return arriRequest<Post, UpdatePostParams>({
-            url: `${this.baseUrl}/rpcs/posts/update-post`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$Post.parse,
-            serializer: $$UpdatePostParams.serialize,
-        });
-    }
-}
-
-export class TestClientVideosService {
-    private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
-
-    constructor(options: TestClientOptions = {}) {
-        this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
-    }
-    getAnnotation(params: AnnotationId) {
-        return arriRequest<Annotation, AnnotationId>({
-            url: `${this.baseUrl}/rpcs/videos/get-annotation`,
-            method: "get",
-            headers: this.headers,
-            params,
-            parser: $$Annotation.parse,
-            serializer: $$AnnotationId.serialize,
-        });
-    }
-    updateAnnotation(params: UpdateAnnotationParams) {
-        return arriRequest<Annotation, UpdateAnnotationParams>({
-            url: `${this.baseUrl}/rpcs/videos/update-annotation`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$Annotation.parse,
-            serializer: $$UpdateAnnotationParams.serialize,
-        });
-    }
-}
-
 export interface ManuallyAddedModel {
     hello: string;
 }
@@ -330,8 +266,11 @@ const $$ManuallyAddedModel = {
     },
     serialize(input: ManuallyAddedModel): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += `"hello":`;
         if (input.hello.length < 42) {
@@ -640,8 +579,11 @@ const $$AdaptersTypeboxAdapterParams = {
     },
     serialize(input: AdaptersTypeboxAdapterParams): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += `"string":`;
         if (input.string.length < 42) {
@@ -692,7 +634,9 @@ const $$AdaptersTypeboxAdapterParams = {
         }
         json += `,"number":${input.number}`;
         json += `,"enumField":"${input.enumField}"`;
-        json += ',"object":{';
+
+        json += ',"object":';
+        json += "{";
         json += `"string":`;
         if (input.object.string.length < 42) {
             let __result__ = "";
@@ -733,11 +677,11 @@ const $$AdaptersTypeboxAdapterParams = {
         json += "}";
         json += ',"array":[';
         for (let i = 0; i < input.array.length; i++) {
-            const inputArrayItem = input.array[i];
+            const valArrayItem = input.array[i];
             if (i !== 0) {
                 json += ",";
             }
-            json += `${inputArrayItem}`;
+            json += `${valArrayItem}`;
         }
         json += "]";
         if (typeof input.optionalString !== "undefined") {
@@ -840,8 +784,11 @@ const $$AdaptersTypeboxAdapterResponse = {
     },
     serialize(input: AdaptersTypeboxAdapterResponse): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += `"message":`;
         if (input.message.length < 42) {
@@ -942,8 +889,11 @@ const $$DeprecatedRpcParams = {
     },
     serialize(input: DeprecatedRpcParams): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += `"deprecatedField":`;
         if (input.deprecatedField.length < 42) {
@@ -2208,8 +2158,11 @@ const $$ObjectWithEveryType = {
     },
     serialize(input: ObjectWithEveryType): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         if (typeof input.any !== "undefined") {
             json += '"any":' + JSON.stringify(input.any);
@@ -2298,14 +2251,16 @@ const $$ObjectWithEveryType = {
         json += `,"enumerator":"${input.enumerator}"`;
         json += ',"array":[';
         for (let i = 0; i < input.array.length; i++) {
-            const inputArrayItem = input.array[i];
+            const valArrayItem = input.array[i];
             if (i !== 0) {
                 json += ",";
             }
-            json += `${inputArrayItem}`;
+            json += `${valArrayItem}`;
         }
         json += "]";
-        json += ',"object":{';
+
+        json += ',"object":';
+        json += "{";
         json += `"string":`;
         if (input.object.string.length < 42) {
             let __result__ = "";
@@ -2361,7 +2316,8 @@ const $$ObjectWithEveryType = {
         json += "}";
         switch (input.discriminator.type) {
             case "A": {
-                json += ',"discriminator":{';
+                json += ',"discriminator":';
+                json += "{";
                 json += `"type":"A"`;
                 json += `,"title":`;
                 if (input.discriminator.title.length < 42) {
@@ -2406,7 +2362,8 @@ const $$ObjectWithEveryType = {
                 break;
             }
             case "B": {
-                json += ',"discriminator":{';
+                json += ',"discriminator":';
+                json += "{";
                 json += `"type":"B"`;
                 json += `,"title":`;
                 if (input.discriminator.title.length < 42) {
@@ -2499,7 +2456,9 @@ const $$ObjectWithEveryType = {
                 break;
             }
         }
-        json += ',"nestedObject":{';
+
+        json += ',"nestedObject":';
+        json += "{";
         json += `"id":`;
         if (input.nestedObject.id.length < 42) {
             let __result__ = "";
@@ -2539,7 +2498,9 @@ const $$ObjectWithEveryType = {
             json += JSON.stringify(input.nestedObject.id);
         }
         json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
-        json += ',"data":{';
+
+        json += ',"data":';
+        json += "{";
         json += `"id":`;
         if (input.nestedObject.data.id.length < 42) {
             let __result__ = "";
@@ -2579,7 +2540,9 @@ const $$ObjectWithEveryType = {
             json += JSON.stringify(input.nestedObject.data.id);
         }
         json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
-        json += ',"data":{';
+
+        json += ',"data":';
+        json += "{";
         json += `"id":`;
         if (input.nestedObject.data.data.id.length < 42) {
             let __result__ = "";
@@ -2625,61 +2588,59 @@ const $$ObjectWithEveryType = {
         json += "}";
         json += ',"nestedArray":[';
         for (let i = 0; i < input.nestedArray.length; i++) {
-            const inputNestedArrayItem = input.nestedArray[i];
+            const valNestedArrayItem = input.nestedArray[i];
             if (i !== 0) {
                 json += ",";
             }
             json += "[";
-            for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                const inputNestedArrayItemItem = inputNestedArrayItem[i];
+            for (let i = 0; i < valNestedArrayItem.length; i++) {
+                const valNestedArrayItemItem = valNestedArrayItem[i];
                 if (i !== 0) {
                     json += ",";
                 }
+
+                json += "";
                 json += "{";
                 json += `"id":`;
-                if (inputNestedArrayItemItem.id.length < 42) {
+                if (valNestedArrayItemItem.id.length < 42) {
                     let __result__ = "";
                     let __last__ = -1;
                     let __point__ = 255;
                     let __finished__ = false;
-                    for (
-                        let i = 0;
-                        i < inputNestedArrayItemItem.id.length;
-                        i++
-                    ) {
-                        __point__ = inputNestedArrayItemItem.id.charCodeAt(i);
+                    for (let i = 0; i < valNestedArrayItemItem.id.length; i++) {
+                        __point__ = valNestedArrayItemItem.id.charCodeAt(i);
                         if (
                             __point__ < 32 ||
                             (__point__ >= 0xd800 && __point__ <= 0xdfff)
                         ) {
-                            json += JSON.stringify(inputNestedArrayItemItem.id);
+                            json += JSON.stringify(valNestedArrayItemItem.id);
                             __finished__ = true;
                             break;
                         }
                         if (__point__ === 0x22 || __point__ === 0x5c) {
                             __last__ === -1 && (__last__ = 0);
                             __result__ +=
-                                inputNestedArrayItemItem.id.slice(__last__, i) +
+                                valNestedArrayItemItem.id.slice(__last__, i) +
                                 "\\";
                             __last__ = i;
                         }
                     }
                     if (!__finished__) {
                         if (__last__ === -1) {
-                            json += `"${inputNestedArrayItemItem.id}"`;
+                            json += `"${valNestedArrayItemItem.id}"`;
                         } else {
-                            json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                            json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
                         }
                     }
                 } else if (
-                    inputNestedArrayItemItem.id.length < 5000 &&
-                    !STR_ESCAPE.test(inputNestedArrayItemItem.id)
+                    valNestedArrayItemItem.id.length < 5000 &&
+                    !STR_ESCAPE.test(valNestedArrayItemItem.id)
                 ) {
-                    json += `"${inputNestedArrayItemItem.id}"`;
+                    json += `"${valNestedArrayItemItem.id}"`;
                 } else {
-                    json += JSON.stringify(inputNestedArrayItemItem.id);
+                    json += JSON.stringify(valNestedArrayItemItem.id);
                 }
-                json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                 json += "}";
             }
             json += "]";
@@ -4360,8 +4321,11 @@ const $$ObjectWithEveryNullableType = {
     },
     serialize(input: ObjectWithEveryNullableType): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         if (input.any === null) {
             json += '"any":null';
@@ -4506,12 +4470,12 @@ const $$ObjectWithEveryNullableType = {
         if (Array.isArray(input.array)) {
             json += ',"array":[';
             for (let i = 0; i < input.array.length; i++) {
-                const inputArrayItem = input.array[i];
+                const valArrayItem = input.array[i];
                 if (i !== 0) {
                     json += ",";
                 }
-                if (typeof inputArrayItem === "boolean") {
-                    json += `${inputArrayItem}`;
+                if (typeof valArrayItem === "boolean") {
+                    json += `${valArrayItem}`;
                 } else {
                     json += "null";
                 }
@@ -4521,7 +4485,8 @@ const $$ObjectWithEveryNullableType = {
             json += ',"array":null';
         }
         if (typeof input.object === "object" && input.object !== null) {
-            json += ',"object":{';
+            json += ',"object":';
+            json += "{";
             if (typeof input.object.string === "string") {
                 json += `"string":`;
                 if (input.object.string.length < 42) {
@@ -4608,7 +4573,8 @@ const $$ObjectWithEveryNullableType = {
         ) {
             switch (input.discriminator.type) {
                 case "A": {
-                    json += ',"discriminator":{';
+                    json += ',"discriminator":';
+                    json += "{";
                     json += `"type":"A"`;
                     if (typeof input.discriminator.title === "string") {
                         json += `,"title":`;
@@ -4666,7 +4632,8 @@ const $$ObjectWithEveryNullableType = {
                     break;
                 }
                 case "B": {
-                    json += ',"discriminator":{';
+                    json += ',"discriminator":';
+                    json += "{";
                     json += `"type":"B"`;
                     if (typeof input.discriminator.title === "string") {
                         json += `,"title":`;
@@ -4787,7 +4754,8 @@ const $$ObjectWithEveryNullableType = {
             typeof input.nestedObject === "object" &&
             input.nestedObject !== null
         ) {
-            json += ',"nestedObject":{';
+            json += ',"nestedObject":';
+            json += "{";
             if (typeof input.nestedObject.id === "string") {
                 json += `"id":`;
                 if (input.nestedObject.id.length < 42) {
@@ -4842,7 +4810,8 @@ const $$ObjectWithEveryNullableType = {
                 typeof input.nestedObject.data === "object" &&
                 input.nestedObject.data !== null
             ) {
-                json += ',"data":{';
+                json += ',"data":';
+                json += "{";
                 if (typeof input.nestedObject.data.id === "string") {
                     json += `"id":`;
                     if (input.nestedObject.data.id.length < 42) {
@@ -4907,7 +4876,8 @@ const $$ObjectWithEveryNullableType = {
                     typeof input.nestedObject.data.data === "object" &&
                     input.nestedObject.data.data !== null
                 ) {
-                    json += ',"data":{';
+                    json += ',"data":';
+                    json += "{";
                     if (typeof input.nestedObject.data.data.id === "string") {
                         json += `"id":`;
                         if (input.nestedObject.data.data.id.length < 42) {
@@ -4988,39 +4958,37 @@ const $$ObjectWithEveryNullableType = {
         if (Array.isArray(input.nestedArray)) {
             json += ',"nestedArray":[';
             for (let i = 0; i < input.nestedArray.length; i++) {
-                const inputNestedArrayItem = input.nestedArray[i];
+                const valNestedArrayItem = input.nestedArray[i];
                 if (i !== 0) {
                     json += ",";
                 }
-                if (Array.isArray(inputNestedArrayItem)) {
+                if (Array.isArray(valNestedArrayItem)) {
                     json += "[";
-                    for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                        const inputNestedArrayItemItem =
-                            inputNestedArrayItem[i];
+                    for (let i = 0; i < valNestedArrayItem.length; i++) {
+                        const valNestedArrayItemItem = valNestedArrayItem[i];
                         if (i !== 0) {
                             json += ",";
                         }
                         if (
-                            typeof inputNestedArrayItemItem === "object" &&
-                            inputNestedArrayItemItem !== null
+                            typeof valNestedArrayItemItem === "object" &&
+                            valNestedArrayItemItem !== null
                         ) {
+                            json += "";
                             json += "{";
-                            if (
-                                typeof inputNestedArrayItemItem.id === "string"
-                            ) {
+                            if (typeof valNestedArrayItemItem.id === "string") {
                                 json += `"id":`;
-                                if (inputNestedArrayItemItem.id.length < 42) {
+                                if (valNestedArrayItemItem.id.length < 42) {
                                     let __result__ = "";
                                     let __last__ = -1;
                                     let __point__ = 255;
                                     let __finished__ = false;
                                     for (
                                         let i = 0;
-                                        i < inputNestedArrayItemItem.id.length;
+                                        i < valNestedArrayItemItem.id.length;
                                         i++
                                     ) {
                                         __point__ =
-                                            inputNestedArrayItemItem.id.charCodeAt(
+                                            valNestedArrayItemItem.id.charCodeAt(
                                                 i,
                                             );
                                         if (
@@ -5029,7 +4997,7 @@ const $$ObjectWithEveryNullableType = {
                                                 __point__ <= 0xdfff)
                                         ) {
                                             json += JSON.stringify(
-                                                inputNestedArrayItemItem.id,
+                                                valNestedArrayItemItem.id,
                                             );
                                             __finished__ = true;
                                             break;
@@ -5040,7 +5008,7 @@ const $$ObjectWithEveryNullableType = {
                                         ) {
                                             __last__ === -1 && (__last__ = 0);
                                             __result__ +=
-                                                inputNestedArrayItemItem.id.slice(
+                                                valNestedArrayItemItem.id.slice(
                                                     __last__,
                                                     i,
                                                 ) + "\\";
@@ -5049,33 +5017,30 @@ const $$ObjectWithEveryNullableType = {
                                     }
                                     if (!__finished__) {
                                         if (__last__ === -1) {
-                                            json += `"${inputNestedArrayItemItem.id}"`;
+                                            json += `"${valNestedArrayItemItem.id}"`;
                                         } else {
-                                            json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                                            json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
                                         }
                                     }
                                 } else if (
-                                    inputNestedArrayItemItem.id.length < 5000 &&
-                                    !STR_ESCAPE.test(
-                                        inputNestedArrayItemItem.id,
-                                    )
+                                    valNestedArrayItemItem.id.length < 5000 &&
+                                    !STR_ESCAPE.test(valNestedArrayItemItem.id)
                                 ) {
-                                    json += `"${inputNestedArrayItemItem.id}"`;
+                                    json += `"${valNestedArrayItemItem.id}"`;
                                 } else {
                                     json += JSON.stringify(
-                                        inputNestedArrayItemItem.id,
+                                        valNestedArrayItemItem.id,
                                     );
                                 }
                             } else {
                                 json += '"id":null';
                             }
                             if (
-                                typeof inputNestedArrayItemItem.timestamp ===
+                                typeof valNestedArrayItemItem.timestamp ===
                                     "object" &&
-                                inputNestedArrayItemItem.timestamp instanceof
-                                    Date
+                                valNestedArrayItemItem.timestamp instanceof Date
                             ) {
-                                json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                                json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                             } else {
                                 json += ',"timestamp":null';
                             }
@@ -6574,8 +6539,11 @@ const $$ObjectWithEveryOptionalType = {
     },
     serialize(input: ObjectWithEveryOptionalType): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         let inputHasFields = false;
         if (typeof input.any !== "undefined") {
@@ -6828,21 +6796,21 @@ const $$ObjectWithEveryOptionalType = {
             if (inputHasFields) {
                 json += ',"array":[';
                 for (let i = 0; i < input.array.length; i++) {
-                    const inputArrayItem = input.array[i];
+                    const valArrayItem = input.array[i];
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `${inputArrayItem}`;
+                    json += `${valArrayItem}`;
                 }
                 json += "]";
             } else {
                 json += '"array":[';
                 for (let i = 0; i < input.array.length; i++) {
-                    const inputArrayItem = input.array[i];
+                    const valArrayItem = input.array[i];
                     if (i !== 0) {
                         json += ",";
                     }
-                    json += `${inputArrayItem}`;
+                    json += `${valArrayItem}`;
                 }
                 json += "]";
                 inputHasFields = true;
@@ -6850,7 +6818,8 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.object !== "undefined") {
             if (inputHasFields) {
-                json += ',"object":{';
+                json += ',"object":';
+                json += "{";
                 json += `"string":`;
                 if (input.object.string.length < 42) {
                     let __result__ = "";
@@ -6893,7 +6862,8 @@ const $$ObjectWithEveryOptionalType = {
                 json += `,"timestamp":"${input.object.timestamp.toISOString()}"`;
                 json += "}";
             } else {
-                json += '"object":{';
+                json += '"object":';
+                json += "{";
                 json += `"string":`;
                 if (input.object.string.length < 42) {
                     let __result__ = "";
@@ -6974,7 +6944,8 @@ const $$ObjectWithEveryOptionalType = {
             if (inputHasFields) {
                 switch (input.discriminator.type) {
                     case "A": {
-                        json += ',"discriminator":{';
+                        json += ',"discriminator":';
+                        json += "{";
                         json += `"type":"A"`;
                         json += `,"title":`;
                         if (input.discriminator.title.length < 42) {
@@ -7028,7 +6999,8 @@ const $$ObjectWithEveryOptionalType = {
                         break;
                     }
                     case "B": {
-                        json += ',"discriminator":{';
+                        json += ',"discriminator":';
+                        json += "{";
                         json += `"type":"B"`;
                         json += `,"title":`;
                         if (input.discriminator.title.length < 42) {
@@ -7137,7 +7109,8 @@ const $$ObjectWithEveryOptionalType = {
             } else {
                 switch (input.discriminator.type) {
                     case "A": {
-                        json += '"discriminator":{';
+                        json += '"discriminator":';
+                        json += "{";
                         json += `"type":"A"`;
                         json += `,"title":`;
                         if (input.discriminator.title.length < 42) {
@@ -7191,7 +7164,8 @@ const $$ObjectWithEveryOptionalType = {
                         break;
                     }
                     case "B": {
-                        json += '"discriminator":{';
+                        json += '"discriminator":';
+                        json += "{";
                         json += `"type":"B"`;
                         json += `,"title":`;
                         if (input.discriminator.title.length < 42) {
@@ -7302,7 +7276,8 @@ const $$ObjectWithEveryOptionalType = {
         }
         if (typeof input.nestedObject !== "undefined") {
             if (inputHasFields) {
-                json += ',"nestedObject":{';
+                json += ',"nestedObject":';
+                json += "{";
                 json += `"id":`;
                 if (input.nestedObject.id.length < 42) {
                     let __result__ = "";
@@ -7342,7 +7317,9 @@ const $$ObjectWithEveryOptionalType = {
                     json += JSON.stringify(input.nestedObject.id);
                 }
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
-                json += ',"data":{';
+
+                json += ',"data":';
+                json += "{";
                 json += `"id":`;
                 if (input.nestedObject.data.id.length < 42) {
                     let __result__ = "";
@@ -7387,7 +7364,9 @@ const $$ObjectWithEveryOptionalType = {
                     json += JSON.stringify(input.nestedObject.data.id);
                 }
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
-                json += ',"data":{';
+
+                json += ',"data":';
+                json += "{";
                 json += `"id":`;
                 if (input.nestedObject.data.data.id.length < 42) {
                     let __result__ = "";
@@ -7441,7 +7420,8 @@ const $$ObjectWithEveryOptionalType = {
                 json += "}";
                 json += "}";
             } else {
-                json += '"nestedObject":{';
+                json += '"nestedObject":';
+                json += "{";
                 json += `"id":`;
                 if (input.nestedObject.id.length < 42) {
                     let __result__ = "";
@@ -7481,7 +7461,9 @@ const $$ObjectWithEveryOptionalType = {
                     json += JSON.stringify(input.nestedObject.id);
                 }
                 json += `,"timestamp":"${input.nestedObject.timestamp.toISOString()}"`;
-                json += ',"data":{';
+
+                json += ',"data":';
+                json += "{";
                 json += `"id":`;
                 if (input.nestedObject.data.id.length < 42) {
                     let __result__ = "";
@@ -7526,7 +7508,9 @@ const $$ObjectWithEveryOptionalType = {
                     json += JSON.stringify(input.nestedObject.data.id);
                 }
                 json += `,"timestamp":"${input.nestedObject.data.timestamp.toISOString()}"`;
-                json += ',"data":{';
+
+                json += ',"data":';
+                json += "{";
                 json += `"id":`;
                 if (input.nestedObject.data.data.id.length < 42) {
                     let __result__ = "";
@@ -7586,37 +7570,38 @@ const $$ObjectWithEveryOptionalType = {
             if (inputHasFields) {
                 json += ',"nestedArray":[';
                 for (let i = 0; i < input.nestedArray.length; i++) {
-                    const inputNestedArrayItem = input.nestedArray[i];
+                    const valNestedArrayItem = input.nestedArray[i];
                     if (i !== 0) {
                         json += ",";
                     }
                     json += "[";
-                    for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                        const inputNestedArrayItemItem =
-                            inputNestedArrayItem[i];
+                    for (let i = 0; i < valNestedArrayItem.length; i++) {
+                        const valNestedArrayItemItem = valNestedArrayItem[i];
                         if (i !== 0) {
                             json += ",";
                         }
+
+                        json += "";
                         json += "{";
                         json += `"id":`;
-                        if (inputNestedArrayItemItem.id.length < 42) {
+                        if (valNestedArrayItemItem.id.length < 42) {
                             let __result__ = "";
                             let __last__ = -1;
                             let __point__ = 255;
                             let __finished__ = false;
                             for (
                                 let i = 0;
-                                i < inputNestedArrayItemItem.id.length;
+                                i < valNestedArrayItemItem.id.length;
                                 i++
                             ) {
                                 __point__ =
-                                    inputNestedArrayItemItem.id.charCodeAt(i);
+                                    valNestedArrayItemItem.id.charCodeAt(i);
                                 if (
                                     __point__ < 32 ||
                                     (__point__ >= 0xd800 && __point__ <= 0xdfff)
                                 ) {
                                     json += JSON.stringify(
-                                        inputNestedArrayItemItem.id,
+                                        valNestedArrayItemItem.id,
                                     );
                                     __finished__ = true;
                                     break;
@@ -7624,7 +7609,7 @@ const $$ObjectWithEveryOptionalType = {
                                 if (__point__ === 0x22 || __point__ === 0x5c) {
                                     __last__ === -1 && (__last__ = 0);
                                     __result__ +=
-                                        inputNestedArrayItemItem.id.slice(
+                                        valNestedArrayItemItem.id.slice(
                                             __last__,
                                             i,
                                         ) + "\\";
@@ -7633,20 +7618,20 @@ const $$ObjectWithEveryOptionalType = {
                             }
                             if (!__finished__) {
                                 if (__last__ === -1) {
-                                    json += `"${inputNestedArrayItemItem.id}"`;
+                                    json += `"${valNestedArrayItemItem.id}"`;
                                 } else {
-                                    json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                                    json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
                                 }
                             }
                         } else if (
-                            inputNestedArrayItemItem.id.length < 5000 &&
-                            !STR_ESCAPE.test(inputNestedArrayItemItem.id)
+                            valNestedArrayItemItem.id.length < 5000 &&
+                            !STR_ESCAPE.test(valNestedArrayItemItem.id)
                         ) {
-                            json += `"${inputNestedArrayItemItem.id}"`;
+                            json += `"${valNestedArrayItemItem.id}"`;
                         } else {
-                            json += JSON.stringify(inputNestedArrayItemItem.id);
+                            json += JSON.stringify(valNestedArrayItemItem.id);
                         }
-                        json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                        json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
                     json += "]";
@@ -7655,37 +7640,38 @@ const $$ObjectWithEveryOptionalType = {
             } else {
                 json += '"nestedArray":[';
                 for (let i = 0; i < input.nestedArray.length; i++) {
-                    const inputNestedArrayItem = input.nestedArray[i];
+                    const valNestedArrayItem = input.nestedArray[i];
                     if (i !== 0) {
                         json += ",";
                     }
                     json += "[";
-                    for (let i = 0; i < inputNestedArrayItem.length; i++) {
-                        const inputNestedArrayItemItem =
-                            inputNestedArrayItem[i];
+                    for (let i = 0; i < valNestedArrayItem.length; i++) {
+                        const valNestedArrayItemItem = valNestedArrayItem[i];
                         if (i !== 0) {
                             json += ",";
                         }
+
+                        json += "";
                         json += "{";
                         json += `"id":`;
-                        if (inputNestedArrayItemItem.id.length < 42) {
+                        if (valNestedArrayItemItem.id.length < 42) {
                             let __result__ = "";
                             let __last__ = -1;
                             let __point__ = 255;
                             let __finished__ = false;
                             for (
                                 let i = 0;
-                                i < inputNestedArrayItemItem.id.length;
+                                i < valNestedArrayItemItem.id.length;
                                 i++
                             ) {
                                 __point__ =
-                                    inputNestedArrayItemItem.id.charCodeAt(i);
+                                    valNestedArrayItemItem.id.charCodeAt(i);
                                 if (
                                     __point__ < 32 ||
                                     (__point__ >= 0xd800 && __point__ <= 0xdfff)
                                 ) {
                                     json += JSON.stringify(
-                                        inputNestedArrayItemItem.id,
+                                        valNestedArrayItemItem.id,
                                     );
                                     __finished__ = true;
                                     break;
@@ -7693,7 +7679,7 @@ const $$ObjectWithEveryOptionalType = {
                                 if (__point__ === 0x22 || __point__ === 0x5c) {
                                     __last__ === -1 && (__last__ = 0);
                                     __result__ +=
-                                        inputNestedArrayItemItem.id.slice(
+                                        valNestedArrayItemItem.id.slice(
                                             __last__,
                                             i,
                                         ) + "\\";
@@ -7702,20 +7688,20 @@ const $$ObjectWithEveryOptionalType = {
                             }
                             if (!__finished__) {
                                 if (__last__ === -1) {
-                                    json += `"${inputNestedArrayItemItem.id}"`;
+                                    json += `"${valNestedArrayItemItem.id}"`;
                                 } else {
-                                    json += `"${__result__}${inputNestedArrayItemItem.id.slice(__last__)}"`;
+                                    json += `"${__result__}${valNestedArrayItemItem.id.slice(__last__)}"`;
                                 }
                             }
                         } else if (
-                            inputNestedArrayItemItem.id.length < 5000 &&
-                            !STR_ESCAPE.test(inputNestedArrayItemItem.id)
+                            valNestedArrayItemItem.id.length < 5000 &&
+                            !STR_ESCAPE.test(valNestedArrayItemItem.id)
                         ) {
-                            json += `"${inputNestedArrayItemItem.id}"`;
+                            json += `"${valNestedArrayItemItem.id}"`;
                         } else {
-                            json += JSON.stringify(inputNestedArrayItemItem.id);
+                            json += JSON.stringify(valNestedArrayItemItem.id);
                         }
-                        json += `,"timestamp":"${inputNestedArrayItemItem.timestamp.toISOString()}"`;
+                        json += `,"timestamp":"${valNestedArrayItemItem.timestamp.toISOString()}"`;
                         json += "}";
                     }
                     json += "]";
@@ -7772,6 +7758,450 @@ export interface ObjectWithEveryOptionalTypeNestedObjectDataData {
 export interface ObjectWithEveryOptionalTypeNestedArrayItemItem {
     id: string;
     timestamp: Date;
+}
+
+export interface RecursiveObject {
+    left: RecursiveObject | null;
+    right: RecursiveObject | null;
+    value: string;
+}
+const $$RecursiveObject = {
+    parse(input: Record<any, any>): RecursiveObject {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+        function __parse_RecursiveObject(_fnVal) {
+            let _fnTarget;
+            if (typeof _fnVal === "object" && _fnVal !== null) {
+                const __D1 = {};
+                if (_fnVal.left === null) {
+                    __D1.left = null;
+                } else {
+                    __D1.left = __parse_RecursiveObject(_fnVal.left);
+                }
+                if (_fnVal.right === null) {
+                    __D1.right = null;
+                } else {
+                    __D1.right = __parse_RecursiveObject(_fnVal.right);
+                }
+                if (typeof _fnVal.value === "string") {
+                    __D1.value = _fnVal.value;
+                } else {
+                    $fallback(
+                        "/value",
+                        "/properties/value/type",
+                        "Expected string at /value",
+                    );
+                }
+                _fnTarget = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return _fnTarget;
+        }
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            result = __parse_RecursiveObject(json);
+            return result;
+        }
+        let result = {};
+        result = __parse_RecursiveObject(input);
+        return result;
+    },
+    serialize(input: RecursiveObject): string {
+        let json = "";
+        function __serialize_RecursiveObject(__inputVal__) {
+            json += "{";
+            if (__inputVal__.left === null) {
+                json += '"left":null';
+            } else {
+                json += '"left":';
+                __serialize_RecursiveObject(__inputVal__.left);
+            }
+            if (__inputVal__.right === null) {
+                json += ',"right":null';
+            } else {
+                json += ',"right":';
+                __serialize_RecursiveObject(__inputVal__.right);
+            }
+            json += `,"value":`;
+            if (__inputVal__.value.length < 42) {
+                let __result__ = "";
+                let __last__ = -1;
+                let __point__ = 255;
+                let __finished__ = false;
+                for (let i = 0; i < __inputVal__.value.length; i++) {
+                    __point__ = __inputVal__.value.charCodeAt(i);
+                    if (
+                        __point__ < 32 ||
+                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                    ) {
+                        json += JSON.stringify(__inputVal__.value);
+                        __finished__ = true;
+                        break;
+                    }
+                    if (__point__ === 0x22 || __point__ === 0x5c) {
+                        __last__ === -1 && (__last__ = 0);
+                        __result__ +=
+                            __inputVal__.value.slice(__last__, i) + "\\";
+                        __last__ = i;
+                    }
+                }
+                if (!__finished__) {
+                    if (__last__ === -1) {
+                        json += `"${__inputVal__.value}"`;
+                    } else {
+                        json += `"${__result__}${__inputVal__.value.slice(__last__)}"`;
+                    }
+                }
+            } else if (
+                __inputVal__.value.length < 5000 &&
+                !STR_ESCAPE.test(__inputVal__.value)
+            ) {
+                json += `"${__inputVal__.value}"`;
+            } else {
+                json += JSON.stringify(__inputVal__.value);
+            }
+            json += "}";
+        }
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        __serialize_RecursiveObject(input);
+        return json;
+    },
+};
+
+export type RecursiveUnion =
+    | RecursiveUnionChild
+    | RecursiveUnionChildren
+    | RecursiveUnionText
+    | RecursiveUnionShape;
+const $$RecursiveUnion = {
+    parse(input: Record<any, any>): RecursiveUnion {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+        function __parse_RecursiveUnion(_fnVal) {
+            let _fnTarget;
+            if (typeof _fnVal === "object" && _fnVal !== null) {
+                switch (_fnVal.type) {
+                    case "CHILD": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "CHILD";
+                            __D1.data = __parse_RecursiveUnion(_fnVal.data);
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "CHILDREN": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "CHILDREN";
+                            if (Array.isArray(_fnVal.data)) {
+                                const __D2 = [];
+                                for (const __D2AItem of _fnVal.data) {
+                                    let __D2AItemAResult;
+                                    __D2AItemAResult =
+                                        __parse_RecursiveUnion(__D2AItem);
+                                    __D2.push(__D2AItemAResult);
+                                }
+                                __D1.data = __D2;
+                            } else {
+                                $fallback(
+                                    "/data",
+                                    "/mapping/properties/data",
+                                    "Expected Array",
+                                );
+                            }
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "TEXT": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "TEXT";
+                            if (typeof _fnVal.data === "string") {
+                                __D1.data = _fnVal.data;
+                            } else {
+                                $fallback(
+                                    "/data",
+                                    "/mapping/properties/data/type",
+                                    "Expected string at /data",
+                                );
+                            }
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    case "SHAPE": {
+                        if (typeof _fnVal === "object" && _fnVal !== null) {
+                            const __D1 = {};
+                            __D1.type = "SHAPE";
+                            if (
+                                typeof _fnVal.data === "object" &&
+                                _fnVal.data !== null
+                            ) {
+                                const __D2 = {};
+                                if (
+                                    typeof _fnVal.data.width === "number" &&
+                                    !Number.isNaN(_fnVal.data.width)
+                                ) {
+                                    __D2.width = _fnVal.data.width;
+                                } else {
+                                    $fallback(
+                                        "/data/width",
+                                        "/mapping/properties/data/properties/width/type",
+                                        "Expected number at /data/width",
+                                    );
+                                }
+                                if (
+                                    typeof _fnVal.data.height === "number" &&
+                                    !Number.isNaN(_fnVal.data.height)
+                                ) {
+                                    __D2.height = _fnVal.data.height;
+                                } else {
+                                    $fallback(
+                                        "/data/height",
+                                        "/mapping/properties/data/properties/height/type",
+                                        "Expected number at /data/height",
+                                    );
+                                }
+                                if (typeof _fnVal.data.color === "string") {
+                                    __D2.color = _fnVal.data.color;
+                                } else {
+                                    $fallback(
+                                        "/data/color",
+                                        "/mapping/properties/data/properties/color/type",
+                                        "Expected string at /data/color",
+                                    );
+                                }
+                                __D1.data = __D2;
+                            } else {
+                                $fallback(
+                                    "/data",
+                                    "/mapping/properties/data",
+                                    "Expected object",
+                                );
+                            }
+                            _fnTarget = __D1;
+                        } else {
+                            $fallback("", "/mapping", "Expected object");
+                        }
+                        break;
+                    }
+                    default:
+                        $fallback(
+                            "",
+                            "/mapping",
+                            "input.type did not match one of the specified values",
+                        );
+                        break;
+                }
+            } else {
+                $fallback("", "", "Expected Object.");
+            }
+            return _fnTarget;
+        }
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            result = __parse_RecursiveUnion(json);
+            return result;
+        }
+        let result = {};
+        result = __parse_RecursiveUnion(input);
+        return result;
+    },
+    serialize(input: RecursiveUnion): string {
+        let json = "";
+        function __serialize_RecursiveUnion(__fnInput__) {
+            switch (__fnInput__.type) {
+                case "CHILD": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"CHILD"`;
+                    json += ',"data":';
+                    __serialize_RecursiveUnion(__fnInput__.data);
+                    json += "}";
+                    break;
+                }
+                case "CHILDREN": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"CHILDREN"`;
+                    json += ',"data":[';
+                    for (let i = 0; i < __fnInput__.data.length; i++) {
+                        const valDataItem = __fnInput__.data[i];
+                        if (i !== 0) {
+                            json += ",";
+                        }
+                        json += "";
+                        __serialize_RecursiveUnion(valDataItem);
+                    }
+                    json += "]";
+                    json += "}";
+                    break;
+                }
+                case "TEXT": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"TEXT"`;
+                    json += `,"data":`;
+                    if (__fnInput__.data.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (let i = 0; i < __fnInput__.data.length; i++) {
+                            __point__ = __fnInput__.data.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(__fnInput__.data);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    __fnInput__.data.slice(__last__, i) + "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${__fnInput__.data}"`;
+                            } else {
+                                json += `"${__result__}${__fnInput__.data.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        __fnInput__.data.length < 5000 &&
+                        !STR_ESCAPE.test(__fnInput__.data)
+                    ) {
+                        json += `"${__fnInput__.data}"`;
+                    } else {
+                        json += JSON.stringify(__fnInput__.data);
+                    }
+                    json += "}";
+                    break;
+                }
+                case "SHAPE": {
+                    json += "";
+                    json += "{";
+                    json += `"type":"SHAPE"`;
+
+                    json += ',"data":';
+                    json += "{";
+
+                    if (Number.isNaN(__fnInput__.data.width)) {
+                        throw new Error(
+                            "Expected number at /data/width got NaN",
+                        );
+                    }
+                    json += `"width":${__fnInput__.data.width}`;
+
+                    if (Number.isNaN(__fnInput__.data.height)) {
+                        throw new Error(
+                            "Expected number at /data/height got NaN",
+                        );
+                    }
+                    json += `,"height":${__fnInput__.data.height}`;
+                    json += `,"color":`;
+                    if (__fnInput__.data.color.length < 42) {
+                        let __result__ = "";
+                        let __last__ = -1;
+                        let __point__ = 255;
+                        let __finished__ = false;
+                        for (
+                            let i = 0;
+                            i < __fnInput__.data.color.length;
+                            i++
+                        ) {
+                            __point__ = __fnInput__.data.color.charCodeAt(i);
+                            if (
+                                __point__ < 32 ||
+                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                            ) {
+                                json += JSON.stringify(__fnInput__.data.color);
+                                __finished__ = true;
+                                break;
+                            }
+                            if (__point__ === 0x22 || __point__ === 0x5c) {
+                                __last__ === -1 && (__last__ = 0);
+                                __result__ +=
+                                    __fnInput__.data.color.slice(__last__, i) +
+                                    "\\";
+                                __last__ = i;
+                            }
+                        }
+                        if (!__finished__) {
+                            if (__last__ === -1) {
+                                json += `"${__fnInput__.data.color}"`;
+                            } else {
+                                json += `"${__result__}${__fnInput__.data.color.slice(__last__)}"`;
+                            }
+                        }
+                    } else if (
+                        __fnInput__.data.color.length < 5000 &&
+                        !STR_ESCAPE.test(__fnInput__.data.color)
+                    ) {
+                        json += `"${__fnInput__.data.color}"`;
+                    } else {
+                        json += JSON.stringify(__fnInput__.data.color);
+                    }
+                    json += "}";
+                    json += "}";
+                    break;
+                }
+            }
+        }
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+        __serialize_RecursiveUnion(input);
+        return json;
+    },
+};
+export interface RecursiveUnionChild {
+    type: "CHILD";
+    data: RecursiveUnion;
+}
+
+export interface RecursiveUnionChildren {
+    type: "CHILDREN";
+    data: Array<RecursiveUnion>;
+}
+
+export interface RecursiveUnionText {
+    type: "TEXT";
+    data: string;
+}
+
+export interface RecursiveUnionShape {
+    type: "SHAPE";
+    data: RecursiveUnionShapeData;
+}
+
+export interface RecursiveUnionShapeData {
+    width: number;
+    height: number;
+    color: string;
 }
 
 export interface AutoReconnectParams {
@@ -7836,6 +8266,7 @@ const $$AutoReconnectParams = {
     serialize(input: AutoReconnectParams): string {
         let json = "";
 
+        json += "";
         json += "{";
 
         if (Number.isNaN(input.messageCount)) {
@@ -7927,8 +8358,11 @@ const $$AutoReconnectResponse = {
     },
     serialize(input: AutoReconnectResponse): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
 
         if (Number.isNaN(input.count)) {
@@ -8057,8 +8491,11 @@ const $$StreamConnectionErrorTestParams = {
     },
     serialize(input: StreamConnectionErrorTestParams): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
 
         if (Number.isNaN(input.statusCode)) {
@@ -8158,8 +8595,11 @@ const $$StreamConnectionErrorTestResponse = {
     },
     serialize(input: StreamConnectionErrorTestResponse): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += `"message":`;
         if (input.message.length < 42) {
@@ -8386,142 +8826,147 @@ const $$StreamLargeObjectsResponse = {
     },
     serialize(input: StreamLargeObjectsResponse): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += '"numbers":[';
         for (let i = 0; i < input.numbers.length; i++) {
-            const inputNumbersItem = input.numbers[i];
+            const valNumbersItem = input.numbers[i];
             if (i !== 0) {
                 json += ",";
             }
 
-            if (Number.isNaN(inputNumbersItem)) {
+            if (Number.isNaN(valNumbersItem)) {
                 throw new Error("Expected number at /numbers/i got NaN");
             }
-            json += `${inputNumbersItem}`;
+            json += `${valNumbersItem}`;
         }
         json += "]";
         json += ',"objects":[';
         for (let i = 0; i < input.objects.length; i++) {
-            const inputObjectsItem = input.objects[i];
+            const valObjectsItem = input.objects[i];
             if (i !== 0) {
                 json += ",";
             }
+
+            json += "";
             json += "{";
             json += `"id":`;
-            if (inputObjectsItem.id.length < 42) {
+            if (valObjectsItem.id.length < 42) {
                 let __result__ = "";
                 let __last__ = -1;
                 let __point__ = 255;
                 let __finished__ = false;
-                for (let i = 0; i < inputObjectsItem.id.length; i++) {
-                    __point__ = inputObjectsItem.id.charCodeAt(i);
+                for (let i = 0; i < valObjectsItem.id.length; i++) {
+                    __point__ = valObjectsItem.id.charCodeAt(i);
                     if (
                         __point__ < 32 ||
                         (__point__ >= 0xd800 && __point__ <= 0xdfff)
                     ) {
-                        json += JSON.stringify(inputObjectsItem.id);
+                        json += JSON.stringify(valObjectsItem.id);
                         __finished__ = true;
                         break;
                     }
                     if (__point__ === 0x22 || __point__ === 0x5c) {
                         __last__ === -1 && (__last__ = 0);
                         __result__ +=
-                            inputObjectsItem.id.slice(__last__, i) + "\\";
+                            valObjectsItem.id.slice(__last__, i) + "\\";
                         __last__ = i;
                     }
                 }
                 if (!__finished__) {
                     if (__last__ === -1) {
-                        json += `"${inputObjectsItem.id}"`;
+                        json += `"${valObjectsItem.id}"`;
                     } else {
-                        json += `"${__result__}${inputObjectsItem.id.slice(__last__)}"`;
+                        json += `"${__result__}${valObjectsItem.id.slice(__last__)}"`;
                     }
                 }
             } else if (
-                inputObjectsItem.id.length < 5000 &&
-                !STR_ESCAPE.test(inputObjectsItem.id)
+                valObjectsItem.id.length < 5000 &&
+                !STR_ESCAPE.test(valObjectsItem.id)
             ) {
-                json += `"${inputObjectsItem.id}"`;
+                json += `"${valObjectsItem.id}"`;
             } else {
-                json += JSON.stringify(inputObjectsItem.id);
+                json += JSON.stringify(valObjectsItem.id);
             }
             json += `,"name":`;
-            if (inputObjectsItem.name.length < 42) {
+            if (valObjectsItem.name.length < 42) {
                 let __result__ = "";
                 let __last__ = -1;
                 let __point__ = 255;
                 let __finished__ = false;
-                for (let i = 0; i < inputObjectsItem.name.length; i++) {
-                    __point__ = inputObjectsItem.name.charCodeAt(i);
+                for (let i = 0; i < valObjectsItem.name.length; i++) {
+                    __point__ = valObjectsItem.name.charCodeAt(i);
                     if (
                         __point__ < 32 ||
                         (__point__ >= 0xd800 && __point__ <= 0xdfff)
                     ) {
-                        json += JSON.stringify(inputObjectsItem.name);
+                        json += JSON.stringify(valObjectsItem.name);
                         __finished__ = true;
                         break;
                     }
                     if (__point__ === 0x22 || __point__ === 0x5c) {
                         __last__ === -1 && (__last__ = 0);
                         __result__ +=
-                            inputObjectsItem.name.slice(__last__, i) + "\\";
+                            valObjectsItem.name.slice(__last__, i) + "\\";
                         __last__ = i;
                     }
                 }
                 if (!__finished__) {
                     if (__last__ === -1) {
-                        json += `"${inputObjectsItem.name}"`;
+                        json += `"${valObjectsItem.name}"`;
                     } else {
-                        json += `"${__result__}${inputObjectsItem.name.slice(__last__)}"`;
+                        json += `"${__result__}${valObjectsItem.name.slice(__last__)}"`;
                     }
                 }
             } else if (
-                inputObjectsItem.name.length < 5000 &&
-                !STR_ESCAPE.test(inputObjectsItem.name)
+                valObjectsItem.name.length < 5000 &&
+                !STR_ESCAPE.test(valObjectsItem.name)
             ) {
-                json += `"${inputObjectsItem.name}"`;
+                json += `"${valObjectsItem.name}"`;
             } else {
-                json += JSON.stringify(inputObjectsItem.name);
+                json += JSON.stringify(valObjectsItem.name);
             }
             json += `,"email":`;
-            if (inputObjectsItem.email.length < 42) {
+            if (valObjectsItem.email.length < 42) {
                 let __result__ = "";
                 let __last__ = -1;
                 let __point__ = 255;
                 let __finished__ = false;
-                for (let i = 0; i < inputObjectsItem.email.length; i++) {
-                    __point__ = inputObjectsItem.email.charCodeAt(i);
+                for (let i = 0; i < valObjectsItem.email.length; i++) {
+                    __point__ = valObjectsItem.email.charCodeAt(i);
                     if (
                         __point__ < 32 ||
                         (__point__ >= 0xd800 && __point__ <= 0xdfff)
                     ) {
-                        json += JSON.stringify(inputObjectsItem.email);
+                        json += JSON.stringify(valObjectsItem.email);
                         __finished__ = true;
                         break;
                     }
                     if (__point__ === 0x22 || __point__ === 0x5c) {
                         __last__ === -1 && (__last__ = 0);
                         __result__ +=
-                            inputObjectsItem.email.slice(__last__, i) + "\\";
+                            valObjectsItem.email.slice(__last__, i) + "\\";
                         __last__ = i;
                     }
                 }
                 if (!__finished__) {
                     if (__last__ === -1) {
-                        json += `"${inputObjectsItem.email}"`;
+                        json += `"${valObjectsItem.email}"`;
                     } else {
-                        json += `"${__result__}${inputObjectsItem.email.slice(__last__)}"`;
+                        json += `"${__result__}${valObjectsItem.email.slice(__last__)}"`;
                     }
                 }
             } else if (
-                inputObjectsItem.email.length < 5000 &&
-                !STR_ESCAPE.test(inputObjectsItem.email)
+                valObjectsItem.email.length < 5000 &&
+                !STR_ESCAPE.test(valObjectsItem.email)
             ) {
-                json += `"${inputObjectsItem.email}"`;
+                json += `"${valObjectsItem.email}"`;
             } else {
-                json += JSON.stringify(inputObjectsItem.email);
+                json += JSON.stringify(valObjectsItem.email);
             }
             json += "}";
         }
@@ -8587,8 +9032,11 @@ const $$ChatMessageParams = {
     },
     serialize(input: ChatMessageParams): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
         json += "{";
         json += `"channelId":`;
         if (input.channelId.length < 42) {
@@ -9037,10 +9485,12 @@ const $$ChatMessage = {
     },
     serialize(input: ChatMessage): string {
         let json = "";
+
         const STR_ESCAPE =
             /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
         switch (input.messageType) {
             case "TEXT": {
+                json += "";
                 json += "{";
                 json += `"messageType":"TEXT"`;
                 json += `,"id":`;
@@ -9198,6 +9648,7 @@ const $$ChatMessage = {
                 break;
             }
             case "IMAGE": {
+                json += "";
                 json += "{";
                 json += `"messageType":"IMAGE"`;
                 json += `,"id":`;
@@ -9355,6 +9806,7 @@ const $$ChatMessage = {
                 break;
             }
             case "URL": {
+                json += "";
                 json += "{";
                 json += `"messageType":"URL"`;
                 json += `,"id":`;
@@ -9540,6542 +9992,4 @@ export interface ChatMessageUrl {
     userId: string;
     date: Date;
     url: string;
-}
-
-export interface PostParams {
-    postId: string;
-}
-const $$PostParams = {
-    parse(input: Record<any, any>): PostParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.postId === "string") {
-                    __D1.postId = json.postId;
-                } else {
-                    $fallback(
-                        "/postId",
-                        "/properties/postId/type",
-                        "Expected string at /postId",
-                    );
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.postId === "string") {
-                __D1.postId = input.postId;
-            } else {
-                $fallback(
-                    "/postId",
-                    "/properties/postId/type",
-                    "Expected string at /postId",
-                );
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: PostParams): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"postId":`;
-        if (input.postId.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.postId.length; i++) {
-                __point__ = input.postId.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.postId);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.postId.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += `"${__result__}${input.postId.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.postId.length < 5000 &&
-            !STR_ESCAPE.test(input.postId)
-        ) {
-            json += `"${input.postId}"`;
-        } else {
-            json += JSON.stringify(input.postId);
-        }
-        json += "}";
-        return json;
-    },
-};
-
-export interface Post {
-    id: string;
-    title: string;
-    type: PostType;
-    description: string | null;
-    content: string;
-    tags: Array<string>;
-    authorId: string;
-    author: Author;
-    createdAt: Date;
-    updatedAt: Date;
-}
-const $$Post = {
-    parse(input: Record<any, any>): Post {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.id === "string") {
-                    __D1.id = json.id;
-                } else {
-                    $fallback(
-                        "/id",
-                        "/properties/id/type",
-                        "Expected string at /id",
-                    );
-                }
-                if (typeof json.title === "string") {
-                    __D1.title = json.title;
-                } else {
-                    $fallback(
-                        "/title",
-                        "/properties/title/type",
-                        "Expected string at /title",
-                    );
-                }
-                if (typeof json.type === "string") {
-                    if (
-                        json.type === "text" ||
-                        json.type === "image" ||
-                        json.type === "video"
-                    ) {
-                        __D1.type = json.type;
-                    } else {
-                        $fallback(
-                            "/type",
-                            "/properties/type",
-                            "Expected one of the following values: [text, image, video] at /type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/type",
-                        "/properties/type",
-                        "Expected one of the following values: [text, image, video] at /type.",
-                    );
-                }
-                if (json.description === null) {
-                    __D1.description = json.description;
-                } else {
-                    if (typeof json.description === "string") {
-                        __D1.description = json.description;
-                    } else {
-                        $fallback(
-                            "/description",
-                            "/properties/description/type",
-                            "Expected string at /description",
-                        );
-                    }
-                }
-                if (typeof json.content === "string") {
-                    __D1.content = json.content;
-                } else {
-                    $fallback(
-                        "/content",
-                        "/properties/content/type",
-                        "Expected string at /content",
-                    );
-                }
-                if (Array.isArray(json.tags)) {
-                    const __D2 = [];
-                    for (const __D2AItem of json.tags) {
-                        let __D2AItemAResult;
-                        if (typeof __D2AItem === "string") {
-                            __D2AItemAResult = __D2AItem;
-                        } else {
-                            $fallback(
-                                "/tags/[0]",
-                                "/properties/tags/elements/type",
-                                "Expected string at /tags/[0]",
-                            );
-                        }
-                        __D2.push(__D2AItemAResult);
-                    }
-                    __D1.tags = __D2;
-                } else {
-                    $fallback("/tags", "/properties/tags", "Expected Array");
-                }
-                if (typeof json.authorId === "string") {
-                    __D1.authorId = json.authorId;
-                } else {
-                    $fallback(
-                        "/authorId",
-                        "/properties/authorId/type",
-                        "Expected string at /authorId",
-                    );
-                }
-                if (typeof json.author === "object" && json.author !== null) {
-                    const __D2 = {};
-                    if (typeof json.author.id === "string") {
-                        __D2.id = json.author.id;
-                    } else {
-                        $fallback(
-                            "/author/id",
-                            "/properties/author/properties/id/type",
-                            "Expected string at /author/id",
-                        );
-                    }
-                    if (typeof json.author.name === "string") {
-                        __D2.name = json.author.name;
-                    } else {
-                        $fallback(
-                            "/author/name",
-                            "/properties/author/properties/name/type",
-                            "Expected string at /author/name",
-                        );
-                    }
-                    if (json.author.bio === null) {
-                        __D2.bio = json.author.bio;
-                    } else {
-                        if (typeof json.author.bio === "string") {
-                            __D2.bio = json.author.bio;
-                        } else {
-                            $fallback(
-                                "/author/bio",
-                                "/properties/author/properties/bio/type",
-                                "Expected string at /author/bio",
-                            );
-                        }
-                    }
-                    if (
-                        typeof json.author.createdAt === "object" &&
-                        json.author.createdAt instanceof Date
-                    ) {
-                        __D2.createdAt = json.author.createdAt;
-                    } else if (typeof json.author.createdAt === "string") {
-                        __D2.createdAt = new Date(json.author.createdAt);
-                    } else {
-                        $fallback(
-                            "/author/createdAt",
-                            "/properties/author/properties/createdAt",
-                            "Expected instanceof Date or ISO Date string at /author/createdAt",
-                        );
-                    }
-                    if (
-                        typeof json.author.updatedAt === "object" &&
-                        json.author.updatedAt instanceof Date
-                    ) {
-                        __D2.updatedAt = json.author.updatedAt;
-                    } else if (typeof json.author.updatedAt === "string") {
-                        __D2.updatedAt = new Date(json.author.updatedAt);
-                    } else {
-                        $fallback(
-                            "/author/updatedAt",
-                            "/properties/author/properties/updatedAt",
-                            "Expected instanceof Date or ISO Date string at /author/updatedAt",
-                        );
-                    }
-                    __D1.author = __D2;
-                } else {
-                    $fallback(
-                        "/author",
-                        "/properties/author",
-                        "Expected object",
-                    );
-                }
-                if (
-                    typeof json.createdAt === "object" &&
-                    json.createdAt instanceof Date
-                ) {
-                    __D1.createdAt = json.createdAt;
-                } else if (typeof json.createdAt === "string") {
-                    __D1.createdAt = new Date(json.createdAt);
-                } else {
-                    $fallback(
-                        "/createdAt",
-                        "/properties/createdAt",
-                        "Expected instanceof Date or ISO Date string at /createdAt",
-                    );
-                }
-                if (
-                    typeof json.updatedAt === "object" &&
-                    json.updatedAt instanceof Date
-                ) {
-                    __D1.updatedAt = json.updatedAt;
-                } else if (typeof json.updatedAt === "string") {
-                    __D1.updatedAt = new Date(json.updatedAt);
-                } else {
-                    $fallback(
-                        "/updatedAt",
-                        "/properties/updatedAt",
-                        "Expected instanceof Date or ISO Date string at /updatedAt",
-                    );
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.id === "string") {
-                __D1.id = input.id;
-            } else {
-                $fallback(
-                    "/id",
-                    "/properties/id/type",
-                    "Expected string at /id",
-                );
-            }
-            if (typeof input.title === "string") {
-                __D1.title = input.title;
-            } else {
-                $fallback(
-                    "/title",
-                    "/properties/title/type",
-                    "Expected string at /title",
-                );
-            }
-            if (typeof input.type === "string") {
-                if (
-                    input.type === "text" ||
-                    input.type === "image" ||
-                    input.type === "video"
-                ) {
-                    __D1.type = input.type;
-                } else {
-                    $fallback(
-                        "/type",
-                        "/properties/type",
-                        "Expected one of the following values: [text, image, video] at /type.",
-                    );
-                }
-            } else {
-                $fallback(
-                    "/type",
-                    "/properties/type",
-                    "Expected one of the following values: [text, image, video] at /type.",
-                );
-            }
-            if (input.description === null) {
-                __D1.description = input.description;
-            } else {
-                if (typeof input.description === "string") {
-                    __D1.description = input.description;
-                } else {
-                    $fallback(
-                        "/description",
-                        "/properties/description/type",
-                        "Expected string at /description",
-                    );
-                }
-            }
-            if (typeof input.content === "string") {
-                __D1.content = input.content;
-            } else {
-                $fallback(
-                    "/content",
-                    "/properties/content/type",
-                    "Expected string at /content",
-                );
-            }
-            if (Array.isArray(input.tags)) {
-                const __D2 = [];
-                for (const __D2AItem of input.tags) {
-                    let __D2AItemAResult;
-                    if (typeof __D2AItem === "string") {
-                        __D2AItemAResult = __D2AItem;
-                    } else {
-                        $fallback(
-                            "/tags/[0]",
-                            "/properties/tags/elements/type",
-                            "Expected string at /tags/[0]",
-                        );
-                    }
-                    __D2.push(__D2AItemAResult);
-                }
-                __D1.tags = __D2;
-            } else {
-                $fallback("/tags", "/properties/tags", "Expected Array");
-            }
-            if (typeof input.authorId === "string") {
-                __D1.authorId = input.authorId;
-            } else {
-                $fallback(
-                    "/authorId",
-                    "/properties/authorId/type",
-                    "Expected string at /authorId",
-                );
-            }
-            if (typeof input.author === "object" && input.author !== null) {
-                const __D2 = {};
-                if (typeof input.author.id === "string") {
-                    __D2.id = input.author.id;
-                } else {
-                    $fallback(
-                        "/author/id",
-                        "/properties/author/properties/id/type",
-                        "Expected string at /author/id",
-                    );
-                }
-                if (typeof input.author.name === "string") {
-                    __D2.name = input.author.name;
-                } else {
-                    $fallback(
-                        "/author/name",
-                        "/properties/author/properties/name/type",
-                        "Expected string at /author/name",
-                    );
-                }
-                if (input.author.bio === null) {
-                    __D2.bio = input.author.bio;
-                } else {
-                    if (typeof input.author.bio === "string") {
-                        __D2.bio = input.author.bio;
-                    } else {
-                        $fallback(
-                            "/author/bio",
-                            "/properties/author/properties/bio/type",
-                            "Expected string at /author/bio",
-                        );
-                    }
-                }
-                if (
-                    typeof input.author.createdAt === "object" &&
-                    input.author.createdAt instanceof Date
-                ) {
-                    __D2.createdAt = input.author.createdAt;
-                } else if (typeof input.author.createdAt === "string") {
-                    __D2.createdAt = new Date(input.author.createdAt);
-                } else {
-                    $fallback(
-                        "/author/createdAt",
-                        "/properties/author/properties/createdAt",
-                        "Expected instanceof Date or ISO Date string at /author/createdAt",
-                    );
-                }
-                if (
-                    typeof input.author.updatedAt === "object" &&
-                    input.author.updatedAt instanceof Date
-                ) {
-                    __D2.updatedAt = input.author.updatedAt;
-                } else if (typeof input.author.updatedAt === "string") {
-                    __D2.updatedAt = new Date(input.author.updatedAt);
-                } else {
-                    $fallback(
-                        "/author/updatedAt",
-                        "/properties/author/properties/updatedAt",
-                        "Expected instanceof Date or ISO Date string at /author/updatedAt",
-                    );
-                }
-                __D1.author = __D2;
-            } else {
-                $fallback("/author", "/properties/author", "Expected object");
-            }
-            if (
-                typeof input.createdAt === "object" &&
-                input.createdAt instanceof Date
-            ) {
-                __D1.createdAt = input.createdAt;
-            } else if (typeof input.createdAt === "string") {
-                __D1.createdAt = new Date(input.createdAt);
-            } else {
-                $fallback(
-                    "/createdAt",
-                    "/properties/createdAt",
-                    "Expected instanceof Date or ISO Date string at /createdAt",
-                );
-            }
-            if (
-                typeof input.updatedAt === "object" &&
-                input.updatedAt instanceof Date
-            ) {
-                __D1.updatedAt = input.updatedAt;
-            } else if (typeof input.updatedAt === "string") {
-                __D1.updatedAt = new Date(input.updatedAt);
-            } else {
-                $fallback(
-                    "/updatedAt",
-                    "/properties/updatedAt",
-                    "Expected instanceof Date or ISO Date string at /updatedAt",
-                );
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: Post): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"id":`;
-        if (input.id.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.id.length; i++) {
-                __point__ = input.id.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.id);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.id.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.id}"`;
-                } else {
-                    json += `"${__result__}${input.id.slice(__last__)}"`;
-                }
-            }
-        } else if (input.id.length < 5000 && !STR_ESCAPE.test(input.id)) {
-            json += `"${input.id}"`;
-        } else {
-            json += JSON.stringify(input.id);
-        }
-        json += `,"title":`;
-        if (input.title.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.title.length; i++) {
-                __point__ = input.title.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.title);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.title.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.title}"`;
-                } else {
-                    json += `"${__result__}${input.title.slice(__last__)}"`;
-                }
-            }
-        } else if (input.title.length < 5000 && !STR_ESCAPE.test(input.title)) {
-            json += `"${input.title}"`;
-        } else {
-            json += JSON.stringify(input.title);
-        }
-        json += `,"type":"${input.type}"`;
-        if (typeof input.description === "string") {
-            json += `,"description":`;
-            if (input.description.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < input.description.length; i++) {
-                    __point__ = input.description.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(input.description);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            input.description.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${input.description}"`;
-                    } else {
-                        json += `"${__result__}${input.description.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                input.description.length < 5000 &&
-                !STR_ESCAPE.test(input.description)
-            ) {
-                json += `"${input.description}"`;
-            } else {
-                json += JSON.stringify(input.description);
-            }
-        } else {
-            json += ',"description":null';
-        }
-        json += `,"content":`;
-        if (input.content.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.content.length; i++) {
-                __point__ = input.content.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.content);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.content.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.content}"`;
-                } else {
-                    json += `"${__result__}${input.content.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.content.length < 5000 &&
-            !STR_ESCAPE.test(input.content)
-        ) {
-            json += `"${input.content}"`;
-        } else {
-            json += JSON.stringify(input.content);
-        }
-        json += ',"tags":[';
-        for (let i = 0; i < input.tags.length; i++) {
-            const inputTagsItem = input.tags[i];
-            if (i !== 0) {
-                json += ",";
-            }
-            json += ``;
-            if (inputTagsItem.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputTagsItem.length; i++) {
-                    __point__ = inputTagsItem.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputTagsItem);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ += inputTagsItem.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputTagsItem}"`;
-                    } else {
-                        json += `"${__result__}${inputTagsItem.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputTagsItem.length < 5000 &&
-                !STR_ESCAPE.test(inputTagsItem)
-            ) {
-                json += `"${inputTagsItem}"`;
-            } else {
-                json += JSON.stringify(inputTagsItem);
-            }
-        }
-        json += "]";
-        json += `,"authorId":`;
-        if (input.authorId.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.authorId.length; i++) {
-                __point__ = input.authorId.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.authorId);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.authorId.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.authorId}"`;
-                } else {
-                    json += `"${__result__}${input.authorId.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.authorId.length < 5000 &&
-            !STR_ESCAPE.test(input.authorId)
-        ) {
-            json += `"${input.authorId}"`;
-        } else {
-            json += JSON.stringify(input.authorId);
-        }
-        json += ',"author":{';
-        json += `"id":`;
-        if (input.author.id.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.author.id.length; i++) {
-                __point__ = input.author.id.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.author.id);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.author.id.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.author.id}"`;
-                } else {
-                    json += `"${__result__}${input.author.id.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.author.id.length < 5000 &&
-            !STR_ESCAPE.test(input.author.id)
-        ) {
-            json += `"${input.author.id}"`;
-        } else {
-            json += JSON.stringify(input.author.id);
-        }
-        json += `,"name":`;
-        if (input.author.name.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.author.name.length; i++) {
-                __point__ = input.author.name.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.author.name);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.author.name.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.author.name}"`;
-                } else {
-                    json += `"${__result__}${input.author.name.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.author.name.length < 5000 &&
-            !STR_ESCAPE.test(input.author.name)
-        ) {
-            json += `"${input.author.name}"`;
-        } else {
-            json += JSON.stringify(input.author.name);
-        }
-        if (typeof input.author.bio === "string") {
-            json += `,"bio":`;
-            if (input.author.bio.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < input.author.bio.length; i++) {
-                    __point__ = input.author.bio.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(input.author.bio);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            input.author.bio.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${input.author.bio}"`;
-                    } else {
-                        json += `"${__result__}${input.author.bio.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                input.author.bio.length < 5000 &&
-                !STR_ESCAPE.test(input.author.bio)
-            ) {
-                json += `"${input.author.bio}"`;
-            } else {
-                json += JSON.stringify(input.author.bio);
-            }
-        } else {
-            json += ',"bio":null';
-        }
-        json += `,"createdAt":"${input.author.createdAt.toISOString()}"`;
-        json += `,"updatedAt":"${input.author.updatedAt.toISOString()}"`;
-        json += "}";
-        json += `,"createdAt":"${input.createdAt.toISOString()}"`;
-        json += `,"updatedAt":"${input.updatedAt.toISOString()}"`;
-        json += "}";
-        return json;
-    },
-};
-export type PostType = "text" | "image" | "video";
-export interface Author {
-    id: string;
-    name: string;
-    bio: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface PostListParams {
-    limit: number;
-    type?: PostType;
-}
-const $$PostListParams = {
-    parse(input: Record<any, any>): PostListParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (
-                    typeof json.limit === "number" &&
-                    Number.isInteger(json.limit) &&
-                    json.limit >= -128 &&
-                    json.limit <= 127
-                ) {
-                    __D1.limit = json.limit;
-                } else {
-                    $fallback(
-                        "/limit",
-                        "/properties/limit",
-                        "Expected valid integer between -128 and 127",
-                    );
-                }
-                if (typeof json.type === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof json.type === "string") {
-                        if (
-                            json.type === "text" ||
-                            json.type === "image" ||
-                            json.type === "video"
-                        ) {
-                            __D1.type = json.type;
-                        } else {
-                            $fallback(
-                                "/type",
-                                "/optionalProperties/type",
-                                "Expected one of the following values: [text, image, video] at /type.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/type",
-                            "/optionalProperties/type",
-                            "Expected one of the following values: [text, image, video] at /type.",
-                        );
-                    }
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (
-                typeof input.limit === "number" &&
-                Number.isInteger(input.limit) &&
-                input.limit >= -128 &&
-                input.limit <= 127
-            ) {
-                __D1.limit = input.limit;
-            } else {
-                $fallback(
-                    "/limit",
-                    "/properties/limit",
-                    "Expected valid integer between -128 and 127",
-                );
-            }
-            if (typeof input.type === "undefined") {
-                // ignore undefined
-            } else {
-                if (typeof input.type === "string") {
-                    if (
-                        input.type === "text" ||
-                        input.type === "image" ||
-                        input.type === "video"
-                    ) {
-                        __D1.type = input.type;
-                    } else {
-                        $fallback(
-                            "/type",
-                            "/optionalProperties/type",
-                            "Expected one of the following values: [text, image, video] at /type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/type",
-                        "/optionalProperties/type",
-                        "Expected one of the following values: [text, image, video] at /type.",
-                    );
-                }
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: PostListParams): string {
-        let json = "";
-
-        json += "{";
-
-        if (Number.isNaN(input.limit)) {
-            throw new Error("Expected number at /limit got NaN");
-        }
-        json += `"limit":${input.limit}`;
-        if (typeof input.type !== "undefined") {
-            json += `,"type":"${input.type}"`;
-        }
-        json += "}";
-        return json;
-    },
-};
-
-export interface PostListResponse {
-    total: number;
-    items: Array<Post>;
-}
-const $$PostListResponse = {
-    parse(input: Record<any, any>): PostListResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (
-                    typeof json.total === "number" &&
-                    Number.isInteger(json.total) &&
-                    json.total >= -2147483648 &&
-                    json.total <= 2147483647
-                ) {
-                    __D1.total = json.total;
-                } else {
-                    $fallback(
-                        "/total",
-                        "/properties/total",
-                        "Expected valid integer between -2147483648 and 2147483647",
-                    );
-                }
-                if (Array.isArray(json.items)) {
-                    const __D2 = [];
-                    for (const __D2AItem of json.items) {
-                        let __D2AItemAResult;
-                        if (
-                            typeof __D2AItem === "object" &&
-                            __D2AItem !== null
-                        ) {
-                            const __D3 = {};
-                            if (typeof __D2AItem.id === "string") {
-                                __D3.id = __D2AItem.id;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/id",
-                                    "/properties/items/elements/properties/id/type",
-                                    "Expected string at /items/[0]/id",
-                                );
-                            }
-                            if (typeof __D2AItem.title === "string") {
-                                __D3.title = __D2AItem.title;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/title",
-                                    "/properties/items/elements/properties/title/type",
-                                    "Expected string at /items/[0]/title",
-                                );
-                            }
-                            if (typeof __D2AItem.type === "string") {
-                                if (
-                                    __D2AItem.type === "text" ||
-                                    __D2AItem.type === "image" ||
-                                    __D2AItem.type === "video"
-                                ) {
-                                    __D3.type = __D2AItem.type;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/type",
-                                        "/properties/items/elements/properties/type",
-                                        "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                                    );
-                                }
-                            } else {
-                                $fallback(
-                                    "/items/[0]/type",
-                                    "/properties/items/elements/properties/type",
-                                    "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                                );
-                            }
-                            if (__D2AItem.description === null) {
-                                __D3.description = __D2AItem.description;
-                            } else {
-                                if (typeof __D2AItem.description === "string") {
-                                    __D3.description = __D2AItem.description;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/description",
-                                        "/properties/items/elements/properties/description/type",
-                                        "Expected string at /items/[0]/description",
-                                    );
-                                }
-                            }
-                            if (typeof __D2AItem.content === "string") {
-                                __D3.content = __D2AItem.content;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/content",
-                                    "/properties/items/elements/properties/content/type",
-                                    "Expected string at /items/[0]/content",
-                                );
-                            }
-                            if (Array.isArray(__D2AItem.tags)) {
-                                const __D4 = [];
-                                for (const __D4AItem of __D2AItem.tags) {
-                                    let __D4AItemAResult;
-                                    if (typeof __D4AItem === "string") {
-                                        __D4AItemAResult = __D4AItem;
-                                    } else {
-                                        $fallback(
-                                            "/items/[0]/tags/[0]",
-                                            "/properties/items/elements/properties/tags/elements/type",
-                                            "Expected string at /items/[0]/tags/[0]",
-                                        );
-                                    }
-                                    __D4.push(__D4AItemAResult);
-                                }
-                                __D3.tags = __D4;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/tags",
-                                    "/properties/items/elements/properties/tags",
-                                    "Expected Array",
-                                );
-                            }
-                            if (typeof __D2AItem.authorId === "string") {
-                                __D3.authorId = __D2AItem.authorId;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/authorId",
-                                    "/properties/items/elements/properties/authorId/type",
-                                    "Expected string at /items/[0]/authorId",
-                                );
-                            }
-                            if (
-                                typeof __D2AItem.author === "object" &&
-                                __D2AItem.author !== null
-                            ) {
-                                const __D4 = {};
-                                if (typeof __D2AItem.author.id === "string") {
-                                    __D4.id = __D2AItem.author.id;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/id",
-                                        "/properties/items/elements/properties/author/properties/id/type",
-                                        "Expected string at /items/[0]/author/id",
-                                    );
-                                }
-                                if (typeof __D2AItem.author.name === "string") {
-                                    __D4.name = __D2AItem.author.name;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/name",
-                                        "/properties/items/elements/properties/author/properties/name/type",
-                                        "Expected string at /items/[0]/author/name",
-                                    );
-                                }
-                                if (__D2AItem.author.bio === null) {
-                                    __D4.bio = __D2AItem.author.bio;
-                                } else {
-                                    if (
-                                        typeof __D2AItem.author.bio === "string"
-                                    ) {
-                                        __D4.bio = __D2AItem.author.bio;
-                                    } else {
-                                        $fallback(
-                                            "/items/[0]/author/bio",
-                                            "/properties/items/elements/properties/author/properties/bio/type",
-                                            "Expected string at /items/[0]/author/bio",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof __D2AItem.author.createdAt ===
-                                        "object" &&
-                                    __D2AItem.author.createdAt instanceof Date
-                                ) {
-                                    __D4.createdAt = __D2AItem.author.createdAt;
-                                } else if (
-                                    typeof __D2AItem.author.createdAt ===
-                                    "string"
-                                ) {
-                                    __D4.createdAt = new Date(
-                                        __D2AItem.author.createdAt,
-                                    );
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/createdAt",
-                                        "/properties/items/elements/properties/author/properties/createdAt",
-                                        "Expected instanceof Date or ISO Date string at /items/[0]/author/createdAt",
-                                    );
-                                }
-                                if (
-                                    typeof __D2AItem.author.updatedAt ===
-                                        "object" &&
-                                    __D2AItem.author.updatedAt instanceof Date
-                                ) {
-                                    __D4.updatedAt = __D2AItem.author.updatedAt;
-                                } else if (
-                                    typeof __D2AItem.author.updatedAt ===
-                                    "string"
-                                ) {
-                                    __D4.updatedAt = new Date(
-                                        __D2AItem.author.updatedAt,
-                                    );
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/updatedAt",
-                                        "/properties/items/elements/properties/author/properties/updatedAt",
-                                        "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
-                                    );
-                                }
-                                __D3.author = __D4;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author",
-                                    "/properties/items/elements/properties/author",
-                                    "Expected object",
-                                );
-                            }
-                            if (
-                                typeof __D2AItem.createdAt === "object" &&
-                                __D2AItem.createdAt instanceof Date
-                            ) {
-                                __D3.createdAt = __D2AItem.createdAt;
-                            } else if (
-                                typeof __D2AItem.createdAt === "string"
-                            ) {
-                                __D3.createdAt = new Date(__D2AItem.createdAt);
-                            } else {
-                                $fallback(
-                                    "/items/[0]/createdAt",
-                                    "/properties/items/elements/properties/createdAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/createdAt",
-                                );
-                            }
-                            if (
-                                typeof __D2AItem.updatedAt === "object" &&
-                                __D2AItem.updatedAt instanceof Date
-                            ) {
-                                __D3.updatedAt = __D2AItem.updatedAt;
-                            } else if (
-                                typeof __D2AItem.updatedAt === "string"
-                            ) {
-                                __D3.updatedAt = new Date(__D2AItem.updatedAt);
-                            } else {
-                                $fallback(
-                                    "/items/[0]/updatedAt",
-                                    "/properties/items/elements/properties/updatedAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
-                                );
-                            }
-                            __D2AItemAResult = __D3;
-                        } else {
-                            $fallback(
-                                "/items/[0]",
-                                "/properties/items/elements",
-                                "Expected object",
-                            );
-                        }
-                        __D2.push(__D2AItemAResult);
-                    }
-                    __D1.items = __D2;
-                } else {
-                    $fallback("/items", "/properties/items", "Expected Array");
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (
-                typeof input.total === "number" &&
-                Number.isInteger(input.total) &&
-                input.total >= -2147483648 &&
-                input.total <= 2147483647
-            ) {
-                __D1.total = input.total;
-            } else {
-                $fallback(
-                    "/total",
-                    "/properties/total",
-                    "Expected valid integer between -2147483648 and 2147483647",
-                );
-            }
-            if (Array.isArray(input.items)) {
-                const __D2 = [];
-                for (const __D2AItem of input.items) {
-                    let __D2AItemAResult;
-                    if (typeof __D2AItem === "object" && __D2AItem !== null) {
-                        const __D3 = {};
-                        if (typeof __D2AItem.id === "string") {
-                            __D3.id = __D2AItem.id;
-                        } else {
-                            $fallback(
-                                "/items/[0]/id",
-                                "/properties/items/elements/properties/id/type",
-                                "Expected string at /items/[0]/id",
-                            );
-                        }
-                        if (typeof __D2AItem.title === "string") {
-                            __D3.title = __D2AItem.title;
-                        } else {
-                            $fallback(
-                                "/items/[0]/title",
-                                "/properties/items/elements/properties/title/type",
-                                "Expected string at /items/[0]/title",
-                            );
-                        }
-                        if (typeof __D2AItem.type === "string") {
-                            if (
-                                __D2AItem.type === "text" ||
-                                __D2AItem.type === "image" ||
-                                __D2AItem.type === "video"
-                            ) {
-                                __D3.type = __D2AItem.type;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/type",
-                                    "/properties/items/elements/properties/type",
-                                    "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/items/[0]/type",
-                                "/properties/items/elements/properties/type",
-                                "Expected one of the following values: [text, image, video] at /items/[0]/type.",
-                            );
-                        }
-                        if (__D2AItem.description === null) {
-                            __D3.description = __D2AItem.description;
-                        } else {
-                            if (typeof __D2AItem.description === "string") {
-                                __D3.description = __D2AItem.description;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/description",
-                                    "/properties/items/elements/properties/description/type",
-                                    "Expected string at /items/[0]/description",
-                                );
-                            }
-                        }
-                        if (typeof __D2AItem.content === "string") {
-                            __D3.content = __D2AItem.content;
-                        } else {
-                            $fallback(
-                                "/items/[0]/content",
-                                "/properties/items/elements/properties/content/type",
-                                "Expected string at /items/[0]/content",
-                            );
-                        }
-                        if (Array.isArray(__D2AItem.tags)) {
-                            const __D4 = [];
-                            for (const __D4AItem of __D2AItem.tags) {
-                                let __D4AItemAResult;
-                                if (typeof __D4AItem === "string") {
-                                    __D4AItemAResult = __D4AItem;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/tags/[0]",
-                                        "/properties/items/elements/properties/tags/elements/type",
-                                        "Expected string at /items/[0]/tags/[0]",
-                                    );
-                                }
-                                __D4.push(__D4AItemAResult);
-                            }
-                            __D3.tags = __D4;
-                        } else {
-                            $fallback(
-                                "/items/[0]/tags",
-                                "/properties/items/elements/properties/tags",
-                                "Expected Array",
-                            );
-                        }
-                        if (typeof __D2AItem.authorId === "string") {
-                            __D3.authorId = __D2AItem.authorId;
-                        } else {
-                            $fallback(
-                                "/items/[0]/authorId",
-                                "/properties/items/elements/properties/authorId/type",
-                                "Expected string at /items/[0]/authorId",
-                            );
-                        }
-                        if (
-                            typeof __D2AItem.author === "object" &&
-                            __D2AItem.author !== null
-                        ) {
-                            const __D4 = {};
-                            if (typeof __D2AItem.author.id === "string") {
-                                __D4.id = __D2AItem.author.id;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/id",
-                                    "/properties/items/elements/properties/author/properties/id/type",
-                                    "Expected string at /items/[0]/author/id",
-                                );
-                            }
-                            if (typeof __D2AItem.author.name === "string") {
-                                __D4.name = __D2AItem.author.name;
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/name",
-                                    "/properties/items/elements/properties/author/properties/name/type",
-                                    "Expected string at /items/[0]/author/name",
-                                );
-                            }
-                            if (__D2AItem.author.bio === null) {
-                                __D4.bio = __D2AItem.author.bio;
-                            } else {
-                                if (typeof __D2AItem.author.bio === "string") {
-                                    __D4.bio = __D2AItem.author.bio;
-                                } else {
-                                    $fallback(
-                                        "/items/[0]/author/bio",
-                                        "/properties/items/elements/properties/author/properties/bio/type",
-                                        "Expected string at /items/[0]/author/bio",
-                                    );
-                                }
-                            }
-                            if (
-                                typeof __D2AItem.author.createdAt ===
-                                    "object" &&
-                                __D2AItem.author.createdAt instanceof Date
-                            ) {
-                                __D4.createdAt = __D2AItem.author.createdAt;
-                            } else if (
-                                typeof __D2AItem.author.createdAt === "string"
-                            ) {
-                                __D4.createdAt = new Date(
-                                    __D2AItem.author.createdAt,
-                                );
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/createdAt",
-                                    "/properties/items/elements/properties/author/properties/createdAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/author/createdAt",
-                                );
-                            }
-                            if (
-                                typeof __D2AItem.author.updatedAt ===
-                                    "object" &&
-                                __D2AItem.author.updatedAt instanceof Date
-                            ) {
-                                __D4.updatedAt = __D2AItem.author.updatedAt;
-                            } else if (
-                                typeof __D2AItem.author.updatedAt === "string"
-                            ) {
-                                __D4.updatedAt = new Date(
-                                    __D2AItem.author.updatedAt,
-                                );
-                            } else {
-                                $fallback(
-                                    "/items/[0]/author/updatedAt",
-                                    "/properties/items/elements/properties/author/properties/updatedAt",
-                                    "Expected instanceof Date or ISO Date string at /items/[0]/author/updatedAt",
-                                );
-                            }
-                            __D3.author = __D4;
-                        } else {
-                            $fallback(
-                                "/items/[0]/author",
-                                "/properties/items/elements/properties/author",
-                                "Expected object",
-                            );
-                        }
-                        if (
-                            typeof __D2AItem.createdAt === "object" &&
-                            __D2AItem.createdAt instanceof Date
-                        ) {
-                            __D3.createdAt = __D2AItem.createdAt;
-                        } else if (typeof __D2AItem.createdAt === "string") {
-                            __D3.createdAt = new Date(__D2AItem.createdAt);
-                        } else {
-                            $fallback(
-                                "/items/[0]/createdAt",
-                                "/properties/items/elements/properties/createdAt",
-                                "Expected instanceof Date or ISO Date string at /items/[0]/createdAt",
-                            );
-                        }
-                        if (
-                            typeof __D2AItem.updatedAt === "object" &&
-                            __D2AItem.updatedAt instanceof Date
-                        ) {
-                            __D3.updatedAt = __D2AItem.updatedAt;
-                        } else if (typeof __D2AItem.updatedAt === "string") {
-                            __D3.updatedAt = new Date(__D2AItem.updatedAt);
-                        } else {
-                            $fallback(
-                                "/items/[0]/updatedAt",
-                                "/properties/items/elements/properties/updatedAt",
-                                "Expected instanceof Date or ISO Date string at /items/[0]/updatedAt",
-                            );
-                        }
-                        __D2AItemAResult = __D3;
-                    } else {
-                        $fallback(
-                            "/items/[0]",
-                            "/properties/items/elements",
-                            "Expected object",
-                        );
-                    }
-                    __D2.push(__D2AItemAResult);
-                }
-                __D1.items = __D2;
-            } else {
-                $fallback("/items", "/properties/items", "Expected Array");
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: PostListResponse): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-
-        if (Number.isNaN(input.total)) {
-            throw new Error("Expected number at /total got NaN");
-        }
-        json += `"total":${input.total}`;
-        json += ',"items":[';
-        for (let i = 0; i < input.items.length; i++) {
-            const inputItemsItem = input.items[i];
-            if (i !== 0) {
-                json += ",";
-            }
-            json += "{";
-            json += `"id":`;
-            if (inputItemsItem.id.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputItemsItem.id.length; i++) {
-                    __point__ = inputItemsItem.id.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputItemsItem.id);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            inputItemsItem.id.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputItemsItem.id}"`;
-                    } else {
-                        json += `"${__result__}${inputItemsItem.id.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputItemsItem.id.length < 5000 &&
-                !STR_ESCAPE.test(inputItemsItem.id)
-            ) {
-                json += `"${inputItemsItem.id}"`;
-            } else {
-                json += JSON.stringify(inputItemsItem.id);
-            }
-            json += `,"title":`;
-            if (inputItemsItem.title.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputItemsItem.title.length; i++) {
-                    __point__ = inputItemsItem.title.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputItemsItem.title);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            inputItemsItem.title.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputItemsItem.title}"`;
-                    } else {
-                        json += `"${__result__}${inputItemsItem.title.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputItemsItem.title.length < 5000 &&
-                !STR_ESCAPE.test(inputItemsItem.title)
-            ) {
-                json += `"${inputItemsItem.title}"`;
-            } else {
-                json += JSON.stringify(inputItemsItem.title);
-            }
-            json += `,"type":"${inputItemsItem.type}"`;
-            if (typeof inputItemsItem.description === "string") {
-                json += `,"description":`;
-                if (inputItemsItem.description.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (
-                        let i = 0;
-                        i < inputItemsItem.description.length;
-                        i++
-                    ) {
-                        __point__ = inputItemsItem.description.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(inputItemsItem.description);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                inputItemsItem.description.slice(__last__, i) +
-                                "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${inputItemsItem.description}"`;
-                        } else {
-                            json += `"${__result__}${inputItemsItem.description.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    inputItemsItem.description.length < 5000 &&
-                    !STR_ESCAPE.test(inputItemsItem.description)
-                ) {
-                    json += `"${inputItemsItem.description}"`;
-                } else {
-                    json += JSON.stringify(inputItemsItem.description);
-                }
-            } else {
-                json += ',"description":null';
-            }
-            json += `,"content":`;
-            if (inputItemsItem.content.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputItemsItem.content.length; i++) {
-                    __point__ = inputItemsItem.content.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputItemsItem.content);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            inputItemsItem.content.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputItemsItem.content}"`;
-                    } else {
-                        json += `"${__result__}${inputItemsItem.content.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputItemsItem.content.length < 5000 &&
-                !STR_ESCAPE.test(inputItemsItem.content)
-            ) {
-                json += `"${inputItemsItem.content}"`;
-            } else {
-                json += JSON.stringify(inputItemsItem.content);
-            }
-            json += ',"tags":[';
-            for (let i = 0; i < inputItemsItem.tags.length; i++) {
-                const inputItemsItemTagsItem = inputItemsItem.tags[i];
-                if (i !== 0) {
-                    json += ",";
-                }
-                json += ``;
-                if (inputItemsItemTagsItem.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < inputItemsItemTagsItem.length; i++) {
-                        __point__ = inputItemsItemTagsItem.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(inputItemsItemTagsItem);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                inputItemsItemTagsItem.slice(__last__, i) +
-                                "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${inputItemsItemTagsItem}"`;
-                        } else {
-                            json += `"${__result__}${inputItemsItemTagsItem.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    inputItemsItemTagsItem.length < 5000 &&
-                    !STR_ESCAPE.test(inputItemsItemTagsItem)
-                ) {
-                    json += `"${inputItemsItemTagsItem}"`;
-                } else {
-                    json += JSON.stringify(inputItemsItemTagsItem);
-                }
-            }
-            json += "]";
-            json += `,"authorId":`;
-            if (inputItemsItem.authorId.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputItemsItem.authorId.length; i++) {
-                    __point__ = inputItemsItem.authorId.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputItemsItem.authorId);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            inputItemsItem.authorId.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputItemsItem.authorId}"`;
-                    } else {
-                        json += `"${__result__}${inputItemsItem.authorId.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputItemsItem.authorId.length < 5000 &&
-                !STR_ESCAPE.test(inputItemsItem.authorId)
-            ) {
-                json += `"${inputItemsItem.authorId}"`;
-            } else {
-                json += JSON.stringify(inputItemsItem.authorId);
-            }
-            json += ',"author":{';
-            json += `"id":`;
-            if (inputItemsItem.author.id.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputItemsItem.author.id.length; i++) {
-                    __point__ = inputItemsItem.author.id.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputItemsItem.author.id);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            inputItemsItem.author.id.slice(__last__, i) + "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputItemsItem.author.id}"`;
-                    } else {
-                        json += `"${__result__}${inputItemsItem.author.id.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputItemsItem.author.id.length < 5000 &&
-                !STR_ESCAPE.test(inputItemsItem.author.id)
-            ) {
-                json += `"${inputItemsItem.author.id}"`;
-            } else {
-                json += JSON.stringify(inputItemsItem.author.id);
-            }
-            json += `,"name":`;
-            if (inputItemsItem.author.name.length < 42) {
-                let __result__ = "";
-                let __last__ = -1;
-                let __point__ = 255;
-                let __finished__ = false;
-                for (let i = 0; i < inputItemsItem.author.name.length; i++) {
-                    __point__ = inputItemsItem.author.name.charCodeAt(i);
-                    if (
-                        __point__ < 32 ||
-                        (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                    ) {
-                        json += JSON.stringify(inputItemsItem.author.name);
-                        __finished__ = true;
-                        break;
-                    }
-                    if (__point__ === 0x22 || __point__ === 0x5c) {
-                        __last__ === -1 && (__last__ = 0);
-                        __result__ +=
-                            inputItemsItem.author.name.slice(__last__, i) +
-                            "\\";
-                        __last__ = i;
-                    }
-                }
-                if (!__finished__) {
-                    if (__last__ === -1) {
-                        json += `"${inputItemsItem.author.name}"`;
-                    } else {
-                        json += `"${__result__}${inputItemsItem.author.name.slice(__last__)}"`;
-                    }
-                }
-            } else if (
-                inputItemsItem.author.name.length < 5000 &&
-                !STR_ESCAPE.test(inputItemsItem.author.name)
-            ) {
-                json += `"${inputItemsItem.author.name}"`;
-            } else {
-                json += JSON.stringify(inputItemsItem.author.name);
-            }
-            if (typeof inputItemsItem.author.bio === "string") {
-                json += `,"bio":`;
-                if (inputItemsItem.author.bio.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < inputItemsItem.author.bio.length; i++) {
-                        __point__ = inputItemsItem.author.bio.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(inputItemsItem.author.bio);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                inputItemsItem.author.bio.slice(__last__, i) +
-                                "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${inputItemsItem.author.bio}"`;
-                        } else {
-                            json += `"${__result__}${inputItemsItem.author.bio.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    inputItemsItem.author.bio.length < 5000 &&
-                    !STR_ESCAPE.test(inputItemsItem.author.bio)
-                ) {
-                    json += `"${inputItemsItem.author.bio}"`;
-                } else {
-                    json += JSON.stringify(inputItemsItem.author.bio);
-                }
-            } else {
-                json += ',"bio":null';
-            }
-            json += `,"createdAt":"${inputItemsItem.author.createdAt.toISOString()}"`;
-            json += `,"updatedAt":"${inputItemsItem.author.updatedAt.toISOString()}"`;
-            json += "}";
-            json += `,"createdAt":"${inputItemsItem.createdAt.toISOString()}"`;
-            json += `,"updatedAt":"${inputItemsItem.updatedAt.toISOString()}"`;
-            json += "}";
-        }
-        json += "]";
-        json += "}";
-        return json;
-    },
-};
-
-export type PostEvent =
-    | PostEventPostCreated
-    | PostEventPostDeleted
-    | PostEventPostUpdated
-    | PostEventPostLiked
-    | PostEventPostCommented;
-const $$PostEvent = {
-    parse(input: Record<any, any>): PostEvent {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                switch (json.eventType) {
-                    case "POST_CREATED": {
-                        if (typeof json === "object" && json !== null) {
-                            const __D1 = {};
-                            __D1.eventType = "POST_CREATED";
-                            if (typeof json.postId === "string") {
-                                __D1.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                __D1.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                __D1.timestamp = new Date(json.timestamp);
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            result = __D1;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_DELETED": {
-                        if (typeof json === "object" && json !== null) {
-                            const __D1 = {};
-                            __D1.eventType = "POST_DELETED";
-                            if (typeof json.postId === "string") {
-                                __D1.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                __D1.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                __D1.timestamp = new Date(json.timestamp);
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            result = __D1;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_UPDATED": {
-                        if (typeof json === "object" && json !== null) {
-                            const __D1 = {};
-                            __D1.eventType = "POST_UPDATED";
-                            if (typeof json.postId === "string") {
-                                __D1.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                __D1.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                __D1.timestamp = new Date(json.timestamp);
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            if (
-                                typeof json.data === "object" &&
-                                json.data !== null
-                            ) {
-                                const __D2 = {};
-                                if (typeof json.data.id === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.id === "string") {
-                                        __D2.id = json.data.id;
-                                    } else {
-                                        $fallback(
-                                            "/data/id",
-                                            "/mapping/properties/data/optionalProperties/id/type",
-                                            "Expected string at /data/id",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.title === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.title === "string") {
-                                        __D2.title = json.data.title;
-                                    } else {
-                                        $fallback(
-                                            "/data/title",
-                                            "/mapping/properties/data/optionalProperties/title/type",
-                                            "Expected string at /data/title",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.type === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.type === "string") {
-                                        if (
-                                            json.data.type === "text" ||
-                                            json.data.type === "image" ||
-                                            json.data.type === "video"
-                                        ) {
-                                            __D2.type = json.data.type;
-                                        } else {
-                                            $fallback(
-                                                "/data/type",
-                                                "/mapping/properties/data/optionalProperties/type",
-                                                "Expected one of the following values: [text, image, video] at /data/type.",
-                                            );
-                                        }
-                                    } else {
-                                        $fallback(
-                                            "/data/type",
-                                            "/mapping/properties/data/optionalProperties/type",
-                                            "Expected one of the following values: [text, image, video] at /data/type.",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof json.data.description === "undefined"
-                                ) {
-                                    // ignore undefined
-                                } else {
-                                    if (json.data.description === null) {
-                                        __D2.description =
-                                            json.data.description;
-                                    } else {
-                                        if (
-                                            typeof json.data.description ===
-                                            "string"
-                                        ) {
-                                            __D2.description =
-                                                json.data.description;
-                                        } else {
-                                            $fallback(
-                                                "/data/description",
-                                                "/mapping/properties/data/optionalProperties/description/type",
-                                                "Expected string at /data/description",
-                                            );
-                                        }
-                                    }
-                                }
-                                if (typeof json.data.content === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (typeof json.data.content === "string") {
-                                        __D2.content = json.data.content;
-                                    } else {
-                                        $fallback(
-                                            "/data/content",
-                                            "/mapping/properties/data/optionalProperties/content/type",
-                                            "Expected string at /data/content",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.tags === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (Array.isArray(json.data.tags)) {
-                                        const __D3 = [];
-                                        for (const __D3AItem of json.data
-                                            .tags) {
-                                            let __D3AItemAResult;
-                                            if (typeof __D3AItem === "string") {
-                                                __D3AItemAResult = __D3AItem;
-                                            } else {
-                                                $fallback(
-                                                    "/data/tags/[0]",
-                                                    "/mapping/properties/data/optionalProperties/tags/elements/type",
-                                                    "Expected string at /data/tags/[0]",
-                                                );
-                                            }
-                                            __D3.push(__D3AItemAResult);
-                                        }
-                                        __D2.tags = __D3;
-                                    } else {
-                                        $fallback(
-                                            "/data/tags",
-                                            "/mapping/properties/data/optionalProperties/tags",
-                                            "Expected Array",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.authorId === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.authorId === "string"
-                                    ) {
-                                        __D2.authorId = json.data.authorId;
-                                    } else {
-                                        $fallback(
-                                            "/data/authorId",
-                                            "/mapping/properties/data/optionalProperties/authorId/type",
-                                            "Expected string at /data/authorId",
-                                        );
-                                    }
-                                }
-                                if (typeof json.data.author === "undefined") {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.author === "object" &&
-                                        json.data.author !== null
-                                    ) {
-                                        const __D3 = {};
-                                        if (
-                                            typeof json.data.author.id ===
-                                            "string"
-                                        ) {
-                                            __D3.id = json.data.author.id;
-                                        } else {
-                                            $fallback(
-                                                "/data/author/id",
-                                                "/mapping/properties/data/optionalProperties/author/properties/id/type",
-                                                "Expected string at /data/author/id",
-                                            );
-                                        }
-                                        if (
-                                            typeof json.data.author.name ===
-                                            "string"
-                                        ) {
-                                            __D3.name = json.data.author.name;
-                                        } else {
-                                            $fallback(
-                                                "/data/author/name",
-                                                "/mapping/properties/data/optionalProperties/author/properties/name/type",
-                                                "Expected string at /data/author/name",
-                                            );
-                                        }
-                                        if (json.data.author.bio === null) {
-                                            __D3.bio = json.data.author.bio;
-                                        } else {
-                                            if (
-                                                typeof json.data.author.bio ===
-                                                "string"
-                                            ) {
-                                                __D3.bio = json.data.author.bio;
-                                            } else {
-                                                $fallback(
-                                                    "/data/author/bio",
-                                                    "/mapping/properties/data/optionalProperties/author/properties/bio/type",
-                                                    "Expected string at /data/author/bio",
-                                                );
-                                            }
-                                        }
-                                        if (
-                                            typeof json.data.author
-                                                .createdAt === "object" &&
-                                            json.data.author
-                                                .createdAt instanceof Date
-                                        ) {
-                                            __D3.createdAt =
-                                                json.data.author.createdAt;
-                                        } else if (
-                                            typeof json.data.author
-                                                .createdAt === "string"
-                                        ) {
-                                            __D3.createdAt = new Date(
-                                                json.data.author.createdAt,
-                                            );
-                                        } else {
-                                            $fallback(
-                                                "/data/author/createdAt",
-                                                "/mapping/properties/data/optionalProperties/author/properties/createdAt",
-                                                "Expected instanceof Date or ISO Date string at /data/author/createdAt",
-                                            );
-                                        }
-                                        if (
-                                            typeof json.data.author
-                                                .updatedAt === "object" &&
-                                            json.data.author
-                                                .updatedAt instanceof Date
-                                        ) {
-                                            __D3.updatedAt =
-                                                json.data.author.updatedAt;
-                                        } else if (
-                                            typeof json.data.author
-                                                .updatedAt === "string"
-                                        ) {
-                                            __D3.updatedAt = new Date(
-                                                json.data.author.updatedAt,
-                                            );
-                                        } else {
-                                            $fallback(
-                                                "/data/author/updatedAt",
-                                                "/mapping/properties/data/optionalProperties/author/properties/updatedAt",
-                                                "Expected instanceof Date or ISO Date string at /data/author/updatedAt",
-                                            );
-                                        }
-                                        __D2.author = __D3;
-                                    } else {
-                                        $fallback(
-                                            "/data/author",
-                                            "/mapping/properties/data/optionalProperties/author",
-                                            "Expected object",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof json.data.createdAt === "undefined"
-                                ) {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.createdAt ===
-                                            "object" &&
-                                        json.data.createdAt instanceof Date
-                                    ) {
-                                        __D2.createdAt = json.data.createdAt;
-                                    } else if (
-                                        typeof json.data.createdAt === "string"
-                                    ) {
-                                        __D2.createdAt = new Date(
-                                            json.data.createdAt,
-                                        );
-                                    } else {
-                                        $fallback(
-                                            "/data/createdAt",
-                                            "/mapping/properties/data/optionalProperties/createdAt",
-                                            "Expected instanceof Date or ISO Date string at /data/createdAt",
-                                        );
-                                    }
-                                }
-                                if (
-                                    typeof json.data.updatedAt === "undefined"
-                                ) {
-                                    // ignore undefined
-                                } else {
-                                    if (
-                                        typeof json.data.updatedAt ===
-                                            "object" &&
-                                        json.data.updatedAt instanceof Date
-                                    ) {
-                                        __D2.updatedAt = json.data.updatedAt;
-                                    } else if (
-                                        typeof json.data.updatedAt === "string"
-                                    ) {
-                                        __D2.updatedAt = new Date(
-                                            json.data.updatedAt,
-                                        );
-                                    } else {
-                                        $fallback(
-                                            "/data/updatedAt",
-                                            "/mapping/properties/data/optionalProperties/updatedAt",
-                                            "Expected instanceof Date or ISO Date string at /data/updatedAt",
-                                        );
-                                    }
-                                }
-                                __D1.data = __D2;
-                            } else {
-                                $fallback(
-                                    "/data",
-                                    "/mapping/properties/data",
-                                    "Expected object",
-                                );
-                            }
-                            result = __D1;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_LIKED": {
-                        if (typeof json === "object" && json !== null) {
-                            const __D1 = {};
-                            __D1.eventType = "POST_LIKED";
-                            if (typeof json.postId === "string") {
-                                __D1.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                __D1.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                __D1.timestamp = new Date(json.timestamp);
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            if (typeof json.postLikeId === "string") {
-                                __D1.postLikeId = json.postLikeId;
-                            } else {
-                                $fallback(
-                                    "/postLikeId",
-                                    "/mapping/properties/postLikeId/type",
-                                    "Expected string at /postLikeId",
-                                );
-                            }
-                            if (
-                                typeof json.postLikeCount === "number" &&
-                                Number.isInteger(json.postLikeCount) &&
-                                json.postLikeCount >= 0 &&
-                                json.postLikeCount <= 4294967295
-                            ) {
-                                __D1.postLikeCount = json.postLikeCount;
-                            } else {
-                                $fallback(
-                                    "/postLikeCount",
-                                    "/mapping/properties/postLikeCount",
-                                    "Expected valid integer between 0 and 4294967295",
-                                );
-                            }
-                            result = __D1;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    case "POST_COMMENTED": {
-                        if (typeof json === "object" && json !== null) {
-                            const __D1 = {};
-                            __D1.eventType = "POST_COMMENTED";
-                            if (typeof json.postId === "string") {
-                                __D1.postId = json.postId;
-                            } else {
-                                $fallback(
-                                    "/postId",
-                                    "/mapping/properties/postId/type",
-                                    "Expected string at /postId",
-                                );
-                            }
-                            if (
-                                typeof json.timestamp === "object" &&
-                                json.timestamp instanceof Date
-                            ) {
-                                __D1.timestamp = json.timestamp;
-                            } else if (typeof json.timestamp === "string") {
-                                __D1.timestamp = new Date(json.timestamp);
-                            } else {
-                                $fallback(
-                                    "/timestamp",
-                                    "/mapping/properties/timestamp",
-                                    "Expected instanceof Date or ISO Date string at /timestamp",
-                                );
-                            }
-                            if (typeof json.commentId === "string") {
-                                __D1.commentId = json.commentId;
-                            } else {
-                                $fallback(
-                                    "/commentId",
-                                    "/mapping/properties/commentId/type",
-                                    "Expected string at /commentId",
-                                );
-                            }
-                            if (typeof json.commentText === "string") {
-                                __D1.commentText = json.commentText;
-                            } else {
-                                $fallback(
-                                    "/commentText",
-                                    "/mapping/properties/commentText/type",
-                                    "Expected string at /commentText",
-                                );
-                            }
-                            if (
-                                typeof json.commentCount === "number" &&
-                                Number.isInteger(json.commentCount) &&
-                                json.commentCount >= 0 &&
-                                json.commentCount <= 4294967295
-                            ) {
-                                __D1.commentCount = json.commentCount;
-                            } else {
-                                $fallback(
-                                    "/commentCount",
-                                    "/mapping/properties/commentCount",
-                                    "Expected valid integer between 0 and 4294967295",
-                                );
-                            }
-                            result = __D1;
-                        } else {
-                            $fallback("", "/mapping", "Expected object");
-                        }
-                        break;
-                    }
-                    default:
-                        $fallback(
-                            "",
-                            "/mapping",
-                            "json.eventType did not match one of the specified values",
-                        );
-                        break;
-                }
-            } else {
-                $fallback("", "", "Expected Object.");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            switch (input.eventType) {
-                case "POST_CREATED": {
-                    if (typeof input === "object" && input !== null) {
-                        const __D1 = {};
-                        __D1.eventType = "POST_CREATED";
-                        if (typeof input.postId === "string") {
-                            __D1.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            __D1.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            __D1.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        result = __D1;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_DELETED": {
-                    if (typeof input === "object" && input !== null) {
-                        const __D1 = {};
-                        __D1.eventType = "POST_DELETED";
-                        if (typeof input.postId === "string") {
-                            __D1.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            __D1.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            __D1.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        result = __D1;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_UPDATED": {
-                    if (typeof input === "object" && input !== null) {
-                        const __D1 = {};
-                        __D1.eventType = "POST_UPDATED";
-                        if (typeof input.postId === "string") {
-                            __D1.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            __D1.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            __D1.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        if (
-                            typeof input.data === "object" &&
-                            input.data !== null
-                        ) {
-                            const __D2 = {};
-                            if (typeof input.data.id === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.id === "string") {
-                                    __D2.id = input.data.id;
-                                } else {
-                                    $fallback(
-                                        "/data/id",
-                                        "/mapping/properties/data/optionalProperties/id/type",
-                                        "Expected string at /data/id",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.title === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.title === "string") {
-                                    __D2.title = input.data.title;
-                                } else {
-                                    $fallback(
-                                        "/data/title",
-                                        "/mapping/properties/data/optionalProperties/title/type",
-                                        "Expected string at /data/title",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.type === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.type === "string") {
-                                    if (
-                                        input.data.type === "text" ||
-                                        input.data.type === "image" ||
-                                        input.data.type === "video"
-                                    ) {
-                                        __D2.type = input.data.type;
-                                    } else {
-                                        $fallback(
-                                            "/data/type",
-                                            "/mapping/properties/data/optionalProperties/type",
-                                            "Expected one of the following values: [text, image, video] at /data/type.",
-                                        );
-                                    }
-                                } else {
-                                    $fallback(
-                                        "/data/type",
-                                        "/mapping/properties/data/optionalProperties/type",
-                                        "Expected one of the following values: [text, image, video] at /data/type.",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.description === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (input.data.description === null) {
-                                    __D2.description = input.data.description;
-                                } else {
-                                    if (
-                                        typeof input.data.description ===
-                                        "string"
-                                    ) {
-                                        __D2.description =
-                                            input.data.description;
-                                    } else {
-                                        $fallback(
-                                            "/data/description",
-                                            "/mapping/properties/data/optionalProperties/description/type",
-                                            "Expected string at /data/description",
-                                        );
-                                    }
-                                }
-                            }
-                            if (typeof input.data.content === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.content === "string") {
-                                    __D2.content = input.data.content;
-                                } else {
-                                    $fallback(
-                                        "/data/content",
-                                        "/mapping/properties/data/optionalProperties/content/type",
-                                        "Expected string at /data/content",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.tags === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (Array.isArray(input.data.tags)) {
-                                    const __D3 = [];
-                                    for (const __D3AItem of input.data.tags) {
-                                        let __D3AItemAResult;
-                                        if (typeof __D3AItem === "string") {
-                                            __D3AItemAResult = __D3AItem;
-                                        } else {
-                                            $fallback(
-                                                "/data/tags/[0]",
-                                                "/mapping/properties/data/optionalProperties/tags/elements/type",
-                                                "Expected string at /data/tags/[0]",
-                                            );
-                                        }
-                                        __D3.push(__D3AItemAResult);
-                                    }
-                                    __D2.tags = __D3;
-                                } else {
-                                    $fallback(
-                                        "/data/tags",
-                                        "/mapping/properties/data/optionalProperties/tags",
-                                        "Expected Array",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.authorId === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (typeof input.data.authorId === "string") {
-                                    __D2.authorId = input.data.authorId;
-                                } else {
-                                    $fallback(
-                                        "/data/authorId",
-                                        "/mapping/properties/data/optionalProperties/authorId/type",
-                                        "Expected string at /data/authorId",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.author === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (
-                                    typeof input.data.author === "object" &&
-                                    input.data.author !== null
-                                ) {
-                                    const __D3 = {};
-                                    if (
-                                        typeof input.data.author.id === "string"
-                                    ) {
-                                        __D3.id = input.data.author.id;
-                                    } else {
-                                        $fallback(
-                                            "/data/author/id",
-                                            "/mapping/properties/data/optionalProperties/author/properties/id/type",
-                                            "Expected string at /data/author/id",
-                                        );
-                                    }
-                                    if (
-                                        typeof input.data.author.name ===
-                                        "string"
-                                    ) {
-                                        __D3.name = input.data.author.name;
-                                    } else {
-                                        $fallback(
-                                            "/data/author/name",
-                                            "/mapping/properties/data/optionalProperties/author/properties/name/type",
-                                            "Expected string at /data/author/name",
-                                        );
-                                    }
-                                    if (input.data.author.bio === null) {
-                                        __D3.bio = input.data.author.bio;
-                                    } else {
-                                        if (
-                                            typeof input.data.author.bio ===
-                                            "string"
-                                        ) {
-                                            __D3.bio = input.data.author.bio;
-                                        } else {
-                                            $fallback(
-                                                "/data/author/bio",
-                                                "/mapping/properties/data/optionalProperties/author/properties/bio/type",
-                                                "Expected string at /data/author/bio",
-                                            );
-                                        }
-                                    }
-                                    if (
-                                        typeof input.data.author.createdAt ===
-                                            "object" &&
-                                        input.data.author.createdAt instanceof
-                                            Date
-                                    ) {
-                                        __D3.createdAt =
-                                            input.data.author.createdAt;
-                                    } else if (
-                                        typeof input.data.author.createdAt ===
-                                        "string"
-                                    ) {
-                                        __D3.createdAt = new Date(
-                                            input.data.author.createdAt,
-                                        );
-                                    } else {
-                                        $fallback(
-                                            "/data/author/createdAt",
-                                            "/mapping/properties/data/optionalProperties/author/properties/createdAt",
-                                            "Expected instanceof Date or ISO Date string at /data/author/createdAt",
-                                        );
-                                    }
-                                    if (
-                                        typeof input.data.author.updatedAt ===
-                                            "object" &&
-                                        input.data.author.updatedAt instanceof
-                                            Date
-                                    ) {
-                                        __D3.updatedAt =
-                                            input.data.author.updatedAt;
-                                    } else if (
-                                        typeof input.data.author.updatedAt ===
-                                        "string"
-                                    ) {
-                                        __D3.updatedAt = new Date(
-                                            input.data.author.updatedAt,
-                                        );
-                                    } else {
-                                        $fallback(
-                                            "/data/author/updatedAt",
-                                            "/mapping/properties/data/optionalProperties/author/properties/updatedAt",
-                                            "Expected instanceof Date or ISO Date string at /data/author/updatedAt",
-                                        );
-                                    }
-                                    __D2.author = __D3;
-                                } else {
-                                    $fallback(
-                                        "/data/author",
-                                        "/mapping/properties/data/optionalProperties/author",
-                                        "Expected object",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.createdAt === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (
-                                    typeof input.data.createdAt === "object" &&
-                                    input.data.createdAt instanceof Date
-                                ) {
-                                    __D2.createdAt = input.data.createdAt;
-                                } else if (
-                                    typeof input.data.createdAt === "string"
-                                ) {
-                                    __D2.createdAt = new Date(
-                                        input.data.createdAt,
-                                    );
-                                } else {
-                                    $fallback(
-                                        "/data/createdAt",
-                                        "/mapping/properties/data/optionalProperties/createdAt",
-                                        "Expected instanceof Date or ISO Date string at /data/createdAt",
-                                    );
-                                }
-                            }
-                            if (typeof input.data.updatedAt === "undefined") {
-                                // ignore undefined
-                            } else {
-                                if (
-                                    typeof input.data.updatedAt === "object" &&
-                                    input.data.updatedAt instanceof Date
-                                ) {
-                                    __D2.updatedAt = input.data.updatedAt;
-                                } else if (
-                                    typeof input.data.updatedAt === "string"
-                                ) {
-                                    __D2.updatedAt = new Date(
-                                        input.data.updatedAt,
-                                    );
-                                } else {
-                                    $fallback(
-                                        "/data/updatedAt",
-                                        "/mapping/properties/data/optionalProperties/updatedAt",
-                                        "Expected instanceof Date or ISO Date string at /data/updatedAt",
-                                    );
-                                }
-                            }
-                            __D1.data = __D2;
-                        } else {
-                            $fallback(
-                                "/data",
-                                "/mapping/properties/data",
-                                "Expected object",
-                            );
-                        }
-                        result = __D1;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_LIKED": {
-                    if (typeof input === "object" && input !== null) {
-                        const __D1 = {};
-                        __D1.eventType = "POST_LIKED";
-                        if (typeof input.postId === "string") {
-                            __D1.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            __D1.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            __D1.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        if (typeof input.postLikeId === "string") {
-                            __D1.postLikeId = input.postLikeId;
-                        } else {
-                            $fallback(
-                                "/postLikeId",
-                                "/mapping/properties/postLikeId/type",
-                                "Expected string at /postLikeId",
-                            );
-                        }
-                        if (
-                            typeof input.postLikeCount === "number" &&
-                            Number.isInteger(input.postLikeCount) &&
-                            input.postLikeCount >= 0 &&
-                            input.postLikeCount <= 4294967295
-                        ) {
-                            __D1.postLikeCount = input.postLikeCount;
-                        } else {
-                            $fallback(
-                                "/postLikeCount",
-                                "/mapping/properties/postLikeCount",
-                                "Expected valid integer between 0 and 4294967295",
-                            );
-                        }
-                        result = __D1;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                case "POST_COMMENTED": {
-                    if (typeof input === "object" && input !== null) {
-                        const __D1 = {};
-                        __D1.eventType = "POST_COMMENTED";
-                        if (typeof input.postId === "string") {
-                            __D1.postId = input.postId;
-                        } else {
-                            $fallback(
-                                "/postId",
-                                "/mapping/properties/postId/type",
-                                "Expected string at /postId",
-                            );
-                        }
-                        if (
-                            typeof input.timestamp === "object" &&
-                            input.timestamp instanceof Date
-                        ) {
-                            __D1.timestamp = input.timestamp;
-                        } else if (typeof input.timestamp === "string") {
-                            __D1.timestamp = new Date(input.timestamp);
-                        } else {
-                            $fallback(
-                                "/timestamp",
-                                "/mapping/properties/timestamp",
-                                "Expected instanceof Date or ISO Date string at /timestamp",
-                            );
-                        }
-                        if (typeof input.commentId === "string") {
-                            __D1.commentId = input.commentId;
-                        } else {
-                            $fallback(
-                                "/commentId",
-                                "/mapping/properties/commentId/type",
-                                "Expected string at /commentId",
-                            );
-                        }
-                        if (typeof input.commentText === "string") {
-                            __D1.commentText = input.commentText;
-                        } else {
-                            $fallback(
-                                "/commentText",
-                                "/mapping/properties/commentText/type",
-                                "Expected string at /commentText",
-                            );
-                        }
-                        if (
-                            typeof input.commentCount === "number" &&
-                            Number.isInteger(input.commentCount) &&
-                            input.commentCount >= 0 &&
-                            input.commentCount <= 4294967295
-                        ) {
-                            __D1.commentCount = input.commentCount;
-                        } else {
-                            $fallback(
-                                "/commentCount",
-                                "/mapping/properties/commentCount",
-                                "Expected valid integer between 0 and 4294967295",
-                            );
-                        }
-                        result = __D1;
-                    } else {
-                        $fallback("", "/mapping", "Expected object");
-                    }
-                    break;
-                }
-                default:
-                    $fallback(
-                        "",
-                        "/mapping",
-                        "input.eventType did not match one of the specified values",
-                    );
-                    break;
-            }
-        } else {
-            $fallback("", "", "Expected Object.");
-        }
-        return result;
-    },
-    serialize(input: PostEvent): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        switch (input.eventType) {
-            case "POST_CREATED": {
-                json += "{";
-                json += `"eventType":"POST_CREATED"`;
-                json += `,"postId":`;
-                if (input.postId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.postId.length; i++) {
-                        __point__ = input.postId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.postId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.postId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.postId}"`;
-                        } else {
-                            json += `"${__result__}${input.postId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.postId.length < 5000 &&
-                    !STR_ESCAPE.test(input.postId)
-                ) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += JSON.stringify(input.postId);
-                }
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += "}";
-                break;
-            }
-            case "POST_DELETED": {
-                json += "{";
-                json += `"eventType":"POST_DELETED"`;
-                json += `,"postId":`;
-                if (input.postId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.postId.length; i++) {
-                        __point__ = input.postId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.postId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.postId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.postId}"`;
-                        } else {
-                            json += `"${__result__}${input.postId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.postId.length < 5000 &&
-                    !STR_ESCAPE.test(input.postId)
-                ) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += JSON.stringify(input.postId);
-                }
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += "}";
-                break;
-            }
-            case "POST_UPDATED": {
-                json += "{";
-                json += `"eventType":"POST_UPDATED"`;
-                json += `,"postId":`;
-                if (input.postId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.postId.length; i++) {
-                        __point__ = input.postId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.postId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.postId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.postId}"`;
-                        } else {
-                            json += `"${__result__}${input.postId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.postId.length < 5000 &&
-                    !STR_ESCAPE.test(input.postId)
-                ) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += JSON.stringify(input.postId);
-                }
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += ',"data":{';
-                let dataHasFields = false;
-                if (typeof input.data.id !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"id":`;
-                        if (input.data.id.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (let i = 0; i < input.data.id.length; i++) {
-                                __point__ = input.data.id.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.id);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.id.slice(__last__, i) + "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.id}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.id.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.id.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.id)
-                        ) {
-                            json += `"${input.data.id}"`;
-                        } else {
-                            json += JSON.stringify(input.data.id);
-                        }
-                    } else {
-                        json += `"id":`;
-                        if (input.data.id.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (let i = 0; i < input.data.id.length; i++) {
-                                __point__ = input.data.id.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.id);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.id.slice(__last__, i) + "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.id}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.id.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.id.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.id)
-                        ) {
-                            json += `"${input.data.id}"`;
-                        } else {
-                            json += JSON.stringify(input.data.id);
-                        }
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.title !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"title":`;
-                        if (input.data.title.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (let i = 0; i < input.data.title.length; i++) {
-                                __point__ = input.data.title.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.title);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.title.slice(__last__, i) +
-                                        "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.title}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.title.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.title.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.title)
-                        ) {
-                            json += `"${input.data.title}"`;
-                        } else {
-                            json += JSON.stringify(input.data.title);
-                        }
-                    } else {
-                        json += `"title":`;
-                        if (input.data.title.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (let i = 0; i < input.data.title.length; i++) {
-                                __point__ = input.data.title.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.title);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.title.slice(__last__, i) +
-                                        "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.title}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.title.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.title.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.title)
-                        ) {
-                            json += `"${input.data.title}"`;
-                        } else {
-                            json += JSON.stringify(input.data.title);
-                        }
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.type !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"type":"${input.data.type}"`;
-                    } else {
-                        json += `"type":"${input.data.type}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.description !== "undefined") {
-                    if (dataHasFields) {
-                        if (typeof input.data.description === "string") {
-                            json += `,"description":`;
-                            if (input.data.description.length < 42) {
-                                let __result__ = "";
-                                let __last__ = -1;
-                                let __point__ = 255;
-                                let __finished__ = false;
-                                for (
-                                    let i = 0;
-                                    i < input.data.description.length;
-                                    i++
-                                ) {
-                                    __point__ =
-                                        input.data.description.charCodeAt(i);
-                                    if (
-                                        __point__ < 32 ||
-                                        (__point__ >= 0xd800 &&
-                                            __point__ <= 0xdfff)
-                                    ) {
-                                        json += JSON.stringify(
-                                            input.data.description,
-                                        );
-                                        __finished__ = true;
-                                        break;
-                                    }
-                                    if (
-                                        __point__ === 0x22 ||
-                                        __point__ === 0x5c
-                                    ) {
-                                        __last__ === -1 && (__last__ = 0);
-                                        __result__ +=
-                                            input.data.description.slice(
-                                                __last__,
-                                                i,
-                                            ) + "\\";
-                                        __last__ = i;
-                                    }
-                                }
-                                if (!__finished__) {
-                                    if (__last__ === -1) {
-                                        json += `"${input.data.description}"`;
-                                    } else {
-                                        json += `"${__result__}${input.data.description.slice(__last__)}"`;
-                                    }
-                                }
-                            } else if (
-                                input.data.description.length < 5000 &&
-                                !STR_ESCAPE.test(input.data.description)
-                            ) {
-                                json += `"${input.data.description}"`;
-                            } else {
-                                json += JSON.stringify(input.data.description);
-                            }
-                        } else {
-                            json += ',"description":null';
-                        }
-                    } else {
-                        if (typeof input.data.description === "string") {
-                            json += `"description":`;
-                            if (input.data.description.length < 42) {
-                                let __result__ = "";
-                                let __last__ = -1;
-                                let __point__ = 255;
-                                let __finished__ = false;
-                                for (
-                                    let i = 0;
-                                    i < input.data.description.length;
-                                    i++
-                                ) {
-                                    __point__ =
-                                        input.data.description.charCodeAt(i);
-                                    if (
-                                        __point__ < 32 ||
-                                        (__point__ >= 0xd800 &&
-                                            __point__ <= 0xdfff)
-                                    ) {
-                                        json += JSON.stringify(
-                                            input.data.description,
-                                        );
-                                        __finished__ = true;
-                                        break;
-                                    }
-                                    if (
-                                        __point__ === 0x22 ||
-                                        __point__ === 0x5c
-                                    ) {
-                                        __last__ === -1 && (__last__ = 0);
-                                        __result__ +=
-                                            input.data.description.slice(
-                                                __last__,
-                                                i,
-                                            ) + "\\";
-                                        __last__ = i;
-                                    }
-                                }
-                                if (!__finished__) {
-                                    if (__last__ === -1) {
-                                        json += `"${input.data.description}"`;
-                                    } else {
-                                        json += `"${__result__}${input.data.description.slice(__last__)}"`;
-                                    }
-                                }
-                            } else if (
-                                input.data.description.length < 5000 &&
-                                !STR_ESCAPE.test(input.data.description)
-                            ) {
-                                json += `"${input.data.description}"`;
-                            } else {
-                                json += JSON.stringify(input.data.description);
-                            }
-                        } else {
-                            json += '"description":null';
-                        }
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.content !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"content":`;
-                        if (input.data.content.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.content.length;
-                                i++
-                            ) {
-                                __point__ = input.data.content.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.content);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.content.slice(__last__, i) +
-                                        "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.content}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.content.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.content.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.content)
-                        ) {
-                            json += `"${input.data.content}"`;
-                        } else {
-                            json += JSON.stringify(input.data.content);
-                        }
-                    } else {
-                        json += `"content":`;
-                        if (input.data.content.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.content.length;
-                                i++
-                            ) {
-                                __point__ = input.data.content.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.content);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.content.slice(__last__, i) +
-                                        "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.content}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.content.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.content.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.content)
-                        ) {
-                            json += `"${input.data.content}"`;
-                        } else {
-                            json += JSON.stringify(input.data.content);
-                        }
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.tags !== "undefined") {
-                    if (dataHasFields) {
-                        json += ',"tags":[';
-                        for (let i = 0; i < input.data.tags.length; i++) {
-                            const inputDataTagsItem = input.data.tags[i];
-                            if (i !== 0) {
-                                json += ",";
-                            }
-                            json += ``;
-                            if (inputDataTagsItem.length < 42) {
-                                let __result__ = "";
-                                let __last__ = -1;
-                                let __point__ = 255;
-                                let __finished__ = false;
-                                for (
-                                    let i = 0;
-                                    i < inputDataTagsItem.length;
-                                    i++
-                                ) {
-                                    __point__ = inputDataTagsItem.charCodeAt(i);
-                                    if (
-                                        __point__ < 32 ||
-                                        (__point__ >= 0xd800 &&
-                                            __point__ <= 0xdfff)
-                                    ) {
-                                        json +=
-                                            JSON.stringify(inputDataTagsItem);
-                                        __finished__ = true;
-                                        break;
-                                    }
-                                    if (
-                                        __point__ === 0x22 ||
-                                        __point__ === 0x5c
-                                    ) {
-                                        __last__ === -1 && (__last__ = 0);
-                                        __result__ +=
-                                            inputDataTagsItem.slice(
-                                                __last__,
-                                                i,
-                                            ) + "\\";
-                                        __last__ = i;
-                                    }
-                                }
-                                if (!__finished__) {
-                                    if (__last__ === -1) {
-                                        json += `"${inputDataTagsItem}"`;
-                                    } else {
-                                        json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
-                                    }
-                                }
-                            } else if (
-                                inputDataTagsItem.length < 5000 &&
-                                !STR_ESCAPE.test(inputDataTagsItem)
-                            ) {
-                                json += `"${inputDataTagsItem}"`;
-                            } else {
-                                json += JSON.stringify(inputDataTagsItem);
-                            }
-                        }
-                        json += "]";
-                    } else {
-                        json += '"tags":[';
-                        for (let i = 0; i < input.data.tags.length; i++) {
-                            const inputDataTagsItem = input.data.tags[i];
-                            if (i !== 0) {
-                                json += ",";
-                            }
-                            json += ``;
-                            if (inputDataTagsItem.length < 42) {
-                                let __result__ = "";
-                                let __last__ = -1;
-                                let __point__ = 255;
-                                let __finished__ = false;
-                                for (
-                                    let i = 0;
-                                    i < inputDataTagsItem.length;
-                                    i++
-                                ) {
-                                    __point__ = inputDataTagsItem.charCodeAt(i);
-                                    if (
-                                        __point__ < 32 ||
-                                        (__point__ >= 0xd800 &&
-                                            __point__ <= 0xdfff)
-                                    ) {
-                                        json +=
-                                            JSON.stringify(inputDataTagsItem);
-                                        __finished__ = true;
-                                        break;
-                                    }
-                                    if (
-                                        __point__ === 0x22 ||
-                                        __point__ === 0x5c
-                                    ) {
-                                        __last__ === -1 && (__last__ = 0);
-                                        __result__ +=
-                                            inputDataTagsItem.slice(
-                                                __last__,
-                                                i,
-                                            ) + "\\";
-                                        __last__ = i;
-                                    }
-                                }
-                                if (!__finished__) {
-                                    if (__last__ === -1) {
-                                        json += `"${inputDataTagsItem}"`;
-                                    } else {
-                                        json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
-                                    }
-                                }
-                            } else if (
-                                inputDataTagsItem.length < 5000 &&
-                                !STR_ESCAPE.test(inputDataTagsItem)
-                            ) {
-                                json += `"${inputDataTagsItem}"`;
-                            } else {
-                                json += JSON.stringify(inputDataTagsItem);
-                            }
-                        }
-                        json += "]";
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.authorId !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"authorId":`;
-                        if (input.data.authorId.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.authorId.length;
-                                i++
-                            ) {
-                                __point__ = input.data.authorId.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.authorId);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.authorId.slice(__last__, i) +
-                                        "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.authorId}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.authorId.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.authorId.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.authorId)
-                        ) {
-                            json += `"${input.data.authorId}"`;
-                        } else {
-                            json += JSON.stringify(input.data.authorId);
-                        }
-                    } else {
-                        json += `"authorId":`;
-                        if (input.data.authorId.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.authorId.length;
-                                i++
-                            ) {
-                                __point__ = input.data.authorId.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(input.data.authorId);
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.authorId.slice(__last__, i) +
-                                        "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.authorId}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.authorId.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.authorId.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.authorId)
-                        ) {
-                            json += `"${input.data.authorId}"`;
-                        } else {
-                            json += JSON.stringify(input.data.authorId);
-                        }
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.author !== "undefined") {
-                    if (dataHasFields) {
-                        json += ',"author":{';
-                        json += `"id":`;
-                        if (input.data.author.id.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.author.id.length;
-                                i++
-                            ) {
-                                __point__ = input.data.author.id.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(
-                                        input.data.author.id,
-                                    );
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.author.id.slice(
-                                            __last__,
-                                            i,
-                                        ) + "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.author.id}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.author.id.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.author.id.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.author.id)
-                        ) {
-                            json += `"${input.data.author.id}"`;
-                        } else {
-                            json += JSON.stringify(input.data.author.id);
-                        }
-                        json += `,"name":`;
-                        if (input.data.author.name.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.author.name.length;
-                                i++
-                            ) {
-                                __point__ =
-                                    input.data.author.name.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(
-                                        input.data.author.name,
-                                    );
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.author.name.slice(
-                                            __last__,
-                                            i,
-                                        ) + "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.author.name}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.author.name.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.author.name.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.author.name)
-                        ) {
-                            json += `"${input.data.author.name}"`;
-                        } else {
-                            json += JSON.stringify(input.data.author.name);
-                        }
-                        if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":`;
-                            if (input.data.author.bio.length < 42) {
-                                let __result__ = "";
-                                let __last__ = -1;
-                                let __point__ = 255;
-                                let __finished__ = false;
-                                for (
-                                    let i = 0;
-                                    i < input.data.author.bio.length;
-                                    i++
-                                ) {
-                                    __point__ =
-                                        input.data.author.bio.charCodeAt(i);
-                                    if (
-                                        __point__ < 32 ||
-                                        (__point__ >= 0xd800 &&
-                                            __point__ <= 0xdfff)
-                                    ) {
-                                        json += JSON.stringify(
-                                            input.data.author.bio,
-                                        );
-                                        __finished__ = true;
-                                        break;
-                                    }
-                                    if (
-                                        __point__ === 0x22 ||
-                                        __point__ === 0x5c
-                                    ) {
-                                        __last__ === -1 && (__last__ = 0);
-                                        __result__ +=
-                                            input.data.author.bio.slice(
-                                                __last__,
-                                                i,
-                                            ) + "\\";
-                                        __last__ = i;
-                                    }
-                                }
-                                if (!__finished__) {
-                                    if (__last__ === -1) {
-                                        json += `"${input.data.author.bio}"`;
-                                    } else {
-                                        json += `"${__result__}${input.data.author.bio.slice(__last__)}"`;
-                                    }
-                                }
-                            } else if (
-                                input.data.author.bio.length < 5000 &&
-                                !STR_ESCAPE.test(input.data.author.bio)
-                            ) {
-                                json += `"${input.data.author.bio}"`;
-                            } else {
-                                json += JSON.stringify(input.data.author.bio);
-                            }
-                        } else {
-                            json += ',"bio":null';
-                        }
-                        json += `,"createdAt":"${input.data.author.createdAt.toISOString()}"`;
-                        json += `,"updatedAt":"${input.data.author.updatedAt.toISOString()}"`;
-                        json += "}";
-                    } else {
-                        json += '"author":{';
-                        json += `"id":`;
-                        if (input.data.author.id.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.author.id.length;
-                                i++
-                            ) {
-                                __point__ = input.data.author.id.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(
-                                        input.data.author.id,
-                                    );
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.author.id.slice(
-                                            __last__,
-                                            i,
-                                        ) + "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.author.id}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.author.id.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.author.id.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.author.id)
-                        ) {
-                            json += `"${input.data.author.id}"`;
-                        } else {
-                            json += JSON.stringify(input.data.author.id);
-                        }
-                        json += `,"name":`;
-                        if (input.data.author.name.length < 42) {
-                            let __result__ = "";
-                            let __last__ = -1;
-                            let __point__ = 255;
-                            let __finished__ = false;
-                            for (
-                                let i = 0;
-                                i < input.data.author.name.length;
-                                i++
-                            ) {
-                                __point__ =
-                                    input.data.author.name.charCodeAt(i);
-                                if (
-                                    __point__ < 32 ||
-                                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                                ) {
-                                    json += JSON.stringify(
-                                        input.data.author.name,
-                                    );
-                                    __finished__ = true;
-                                    break;
-                                }
-                                if (__point__ === 0x22 || __point__ === 0x5c) {
-                                    __last__ === -1 && (__last__ = 0);
-                                    __result__ +=
-                                        input.data.author.name.slice(
-                                            __last__,
-                                            i,
-                                        ) + "\\";
-                                    __last__ = i;
-                                }
-                            }
-                            if (!__finished__) {
-                                if (__last__ === -1) {
-                                    json += `"${input.data.author.name}"`;
-                                } else {
-                                    json += `"${__result__}${input.data.author.name.slice(__last__)}"`;
-                                }
-                            }
-                        } else if (
-                            input.data.author.name.length < 5000 &&
-                            !STR_ESCAPE.test(input.data.author.name)
-                        ) {
-                            json += `"${input.data.author.name}"`;
-                        } else {
-                            json += JSON.stringify(input.data.author.name);
-                        }
-                        if (typeof input.data.author.bio === "string") {
-                            json += `,"bio":`;
-                            if (input.data.author.bio.length < 42) {
-                                let __result__ = "";
-                                let __last__ = -1;
-                                let __point__ = 255;
-                                let __finished__ = false;
-                                for (
-                                    let i = 0;
-                                    i < input.data.author.bio.length;
-                                    i++
-                                ) {
-                                    __point__ =
-                                        input.data.author.bio.charCodeAt(i);
-                                    if (
-                                        __point__ < 32 ||
-                                        (__point__ >= 0xd800 &&
-                                            __point__ <= 0xdfff)
-                                    ) {
-                                        json += JSON.stringify(
-                                            input.data.author.bio,
-                                        );
-                                        __finished__ = true;
-                                        break;
-                                    }
-                                    if (
-                                        __point__ === 0x22 ||
-                                        __point__ === 0x5c
-                                    ) {
-                                        __last__ === -1 && (__last__ = 0);
-                                        __result__ +=
-                                            input.data.author.bio.slice(
-                                                __last__,
-                                                i,
-                                            ) + "\\";
-                                        __last__ = i;
-                                    }
-                                }
-                                if (!__finished__) {
-                                    if (__last__ === -1) {
-                                        json += `"${input.data.author.bio}"`;
-                                    } else {
-                                        json += `"${__result__}${input.data.author.bio.slice(__last__)}"`;
-                                    }
-                                }
-                            } else if (
-                                input.data.author.bio.length < 5000 &&
-                                !STR_ESCAPE.test(input.data.author.bio)
-                            ) {
-                                json += `"${input.data.author.bio}"`;
-                            } else {
-                                json += JSON.stringify(input.data.author.bio);
-                            }
-                        } else {
-                            json += ',"bio":null';
-                        }
-                        json += `,"createdAt":"${input.data.author.createdAt.toISOString()}"`;
-                        json += `,"updatedAt":"${input.data.author.updatedAt.toISOString()}"`;
-                        json += "}";
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.createdAt !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"createdAt":"${input.data.createdAt.toISOString()}"`;
-                    } else {
-                        json += `"createdAt":"${input.data.createdAt.toISOString()}"`;
-                        dataHasFields = true;
-                    }
-                }
-                if (typeof input.data.updatedAt !== "undefined") {
-                    if (dataHasFields) {
-                        json += `,"updatedAt":"${input.data.updatedAt.toISOString()}"`;
-                    } else {
-                        json += `"updatedAt":"${input.data.updatedAt.toISOString()}"`;
-                        dataHasFields = true;
-                    }
-                }
-                json += "}";
-                json += "}";
-                break;
-            }
-            case "POST_LIKED": {
-                json += "{";
-                json += `"eventType":"POST_LIKED"`;
-                json += `,"postId":`;
-                if (input.postId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.postId.length; i++) {
-                        __point__ = input.postId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.postId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.postId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.postId}"`;
-                        } else {
-                            json += `"${__result__}${input.postId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.postId.length < 5000 &&
-                    !STR_ESCAPE.test(input.postId)
-                ) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += JSON.stringify(input.postId);
-                }
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"postLikeId":`;
-                if (input.postLikeId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.postLikeId.length; i++) {
-                        __point__ = input.postLikeId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.postLikeId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.postLikeId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.postLikeId}"`;
-                        } else {
-                            json += `"${__result__}${input.postLikeId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.postLikeId.length < 5000 &&
-                    !STR_ESCAPE.test(input.postLikeId)
-                ) {
-                    json += `"${input.postLikeId}"`;
-                } else {
-                    json += JSON.stringify(input.postLikeId);
-                }
-
-                if (Number.isNaN(input.postLikeCount)) {
-                    throw new Error(
-                        "Expected number at /postLikeCount got NaN",
-                    );
-                }
-                json += `,"postLikeCount":${input.postLikeCount}`;
-                json += "}";
-                break;
-            }
-            case "POST_COMMENTED": {
-                json += "{";
-                json += `"eventType":"POST_COMMENTED"`;
-                json += `,"postId":`;
-                if (input.postId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.postId.length; i++) {
-                        __point__ = input.postId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.postId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.postId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.postId}"`;
-                        } else {
-                            json += `"${__result__}${input.postId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.postId.length < 5000 &&
-                    !STR_ESCAPE.test(input.postId)
-                ) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += JSON.stringify(input.postId);
-                }
-                json += `,"timestamp":"${input.timestamp.toISOString()}"`;
-                json += `,"commentId":`;
-                if (input.commentId.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.commentId.length; i++) {
-                        __point__ = input.commentId.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.commentId);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.commentId.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.commentId}"`;
-                        } else {
-                            json += `"${__result__}${input.commentId.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.commentId.length < 5000 &&
-                    !STR_ESCAPE.test(input.commentId)
-                ) {
-                    json += `"${input.commentId}"`;
-                } else {
-                    json += JSON.stringify(input.commentId);
-                }
-                json += `,"commentText":`;
-                if (input.commentText.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.commentText.length; i++) {
-                        __point__ = input.commentText.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.commentText);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.commentText.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.commentText}"`;
-                        } else {
-                            json += `"${__result__}${input.commentText.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.commentText.length < 5000 &&
-                    !STR_ESCAPE.test(input.commentText)
-                ) {
-                    json += `"${input.commentText}"`;
-                } else {
-                    json += JSON.stringify(input.commentText);
-                }
-
-                if (Number.isNaN(input.commentCount)) {
-                    throw new Error("Expected number at /commentCount got NaN");
-                }
-                json += `,"commentCount":${input.commentCount}`;
-                json += "}";
-                break;
-            }
-        }
-        return json;
-    },
-};
-export interface PostEventPostCreated {
-    eventType: "POST_CREATED";
-    postId: string;
-    timestamp: Date;
-}
-
-export interface PostEventPostDeleted {
-    eventType: "POST_DELETED";
-    postId: string;
-    timestamp: Date;
-}
-
-export interface PostEventPostUpdated {
-    eventType: "POST_UPDATED";
-    postId: string;
-    timestamp: Date;
-    data: PostEventPostUpdatedData;
-}
-
-export interface PostEventPostUpdatedData {
-    id?: string;
-    title?: string;
-    type?: PostType;
-    description?: string | null;
-    content?: string;
-    tags?: Array<string>;
-    authorId?: string;
-    author?: Author;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
-export interface PostEventPostLiked {
-    eventType: "POST_LIKED";
-    postId: string;
-    timestamp: Date;
-    postLikeId: string;
-    postLikeCount: number;
-}
-
-export interface PostEventPostCommented {
-    eventType: "POST_COMMENTED";
-    postId: string;
-    timestamp: Date;
-    commentId: string;
-    commentText: string;
-    commentCount: number;
-}
-
-export interface LogPostEventResponse {
-    success: boolean;
-    message: string;
-}
-const $$LogPostEventResponse = {
-    parse(input: Record<any, any>): LogPostEventResponse {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.success === "boolean") {
-                    __D1.success = json.success;
-                } else {
-                    $fallback(
-                        "/success",
-                        "/properties/success/type",
-                        "Expected boolean for /success",
-                    );
-                }
-                if (typeof json.message === "string") {
-                    __D1.message = json.message;
-                } else {
-                    $fallback(
-                        "/message",
-                        "/properties/message/type",
-                        "Expected string at /message",
-                    );
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.success === "boolean") {
-                __D1.success = input.success;
-            } else {
-                $fallback(
-                    "/success",
-                    "/properties/success/type",
-                    "Expected boolean for /success",
-                );
-            }
-            if (typeof input.message === "string") {
-                __D1.message = input.message;
-            } else {
-                $fallback(
-                    "/message",
-                    "/properties/message/type",
-                    "Expected string at /message",
-                );
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: LogPostEventResponse): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"success":${input.success}`;
-        json += `,"message":`;
-        if (input.message.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.message.length; i++) {
-                __point__ = input.message.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.message);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.message.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.message}"`;
-                } else {
-                    json += `"${__result__}${input.message.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.message.length < 5000 &&
-            !STR_ESCAPE.test(input.message)
-        ) {
-            json += `"${input.message}"`;
-        } else {
-            json += JSON.stringify(input.message);
-        }
-        json += "}";
-        return json;
-    },
-};
-
-export interface UpdatePostParams {
-    postId: string;
-    data: UpdatePostParamsData;
-}
-const $$UpdatePostParams = {
-    parse(input: Record<any, any>): UpdatePostParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.postId === "string") {
-                    __D1.postId = json.postId;
-                } else {
-                    $fallback(
-                        "/postId",
-                        "/properties/postId/type",
-                        "Expected string at /postId",
-                    );
-                }
-                if (typeof json.data === "object" && json.data !== null) {
-                    const __D2 = {};
-                    if (typeof json.data.title === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (typeof json.data.title === "string") {
-                            __D2.title = json.data.title;
-                        } else {
-                            $fallback(
-                                "/data/title",
-                                "/properties/data/optionalProperties/title/type",
-                                "Expected string at /data/title",
-                            );
-                        }
-                    }
-                    if (typeof json.data.description === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (json.data.description === null) {
-                            __D2.description = json.data.description;
-                        } else {
-                            if (typeof json.data.description === "string") {
-                                __D2.description = json.data.description;
-                            } else {
-                                $fallback(
-                                    "/data/description",
-                                    "/properties/data/optionalProperties/description/type",
-                                    "Expected string at /data/description",
-                                );
-                            }
-                        }
-                    }
-                    if (typeof json.data.content === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (typeof json.data.content === "string") {
-                            __D2.content = json.data.content;
-                        } else {
-                            $fallback(
-                                "/data/content",
-                                "/properties/data/optionalProperties/content/type",
-                                "Expected string at /data/content",
-                            );
-                        }
-                    }
-                    if (typeof json.data.tags === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (Array.isArray(json.data.tags)) {
-                            const __D3 = [];
-                            for (const __D3AItem of json.data.tags) {
-                                let __D3AItemAResult;
-                                if (typeof __D3AItem === "string") {
-                                    __D3AItemAResult = __D3AItem;
-                                } else {
-                                    $fallback(
-                                        "/data/tags/[0]",
-                                        "/properties/data/optionalProperties/tags/elements/type",
-                                        "Expected string at /data/tags/[0]",
-                                    );
-                                }
-                                __D3.push(__D3AItemAResult);
-                            }
-                            __D2.tags = __D3;
-                        } else {
-                            $fallback(
-                                "/data/tags",
-                                "/properties/data/optionalProperties/tags",
-                                "Expected Array",
-                            );
-                        }
-                    }
-                    __D1.data = __D2;
-                } else {
-                    $fallback("/data", "/properties/data", "Expected object");
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.postId === "string") {
-                __D1.postId = input.postId;
-            } else {
-                $fallback(
-                    "/postId",
-                    "/properties/postId/type",
-                    "Expected string at /postId",
-                );
-            }
-            if (typeof input.data === "object" && input.data !== null) {
-                const __D2 = {};
-                if (typeof input.data.title === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof input.data.title === "string") {
-                        __D2.title = input.data.title;
-                    } else {
-                        $fallback(
-                            "/data/title",
-                            "/properties/data/optionalProperties/title/type",
-                            "Expected string at /data/title",
-                        );
-                    }
-                }
-                if (typeof input.data.description === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (input.data.description === null) {
-                        __D2.description = input.data.description;
-                    } else {
-                        if (typeof input.data.description === "string") {
-                            __D2.description = input.data.description;
-                        } else {
-                            $fallback(
-                                "/data/description",
-                                "/properties/data/optionalProperties/description/type",
-                                "Expected string at /data/description",
-                            );
-                        }
-                    }
-                }
-                if (typeof input.data.content === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof input.data.content === "string") {
-                        __D2.content = input.data.content;
-                    } else {
-                        $fallback(
-                            "/data/content",
-                            "/properties/data/optionalProperties/content/type",
-                            "Expected string at /data/content",
-                        );
-                    }
-                }
-                if (typeof input.data.tags === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (Array.isArray(input.data.tags)) {
-                        const __D3 = [];
-                        for (const __D3AItem of input.data.tags) {
-                            let __D3AItemAResult;
-                            if (typeof __D3AItem === "string") {
-                                __D3AItemAResult = __D3AItem;
-                            } else {
-                                $fallback(
-                                    "/data/tags/[0]",
-                                    "/properties/data/optionalProperties/tags/elements/type",
-                                    "Expected string at /data/tags/[0]",
-                                );
-                            }
-                            __D3.push(__D3AItemAResult);
-                        }
-                        __D2.tags = __D3;
-                    } else {
-                        $fallback(
-                            "/data/tags",
-                            "/properties/data/optionalProperties/tags",
-                            "Expected Array",
-                        );
-                    }
-                }
-                __D1.data = __D2;
-            } else {
-                $fallback("/data", "/properties/data", "Expected object");
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: UpdatePostParams): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"postId":`;
-        if (input.postId.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.postId.length; i++) {
-                __point__ = input.postId.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.postId);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.postId.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.postId}"`;
-                } else {
-                    json += `"${__result__}${input.postId.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.postId.length < 5000 &&
-            !STR_ESCAPE.test(input.postId)
-        ) {
-            json += `"${input.postId}"`;
-        } else {
-            json += JSON.stringify(input.postId);
-        }
-        json += ',"data":{';
-        let dataHasFields = false;
-        if (typeof input.data.title !== "undefined") {
-            if (dataHasFields) {
-                json += `,"title":`;
-                if (input.data.title.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.data.title.length; i++) {
-                        __point__ = input.data.title.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.data.title);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.data.title.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.data.title}"`;
-                        } else {
-                            json += `"${__result__}${input.data.title.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.data.title.length < 5000 &&
-                    !STR_ESCAPE.test(input.data.title)
-                ) {
-                    json += `"${input.data.title}"`;
-                } else {
-                    json += JSON.stringify(input.data.title);
-                }
-            } else {
-                json += `"title":`;
-                if (input.data.title.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.data.title.length; i++) {
-                        __point__ = input.data.title.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.data.title);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.data.title.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.data.title}"`;
-                        } else {
-                            json += `"${__result__}${input.data.title.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.data.title.length < 5000 &&
-                    !STR_ESCAPE.test(input.data.title)
-                ) {
-                    json += `"${input.data.title}"`;
-                } else {
-                    json += JSON.stringify(input.data.title);
-                }
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.description !== "undefined") {
-            if (dataHasFields) {
-                if (typeof input.data.description === "string") {
-                    json += `,"description":`;
-                    if (input.data.description.length < 42) {
-                        let __result__ = "";
-                        let __last__ = -1;
-                        let __point__ = 255;
-                        let __finished__ = false;
-                        for (
-                            let i = 0;
-                            i < input.data.description.length;
-                            i++
-                        ) {
-                            __point__ = input.data.description.charCodeAt(i);
-                            if (
-                                __point__ < 32 ||
-                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                            ) {
-                                json += JSON.stringify(input.data.description);
-                                __finished__ = true;
-                                break;
-                            }
-                            if (__point__ === 0x22 || __point__ === 0x5c) {
-                                __last__ === -1 && (__last__ = 0);
-                                __result__ +=
-                                    input.data.description.slice(__last__, i) +
-                                    "\\";
-                                __last__ = i;
-                            }
-                        }
-                        if (!__finished__) {
-                            if (__last__ === -1) {
-                                json += `"${input.data.description}"`;
-                            } else {
-                                json += `"${__result__}${input.data.description.slice(__last__)}"`;
-                            }
-                        }
-                    } else if (
-                        input.data.description.length < 5000 &&
-                        !STR_ESCAPE.test(input.data.description)
-                    ) {
-                        json += `"${input.data.description}"`;
-                    } else {
-                        json += JSON.stringify(input.data.description);
-                    }
-                } else {
-                    json += ',"description":null';
-                }
-            } else {
-                if (typeof input.data.description === "string") {
-                    json += `"description":`;
-                    if (input.data.description.length < 42) {
-                        let __result__ = "";
-                        let __last__ = -1;
-                        let __point__ = 255;
-                        let __finished__ = false;
-                        for (
-                            let i = 0;
-                            i < input.data.description.length;
-                            i++
-                        ) {
-                            __point__ = input.data.description.charCodeAt(i);
-                            if (
-                                __point__ < 32 ||
-                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                            ) {
-                                json += JSON.stringify(input.data.description);
-                                __finished__ = true;
-                                break;
-                            }
-                            if (__point__ === 0x22 || __point__ === 0x5c) {
-                                __last__ === -1 && (__last__ = 0);
-                                __result__ +=
-                                    input.data.description.slice(__last__, i) +
-                                    "\\";
-                                __last__ = i;
-                            }
-                        }
-                        if (!__finished__) {
-                            if (__last__ === -1) {
-                                json += `"${input.data.description}"`;
-                            } else {
-                                json += `"${__result__}${input.data.description.slice(__last__)}"`;
-                            }
-                        }
-                    } else if (
-                        input.data.description.length < 5000 &&
-                        !STR_ESCAPE.test(input.data.description)
-                    ) {
-                        json += `"${input.data.description}"`;
-                    } else {
-                        json += JSON.stringify(input.data.description);
-                    }
-                } else {
-                    json += '"description":null';
-                }
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.content !== "undefined") {
-            if (dataHasFields) {
-                json += `,"content":`;
-                if (input.data.content.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.data.content.length; i++) {
-                        __point__ = input.data.content.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.data.content);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.data.content.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.data.content}"`;
-                        } else {
-                            json += `"${__result__}${input.data.content.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.data.content.length < 5000 &&
-                    !STR_ESCAPE.test(input.data.content)
-                ) {
-                    json += `"${input.data.content}"`;
-                } else {
-                    json += JSON.stringify(input.data.content);
-                }
-            } else {
-                json += `"content":`;
-                if (input.data.content.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (let i = 0; i < input.data.content.length; i++) {
-                        __point__ = input.data.content.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.data.content);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.data.content.slice(__last__, i) + "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.data.content}"`;
-                        } else {
-                            json += `"${__result__}${input.data.content.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.data.content.length < 5000 &&
-                    !STR_ESCAPE.test(input.data.content)
-                ) {
-                    json += `"${input.data.content}"`;
-                } else {
-                    json += JSON.stringify(input.data.content);
-                }
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.tags !== "undefined") {
-            if (dataHasFields) {
-                json += ',"tags":[';
-                for (let i = 0; i < input.data.tags.length; i++) {
-                    const inputDataTagsItem = input.data.tags[i];
-                    if (i !== 0) {
-                        json += ",";
-                    }
-                    json += ``;
-                    if (inputDataTagsItem.length < 42) {
-                        let __result__ = "";
-                        let __last__ = -1;
-                        let __point__ = 255;
-                        let __finished__ = false;
-                        for (let i = 0; i < inputDataTagsItem.length; i++) {
-                            __point__ = inputDataTagsItem.charCodeAt(i);
-                            if (
-                                __point__ < 32 ||
-                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                            ) {
-                                json += JSON.stringify(inputDataTagsItem);
-                                __finished__ = true;
-                                break;
-                            }
-                            if (__point__ === 0x22 || __point__ === 0x5c) {
-                                __last__ === -1 && (__last__ = 0);
-                                __result__ +=
-                                    inputDataTagsItem.slice(__last__, i) + "\\";
-                                __last__ = i;
-                            }
-                        }
-                        if (!__finished__) {
-                            if (__last__ === -1) {
-                                json += `"${inputDataTagsItem}"`;
-                            } else {
-                                json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
-                            }
-                        }
-                    } else if (
-                        inputDataTagsItem.length < 5000 &&
-                        !STR_ESCAPE.test(inputDataTagsItem)
-                    ) {
-                        json += `"${inputDataTagsItem}"`;
-                    } else {
-                        json += JSON.stringify(inputDataTagsItem);
-                    }
-                }
-                json += "]";
-            } else {
-                json += '"tags":[';
-                for (let i = 0; i < input.data.tags.length; i++) {
-                    const inputDataTagsItem = input.data.tags[i];
-                    if (i !== 0) {
-                        json += ",";
-                    }
-                    json += ``;
-                    if (inputDataTagsItem.length < 42) {
-                        let __result__ = "";
-                        let __last__ = -1;
-                        let __point__ = 255;
-                        let __finished__ = false;
-                        for (let i = 0; i < inputDataTagsItem.length; i++) {
-                            __point__ = inputDataTagsItem.charCodeAt(i);
-                            if (
-                                __point__ < 32 ||
-                                (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                            ) {
-                                json += JSON.stringify(inputDataTagsItem);
-                                __finished__ = true;
-                                break;
-                            }
-                            if (__point__ === 0x22 || __point__ === 0x5c) {
-                                __last__ === -1 && (__last__ = 0);
-                                __result__ +=
-                                    inputDataTagsItem.slice(__last__, i) + "\\";
-                                __last__ = i;
-                            }
-                        }
-                        if (!__finished__) {
-                            if (__last__ === -1) {
-                                json += `"${inputDataTagsItem}"`;
-                            } else {
-                                json += `"${__result__}${inputDataTagsItem.slice(__last__)}"`;
-                            }
-                        }
-                    } else if (
-                        inputDataTagsItem.length < 5000 &&
-                        !STR_ESCAPE.test(inputDataTagsItem)
-                    ) {
-                        json += `"${inputDataTagsItem}"`;
-                    } else {
-                        json += JSON.stringify(inputDataTagsItem);
-                    }
-                }
-                json += "]";
-                dataHasFields = true;
-            }
-        }
-        json += "}";
-        json += "}";
-        return json;
-    },
-};
-export interface UpdatePostParamsData {
-    title?: string;
-    description?: string | null;
-    content?: string;
-    tags?: Array<string>;
-}
-
-export interface AnnotationId {
-    id: string;
-    version: string;
-}
-const $$AnnotationId = {
-    parse(input: Record<any, any>): AnnotationId {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.id === "string") {
-                    __D1.id = json.id;
-                } else {
-                    $fallback(
-                        "/id",
-                        "/properties/id/type",
-                        "Expected string at /id",
-                    );
-                }
-                if (typeof json.version === "string") {
-                    __D1.version = json.version;
-                } else {
-                    $fallback(
-                        "/version",
-                        "/properties/version/type",
-                        "Expected string at /version",
-                    );
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.id === "string") {
-                __D1.id = input.id;
-            } else {
-                $fallback(
-                    "/id",
-                    "/properties/id/type",
-                    "Expected string at /id",
-                );
-            }
-            if (typeof input.version === "string") {
-                __D1.version = input.version;
-            } else {
-                $fallback(
-                    "/version",
-                    "/properties/version/type",
-                    "Expected string at /version",
-                );
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: AnnotationId): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"id":`;
-        if (input.id.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.id.length; i++) {
-                __point__ = input.id.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.id);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.id.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.id}"`;
-                } else {
-                    json += `"${__result__}${input.id.slice(__last__)}"`;
-                }
-            }
-        } else if (input.id.length < 5000 && !STR_ESCAPE.test(input.id)) {
-            json += `"${input.id}"`;
-        } else {
-            json += JSON.stringify(input.id);
-        }
-        json += `,"version":`;
-        if (input.version.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.version.length; i++) {
-                __point__ = input.version.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.version);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.version.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.version}"`;
-                } else {
-                    json += `"${__result__}${input.version.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.version.length < 5000 &&
-            !STR_ESCAPE.test(input.version)
-        ) {
-            json += `"${input.version}"`;
-        } else {
-            json += JSON.stringify(input.version);
-        }
-        json += "}";
-        return json;
-    },
-};
-
-export interface Annotation {
-    annotation_id: AnnotationId;
-    associated_id: AssociatedId;
-    annotation_type: AnnotationAnnotationType;
-    annotation_type_version: number;
-    metadata: any;
-    box_type_range: AnnotationBoxTypeRange;
-}
-const $$Annotation = {
-    parse(input: Record<any, any>): Annotation {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (
-                    typeof json.annotation_id === "object" &&
-                    json.annotation_id !== null
-                ) {
-                    const __D2 = {};
-                    if (typeof json.annotation_id.id === "string") {
-                        __D2.id = json.annotation_id.id;
-                    } else {
-                        $fallback(
-                            "/annotation_id/id",
-                            "/properties/annotation_id/properties/id/type",
-                            "Expected string at /annotation_id/id",
-                        );
-                    }
-                    if (typeof json.annotation_id.version === "string") {
-                        __D2.version = json.annotation_id.version;
-                    } else {
-                        $fallback(
-                            "/annotation_id/version",
-                            "/properties/annotation_id/properties/version/type",
-                            "Expected string at /annotation_id/version",
-                        );
-                    }
-                    __D1.annotation_id = __D2;
-                } else {
-                    $fallback(
-                        "/annotation_id",
-                        "/properties/annotation_id",
-                        "Expected object",
-                    );
-                }
-                if (
-                    typeof json.associated_id === "object" &&
-                    json.associated_id !== null
-                ) {
-                    const __D2 = {};
-                    if (typeof json.associated_id.entity_type === "string") {
-                        if (
-                            json.associated_id.entity_type === "MOVIE_ID" ||
-                            json.associated_id.entity_type === "SHOW_ID"
-                        ) {
-                            __D2.entity_type = json.associated_id.entity_type;
-                        } else {
-                            $fallback(
-                                "/associated_id/entity_type",
-                                "/properties/associated_id/properties/entity_type",
-                                "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/associated_id/entity_type",
-                            "/properties/associated_id/properties/entity_type",
-                            "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                        );
-                    }
-                    if (typeof json.associated_id.id === "string") {
-                        __D2.id = json.associated_id.id;
-                    } else {
-                        $fallback(
-                            "/associated_id/id",
-                            "/properties/associated_id/properties/id/type",
-                            "Expected string at /associated_id/id",
-                        );
-                    }
-                    __D1.associated_id = __D2;
-                } else {
-                    $fallback(
-                        "/associated_id",
-                        "/properties/associated_id",
-                        "Expected object",
-                    );
-                }
-                if (typeof json.annotation_type === "string") {
-                    if (json.annotation_type === "ANNOTATION_BOUNDINGBOX") {
-                        __D1.annotation_type = json.annotation_type;
-                    } else {
-                        $fallback(
-                            "/annotation_type",
-                            "/properties/annotation_type",
-                            "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/annotation_type",
-                        "/properties/annotation_type",
-                        "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                    );
-                }
-                if (
-                    typeof json.annotation_type_version === "number" &&
-                    Number.isInteger(json.annotation_type_version) &&
-                    json.annotation_type_version >= 0 &&
-                    json.annotation_type_version <= 65535
-                ) {
-                    __D1.annotation_type_version = json.annotation_type_version;
-                } else {
-                    $fallback(
-                        "/annotation_type_version",
-                        "/properties/annotation_type_version",
-                        "Expected valid integer between 0 and 65535",
-                    );
-                }
-                __D1.metadata = json.metadata;
-                if (
-                    typeof json.box_type_range === "object" &&
-                    json.box_type_range !== null
-                ) {
-                    const __D2 = {};
-                    if (
-                        typeof json.box_type_range.start_time_in_nano_sec ===
-                            "string" ||
-                        typeof json.box_type_range.start_time_in_nano_sec ===
-                            "number"
-                    ) {
-                        try {
-                            const val = BigInt(
-                                json.box_type_range.start_time_in_nano_sec,
-                            );
-                            __D2.start_time_in_nano_sec = val;
-                        } catch (err) {
-                            $fallback(
-                                "/box_type_range/start_time_in_nano_sec",
-                                "/properties/box_type_range/properties/start_time_in_nano_sec",
-                                "Unable to parse BigInt from json.box_type_range.start_time_in_nano_sec.",
-                            );
-                        }
-                    } else if (
-                        typeof json.box_type_range.start_time_in_nano_sec ===
-                        "bigint"
-                    ) {
-                        __D2.start_time_in_nano_sec =
-                            json.box_type_range.start_time_in_nano_sec;
-                    } else {
-                        $fallback(
-                            "/box_type_range/start_time_in_nano_sec",
-                            "/properties/box_type_range/properties/start_time_in_nano_sec",
-                            "Expected BigInt or Integer string. Got ${json.box_type_range.start_time_in_nano_sec}",
-                        );
-                    }
-                    if (
-                        typeof json.box_type_range.end_time_in_nano_sec ===
-                            "string" ||
-                        typeof json.box_type_range.end_time_in_nano_sec ===
-                            "number"
-                    ) {
-                        try {
-                            const val = BigInt(
-                                json.box_type_range.end_time_in_nano_sec,
-                            );
-                            if (val >= BigInt("0")) {
-                                __D2.end_time_in_nano_sec = val;
-                            } else {
-                                $fallback(
-                                    "/box_type_range/end_time_in_nano_sec",
-                                    "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Unsigned int must be greater than or equal to 0.",
-                                );
-                            }
-                        } catch (err) {
-                            $fallback(
-                                "/box_type_range/end_time_in_nano_sec",
-                                "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                "Unable to parse BigInt from json.box_type_range.end_time_in_nano_sec.",
-                            );
-                        }
-                    } else if (
-                        typeof json.box_type_range.end_time_in_nano_sec ===
-                        "bigint"
-                    ) {
-                        if (
-                            json.box_type_range.end_time_in_nano_sec >=
-                            BigInt("0")
-                        ) {
-                            __D2.end_time_in_nano_sec =
-                                json.box_type_range.end_time_in_nano_sec;
-                        } else {
-                            $fallback(
-                                "/box_type_range/end_time_in_nano_sec",
-                                "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                "Unsigned int must be greater than or equal to 0.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/box_type_range/end_time_in_nano_sec",
-                            "/properties/box_type_range/properties/end_time_in_nano_sec",
-                            "Expected BigInt or Integer string. Got ${json.box_type_range.end_time_in_nano_sec}",
-                        );
-                    }
-                    __D1.box_type_range = __D2;
-                } else {
-                    $fallback(
-                        "/box_type_range",
-                        "/properties/box_type_range",
-                        "Expected object",
-                    );
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (
-                typeof input.annotation_id === "object" &&
-                input.annotation_id !== null
-            ) {
-                const __D2 = {};
-                if (typeof input.annotation_id.id === "string") {
-                    __D2.id = input.annotation_id.id;
-                } else {
-                    $fallback(
-                        "/annotation_id/id",
-                        "/properties/annotation_id/properties/id/type",
-                        "Expected string at /annotation_id/id",
-                    );
-                }
-                if (typeof input.annotation_id.version === "string") {
-                    __D2.version = input.annotation_id.version;
-                } else {
-                    $fallback(
-                        "/annotation_id/version",
-                        "/properties/annotation_id/properties/version/type",
-                        "Expected string at /annotation_id/version",
-                    );
-                }
-                __D1.annotation_id = __D2;
-            } else {
-                $fallback(
-                    "/annotation_id",
-                    "/properties/annotation_id",
-                    "Expected object",
-                );
-            }
-            if (
-                typeof input.associated_id === "object" &&
-                input.associated_id !== null
-            ) {
-                const __D2 = {};
-                if (typeof input.associated_id.entity_type === "string") {
-                    if (
-                        input.associated_id.entity_type === "MOVIE_ID" ||
-                        input.associated_id.entity_type === "SHOW_ID"
-                    ) {
-                        __D2.entity_type = input.associated_id.entity_type;
-                    } else {
-                        $fallback(
-                            "/associated_id/entity_type",
-                            "/properties/associated_id/properties/entity_type",
-                            "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/associated_id/entity_type",
-                        "/properties/associated_id/properties/entity_type",
-                        "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /associated_id/entity_type.",
-                    );
-                }
-                if (typeof input.associated_id.id === "string") {
-                    __D2.id = input.associated_id.id;
-                } else {
-                    $fallback(
-                        "/associated_id/id",
-                        "/properties/associated_id/properties/id/type",
-                        "Expected string at /associated_id/id",
-                    );
-                }
-                __D1.associated_id = __D2;
-            } else {
-                $fallback(
-                    "/associated_id",
-                    "/properties/associated_id",
-                    "Expected object",
-                );
-            }
-            if (typeof input.annotation_type === "string") {
-                if (input.annotation_type === "ANNOTATION_BOUNDINGBOX") {
-                    __D1.annotation_type = input.annotation_type;
-                } else {
-                    $fallback(
-                        "/annotation_type",
-                        "/properties/annotation_type",
-                        "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                    );
-                }
-            } else {
-                $fallback(
-                    "/annotation_type",
-                    "/properties/annotation_type",
-                    "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /annotation_type.",
-                );
-            }
-            if (
-                typeof input.annotation_type_version === "number" &&
-                Number.isInteger(input.annotation_type_version) &&
-                input.annotation_type_version >= 0 &&
-                input.annotation_type_version <= 65535
-            ) {
-                __D1.annotation_type_version = input.annotation_type_version;
-            } else {
-                $fallback(
-                    "/annotation_type_version",
-                    "/properties/annotation_type_version",
-                    "Expected valid integer between 0 and 65535",
-                );
-            }
-            __D1.metadata = input.metadata;
-            if (
-                typeof input.box_type_range === "object" &&
-                input.box_type_range !== null
-            ) {
-                const __D2 = {};
-                if (
-                    typeof input.box_type_range.start_time_in_nano_sec ===
-                        "string" ||
-                    typeof input.box_type_range.start_time_in_nano_sec ===
-                        "number"
-                ) {
-                    try {
-                        const val = BigInt(
-                            input.box_type_range.start_time_in_nano_sec,
-                        );
-                        __D2.start_time_in_nano_sec = val;
-                    } catch (err) {
-                        $fallback(
-                            "/box_type_range/start_time_in_nano_sec",
-                            "/properties/box_type_range/properties/start_time_in_nano_sec",
-                            "Unable to parse BigInt from input.box_type_range.start_time_in_nano_sec.",
-                        );
-                    }
-                } else if (
-                    typeof input.box_type_range.start_time_in_nano_sec ===
-                    "bigint"
-                ) {
-                    __D2.start_time_in_nano_sec =
-                        input.box_type_range.start_time_in_nano_sec;
-                } else {
-                    $fallback(
-                        "/box_type_range/start_time_in_nano_sec",
-                        "/properties/box_type_range/properties/start_time_in_nano_sec",
-                        "Expected BigInt or Integer string. Got ${input.box_type_range.start_time_in_nano_sec}",
-                    );
-                }
-                if (
-                    typeof input.box_type_range.end_time_in_nano_sec ===
-                        "string" ||
-                    typeof input.box_type_range.end_time_in_nano_sec ===
-                        "number"
-                ) {
-                    try {
-                        const val = BigInt(
-                            input.box_type_range.end_time_in_nano_sec,
-                        );
-                        if (val >= BigInt("0")) {
-                            __D2.end_time_in_nano_sec = val;
-                        } else {
-                            $fallback(
-                                "/box_type_range/end_time_in_nano_sec",
-                                "/properties/box_type_range/properties/end_time_in_nano_sec",
-                                "Unsigned int must be greater than or equal to 0.",
-                            );
-                        }
-                    } catch (err) {
-                        $fallback(
-                            "/box_type_range/end_time_in_nano_sec",
-                            "/properties/box_type_range/properties/end_time_in_nano_sec",
-                            "Unable to parse BigInt from input.box_type_range.end_time_in_nano_sec.",
-                        );
-                    }
-                } else if (
-                    typeof input.box_type_range.end_time_in_nano_sec ===
-                    "bigint"
-                ) {
-                    if (
-                        input.box_type_range.end_time_in_nano_sec >= BigInt("0")
-                    ) {
-                        __D2.end_time_in_nano_sec =
-                            input.box_type_range.end_time_in_nano_sec;
-                    } else {
-                        $fallback(
-                            "/box_type_range/end_time_in_nano_sec",
-                            "/properties/box_type_range/properties/end_time_in_nano_sec",
-                            "Unsigned int must be greater than or equal to 0.",
-                        );
-                    }
-                } else {
-                    $fallback(
-                        "/box_type_range/end_time_in_nano_sec",
-                        "/properties/box_type_range/properties/end_time_in_nano_sec",
-                        "Expected BigInt or Integer string. Got ${input.box_type_range.end_time_in_nano_sec}",
-                    );
-                }
-                __D1.box_type_range = __D2;
-            } else {
-                $fallback(
-                    "/box_type_range",
-                    "/properties/box_type_range",
-                    "Expected object",
-                );
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: Annotation): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += '"annotation_id":{';
-        json += `"id":`;
-        if (input.annotation_id.id.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.annotation_id.id.length; i++) {
-                __point__ = input.annotation_id.id.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.annotation_id.id);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ +=
-                        input.annotation_id.id.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.annotation_id.id}"`;
-                } else {
-                    json += `"${__result__}${input.annotation_id.id.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.annotation_id.id.length < 5000 &&
-            !STR_ESCAPE.test(input.annotation_id.id)
-        ) {
-            json += `"${input.annotation_id.id}"`;
-        } else {
-            json += JSON.stringify(input.annotation_id.id);
-        }
-        json += `,"version":`;
-        if (input.annotation_id.version.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.annotation_id.version.length; i++) {
-                __point__ = input.annotation_id.version.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.annotation_id.version);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ +=
-                        input.annotation_id.version.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.annotation_id.version}"`;
-                } else {
-                    json += `"${__result__}${input.annotation_id.version.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.annotation_id.version.length < 5000 &&
-            !STR_ESCAPE.test(input.annotation_id.version)
-        ) {
-            json += `"${input.annotation_id.version}"`;
-        } else {
-            json += JSON.stringify(input.annotation_id.version);
-        }
-        json += "}";
-        json += ',"associated_id":{';
-        json += `"entity_type":"${input.associated_id.entity_type}"`;
-        json += `,"id":`;
-        if (input.associated_id.id.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.associated_id.id.length; i++) {
-                __point__ = input.associated_id.id.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.associated_id.id);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ +=
-                        input.associated_id.id.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.associated_id.id}"`;
-                } else {
-                    json += `"${__result__}${input.associated_id.id.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.associated_id.id.length < 5000 &&
-            !STR_ESCAPE.test(input.associated_id.id)
-        ) {
-            json += `"${input.associated_id.id}"`;
-        } else {
-            json += JSON.stringify(input.associated_id.id);
-        }
-        json += "}";
-        json += `,"annotation_type":"${input.annotation_type}"`;
-
-        if (Number.isNaN(input.annotation_type_version)) {
-            throw new Error(
-                "Expected number at /annotation_type_version got NaN",
-            );
-        }
-        json += `,"annotation_type_version":${input.annotation_type_version}`;
-        if (typeof input.metadata !== "undefined") {
-            json += ',"metadata":' + JSON.stringify(input.metadata);
-        }
-        json += ',"box_type_range":{';
-        json += `"start_time_in_nano_sec":"${input.box_type_range.start_time_in_nano_sec.toString()}"`;
-        json += `,"end_time_in_nano_sec":"${input.box_type_range.end_time_in_nano_sec.toString()}"`;
-        json += "}";
-        json += "}";
-        return json;
-    },
-};
-export interface AssociatedId {
-    entity_type: AnnotationAssociatedIdEntityType;
-    id: string;
-}
-
-export type AnnotationAssociatedIdEntityType = "MOVIE_ID" | "SHOW_ID";
-export type AnnotationAnnotationType = "ANNOTATION_BOUNDINGBOX";
-export interface AnnotationBoxTypeRange {
-    start_time_in_nano_sec: bigint;
-    end_time_in_nano_sec: bigint;
-}
-
-export interface UpdateAnnotationParams {
-    annotation_id: string;
-    annotation_id_version: string;
-    data: UpdateAnnotationData;
-}
-const $$UpdateAnnotationParams = {
-    parse(input: Record<any, any>): UpdateAnnotationParams {
-        function $fallback(instancePath, schemaPath) {
-            throw new Error(
-                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
-            );
-        }
-
-        if (typeof input === "string") {
-            const json = JSON.parse(input);
-            let result = {};
-            if (typeof json === "object" && json !== null) {
-                const __D1 = {};
-                if (typeof json.annotation_id === "string") {
-                    __D1.annotation_id = json.annotation_id;
-                } else {
-                    $fallback(
-                        "/annotation_id",
-                        "/properties/annotation_id/type",
-                        "Expected string at /annotation_id",
-                    );
-                }
-                if (typeof json.annotation_id_version === "string") {
-                    __D1.annotation_id_version = json.annotation_id_version;
-                } else {
-                    $fallback(
-                        "/annotation_id_version",
-                        "/properties/annotation_id_version/type",
-                        "Expected string at /annotation_id_version",
-                    );
-                }
-                if (typeof json.data === "object" && json.data !== null) {
-                    const __D2 = {};
-                    if (typeof json.data.associated_id === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (
-                            typeof json.data.associated_id === "object" &&
-                            json.data.associated_id !== null
-                        ) {
-                            const __D3 = {};
-                            if (
-                                typeof json.data.associated_id.entity_type ===
-                                "string"
-                            ) {
-                                if (
-                                    json.data.associated_id.entity_type ===
-                                        "MOVIE_ID" ||
-                                    json.data.associated_id.entity_type ===
-                                        "SHOW_ID"
-                                ) {
-                                    __D3.entity_type =
-                                        json.data.associated_id.entity_type;
-                                } else {
-                                    $fallback(
-                                        "/data/associated_id/entity_type",
-                                        "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                        "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                                    );
-                                }
-                            } else {
-                                $fallback(
-                                    "/data/associated_id/entity_type",
-                                    "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                    "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                                );
-                            }
-                            if (
-                                typeof json.data.associated_id.id === "string"
-                            ) {
-                                __D3.id = json.data.associated_id.id;
-                            } else {
-                                $fallback(
-                                    "/data/associated_id/id",
-                                    "/properties/data/optionalProperties/associated_id/properties/id/type",
-                                    "Expected string at /data/associated_id/id",
-                                );
-                            }
-                            __D2.associated_id = __D3;
-                        } else {
-                            $fallback(
-                                "/data/associated_id",
-                                "/properties/data/optionalProperties/associated_id",
-                                "Expected object",
-                            );
-                        }
-                    }
-                    if (typeof json.data.annotation_type === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (typeof json.data.annotation_type === "string") {
-                            if (
-                                json.data.annotation_type ===
-                                "ANNOTATION_BOUNDINGBOX"
-                            ) {
-                                __D2.annotation_type =
-                                    json.data.annotation_type;
-                            } else {
-                                $fallback(
-                                    "/data/annotation_type",
-                                    "/properties/data/optionalProperties/annotation_type",
-                                    "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/data/annotation_type",
-                                "/properties/data/optionalProperties/annotation_type",
-                                "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                            );
-                        }
-                    }
-                    if (
-                        typeof json.data.annotation_type_version === "undefined"
-                    ) {
-                        // ignore undefined
-                    } else {
-                        if (
-                            typeof json.data.annotation_type_version ===
-                                "number" &&
-                            Number.isInteger(
-                                json.data.annotation_type_version,
-                            ) &&
-                            json.data.annotation_type_version >= 0 &&
-                            json.data.annotation_type_version <= 65535
-                        ) {
-                            __D2.annotation_type_version =
-                                json.data.annotation_type_version;
-                        } else {
-                            $fallback(
-                                "/data/annotation_type_version",
-                                "/properties/data/optionalProperties/annotation_type_version",
-                                "Expected valid integer between 0 and 65535",
-                            );
-                        }
-                    }
-                    if (typeof json.data.metadata === "undefined") {
-                        // ignore undefined
-                    } else {
-                        __D2.metadata = json.data.metadata;
-                    }
-                    if (typeof json.data.box_type_range === "undefined") {
-                        // ignore undefined
-                    } else {
-                        if (
-                            typeof json.data.box_type_range === "object" &&
-                            json.data.box_type_range !== null
-                        ) {
-                            const __D3 = {};
-                            if (
-                                typeof json.data.box_type_range
-                                    .start_time_in_nano_sec === "string" ||
-                                typeof json.data.box_type_range
-                                    .start_time_in_nano_sec === "number"
-                            ) {
-                                try {
-                                    const val = BigInt(
-                                        json.data.box_type_range
-                                            .start_time_in_nano_sec,
-                                    );
-                                    __D3.start_time_in_nano_sec = val;
-                                } catch (err) {
-                                    $fallback(
-                                        "/data/box_type_range/start_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                        "Unable to parse BigInt from json.data.box_type_range.start_time_in_nano_sec.",
-                                    );
-                                }
-                            } else if (
-                                typeof json.data.box_type_range
-                                    .start_time_in_nano_sec === "bigint"
-                            ) {
-                                __D3.start_time_in_nano_sec =
-                                    json.data.box_type_range.start_time_in_nano_sec;
-                            } else {
-                                $fallback(
-                                    "/data/box_type_range/start_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                    "Expected BigInt or Integer string. Got ${json.data.box_type_range.start_time_in_nano_sec}",
-                                );
-                            }
-                            if (
-                                typeof json.data.box_type_range
-                                    .end_time_in_nano_sec === "string" ||
-                                typeof json.data.box_type_range
-                                    .end_time_in_nano_sec === "number"
-                            ) {
-                                try {
-                                    const val = BigInt(
-                                        json.data.box_type_range
-                                            .end_time_in_nano_sec,
-                                    );
-                                    if (val >= BigInt("0")) {
-                                        __D3.end_time_in_nano_sec = val;
-                                    } else {
-                                        $fallback(
-                                            "/data/box_type_range/end_time_in_nano_sec",
-                                            "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                            "Unsigned int must be greater than or equal to 0.",
-                                        );
-                                    }
-                                } catch (err) {
-                                    $fallback(
-                                        "/data/box_type_range/end_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                        "Unable to parse BigInt from json.data.box_type_range.end_time_in_nano_sec.",
-                                    );
-                                }
-                            } else if (
-                                typeof json.data.box_type_range
-                                    .end_time_in_nano_sec === "bigint"
-                            ) {
-                                if (
-                                    json.data.box_type_range
-                                        .end_time_in_nano_sec >= BigInt("0")
-                                ) {
-                                    __D3.end_time_in_nano_sec =
-                                        json.data.box_type_range.end_time_in_nano_sec;
-                                } else {
-                                    $fallback(
-                                        "/data/box_type_range/end_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                        "Unsigned int must be greater than or equal to 0.",
-                                    );
-                                }
-                            } else {
-                                $fallback(
-                                    "/data/box_type_range/end_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Expected BigInt or Integer string. Got ${json.data.box_type_range.end_time_in_nano_sec}",
-                                );
-                            }
-                            __D2.box_type_range = __D3;
-                        } else {
-                            $fallback(
-                                "/data/box_type_range",
-                                "/properties/data/optionalProperties/box_type_range",
-                                "Expected object",
-                            );
-                        }
-                    }
-                    __D1.data = __D2;
-                } else {
-                    $fallback("/data", "/properties/data", "Expected object");
-                }
-                result = __D1;
-            } else {
-                $fallback("", "", "Expected object");
-            }
-            return result;
-        }
-        let result = {};
-        if (typeof input === "object" && input !== null) {
-            const __D1 = {};
-            if (typeof input.annotation_id === "string") {
-                __D1.annotation_id = input.annotation_id;
-            } else {
-                $fallback(
-                    "/annotation_id",
-                    "/properties/annotation_id/type",
-                    "Expected string at /annotation_id",
-                );
-            }
-            if (typeof input.annotation_id_version === "string") {
-                __D1.annotation_id_version = input.annotation_id_version;
-            } else {
-                $fallback(
-                    "/annotation_id_version",
-                    "/properties/annotation_id_version/type",
-                    "Expected string at /annotation_id_version",
-                );
-            }
-            if (typeof input.data === "object" && input.data !== null) {
-                const __D2 = {};
-                if (typeof input.data.associated_id === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (
-                        typeof input.data.associated_id === "object" &&
-                        input.data.associated_id !== null
-                    ) {
-                        const __D3 = {};
-                        if (
-                            typeof input.data.associated_id.entity_type ===
-                            "string"
-                        ) {
-                            if (
-                                input.data.associated_id.entity_type ===
-                                    "MOVIE_ID" ||
-                                input.data.associated_id.entity_type ===
-                                    "SHOW_ID"
-                            ) {
-                                __D3.entity_type =
-                                    input.data.associated_id.entity_type;
-                            } else {
-                                $fallback(
-                                    "/data/associated_id/entity_type",
-                                    "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                    "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/data/associated_id/entity_type",
-                                "/properties/data/optionalProperties/associated_id/properties/entity_type",
-                                "Expected one of the following values: [MOVIE_ID, SHOW_ID] at /data/associated_id/entity_type.",
-                            );
-                        }
-                        if (typeof input.data.associated_id.id === "string") {
-                            __D3.id = input.data.associated_id.id;
-                        } else {
-                            $fallback(
-                                "/data/associated_id/id",
-                                "/properties/data/optionalProperties/associated_id/properties/id/type",
-                                "Expected string at /data/associated_id/id",
-                            );
-                        }
-                        __D2.associated_id = __D3;
-                    } else {
-                        $fallback(
-                            "/data/associated_id",
-                            "/properties/data/optionalProperties/associated_id",
-                            "Expected object",
-                        );
-                    }
-                }
-                if (typeof input.data.annotation_type === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (typeof input.data.annotation_type === "string") {
-                        if (
-                            input.data.annotation_type ===
-                            "ANNOTATION_BOUNDINGBOX"
-                        ) {
-                            __D2.annotation_type = input.data.annotation_type;
-                        } else {
-                            $fallback(
-                                "/data/annotation_type",
-                                "/properties/data/optionalProperties/annotation_type",
-                                "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                            );
-                        }
-                    } else {
-                        $fallback(
-                            "/data/annotation_type",
-                            "/properties/data/optionalProperties/annotation_type",
-                            "Expected one of the following values: [ANNOTATION_BOUNDINGBOX] at /data/annotation_type.",
-                        );
-                    }
-                }
-                if (typeof input.data.annotation_type_version === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (
-                        typeof input.data.annotation_type_version ===
-                            "number" &&
-                        Number.isInteger(input.data.annotation_type_version) &&
-                        input.data.annotation_type_version >= 0 &&
-                        input.data.annotation_type_version <= 65535
-                    ) {
-                        __D2.annotation_type_version =
-                            input.data.annotation_type_version;
-                    } else {
-                        $fallback(
-                            "/data/annotation_type_version",
-                            "/properties/data/optionalProperties/annotation_type_version",
-                            "Expected valid integer between 0 and 65535",
-                        );
-                    }
-                }
-                if (typeof input.data.metadata === "undefined") {
-                    // ignore undefined
-                } else {
-                    __D2.metadata = input.data.metadata;
-                }
-                if (typeof input.data.box_type_range === "undefined") {
-                    // ignore undefined
-                } else {
-                    if (
-                        typeof input.data.box_type_range === "object" &&
-                        input.data.box_type_range !== null
-                    ) {
-                        const __D3 = {};
-                        if (
-                            typeof input.data.box_type_range
-                                .start_time_in_nano_sec === "string" ||
-                            typeof input.data.box_type_range
-                                .start_time_in_nano_sec === "number"
-                        ) {
-                            try {
-                                const val = BigInt(
-                                    input.data.box_type_range
-                                        .start_time_in_nano_sec,
-                                );
-                                __D3.start_time_in_nano_sec = val;
-                            } catch (err) {
-                                $fallback(
-                                    "/data/box_type_range/start_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                    "Unable to parse BigInt from input.data.box_type_range.start_time_in_nano_sec.",
-                                );
-                            }
-                        } else if (
-                            typeof input.data.box_type_range
-                                .start_time_in_nano_sec === "bigint"
-                        ) {
-                            __D3.start_time_in_nano_sec =
-                                input.data.box_type_range.start_time_in_nano_sec;
-                        } else {
-                            $fallback(
-                                "/data/box_type_range/start_time_in_nano_sec",
-                                "/properties/data/optionalProperties/box_type_range/properties/start_time_in_nano_sec",
-                                "Expected BigInt or Integer string. Got ${input.data.box_type_range.start_time_in_nano_sec}",
-                            );
-                        }
-                        if (
-                            typeof input.data.box_type_range
-                                .end_time_in_nano_sec === "string" ||
-                            typeof input.data.box_type_range
-                                .end_time_in_nano_sec === "number"
-                        ) {
-                            try {
-                                const val = BigInt(
-                                    input.data.box_type_range
-                                        .end_time_in_nano_sec,
-                                );
-                                if (val >= BigInt("0")) {
-                                    __D3.end_time_in_nano_sec = val;
-                                } else {
-                                    $fallback(
-                                        "/data/box_type_range/end_time_in_nano_sec",
-                                        "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                        "Unsigned int must be greater than or equal to 0.",
-                                    );
-                                }
-                            } catch (err) {
-                                $fallback(
-                                    "/data/box_type_range/end_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Unable to parse BigInt from input.data.box_type_range.end_time_in_nano_sec.",
-                                );
-                            }
-                        } else if (
-                            typeof input.data.box_type_range
-                                .end_time_in_nano_sec === "bigint"
-                        ) {
-                            if (
-                                input.data.box_type_range
-                                    .end_time_in_nano_sec >= BigInt("0")
-                            ) {
-                                __D3.end_time_in_nano_sec =
-                                    input.data.box_type_range.end_time_in_nano_sec;
-                            } else {
-                                $fallback(
-                                    "/data/box_type_range/end_time_in_nano_sec",
-                                    "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                    "Unsigned int must be greater than or equal to 0.",
-                                );
-                            }
-                        } else {
-                            $fallback(
-                                "/data/box_type_range/end_time_in_nano_sec",
-                                "/properties/data/optionalProperties/box_type_range/properties/end_time_in_nano_sec",
-                                "Expected BigInt or Integer string. Got ${input.data.box_type_range.end_time_in_nano_sec}",
-                            );
-                        }
-                        __D2.box_type_range = __D3;
-                    } else {
-                        $fallback(
-                            "/data/box_type_range",
-                            "/properties/data/optionalProperties/box_type_range",
-                            "Expected object",
-                        );
-                    }
-                }
-                __D1.data = __D2;
-            } else {
-                $fallback("/data", "/properties/data", "Expected object");
-            }
-            result = __D1;
-        } else {
-            $fallback("", "", "Expected object");
-        }
-        return result;
-    },
-    serialize(input: UpdateAnnotationParams): string {
-        let json = "";
-        const STR_ESCAPE =
-            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
-        json += "{";
-        json += `"annotation_id":`;
-        if (input.annotation_id.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.annotation_id.length; i++) {
-                __point__ = input.annotation_id.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.annotation_id);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ += input.annotation_id.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.annotation_id}"`;
-                } else {
-                    json += `"${__result__}${input.annotation_id.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.annotation_id.length < 5000 &&
-            !STR_ESCAPE.test(input.annotation_id)
-        ) {
-            json += `"${input.annotation_id}"`;
-        } else {
-            json += JSON.stringify(input.annotation_id);
-        }
-        json += `,"annotation_id_version":`;
-        if (input.annotation_id_version.length < 42) {
-            let __result__ = "";
-            let __last__ = -1;
-            let __point__ = 255;
-            let __finished__ = false;
-            for (let i = 0; i < input.annotation_id_version.length; i++) {
-                __point__ = input.annotation_id_version.charCodeAt(i);
-                if (
-                    __point__ < 32 ||
-                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                ) {
-                    json += JSON.stringify(input.annotation_id_version);
-                    __finished__ = true;
-                    break;
-                }
-                if (__point__ === 0x22 || __point__ === 0x5c) {
-                    __last__ === -1 && (__last__ = 0);
-                    __result__ +=
-                        input.annotation_id_version.slice(__last__, i) + "\\";
-                    __last__ = i;
-                }
-            }
-            if (!__finished__) {
-                if (__last__ === -1) {
-                    json += `"${input.annotation_id_version}"`;
-                } else {
-                    json += `"${__result__}${input.annotation_id_version.slice(__last__)}"`;
-                }
-            }
-        } else if (
-            input.annotation_id_version.length < 5000 &&
-            !STR_ESCAPE.test(input.annotation_id_version)
-        ) {
-            json += `"${input.annotation_id_version}"`;
-        } else {
-            json += JSON.stringify(input.annotation_id_version);
-        }
-        json += ',"data":{';
-        let dataHasFields = false;
-        if (typeof input.data.associated_id !== "undefined") {
-            if (dataHasFields) {
-                json += ',"associated_id":{';
-                json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":`;
-                if (input.data.associated_id.id.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (
-                        let i = 0;
-                        i < input.data.associated_id.id.length;
-                        i++
-                    ) {
-                        __point__ = input.data.associated_id.id.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.data.associated_id.id);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.data.associated_id.id.slice(__last__, i) +
-                                "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.data.associated_id.id}"`;
-                        } else {
-                            json += `"${__result__}${input.data.associated_id.id.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.data.associated_id.id.length < 5000 &&
-                    !STR_ESCAPE.test(input.data.associated_id.id)
-                ) {
-                    json += `"${input.data.associated_id.id}"`;
-                } else {
-                    json += JSON.stringify(input.data.associated_id.id);
-                }
-                json += "}";
-            } else {
-                json += '"associated_id":{';
-                json += `"entity_type":"${input.data.associated_id.entity_type}"`;
-                json += `,"id":`;
-                if (input.data.associated_id.id.length < 42) {
-                    let __result__ = "";
-                    let __last__ = -1;
-                    let __point__ = 255;
-                    let __finished__ = false;
-                    for (
-                        let i = 0;
-                        i < input.data.associated_id.id.length;
-                        i++
-                    ) {
-                        __point__ = input.data.associated_id.id.charCodeAt(i);
-                        if (
-                            __point__ < 32 ||
-                            (__point__ >= 0xd800 && __point__ <= 0xdfff)
-                        ) {
-                            json += JSON.stringify(input.data.associated_id.id);
-                            __finished__ = true;
-                            break;
-                        }
-                        if (__point__ === 0x22 || __point__ === 0x5c) {
-                            __last__ === -1 && (__last__ = 0);
-                            __result__ +=
-                                input.data.associated_id.id.slice(__last__, i) +
-                                "\\";
-                            __last__ = i;
-                        }
-                    }
-                    if (!__finished__) {
-                        if (__last__ === -1) {
-                            json += `"${input.data.associated_id.id}"`;
-                        } else {
-                            json += `"${__result__}${input.data.associated_id.id.slice(__last__)}"`;
-                        }
-                    }
-                } else if (
-                    input.data.associated_id.id.length < 5000 &&
-                    !STR_ESCAPE.test(input.data.associated_id.id)
-                ) {
-                    json += `"${input.data.associated_id.id}"`;
-                } else {
-                    json += JSON.stringify(input.data.associated_id.id);
-                }
-                json += "}";
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.annotation_type !== "undefined") {
-            if (dataHasFields) {
-                json += `,"annotation_type":"${input.data.annotation_type}"`;
-            } else {
-                json += `"annotation_type":"${input.data.annotation_type}"`;
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.annotation_type_version !== "undefined") {
-            if (dataHasFields) {
-                if (Number.isNaN(input.data.annotation_type_version)) {
-                    throw new Error(
-                        "Expected number at /data/annotation_type_version got NaN",
-                    );
-                }
-                json += `,"annotation_type_version":${input.data.annotation_type_version}`;
-            } else {
-                if (Number.isNaN(input.data.annotation_type_version)) {
-                    throw new Error(
-                        "Expected number at /data/annotation_type_version got NaN",
-                    );
-                }
-                json += `"annotation_type_version":${input.data.annotation_type_version}`;
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.metadata !== "undefined") {
-            if (dataHasFields) {
-                if (typeof input.data.metadata !== "undefined") {
-                    json +=
-                        ',"metadata":' + JSON.stringify(input.data.metadata);
-                }
-            } else {
-                if (typeof input.data.metadata !== "undefined") {
-                    json += '"metadata":' + JSON.stringify(input.data.metadata);
-                }
-                dataHasFields = true;
-            }
-        }
-        if (typeof input.data.box_type_range !== "undefined") {
-            if (dataHasFields) {
-                json += ',"box_type_range":{';
-                json += `"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}"`;
-                json += `,"end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"`;
-                json += "}";
-            } else {
-                json += '"box_type_range":{';
-                json += `"start_time_in_nano_sec":"${input.data.box_type_range.start_time_in_nano_sec.toString()}"`;
-                json += `,"end_time_in_nano_sec":"${input.data.box_type_range.end_time_in_nano_sec.toString()}"`;
-                json += "}";
-                dataHasFields = true;
-            }
-        }
-        json += "}";
-        json += "}";
-        return json;
-    },
-};
-export interface UpdateAnnotationData {
-    associated_id?: AssociatedId;
-    annotation_type?: UpdateAnnotationParamsDataAnnotationType;
-    annotation_type_version?: number;
-    metadata?: any;
-    box_type_range?: UpdateAnnotationParamsDataBoxTypeRange;
-}
-
-export type UpdateAnnotationParamsDataAnnotationType = "ANNOTATION_BOUNDINGBOX";
-export interface UpdateAnnotationParamsDataBoxTypeRange {
-    start_time_in_nano_sec: bigint;
-    end_time_in_nano_sec: bigint;
 }

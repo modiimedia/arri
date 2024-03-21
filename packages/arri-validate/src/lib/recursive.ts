@@ -1,5 +1,4 @@
 import {
-    type ASchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
     type ARefSchema,
@@ -15,7 +14,7 @@ export function recursive<T>(
         self: ARefSchema<T>,
     ) => AObjectSchema<T> | ADiscriminatorSchema<T>,
     options?: ASchemaOptions,
-): ASchema<T> {
+): AObjectSchema<T> | ADiscriminatorSchema<T> {
     const recursiveFns: Record<
         string,
         {

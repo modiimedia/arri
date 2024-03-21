@@ -22,6 +22,8 @@ import {
     isRpcDefinition,
     isServiceDefinition,
     type ServiceDefinition,
+    isSchemaFormRef,
+    type SchemaFormRef,
 } from "arri-codegen-utils";
 import {
     getSchemaParsingCode,
@@ -317,6 +319,9 @@ export function tsTypeFromJtdSchema(
     }
     if (isSchemaFormValues(def)) {
         return tsRecordFromJtdSchema(nodePath, def, options, additionalOptions);
+    }
+    if (isSchemaFormRef(def)) {
+        return tsRefFromJtdSchema(nodePath, def, options, additionalOptions);
     }
 
     return tsAnyFromJtdSchema(nodePath, def, options, additionalOptions);
@@ -896,5 +901,41 @@ ${subType.content}`;
             return `JSON.stringify(${input})`;
         },
         content,
+    };
+}
+
+export function tsRefFromJtdSchema(
+    nodePath: string,
+    def: SchemaFormRef,
+    options: RpcOptions,
+    additionalOptions: AdditionalOptions,
+): TsProperty {
+    const key = nodePath.split(".").pop() ?? "";
+    const typeName = pascalCase(def.ref, {
+        normalize: true,
+    });
+    return {
+        tsType: typeName,
+        schema: def,
+        fieldTemplate: `${maybeOptionalKey(key, additionalOptions.isOptional)}: ${maybeNullType(typeName, def.nullable)}`,
+        fromJsonTemplate(input) {
+            if (additionalOptions.isOptional) {
+                return `typeof ${input} === 'object' && ${input} !== null ? $$${typeName}.parse(${input}) : undefined`;
+            }
+            if (def.nullable) {
+                return `typeof ${input} === 'object' && ${input} !== null ? $$${typeName}.parse(${input}) : null`;
+            }
+            return `typeof ${input} === 'object' && ${input} !== null ? $$${typeName}.parse(${input}) : {}`;
+        },
+        toJsonTemplate(input) {
+            if (additionalOptions.isOptional) {
+                return `typeof ${input} === 'object' && ${input} !== null ? $$${typeName}.serialize(${input}) : 'undefined'`;
+            }
+            if (def.nullable) {
+                return `typeof ${input} === 'object' && ${input} !== null ? $$${typeName}.serialize(${input}) : 'null'`;
+            }
+            return `$$${typeName}.serialize(${input})`;
+        },
+        content: "",
     };
 }
