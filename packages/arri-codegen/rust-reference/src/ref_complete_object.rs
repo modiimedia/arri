@@ -1,6 +1,4 @@
 #![allow(dead_code, unused_variables)]
-use std::str::FromStr;
-
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},

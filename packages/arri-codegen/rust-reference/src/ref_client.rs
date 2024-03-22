@@ -8,7 +8,7 @@ use arri_client::{
     ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
     EmptyArriModel,
 };
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
 pub struct TestClient {
     pub users: TestClientUsersService,
