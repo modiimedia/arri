@@ -2432,11 +2432,11 @@ impl ArriModel for ObjectWithEveryNullableTypeDiscriminator {
                         };
                         Self::B { title, description }
                     }
-                    _ => None,
+                    _ => Self::new(),
                 },
-                _ => None,
+                _ => Self::new(),
             },
-            _ => None,
+            _ => Self::new(),
         }
     }
 
@@ -3756,11 +3756,11 @@ impl ArriModel for ObjectWithEveryOptionalTypeDiscriminator {
                         };
                         Self::B { title, description }
                     }
-                    _ => None,
+                    _ => Self::new(),
                 },
-                _ => None,
+                _ => Self::new(),
             },
-            _ => None,
+            _ => Self::new(),
         }
     }
 

@@ -52,7 +52,6 @@ export function rustTaggedUnionFromSchema(
         subContentParts.push(subType.content);
     }
     const discriminatorKey = validRustKey(schema.discriminator);
-    const defaultVal = isOption ? `None` : `Self::new()`;
     let content = `#[derive(Debug, PartialEq, Clone)]
 enum ${enumName} {
     ${fieldParts.join(",\n")},
@@ -68,11 +67,11 @@ impl ArriModel for ${enumName} {
             serde_json::Value::Object(val) => match val.get("${schema.discriminator}") {
                 Some(serde_json::Value::String(${discriminatorKey}_val)) => match ${discriminatorKey}_val.as_str() {
                     ${fromJsonMatchArms.join(",\n")},
-                    _ => ${defaultVal},
+                    _ => Self::new(),
                 },
-                _ => ${defaultVal},
+                _ => Self::new(),
             },
-            _ => ${defaultVal},
+            _ => Self::new(),
         }
     }
 
