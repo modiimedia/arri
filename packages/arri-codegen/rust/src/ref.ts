@@ -16,7 +16,7 @@ export function rustRefFromSchema(
         normalize: true,
     });
     const isOption = isOptionType(schema, context);
-    const isBoxed = context.rootTypeName === typeName;
+    const isBoxed = context.parentIds.includes(typeName);
     const defaultVal = isBoxed
         ? `Box::new(${typeName}::new())`
         : `${typeName}::new()`;

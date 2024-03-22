@@ -16,6 +16,7 @@ export function rustHashMapFromSchema(
 ): RustProperty {
     const isOption = isOptionType(schema, context);
     const subType = rustTypeFromSchema(schema.values, {
+        parentIds: context.parentIds,
         clientName: context.clientName,
         generatedTypes: context.generatedTypes,
         instancePath: `${context.instancePath}/[k]`,

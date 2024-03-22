@@ -5,8 +5,8 @@ export const tmpDir = path.resolve(__dirname, "../.tmp");
 export const refDir = path.resolve(__dirname, "../../rust-reference/src");
 
 export interface GeneratorContext {
-    rootTypeName?: string;
     parentId?: string;
+    parentIds: string[];
     schemaPath: string;
     instancePath: string;
     generatedTypes: string[];

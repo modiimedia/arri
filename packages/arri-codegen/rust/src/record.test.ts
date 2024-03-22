@@ -36,6 +36,7 @@ test("record codegen", () => {
         generatedTypes: [],
         instancePath: "/ObjectWithRecord",
         schemaPath: "",
+        parentIds: [],
     });
     const outputFilePath = path.resolve(tmpDir, "hashmap_output.rs");
     writeFileSync(outputFilePath, result.content);

@@ -12,6 +12,7 @@ const defaultContext: GeneratorContext = {
     instancePath: "",
     generatedTypes: [],
     clientName: "",
+    parentIds: [],
 };
 
 beforeAll(() => {
@@ -91,6 +92,7 @@ describe("objects", () => {
             generatedTypes: [],
             instancePath: "/schema",
             schemaPath: "",
+            parentIds: [],
         });
         const outputFilePath = path.resolve(
             tmpDir,
@@ -123,6 +125,7 @@ describe("objects", () => {
             generatedTypes: [],
             instancePath: "",
             schemaPath: "",
+            parentIds: [],
         });
         const outputFilePath = path.resolve(tmpDir, "partial_object_output.rs");
         writeFileSync(outputFilePath, result.content);
@@ -144,6 +147,7 @@ describe("objects", () => {
             generatedTypes: [],
             instancePath: "",
             schemaPath: "",
+            parentIds: [],
         });
         const outputFilePath = path.resolve(
             tmpDir,

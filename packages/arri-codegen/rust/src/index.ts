@@ -42,6 +42,7 @@ export const rustClientGenerator = defineClientGeneratorPlugin(
                     generatedTypes: [],
                     instancePath: "",
                     schemaPath: "",
+                    parentIds: [],
                 };
                 const client = createRustClient(def, context);
                 const outputFile = path.resolve(options.outputFile);

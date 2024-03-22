@@ -62,6 +62,7 @@ test("Recursive Union", () => {
         schemaPath: "",
         instancePath: "",
         generatedTypes: [],
+        parentIds: [],
         clientName: "",
     };
     const outputStr = rustTypeFromSchema(RecursiveUnion, context);

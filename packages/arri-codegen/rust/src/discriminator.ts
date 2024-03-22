@@ -20,7 +20,9 @@ export function rustTaggedUnionFromSchema(
 ): RustProperty {
     const enumName = getTypeName(schema, context);
     if (context.instancePath === "") {
-        context.rootTypeName = enumName;
+        context.parentIds = [enumName];
+    } else {
+        context.parentIds.push(enumName);
     }
     const isOption = isOptionType(schema, context);
     const fieldParts: string[] = [];
@@ -38,7 +40,6 @@ export function rustTaggedUnionFromSchema(
             schema.mapping[key],
             {
                 ...context,
-                rootTypeName: enumName,
                 parentId: enumName,
                 schemaPath: `${context.schemaPath}/mapping/${key}`,
             },
@@ -228,7 +229,7 @@ function taggedUnionSubType(
 ${fieldParts.join(",\n")},
 }`,
         defaultTemplate: `Self::${enumName} {
-${defaultParts.join("\n")},
+${defaultParts.join(",\n")},
         }`,
         fromJsonMatchArm: `"${discriminatorValue}" => {
             ${fromJsonParts.join(";\n")};

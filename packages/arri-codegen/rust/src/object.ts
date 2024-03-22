@@ -16,7 +16,9 @@ export function rustStructFromSchema(
 ): RustProperty {
     const structName = getTypeName(schema, context);
     if (context.instancePath === "") {
-        context.rootTypeName = structName;
+        context.parentIds = [structName];
+    } else {
+        context.parentIds.push(structName);
     }
     const isOption = isOptionType(schema, context);
     const keyParts: string[] = [];

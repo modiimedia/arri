@@ -32,6 +32,7 @@ test("rustRefFromSchema()", () => {
         instancePath: "",
         generatedTypes: [],
         clientName: "",
+        parentIds: [],
     };
     const outputStr = rustTypeFromSchema(BinaryTree, context);
     const tmpFilePath = path.resolve(tmpDir, "output_recursive_object.rs");

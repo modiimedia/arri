@@ -20,7 +20,7 @@ export function rustVecFromSchema(
         instancePath: `${context.instancePath}/[i]`,
         schemaPath: `${context.schemaPath}/elements`,
         parentId: context.parentId,
-        rootTypeName: context.rootTypeName,
+        parentIds: context.parentIds,
     });
     const isOption = isOptionType(schema, context);
     const fieldTemplate = maybeOption(
