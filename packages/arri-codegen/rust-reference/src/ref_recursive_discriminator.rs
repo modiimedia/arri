@@ -21,7 +21,7 @@ impl ArriModel for RecursiveUnion {
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::Object(val) => match val.get("type") {
-                Some(serde_json::Value::String(type_val)) => match type_val.as_str() {
+                Some(serde_json::Value::String(r#type_val)) => match r#type_val.as_str() {
                     "TEXT" => {
                         let data = match val.get("data") {
                             Some(serde_json::Value::String(data_val)) => data_val.to_owned(),
@@ -81,16 +81,16 @@ impl ArriModel for RecursiveUnion {
         match &self {
             Self::Text { data } => {
                 let mut _json_output_ = "{".to_string();
-                let _key_count_ = 2;
                 _json_output_.push_str("\"type\":\"TEXT\"");
                 _json_output_.push_str(",\"data\":");
-                _json_output_.push_str(format!("\"{}\"", data).as_str());
+                _json_output_.push_str(
+                    format!("\"{}\"", data.replace("\n", "\\n").replace("\"", "\\\"")).as_str(),
+                );
                 _json_output_.push('}');
                 _json_output_
             }
             Self::Shape { data } => {
                 let mut _json_output_ = "{".to_string();
-                let _key_count_ = 2;
                 _json_output_.push_str("\"type\":\"SHAPE\"");
                 _json_output_.push_str(",\"data\":");
                 _json_output_.push_str(data.to_json_string().as_str());
@@ -99,15 +99,14 @@ impl ArriModel for RecursiveUnion {
             }
             Self::Child { data } => {
                 let mut _json_output_ = "{".to_string();
-                let _key_count_ = 2;
                 _json_output_.push_str("\"type\":\"CHILD\"");
                 _json_output_.push_str(",\"data\":");
                 _json_output_.push_str(data.to_json_string().as_str());
+                _json_output_.push('}');
                 _json_output_
             }
             Self::Children { data } => {
                 let mut _json_output_ = "{".to_string();
-                let _key_count_ = 2;
                 _json_output_.push_str("\"type\":\"CHILDREN\"");
                 _json_output_.push_str(",\"data\":");
                 _json_output_.push('[');
@@ -120,6 +119,7 @@ impl ArriModel for RecursiveUnion {
                     data_index += 1;
                 }
                 _json_output_.push(']');
+                _json_output_.push('}');
                 _json_output_
             }
         }
@@ -127,36 +127,37 @@ impl ArriModel for RecursiveUnion {
 
     fn to_query_params_string(&self) -> String {
         match &self {
-            RecursiveUnion::Text { data } => {
+            Self::Text { data } => {
                 let mut _query_parts_: Vec<String> = Vec::new();
                 _query_parts_.push("type=TEXT".to_string());
                 _query_parts_.push(format!("data={}", data));
                 _query_parts_.join("&")
             }
-            RecursiveUnion::Shape { data } => {
+            Self::Shape { data } => {
                 let mut _query_parts_: Vec<String> = Vec::new();
                 _query_parts_.push("type=SHAPE".to_string());
                 _query_parts_.push(format!("data={}", data.to_query_params_string()));
                 _query_parts_.join("&")
             }
-            RecursiveUnion::Child { data } => {
+            Self::Child { data } => {
                 let mut _query_parts_: Vec<String> = Vec::new();
                 _query_parts_.push("type=CHILD".to_string());
                 _query_parts_.push(format!("data={}", data.to_query_params_string()));
                 _query_parts_.join("&")
             }
-            RecursiveUnion::Children { data } => {
+            Self::Children { data } => {
                 let mut _query_parts_: Vec<String> = Vec::new();
                 _query_parts_.push("type=CHILDREN".to_string());
-                let mut data_output = "children=[".to_string();
+                let mut data_output = "data=[".to_string();
                 let mut data_index = 0;
                 for data_item in data {
                     if data_index != 0 {
                         data_output.push(',');
                     }
-                    data_output.push_str(data_item.to_query_params_string().as_str());
+                    data_output.push_str(data_item.to_json_string().as_str());
                     data_index += 1;
                 }
+                data_output.push(']');
                 _query_parts_.push(data_output);
                 _query_parts_.join("&")
             }
@@ -165,10 +166,10 @@ impl ArriModel for RecursiveUnion {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-struct RecursiveUnionShapeData {
-    width: f64,
-    height: f64,
-    color: String,
+pub struct RecursiveUnionShapeData {
+    pub width: f64,
+    pub height: f64,
+    pub color: String,
 }
 
 impl ArriModel for RecursiveUnionShapeData {
@@ -184,14 +185,12 @@ impl ArriModel for RecursiveUnionShapeData {
         match input {
             serde_json::Value::Object(val) => {
                 let width = match val.get("width") {
-                    Some(serde_json::Value::Number(width_val)) => {
-                        width_val.as_f64().unwrap_or(0.0).to_owned()
-                    }
+                    Some(serde_json::Value::Number(width_val)) => width_val.as_f64().unwrap_or(0.0),
                     _ => 0.0,
                 };
                 let height = match val.get("height") {
                     Some(serde_json::Value::Number(height_val)) => {
-                        height_val.as_f64().unwrap_or(0.0).to_owned()
+                        height_val.as_f64().unwrap_or(0.0)
                     }
                     _ => 0.0,
                 };
@@ -224,7 +223,13 @@ impl ArriModel for RecursiveUnionShapeData {
         _json_output_.push_str(",\"height\":");
         _json_output_.push_str(&self.height.to_string().as_str());
         _json_output_.push_str(",\"color\":");
-        _json_output_.push_str(format!("\"{}\"", &self.color).as_str());
+        _json_output_.push_str(
+            format!(
+                "\"{}\"",
+                &self.color.replace("\n", "\\n").replace("\"", "\\\"")
+            )
+            .as_str(),
+        );
         _json_output_.push('}');
         _json_output_
     }

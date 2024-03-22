@@ -70,7 +70,7 @@ export function rustRefFromSchema(
                     _ => {},
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${rustKey}_val.to_query_params_string()))`;
+            return `${target}.push(format!("${key}={}", ${val}.to_query_params_string()))`;
             // TODO
         },
         content: "",

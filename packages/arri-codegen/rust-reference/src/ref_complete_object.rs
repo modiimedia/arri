@@ -144,7 +144,7 @@ impl ArriModel for CompleteObject {
                                     string_array_val_item_val.to_owned()
                                 }
                                 _ => "".to_string(),
-                            })
+                            });
                         }
                         string_array_val_result
                     }
@@ -280,7 +280,8 @@ impl ArriModel for CompleteObject {
             );
             string_array_index += 1;
         }
-        _query_parts_.push(format!("stringArray={}", string_array_output));
+        string_array_output.push(']');
+        _query_parts_.push(string_array_output);
         _query_parts_.join("&")
     }
 }

@@ -392,7 +392,8 @@ impl ArriModel for NullableObject {
                     );
                     string_array_val_index += 1;
                 }
-                _query_parts_.push(format!("stringArray={}", string_array_val_output));
+                string_array_val_output.push(']');
+                _query_parts_.push(string_array_val_output);
             }
             _ => _query_parts_.push("stringArray=null".to_string()),
         };

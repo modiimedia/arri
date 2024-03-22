@@ -29,6 +29,10 @@
     },
     "test": {
       "executor": "nx:run-commands",
+      "inputs": [
+        "{workspaceRoot}/coverage/packages/arri-codegen/rust-reference/src",
+        "{workspaceRoot}/coverage/packages/arri-codegen/rust/src"
+      ],
       "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen/rust"],
       "options": {
         "command": "vitest run --passWithNoTests --globals",

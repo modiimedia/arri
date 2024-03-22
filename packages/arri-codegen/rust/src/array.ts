@@ -20,6 +20,7 @@ export function rustVecFromSchema(
         instancePath: `${context.instancePath}/[i]`,
         schemaPath: `${context.schemaPath}/elements`,
         parentId: context.parentId,
+        rootTypeName: context.rootTypeName,
     });
     const isOption = isOptionType(schema, context);
     const fieldTemplate = maybeOption(
@@ -48,7 +49,7 @@ export function rustVecFromSchema(
                 ${maybeSome(`serde_json::Value::Array(${rustKey}_val)`, valIsOption)} => {
                     let mut ${rustKey}_val_result: Vec<${innerProp.fieldTemplate}> = Vec::new();
                     for ${rustKey}_val_item in ${rustKey}_val {
-                        ${rustKey}_val_result.push(${innerProp.fromJsonTemplate(`${rustKey}_val_item`, `${rustKey}_val_item`, false)})
+                        ${rustKey}_val_result.push(${innerProp.fromJsonTemplate(`${rustKey}_val_item`, `${rustKey}_val_item`, false)});
                     }
                     ${rustKey}_val_result
                 },
@@ -101,7 +102,8 @@ export function rustVecFromSchema(
                             ${innerProp.toJsonTemplate(`${baseKey}_output`, `${baseKey}_item`, `${baseKey}_item`)};
                             ${baseKey}_index += 1;
                         }
-                        ${target}.push(format!("${key}={}", ${baseKey}_output));
+                        ${baseKey}_output.push(']');
+                        ${target}.push(${baseKey}_output);
                     },
                     _ => ${target}.push("${key}=null".to_string())
                 }`;
@@ -115,7 +117,8 @@ export function rustVecFromSchema(
                 ${innerProp.toJsonTemplate(`${baseKey}_output`, `${baseKey}_item`, `${baseKey}_item`)};
                 ${baseKey}_index += 1;
             }
-            ${target}.push(format!("${key}={}", ${baseKey}_output));`;
+            ${baseKey}_output.push(']');
+            ${target}.push(${baseKey}_output);`;
         },
         content: innerProp.content,
     };

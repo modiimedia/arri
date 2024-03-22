@@ -11,12 +11,14 @@ import {
     isSchemaFormElements,
     isSchemaFormValues,
     isSchemaFormRef,
+    isSchemaFormDiscriminator,
 } from "arri-codegen-utils";
 import path from "pathe";
 import { rustAnyFromSchema } from "./any";
 import { rustVecFromSchema } from "./array";
 import { rustBoolFromSchema } from "./boolean";
 import { type GeneratorContext, type RustProperty } from "./common";
+import { rustTaggedUnionFromSchema } from "./discriminator";
 import { rustEnumFromSchema } from "./enum";
 import { rustFloatFromSchema, rustIntFromSchema } from "./numbers";
 import { rustStructFromSchema } from "./object";
@@ -135,9 +137,9 @@ export function rustTypeFromSchema(
     if (isSchemaFormValues(schema)) {
         return rustHashMapFromSchema(schema, context);
     }
-    // if (isSchemaFormDiscriminator(schema)) {
-    //     return rustTaggedUnionFromSchema(schema, context);
-    // }
+    if (isSchemaFormDiscriminator(schema)) {
+        return rustTaggedUnionFromSchema(schema, context);
+    }
     if (isSchemaFormRef(schema)) {
         return rustRefFromSchema(schema, context);
     }
