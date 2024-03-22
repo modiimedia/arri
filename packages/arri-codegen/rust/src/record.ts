@@ -6,10 +6,11 @@ import {
     maybeOption,
     maybeNone,
     validRustKey,
+    maybeSome,
 } from "./common";
 import { rustTypeFromSchema } from ".";
 
-export function rustHashmapFromSchema(
+export function rustHashMapFromSchema(
     schema: SchemaFormValues,
     context: GeneratorContext,
 ): RustProperty {
@@ -23,21 +24,21 @@ export function rustHashmapFromSchema(
     });
     const typeName = `HashMap<String, ${subType.fieldTemplate}>`;
     const fieldTemplate = maybeOption(typeName, isOption);
-    const defaultTemplate = maybeNone(`Hashmap::new()`, isOption);
+    const defaultTemplate = maybeNone(`HashMap::new()`, isOption);
 
     return {
         fieldTemplate,
         defaultTemplate,
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
                     Some(serde_json::Value::Object(${rustKey}_val)) => {
-                        let mut ${rustKey}_result: ${typeName} = Hashmap::new();
+                        let mut ${rustKey}_result: ${typeName} = HashMap::new();
                         for (${rustKey}_key, ${rustKey}_key_val) in ${rustKey}_val {
                             ${rustKey}_result.insert(
                                 ${rustKey}_key.to_owned(),
-                                ${subType.fromJsonTemplate(`${rustKey}_key_val`, `${rustKey}_key_val`)},
+                                ${subType.fromJsonTemplate(`${rustKey}_key_val`, `${rustKey}_key_val`, false)},
                             );
                         }
                         Some(${rustKey}_result)
@@ -46,17 +47,17 @@ export function rustHashmapFromSchema(
                 }`;
             }
             return `match ${val} {
-                Some(serde_json::Value::Object(${rustKey}_val)) => {
-                    let mut ${rustKey}_result: ${typeName} = Hashmap::new();
+                ${maybeSome(`serde_json::Value::Object(${rustKey}_val)`, valIsOption)} => {
+                    let mut ${rustKey}_result: ${typeName} = HashMap::new();
                     for (${rustKey}_key, ${rustKey}_key_val) in ${rustKey}_val {
-                        ${rustKey}_rseult.insert(
+                        ${rustKey}_result.insert(
                             ${rustKey}_key.to_owned(),
-                            ${subType.fromJsonTemplate(`${rustKey}_key_val`, `${rustKey}_key_val`)},
+                            ${subType.fromJsonTemplate(`${rustKey}_key_val`, `${rustKey}_key_val`, false)},
                         );
                     }
                     ${rustKey}_result
                 },
-                _ => Hashmap::new(),
+                _ => HashMap::new(),
             }`;
         },
         toJsonTemplate: (target, val, key) => {
@@ -79,7 +80,8 @@ export function rustHashmapFromSchema(
                     _ => ${target}.push_str("null"),
                 }`;
             }
-            return `let mut ${rustKey}_index = 0;
+            return `${target}.push('{');
+                let mut ${rustKey}_index = 0;
                 for (${rustKey}_key, ${rustKey}_val) in ${val} {
                     if ${rustKey}_index != 0 {
                         ${target}.push(',');

@@ -31,10 +31,10 @@ export function rustDateTimeFromSchema(
             }
             return `${target}.push_str(format!("\\"{}\\"", ${val}.to_rfc3339()).as_str())`;
         },
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             return `match ${val} {
-    Some(serde_json::Value::String(${rustKey}_val)) => ${maybeSome(`DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val).unwrap_or(DateTime::default())`, isOption)},
+    ${maybeSome(`serde_json::Value::String(${rustKey}_val)`, valIsOption)} => ${maybeSome(`DateTime::<FixedOffset>::parse_from_rfc3339(${rustKey}_val).unwrap_or(DateTime::default())`, isOption)},
     _ => ${maybeNone(`DateTime::default()`, isOption)},
 }`;
         },

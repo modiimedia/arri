@@ -16,7 +16,11 @@ export interface GeneratorContext {
 
 export interface RustProperty {
     fieldTemplate: string;
-    fromJsonTemplate: (val: string, key: string) => string;
+    fromJsonTemplate: (
+        val: string,
+        key: string,
+        valIsOption: boolean,
+    ) => string;
     toJsonTemplate: (targetString: string, val: string, key: string) => string;
     toQueryTemplate: (targetVec: string, val: string, key: string) => string;
     defaultTemplate: string;

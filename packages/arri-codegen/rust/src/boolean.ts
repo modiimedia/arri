@@ -27,10 +27,10 @@ export function rustBoolFromSchema(
             }
             return `${target}.push_str(${val}.to_string().as_str())`;
         },
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             return `match ${val} {
-    Some(serde_json::Value::Bool(${rustKey}_val)) => ${maybeSome(`${rustKey}_val.to_owned()`, isOption)},
+    ${maybeSome(`serde_json::Value::Bool(${rustKey}_val)`, valIsOption)} => ${maybeSome(`${rustKey}_val.to_owned()`, isOption)},
     _ => ${maybeNone("false", isOption)},
 }`;
         },

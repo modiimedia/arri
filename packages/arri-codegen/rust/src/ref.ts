@@ -1,4 +1,4 @@
-import { pascalCase, snakeCase, type SchemaFormRef } from "arri-codegen-utils";
+import { type SchemaFormRef, pascalCase } from "arri-codegen-utils";
 import {
     isOptionType,
     type GeneratorContext,
@@ -12,7 +12,9 @@ export function rustRefFromSchema(
     schema: SchemaFormRef,
     context: GeneratorContext,
 ): RustProperty {
-    const typeName = snakeCase(schema.ref);
+    const typeName = pascalCase(schema.ref, {
+        normalize: true,
+    });
     const isOption = isOptionType(schema, context);
     const isBoxed = context.rootTypeName === typeName;
     const defaultVal = isBoxed
@@ -34,25 +36,43 @@ export function rustRefFromSchema(
             }
             return `${target}.push_str(${val}.to_json_string().as_str())`;
         },
-        fromJsonTemplate(val, key) {
+        fromJsonTemplate(val, key, valIsOption) {
             const rustKey = validRustKey(key);
             const fromJsonStr = (v: string) =>
                 isBoxed
-                    ? `Box::new(${typeName}::from_json(${v}))`
-                    : `${typeName}::from_json(${v})`;
+                    ? `Box::new(${typeName}::from_json(${v}.to_owned()))`
+                    : `${typeName}::from_json(${v}.to_owned())`;
             if (isOption) {
                 return `match ${val} {
-                    Some(${rustKey}_val) => Some(${fromJsonStr(`${rustKey}_val`)}),
-                    _ => None,
-                }`;
+    Some(${rustKey}_val) => Some(${fromJsonStr(`${rustKey}_val`)}),
+    _ => None,
+}`;
             }
-            return `match ${val} {
-                Some(${rustKey}_val) => ${fromJsonStr(`${rustKey}_val`)},
-                _ => ${isBoxed ? `Box::new(${typeName}::new())` : `${typeName}::new()`}
-            }`;
+            if (valIsOption) {
+                return `match ${val} {
+    Some(${rustKey}_val) => ${fromJsonStr(`${rustKey}_val`)},
+    _ => ${isBoxed ? `Box::new(${typeName}::new())` : `${typeName}::new()`}
+}`;
+            }
+            return fromJsonStr(val);
         },
         toQueryTemplate(target, val, key) {
+            const rustKey = validRustKey(key);
+            if (schema.nullable) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${target}.push(format!("${key}={}", ${rustKey}_val.to_query_params_string())),
+                    _ => ${target}.push("${key}=null".to_string()),
+                }`;
+            }
+            if (isOption) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${target}.push(format!("${key}={}", ${rustKey}_val.to_query_params_string())),
+                    _ => {},
+                }`;
+            }
+            return `${target}.push(format!("${key}={}", ${rustKey}_val.to_query_params_string()))`;
             // TODO
         },
+        content: "",
     };
 }

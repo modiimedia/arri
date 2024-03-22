@@ -1,7 +1,7 @@
 use arri_client::{serde_json, ArriModel};
 use std::collections::HashMap;
 
-// IGNORE PREVIOUS //
+// IGNORE BEFORE //
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ObjectWithRecord {
@@ -69,6 +69,7 @@ impl ArriModel for ObjectWithRecord {
 
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
+        let _key_count_ = 2;
         _json_output_.push_str("\"stringRecord\":");
         _json_output_.push('{');
         let mut string_record_index = 0;

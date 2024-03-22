@@ -142,8 +142,8 @@ impl ArriModel for NullableObject {
                     Some(serde_json::Value::Array(string_array_val)) => {
                         let mut string_array_val_result: Vec<String> = Vec::new();
                         for string_array_val_item in string_array_val {
-                            string_array_val_result.push(match Some(string_array_val_item) {
-                                Some(serde_json::Value::String(string_array_val_item_val)) => {
+                            string_array_val_result.push(match string_array_val_item {
+                                serde_json::Value::String(string_array_val_item_val) => {
                                     string_array_val_item_val.to_owned()
                                 }
                                 _ => "".to_string(),
@@ -178,7 +178,7 @@ impl ArriModel for NullableObject {
     }
 
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }

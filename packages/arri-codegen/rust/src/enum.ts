@@ -84,7 +84,7 @@ impl ArriModel for ${enumName} {
             }
             return `${target}.push_str(${val}.to_json_string().as_str())`;
         },
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
@@ -92,10 +92,13 @@ impl ArriModel for ${enumName} {
                     _ => None,
                 }`;
             }
-            return `match ${val} {
-            Some(${rustKey}_val) => ${enumName}::from_json(${rustKey}_val.to_owned()),
-            _ => ${defaultVal},
-        }`;
+            if (valIsOption) {
+                return `match ${val} {
+    Some(${rustKey}_val) => ${enumName}::from_json(${rustKey}_val.to_owned()),
+    _ => ${defaultVal},
+}`;
+            }
+            return `${enumName}::from_json(${val}.to_owned())`;
         },
         toQueryTemplate: (target, val, key) => {
             const rustKey = validRustKey(key);

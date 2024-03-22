@@ -34,7 +34,7 @@ impl ArriModel for ManuallyAddedModel {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -156,7 +156,7 @@ impl ArriModel for AdaptersTypeboxAdapterParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -309,7 +309,7 @@ impl ArriModel for AdaptersTypeboxAdapterParamsObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -359,7 +359,7 @@ impl ArriModel for AdaptersTypeboxAdapterResponse {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -411,7 +411,7 @@ impl ArriModel for DeprecatedRpcParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -673,7 +673,7 @@ impl ArriModel for ObjectWithEveryType {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -926,7 +926,7 @@ impl ArriModel for ObjectWithEveryTypeObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1003,7 +1003,7 @@ impl ArriModel for ObjectWithEveryTypeNestedObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1079,7 +1079,7 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1143,7 +1143,7 @@ impl ArriModel for ObjectWithEveryTypeNestedObjectDataData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1205,7 +1205,7 @@ impl ArriModel for ObjectWithEveryType_i_ {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1482,7 +1482,7 @@ impl ArriModel for ObjectWithEveryNullableType {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -1921,7 +1921,7 @@ impl ArriModel for ObjectWithEveryNullableTypeObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -2025,7 +2025,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -2127,7 +2127,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -2212,7 +2212,7 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedObjectDataData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -2286,7 +2286,7 @@ impl ArriModel for ObjectWithEveryNullableType_i_ {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -2570,7 +2570,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3119,7 +3119,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3196,7 +3196,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObject {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3272,7 +3272,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3336,7 +3336,7 @@ impl ArriModel for ObjectWithEveryOptionalTypeNestedObjectDataData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3398,7 +3398,7 @@ impl ArriModel for ObjectWithEveryOptionalType_i_ {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3451,7 +3451,7 @@ impl ArriModel for AutoReconnectParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3503,7 +3503,7 @@ impl ArriModel for AutoReconnectResponse {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3569,7 +3569,7 @@ impl ArriModel for StreamConnectionErrorTestParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3625,7 +3625,7 @@ impl ArriModel for StreamConnectionErrorTestResponse {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3705,7 +3705,7 @@ impl ArriModel for StreamLargeObjectsResponse {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3799,7 +3799,7 @@ impl ArriModel for StreamLargeObjectsResponse_i_ {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3867,7 +3867,7 @@ impl ArriModel for ChatMessageParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -3917,7 +3917,7 @@ impl ArriModel for PostParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4051,7 +4051,7 @@ impl ArriModel for Post {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4267,7 +4267,7 @@ impl ArriModel for Author {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4351,7 +4351,7 @@ impl ArriModel for PostListParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4427,7 +4427,7 @@ impl ArriModel for PostListResponse {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4498,7 +4498,7 @@ impl ArriModel for LogPostEventResponse {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4557,7 +4557,7 @@ impl ArriModel for UpdatePostParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4645,7 +4645,7 @@ impl ArriModel for UpdatePostParamsData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4816,7 +4816,7 @@ impl ArriModel for AnnotationId {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -4923,7 +4923,7 @@ impl ArriModel for Annotation {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -5011,7 +5011,7 @@ impl ArriModel for AssociatedId {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -5155,7 +5155,7 @@ impl ArriModel for AnnotationBoxTypeRange {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -5228,7 +5228,7 @@ impl ArriModel for UpdateAnnotationParams {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -5347,7 +5347,7 @@ impl ArriModel for UpdateAnnotationData {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }
@@ -5540,7 +5540,7 @@ impl ArriModel for UpdateAnnotationDataBoxTypeRange {
         }
     }
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }

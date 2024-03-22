@@ -16,7 +16,7 @@ export function rustAnyFromSchema(
     return {
         fieldTemplate: maybeOption("serde_json::Value", isOption),
         defaultTemplate: maybeNone("serde_json::Value::Null", isOption),
-        fromJsonTemplate(val, key) {
+        fromJsonTemplate(val, key, valIsOption) {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
@@ -24,10 +24,13 @@ export function rustAnyFromSchema(
                     _ => None,
                 }`;
             }
-            return `match ${val} {
+            if (valIsOption) {
+                return `match ${val} {
                 Some(${rustKey}_val) => ${rustKey}_val.to_owned(),
                 _ => serde_json::Value::Null,
             }`;
+            }
+            return `${rustKey}.to_owned()`;
         },
         toJsonTemplate: (target, val, key) => {
             const rustKey = validRustKey(key);

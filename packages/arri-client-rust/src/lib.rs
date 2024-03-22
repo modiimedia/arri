@@ -97,7 +97,7 @@ impl ArriModel for ArriRequestError {
     }
 
     fn from_json_string(input: String) -> Self {
-        match serde_json::Value::from_str(input.as_str()) {
+        match serde_json::from_str(input.as_str()) {
             Ok(val) => Self::from_json(val),
             _ => Self::new(),
         }

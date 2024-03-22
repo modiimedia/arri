@@ -29,7 +29,7 @@ export function rustStringFromSchema(
             }
             return `${target}.push_str(format!("\\"{}\\"", ${val}.replace("\\n", "\\\\n").replace("\\"", "\\\\\\"")).as_str())`;
         },
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
@@ -37,8 +37,14 @@ export function rustStringFromSchema(
     _ => None,
 }`;
             }
-            return `match ${val} {
+            if (valIsOption) {
+                return `match ${val} {
     Some(serde_json::Value::String(${rustKey}_val)) => ${rustKey}_val.to_owned(),
+    _ => "".to_string(),
+}`;
+            }
+            return `match ${val} {
+    serde_json::Value::String(${rustKey}_val) => ${rustKey}_val.to_owned(),
     _ => "".to_string(),
 }`;
         },

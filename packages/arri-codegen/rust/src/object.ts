@@ -48,7 +48,7 @@ export function rustStructFromSchema(
         fieldParts.push(`    pub ${rustKey}: ${prop.fieldTemplate}`);
         defaultParts.push(`        ${rustKey}: ${prop.defaultTemplate}`);
         fromJsonParts.push(
-            `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key)};`,
+            `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key, true)};`,
         );
         if (keyCount === 0) {
             toJsonParts.push(`_json_output_.push_str("\\"${key}\\":");`);
@@ -81,7 +81,7 @@ export function rustStructFromSchema(
             fieldParts.push(`    pub ${rustKey}: ${prop.fieldTemplate}`);
             defaultParts.push(`        ${rustKey}: None`);
             fromJsonParts.push(
-                `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key)};`,
+                `let ${rustKey} = ${prop.fromJsonTemplate(`val.get("${key}")`, key, true)};`,
             );
             if (keyCount > 0) {
                 toJsonParts.push(`match &self.${rustKey} {
@@ -174,7 +174,7 @@ ${subContentParts.join("\n")}
             }
             return `${target}.push_str(${val}.to_json_string().as_str())`;
         },
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
@@ -185,10 +185,13 @@ ${subContentParts.join("\n")}
                 _ => None,
             }`;
             }
-            return `match ${val} {
-                Some(${rustKey}_val) => ${structName}::from_json(${rustKey}_val.to_owned()),
-                _ => ${structName}::new(),
-            }`;
+            if (valIsOption) {
+                return `match ${val} {
+                    Some(${rustKey}_val) => ${structName}::from_json(${rustKey}_val.to_owned()),
+                    _ => ${structName}::new(),
+                }`;
+            }
+            return `${structName}::from_json(${val}.to_owned())`;
         },
         toQueryTemplate(target, val, key) {
             const rustKey = validRustKey(key);

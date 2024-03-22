@@ -6,6 +6,7 @@ import {
     maybeNone,
     type RustProperty,
     validRustKey,
+    maybeSome,
 } from "./common";
 import { rustTypeFromSchema } from ".";
 
@@ -29,14 +30,14 @@ export function rustVecFromSchema(
     return {
         fieldTemplate,
         defaultTemplate,
-        fromJsonTemplate: (val, key) => {
+        fromJsonTemplate: (val, key, valIsOption) => {
             const rustKey = validRustKey(key);
             if (isOption) {
                 return `match ${val} {
                     Some(serde_json::Value::Array(${rustKey}_val)) => {
                         let mut ${rustKey}_val_result: Vec<${innerProp.fieldTemplate}> = Vec::new();
                         for ${rustKey}_val_item in ${rustKey}_val {
-                            ${rustKey}_val_result.push(${innerProp.fromJsonTemplate(`Some(${rustKey}_val_item)`, `${rustKey}_val_item`)});
+                            ${rustKey}_val_result.push(${innerProp.fromJsonTemplate(`${rustKey}_val_item`, `${rustKey}_val_item`, false)});
                         }
                         Some(${rustKey}_val_result)
                     },
@@ -44,10 +45,10 @@ export function rustVecFromSchema(
                 }`;
             }
             return `match ${val} {
-                Some(serde_json::Value::Array(${rustKey}_val)) => {
+                ${maybeSome(`serde_json::Value::Array(${rustKey}_val)`, valIsOption)} => {
                     let mut ${rustKey}_val_result: Vec<${innerProp.fieldTemplate}> = Vec::new();
                     for ${rustKey}_val_item in ${rustKey}_val {
-                        ${rustKey}_val_result.push(${innerProp.fromJsonTemplate(`Some(${rustKey}_val_item)`, `${rustKey}_val_item`)})
+                        ${rustKey}_val_result.push(${innerProp.fromJsonTemplate(`${rustKey}_val_item`, `${rustKey}_val_item`, false)})
                     }
                     ${rustKey}_val_result
                 },

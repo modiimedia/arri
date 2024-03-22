@@ -14,10 +14,11 @@ function defaultFromJson(
     key: string,
     fromJsonNumber: (subKey: string) => string,
     defaultVal: string,
+    valIsOption: boolean,
 ) {
     const rustKey = validRustKey(key);
     return `match ${val} {
-    Some(serde_json::Value::Number(${rustKey}_val)) => ${fromJsonNumber(`${rustKey}_val`)},
+    ${maybeSome(`serde_json::Value::Number(${rustKey}_val)`, valIsOption)} => ${fromJsonNumber(`${rustKey}_val`)},
     _ => ${defaultVal},
 }`;
 }
@@ -80,12 +81,13 @@ export function rustFloatFromSchema(
     return {
         fieldTemplate: maybeOption(typeName, isOption),
         defaultTemplate: maybeNone("0.0", isOption),
-        fromJsonTemplate: (val, key) =>
+        fromJsonTemplate: (val, key, valIsOption) =>
             defaultFromJson(
                 val,
                 key,
                 fromJsonNumber,
                 maybeNone("0.0", isOption),
+                valIsOption,
             ),
         toJsonTemplate: (target, val, key) =>
             defaultToJson(target, val, key, schema.nullable),
@@ -126,7 +128,7 @@ export function rustIntFromSchema(
             typeName = "u64";
             break;
     }
-    let fromJsonTemplate = (val: string, key: string) =>
+    let fromJsonTemplate = (val: string, key: string, valIsOption: boolean) =>
         defaultFromJson(
             val,
             key,
@@ -136,6 +138,7 @@ export function rustIntFromSchema(
                     isOptionType(schema, context),
                 ),
             maybeNone(`0`, isOptionType(schema, context)),
+            valIsOption,
         );
     let toJsonTemplate = (target: string, val: string, key: string) =>
         defaultToJson(target, val, key, schema.nullable);
