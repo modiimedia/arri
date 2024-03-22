@@ -3,6 +3,7 @@ mod ref_complete_object;
 mod ref_hashmap;
 mod ref_nullable_object;
 mod ref_partial_object;
+mod ref_recursive_object;
 
 use arri_client::{
     reqwest::{header::HeaderMap, Client},
