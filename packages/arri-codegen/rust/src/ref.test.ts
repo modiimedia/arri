@@ -1,8 +1,8 @@
 import { execSync } from "child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { normalizeWhitespace } from "packages/arri-codegen/utils/dist";
-import { a } from "packages/arri-validate/dist";
+import { normalizeWhitespace } from "arri-codegen-utils";
+import { a } from "arri-validate";
 import { type GeneratorContext, tmpDir, refDir } from "./common";
 import { rustTypeFromSchema } from ".";
 
