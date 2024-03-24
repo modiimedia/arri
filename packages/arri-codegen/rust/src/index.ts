@@ -12,6 +12,11 @@ import {
     isSchemaFormValues,
     isSchemaFormRef,
     isSchemaFormDiscriminator,
+    isServiceDefinition,
+    type ServiceDefinition,
+    type RpcDefinition,
+    isRpcDefinition,
+    pascalCase,
 } from "arri-codegen-utils";
 import path from "pathe";
 import { rustAnyFromSchema } from "./any";
@@ -67,7 +72,21 @@ export function createRustClient(
 ): string {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const services = unflattenProcedures(def.procedures);
-
+    const rpcsParts: string[] = [];
+    const serviceParts: string[] = [];
+    for (const key of Object.keys(services)) {
+        const def = services[key];
+        if (isServiceDefinition(def)) {
+            const service = rustServiceFromDef(key, def, context);
+            serviceParts.push(service);
+            continue;
+        }
+        if (isRpcDefinition(def)) {
+            const procedure = rustProcedureFromDef(key, def, context);
+            rpcsParts.push(procedure);
+            continue;
+        }
+    }
     const modelParts: string[] = [];
     for (const key of Object.keys(def.models)) {
         const result = rustTypeFromSchema(def.models[key], {
@@ -146,3 +165,32 @@ export function rustTypeFromSchema(
     }
     return rustAnyFromSchema(schema, context);
 }
+
+export function rustServiceFromDef(
+    key: string,
+    schema: ServiceDefinition,
+    context: GeneratorContext,
+): string {
+    const serviceId = pascalCase(`${context.parentId ?? ""}_${key}`);
+    context.parentId = serviceId;
+    const rpcsParts: string[] = [];
+    const subServiceParts: string[] = [];
+    for (const key of Object.keys(schema)) {
+        const subSchema = schema[key];
+        if (isServiceDefinition(subSchema)) {
+            const subService = rustServiceFromDef(key, subSchema, context);
+            subServiceParts.push(subService);
+            continue;
+        }
+        if (isRpcDefinition(subSchema)) {
+            const rpc = rustProcedureFromDef(key, subSchema, context);
+            rpcsParts.push(rpc);
+        }
+    }
+}
+
+export function rustProcedureFromDef(
+    key: string,
+    schema: RpcDefinition,
+    context: GeneratorContext,
+): string {}
