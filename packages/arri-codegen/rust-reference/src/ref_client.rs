@@ -5,8 +5,7 @@ use arri_client::{
     parsed_arri_request,
     reqwest::Method,
     serde_json::{self},
-    ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
-    EmptyArriModel,
+    ArriClientConfig, ArriError, ArriModel, ArriParsedRequestOptions, ArriService, EmptyArriModel,
 };
 use std::collections::HashMap;
 
@@ -24,18 +23,12 @@ impl ArriService for TestClient {
 
 #[async_trait]
 pub trait TestClientMethods {
-    async fn get_status(
-        &self,
-        config: &ArriClientConfig,
-    ) -> Result<GetStatusResponse, ArriRequestError>;
+    async fn get_status(&self, config: &ArriClientConfig) -> Result<GetStatusResponse, ArriError>;
 }
 
 #[async_trait]
 impl TestClientMethods for TestClient {
-    async fn get_status(
-        &self,
-        config: &ArriClientConfig,
-    ) -> Result<GetStatusResponse, ArriRequestError> {
+    async fn get_status(&self, config: &ArriClientConfig) -> Result<GetStatusResponse, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 client: &config.client,
@@ -68,12 +61,12 @@ pub trait TestClientUsersServiceMethods {
         &self,
         config: &ArriClientConfig,
         params: UserParams,
-    ) -> Result<User, ArriRequestError>;
+    ) -> Result<User, ArriError>;
     async fn update_user(
         &self,
         config: &ArriClientConfig,
         params: UpdateUserParams,
-    ) -> Result<User, ArriRequestError>;
+    ) -> Result<User, ArriError>;
 }
 
 #[async_trait]
@@ -82,7 +75,7 @@ impl TestClientUsersServiceMethods for TestClientUsersService {
         &self,
         config: &ArriClientConfig,
         params: UserParams,
-    ) -> Result<User, ArriRequestError> {
+    ) -> Result<User, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 client: &config.client,
@@ -99,7 +92,7 @@ impl TestClientUsersServiceMethods for TestClientUsersService {
         &self,
         config: &ArriClientConfig,
         params: UpdateUserParams,
-    ) -> Result<User, ArriRequestError> {
+    ) -> Result<User, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 client: &config.client,
@@ -124,12 +117,12 @@ impl ArriService for TestClientUsersSettingsService {
 
 #[async_trait]
 pub trait TestClientUserSettingsServiceMethods {
-    async fn get_user_settings(&self, config: &ArriClientConfig) -> Result<(), ArriRequestError>;
+    async fn get_user_settings(&self, config: &ArriClientConfig) -> Result<(), ArriError>;
 }
 
 #[async_trait]
 impl TestClientUserSettingsServiceMethods for TestClientUsersSettingsService {
-    async fn get_user_settings(&self, config: &ArriClientConfig) -> Result<(), ArriRequestError> {
+    async fn get_user_settings(&self, config: &ArriClientConfig) -> Result<(), ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 client: &config.client,

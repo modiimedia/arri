@@ -2,7 +2,7 @@ use reqwest::{header::HeaderMap, Response};
 use serde_json::json;
 use std::marker::PhantomData;
 
-use crate::{ArriModel, ArriRequestError, ArriRequestErrorMethods};
+use crate::{ArriError, ArriModel, ArriRequestErrorMethods};
 
 pub struct ParsedArriSseRequestOptions<
     'a,
@@ -14,8 +14,8 @@ pub struct ParsedArriSseRequestOptions<
     OnClose,
 > where
     OnData: Fn(TData),
-    OnError: Fn(ArriRequestError),
-    OnConnectionError: Fn(ArriRequestError),
+    OnError: Fn(ArriError),
+    OnConnectionError: Fn(ArriError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
@@ -56,8 +56,8 @@ pub async fn parsed_arri_sse_request<
     params: Option<impl ArriModel>,
 ) where
     OnData: Fn(TData),
-    OnError: Fn(ArriRequestError),
-    OnConnectionError: Fn(ArriRequestError),
+    OnError: Fn(ArriError),
+    OnConnectionError: Fn(ArriError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
@@ -96,8 +96,8 @@ pub async fn parsed_arri_sse_request<
 pub struct ArriSseRequestOptions<'a, OnData, OnError, OnConnectionError, OnOpen, OnClose>
 where
     OnData: Fn(String),
-    OnError: Fn(ArriRequestError),
-    OnConnectionError: Fn(ArriRequestError),
+    OnError: Fn(ArriError),
+    OnConnectionError: Fn(ArriError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
@@ -118,8 +118,8 @@ pub async fn arri_sse_request<'a, OnData, OnError, OnConnectionError, OnOpen, On
 ) -> ()
 where
     OnData: Fn(String),
-    OnError: Fn(ArriRequestError),
-    OnConnectionError: Fn(ArriRequestError),
+    OnError: Fn(ArriError),
+    OnConnectionError: Fn(ArriError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
@@ -169,7 +169,7 @@ where
     };
 
     if !response.is_ok() {
-        (options.on_connection_error)(ArriRequestError::new());
+        (options.on_connection_error)(ArriError::new());
         return;
     }
     let mut ok_response = response.unwrap();
@@ -177,7 +177,7 @@ where
     let status = ok_response.status().as_u16();
     if status < 200 || status >= 300 {
         let body = ok_response.text().await.unwrap_or_default();
-        (options.on_connection_error)(ArriRequestError::from_response_data(status, body));
+        (options.on_connection_error)(ArriError::from_response_data(status, body));
         return;
     }
     let mut pending_data: String = "".to_string();
@@ -197,7 +197,7 @@ where
                     let event = message.event.unwrap_or("".to_string());
                     match event.as_str() {
                         "error" => {
-                            (options.on_error)(ArriRequestError::from_json_string(message.data));
+                            (options.on_error)(ArriError::from_json_string(message.data));
                         }
                         "done" => {
                             (options.on_close)(&ok_response);
