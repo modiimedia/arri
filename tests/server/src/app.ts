@@ -6,7 +6,7 @@ import {
     handleCors,
 } from "arri";
 import { a } from "arri-validate";
-import usersRouter from "./routes/authors";
+import manualRouter from "./routes/other";
 
 const app = new ArriApp({
     rpcRoutePrefix: "rpcs",
@@ -49,6 +49,6 @@ app.registerModels({
     }),
 });
 
-app.use(usersRouter);
+app.use(manualRouter);
 
 export default app;

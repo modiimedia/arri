@@ -33,8 +33,10 @@ Future<http.Response> arriRequest(
   /// manually specify a specific encoding
   Encoding? encoding,
 }) async {
+  String defaultErrorMsg =
+      "Placeholder request. If you see this that means a request was never sent to the server.";
   http.Response result = http.Response(
-    "Placeholder request. If you see this that means a request was never sent to the server.",
+    """{"statusCode": 400,"statusMessage":"$defaultErrorMsg"}""",
     400,
   );
   final finalHeaders = {...headers ?? {}};
@@ -57,7 +59,10 @@ Future<http.Response> arriRequest(
           uri,
           headers: finalHeaders,
         );
+        break;
       }
+      final uri = Uri.parse(url);
+      result = await client.get(uri, headers: finalHeaders);
       break;
     case HttpMethod.patch:
       result = await client.patch(
