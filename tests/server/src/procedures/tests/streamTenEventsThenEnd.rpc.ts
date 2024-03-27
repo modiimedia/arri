@@ -3,6 +3,8 @@ import { defineEventStreamRpc } from "arri";
 import { ChatMessage } from "./streamMessages.rpc";
 
 export default defineEventStreamRpc({
+    description:
+        "When the client receives the 'done' event, it should close the connection and NOT reconnect",
     params: undefined,
     response: ChatMessage,
     handler({ stream }) {

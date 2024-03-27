@@ -95,7 +95,7 @@ class TestClientTestsService {
     );
   }
 
-  /// This RPC is no longer supported
+  /// If the target language supports it. Generated code should mark this procedure as deprecated.
   @deprecated
   Future<void> deprecatedRpc(DeprecatedRpcParams params) {
     return parsedArriRequest(
@@ -202,6 +202,7 @@ class TestClientTestsService {
     );
   }
 
+  /// This route will always return an error. The client should automatically retry with exponential backoff.
   EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
     StreamConnectionErrorTestParams params, {
     SseHookOnData<StreamConnectionErrorTestResponse>? onData,
@@ -230,6 +231,7 @@ class TestClientTestsService {
     );
   }
 
+  /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
   EventSource<StreamLargeObjectsResponse> streamLargeObjects({
     SseHookOnData<StreamLargeObjectsResponse>? onData,
     SseHookOnError<StreamLargeObjectsResponse>? onError,
@@ -283,6 +285,7 @@ class TestClientTestsService {
     );
   }
 
+  /// When the client receives the 'done' event, it should close the connection and NOT reconnect
   EventSource<ChatMessage> streamTenEventsThenEnd({
     SseHookOnData<ChatMessage>? onData,
     SseHookOnError<ChatMessage>? onError,

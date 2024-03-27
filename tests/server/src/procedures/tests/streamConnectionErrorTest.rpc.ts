@@ -2,6 +2,8 @@ import { defineError, defineEventStreamRpc } from "arri";
 import { a } from "arri-validate";
 
 export default defineEventStreamRpc({
+    description:
+        "This route will always return an error. The client should automatically retry with exponential backoff.",
     params: a.object(
         {
             statusCode: a.uint16(),
