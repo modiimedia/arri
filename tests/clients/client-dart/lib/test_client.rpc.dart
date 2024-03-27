@@ -17,8 +17,8 @@ class TestClient {
     _headers = {"client-version": "10", ...headers};
   }
 
-  TestClientAuthorsService get authors {
-    return TestClientAuthorsService(
+  TestClientTestsService get tests {
+    return TestClientTestsService(
       httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
@@ -32,21 +32,13 @@ class TestClient {
       headers: _headers,
     );
   }
-
-  TestClientMiscTestsService get miscTests {
-    return TestClientMiscTestsService(
-      httpClient: _httpClient,
-      baseUrl: _baseUrl,
-      headers: _headers,
-    );
-  }
 }
 
-class TestClientAuthorsService {
+class TestClientTestsService {
   final http.Client? _httpClient;
   final String _baseUrl;
   late final Map<String, String> _headers;
-  TestClientAuthorsService({
+  TestClientTestsService({
     http.Client? httpClient,
     String baseUrl = "",
     Map<String, String> headers = const {},
@@ -55,65 +47,59 @@ class TestClientAuthorsService {
     _headers = {"client-version": "10", ...headers};
   }
 
-  Future<Author> updateAuthor(AuthorsUpdateAuthorParams params) {
+  Future<DefaultPayload> emptyParamsGetRequest() {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/authors/update-author",
+      "$_baseUrl/rpcs/tests/empty-params-get-request",
       httpClient: _httpClient,
-      method: HttpMethod.post,
+      method: HttpMethod.get,
       headers: _headers,
-      params: params.toJson(),
-      parser: (body) => Author.fromJson(
+      params: null,
+      parser: (body) => DefaultPayload.fromJson(
         json.decode(body),
       ),
     );
   }
-}
 
-class TestClientAdaptersService {
-  final http.Client? _httpClient;
-  final String _baseUrl;
-  late final Map<String, String> _headers;
-  TestClientAdaptersService({
-    http.Client? httpClient,
-    String baseUrl = "",
-    Map<String, String> headers = const {},
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl {
-    _headers = {"client-version": "10", ...headers};
-  }
-
-  Future<TypeBoxObject> typebox(TypeBoxObject params) {
+  Future<DefaultPayload> emptyParamsPostRequest() {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/adapters/typebox",
+      "$_baseUrl/rpcs/tests/empty-params-post-request",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
-      params: params.toJson(),
-      parser: (body) => TypeBoxObject.fromJson(
+      params: null,
+      parser: (body) => DefaultPayload.fromJson(
         json.decode(body),
       ),
     );
   }
-}
 
-class TestClientMiscTestsService {
-  final http.Client? _httpClient;
-  final String _baseUrl;
-  late final Map<String, String> _headers;
-  TestClientMiscTestsService({
-    http.Client? httpClient,
-    String baseUrl = "",
-    Map<String, String> headers = const {},
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl {
-    _headers = {"client-version": "10", ...headers};
+  Future<void> emptyResponseGetRequest(DefaultPayload params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/empty-response-get-request",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) {},
+    );
+  }
+
+  Future<void> emptyResponsePostRequest(DefaultPayload params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/empty-response-post-request",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) {},
+    );
   }
 
   /// This RPC is no longer supported
   @deprecated
   Future<void> deprecatedRpc(DeprecatedRpcParams params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/deprecated-rpc",
+      "$_baseUrl/rpcs/tests/deprecated-rpc",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -124,7 +110,7 @@ class TestClientMiscTestsService {
 
   Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-object",
+      "$_baseUrl/rpcs/tests/send-object",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -138,7 +124,7 @@ class TestClientMiscTestsService {
   Future<ObjectWithEveryNullableType> sendObjectWithNullableFields(
       ObjectWithEveryNullableType params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-object-with-nullable-fields",
+      "$_baseUrl/rpcs/tests/send-object-with-nullable-fields",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -152,7 +138,7 @@ class TestClientMiscTestsService {
   Future<ObjectWithEveryOptionalType> sendPartialObject(
       ObjectWithEveryOptionalType params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-partial-object",
+      "$_baseUrl/rpcs/tests/send-partial-object",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -165,7 +151,7 @@ class TestClientMiscTestsService {
 
   Future<RecursiveObject> sendRecursiveObject(RecursiveObject params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-recursive-object",
+      "$_baseUrl/rpcs/tests/send-recursive-object",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -178,7 +164,7 @@ class TestClientMiscTestsService {
 
   Future<RecursiveUnion> sendRecursiveUnion(RecursiveUnion params) {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-recursive-union",
+      "$_baseUrl/rpcs/tests/send-recursive-union",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -199,7 +185,7 @@ class TestClientMiscTestsService {
     String? lastEventId,
   }) {
     return parsedArriSseRequest<AutoReconnectResponse>(
-      "$_baseUrl/rpcs/misc-tests/stream-auto-reconnect",
+      "$_baseUrl/rpcs/tests/stream-auto-reconnect",
       httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
@@ -227,7 +213,7 @@ class TestClientMiscTestsService {
     String? lastEventId,
   }) {
     return parsedArriSseRequest<StreamConnectionErrorTestResponse>(
-      "$_baseUrl/rpcs/misc-tests/stream-connection-error-test",
+      "$_baseUrl/rpcs/tests/stream-connection-error-test",
       httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
@@ -253,7 +239,7 @@ class TestClientMiscTestsService {
     String? lastEventId,
   }) {
     return parsedArriSseRequest<StreamLargeObjectsResponse>(
-      "$_baseUrl/rpcs/misc-tests/stream-large-objects",
+      "$_baseUrl/rpcs/tests/stream-large-objects",
       httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
@@ -280,7 +266,7 @@ class TestClientMiscTestsService {
     String? lastEventId,
   }) {
     return parsedArriSseRequest<ChatMessage>(
-      "$_baseUrl/rpcs/misc-tests/stream-messages",
+      "$_baseUrl/rpcs/tests/stream-messages",
       httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
@@ -306,7 +292,7 @@ class TestClientMiscTestsService {
     String? lastEventId,
   }) {
     return parsedArriSseRequest<ChatMessage>(
-      "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-end",
+      "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
       httpClient: _httpClient,
       method: HttpMethod.get,
       headers: _headers,
@@ -332,7 +318,7 @@ class TestClientMiscTestsService {
     String? lastEventId,
   }) {
     return parsedArriSseRequest<ChatMessage>(
-      "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-error",
+      "$_baseUrl/rpcs/tests/stream-ten-events-then-error",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
@@ -346,6 +332,33 @@ class TestClientMiscTestsService {
       onOpen: onOpen,
       onClose: onClose,
       lastEventId: lastEventId,
+    );
+  }
+}
+
+class TestClientAdaptersService {
+  final http.Client? _httpClient;
+  final String _baseUrl;
+  late final Map<String, String> _headers;
+  TestClientAdaptersService({
+    http.Client? httpClient,
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl {
+    _headers = {"client-version": "10", ...headers};
+  }
+
+  Future<TypeBoxObject> typebox(TypeBoxObject params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/adapters/typebox",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => TypeBoxObject.fromJson(
+        json.decode(body),
+      ),
     );
   }
 }
@@ -378,146 +391,30 @@ class ManuallyAddedModel {
   }
 }
 
-class AuthorsUpdateAuthorParams {
-  final String authorId;
-  final UpdateAuthorData data;
-  const AuthorsUpdateAuthorParams({
-    required this.authorId,
-    required this.data,
+class DefaultPayload {
+  final String message;
+  const DefaultPayload({
+    required this.message,
   });
-  factory AuthorsUpdateAuthorParams.fromJson(Map<String, dynamic> json) {
-    return AuthorsUpdateAuthorParams(
-      authorId: typeFromDynamic<String>(json["authorId"], ""),
-      data: UpdateAuthorData.fromJson(json["data"]),
+  factory DefaultPayload.fromJson(Map<String, dynamic> json) {
+    return DefaultPayload(
+      message: typeFromDynamic<String>(json["message"], ""),
     );
   }
 
   Map<String, dynamic> toJson() {
     final __result = <String, dynamic>{
-      "authorId": authorId,
-      "data": data.toJson(),
+      "message": message,
     };
 
     return __result;
   }
 
-  AuthorsUpdateAuthorParams copyWith({
-    String? authorId,
-    UpdateAuthorData? data,
+  DefaultPayload copyWith({
+    String? message,
   }) {
-    return AuthorsUpdateAuthorParams(
-      authorId: authorId ?? this.authorId,
-      data: data ?? this.data,
-    );
-  }
-}
-
-class UpdateAuthorData {
-  final String? name;
-  final String? bio;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  const UpdateAuthorData({
-    this.name,
-    this.bio,
-    this.createdAt,
-    this.updatedAt,
-  });
-  factory UpdateAuthorData.fromJson(Map<String, dynamic> json) {
-    return UpdateAuthorData(
-      name: nullableTypeFromDynamic<String>(json["name"]),
-      bio: nullableTypeFromDynamic<String>(json["bio"]),
-      createdAt: nullableDateTimeFromDynamic(json["createdAt"]),
-      updatedAt: nullableDateTimeFromDynamic(json["updatedAt"]),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final __result = <String, dynamic>{};
-    if (name != null) {
-      __result["name"] = name;
-    }
-    if (bio != null) {
-      __result["bio"] = bio;
-    }
-    if (createdAt != null) {
-      __result["createdAt"] = createdAt?.toUtc().toIso8601String();
-    }
-    if (updatedAt != null) {
-      __result["updatedAt"] = updatedAt?.toUtc().toIso8601String();
-    }
-    return __result;
-  }
-
-  UpdateAuthorData copyWith({
-    String? name,
-    String? bio,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return UpdateAuthorData(
-      name: name ?? this.name,
-      bio: bio ?? this.bio,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-}
-
-class Author {
-  final String id;
-  final String name;
-  final String? bio;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  const Author({
-    required this.id,
-    required this.name,
-    required this.bio,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-  factory Author.fromJson(Map<String, dynamic> json) {
-    return Author(
-      id: typeFromDynamic<String>(json["id"], ""),
-      name: typeFromDynamic<String>(json["name"], ""),
-      bio: nullableTypeFromDynamic<String>(json["bio"]),
-      createdAt: dateTimeFromDynamic(
-        json["createdAt"],
-        DateTime.fromMillisecondsSinceEpoch(0),
-      ),
-      updatedAt: dateTimeFromDynamic(
-        json["updatedAt"],
-        DateTime.fromMillisecondsSinceEpoch(0),
-      ),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final __result = <String, dynamic>{
-      "id": id,
-      "name": name,
-      "bio": bio,
-      "createdAt": createdAt.toUtc().toIso8601String(),
-      "updatedAt": updatedAt.toUtc().toIso8601String(),
-    };
-
-    return __result;
-  }
-
-  Author copyWith({
-    String? id,
-    String? name,
-    String? bio,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Author(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      bio: bio ?? this.bio,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+    return DefaultPayload(
+      message: message ?? this.message,
     );
   }
 }

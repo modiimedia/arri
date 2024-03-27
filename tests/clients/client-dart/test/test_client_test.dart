@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
 import 'package:test_client_dart/test_client.rpc.dart';
+// ignore: depend_on_referenced_packages
 import 'package:http/io_client.dart';
 
 Future<void> main() async {
@@ -19,6 +20,29 @@ Future<void> main() async {
   );
 
   group("miscTests", () {
+    test("empty params", () async {
+      try {
+        await client.tests.emptyParamsGetRequest();
+        await client.tests.emptyParamsPostRequest();
+      } catch (err) {
+        print("ERROR: ${err.toString()}");
+        expect(false, equals(true));
+      }
+    });
+    test("empty response", () async {
+      try {
+        await client.tests.emptyResponseGetRequest(
+          DefaultPayload(message: "ok"),
+        );
+        await client.tests.emptyResponsePostRequest(
+          DefaultPayload(message: "ok"),
+        );
+      } catch (err) {
+        print("ERROR ${err.toString()}");
+        expect(false, equals(true));
+      }
+    });
+
     final input = ObjectWithEveryType(
         any: {"hello": "world", "goodbye": "world"},
         boolean: true,
@@ -61,7 +85,7 @@ Future<void> main() async {
           ]
         ]);
     test("sendObject()", () async {
-      final result = await client.miscTests.sendObject(input);
+      final result = await client.tests.sendObject(input);
       expect(result.any["hello"], equals(input.any["hello"]));
       expect(result.array.length, equals(input.array.length));
       expect(result.array[0], equals(input.array[0]));
@@ -79,18 +103,18 @@ Future<void> main() async {
         equals(result.nestedObject.data.data.timestamp.microsecond),
       );
       final input2 = input.copyWith(int16: 999);
-      final result2 = await client.miscTests.sendObject(input2);
+      final result2 = await client.tests.sendObject(input2);
       expect(result2.int16, equals(999));
     });
     test("sendObject() with custom http client", () async {
-      final result = await clientWCustomHttpClient.miscTests.sendObject(input);
+      final result = await clientWCustomHttpClient.tests.sendObject(input);
       expect(result.array.length, equals(input.array.length));
       expect(result.int64, equals(input.int64));
       expect(result.uint64, equals(input.uint64));
     });
     test("sendObject() with unauthenticated client", () async {
       try {
-        await unauthenticatedClient.miscTests.sendObject(input);
+        await unauthenticatedClient.tests.sendObject(input);
         expect(false, equals(true));
       } catch (err) {
         if (err is ArriRequestError) {
@@ -111,7 +135,7 @@ Future<void> main() async {
           ]
         ],
       );
-      final result = await client.miscTests.sendPartialObject(input);
+      final result = await client.tests.sendPartialObject(input);
       expect(result.string, equals(null));
       expect(result.int16, equals(0));
       expect(result.int64, equals(BigInt.zero));
@@ -141,7 +165,7 @@ Future<void> main() async {
         nestedObject: null,
         nestedArray: null,
       );
-      final result = await client.miscTests.sendObjectWithNullableFields(input);
+      final result = await client.tests.sendObjectWithNullableFields(input);
       expect(result.string, equals(null));
       expect(result.array, equals(null));
       final input2 = input.copyWith(
@@ -155,8 +179,7 @@ Future<void> main() async {
         ),
         nestedArray: [null],
       );
-      final result2 =
-          await client.miscTests.sendObjectWithNullableFields(input2);
+      final result2 = await client.tests.sendObjectWithNullableFields(input2);
       expect(result2.nestedArray?[0], equals(null));
       expect(result2.nestedObject?.data?.id, equals(""));
       expect(result2.int64, equals(BigInt.zero));
@@ -183,7 +206,7 @@ Future<void> main() async {
         ),
         value: "depth0",
       );
-      final result = await client.miscTests.sendRecursiveObject(input);
+      final result = await client.tests.sendRecursiveObject(input);
       expect(result.left?.left?.left, equals(null));
       expect(result.left?.left?.value, equals("depth2"));
     });
@@ -204,7 +227,7 @@ Future<void> main() async {
           ),
         ],
       );
-      final result = await client.miscTests.sendRecursiveUnion(input);
+      final result = await client.tests.sendRecursiveUnion(input);
       expect(result is RecursiveUnionChildren, equals(true));
       expect((result as RecursiveUnionChildren).data.length, equals(2));
       expect((result.data[0] as RecursiveUnionChild).data is RecursiveUnionText,
@@ -215,7 +238,7 @@ Future<void> main() async {
   group("stream requests", () {
     test("basic subscription", () async {
       int messageCount = 0;
-      final eventSource = client.miscTests.streamMessages(
+      final eventSource = client.tests.streamMessages(
         ChatMessageParams(channelId: "12345"),
         onData: (data, _) {
           messageCount++;
@@ -242,8 +265,8 @@ Future<void> main() async {
     });
     test("basic subscription with dart streams", () async {
       int messageCount = 0;
-      final eventSource = client.miscTests
-          .streamMessages(ChatMessageParams(channelId: "12345"));
+      final eventSource =
+          client.tests.streamMessages(ChatMessageParams(channelId: "12345"));
       final listener = eventSource.toStream().listen((message) {
         messageCount++;
         switch (message) {
@@ -269,7 +292,7 @@ Future<void> main() async {
     test("subscription with errors", () async {
       int messageCount = 0;
       int errorCount = 0;
-      final eventSource = client.miscTests.streamTenEventsThenError(
+      final eventSource = client.tests.streamTenEventsThenError(
         onData: (data, connection) {
           messageCount++;
           expect(data.messageType.isNotEmpty, equals(true));
@@ -287,7 +310,7 @@ Future<void> main() async {
     test("subscription closed by server", () async {
       int messageCount = 0;
       int errorCount = 0;
-      final eventSource = client.miscTests.streamTenEventsThenEnd(
+      final eventSource = client.tests.streamTenEventsThenEnd(
         onData: (data, connection) {
           messageCount++;
         },
@@ -304,7 +327,7 @@ Future<void> main() async {
       int connectionCount = 0;
       int messageCount = 0;
       int errorCount = 0;
-      final eventSource = client.miscTests.streamAutoReconnect(
+      final eventSource = client.tests.streamAutoReconnect(
         AutoReconnectParams(messageCount: 10),
         onOpen: (_, __) {
           connectionCount++;
@@ -327,7 +350,7 @@ Future<void> main() async {
       var openCount = 0;
       var msgCount = 0;
       var errorCount = 0;
-      final eventSource = client.miscTests.streamLargeObjects(
+      final eventSource = client.tests.streamLargeObjects(
         onOpen: (_, __) {
           openCount++;
         },
@@ -353,7 +376,7 @@ Future<void> main() async {
       final List<ArriRequestError> errors = [];
       final statusCode = 555;
       final statusMessage = "test_message";
-      final eventSource = client.miscTests.streamConnectionErrorTest(
+      final eventSource = client.tests.streamConnectionErrorTest(
         StreamConnectionErrorTestParams(
           statusCode: statusCode,
           statusMessage: statusMessage,

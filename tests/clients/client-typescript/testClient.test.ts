@@ -9,7 +9,6 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     type TypeBoxObject,
-    type UpdateAuthorData,
 } from "./testClient.rpc";
 
 const baseUrl = "http://127.0.0.1:2020";
@@ -26,7 +25,7 @@ const unauthenticatedClient = new TestClient({
 });
 
 test("route request", async () => {
-    const result = await ofetch("/routes/authors/12345", {
+    const result = await ofetch("/routes/hello-world", {
         method: "post",
         baseURL: baseUrl,
         headers,
@@ -34,11 +33,20 @@ test("route request", async () => {
             name: "John Doe",
         },
     });
-    expect(result.id).toBe("12345");
-    expect(result.name).toBe("John Doe");
+    expect(result).toBe("hello world");
 });
 
 describe("miscTests", () => {
+    test("emptyParams", async () => {
+        const result = await client.tests.emptyParamsGetRequest();
+        const result2 = await client.tests.emptyParamsPostRequest();
+        expect(typeof result.message).toBe("string");
+        expect(typeof result2.message).toBe("string");
+    });
+    test("emptyResponse", async () => {
+        await client.tests.emptyResponseGetRequest({ message: "ok" });
+        await client.tests.emptyResponsePostRequest({ message: "ok" });
+    });
     const input: ObjectWithEveryType = {
         any: {
             blah: "blah",
@@ -148,12 +156,12 @@ describe("miscTests", () => {
                 ],
             ],
         };
-        const result = await client.miscTests.sendObject(input);
+        const result = await client.tests.sendObject(input);
         expect(result).toStrictEqual(input);
     });
     test("sendObject() unauthenticated", async () => {
         try {
-            await unauthenticatedClient.miscTests.sendObject(input);
+            await unauthenticatedClient.tests.sendObject(input);
             expect(true).toBe(false);
         } catch (err) {
             expect(err instanceof ArriRequestErrorInstance);
@@ -163,8 +171,7 @@ describe("miscTests", () => {
         }
     });
     test("sendPartialObject()", async () => {
-        const fullObjectResult =
-            await client.miscTests.sendPartialObject(input);
+        const fullObjectResult = await client.tests.sendPartialObject(input);
         expect(fullObjectResult).toStrictEqual(input);
         const partialInput: ObjectWithEveryOptionalType = {
             string: "",
@@ -172,12 +179,12 @@ describe("miscTests", () => {
             int64: 0n,
         };
         const partialObjectResult =
-            await client.miscTests.sendPartialObject(partialInput);
+            await client.tests.sendPartialObject(partialInput);
         expect(partialObjectResult).toStrictEqual(partialInput);
     });
     test("sendObjectWithNullableFields", async () => {
         const fullObjectResult =
-            await client.miscTests.sendObjectWithNullableFields(input);
+            await client.tests.sendObjectWithNullableFields(input);
         expect(fullObjectResult).toStrictEqual(input);
         const nullableInput: ObjectWithEveryNullableType = {
             any: null,
@@ -211,7 +218,7 @@ describe("miscTests", () => {
             nestedArray: [null],
         };
         const nullableResult =
-            await client.miscTests.sendObjectWithNullableFields(nullableInput);
+            await client.tests.sendObjectWithNullableFields(nullableInput);
         expect(nullableResult).toStrictEqual(nullableInput);
     });
 
@@ -237,7 +244,7 @@ describe("miscTests", () => {
             right: null,
             value: "depth1",
         };
-        const result = await client.miscTests.sendRecursiveObject(payload);
+        const result = await client.tests.sendRecursiveObject(payload);
         expect(result).toStrictEqual(payload);
     });
 
@@ -271,7 +278,7 @@ describe("miscTests", () => {
                 },
             ],
         };
-        const result = await client.miscTests.sendRecursiveUnion(payload);
+        const result = await client.tests.sendRecursiveUnion(payload);
         expect(result).toStrictEqual(payload);
     });
 });
@@ -296,7 +303,7 @@ test("unauthorized route request", async () => {
 test("SSE request", async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
-    const controller = client.miscTests.streamMessages(
+    const controller = client.tests.streamMessages(
         { channelId: "1" },
         {
             onData(data) {
@@ -336,7 +343,7 @@ test("SSE Request with errors", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriRequestError | undefined;
-    const controller = client.miscTests.streamTenEventsThenError({
+    const controller = client.tests.streamTenEventsThenError({
         onData(_) {
             messageCount++;
         },
@@ -363,7 +370,7 @@ test("SSE Request with done event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriRequestError | undefined;
-    const controller = client.miscTests.streamTenEventsThenEnd({
+    const controller = client.tests.streamTenEventsThenEnd({
         onData(_) {
             messageCount++;
         },
@@ -389,7 +396,7 @@ test("SSE Requests Auto-Reconnect", async () => {
     let connectionCount = 0;
     let errorCount = 0;
     let messageCount = 0;
-    const controller = client.miscTests.streamAutoReconnect(
+    const controller = client.tests.streamAutoReconnect(
         {
             messageCount: 10,
         },
@@ -432,19 +439,5 @@ describe("arri adapters", () => {
         };
         const result = await client.adapters.typebox(input);
         expect(result).toStrictEqual(input);
-    });
-});
-
-describe("manually added rpcs", () => {
-    test("updateAuthor()", async () => {
-        const input: UpdateAuthorData = {
-            name: "John Doe",
-        };
-        const result = await client.authors.updateAuthor({
-            authorId: "1",
-            data: input,
-        });
-        expect(result.id).toBe("1");
-        expect(result.name).toBe("John Doe");
     });
 });
