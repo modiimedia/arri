@@ -2,7 +2,8 @@ import { defineRpc } from "arri";
 import { a } from "arri-validate";
 
 export default defineRpc({
-    description: "This RPC is no longer supported",
+    description:
+        "If the target language supports it. Generated code should mark this procedure as deprecated.",
     isDeprecated: true,
     params: a.object(
         {

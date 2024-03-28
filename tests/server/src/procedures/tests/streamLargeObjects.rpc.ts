@@ -24,6 +24,8 @@ export type StreamLargeObjectsResponse = a.infer<
 >;
 
 export default defineEventStreamRpc({
+    description:
+        "Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message",
     params: undefined,
     response: StreamLargeObjectsResponse,
     async handler({ stream }) {
