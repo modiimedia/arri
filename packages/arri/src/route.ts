@@ -96,7 +96,7 @@ export function defineRoute<
 
 export type RouteOptions = Pick<
     ArriOptions,
-    "onAfterResponse" | "onBeforeResponse" | "onError" | "onRequest"
+    "onAfterResponse" | "onBeforeResponse" | "onError" | "onRequest" | "debug"
 > & { middleware: Middleware[] };
 
 export function registerRoute(
@@ -149,7 +149,7 @@ export function handleRoute(
                         ", ",
                     )}]`;
                     throw defineError(400, {
-                        statusMessage: message,
+                        message,
                     });
                 }
                 event.context.query = parsedQuery.value;
@@ -173,7 +173,7 @@ export function handleRoute(
                         }
                     }
                     throw defineError(400, {
-                        statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                        message: `Invalid request body. Affected properties [${errorParts.join(
                             ", ",
                         )}]`,
                         data: parsedBody.error,
@@ -201,7 +201,7 @@ export function handleRoute(
                 await route.postHandler(event as PostRouteEvent<string>);
             }
         } catch (err) {
-            await handleH3Error(err, event, opts.onError);
+            await handleH3Error(err, event, opts.onError, opts.debug ?? false);
         }
         return "";
     });

@@ -4,64 +4,61 @@ import 'package:arri_client/parsing.dart';
 import 'package:http/http.dart' as http;
 
 /// Serializable request error that can parse the error responses from an Arri RPC server.
-class ArriRequestError implements Exception {
-  final int statusCode;
-  final String statusMessage;
+class ArriError implements Exception {
+  final int code;
+  final String message;
   final dynamic data;
   final String? stack;
-  const ArriRequestError({
-    required this.statusCode,
-    required this.statusMessage,
+  const ArriError({
+    required this.code,
+    required this.message,
     this.data,
     this.stack,
   });
 
   /// Create an ArriRequestError from an HTTP response
-  factory ArriRequestError.fromResponse(http.Response response) {
+  factory ArriError.fromResponse(http.Response response) {
     try {
       final body = json.decode(response.body);
-      return ArriRequestError(
-        statusCode: body["statusCode"] is int
-            ? body["statusCode"]
-            : response.statusCode,
-        statusMessage: body["statusMessage"] is String
-            ? body["statusMessage"]
+      return ArriError(
+        code: body["code"] is int ? body["code"] : response.statusCode,
+        message: body["message"] is String
+            ? body["message"]
             : "Unknown error requesting ${response.request?.url.toString()}",
         data: body["data"],
         stack: body["stack"] is String ? body["stack"] : null,
       );
     } catch (err) {
-      return ArriRequestError.unknown();
+      return ArriError.unknown();
     }
   }
 
-  factory ArriRequestError.unknown() {
-    return ArriRequestError(
-      statusCode: 400,
-      statusMessage: "Unknown error",
+  factory ArriError.unknown() {
+    return ArriError(
+      code: 400,
+      message: "Unknown error",
     );
   }
   @override
   String toString() {
-    return "{ statusCode: $statusCode, statusMessage: $statusMessage, data: ${data.toString()}, stack: $stack }";
+    return "{ code: $code, message: $message, data: ${data.toString()}, stack: $stack }";
   }
 
-  factory ArriRequestError.fromJson(Map<String, dynamic> json) {
-    return ArriRequestError(
-      statusCode: intFromDynamic(json["statusCode"], 0),
-      statusMessage:
-          typeFromDynamic<String>(json["statusMessage"], "Unknown Error"),
+  factory ArriError.fromJson(Map<String, dynamic> json) {
+    return ArriError(
+      code: intFromDynamic(json["code"], 0),
+      message: typeFromDynamic<String>(json["message"], "Unknown Error"),
       data: json["data"],
       stack: nullableTypeFromDynamic<String>(json["stack"]),
     );
   }
 
-  factory ArriRequestError.fromString(String input) {
+  factory ArriError.fromString(String input) {
     try {
       final val = json.decode(input);
-      return ArriRequestError.fromJson(val);
+      return ArriError.fromJson(val);
     } catch (err) {
-      return ArriRequestError.unknown();
+      return ArriError.unknown();
     }
   }
 }

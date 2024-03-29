@@ -1,4 +1,4 @@
-import { type ArriRequestError, ArriRequestErrorInstance } from "arri-client";
+import { type ArriError, ArriErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import { test, expect, describe } from "vitest";
 import {
@@ -43,9 +43,9 @@ test("route request (unauthorized)", async () => {
             baseURL: baseUrl,
         });
     } catch (err) {
-        expect(err instanceof ArriRequestErrorInstance);
-        if (err instanceof ArriRequestErrorInstance) {
-            expect(err.statusCode).toBe(401);
+        expect(err instanceof ArriErrorInstance);
+        if (err instanceof ArriErrorInstance) {
+            expect(err.code).toBe(401);
         }
     }
 });
@@ -123,9 +123,9 @@ test("unauthenticated RPC request returns a 401 error", async () => {
         await unauthenticatedClient.tests.sendObject(input);
         expect(true).toBe(false);
     } catch (err) {
-        expect(err instanceof ArriRequestErrorInstance);
-        if (err instanceof ArriRequestErrorInstance) {
-            expect(err.statusCode).toBe(401);
+        expect(err instanceof ArriErrorInstance);
+        if (err instanceof ArriErrorInstance) {
+            expect(err.code).toBe(401);
         }
     }
 });
@@ -283,7 +283,7 @@ test("[SSE] supports server sent events", async () => {
 test("[SSE] parses both 'message' and 'error' events", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriRequestError | undefined;
+    let errorReceived: ArriError | undefined;
     const controller = client.tests.streamTenEventsThenError({
         onData(_) {
             messageCount++;
@@ -301,7 +301,7 @@ test("[SSE] parses both 'message' and 'error' events", async () => {
             resolve(true);
         }, 500);
     });
-    expect(errorReceived?.statusCode).toBe(400);
+    expect(errorReceived?.code).toBe(400);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
@@ -310,7 +310,7 @@ test("[SSE] parses both 'message' and 'error' events", async () => {
 test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriRequestError | undefined;
+    let errorReceived: ArriError | undefined;
     const controller = client.tests.streamTenEventsThenEnd({
         onData(_) {
             messageCount++;

@@ -25,8 +25,8 @@ export default defineEventStreamRpc({
             }
             if (messageCount === 10) {
                 await stream.pushError({
-                    statusCode: 400,
-                    statusMessage: "Too many requests",
+                    code: 400,
+                    message: "Too many requests",
                 });
                 await cleanup();
             }

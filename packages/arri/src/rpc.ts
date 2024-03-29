@@ -282,7 +282,7 @@ export function registerRpc(
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     const errors = a.errors(procedure.response, response);
                     throw defineError(500, {
-                        statusMessage:
+                        message:
                             "Failed to serialize response. Response does not match specified schema",
                         data: errors,
                     });
@@ -307,7 +307,7 @@ export function registerRpc(
                 );
             }
         } catch (err) {
-            await handleH3Error(err, event, opts.onError);
+            await handleH3Error(err, event, opts.onError, opts.debug ?? false);
         }
         return "";
     });
@@ -357,7 +357,7 @@ export async function validateRpcRequestInput(
                     ", ",
                 )}]`;
                 throw defineError(400, {
-                    statusMessage: message,
+                    message,
                     data: parsedParams.error,
                 });
             }
@@ -370,7 +370,7 @@ export async function validateRpcRequestInput(
             const body = await readRawBody(event);
             if (!body) {
                 throw defineError(400, {
-                    statusMessage: `Invalid request body. Expected object. Got undefined.`,
+                    message: `Invalid request body. Expected object. Got undefined.`,
                 });
             }
             const parsedParams = a.safeParse(schema, body);
@@ -384,7 +384,7 @@ export async function validateRpcRequestInput(
                     }
                 }
                 throw defineError(400, {
-                    statusMessage: `Invalid request body. Affected properties [${errorParts.join(
+                    message: `Invalid request body. Affected properties [${errorParts.join(
                         ", ",
                     )}]`,
                     data: parsedParams.error,

@@ -107,7 +107,7 @@ Future<http.Response> arriRequest(
           headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
     default:
-      throw ArriRequestError.fromResponse(result);
+      throw ArriError.fromResponse(result);
   }
   return result;
 }
@@ -127,7 +127,7 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   if (result.statusCode >= 200 && result.statusCode <= 299) {
     return parser(utf8.decode(result.bodyBytes));
   }
-  throw ArriRequestError.fromResponse(result);
+  throw ArriError.fromResponse(result);
 }
 
 /// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result
@@ -146,14 +146,14 @@ Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
     );
     return ArriRequestResult(value: result);
   } catch (err) {
-    return ArriRequestResult(error: err is ArriRequestError ? err : null);
+    return ArriRequestResult(error: err is ArriError ? err : null);
   }
 }
 
 /// Container for holding a request result or a request error
 class ArriRequestResult<T> {
   final T? value;
-  final ArriRequestError? error;
+  final ArriError? error;
   const ArriRequestResult({this.value, this.error});
 }
 

@@ -23,7 +23,7 @@ export default defineEventStreamRpc({
     ),
     async handler({ params }) {
         throw defineError(params.statusCode, {
-            statusMessage: params.statusMessage,
+            message: params.statusMessage,
         });
     },
 });
