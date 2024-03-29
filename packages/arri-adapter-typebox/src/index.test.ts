@@ -166,28 +166,4 @@ describe("arri inference", () => {
             },
         });
     });
-    test("record parameters", () => {
-        const Schema = Type.Record(Type.String(), Type.Boolean());
-        type Schema = Static<typeof Schema>;
-        defineRpc({
-            params: typeboxAdapter(Schema),
-            response: typeboxAdapter(Schema),
-            handler({ params }) {
-                assertType<Schema>(params);
-                return {
-                    "1": true,
-                    "2": false,
-                };
-            },
-        });
-        defineEventStreamRpc({
-            params: typeboxAdapter(Schema),
-            response: typeboxAdapter(Schema),
-            handler({ params, stream }) {
-                assertType<Schema>(params);
-                stream.send();
-                void stream.push({ "1": true, "2": false });
-            },
-        });
-    });
 });

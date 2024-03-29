@@ -34,7 +34,7 @@ export function defineError(
         statusCode,
         statusMessage:
             input.statusMessage ??
-            defaultVals.message ??
+            defaultVals?.message ??
             "An unknown error occurred",
         stack: input.stack ?? "",
         data: input.data,
@@ -47,8 +47,8 @@ export function errorResponseFromValidationErrors(
 ): H3Error {
     const errorParts: string[] = [];
     for (const err of errors) {
-        const propName = err.instancePath?.split("/") ?? [];
-        if (propName.length) {
+        const propName: string[] = err.instancePath?.split("/") ?? [];
+        if (propName.length > 0) {
             propName.shift();
         }
         if (!errorParts.includes(propName.join("."))) {

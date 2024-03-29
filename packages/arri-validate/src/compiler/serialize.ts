@@ -294,7 +294,7 @@ export function objectTemplate(
         !input.discriminatorKey?.length &&
         !input.discriminatorValue?.length;
     for (let i = 0; i < propKeys.length; i++) {
-        const key = propKeys[i];
+        const key = propKeys[i]!;
         const propSchema = input.schema.properties[key];
         const includeComma =
             i !== 0 || (input.discriminatorKey && input.discriminatorValue);
@@ -327,7 +327,7 @@ export function objectTemplate(
               );
         templateParts.push(`let ${hasFieldsVar} = false;`);
         for (let i = 0; i < optionalPropKeys.length; i++) {
-            const key = optionalPropKeys[i];
+            const key = optionalPropKeys[i]!;
             const optionalPropSchema = input.schema.optionalProperties?.[
                 key
             ] as Schema;
@@ -366,7 +366,7 @@ export function objectTemplate(
         }
     } else {
         for (let i = 0; i < optionalPropKeys.length; i++) {
-            const key = optionalPropKeys[i];
+            const key = optionalPropKeys[i]!;
             const optionalPropSchema = input.schema.optionalProperties?.[key];
             if (!optionalPropSchema) {
                 continue;
@@ -417,7 +417,7 @@ function hasFunctionName(name: string, fns: Record<string, string>) {
 }
 
 function hasFunctionBody(name: string, fns: Record<string, string>) {
-    return typeof fns[name] === "string" && fns[name].length > 0;
+    return typeof fns[name] === "string" && fns[name]!.length > 0;
 }
 
 export function arrayTemplate(

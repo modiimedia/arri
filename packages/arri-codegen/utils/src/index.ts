@@ -198,7 +198,7 @@ export function setNestedObjectProperty<T>(
     const parts = targetProp.split(".");
     let current = object;
     for (let i = 0; i < parts.length; i++) {
-        const key = parts[i];
+        const key = parts[i]!;
         if (i === parts.length - 1) {
             current[key] = value;
         } else {

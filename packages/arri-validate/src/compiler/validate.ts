@@ -282,6 +282,9 @@ function discriminatorTemplate(
     const parts: string[] = [];
     for (const discriminatorVal of Object.keys(input.schema.mapping)) {
         const subSchema = input.schema.mapping[discriminatorVal];
+        if (!subSchema) {
+            continue;
+        }
         parts.push(
             objectTemplate({
                 val: input.val,

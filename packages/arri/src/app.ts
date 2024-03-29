@@ -185,7 +185,7 @@ export class ArriApp implements ArriRouterBase {
 
     registerModels(models: ModelMap) {
         for (const key of Object.keys(models)) {
-            this.models[key] = models[key];
+            this.models[key] = models[key]!;
         }
     }
 
@@ -197,7 +197,7 @@ export class ArriApp implements ArriRouterBase {
             models: this.models as any,
         };
         for (const key of Object.keys(this.procedures)) {
-            const rpc = this.procedures[key];
+            const rpc = this.procedures[key]!;
             appDef.procedures[key] = rpc;
         }
         return appDef;
