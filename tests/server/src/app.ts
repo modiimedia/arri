@@ -9,7 +9,6 @@ import { a } from "arri-validate";
 import manualRouter from "./routes/other";
 
 const app = new ArriApp({
-    debug: true,
     rpcRoutePrefix: "rpcs",
     appInfo: {
         version: "10",
