@@ -8,7 +8,7 @@ class ArriError implements Exception {
   final int code;
   final String message;
   final dynamic data;
-  final String? stack;
+  final List<String>? stack;
   const ArriError({
     required this.code,
     required this.message,
@@ -26,7 +26,11 @@ class ArriError implements Exception {
             ? body["message"]
             : "Unknown error requesting ${response.request?.url.toString()}",
         data: body["data"],
-        stack: body["stack"] is String ? body["stack"] : null,
+        stack: body["stack"] is List
+            ? (body["stack"] as List)
+                .map((e) => e is String ? e : e.toString())
+                .toList()
+            : null,
       );
     } catch (err) {
       return ArriError.unknown();
@@ -41,7 +45,10 @@ class ArriError implements Exception {
   }
   @override
   String toString() {
-    return "{ code: $code, message: $message, data: ${data.toString()}, stack: $stack }";
+    if (stack == null) {
+      return "{ code: $code, message: $message, data: ${data.toString()} }";
+    }
+    return "{ code: $code, message: $message, data: ${data.toString()}, stack: [${stack!.map((e) => "\"$e\"").join(",")}] }";
   }
 
   factory ArriError.fromJson(Map<String, dynamic> json) {
@@ -49,7 +56,11 @@ class ArriError implements Exception {
       code: intFromDynamic(json["code"], 0),
       message: typeFromDynamic<String>(json["message"], "Unknown Error"),
       data: json["data"],
-      stack: nullableTypeFromDynamic<String>(json["stack"]),
+      stack: json["stack"] is List
+          ? (json["stack"] as List)
+              .map((e) => e is String ? e : e.toString())
+              .toList()
+          : null,
     );
   }
 

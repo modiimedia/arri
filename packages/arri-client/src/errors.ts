@@ -41,7 +41,7 @@ export class ArriErrorInstance extends Error implements ArriError {
         return {
             code: this.code,
             message: this._internalMessage,
-            stack: this.stack,
+            stack: this.stack?.split("\n").map((l) => l.trim()),
             data: this.data,
         };
     }
@@ -71,8 +71,8 @@ export class ArriErrorInstance extends Error implements ArriError {
                     ? parsedJson.message
                     : "",
             stack:
-                "stack" in parsedJson && typeof parsedJson.stack === "string"
-                    ? parsedJson.stack
+                "stack" in parsedJson && Array.isArray(parsedJson.stack)
+                    ? parsedJson.stack.join("\n")
                     : undefined,
             data: "data" in parsedJson ? parsedJson.data : undefined,
         });

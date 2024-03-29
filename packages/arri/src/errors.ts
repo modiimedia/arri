@@ -12,7 +12,12 @@ import { type ArriOptions } from "./app";
 export class ArriServerError extends Error {
     code: number;
     data?: any;
-    constructor(err: ArriServerErrorResponse) {
+    constructor(err: {
+        code: number;
+        message: string;
+        data?: any;
+        stack?: string;
+    }) {
         super(err.message);
         this.code = err.code;
         this.data = err.data;
@@ -22,20 +27,15 @@ export class ArriServerError extends Error {
     }
 }
 
-export const ArriServerErrorResponse = a.object(
-    {
-        code: a.int16(),
-        message: a.string(),
-        stack: a.optional(a.string()),
-        data: a.optional(a.any()),
-    },
-    {
-        id: "ArriError",
-    },
-) as AObjectSchema<{
+export const ArriServerErrorResponse = a.object({
+    code: a.int16(),
+    message: a.string(),
+    stack: a.optional(a.array(a.string())),
+    data: a.optional(a.any()),
+}) as AObjectSchema<{
     code: number;
     message: string;
-    stack?: string;
+    stack?: string[];
     data?: any;
 }>;
 
@@ -43,9 +43,7 @@ export type ArriServerErrorResponse = a.infer<typeof ArriServerErrorResponse>;
 
 export function defineError(
     statusCode: StatusCode,
-    input: Partial<Omit<ArriServerErrorResponse, "code" | "stack">> & {
-        stack?: string;
-    } = {},
+    input: Partial<Omit<ArriServerErrorResponse, "code" | "stack">> = {},
 ): ArriServerError {
     const defaultVals = errorResponseDefaults[statusCode];
     return new ArriServerError({
@@ -54,7 +52,6 @@ export function defineError(
             input.message ??
             defaultVals?.message ??
             "An unknown error occurred",
-        stack: input.stack ?? "",
         data: input.data,
     });
 }
@@ -286,7 +283,7 @@ export async function handleH3Error(
         arriErr = new ArriServerError({
             code: err.statusCode,
             message: err.message,
-            stack: err.stack ?? `${err as any}`,
+            stack: err.stack,
             data: err.data,
         });
     } else if (err instanceof Error) {
@@ -327,7 +324,7 @@ async function sendArriError(
         data: error.data,
     };
     if (debug) {
-        payload.stack = error.stack;
+        payload.stack = error.stack?.split("\n").map((l) => l.trim()) as any;
     }
     setResponseHeader(event, "Content-Type", "application/json");
     setResponseStatus(event, error.code);
