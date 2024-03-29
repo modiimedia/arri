@@ -1,42 +1,57 @@
 import { type ValidationError, a, type AObjectSchema } from "arri-validate";
 import {
     type H3Error,
-    createError,
     type H3Event,
     isError,
     setResponseStatus,
     send,
+    setResponseHeader,
 } from "h3";
 import { type ArriOptions } from "./app";
 
-export const ErrorResponse = a.object({
-    statusCode: a.int8(),
-    statusMessage: a.string(),
-    stack: a.optional(a.string()),
+export class ArriServerError extends Error {
+    code: number;
+    data?: any;
+    constructor(err: {
+        code: number;
+        message: string;
+        data?: any;
+        stack?: string;
+    }) {
+        super(err.message);
+        this.code = err.code;
+        this.data = err.data;
+        if (err.stack) {
+            this.stack = err.stack;
+        }
+    }
+}
+
+export const ArriServerErrorResponse = a.object({
+    code: a.int16(),
+    message: a.string(),
+    stack: a.optional(a.array(a.string())),
     data: a.optional(a.any()),
 }) as AObjectSchema<{
-    statusCode: number;
-    statusMessage: string;
-    stack?: string;
+    code: number;
+    message: string;
+    stack?: string[];
     data?: any;
 }>;
 
-export type ErrorResponse = a.infer<typeof ErrorResponse>;
+export type ArriServerErrorResponse = a.infer<typeof ArriServerErrorResponse>;
 
 export function defineError(
     statusCode: StatusCode,
-    input: Partial<Omit<ErrorResponse, "statusCode" | "stack">> & {
-        stack?: string;
-    } = {},
-): H3Error {
+    input: Partial<Omit<ArriServerErrorResponse, "code" | "stack">> = {},
+): ArriServerError {
     const defaultVals = errorResponseDefaults[statusCode];
-    return createError({
-        statusCode,
-        statusMessage:
-            input.statusMessage ??
+    return new ArriServerError({
+        code: statusCode,
+        message:
+            input.message ??
             defaultVals?.message ??
             "An unknown error occurred",
-        stack: input.stack ?? "",
         data: input.data,
     });
 }
@@ -56,7 +71,7 @@ export function errorResponseFromValidationErrors(
         }
     }
     throw defineError(400, {
-        statusMessage: `${prefixText}: [${errorParts.join(",")}]`,
+        message: `${prefixText}: [${errorParts.join(",")}]`,
         data: errors,
     });
 }
@@ -259,34 +274,59 @@ export async function handleH3Error(
     err: unknown,
     event: H3Event,
     onError: ArriOptions["onError"],
+    debug: boolean,
 ) {
-    const error = isError(err)
-        ? err
-        : defineError(500, {
-              statusMessage:
-                  typeof err === "object" &&
-                  err != null &&
-                  "message" in err &&
-                  typeof err.message === "string"
-                      ? err.message
-                      : undefined,
-              data: err as any,
-              stack: `${err as any}`,
-          });
-    setResponseStatus(event, error.statusCode);
+    let arriErr: ArriServerError | undefined;
+    if (err instanceof ArriServerError) {
+        arriErr = err;
+    } else if (isError(err)) {
+        arriErr = new ArriServerError({
+            code: err.statusCode,
+            message: err.message,
+            stack: err.stack,
+            data: err.data,
+        });
+    } else if (err instanceof Error) {
+        arriErr = new ArriServerError({
+            code: 500,
+            message: err.message,
+            data: err,
+            stack: err.stack,
+        });
+    } else {
+        arriErr = new ArriServerError({
+            code: 500,
+            message: `An unknown error occurred`,
+            data: err,
+        });
+    }
+    if (!arriErr) {
+        return;
+    }
+    setResponseStatus(event, arriErr.code);
     if (onError) {
-        await onError(error, event);
+        await onError(arriErr, event);
     }
     if (event.handled) {
         return;
     }
-    await send(
-        event,
-        JSON.stringify({
-            statusCode: error.statusCode,
-            statusMessage: error.statusMessage,
-            data: error.data,
-            stack: error.stack,
-        }),
-    );
+    return sendArriError(event, arriErr, debug);
+}
+
+async function sendArriError(
+    event: H3Event,
+    error: ArriServerError,
+    debug: boolean,
+) {
+    const payload: ArriServerErrorResponse = {
+        code: error.code,
+        message: error.message,
+        data: error.data,
+    };
+    if (debug) {
+        payload.stack = error.stack?.split("\n").map((l) => l.trim()) as any;
+    }
+    setResponseHeader(event, "Content-Type", "application/json");
+    setResponseStatus(event, error.code);
+    return send(event, JSON.stringify(payload));
 }

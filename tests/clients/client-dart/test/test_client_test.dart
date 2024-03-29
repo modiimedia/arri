@@ -116,8 +116,8 @@ Future<void> main() async {
       await unauthenticatedClient.tests.sendObject(input);
       expect(false, equals(true));
     } catch (err) {
-      if (err is ArriRequestError) {
-        expect(err.statusCode, equals(401));
+      if (err is ArriError) {
+        expect(err.code, equals(401));
         return;
       }
       expect(false, equals(true));
@@ -371,7 +371,7 @@ Future<void> main() async {
     var errorCount = 0;
     var connectionErrorCount = 0;
     var msgCount = 0;
-    final List<ArriRequestError> errors = [];
+    final List<ArriError> errors = [];
     final statusCode = 555;
     final statusMessage = "test_message";
     final eventSource = client.tests.streamConnectionErrorTest(
@@ -402,8 +402,7 @@ Future<void> main() async {
     expect(
       errors.every(
         (element) =>
-            element.statusCode == statusCode &&
-            element.statusMessage == statusMessage,
+            element.code == statusCode && element.message == statusMessage,
       ),
       equals(true),
     );

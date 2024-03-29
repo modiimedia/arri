@@ -1,4 +1,4 @@
-import { arriSafeRequest, isArriRequestError } from "./_index";
+import { arriSafeRequest, isArriError } from "./_index";
 
 test("error messages", async () => {
     const request = await arriSafeRequest({
@@ -11,7 +11,7 @@ test("error messages", async () => {
     });
     expect(!request.success);
     if (!request.success) {
-        expect(isArriRequestError(request.error));
-        expect(request.error.statusCode).toBe(500);
+        expect(isArriError(request.error));
+        expect(request.error.code).toBe(500);
     }
 });

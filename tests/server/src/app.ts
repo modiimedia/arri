@@ -9,6 +9,7 @@ import { a } from "arri-validate";
 import manualRouter from "./routes/other";
 
 const app = new ArriApp({
+    debug: true,
     rpcRoutePrefix: "rpcs",
     appInfo: {
         version: "10",
@@ -29,7 +30,7 @@ app.use(
             event.path !== "/favicon.ico"
         ) {
             throw defineError(401, {
-                statusMessage: "Missing test auth header 'x-test-header'",
+                message: "Missing test auth header 'x-test-header'",
             });
         }
     }),
