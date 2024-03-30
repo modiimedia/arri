@@ -17,7 +17,7 @@ fun main() {
         onData = { user ->
             println(user.toString())
         },
-        onConnectionError = {err ->
+        onConnectionError = { err ->
             println(err)
         }
     )

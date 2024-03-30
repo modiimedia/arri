@@ -24,6 +24,8 @@ import {
     type SchemaFormValues,
     isSchemaFormValues,
     isSchemaFormDiscriminator,
+    isSchemaFormRef,
+    type SchemaFormRef,
 } from "jtd-utils";
 
 export interface ServiceContext {
@@ -419,6 +421,10 @@ export function kotlinPropertyFromSchema(
         return kotlinMapFromSchema(schema, context);
     }
 
+    if (isSchemaFormRef(schema)) {
+        return kotlinRefFromSchema(schema, context);
+    }
+
     return {
         dataType: `JsonElement${schema.nullable ? "?" : ""}`,
         comparisonTemplate: defaultComparisonTemplate,
@@ -736,6 +742,20 @@ export function kotlinMapFromSchema(
     };
 }
 
+export function kotlinRefFromSchema(
+    schema: SchemaFormRef,
+    context: ModelContext,
+): KotlinProperty {
+    const typeName = pascalCase(schema.ref, { normalize: true });
+    const dataType = `${typeName}${schema.nullable ? "?" : ""}`;
+    return {
+        dataType,
+        comparisonTemplate: defaultComparisonTemplate,
+        hashTemplate: defaultComparisonTemplate,
+        content: "",
+    };
+}
+
 const importSection = `import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -871,9 +891,9 @@ private suspend fun handleSseRequest(
     lastEventId: String?,
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
-    onError: ((error: TestClientError) -> Unit) = {},
+    onError: ((error: ${clientName}Error) -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onConnectionError: ((error: TestClientError) -> Unit) = {},
+    onConnectionError: ((error: ${clientName}Error) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = mutableMapOf<String, String>();
@@ -906,7 +926,7 @@ private suspend fun handleSseRequest(
             if (httpResponse.status.value != 200) {
 
                 onConnectionError(
-                    TestClientError(
+                    ${clientName}Error(
                         code = httpResponse.status.value,
                         message = "Error fetching stream",
                         data = JsonInstance.encodeToJsonElement(httpResponse),
@@ -928,7 +948,7 @@ private suspend fun handleSseRequest(
                     onClose = onClose,
                     onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError
+                    onConnectionError = onConnectionError,
                 )
                 return@execute
             }
@@ -955,7 +975,7 @@ private suspend fun handleSseRequest(
                         }
 
                         "error" -> {
-                            val error = JsonInstance.decodeFromString<TestClientError>(event.data)
+                            val error = JsonInstance.decodeFromString<${clientName}Error>(event.data)
                             onError(error)
                         }
 
@@ -966,11 +986,11 @@ private suspend fun handleSseRequest(
         }
     } catch (e: java.net.ConnectException) {
         onConnectionError(
-            TestClientError(
+            ${clientName}Error(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString().split("\\n")
+                stack = e.stackTraceToString().split("\\n"),
             )
         )
         handleSseRequest(
@@ -988,16 +1008,16 @@ private suspend fun handleSseRequest(
             onClose = onClose,
             onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError
+            onConnectionError = onConnectionError,
         )
         return
     } catch (e: Exception) {
         onConnectionError(
-            TestClientError(
+            ${clientName}Error(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString().split("\\n")
+                stack = e.stackTraceToString().split("\\n"),
             )
         )
         handleSseRequest(
@@ -1015,7 +1035,7 @@ private suspend fun handleSseRequest(
             onClose = onClose,
             onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError
+            onConnectionError = onConnectionError,
         )
     }
 }`;

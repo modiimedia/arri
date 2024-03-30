@@ -49,7 +49,12 @@ class TestClient(
             params = null,
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<GetStatusResponse>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<GetStatusResponse>(response.body())
+
+        }
+        val error =  JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
 }
 
@@ -68,7 +73,11 @@ class TestClientUsersService(
             params = JsonInstance.encodeToJsonElement<UserParams>(params),
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<User>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<User>(response.body())
+        }
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
 
     suspend fun updateUser(params: UpdateUserParams): User {
@@ -79,7 +88,11 @@ class TestClientUsersService(
             params = JsonInstance.encodeToJsonElement<UpdateUserParams>(params),
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<User>(response.body())
+        if(response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<User>(response.body())
+        }
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
 
     fun watchUser(
@@ -131,13 +144,18 @@ class TestClientUsersSettingsService(
     private val headers: Map<String, String> = mutableMapOf(),
 ) {
     suspend fun getUserSettings(): Unit {
-        prepareRequest(
+        val request = prepareRequest(
             client = httpClient,
             url = "$baseUrl/users/settings/get-user-settings",
             method = HttpMethod.Get,
             params = null,
             headers = headers,
         ).execute()
+        if(request.status.value in 200..299) {
+            return
+        }
+        val error = JsonInstance.decodeFromString<TestClientError>(request.body())
+        throw error
     }
 }
 
@@ -155,10 +173,12 @@ data class User(
     val createdAt: Instant,
     val numFollowers: Int,
     val settings: UserSettings,
+    val lastNotification: UserRecentNotificationsItem?,
     val recentNotifications: List<UserRecentNotificationsItem>,
     val bookmarks: Map<String, UserBookmarksValue>,
     val metadata: Map<String, JsonElement>,
     val randomList: List<JsonElement>,
+    val binaryTree: BinaryTree,
     val bio: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -272,6 +292,12 @@ data class UserBookmarksValue(
 )
 
 @Serializable
+data class BinaryTree(
+    val left: BinaryTree?,
+    val right: BinaryTree?,
+)
+
+@Serializable
 data class UserParams(
     val userId: String,
 )
@@ -285,11 +311,11 @@ data class UpdateUserParams(
 
 @Serializable
 data class TestClientError(
-    val statusCode: Int,
-    val statusMessage: String,
-    val data: JsonElement,
-    val stack: String?
-)
+    val code: Int,
+    override val message: String,
+    val data: JsonElement? = null,
+    val stack: List<String>? = null,
+): Exception()
 
 object InstantAsStringSerializer : KSerializer<Instant> {
     override val descriptor: SerialDescriptor
@@ -432,10 +458,10 @@ private suspend fun handleSseRequest(
 
                 onConnectionError(
                     TestClientError(
-                        statusCode = httpResponse.status.value,
-                        statusMessage = "Error fetching stream",
+                        code = httpResponse.status.value,
+                        message = "Error fetching stream",
                         data = JsonInstance.encodeToJsonElement(httpResponse),
-                        stack = ""
+                        stack = null,
                     )
                 )
                 handleSseRequest(
@@ -453,7 +479,7 @@ private suspend fun handleSseRequest(
                     onClose = onClose,
                     onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError
+                    onConnectionError = onConnectionError,
                 )
                 return@execute
             }
@@ -492,10 +518,10 @@ private suspend fun handleSseRequest(
     } catch (e: java.net.ConnectException) {
         onConnectionError(
             TestClientError(
-                statusCode = 503,
-                statusMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                code = 503,
+                message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString()
+                stack = e.stackTraceToString().split("\n"),
             )
         )
         handleSseRequest(
@@ -513,16 +539,16 @@ private suspend fun handleSseRequest(
             onClose = onClose,
             onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError
+            onConnectionError = onConnectionError,
         )
         return
     } catch (e: Exception) {
         onConnectionError(
             TestClientError(
-                statusCode = 503,
-                statusMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                code = 503,
+                message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString()
+                stack = e.stackTraceToString().split("\n"),
             )
         )
         handleSseRequest(
@@ -540,7 +566,7 @@ private suspend fun handleSseRequest(
             onClose = onClose,
             onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError
+            onConnectionError = onConnectionError,
         )
     }
 }
