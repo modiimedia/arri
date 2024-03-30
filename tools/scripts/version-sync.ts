@@ -18,7 +18,7 @@ async function main() {
         { encoding: "utf-8" },
     ).split("\n");
     for (let i = 0; i < pubspecParts.length; i++) {
-        const line = pubspecParts[i];
+        const line = pubspecParts[i]!;
         if (line.startsWith("version: ")) {
             pubspecParts[i] = `version: "${version}"`;
         }
@@ -48,7 +48,7 @@ async function main() {
     await Promise.all(tasks);
 
     // sync test clients
-    execSync("nx pub-get test-client-dart");
+    execSync("nx run-many -t pub -- get");
 }
 
 void main();

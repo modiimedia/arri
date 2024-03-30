@@ -84,8 +84,8 @@ export function compile<TSchema extends ASchema<any>>(
                 let errorMessage = err instanceof Error ? err.message : "";
                 if (errors.length) {
                     errorMessage =
-                        errors[0].message ??
-                        `Parsing error at ${errors[0].instancePath}`;
+                        errors[0]!.message ??
+                        `Parsing error at ${errors[0]!.instancePath}`;
                 }
                 throw new ValidationError({
                     message: errorMessage,
@@ -105,8 +105,8 @@ export function compile<TSchema extends ASchema<any>>(
                 let errorMessage = err instanceof Error ? err.message : "";
                 if (errors.length) {
                     errorMessage =
-                        errors[0].message ??
-                        `Parsing error at ${errors[0].instancePath}`;
+                        errors[0]!.message ??
+                        `Parsing error at ${errors[0]!.instancePath}`;
                 }
                 return {
                     success: false,
@@ -126,8 +126,8 @@ export function compile<TSchema extends ASchema<any>>(
                 let errorMessage = err instanceof Error ? err.message : "";
                 if (errors.length) {
                     errorMessage =
-                        errors[0].message ??
-                        `Serialization error at ${errors[0].instancePath}`;
+                        errors[0]!.message ??
+                        `Serialization error at ${errors[0]!.instancePath}`;
                 }
                 throw new ValidationError({ message: errorMessage, errors });
             }

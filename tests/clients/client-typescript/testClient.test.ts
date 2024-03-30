@@ -1,4 +1,4 @@
-import { type ArriRequestError, ArriRequestErrorInstance } from "arri-client";
+import { type ArriError, ArriErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import { test, expect, describe } from "vitest";
 import {
@@ -9,7 +9,6 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     type TypeBoxObject,
-    type UpdateAuthorData,
 } from "./testClient.rpc";
 
 const baseUrl = "http://127.0.0.1:2020";
@@ -26,7 +25,7 @@ const unauthenticatedClient = new TestClient({
 });
 
 test("route request", async () => {
-    const result = await ofetch("/routes/authors/12345", {
+    const result = await ofetch("/routes/hello-world", {
         method: "post",
         baseURL: baseUrl,
         headers,
@@ -34,269 +33,218 @@ test("route request", async () => {
             name: "John Doe",
         },
     });
-    expect(result.id).toBe("12345");
-    expect(result.name).toBe("John Doe");
+    expect(result).toBe("hello world");
 });
 
-describe("miscTests", () => {
-    const input: ObjectWithEveryType = {
-        any: {
-            blah: "blah",
-            blah2: "blah2",
-            blah3: true,
-        },
-        boolean: true,
-        string: "hello world",
+test("route request (unauthorized)", async () => {
+    try {
+        await ofetch("/routes/hello-world", {
+            method: "post",
+            baseURL: baseUrl,
+        });
+    } catch (err) {
+        expect(err instanceof ArriErrorInstance);
+        if (err instanceof ArriErrorInstance) {
+            expect(err.code).toBe(401);
+        }
+    }
+});
+
+test("can handle RPCs with no params", async () => {
+    const result = await client.tests.emptyParamsGetRequest();
+    const result2 = await client.tests.emptyParamsPostRequest();
+    expect(typeof result.message).toBe("string");
+    expect(typeof result2.message).toBe("string");
+});
+test("can handle RPCs with no response", async () => {
+    await client.tests.emptyResponseGetRequest({ message: "ok" });
+    await client.tests.emptyResponsePostRequest({ message: "ok" });
+});
+const input: ObjectWithEveryType = {
+    any: {
+        blah: "blah",
+        blah2: "blah2",
+        blah3: true,
+    },
+    boolean: true,
+    string: "hello world",
+    timestamp: new Date(),
+    float32: 0,
+    float64: 0,
+    int8: 0,
+    uint8: 0,
+    int16: 0,
+    uint16: 0,
+    int32: 0,
+    uint32: 0,
+    int64: 0n,
+    uint64: 0n,
+    enumerator: "B",
+    array: [true, false, false],
+    object: {
+        string: "",
+        boolean: false,
         timestamp: new Date(),
-        float32: 0,
-        float64: 0,
-        int8: 0,
-        uint8: 0,
-        int16: 0,
-        uint16: 0,
-        int32: 0,
-        uint32: 0,
-        int64: 0n,
-        uint64: 0n,
-        enumerator: "B",
-        array: [true, false, false],
-        object: {
-            string: "",
-            boolean: false,
-            timestamp: new Date(),
-        },
-        record: {
-            A: true,
-            B: false,
-        },
-        discriminator: {
-            type: "B",
-            title: "Hello World",
-            description: "",
-        },
-        nestedObject: {
+    },
+    record: {
+        A: true,
+        B: false,
+    },
+    discriminator: {
+        type: "B",
+        title: "Hello World",
+        description: "",
+    },
+    nestedObject: {
+        id: "",
+        timestamp: new Date(),
+        data: {
             id: "",
             timestamp: new Date(),
             data: {
                 id: "",
                 timestamp: new Date(),
-                data: {
-                    id: "",
-                    timestamp: new Date(),
-                },
             },
         },
-        nestedArray: [
-            [
-                { id: "", timestamp: new Date() },
-                { id: "", timestamp: new Date() },
-            ],
+    },
+    nestedArray: [
+        [
+            { id: "", timestamp: new Date() },
+            { id: "", timestamp: new Date() },
         ],
-    };
-    test("sendObject()", async () => {
-        const input: ObjectWithEveryType = {
-            any: {
-                blah: "blah",
-                blah2: "blah2",
-                blah3: true,
-            },
-            boolean: true,
-            string: "hello world",
-            timestamp: new Date(),
-            float32: 0,
-            float64: 0,
-            int8: 0,
-            uint8: 0,
-            int16: 0,
-            uint16: 0,
-            int32: 0,
-            uint32: 0,
-            int64: 0n,
-            uint64: 0n,
-            enumerator: "B",
-            array: [true, false, false],
-            object: {
-                string: "",
-                boolean: false,
-                timestamp: new Date(),
-            },
-            record: {
-                A: true,
-                B: false,
-            },
-            discriminator: {
-                type: "B",
-                title: "Hello World",
-                description: "",
-            },
-            nestedObject: {
-                id: "",
-                timestamp: new Date(),
-                data: {
-                    id: "",
-                    timestamp: new Date(),
-                    data: {
-                        id: "",
-                        timestamp: new Date(),
-                    },
-                },
-            },
-            nestedArray: [
-                [
-                    { id: "", timestamp: new Date() },
-                    { id: "", timestamp: new Date() },
-                ],
-            ],
-        };
-        const result = await client.miscTests.sendObject(input);
-        expect(result).toStrictEqual(input);
-    });
-    test("sendObject() unauthenticated", async () => {
-        try {
-            await unauthenticatedClient.miscTests.sendObject(input);
-            expect(true).toBe(false);
-        } catch (err) {
-            expect(err instanceof ArriRequestErrorInstance);
-            if (err instanceof ArriRequestErrorInstance) {
-                expect(err.statusCode).toBe(401);
-            }
-        }
-    });
-    test("sendPartialObject()", async () => {
-        const fullObjectResult =
-            await client.miscTests.sendPartialObject(input);
-        expect(fullObjectResult).toStrictEqual(input);
-        const partialInput: ObjectWithEveryOptionalType = {
-            string: "",
-            int16: 0,
-            int64: 0n,
-        };
-        const partialObjectResult =
-            await client.miscTests.sendPartialObject(partialInput);
-        expect(partialObjectResult).toStrictEqual(partialInput);
-    });
-    test("sendObjectWithNullableFields", async () => {
-        const fullObjectResult =
-            await client.miscTests.sendObjectWithNullableFields(input);
-        expect(fullObjectResult).toStrictEqual(input);
-        const nullableInput: ObjectWithEveryNullableType = {
-            any: null,
-            boolean: null,
-            string: null,
-            timestamp: null,
-            float32: null,
-            float64: null,
-            int8: null,
-            uint8: null,
-            int16: null,
-            uint16: null,
-            int32: null,
-            uint32: null,
-            int64: null,
-            uint64: null,
-            enumerator: null,
-            array: null,
-            object: null,
-            record: null,
-            discriminator: null,
-            nestedObject: {
-                id: null,
-                timestamp: null,
-                data: {
-                    id: null,
-                    timestamp: null,
-                    data: null,
-                },
-            },
-            nestedArray: [null],
-        };
-        const nullableResult =
-            await client.miscTests.sendObjectWithNullableFields(nullableInput);
-        expect(nullableResult).toStrictEqual(nullableInput);
-    });
-
-    test("recursive object", async () => {
-        const payload: RecursiveObject = {
-            left: {
-                left: {
-                    left: null,
-                    right: null,
-                    value: "depth3",
-                },
-                right: {
-                    left: null,
-                    right: {
-                        left: null,
-                        right: null,
-                        value: "depth4",
-                    },
-                    value: "depth3",
-                },
-                value: "depth2",
-            },
-            right: null,
-            value: "depth1",
-        };
-        const result = await client.miscTests.sendRecursiveObject(payload);
-        expect(result).toStrictEqual(payload);
-    });
-
-    test("recursive union", async () => {
-        const payload: RecursiveUnion = {
-            type: "CHILDREN",
-            data: [
-                {
-                    type: "CHILD",
-                    data: {
-                        type: "TEXT",
-                        data: "Hello world",
-                    },
-                },
-                {
-                    type: "SHAPE",
-                    data: {
-                        width: 1,
-                        height: 2,
-                        color: "blue",
-                    },
-                },
-                {
-                    type: "CHILDREN",
-                    data: [
-                        {
-                            type: "TEXT",
-                            data: "Hello world",
-                        },
-                    ],
-                },
-            ],
-        };
-        const result = await client.miscTests.sendRecursiveUnion(payload);
-        expect(result).toStrictEqual(payload);
-    });
+    ],
+};
+test("can send/receive object every field type", async () => {
+    const result = await client.tests.sendObject(input);
+    expect(result).toStrictEqual(input);
 });
-
-test("unauthorized route request", async () => {
+test("unauthenticated RPC request returns a 401 error", async () => {
     try {
-        await ofetch("/routes/authors/12345", {
-            method: "post",
-            baseURL: baseUrl,
-            body: {
-                name: "John Doe",
-            },
-        });
+        await unauthenticatedClient.tests.sendObject(input);
+        expect(true).toBe(false);
     } catch (err) {
-        expect(err instanceof ArriRequestErrorInstance);
-        if (err instanceof ArriRequestErrorInstance) {
-            expect(err.statusCode).toBe(401);
+        expect(err instanceof ArriErrorInstance);
+        if (err instanceof ArriErrorInstance) {
+            expect(err.code).toBe(401);
         }
     }
 });
+test("can send/receive partial objects", async () => {
+    const fullObjectResult = await client.tests.sendPartialObject(input);
+    expect(fullObjectResult).toStrictEqual(input);
+    const partialInput: ObjectWithEveryOptionalType = {
+        string: "",
+        int16: 0,
+        int64: 0n,
+    };
+    const partialObjectResult =
+        await client.tests.sendPartialObject(partialInput);
+    expect(partialObjectResult).toStrictEqual(partialInput);
+});
+test("can send/receive object with nullable fields", async () => {
+    const fullObjectResult =
+        await client.tests.sendObjectWithNullableFields(input);
+    expect(fullObjectResult).toStrictEqual(input);
+    const nullableInput: ObjectWithEveryNullableType = {
+        any: null,
+        boolean: null,
+        string: null,
+        timestamp: null,
+        float32: null,
+        float64: null,
+        int8: null,
+        uint8: null,
+        int16: null,
+        uint16: null,
+        int32: null,
+        uint32: null,
+        int64: null,
+        uint64: null,
+        enumerator: null,
+        array: null,
+        object: null,
+        record: null,
+        discriminator: null,
+        nestedObject: {
+            id: null,
+            timestamp: null,
+            data: {
+                id: null,
+                timestamp: null,
+                data: null,
+            },
+        },
+        nestedArray: [null],
+    };
+    const nullableResult =
+        await client.tests.sendObjectWithNullableFields(nullableInput);
+    expect(nullableResult).toStrictEqual(nullableInput);
+});
 
-test("SSE request", async () => {
+test("can send/receive recursive objects", async () => {
+    const payload: RecursiveObject = {
+        left: {
+            left: {
+                left: null,
+                right: null,
+                value: "depth3",
+            },
+            right: {
+                left: null,
+                right: {
+                    left: null,
+                    right: null,
+                    value: "depth4",
+                },
+                value: "depth3",
+            },
+            value: "depth2",
+        },
+        right: null,
+        value: "depth1",
+    };
+    const result = await client.tests.sendRecursiveObject(payload);
+    expect(result).toStrictEqual(payload);
+});
+
+test("can send/receive recursive unions", async () => {
+    const payload: RecursiveUnion = {
+        type: "CHILDREN",
+        data: [
+            {
+                type: "CHILD",
+                data: {
+                    type: "TEXT",
+                    data: "Hello world",
+                },
+            },
+            {
+                type: "SHAPE",
+                data: {
+                    width: 1,
+                    height: 2,
+                    color: "blue",
+                },
+            },
+            {
+                type: "CHILDREN",
+                data: [
+                    {
+                        type: "TEXT",
+                        data: "Hello world",
+                    },
+                ],
+            },
+        ],
+    };
+    const result = await client.tests.sendRecursiveUnion(payload);
+    expect(result).toStrictEqual(payload);
+});
+
+test("[SSE] supports server sent events", async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
-    const controller = client.miscTests.streamMessages(
+    const controller = client.tests.streamMessages(
         { channelId: "1" },
         {
             onData(data) {
@@ -332,11 +280,11 @@ test("SSE request", async () => {
     expect(wasConnected).toBe(true);
 }, 2000);
 
-test("SSE Request with errors", async () => {
+test("[SSE] parses both 'message' and 'error' events", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriRequestError | undefined;
-    const controller = client.miscTests.streamTenEventsThenError({
+    let errorReceived: ArriError | undefined;
+    const controller = client.tests.streamTenEventsThenError({
         onData(_) {
             messageCount++;
         },
@@ -353,17 +301,17 @@ test("SSE Request with errors", async () => {
             resolve(true);
         }, 500);
     });
-    expect(errorReceived?.statusCode).toBe(400);
+    expect(errorReceived?.code).toBe(400);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
 }, 2000);
 
-test("SSE Request with done event", async () => {
+test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriRequestError | undefined;
-    const controller = client.miscTests.streamTenEventsThenEnd({
+    let errorReceived: ArriError | undefined;
+    const controller = client.tests.streamTenEventsThenEnd({
         onData(_) {
             messageCount++;
         },
@@ -385,11 +333,11 @@ test("SSE Request with done event", async () => {
     expect(messageCount).toBe(10);
 });
 
-test("SSE Requests Auto-Reconnect", async () => {
+test("[SSE] auto-reconnects when connection is closed by server", async () => {
     let connectionCount = 0;
     let errorCount = 0;
     let messageCount = 0;
-    const controller = client.miscTests.streamAutoReconnect(
+    const controller = client.tests.streamAutoReconnect(
         {
             messageCount: 10,
         },
@@ -432,19 +380,5 @@ describe("arri adapters", () => {
         };
         const result = await client.adapters.typebox(input);
         expect(result).toStrictEqual(input);
-    });
-});
-
-describe("manually added rpcs", () => {
-    test("updateAuthor()", async () => {
-        const input: UpdateAuthorData = {
-            name: "John Doe",
-        };
-        const result = await client.authors.updateAuthor({
-            authorId: "1",
-            data: input,
-        });
-        expect(result.id).toBe("1");
-        expect(result.name).toBe("John Doe");
     });
 });

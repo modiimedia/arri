@@ -38,24 +38,24 @@ export function recursive<T>(
                 output: "" as T,
                 parse(input, data) {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id].parse(input, data);
+                        return recursiveFns[id]!.parse(input, data);
                     }
                 },
                 serialize(input, data) {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id].serialize(input, data);
+                        return recursiveFns[id]!.serialize(input, data);
                     }
                     return "";
                 },
                 validate(input): input is T {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id].validate(input);
+                        return recursiveFns[id]!.validate(input);
                     }
                     return false;
                 },
                 coerce(input, data) {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id].coerce(input, data);
+                        return recursiveFns[id]!.coerce(input, data);
                     }
                 },
             },

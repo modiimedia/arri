@@ -17,8 +17,8 @@ class TestClient {
     _headers = {"client-version": "10", ...headers};
   }
 
-  TestClientAuthorsService get authors {
-    return TestClientAuthorsService(
+  TestClientTestsService get tests {
+    return TestClientTestsService(
       httpClient: _httpClient,
       baseUrl: _baseUrl,
       headers: _headers,
@@ -32,21 +32,13 @@ class TestClient {
       headers: _headers,
     );
   }
-
-  TestClientMiscTestsService get miscTests {
-    return TestClientMiscTestsService(
-      httpClient: _httpClient,
-      baseUrl: _baseUrl,
-      headers: _headers,
-    );
-  }
 }
 
-class TestClientAuthorsService {
+class TestClientTestsService {
   final http.Client? _httpClient;
   final String _baseUrl;
   late final Map<String, String> _headers;
-  TestClientAuthorsService({
+  TestClientTestsService({
     http.Client? httpClient,
     String baseUrl = "",
     Map<String, String> headers = const {},
@@ -55,16 +47,294 @@ class TestClientAuthorsService {
     _headers = {"client-version": "10", ...headers};
   }
 
-  Future<Author> updateAuthor(AuthorsUpdateAuthorParams params) {
+  Future<DefaultPayload> emptyParamsGetRequest() {
     return parsedArriRequest(
-      "$_baseUrl/rpcs/authors/update-author",
+      "$_baseUrl/rpcs/tests/empty-params-get-request",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => DefaultPayload.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<DefaultPayload> emptyParamsPostRequest() {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/empty-params-post-request",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: null,
+      parser: (body) => DefaultPayload.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<void> emptyResponseGetRequest(DefaultPayload params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/empty-response-get-request",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) {},
+    );
+  }
+
+  Future<void> emptyResponsePostRequest(DefaultPayload params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/empty-response-post-request",
       httpClient: _httpClient,
       method: HttpMethod.post,
       headers: _headers,
       params: params.toJson(),
-      parser: (body) => Author.fromJson(
+      parser: (body) {},
+    );
+  }
+
+  /// If the target language supports it. Generated code should mark this procedure as deprecated.
+  @deprecated
+  Future<void> deprecatedRpc(DeprecatedRpcParams params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/deprecated-rpc",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) {},
+    );
+  }
+
+  Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-object",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ObjectWithEveryType.fromJson(
         json.decode(body),
       ),
+    );
+  }
+
+  Future<ObjectWithEveryNullableType> sendObjectWithNullableFields(
+      ObjectWithEveryNullableType params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-object-with-nullable-fields",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ObjectWithEveryNullableType.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<ObjectWithEveryOptionalType> sendPartialObject(
+      ObjectWithEveryOptionalType params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-partial-object",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ObjectWithEveryOptionalType.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<RecursiveObject> sendRecursiveObject(RecursiveObject params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-recursive-object",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => RecursiveObject.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  Future<RecursiveUnion> sendRecursiveUnion(RecursiveUnion params) {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-recursive-union",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => RecursiveUnion.fromJson(
+        json.decode(body),
+      ),
+    );
+  }
+
+  EventSource<AutoReconnectResponse> streamAutoReconnect(
+    AutoReconnectParams params, {
+    SseHookOnData<AutoReconnectResponse>? onData,
+    SseHookOnError<AutoReconnectResponse>? onError,
+    SseHookOnConnectionError<AutoReconnectResponse>? onConnectionError,
+    SseHookOnOpen<AutoReconnectResponse>? onOpen,
+    SseHookOnClose<AutoReconnectResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<AutoReconnectResponse>(
+      "$_baseUrl/rpcs/tests/stream-auto-reconnect",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => AutoReconnectResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
+  /// This route will always return an error. The client should automatically retry with exponential backoff.
+  EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
+    StreamConnectionErrorTestParams params, {
+    SseHookOnData<StreamConnectionErrorTestResponse>? onData,
+    SseHookOnError<StreamConnectionErrorTestResponse>? onError,
+    SseHookOnConnectionError<StreamConnectionErrorTestResponse>?
+        onConnectionError,
+    SseHookOnOpen<StreamConnectionErrorTestResponse>? onOpen,
+    SseHookOnClose<StreamConnectionErrorTestResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<StreamConnectionErrorTestResponse>(
+      "$_baseUrl/rpcs/tests/stream-connection-error-test",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => StreamConnectionErrorTestResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
+  /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+  EventSource<StreamLargeObjectsResponse> streamLargeObjects({
+    SseHookOnData<StreamLargeObjectsResponse>? onData,
+    SseHookOnError<StreamLargeObjectsResponse>? onError,
+    SseHookOnConnectionError<StreamLargeObjectsResponse>? onConnectionError,
+    SseHookOnOpen<StreamLargeObjectsResponse>? onOpen,
+    SseHookOnClose<StreamLargeObjectsResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<StreamLargeObjectsResponse>(
+      "$_baseUrl/rpcs/tests/stream-large-objects",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => StreamLargeObjectsResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
+  EventSource<ChatMessage> streamMessages(
+    ChatMessageParams params, {
+    SseHookOnData<ChatMessage>? onData,
+    SseHookOnError<ChatMessage>? onError,
+    SseHookOnConnectionError<ChatMessage>? onConnectionError,
+    SseHookOnOpen<ChatMessage>? onOpen,
+    SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<ChatMessage>(
+      "$_baseUrl/rpcs/tests/stream-messages",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => ChatMessage.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
+  /// When the client receives the 'done' event, it should close the connection and NOT reconnect
+  EventSource<ChatMessage> streamTenEventsThenEnd({
+    SseHookOnData<ChatMessage>? onData,
+    SseHookOnError<ChatMessage>? onError,
+    SseHookOnConnectionError<ChatMessage>? onConnectionError,
+    SseHookOnOpen<ChatMessage>? onOpen,
+    SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<ChatMessage>(
+      "$_baseUrl/rpcs/tests/stream-ten-events-then-end",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => ChatMessage.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
+  EventSource<ChatMessage> streamTenEventsThenError({
+    SseHookOnData<ChatMessage>? onData,
+    SseHookOnError<ChatMessage>? onError,
+    SseHookOnConnectionError<ChatMessage>? onConnectionError,
+    SseHookOnOpen<ChatMessage>? onOpen,
+    SseHookOnClose<ChatMessage>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<ChatMessage>(
+      "$_baseUrl/rpcs/tests/stream-ten-events-then-error",
+      httpClient: _httpClient,
+      method: HttpMethod.post,
+      headers: _headers,
+      params: null,
+      parser: (body) => ChatMessage.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
     );
   }
 }
@@ -92,260 +362,6 @@ class TestClientAdaptersService {
       parser: (body) => TypeBoxObject.fromJson(
         json.decode(body),
       ),
-    );
-  }
-}
-
-class TestClientMiscTestsService {
-  final http.Client? _httpClient;
-  final String _baseUrl;
-  late final Map<String, String> _headers;
-  TestClientMiscTestsService({
-    http.Client? httpClient,
-    String baseUrl = "",
-    Map<String, String> headers = const {},
-  })  : _httpClient = httpClient,
-        _baseUrl = baseUrl {
-    _headers = {"client-version": "10", ...headers};
-  }
-
-  /// This RPC is no longer supported
-  @deprecated
-  Future<void> deprecatedRpc(DeprecatedRpcParams params) {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/deprecated-rpc",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) {},
-    );
-  }
-
-  Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-object",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => ObjectWithEveryType.fromJson(
-        json.decode(body),
-      ),
-    );
-  }
-
-  Future<ObjectWithEveryNullableType> sendObjectWithNullableFields(
-      ObjectWithEveryNullableType params) {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-object-with-nullable-fields",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => ObjectWithEveryNullableType.fromJson(
-        json.decode(body),
-      ),
-    );
-  }
-
-  Future<ObjectWithEveryOptionalType> sendPartialObject(
-      ObjectWithEveryOptionalType params) {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-partial-object",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => ObjectWithEveryOptionalType.fromJson(
-        json.decode(body),
-      ),
-    );
-  }
-
-  Future<RecursiveObject> sendRecursiveObject(RecursiveObject params) {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-recursive-object",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => RecursiveObject.fromJson(
-        json.decode(body),
-      ),
-    );
-  }
-
-  Future<RecursiveUnion> sendRecursiveUnion(RecursiveUnion params) {
-    return parsedArriRequest(
-      "$_baseUrl/rpcs/misc-tests/send-recursive-union",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => RecursiveUnion.fromJson(
-        json.decode(body),
-      ),
-    );
-  }
-
-  EventSource<AutoReconnectResponse> streamAutoReconnect(
-    AutoReconnectParams params, {
-    SseHookOnData<AutoReconnectResponse>? onData,
-    SseHookOnError<AutoReconnectResponse>? onError,
-    SseHookOnConnectionError<AutoReconnectResponse>? onConnectionError,
-    SseHookOnOpen<AutoReconnectResponse>? onOpen,
-    SseHookOnClose<AutoReconnectResponse>? onClose,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest<AutoReconnectResponse>(
-      "$_baseUrl/rpcs/misc-tests/stream-auto-reconnect",
-      httpClient: _httpClient,
-      method: HttpMethod.get,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => AutoReconnectResponse.fromJson(
-        json.decode(body),
-      ),
-      onData: onData,
-      onError: onError,
-      onConnectionError: onConnectionError,
-      onOpen: onOpen,
-      onClose: onClose,
-      lastEventId: lastEventId,
-    );
-  }
-
-  EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
-    StreamConnectionErrorTestParams params, {
-    SseHookOnData<StreamConnectionErrorTestResponse>? onData,
-    SseHookOnError<StreamConnectionErrorTestResponse>? onError,
-    SseHookOnConnectionError<StreamConnectionErrorTestResponse>?
-        onConnectionError,
-    SseHookOnOpen<StreamConnectionErrorTestResponse>? onOpen,
-    SseHookOnClose<StreamConnectionErrorTestResponse>? onClose,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest<StreamConnectionErrorTestResponse>(
-      "$_baseUrl/rpcs/misc-tests/stream-connection-error-test",
-      httpClient: _httpClient,
-      method: HttpMethod.get,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => StreamConnectionErrorTestResponse.fromJson(
-        json.decode(body),
-      ),
-      onData: onData,
-      onError: onError,
-      onConnectionError: onConnectionError,
-      onOpen: onOpen,
-      onClose: onClose,
-      lastEventId: lastEventId,
-    );
-  }
-
-  EventSource<StreamLargeObjectsResponse> streamLargeObjects({
-    SseHookOnData<StreamLargeObjectsResponse>? onData,
-    SseHookOnError<StreamLargeObjectsResponse>? onError,
-    SseHookOnConnectionError<StreamLargeObjectsResponse>? onConnectionError,
-    SseHookOnOpen<StreamLargeObjectsResponse>? onOpen,
-    SseHookOnClose<StreamLargeObjectsResponse>? onClose,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest<StreamLargeObjectsResponse>(
-      "$_baseUrl/rpcs/misc-tests/stream-large-objects",
-      httpClient: _httpClient,
-      method: HttpMethod.get,
-      headers: _headers,
-      params: null,
-      parser: (body) => StreamLargeObjectsResponse.fromJson(
-        json.decode(body),
-      ),
-      onData: onData,
-      onError: onError,
-      onConnectionError: onConnectionError,
-      onOpen: onOpen,
-      onClose: onClose,
-      lastEventId: lastEventId,
-    );
-  }
-
-  EventSource<ChatMessage> streamMessages(
-    ChatMessageParams params, {
-    SseHookOnData<ChatMessage>? onData,
-    SseHookOnError<ChatMessage>? onError,
-    SseHookOnConnectionError<ChatMessage>? onConnectionError,
-    SseHookOnOpen<ChatMessage>? onOpen,
-    SseHookOnClose<ChatMessage>? onClose,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest<ChatMessage>(
-      "$_baseUrl/rpcs/misc-tests/stream-messages",
-      httpClient: _httpClient,
-      method: HttpMethod.get,
-      headers: _headers,
-      params: params.toJson(),
-      parser: (body) => ChatMessage.fromJson(
-        json.decode(body),
-      ),
-      onData: onData,
-      onError: onError,
-      onConnectionError: onConnectionError,
-      onOpen: onOpen,
-      onClose: onClose,
-      lastEventId: lastEventId,
-    );
-  }
-
-  EventSource<ChatMessage> streamTenEventsThenEnd({
-    SseHookOnData<ChatMessage>? onData,
-    SseHookOnError<ChatMessage>? onError,
-    SseHookOnConnectionError<ChatMessage>? onConnectionError,
-    SseHookOnOpen<ChatMessage>? onOpen,
-    SseHookOnClose<ChatMessage>? onClose,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest<ChatMessage>(
-      "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-end",
-      httpClient: _httpClient,
-      method: HttpMethod.get,
-      headers: _headers,
-      params: null,
-      parser: (body) => ChatMessage.fromJson(
-        json.decode(body),
-      ),
-      onData: onData,
-      onError: onError,
-      onConnectionError: onConnectionError,
-      onOpen: onOpen,
-      onClose: onClose,
-      lastEventId: lastEventId,
-    );
-  }
-
-  EventSource<ChatMessage> streamTenEventsThenError({
-    SseHookOnData<ChatMessage>? onData,
-    SseHookOnError<ChatMessage>? onError,
-    SseHookOnConnectionError<ChatMessage>? onConnectionError,
-    SseHookOnOpen<ChatMessage>? onOpen,
-    SseHookOnClose<ChatMessage>? onClose,
-    String? lastEventId,
-  }) {
-    return parsedArriSseRequest<ChatMessage>(
-      "$_baseUrl/rpcs/misc-tests/stream-ten-events-then-error",
-      httpClient: _httpClient,
-      method: HttpMethod.post,
-      headers: _headers,
-      params: null,
-      parser: (body) => ChatMessage.fromJson(
-        json.decode(body),
-      ),
-      onData: onData,
-      onError: onError,
-      onConnectionError: onConnectionError,
-      onOpen: onOpen,
-      onClose: onClose,
-      lastEventId: lastEventId,
     );
   }
 }
@@ -378,146 +394,30 @@ class ManuallyAddedModel {
   }
 }
 
-class AuthorsUpdateAuthorParams {
-  final String authorId;
-  final UpdateAuthorData data;
-  const AuthorsUpdateAuthorParams({
-    required this.authorId,
-    required this.data,
+class DefaultPayload {
+  final String message;
+  const DefaultPayload({
+    required this.message,
   });
-  factory AuthorsUpdateAuthorParams.fromJson(Map<String, dynamic> json) {
-    return AuthorsUpdateAuthorParams(
-      authorId: typeFromDynamic<String>(json["authorId"], ""),
-      data: UpdateAuthorData.fromJson(json["data"]),
+  factory DefaultPayload.fromJson(Map<String, dynamic> json) {
+    return DefaultPayload(
+      message: typeFromDynamic<String>(json["message"], ""),
     );
   }
 
   Map<String, dynamic> toJson() {
     final __result = <String, dynamic>{
-      "authorId": authorId,
-      "data": data.toJson(),
+      "message": message,
     };
 
     return __result;
   }
 
-  AuthorsUpdateAuthorParams copyWith({
-    String? authorId,
-    UpdateAuthorData? data,
+  DefaultPayload copyWith({
+    String? message,
   }) {
-    return AuthorsUpdateAuthorParams(
-      authorId: authorId ?? this.authorId,
-      data: data ?? this.data,
-    );
-  }
-}
-
-class UpdateAuthorData {
-  final String? name;
-  final String? bio;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  const UpdateAuthorData({
-    this.name,
-    this.bio,
-    this.createdAt,
-    this.updatedAt,
-  });
-  factory UpdateAuthorData.fromJson(Map<String, dynamic> json) {
-    return UpdateAuthorData(
-      name: nullableTypeFromDynamic<String>(json["name"]),
-      bio: nullableTypeFromDynamic<String>(json["bio"]),
-      createdAt: nullableDateTimeFromDynamic(json["createdAt"]),
-      updatedAt: nullableDateTimeFromDynamic(json["updatedAt"]),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final __result = <String, dynamic>{};
-    if (name != null) {
-      __result["name"] = name;
-    }
-    if (bio != null) {
-      __result["bio"] = bio;
-    }
-    if (createdAt != null) {
-      __result["createdAt"] = createdAt?.toUtc().toIso8601String();
-    }
-    if (updatedAt != null) {
-      __result["updatedAt"] = updatedAt?.toUtc().toIso8601String();
-    }
-    return __result;
-  }
-
-  UpdateAuthorData copyWith({
-    String? name,
-    String? bio,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return UpdateAuthorData(
-      name: name ?? this.name,
-      bio: bio ?? this.bio,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-}
-
-class Author {
-  final String id;
-  final String name;
-  final String? bio;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  const Author({
-    required this.id,
-    required this.name,
-    required this.bio,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-  factory Author.fromJson(Map<String, dynamic> json) {
-    return Author(
-      id: typeFromDynamic<String>(json["id"], ""),
-      name: typeFromDynamic<String>(json["name"], ""),
-      bio: nullableTypeFromDynamic<String>(json["bio"]),
-      createdAt: dateTimeFromDynamic(
-        json["createdAt"],
-        DateTime.fromMillisecondsSinceEpoch(0),
-      ),
-      updatedAt: dateTimeFromDynamic(
-        json["updatedAt"],
-        DateTime.fromMillisecondsSinceEpoch(0),
-      ),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final __result = <String, dynamic>{
-      "id": id,
-      "name": name,
-      "bio": bio,
-      "createdAt": createdAt.toUtc().toIso8601String(),
-      "updatedAt": updatedAt.toUtc().toIso8601String(),
-    };
-
-    return __result;
-  }
-
-  Author copyWith({
-    String? id,
-    String? name,
-    String? bio,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Author(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      bio: bio ?? this.bio,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+    return DefaultPayload(
+      message: message ?? this.message,
     );
   }
 }

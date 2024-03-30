@@ -3,6 +3,17 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
+  "dart.analysisExcludedFolders": [
+    "packages/arri",
+    "packages/arri-adapter-typebox",
+    "packages/arri-client",
+    "packages/arri-codegen",
+    "packages/arri-validate",
+    "node_modules",
+    "dist",
+    "packages/json-schema-to-jtd",
+    "tests/server"
+  ],
   "cSpell.words": [
     "Arri",
     "autoroutes",

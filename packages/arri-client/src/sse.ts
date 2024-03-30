@@ -1,9 +1,5 @@
 import { fetchEventSource } from "@fortaine/fetch-event-source";
-import {
-    type ArriRequestError,
-    ArriRequestErrorInstance,
-    isArriRequestError,
-} from "./errors";
+import { type ArriError, ArriErrorInstance, isArriError } from "./errors";
 import { type ArriRequestOpts } from "./request";
 
 export interface SseEvent<TData = string> {
@@ -12,12 +8,12 @@ export interface SseEvent<TData = string> {
     data: TData;
 }
 
-class NonFatalError extends ArriRequestErrorInstance {}
+class NonFatalError extends ArriErrorInstance {}
 
 export interface SseOptions<TData> {
     onOpen?: (response: Response) => any;
     onData?: (data: TData) => any;
-    onError?: (error: ArriRequestError) => any;
+    onError?: (error: ArriError) => any;
     onClose?: () => any;
     maxRetryCount?: number;
     retryTimeout?: number;
@@ -71,9 +67,7 @@ export function arriSseRequest<
                 return;
             }
             if (event.event === "error") {
-                options.onError?.(
-                    ArriRequestErrorInstance.fromJson(event.data),
-                );
+                options.onError?.(ArriErrorInstance.fromJson(event.data));
                 return;
             }
             if (event.event === "done") {
@@ -88,21 +82,21 @@ export function arriSseRequest<
             if (shouldAbort) {
                 throw error;
             }
-            if (isArriRequestError(error)) {
+            if (isArriError(error)) {
                 options.onError?.(error);
                 return;
             }
-            const err = new ArriRequestErrorInstance({
-                statusCode: 500,
-                statusMessage: `Error connecting to ${opts.url}`,
+            const err = new ArriErrorInstance({
+                code: 500,
+                message: `Error connecting to ${opts.url}`,
                 data: error,
             });
             options.onError?.(err);
         },
         onclose() {
             throw new NonFatalError({
-                statusCode: 500,
-                statusMessage: "Connection closed. Reopening.",
+                code: 500,
+                message: "Connection closed. Reopening.",
             });
         },
         async onopen(response) {
@@ -113,11 +107,11 @@ export function arriSseRequest<
             shouldAbort = true;
             const json = await response.text();
             if (json.includes("{") && json.includes("}")) {
-                throw ArriRequestErrorInstance.fromJson(json);
+                throw ArriErrorInstance.fromJson(json);
             }
-            throw new ArriRequestErrorInstance({
-                statusCode: 500,
-                statusMessage: response.statusText,
+            throw new ArriErrorInstance({
+                code: 500,
+                message: response.statusText,
                 data: json,
             });
         },

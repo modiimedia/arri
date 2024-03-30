@@ -569,7 +569,7 @@ export function tsObjectFromJtdSchema(
     }
     if (def.properties) {
         for (const propKey of Object.keys(def.properties)) {
-            const propSchema = def.properties[propKey];
+            const propSchema = def.properties[propKey]!;
             const type = tsTypeFromJtdSchema(
                 `${nodePath}.${propKey}`,
                 propSchema,
@@ -591,7 +591,7 @@ export function tsObjectFromJtdSchema(
     }
     if (def.optionalProperties) {
         for (const propKey of Object.keys(def.optionalProperties)) {
-            const propSchema = def.optionalProperties[propKey];
+            const propSchema = def.optionalProperties[propKey]!;
             const type = tsTypeFromJtdSchema(
                 `${nodePath}.${propKey}`,
                 propSchema,

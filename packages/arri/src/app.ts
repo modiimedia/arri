@@ -13,11 +13,9 @@ import {
     type Router,
     createRouter,
     eventHandler,
-    type H3Error,
-    sendError,
     setResponseStatus,
 } from "h3";
-import { defineError, handleH3Error } from "./errors";
+import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
 import { type MiddlewareEvent, type Middleware } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
@@ -46,35 +44,37 @@ export class ArriApp implements ArriRouterBase {
     __isArri__ = true;
     readonly h3App: App;
     readonly h3Router: Router = createRouter();
-    private readonly rpcDefinitionPath: string;
-    private readonly rpcRoutePrefix: string;
+    private readonly _rpcDefinitionPath: string;
+    private readonly _rpcRoutePrefix: string;
     appInfo: AppDefinition["info"];
-    private procedures: Record<string, RpcDefinition> = {};
-    private models: ModelMap = {};
-    private readonly middlewares: Middleware[] = [];
-    private readonly onRequest: ArriOptions["onRequest"];
-    private readonly onAfterResponse: ArriOptions["onAfterResponse"];
-    private readonly onBeforeResponse: ArriOptions["onBeforeResponse"];
-    private readonly onError: ArriOptions["onError"];
+    private _procedures: Record<string, RpcDefinition> = {};
+    private _models: ModelMap = {};
+    private readonly _middlewares: Middleware[] = [];
+    private readonly _onRequest: ArriOptions["onRequest"];
+    private readonly _onAfterResponse: ArriOptions["onAfterResponse"];
+    private readonly _onBeforeResponse: ArriOptions["onBeforeResponse"];
+    private readonly _onError: ArriOptions["onError"];
+    private readonly _debug: boolean;
 
     constructor(opts: ArriOptions = {}) {
         this.appInfo = opts?.appInfo;
         this.h3App = createApp({
             debug: opts?.debug,
         });
-        this.onRequest = opts.onRequest;
-        this.onError = opts.onError;
-        this.onAfterResponse = opts.onAfterResponse;
-        this.onBeforeResponse = opts.onBeforeResponse;
-        this.rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
-        this.rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
+        this._debug = opts.debug ?? false;
+        this._onRequest = opts.onRequest;
+        this._onError = opts.onError;
+        this._onAfterResponse = opts.onAfterResponse;
+        this._onBeforeResponse = opts.onBeforeResponse;
+        this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
+        this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3App.use(this.h3Router);
         this.h3Router.get(
-            this.rpcRoutePrefix
-                ? `/${this.rpcRoutePrefix}/${this.rpcDefinitionPath}`
+            this._rpcRoutePrefix
+                ? `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`
                       .split("//")
                       .join("/")
-                : `/${this.rpcDefinitionPath}`,
+                : `/${this._rpcDefinitionPath}`,
             eventHandler(() => this.getAppDefinition()),
         );
         // this route is used by the dev server when auto-generating client code
@@ -91,22 +91,16 @@ export class ArriApp implements ArriRouterBase {
                 setResponseStatus(event, 404);
                 const error = defineError(404);
                 try {
-                    if (this.onRequest) {
-                        await this.onRequest(event);
+                    if (this._onRequest) {
+                        await this._onRequest(event);
                     }
                 } catch (err) {
-                    await handleH3Error(err, event, this.onError);
+                    await handleH3Error(err, event, this._onError, this._debug);
                 }
                 if (event.handled) {
                     return;
                 }
-                if (this.onError) {
-                    await this.onError(error, event);
-                }
-                if (event.handled) {
-                    return;
-                }
-                sendError(event, error);
+                return handleH3Error(error, event, this._onError, this._debug);
             }),
         );
     }
@@ -122,7 +116,7 @@ export class ArriApp implements ArriRouterBase {
             this.registerModels(input.getModels());
             return;
         }
-        this.middlewares.push(input);
+        this._middlewares.push(input);
     }
 
     rpc<
@@ -131,8 +125,8 @@ export class ArriApp implements ArriRouterBase {
         TResponse extends AObjectSchema<any, any> | undefined = undefined,
     >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
         const path =
-            procedure.path ?? getRpcPath(procedure.name, this.rpcRoutePrefix);
-        this.procedures[procedure.name] = createHttpRpcDefinition(
+            procedure.path ?? getRpcPath(procedure.name, this._rpcRoutePrefix);
+        this._procedures[procedure.name] = createHttpRpcDefinition(
             procedure.name,
             path,
             procedure,
@@ -140,31 +134,33 @@ export class ArriApp implements ArriRouterBase {
         if (isRpcParamSchema(procedure.params)) {
             const paramName = getRpcParamName(procedure.name, procedure);
             if (paramName) {
-                this.models[paramName] = procedure.params;
+                this._models[paramName] = procedure.params;
             }
         }
         if (isRpcParamSchema(procedure.response)) {
             const responseName = getRpcResponseName(procedure.name, procedure);
             if (responseName) {
-                this.models[responseName] = procedure.response;
+                this._models[responseName] = procedure.response;
             }
         }
         if (isEventStreamRpc(procedure)) {
             registerEventStreamRpc(this.h3Router, path, procedure, {
-                middleware: this.middlewares,
-                onRequest: this.onRequest,
-                onError: this.onError,
-                onAfterResponse: this.onAfterResponse,
-                onBeforeResponse: this.onBeforeResponse,
+                middleware: this._middlewares,
+                onRequest: this._onRequest,
+                onError: this._onError,
+                onAfterResponse: this._onAfterResponse,
+                onBeforeResponse: this._onBeforeResponse,
+                debug: this._debug,
             });
             return;
         }
         registerRpc(this.h3Router, path, procedure, {
-            middleware: this.middlewares,
-            onRequest: this.onRequest,
-            onError: this.onError,
-            onAfterResponse: this.onAfterResponse,
-            onBeforeResponse: this.onBeforeResponse,
+            middleware: this._middlewares,
+            onRequest: this._onRequest,
+            onError: this._onError,
+            onAfterResponse: this._onAfterResponse,
+            onBeforeResponse: this._onBeforeResponse,
+            debug: this._debug,
         });
     }
 
@@ -175,17 +171,18 @@ export class ArriApp implements ArriRouterBase {
         TResponse = any,
     >(route: ArriRoute<TPath, TQuery, TBody, TResponse>) {
         registerRoute(this.h3Router, route, {
-            middleware: this.middlewares,
-            onRequest: this.onRequest,
-            onError: this.onError,
-            onAfterResponse: this.onAfterResponse,
-            onBeforeResponse: this.onBeforeResponse,
+            middleware: this._middlewares,
+            onRequest: this._onRequest,
+            onError: this._onError,
+            onAfterResponse: this._onAfterResponse,
+            onBeforeResponse: this._onBeforeResponse,
+            debug: this._debug,
         });
     }
 
     registerModels(models: ModelMap) {
         for (const key of Object.keys(models)) {
-            this.models[key] = models[key];
+            this._models[key] = models[key]!;
         }
     }
 
@@ -194,10 +191,10 @@ export class ArriApp implements ArriRouterBase {
             arriSchemaVersion: SCHEMA_VERSION,
             info: this.appInfo,
             procedures: {},
-            models: this.models as any,
+            models: this._models as any,
         };
-        for (const key of Object.keys(this.procedures)) {
-            const rpc = this.procedures[key];
+        for (const key of Object.keys(this._procedures)) {
+            const rpc = this._procedures[key]!;
             appDef.procedures[key] = rpc;
         }
         return appDef;
@@ -219,5 +216,8 @@ export interface ArriOptions {
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
     onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
     onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;
-    onError?: (error: H3Error, event: MiddlewareEvent) => void | Promise<void>;
+    onError?: (
+        error: ArriServerError,
+        event: MiddlewareEvent,
+    ) => void | Promise<void>;
 }
