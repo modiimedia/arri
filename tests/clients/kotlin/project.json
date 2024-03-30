@@ -1,14 +1,14 @@
 {
-    "name": "test-client-kotlin",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "implicitDependencies": ["test-server"],
-    "targets": {
-        "integration-test": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "./gradlew",
-                "cwd": "tests/clients/kotlin"
-            }
-        }
+  "name": "test-client-kotlin",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["test-server"],
+  "targets": {
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew run",
+        "cwd": "tests/clients/kotlin"
+      }
     }
+  }
 }

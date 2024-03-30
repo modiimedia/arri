@@ -1285,8 +1285,8 @@ data class ObjectWithEveryOptionalTypeNestedArrayItemItem(
 
 @Serializable
 data class RecursiveObject(
-    val left: JsonElement?,
-    val right: JsonElement?,
+    val left: RecursiveObject?,
+    val right: RecursiveObject?,
     val value: String,
 )
 
@@ -1297,7 +1297,7 @@ sealed class RecursiveUnion()
 @Serializable
 @SerialName("CHILD")
 data class RecursiveUnionChild(
-    val data: JsonElement,
+    val data: RecursiveUnion,
 ) : RecursiveUnion()
 
 
@@ -1305,7 +1305,7 @@ data class RecursiveUnionChild(
 @Serializable
 @SerialName("CHILDREN")
 data class RecursiveUnionChildren(
-    val data: List<JsonElement>,
+    val data: List<RecursiveUnion>,
 ) : RecursiveUnion()
 
 
@@ -1774,7 +1774,7 @@ private suspend fun handleSseRequest(
                     onClose = onClose,
                     onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError
+                    onConnectionError = onConnectionError,
                 )
                 return@execute
             }
@@ -1816,7 +1816,7 @@ private suspend fun handleSseRequest(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString().split("\n")
+                stack = e.stackTraceToString().split("\n"),
             )
         )
         handleSseRequest(
@@ -1834,7 +1834,7 @@ private suspend fun handleSseRequest(
             onClose = onClose,
             onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError
+            onConnectionError = onConnectionError,
         )
         return
     } catch (e: Exception) {
@@ -1843,7 +1843,7 @@ private suspend fun handleSseRequest(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString().split("\n")
+                stack = e.stackTraceToString().split("\n"),
             )
         )
         handleSseRequest(
@@ -1861,7 +1861,7 @@ private suspend fun handleSseRequest(
             onClose = onClose,
             onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError
+            onConnectionError = onConnectionError,
         )
     }
 }
