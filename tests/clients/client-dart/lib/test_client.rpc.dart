@@ -32,6 +32,14 @@ class TestClient {
       headers: _headers,
     );
   }
+
+  TestClientUsersService get users {
+    return TestClientUsersService(
+      httpClient: _httpClient,
+      baseUrl: _baseUrl,
+      headers: _headers,
+    );
+  }
 }
 
 class TestClientTestsService {
@@ -362,6 +370,47 @@ class TestClientAdaptersService {
       parser: (body) => TypeBoxObject.fromJson(
         json.decode(body),
       ),
+    );
+  }
+}
+
+class TestClientUsersService {
+  final http.Client? _httpClient;
+  final String _baseUrl;
+  late final Map<String, String> _headers;
+  TestClientUsersService({
+    http.Client? httpClient,
+    String baseUrl = "",
+    Map<String, String> headers = const {},
+  })  : _httpClient = httpClient,
+        _baseUrl = baseUrl {
+    _headers = {"client-version": "10", ...headers};
+  }
+
+  EventSource<UsersWatchUserResponse> watchUser(
+    UsersWatchUserParams params, {
+    SseHookOnData<UsersWatchUserResponse>? onData,
+    SseHookOnError<UsersWatchUserResponse>? onError,
+    SseHookOnConnectionError<UsersWatchUserResponse>? onConnectionError,
+    SseHookOnOpen<UsersWatchUserResponse>? onOpen,
+    SseHookOnClose<UsersWatchUserResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<UsersWatchUserResponse>(
+      "$_baseUrl/rpcs/users/watch-user",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: params.toJson(),
+      parser: (body) => UsersWatchUserResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
     );
   }
 }
@@ -2817,6 +2866,431 @@ class ChatMessageUrl implements ChatMessage {
       userId: userId ?? this.userId,
       date: date ?? this.date,
       url: url ?? this.url,
+    );
+  }
+}
+
+class UsersWatchUserParams {
+  final String userId;
+  const UsersWatchUserParams({
+    required this.userId,
+  });
+  factory UsersWatchUserParams.fromJson(Map<String, dynamic> json) {
+    return UsersWatchUserParams(
+      userId: typeFromDynamic<String>(json["userId"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "userId": userId,
+    };
+
+    return __result;
+  }
+
+  UsersWatchUserParams copyWith({
+    String? userId,
+  }) {
+    return UsersWatchUserParams(
+      userId: userId ?? this.userId,
+    );
+  }
+}
+
+class UsersWatchUserResponse {
+  final String id;
+  final UsersWatchUserResponseRole role;
+
+  /// A profile picture
+  final UserPhoto? photo;
+  final DateTime createdAt;
+  final int numFollowers;
+  final UserSettings settings;
+  final List<UsersWatchUserResponseRecentNotificationsItem> recentNotifications;
+  final Map<String, UsersWatchUserResponseBookmarksValue> bookmarks;
+  final Map<String, dynamic> metadata;
+  final List<dynamic> randomList;
+  final String? bio;
+  const UsersWatchUserResponse({
+    required this.id,
+    required this.role,
+    required this.photo,
+    required this.createdAt,
+    required this.numFollowers,
+    required this.settings,
+    required this.recentNotifications,
+    required this.bookmarks,
+    required this.metadata,
+    required this.randomList,
+    this.bio,
+  });
+  factory UsersWatchUserResponse.fromJson(Map<String, dynamic> json) {
+    return UsersWatchUserResponse(
+      id: typeFromDynamic<String>(json["id"], ""),
+      role: UsersWatchUserResponseRole.fromJson(json["role"]),
+      photo: json["photo"] is Map<String, dynamic>
+          ? UserPhoto.fromJson(json["photo"])
+          : null,
+      createdAt: dateTimeFromDynamic(
+        json["createdAt"],
+        DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      numFollowers: intFromDynamic(json["numFollowers"], 0),
+      settings: UserSettings.fromJson(json["settings"]),
+      recentNotifications: json["recentNotifications"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["recentNotifications"] as List)
+              .map((item) =>
+                  UsersWatchUserResponseRecentNotificationsItem.fromJson(item))
+              .toList() as List<UsersWatchUserResponseRecentNotificationsItem>
+          : <UsersWatchUserResponseRecentNotificationsItem>[],
+      bookmarks: json["bookmarks"] is Map<String, dynamic>
+          ? (json["bookmarks"] as Map<String, dynamic>).map((key, value) =>
+              MapEntry(
+                  key, UsersWatchUserResponseBookmarksValue.fromJson(value)))
+          : <String, UsersWatchUserResponseBookmarksValue>{},
+      metadata: json["metadata"] is Map<String, dynamic>
+          ? (json["metadata"] as Map<String, dynamic>)
+              .map((key, value) => MapEntry(key, value))
+          : <String, dynamic>{},
+      randomList: json["randomList"] is List
+          ?
+          // ignore: unnecessary_cast
+          (json["randomList"] as List).map((item) => item).toList()
+              as List<dynamic>
+          : <dynamic>[],
+      bio: nullableTypeFromDynamic<String>(json["bio"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "id": id,
+      "role": role.value,
+      "photo": photo?.toJson(),
+      "createdAt": createdAt.toUtc().toIso8601String(),
+      "numFollowers": numFollowers,
+      "settings": settings.toJson(),
+      "recentNotifications":
+          recentNotifications.map((item) => item.toJson()).toList(),
+      "bookmarks": bookmarks.map((key, value) => MapEntry(key, value.toJson())),
+      "metadata": metadata.map((key, value) => MapEntry(key, value)),
+      "randomList": randomList.map((item) => item).toList(),
+    };
+    if (bio != null) {
+      __result["bio"] = bio;
+    }
+    return __result;
+  }
+
+  UsersWatchUserResponse copyWith({
+    String? id,
+    UsersWatchUserResponseRole? role,
+    UserPhoto? photo,
+    DateTime? createdAt,
+    int? numFollowers,
+    UserSettings? settings,
+    List<UsersWatchUserResponseRecentNotificationsItem>? recentNotifications,
+    Map<String, UsersWatchUserResponseBookmarksValue>? bookmarks,
+    Map<String, dynamic>? metadata,
+    List<dynamic>? randomList,
+    String? bio,
+  }) {
+    return UsersWatchUserResponse(
+      id: id ?? this.id,
+      role: role ?? this.role,
+      photo: photo ?? this.photo,
+      createdAt: createdAt ?? this.createdAt,
+      numFollowers: numFollowers ?? this.numFollowers,
+      settings: settings ?? this.settings,
+      recentNotifications: recentNotifications ?? this.recentNotifications,
+      bookmarks: bookmarks ?? this.bookmarks,
+      metadata: metadata ?? this.metadata,
+      randomList: randomList ?? this.randomList,
+      bio: bio ?? this.bio,
+    );
+  }
+}
+
+enum UsersWatchUserResponseRole
+    implements Comparable<UsersWatchUserResponseRole> {
+  standard("standard"),
+  admin("admin");
+
+  const UsersWatchUserResponseRole(this.value);
+  final String value;
+
+  factory UsersWatchUserResponseRole.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return standard;
+  }
+
+  @override
+  compareTo(UsersWatchUserResponseRole other) => name.compareTo(other.name);
+}
+
+/// A profile picture
+class UserPhoto {
+  final String url;
+  final double width;
+  final double height;
+  final BigInt bytes;
+
+  /// When the photo was last updated in nanoseconds
+  final BigInt nanoseconds;
+  const UserPhoto({
+    required this.url,
+    required this.width,
+    required this.height,
+    required this.bytes,
+    required this.nanoseconds,
+  });
+  factory UserPhoto.fromJson(Map<String, dynamic> json) {
+    return UserPhoto(
+      url: typeFromDynamic<String>(json["url"], ""),
+      width: doubleFromDynamic(json["width"], 0),
+      height: doubleFromDynamic(json["height"], 0),
+      bytes: bigIntFromDynamic(json["bytes"], BigInt.zero),
+      nanoseconds: bigIntFromDynamic(json["nanoseconds"], BigInt.zero),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "url": url,
+      "width": width,
+      "height": height,
+      "bytes": bytes.toString(),
+      "nanoseconds": nanoseconds.toString(),
+    };
+
+    return __result;
+  }
+
+  UserPhoto copyWith({
+    String? url,
+    double? width,
+    double? height,
+    BigInt? bytes,
+    BigInt? nanoseconds,
+  }) {
+    return UserPhoto(
+      url: url ?? this.url,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      bytes: bytes ?? this.bytes,
+      nanoseconds: nanoseconds ?? this.nanoseconds,
+    );
+  }
+}
+
+class UserSettings {
+  final bool notificationsEnabled;
+  final UsersWatchUserResponseSettingsPreferredTheme preferredTheme;
+  const UserSettings({
+    required this.notificationsEnabled,
+    required this.preferredTheme,
+  });
+  factory UserSettings.fromJson(Map<String, dynamic> json) {
+    return UserSettings(
+      notificationsEnabled:
+          typeFromDynamic<bool>(json["notificationsEnabled"], false),
+      preferredTheme: UsersWatchUserResponseSettingsPreferredTheme.fromJson(
+          json["preferredTheme"]),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "notificationsEnabled": notificationsEnabled,
+      "preferredTheme": preferredTheme.value,
+    };
+
+    return __result;
+  }
+
+  UserSettings copyWith({
+    bool? notificationsEnabled,
+    UsersWatchUserResponseSettingsPreferredTheme? preferredTheme,
+  }) {
+    return UserSettings(
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      preferredTheme: preferredTheme ?? this.preferredTheme,
+    );
+  }
+}
+
+enum UsersWatchUserResponseSettingsPreferredTheme
+    implements Comparable<UsersWatchUserResponseSettingsPreferredTheme> {
+  darkMode("dark-mode"),
+  lightMode("light-mode"),
+  system("system");
+
+  const UsersWatchUserResponseSettingsPreferredTheme(this.value);
+  final String value;
+
+  factory UsersWatchUserResponseSettingsPreferredTheme.fromJson(dynamic json) {
+    for (final v in values) {
+      if (v.value == json) {
+        return v;
+      }
+    }
+    return darkMode;
+  }
+
+  @override
+  compareTo(UsersWatchUserResponseSettingsPreferredTheme other) =>
+      name.compareTo(other.name);
+}
+
+sealed class UsersWatchUserResponseRecentNotificationsItem {
+  final String notificationType;
+  const UsersWatchUserResponseRecentNotificationsItem({
+    required this.notificationType,
+  });
+  factory UsersWatchUserResponseRecentNotificationsItem.fromJson(
+      Map<String, dynamic> json) {
+    if (json["notificationType"] is! String) {
+      throw Exception(
+        "Unable to decode UsersWatchUserResponseRecentNotificationsItem. Expected String from \"notificationType\". Received ${json["notificationType"]}}",
+      );
+    }
+    switch (json["notificationType"]) {
+      case "POST_LIKE":
+        return UsersWatchUserResponseRecentNotificationsItemPostLike.fromJson(
+            json);
+      case "POST_COMMENT":
+        return UsersWatchUserResponseRecentNotificationsItemPostComment
+            .fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode UsersWatchUserResponseRecentNotificationsItem. \"${json["notificationType"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class UsersWatchUserResponseRecentNotificationsItemPostLike
+    implements UsersWatchUserResponseRecentNotificationsItem {
+  @override
+  final String notificationType = "POST_LIKE";
+  final String postId;
+  final String userId;
+  const UsersWatchUserResponseRecentNotificationsItemPostLike({
+    required this.postId,
+    required this.userId,
+  });
+  factory UsersWatchUserResponseRecentNotificationsItemPostLike.fromJson(
+      Map<String, dynamic> json) {
+    return UsersWatchUserResponseRecentNotificationsItemPostLike(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      userId: typeFromDynamic<String>(json["userId"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "notificationType": notificationType,
+      "postId": postId,
+      "userId": userId,
+    };
+
+    return __result;
+  }
+
+  UsersWatchUserResponseRecentNotificationsItemPostLike copyWith({
+    String? postId,
+    String? userId,
+  }) {
+    return UsersWatchUserResponseRecentNotificationsItemPostLike(
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+    );
+  }
+}
+
+class UsersWatchUserResponseRecentNotificationsItemPostComment
+    implements UsersWatchUserResponseRecentNotificationsItem {
+  @override
+  final String notificationType = "POST_COMMENT";
+  final String postId;
+  final String userId;
+  final String commentText;
+  const UsersWatchUserResponseRecentNotificationsItemPostComment({
+    required this.postId,
+    required this.userId,
+    required this.commentText,
+  });
+  factory UsersWatchUserResponseRecentNotificationsItemPostComment.fromJson(
+      Map<String, dynamic> json) {
+    return UsersWatchUserResponseRecentNotificationsItemPostComment(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      userId: typeFromDynamic<String>(json["userId"], ""),
+      commentText: typeFromDynamic<String>(json["commentText"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "notificationType": notificationType,
+      "postId": postId,
+      "userId": userId,
+      "commentText": commentText,
+    };
+
+    return __result;
+  }
+
+  UsersWatchUserResponseRecentNotificationsItemPostComment copyWith({
+    String? postId,
+    String? userId,
+    String? commentText,
+  }) {
+    return UsersWatchUserResponseRecentNotificationsItemPostComment(
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+      commentText: commentText ?? this.commentText,
+    );
+  }
+}
+
+class UsersWatchUserResponseBookmarksValue {
+  final String postId;
+  final String userId;
+  const UsersWatchUserResponseBookmarksValue({
+    required this.postId,
+    required this.userId,
+  });
+  factory UsersWatchUserResponseBookmarksValue.fromJson(
+      Map<String, dynamic> json) {
+    return UsersWatchUserResponseBookmarksValue(
+      postId: typeFromDynamic<String>(json["postId"], ""),
+      userId: typeFromDynamic<String>(json["userId"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "postId": postId,
+      "userId": userId,
+    };
+
+    return __result;
+  }
+
+  UsersWatchUserResponseBookmarksValue copyWith({
+    String? postId,
+    String? userId,
+  }) {
+    return UsersWatchUserResponseBookmarksValue(
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
     );
   }
 }

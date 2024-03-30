@@ -11,7 +11,7 @@ import {
     kotlinClassFromSchema,
     kotlinClientFromDef,
     kotlinPropertyFromSchema,
-    kotlinRpcFromDef,
+    kotlinHttpRpcFromDef,
     kotlinSealedClassedFromSchema,
     kotlinServiceFromDef,
 } from "./index";
@@ -251,7 +251,7 @@ describe("procedures", () => {
             params: "SayHelloParams",
             response: "SayHelloResponse",
         };
-        const result = kotlinRpcFromDef("sayHello", input, {
+        const result = kotlinHttpRpcFromDef("sayHello", input, {
             clientName: "Client",
         });
         expect(normalizeWhitespace(result)).toBe(
@@ -275,7 +275,7 @@ describe("procedures", () => {
             params: undefined,
             response: "Status",
         };
-        const result = kotlinRpcFromDef("getStatus", input, {
+        const result = kotlinHttpRpcFromDef("getStatus", input, {
             clientName: "Client",
         });
         expect(normalizeWhitespace(result)).toBe(
@@ -299,7 +299,7 @@ describe("procedures", () => {
             params: "CreateUserParams",
             response: undefined,
         };
-        const result = kotlinRpcFromDef("createUser", input, {
+        const result = kotlinHttpRpcFromDef("createUser", input, {
             clientName: "TestClient",
         });
         expect(normalizeWhitespace(result)).toBe(

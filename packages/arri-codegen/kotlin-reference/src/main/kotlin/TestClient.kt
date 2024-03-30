@@ -170,7 +170,7 @@ data class User(
         if (id != other.id) return false
         if (role != other.role) return false
         if (photo != other.photo) return false
-        if (createdAt != other.createdAt) return false
+        if (createdAt.toEpochMilli() != other.createdAt.toEpochMilli()) return false
         if (numFollowers != other.numFollowers) return false
         if (settings != other.settings) return false
         if (recentNotifications != other.recentNotifications) return false

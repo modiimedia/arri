@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import {
-    type RpcDefinition,
     camelCase,
     pascalCase,
     type ServiceDefinition,
@@ -9,6 +8,8 @@ import {
     type AppDefinition,
     unflattenProcedures,
     defineClientGeneratorPlugin,
+    type HttpRpcDefinition,
+    type WsRpcDefinition,
 } from "arri-codegen-utils";
 import {
     isSchemaFormEnum,
@@ -76,16 +77,18 @@ export function kotlinClientFromDef(
         }
         if (isRpcDefinition(subDef)) {
             const rpcName = camelCase(key, { normalize: true });
-            const rpc = kotlinRpcFromDef(rpcName, subDef, {
-                clientName,
-                modelPrefix,
-            });
-            rpcParts.push(rpc);
+            if (subDef.transport === "http") {
+                const rpc = kotlinHttpRpcFromDef(rpcName, subDef, {
+                    clientName,
+                    modelPrefix,
+                });
+                rpcParts.push(rpc);
+            }
         }
     }
     const generatedTypes: string[] = [];
     for (const key of Object.keys(def.models)) {
-        const model = def.models[key];
+        const model = def.models[key]!;
         const modelResult = kotlinPropertyFromSchema(model, {
             generatedTypes,
             modelPrefix: options.modelPrefix ?? "",
@@ -123,7 +126,7 @@ ${services.map((service) => service.content).join("\n\n")}
 
 ${modelParts.join("\n")}
 
-${utilityFunctionParts(def.info?.version)}`;
+${utilityFunctionParts(clientName, def.info?.version)}`;
 }
 
 // SERVICE GENERATION
@@ -135,7 +138,7 @@ export function kotlinServiceFromDef(
     const subServices: { key: string; name: string; content: string }[] = [];
     const rpcParts: string[] = [];
     for (const key of Object.keys(def)) {
-        const subDef = def[key];
+        const subDef = def[key]!;
         if (isServiceDefinition(subDef)) {
             const subServiceName = pascalCase(`${name}_${key}`);
             subServices.push({
@@ -146,13 +149,29 @@ export function kotlinServiceFromDef(
             continue;
         }
         if (isRpcDefinition(subDef)) {
-            rpcParts.push(
-                kotlinRpcFromDef(
-                    camelCase(key, { normalize: true }),
-                    subDef,
-                    context,
-                ),
+            if (subDef.transport === "http") {
+                rpcParts.push(
+                    kotlinHttpRpcFromDef(
+                        camelCase(key, { normalize: true }),
+                        subDef,
+                        context,
+                    ),
+                );
+                continue;
+            }
+            console.warn(
+                `[kotlin-codegen] WARNING unsupported transport type "${subDef.transport}"`,
             );
+            if (subDef.transport === "ws") {
+                rpcParts.push(
+                    kotlinWsRpcFromDef(
+                        camelCase(key, { normalize: true }),
+                        subDef,
+                        context,
+                    ),
+                );
+                continue;
+            }
             continue;
         }
     }
@@ -181,9 +200,16 @@ ${subServices.map((service) => service.content).join("\n\n")}`;
 }
 
 // RPC GENERATION
-export function kotlinRpcFromDef(
+export function kotlinWsRpcFromDef(
     name: string,
-    def: RpcDefinition,
+    def: WsRpcDefinition,
+    context: ServiceContext,
+): string {
+    return "";
+}
+export function kotlinHttpRpcFromDef(
+    name: string,
+    def: HttpRpcDefinition,
     context: ServiceContext,
 ): string {
     const paramType: string | undefined = def.params
@@ -254,7 +280,7 @@ export function kotlinRpcFromDef(
     return `    suspend fun ${name}(${
         paramType ? `params: ${paramType}` : ""
     }): ${returnType ?? "Unit"} {
-        ${returnType ? "val response = " : ""}prepareRequest(
+        val response = prepareRequest(
             client = httpClient,
             url = "$baseUrl${def.path}",
             method = HttpMethod.${pascalCase(def.method)},
@@ -265,11 +291,15 @@ export function kotlinRpcFromDef(
             },
             headers = headers,
         ).execute()
-        ${
-            returnType
-                ? `return JsonInstance.decodeFromString<${returnType}>(response.body())`
-                : ""
+        if (response.status.value in 200..299) {
+            ${
+                returnType
+                    ? `return JsonInstance.decodeFromString<${returnType}>(response.body())`
+                    : "return"
+            }
         }
+        val err = JsonInstance.decodeFromString<${context.clientName}Error>(response.body())
+        throw err
     }`;
 }
 
@@ -289,11 +319,11 @@ export interface KotlinProperty {
     dataType: string;
     annotation?: string;
     content?: string;
-    comparisonTemplate: (key: string) => string;
+    comparisonTemplate: (key: string, optional: boolean) => string;
     hashTemplate: (key: string, nullable: boolean) => string;
 }
 
-function defaultComparisonTemplate(key: string) {
+function defaultComparisonTemplate(key: string, optional: boolean) {
     return `        if (${key} != other.${key}) return false`;
 }
 
@@ -311,6 +341,7 @@ export function kotlinPropertyFromSchema(
     if (isSchemaFormType(schema)) {
         let dataType = "";
         let annotation: undefined | string;
+        let comparison = defaultComparisonTemplate;
         switch (schema.type) {
             case "string":
                 dataType = "String";
@@ -340,6 +371,12 @@ export function kotlinPropertyFromSchema(
                 dataType = "Instant";
                 annotation =
                     "@Serializable(with = InstantAsStringSerializer::class)";
+                comparison = (key, optional) => {
+                    if ((schema.nullable ?? false) || optional) {
+                        return `        if(${key}?.toEpochMilli() != other.${key}?.toEpochMilli()) return false`;
+                    }
+                    return `        if (${key}.toEpochMilli() != other.${key}.toEpochMilli()) return false`;
+                };
                 break;
             case "uint8":
                 dataType = "UByte";
@@ -357,7 +394,7 @@ export function kotlinPropertyFromSchema(
         return {
             dataType: `${dataType}${schema.nullable ? "?" : ""}`,
             annotation,
-            comparisonTemplate: defaultComparisonTemplate,
+            comparisonTemplate: comparison,
             hashTemplate: defaultHashTemplate,
         };
     }
@@ -413,7 +450,7 @@ ${parts.join("\n")}
     }
 
     return {
-        dataType: name,
+        dataType: schema.nullable ? `${name}?` : name,
         content,
         comparisonTemplate: defaultComparisonTemplate,
         hashTemplate: defaultHashTemplate,
@@ -458,7 +495,7 @@ export function kotlinClassFromSchema(
         if (camelCaseKey === "object") {
             camelCaseKey = `_object`;
         }
-        const propSchema = schema.properties[key];
+        const propSchema = schema.properties[key]!;
         const prop = kotlinPropertyFromSchema(propSchema, {
             instancePath: `${context.instancePath}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
@@ -484,7 +521,7 @@ export function kotlinClassFromSchema(
         } else {
             constructorParts.push(`    val ${camelCaseKey}: ${prop.dataType},`);
         }
-        equalsFnParts.push(prop.comparisonTemplate(camelCaseKey));
+        equalsFnParts.push(prop.comparisonTemplate(camelCaseKey, false));
         if (hashParts.length) {
             hashParts.push(
                 `        result = 31 * result + ${prop.hashTemplate(
@@ -511,7 +548,7 @@ export function kotlinClassFromSchema(
             if (camelCaseKey === "object") {
                 camelCaseKey = "_object";
             }
-            const propSchema = schema.optionalProperties[key];
+            const propSchema = schema.optionalProperties[key]!;
             const prop = kotlinPropertyFromSchema(propSchema, {
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/properties/${key}`,
@@ -546,7 +583,7 @@ export function kotlinClassFromSchema(
                     `    val ${camelCaseKey}: ${finalType} = null,`,
                 );
             }
-            equalsFnParts.push(prop.comparisonTemplate(camelCaseKey));
+            equalsFnParts.push(prop.comparisonTemplate(camelCaseKey, true));
             if (hashParts.length) {
                 hashParts.push(
                     `        result = 31 * result + ${prop.hashTemplate(
@@ -646,7 +683,7 @@ export function kotlinSealedClassedFromSchema(
     ) as string;
     const subContentParts: string[] = [];
     for (const discriminatorVal of Object.keys(schema.mapping)) {
-        const mappingSchema = schema.mapping[discriminatorVal];
+        const mappingSchema = schema.mapping[discriminatorVal]!;
         const mapping = kotlinClassFromSchema(mappingSchema, {
             generatedTypes: context.generatedTypes,
             instancePath: `${context.instancePath}`,
@@ -722,13 +759,16 @@ import kotlinx.serialization.json.jsonObject
 import java.nio.ByteBuffer
 import java.time.Instant`;
 
-const utilityFunctionParts = (version?: string) => `@Serializable
-data class TestClientError(
-    val statusCode: Int,
-    val statusMessage: String,
-    val data: JsonElement,
-    val stack: String?
-)
+const utilityFunctionParts = (
+    clientName: string,
+    version?: string,
+) => `@Serializable
+data class ${clientName}Error(
+    val code: Int,
+    override val message: String,
+    val data: JsonElement? = null,
+    val stack: List<String>? = null,
+): Exception()
 
 object InstantAsStringSerializer : KSerializer<Instant> {
     override val descriptor: SerialDescriptor
@@ -867,10 +907,10 @@ private suspend fun handleSseRequest(
 
                 onConnectionError(
                     TestClientError(
-                        statusCode = httpResponse.status.value,
-                        statusMessage = "Error fetching stream",
+                        code = httpResponse.status.value,
+                        message = "Error fetching stream",
                         data = JsonInstance.encodeToJsonElement(httpResponse),
-                        stack = ""
+                        stack = null,
                     )
                 )
                 handleSseRequest(
@@ -927,10 +967,10 @@ private suspend fun handleSseRequest(
     } catch (e: java.net.ConnectException) {
         onConnectionError(
             TestClientError(
-                statusCode = 503,
-                statusMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                code = 503,
+                message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString()
+                stack = e.stackTraceToString().split("\\n")
             )
         )
         handleSseRequest(
@@ -954,10 +994,10 @@ private suspend fun handleSseRequest(
     } catch (e: Exception) {
         onConnectionError(
             TestClientError(
-                statusCode = 503,
-                statusMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                code = 503,
+                message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString()
+                stack = e.stackTraceToString().split("\\n")
             )
         )
         handleSseRequest(

@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = "main.kotlin.App"
+    mainClass = "MainKt"
 }
 
 val ktorVersion: String by project

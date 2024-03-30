@@ -30,69 +30,157 @@ class TestClient(
     private val baseUrl: String = "",
     private val headers: Map<String, String> = mutableMapOf(),
 ) {
+    val tests = TestClientTestsService(httpClient, baseUrl, headers)
     val adapters = TestClientAdaptersService(httpClient, baseUrl, headers)
-    val miscTests = TestClientMiscTestsService(httpClient, baseUrl, headers)
-    val posts = TestClientPostsService(httpClient, baseUrl, headers)
     val users = TestClientUsersService(httpClient, baseUrl, headers)
-    val videos = TestClientVideosService(httpClient, baseUrl, headers)
 
 }
 
-class TestClientAdaptersService(
+class TestClientTestsService(
     private val httpClient: HttpClient,
     private val baseUrl: String = "",
     private val headers: Map<String, String> = mutableMapOf(),
 ) {
 
-    suspend fun typeboxAdapter(params: AdaptersTypeboxAdapterParams): AdaptersTypeboxAdapterResponse {
+    suspend fun emptyParamsGetRequest(): DefaultPayload {
         val response = prepareRequest(
             client = httpClient,
-            url = "$baseUrl/rpcs/adapters/typebox-adapter",
-            method = HttpMethod.Post,
-            params = JsonInstance.encodeToJsonElement<AdaptersTypeboxAdapterParams>(params),
+            url = "$baseUrl/rpcs/tests/empty-params-get-request",
+            method = HttpMethod.Get,
+            params = null,
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<AdaptersTypeboxAdapterResponse>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<DefaultPayload>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
     }
-}
-
-
-
-class TestClientMiscTestsService(
-    private val httpClient: HttpClient,
-    private val baseUrl: String = "",
-    private val headers: Map<String, String> = mutableMapOf(),
-) {
-
+    suspend fun emptyParamsPostRequest(): DefaultPayload {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/empty-params-post-request",
+            method = HttpMethod.Post,
+            params = null,
+            headers = headers,
+        ).execute()
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<DefaultPayload>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
+    }
+    suspend fun emptyResponseGetRequest(params: DefaultPayload): Unit {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/empty-response-get-request",
+            method = HttpMethod.Get,
+            params = JsonInstance.encodeToJsonElement<DefaultPayload>(params),
+            headers = headers,
+        ).execute()
+        if (response.status.value in 200..299) {
+            return
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
+    }
+    suspend fun emptyResponsePostRequest(params: DefaultPayload): Unit {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/empty-response-post-request",
+            method = HttpMethod.Post,
+            params = JsonInstance.encodeToJsonElement<DefaultPayload>(params),
+            headers = headers,
+        ).execute()
+        if (response.status.value in 200..299) {
+            return
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
+    }
+    suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/deprecated-rpc",
+            method = HttpMethod.Post,
+            params = JsonInstance.encodeToJsonElement<DeprecatedRpcParams>(params),
+            headers = headers,
+        ).execute()
+        if (response.status.value in 200..299) {
+            return
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
+    }
     suspend fun sendObject(params: ObjectWithEveryType): ObjectWithEveryType {
         val response = prepareRequest(
             client = httpClient,
-            url = "$baseUrl/rpcs/misc-tests/send-object",
+            url = "$baseUrl/rpcs/tests/send-object",
             method = HttpMethod.Post,
             params = JsonInstance.encodeToJsonElement<ObjectWithEveryType>(params),
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<ObjectWithEveryType>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<ObjectWithEveryType>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
     }
     suspend fun sendObjectWithNullableFields(params: ObjectWithEveryNullableType): ObjectWithEveryNullableType {
         val response = prepareRequest(
             client = httpClient,
-            url = "$baseUrl/rpcs/misc-tests/send-object-with-nullable-fields",
+            url = "$baseUrl/rpcs/tests/send-object-with-nullable-fields",
             method = HttpMethod.Post,
             params = JsonInstance.encodeToJsonElement<ObjectWithEveryNullableType>(params),
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<ObjectWithEveryNullableType>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<ObjectWithEveryNullableType>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
     }
     suspend fun sendPartialObject(params: ObjectWithEveryOptionalType): ObjectWithEveryOptionalType {
         val response = prepareRequest(
             client = httpClient,
-            url = "$baseUrl/rpcs/misc-tests/send-partial-object",
+            url = "$baseUrl/rpcs/tests/send-partial-object",
             method = HttpMethod.Post,
             params = JsonInstance.encodeToJsonElement<ObjectWithEveryOptionalType>(params),
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<ObjectWithEveryOptionalType>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<ObjectWithEveryOptionalType>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
+    }
+    suspend fun sendRecursiveObject(params: RecursiveObject): RecursiveObject {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/send-recursive-object",
+            method = HttpMethod.Post,
+            params = JsonInstance.encodeToJsonElement<RecursiveObject>(params),
+            headers = headers,
+        ).execute()
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<RecursiveObject>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
+    }
+    suspend fun sendRecursiveUnion(params: RecursiveUnion): RecursiveUnion {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/send-recursive-union",
+            method = HttpMethod.Post,
+            params = JsonInstance.encodeToJsonElement<RecursiveUnion>(params),
+            headers = headers,
+        ).execute()
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<RecursiveUnion>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
     }
     fun streamAutoReconnect(
         scope: CoroutineScope,
@@ -114,7 +202,7 @@ class TestClientMiscTestsService(
             handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
-                url = "$baseUrl/rpcs/misc-tests/stream-auto-reconnect",
+                url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
                 method = HttpMethod.Get,
                 params = JsonInstance.encodeToJsonElement<AutoReconnectParams>(params),
                 headers = finalHeaders,
@@ -154,7 +242,7 @@ class TestClientMiscTestsService(
             handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
-                url = "$baseUrl/rpcs/misc-tests/stream-connection-error-test",
+                url = "$baseUrl/rpcs/tests/stream-connection-error-test",
                 method = HttpMethod.Get,
                 params = JsonInstance.encodeToJsonElement<StreamConnectionErrorTestParams>(params),
                 headers = finalHeaders,
@@ -193,7 +281,7 @@ class TestClientMiscTestsService(
             handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
-                url = "$baseUrl/rpcs/misc-tests/stream-large-objects",
+                url = "$baseUrl/rpcs/tests/stream-large-objects",
                 method = HttpMethod.Get,
                 params = null,
                 headers = finalHeaders,
@@ -233,7 +321,7 @@ class TestClientMiscTestsService(
             handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
-                url = "$baseUrl/rpcs/misc-tests/stream-messages",
+                url = "$baseUrl/rpcs/tests/stream-messages",
                 method = HttpMethod.Get,
                 params = JsonInstance.encodeToJsonElement<ChatMessageParams>(params),
                 headers = finalHeaders,
@@ -272,7 +360,7 @@ class TestClientMiscTestsService(
             handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
-                url = "$baseUrl/rpcs/misc-tests/stream-ten-events-then-end",
+                url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
                 method = HttpMethod.Get,
                 params = null,
                 headers = finalHeaders,
@@ -311,7 +399,7 @@ class TestClientMiscTestsService(
             handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
-                url = "$baseUrl/rpcs/misc-tests/stream-ten-events-then-error",
+                url = "$baseUrl/rpcs/tests/stream-ten-events-then-error",
                 method = HttpMethod.Post,
                 params = null,
                 headers = finalHeaders,
@@ -335,51 +423,25 @@ class TestClientMiscTestsService(
 
 
 
-class TestClientPostsService(
+class TestClientAdaptersService(
     private val httpClient: HttpClient,
     private val baseUrl: String = "",
     private val headers: Map<String, String> = mutableMapOf(),
 ) {
 
-    suspend fun getPost(params: PostParams): Post {
+    suspend fun typebox(params: TypeBoxObject): TypeBoxObject {
         val response = prepareRequest(
             client = httpClient,
-            url = "$baseUrl/rpcs/posts/get-post",
-            method = HttpMethod.Get,
-            params = JsonInstance.encodeToJsonElement<PostParams>(params),
-            headers = headers,
-        ).execute()
-        return JsonInstance.decodeFromString<Post>(response.body())
-    }
-    suspend fun getPosts(params: PostListParams): PostListResponse {
-        val response = prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/posts/get-posts",
-            method = HttpMethod.Get,
-            params = JsonInstance.encodeToJsonElement<PostListParams>(params),
-            headers = headers,
-        ).execute()
-        return JsonInstance.decodeFromString<PostListResponse>(response.body())
-    }
-    suspend fun logEvent(params: PostEvent): LogPostEventResponse {
-        val response = prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/posts/log-event",
+            url = "$baseUrl/rpcs/adapters/typebox",
             method = HttpMethod.Post,
-            params = JsonInstance.encodeToJsonElement<PostEvent>(params),
+            params = JsonInstance.encodeToJsonElement<TypeBoxObject>(params),
             headers = headers,
         ).execute()
-        return JsonInstance.decodeFromString<LogPostEventResponse>(response.body())
-    }
-    suspend fun updatePost(params: UpdatePostParams): Post {
-        val response = prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/posts/update-post",
-            method = HttpMethod.Post,
-            params = JsonInstance.encodeToJsonElement<UpdatePostParams>(params),
-            headers = headers,
-        ).execute()
-        return JsonInstance.decodeFromString<Post>(response.body())
+        if (response.status.value in 200..299) {
+            return JsonInstance.decodeFromString<TypeBoxObject>(response.body())
+        }
+        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw err
     }
 }
 
@@ -435,36 +497,6 @@ class TestClientUsersService(
 
 
 
-class TestClientVideosService(
-    private val httpClient: HttpClient,
-    private val baseUrl: String = "",
-    private val headers: Map<String, String> = mutableMapOf(),
-) {
-
-    suspend fun getAnnotation(params: AnnotationId): Annotation {
-        val response = prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/videos/get-annotation",
-            method = HttpMethod.Get,
-            params = JsonInstance.encodeToJsonElement<AnnotationId>(params),
-            headers = headers,
-        ).execute()
-        return JsonInstance.decodeFromString<Annotation>(response.body())
-    }
-    suspend fun updateAnnotation(params: UpdateAnnotationParams): Annotation {
-        val response = prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/videos/update-annotation",
-            method = HttpMethod.Post,
-            params = JsonInstance.encodeToJsonElement<UpdateAnnotationParams>(params),
-            headers = headers,
-        ).execute()
-        return JsonInstance.decodeFromString<Annotation>(response.body())
-    }
-}
-
-
-
 @Serializable
 data class ManuallyAddedModel(
     val hello: String,
@@ -472,19 +504,25 @@ data class ManuallyAddedModel(
 
 
 @Serializable
-data class AdaptersTypeboxAdapterParams(
+data class DefaultPayload(
+    val message: String,
+)
+
+
+@Serializable
+data class TypeBoxObject(
     val string: String,
     val boolean: Boolean,
     val integer: Int,
     val number: Double,
-    val enumField: AdaptersTypeboxAdapterParamsEnumField,
+    val enumField: TypeBoxObjectEnumField,
     @SerialName("object")
-    val _object: AdaptersTypeboxAdapterParamsObject,
+    val _object: TypeBoxObjectObject,
     val array: List<Boolean>,
     val optionalString: String? = null,
 )
 
-enum class AdaptersTypeboxAdapterParamsEnumField() {
+enum class TypeBoxObjectEnumField() {
     @SerialName("A")
     A,
     @SerialName("B")
@@ -493,14 +531,14 @@ enum class AdaptersTypeboxAdapterParamsEnumField() {
     C,
 }
 @Serializable
-data class AdaptersTypeboxAdapterParamsObject(
+data class TypeBoxObjectObject(
     val string: String,
 )
 
 
 @Serializable
-data class AdaptersTypeboxAdapterResponse(
-    val message: String,
+data class DeprecatedRpcParams(
+    val deprecatedField: String,
 )
 
 
@@ -539,7 +577,7 @@ data class ObjectWithEveryType(
         if (any != other.any) return false
         if (boolean != other.boolean) return false
         if (string != other.string) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
         if (float32 != other.float32) return false
         if (float64 != other.float64) return false
         if (int8 != other.int8) return false
@@ -610,7 +648,7 @@ data class ObjectWithEveryTypeObject(
 
         if (string != other.string) return false
         if (boolean != other.boolean) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
 
         return true
     }
@@ -657,7 +695,7 @@ data class ObjectWithEveryTypeNestedObject(
         other as ObjectWithEveryTypeNestedObject
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
         if (data != other.data) return false
 
         return true
@@ -685,7 +723,7 @@ data class ObjectWithEveryTypeNestedObjectData(
         other as ObjectWithEveryTypeNestedObjectData
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
         if (data != other.data) return false
 
         return true
@@ -712,7 +750,7 @@ data class ObjectWithEveryTypeNestedObjectDataData(
         other as ObjectWithEveryTypeNestedObjectDataData
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
 
         return true
     }
@@ -738,7 +776,7 @@ data class ObjectWithEveryTypeNestedArrayItemItem(
         other as ObjectWithEveryTypeNestedArrayItemItem
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
 
         return true
     }
@@ -768,7 +806,7 @@ data class ObjectWithEveryNullableType(
     val uint32: UInt?,
     val int64: Long?,
     val uint64: ULong?,
-    val enumerator: ObjectWithEveryNullableTypeEnumerator,
+    val enumerator: ObjectWithEveryNullableTypeEnumerator?,
     val array: List<Boolean?>?,
     @SerialName("object")
     val _object: ObjectWithEveryNullableTypeObject?,
@@ -786,7 +824,7 @@ data class ObjectWithEveryNullableType(
         if (any != other.any) return false
         if (boolean != other.boolean) return false
         if (string != other.string) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
         if (float32 != other.float32) return false
         if (float64 != other.float64) return false
         if (int8 != other.int8) return false
@@ -857,7 +895,7 @@ data class ObjectWithEveryNullableTypeObject(
 
         if (string != other.string) return false
         if (boolean != other.boolean) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
 
         return true
     }
@@ -904,7 +942,7 @@ data class ObjectWithEveryNullableTypeNestedObject(
         other as ObjectWithEveryNullableTypeNestedObject
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
         if (data != other.data) return false
 
         return true
@@ -932,7 +970,7 @@ data class ObjectWithEveryNullableTypeNestedObjectData(
         other as ObjectWithEveryNullableTypeNestedObjectData
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
         if (data != other.data) return false
 
         return true
@@ -959,7 +997,7 @@ data class ObjectWithEveryNullableTypeNestedObjectDataData(
         other as ObjectWithEveryNullableTypeNestedObjectDataData
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
 
         return true
     }
@@ -985,7 +1023,7 @@ data class ObjectWithEveryNullableTypeNestedArrayItemItem(
         other as ObjectWithEveryNullableTypeNestedArrayItemItem
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
 
         return true
     }
@@ -1033,7 +1071,7 @@ data class ObjectWithEveryOptionalType(
         if (any != other.any) return false
         if (boolean != other.boolean) return false
         if (string != other.string) return false
-        if (timestamp != other.timestamp) return false
+        if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
         if (float32 != other.float32) return false
         if (float64 != other.float64) return false
         if (int8 != other.int8) return false
@@ -1104,7 +1142,7 @@ data class ObjectWithEveryOptionalTypeObject(
 
         if (string != other.string) return false
         if (boolean != other.boolean) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
 
         return true
     }
@@ -1151,7 +1189,7 @@ data class ObjectWithEveryOptionalTypeNestedObject(
         other as ObjectWithEveryOptionalTypeNestedObject
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
         if (data != other.data) return false
 
         return true
@@ -1179,7 +1217,7 @@ data class ObjectWithEveryOptionalTypeNestedObjectData(
         other as ObjectWithEveryOptionalTypeNestedObjectData
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
         if (data != other.data) return false
 
         return true
@@ -1206,7 +1244,7 @@ data class ObjectWithEveryOptionalTypeNestedObjectDataData(
         other as ObjectWithEveryOptionalTypeNestedObjectDataData
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
 
         return true
     }
@@ -1232,7 +1270,7 @@ data class ObjectWithEveryOptionalTypeNestedArrayItemItem(
         other as ObjectWithEveryOptionalTypeNestedArrayItemItem
 
         if (id != other.id) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
 
         return true
     }
@@ -1243,6 +1281,55 @@ data class ObjectWithEveryOptionalTypeNestedArrayItemItem(
         return result
     }
 }
+
+
+@Serializable
+data class RecursiveObject(
+    val left: JsonElement?,
+    val right: JsonElement?,
+    val value: String,
+)
+
+
+@Serializable
+sealed class RecursiveUnion()
+
+@Serializable
+@SerialName("CHILD")
+data class RecursiveUnionChild(
+    val data: JsonElement,
+) : RecursiveUnion()
+
+
+
+@Serializable
+@SerialName("CHILDREN")
+data class RecursiveUnionChildren(
+    val data: List<JsonElement>,
+) : RecursiveUnion()
+
+
+
+@Serializable
+@SerialName("TEXT")
+data class RecursiveUnionText(
+    val data: String,
+) : RecursiveUnion()
+
+
+
+@Serializable
+@SerialName("SHAPE")
+data class RecursiveUnionShape(
+    val data: RecursiveUnionData,
+) : RecursiveUnion()
+
+@Serializable
+data class RecursiveUnionData(
+    val width: Double,
+    val height: Double,
+    val color: String,
+)
 
 
 @Serializable
@@ -1313,7 +1400,7 @@ data class ChatMessageText(
         if (id != other.id) return false
         if (channelId != other.channelId) return false
         if (userId != other.userId) return false
-        if (date != other.date) return false
+        if (date.toEpochMilli() != other.date.toEpochMilli()) return false
         if (text != other.text) return false
 
         return true
@@ -1350,7 +1437,7 @@ data class ChatMessageImage(
         if (id != other.id) return false
         if (channelId != other.channelId) return false
         if (userId != other.userId) return false
-        if (date != other.date) return false
+        if (date.toEpochMilli() != other.date.toEpochMilli()) return false
         if (image != other.image) return false
 
         return true
@@ -1387,7 +1474,7 @@ data class ChatMessageUrl(
         if (id != other.id) return false
         if (channelId != other.channelId) return false
         if (userId != other.userId) return false
-        if (date != other.date) return false
+        if (date.toEpochMilli() != other.date.toEpochMilli()) return false
         if (url != other.url) return false
 
         return true
@@ -1402,352 +1489,6 @@ data class ChatMessageUrl(
         return result
     }
 }
-
-
-@Serializable
-data class PostParams(
-    val postId: String,
-)
-
-
-@Serializable
-data class Post(
-    val id: String,
-    val title: String,
-    val type: PostType,
-    val description: String?,
-    val content: String,
-    val tags: List<String>,
-    val authorId: String,
-    val author: Author,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val createdAt: Instant,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val updatedAt: Instant,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Post
-
-        if (id != other.id) return false
-        if (title != other.title) return false
-        if (type != other.type) return false
-        if (description != other.description) return false
-        if (content != other.content) return false
-        if (tags != other.tags) return false
-        if (authorId != other.authorId) return false
-        if (author != other.author) return false
-        if (createdAt != other.createdAt) return false
-        if (updatedAt != other.updatedAt) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + title.hashCode()
-        result = 31 * result + type.hashCode()
-        result = 31 * result + (description?.hashCode() ?: 0)
-        result = 31 * result + content.hashCode()
-        result = 31 * result + tags.hashCode()
-        result = 31 * result + authorId.hashCode()
-        result = 31 * result + author.hashCode()
-        result = 31 * result + createdAt.hashCode()
-        result = 31 * result + updatedAt.hashCode()
-        return result
-    }
-}
-
-enum class PostType() {
-    @SerialName("text")
-    Text,
-    @SerialName("image")
-    Image,
-    @SerialName("video")
-    Video,
-}
-@Serializable
-data class Author(
-    val id: String,
-    val name: String,
-    val bio: String?,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val createdAt: Instant,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val updatedAt: Instant,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Author
-
-        if (id != other.id) return false
-        if (name != other.name) return false
-        if (bio != other.bio) return false
-        if (createdAt != other.createdAt) return false
-        if (updatedAt != other.updatedAt) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + name.hashCode()
-        result = 31 * result + (bio?.hashCode() ?: 0)
-        result = 31 * result + createdAt.hashCode()
-        result = 31 * result + updatedAt.hashCode()
-        return result
-    }
-}
-
-
-@Serializable
-data class PostListParams(
-    val limit: Byte,
-    val type: PostType? = null,
-)
-
-
-@Serializable
-data class PostListResponse(
-    val total: Int,
-    val items: List<Post>,
-)
-
-
-@Serializable
-sealed class PostEvent()
-
-@Serializable
-@SerialName("POST_CREATED")
-data class PostEventPostCreated(
-    val postId: String,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val timestamp: Instant,
-) : PostEvent() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PostEventPostCreated
-
-        if (postId != other.postId) return false
-        if (timestamp != other.timestamp) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = postId.hashCode()
-        result = 31 * result + timestamp.hashCode()
-        return result
-    }
-}
-
-
-
-@Serializable
-@SerialName("POST_DELETED")
-data class PostEventPostDeleted(
-    val postId: String,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val timestamp: Instant,
-) : PostEvent() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PostEventPostDeleted
-
-        if (postId != other.postId) return false
-        if (timestamp != other.timestamp) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = postId.hashCode()
-        result = 31 * result + timestamp.hashCode()
-        return result
-    }
-}
-
-
-
-@Serializable
-@SerialName("POST_UPDATED")
-data class PostEventPostUpdated(
-    val postId: String,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val timestamp: Instant,
-    val data: PostEventData,
-) : PostEvent() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PostEventPostUpdated
-
-        if (postId != other.postId) return false
-        if (timestamp != other.timestamp) return false
-        if (data != other.data) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = postId.hashCode()
-        result = 31 * result + timestamp.hashCode()
-        result = 31 * result + data.hashCode()
-        return result
-    }
-}
-
-@Serializable
-data class PostEventData(
-    val id: String? = null,
-    val title: String? = null,
-    val type: PostType? = null,
-    val description: String? = null,
-    val content: String? = null,
-    val tags: List<String>? = null,
-    val authorId: String? = null,
-    val author: Author? = null,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val createdAt: Instant? = null,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val updatedAt: Instant? = null,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PostEventData
-
-        if (id != other.id) return false
-        if (title != other.title) return false
-        if (type != other.type) return false
-        if (description != other.description) return false
-        if (content != other.content) return false
-        if (tags != other.tags) return false
-        if (authorId != other.authorId) return false
-        if (author != other.author) return false
-        if (createdAt != other.createdAt) return false
-        if (updatedAt != other.updatedAt) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = (id?.hashCode() ?: 0)
-        result = 31 * result + (title?.hashCode() ?: 0)
-        result = 31 * result + (type?.hashCode() ?: 0)
-        result = 31 * result + (description?.hashCode() ?: 0)
-        result = 31 * result + (content?.hashCode() ?: 0)
-        result = 31 * result + (tags?.hashCode() ?: 0)
-        result = 31 * result + (authorId?.hashCode() ?: 0)
-        result = 31 * result + (author?.hashCode() ?: 0)
-        result = 31 * result + (createdAt?.hashCode() ?: 0)
-        result = 31 * result + (updatedAt?.hashCode() ?: 0)
-        return result
-    }
-}
-
-
-
-@Serializable
-@SerialName("POST_LIKED")
-data class PostEventPostLiked(
-    val postId: String,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val timestamp: Instant,
-    val postLikeId: String,
-    val postLikeCount: UInt,
-) : PostEvent() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PostEventPostLiked
-
-        if (postId != other.postId) return false
-        if (timestamp != other.timestamp) return false
-        if (postLikeId != other.postLikeId) return false
-        if (postLikeCount != other.postLikeCount) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = postId.hashCode()
-        result = 31 * result + timestamp.hashCode()
-        result = 31 * result + postLikeId.hashCode()
-        result = 31 * result + postLikeCount.hashCode()
-        return result
-    }
-}
-
-
-
-@Serializable
-@SerialName("POST_COMMENTED")
-data class PostEventPostCommented(
-    val postId: String,
-    @Serializable(with = InstantAsStringSerializer::class)
-    val timestamp: Instant,
-    val commentId: String,
-    val commentText: String,
-    val commentCount: UInt,
-) : PostEvent() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PostEventPostCommented
-
-        if (postId != other.postId) return false
-        if (timestamp != other.timestamp) return false
-        if (commentId != other.commentId) return false
-        if (commentText != other.commentText) return false
-        if (commentCount != other.commentCount) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = postId.hashCode()
-        result = 31 * result + timestamp.hashCode()
-        result = 31 * result + commentId.hashCode()
-        result = 31 * result + commentText.hashCode()
-        result = 31 * result + commentCount.hashCode()
-        return result
-    }
-}
-
-
-@Serializable
-data class LogPostEventResponse(
-    val success: Boolean,
-    val message: String,
-)
-
-
-@Serializable
-data class UpdatePostParams(
-    val postId: String,
-    val data: UpdatePostParamsData,
-)
-
-@Serializable
-data class UpdatePostParamsData(
-    val title: String? = null,
-    val description: String? = null,
-    val content: String? = null,
-    val tags: List<String>? = null,
-)
 
 
 @Serializable
@@ -1780,7 +1521,7 @@ data class UsersWatchUserResponse(
         if (id != other.id) return false
         if (role != other.role) return false
         if (photo != other.photo) return false
-        if (createdAt != other.createdAt) return false
+        if (createdAt.toEpochMilli() != other.createdAt.toEpochMilli()) return false
         if (numFollowers != other.numFollowers) return false
         if (settings != other.settings) return false
         if (recentNotifications != other.recentNotifications) return false
@@ -1866,97 +1607,14 @@ data class UsersWatchUserResponseBookmarksValue(
 )
 
 
-@Serializable
-data class AnnotationId(
-    val id: String,
-    val version: String,
-)
-
-
-@Serializable
-data class Annotation(
-    @SerialName("annotation_id")
-    val annotationId: AnnotationId,
-    @SerialName("associated_id")
-    val associatedId: AssociatedId,
-    @SerialName("annotation_type")
-    val annotationType: AnnotationAnnotationType,
-    @SerialName("annotation_type_version")
-    val annotationTypeVersion: UShort,
-    val metadata: JsonElement,
-    @SerialName("box_type_range")
-    val boxTypeRange: AnnotationBoxTypeRange,
-)
-
-@Serializable
-data class AssociatedId(
-    @SerialName("entity_type")
-    val entityType: AnnotationAssociatedIdEntityType,
-    val id: String,
-)
-
-enum class AnnotationAssociatedIdEntityType() {
-    @SerialName("MOVIE_ID")
-    MovieId,
-    @SerialName("SHOW_ID")
-    ShowId,
-}
-enum class AnnotationAnnotationType() {
-    @SerialName("ANNOTATION_BOUNDINGBOX")
-    AnnotationBoundingbox,
-}
-@Serializable
-data class AnnotationBoxTypeRange(
-    @SerialName("start_time_in_nano_sec")
-    val startTimeInNanoSec: Long,
-    @SerialName("end_time_in_nano_sec")
-    val endTimeInNanoSec: ULong,
-)
-
-
-@Serializable
-data class UpdateAnnotationParams(
-    @SerialName("annotation_id")
-    val annotationId: String,
-    @SerialName("annotation_id_version")
-    val annotationIdVersion: String,
-    val data: UpdateAnnotationData,
-)
-
-@Serializable
-data class UpdateAnnotationData(
-    @SerialName("associated_id")
-    val associatedId: AssociatedId? = null,
-    @SerialName("annotation_type")
-    val annotationType: UpdateAnnotationParamsDataAnnotationType? = null,
-    @SerialName("annotation_type_version")
-    val annotationTypeVersion: UShort? = null,
-    val metadata: JsonElement? = null,
-    @SerialName("box_type_range")
-    val boxTypeRange: UpdateAnnotationParamsDataBoxTypeRange? = null,
-)
-
-enum class UpdateAnnotationParamsDataAnnotationType() {
-    @SerialName("ANNOTATION_BOUNDINGBOX")
-    AnnotationBoundingbox,
-}
-@Serializable
-data class UpdateAnnotationParamsDataBoxTypeRange(
-    @SerialName("start_time_in_nano_sec")
-    val startTimeInNanoSec: Long,
-    @SerialName("end_time_in_nano_sec")
-    val endTimeInNanoSec: ULong,
-)
-
-
 
 @Serializable
 data class TestClientError(
-    val statusCode: Int,
-    val statusMessage: String,
-    val data: JsonElement,
-    val stack: String?
-)
+    val code: Int,
+    override val message: String,
+    val data: JsonElement? = null,
+    val stack: List<String>? = null,
+): Exception()
 
 object InstantAsStringSerializer : KSerializer<Instant> {
     override val descriptor: SerialDescriptor
@@ -2095,10 +1753,10 @@ private suspend fun handleSseRequest(
 
                 onConnectionError(
                     TestClientError(
-                        statusCode = httpResponse.status.value,
-                        statusMessage = "Error fetching stream",
+                        code = httpResponse.status.value,
+                        message = "Error fetching stream",
                         data = JsonInstance.encodeToJsonElement(httpResponse),
-                        stack = ""
+                        stack = null,
                     )
                 )
                 handleSseRequest(
@@ -2155,10 +1813,10 @@ private suspend fun handleSseRequest(
     } catch (e: java.net.ConnectException) {
         onConnectionError(
             TestClientError(
-                statusCode = 503,
-                statusMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                code = 503,
+                message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString()
+                stack = e.stackTraceToString().split("\n")
             )
         )
         handleSseRequest(
@@ -2182,10 +1840,10 @@ private suspend fun handleSseRequest(
     } catch (e: Exception) {
         onConnectionError(
             TestClientError(
-                statusCode = 503,
-                statusMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                code = 503,
+                message = if (e.message != null) e.message!! else "Error connecting to $url",
                 data = JsonInstance.encodeToJsonElement(e),
-                stack = e.stackTraceToString()
+                stack = e.stackTraceToString().split("\n")
             )
         )
         handleSseRequest(

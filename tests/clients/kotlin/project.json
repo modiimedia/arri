@@ -6,7 +6,7 @@
         "integration-test": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "./gradlew test",
+                "command": "./gradlew",
                 "cwd": "tests/clients/kotlin"
             }
         }
