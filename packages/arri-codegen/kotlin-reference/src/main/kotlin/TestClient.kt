@@ -23,9 +23,9 @@ import java.time.Instant
 
 
 val JsonInstanceModule = SerializersModule {
-    polymorphic(UserRecentNotificationsItem::class) {
-        subclass(UserRecentNotificationsItemPostLike::class)
-        subclass(UserRecentNotificationsItemPostComment::class)
+    polymorphic(UserNotification::class) {
+        subclass(UserNotificationPostLike::class)
+        subclass(UserNotificationPostComment::class)
     }
 }
 val JsonInstance = Json {
@@ -173,9 +173,9 @@ data class User(
     val createdAt: Instant,
     val numFollowers: Int,
     val settings: UserSettings,
-    val lastNotification: UserRecentNotificationsItem?,
-    val recentNotifications: List<UserRecentNotificationsItem>,
-    val bookmarks: Map<String, UserBookmarksValue>,
+    val lastNotification: UserNotification?,
+    val recentNotifications: List<UserNotification>,
+    val bookmarks: Map<String, UserBookmarks>,
     val metadata: Map<String, JsonElement>,
     val randomList: List<JsonElement>,
     val binaryTree: BinaryTree,
@@ -209,10 +209,12 @@ data class User(
         result = 31 * result + createdAt.hashCode()
         result = 31 * result + numFollowers.hashCode()
         result = 31 * result + settings.hashCode()
+        result = 31 * result + (lastNotification?.hashCode() ?: 0)
         result = 31 * result + recentNotifications.hashCode()
         result = 31 * result + bookmarks.hashCode()
         result = 31 * result + metadata.hashCode()
         result = 31 * result + randomList.hashCode()
+        result = 31 * result + binaryTree.hashCode()
         result = 31 * result + (bio?.hashCode() ?: 0)
         return result
     }
@@ -252,41 +254,49 @@ enum class UserSettingsPreferredTheme() {
     System,
 }
 
-@Serializable
-sealed class UserRecentNotificationsItem(val messageType: String)
+@Serializable(with = UserNotificationSerializer::class)
+sealed class UserNotification() {
+    abstract val notificationType: String
+}
 
 @Serializable
 @SerialName("POST_LIKE")
-data class UserRecentNotificationsItemPostLike(
+data class UserNotificationPostLike(
     val postId: String,
     val userId: String,
-) : UserRecentNotificationsItem(messageType = "POST_LIKE")
+) : UserNotification() {
+    override val notificationType: String
+        get() = "POST_LIKE"
+}
 
 @Serializable
 @SerialName("POST_COMMENT")
-data class UserRecentNotificationsItemPostComment(
+data class UserNotificationPostComment(
     val postId: String,
     val userId: String,
     val commentText: String,
-) : UserRecentNotificationsItem(messageType = "POST_COMMENT")
+) : UserNotification() {
+    override val notificationType: String
+        get() = "POST_COMMENT"
+}
 
 
-object UserRecentNotificationsItemSerializer :
-    JsonContentPolymorphicSerializer<UserRecentNotificationsItem>(UserRecentNotificationsItem::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<UserRecentNotificationsItem> {
-        val discriminatorKey = "messageType";
+object UserNotificationSerializer :
+    JsonContentPolymorphicSerializer<UserNotification>(UserNotification::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<UserNotification> {
+        val discriminatorKey = "notificationType";
         val discriminatorVal =
             if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
         return when (discriminatorVal) {
-            "\"POST_LIKE\"" -> UserRecentNotificationsItemPostLike.serializer()
-            "\"POST_COMMENT\"" -> UserRecentNotificationsItemPostComment.serializer()
-            else -> UserRecentNotificationsItem.serializer()
+            "POST_LIKE" -> UserNotificationPostLike.serializer()
+            "POST_COMMENT" -> UserNotificationPostComment.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
         }
     }
 }
 
 @Serializable
-data class UserBookmarksValue(
+data class UserBookmarks(
     val postId: String,
     val userId: String,
 )
@@ -347,7 +357,7 @@ private suspend fun prepareRequest(
                 if (finalVal.startsWith("\"") && finalVal.endsWith("\"")) {
                     finalVal = finalVal.substring(1, finalVal.length - 1)
                 }
-                queryParts.add("${it.key}=${finalVal}")
+                queryParts.add("${it.key}=$finalVal")
             }
             finalUrl = "$finalUrl?${queryParts.joinToString("&")}"
         }
@@ -520,7 +530,7 @@ private suspend fun handleSseRequest(
             TestClientError(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e),
+                data = JsonInstance.encodeToJsonElement(e.toString()),
                 stack = e.stackTraceToString().split("\n"),
             )
         )
@@ -547,7 +557,7 @@ private suspend fun handleSseRequest(
             TestClientError(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e),
+                data = JsonInstance.encodeToJsonElement(e.toString()),
                 stack = e.stackTraceToString().split("\n"),
             )
         )

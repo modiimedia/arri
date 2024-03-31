@@ -509,9 +509,12 @@ export function kotlinClassFromSchema(
     context: ModelContext,
 ): KotlinProperty {
     const name = getTypeName(schema, context);
+    let discriminatorGetter = "";
     const annotationParts = ["@Serializable"];
     if (context.discriminatorKey && context.discriminatorValue) {
         annotationParts.push(`@SerialName("${context.discriminatorValue}")`);
+        discriminatorGetter = `    override val ${camelCase(context.discriminatorKey, { normalize: true })}: String
+        get() = "${context.discriminatorValue}"`;
     }
     const subContentParts: string[] = [];
     const constructorParts: string[] = [];
@@ -651,19 +654,25 @@ ${equalsFnParts.join("\n")}
 ${hashParts.join("\n")}
         return result
     }`;
+        let classBody = "";
+        if (needsAdditionalMethods) {
+            classBody = ` {
+${discriminatorGetter}
+
+${equalsFn}
+
+${hashFn}
+}`;
+        } else if (discriminatorGetter) {
+            classBody = ` {
+${discriminatorGetter}
+}`;
+        }
 
         content = `${annotationParts.join("\n")}
 data class ${name}(
 ${constructorParts.join("\n")}
-)${context.discriminatorParent ? ` : ${context.discriminatorParent}()` : ""}${
-            needsAdditionalMethods
-                ? ` {
-${equalsFn}
-
-${hashFn}
-}`
-                : ""
-        }
+)${context.discriminatorParent ? ` : ${context.discriminatorParent}()` : ""}${classBody}
 
 ${subContentParts.join("\n")}`;
         context.generatedTypes.push(name);
@@ -711,6 +720,7 @@ export function kotlinSealedClassedFromSchema(
     context: ModelContext,
 ): KotlinProperty {
     const name = getTypeName(schema, context);
+    const subTypes: Array<{ discriminatorVal: string; dataType: string }> = [];
     const subContentParts: string[] = [];
     for (const discriminatorVal of Object.keys(schema.mapping)) {
         const mappingSchema = schema.mapping[discriminatorVal]!;
@@ -724,6 +734,10 @@ export function kotlinSealedClassedFromSchema(
             modelPrefix: context.modelPrefix,
             parentId: name,
         });
+        subTypes.push({
+            discriminatorVal,
+            dataType: mapping.dataType,
+        });
         if (mapping.content) {
             subContentParts.push(mapping.content);
         }
@@ -731,10 +745,25 @@ export function kotlinSealedClassedFromSchema(
 
     let content: string | undefined;
     if (!context.generatedTypes.includes(name)) {
-        content = `@Serializable
-sealed class ${name}()
+        content = `@Serializable(with = ${name}Serializer::class)
+sealed class ${name}() {
+    abstract val ${camelCase(schema.discriminator, { normalize: true })}: String
+}
 
-${subContentParts.join("\n\n")}`;
+${subContentParts.join("\n\n")}
+
+object ${name}Serializer : 
+    JsonContentPolymorphicSerializer<${name}>(${name}::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<${name}> {
+        val discriminatorKey = "${schema.discriminator}";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+${subTypes.map((type) => `            "${type.discriminatorVal}" -> ${type.dataType}.serializer()`).join("\n")}
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}`;
         context.generatedTypes.push(name);
     }
 
@@ -844,7 +873,11 @@ private suspend fun prepareRequest(
         HttpMethod.Get, HttpMethod.Head -> {
             val queryParts = mutableListOf<String>()
             params?.jsonObject?.entries?.forEach {
-                queryParts.add("\${it.key}=\${it.value}")
+                var finalVal = it.value.toString()
+                if (finalVal.startsWith("\\"") && finalVal.endsWith("\\"")) {
+                    finalVal = finalVal.substring(1, finalVal.length - 1)
+                }
+                queryParts.add("\${it.key}=$finalVal")
             }
             finalUrl = "$finalUrl?\${queryParts.joinToString("&")}"
         }
