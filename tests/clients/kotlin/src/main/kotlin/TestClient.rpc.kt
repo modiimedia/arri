@@ -566,7 +566,7 @@ data class ObjectWithEveryType(
     val record: Map<String, Boolean>,
     val discriminator: ObjectWithEveryTypeDiscriminator,
     val nestedObject: ObjectWithEveryTypeNestedObject,
-    val nestedArray: List<List<ObjectWithEveryTypeNestedArrayItemItem>>,
+    val nestedArray: List<List<ObjectWithEveryTypeNestedArray>>,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -667,7 +667,7 @@ sealed class ObjectWithEveryTypeDiscriminator()
 
 @Serializable
 @SerialName("A")
-data class ObjectWithEveryTypeDiscriminatorA(
+data class ObjectWithEveryTypeDiscriminatorDiscriminatorA(
     val title: String,
 ) : ObjectWithEveryTypeDiscriminator()
 
@@ -675,7 +675,7 @@ data class ObjectWithEveryTypeDiscriminatorA(
 
 @Serializable
 @SerialName("B")
-data class ObjectWithEveryTypeDiscriminatorB(
+data class ObjectWithEveryTypeDiscriminatorDiscriminatorB(
     val title: String,
     val description: String,
 ) : ObjectWithEveryTypeDiscriminator()
@@ -764,7 +764,7 @@ data class ObjectWithEveryTypeNestedObjectDataData(
 
 
 @Serializable
-data class ObjectWithEveryTypeNestedArrayItemItem(
+data class ObjectWithEveryTypeNestedArray(
     val id: String,
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
@@ -773,7 +773,7 @@ data class ObjectWithEveryTypeNestedArrayItemItem(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ObjectWithEveryTypeNestedArrayItemItem
+        other as ObjectWithEveryTypeNestedArray
 
         if (id != other.id) return false
         if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
@@ -813,7 +813,7 @@ data class ObjectWithEveryNullableType(
     val record: Map<String, Boolean?>?,
     val discriminator: ObjectWithEveryNullableTypeDiscriminator?,
     val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
-    val nestedArray: List<List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?>?,
+    val nestedArray: List<List<ObjectWithEveryNullableTypeNestedArray?>?>?,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -914,7 +914,7 @@ sealed class ObjectWithEveryNullableTypeDiscriminator()
 
 @Serializable
 @SerialName("A")
-data class ObjectWithEveryNullableTypeDiscriminatorA(
+data class ObjectWithEveryNullableTypeDiscriminatorDiscriminatorA(
     val title: String?,
 ) : ObjectWithEveryNullableTypeDiscriminator()
 
@@ -922,7 +922,7 @@ data class ObjectWithEveryNullableTypeDiscriminatorA(
 
 @Serializable
 @SerialName("B")
-data class ObjectWithEveryNullableTypeDiscriminatorB(
+data class ObjectWithEveryNullableTypeDiscriminatorDiscriminatorB(
     val title: String?,
     val description: String?,
 ) : ObjectWithEveryNullableTypeDiscriminator()
@@ -1011,7 +1011,7 @@ data class ObjectWithEveryNullableTypeNestedObjectDataData(
 
 
 @Serializable
-data class ObjectWithEveryNullableTypeNestedArrayItemItem(
+data class ObjectWithEveryNullableTypeNestedArray(
     val id: String?,
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant?,
@@ -1020,7 +1020,7 @@ data class ObjectWithEveryNullableTypeNestedArrayItemItem(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ObjectWithEveryNullableTypeNestedArrayItemItem
+        other as ObjectWithEveryNullableTypeNestedArray
 
         if (id != other.id) return false
         if(timestamp?.toEpochMilli() != other.timestamp?.toEpochMilli()) return false
@@ -1060,7 +1060,7 @@ data class ObjectWithEveryOptionalType(
     val record: Map<String, Boolean>? = null,
     val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = null,
     val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
-    val nestedArray: List<List<ObjectWithEveryOptionalTypeNestedArrayItemItem>>? = null,
+    val nestedArray: List<List<ObjectWithEveryOptionalTypeNestedArray>>? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -1161,7 +1161,7 @@ sealed class ObjectWithEveryOptionalTypeDiscriminator()
 
 @Serializable
 @SerialName("A")
-data class ObjectWithEveryOptionalTypeDiscriminatorA(
+data class ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorA(
     val title: String,
 ) : ObjectWithEveryOptionalTypeDiscriminator()
 
@@ -1169,7 +1169,7 @@ data class ObjectWithEveryOptionalTypeDiscriminatorA(
 
 @Serializable
 @SerialName("B")
-data class ObjectWithEveryOptionalTypeDiscriminatorB(
+data class ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorB(
     val title: String,
     val description: String,
 ) : ObjectWithEveryOptionalTypeDiscriminator()
@@ -1258,7 +1258,7 @@ data class ObjectWithEveryOptionalTypeNestedObjectDataData(
 
 
 @Serializable
-data class ObjectWithEveryOptionalTypeNestedArrayItemItem(
+data class ObjectWithEveryOptionalTypeNestedArray(
     val id: String,
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
@@ -1267,7 +1267,7 @@ data class ObjectWithEveryOptionalTypeNestedArrayItemItem(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ObjectWithEveryOptionalTypeNestedArrayItemItem
+        other as ObjectWithEveryOptionalTypeNestedArray
 
         if (id != other.id) return false
         if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
@@ -1321,11 +1321,11 @@ data class RecursiveUnionText(
 @Serializable
 @SerialName("SHAPE")
 data class RecursiveUnionShape(
-    val data: RecursiveUnionData,
+    val data: RecursiveUnionShapeData,
 ) : RecursiveUnion()
 
 @Serializable
-data class RecursiveUnionData(
+data class RecursiveUnionShapeData(
     val width: Double,
     val height: Double,
     val color: String,
@@ -1361,11 +1361,11 @@ data class StreamConnectionErrorTestResponse(
 @Serializable
 data class StreamLargeObjectsResponse(
     val numbers: List<Double>,
-    val objects: List<StreamLargeObjectsResponseObjectsItem>,
+    val objects: List<StreamLargeObjectsResponseObjects>,
 )
 
 @Serializable
-data class StreamLargeObjectsResponseObjectsItem(
+data class StreamLargeObjectsResponseObjects(
     val id: String,
     val name: String,
     val email: String,
@@ -1506,8 +1506,8 @@ data class UsersWatchUserResponse(
     val createdAt: Instant,
     val numFollowers: Int,
     val settings: UserSettings,
-    val recentNotifications: List<UsersWatchUserResponseRecentNotificationsItem>,
-    val bookmarks: Map<String, UsersWatchUserResponseBookmarksValue>,
+    val recentNotifications: List<UsersWatchUserResponseRecentNotifications>,
+    val bookmarks: Map<String, UsersWatchUserResponseBookmarks>,
     val metadata: Map<String, JsonElement>,
     val randomList: List<JsonElement>,
     val bio: String? = null,
@@ -1568,10 +1568,10 @@ data class UserPhoto(
 @Serializable
 data class UserSettings(
     val notificationsEnabled: Boolean,
-    val preferredTheme: UsersWatchUserResponseSettingsPreferredTheme,
+    val preferredTheme: UserSettingsPreferredTheme,
 )
 
-enum class UsersWatchUserResponseSettingsPreferredTheme() {
+enum class UserSettingsPreferredTheme() {
     @SerialName("dark-mode")
     DarkMode,
     @SerialName("light-mode")
@@ -1580,28 +1580,28 @@ enum class UsersWatchUserResponseSettingsPreferredTheme() {
     System,
 }
 @Serializable
-sealed class UsersWatchUserResponseRecentNotificationsItem()
+sealed class UsersWatchUserResponseRecentNotifications()
 
 @Serializable
 @SerialName("POST_LIKE")
-data class UsersWatchUserResponseRecentNotificationsItemPostLike(
+data class UsersWatchUserResponseRecentNotificationsRecentNotificationsPostLike(
     val postId: String,
     val userId: String,
-) : UsersWatchUserResponseRecentNotificationsItem()
+) : UsersWatchUserResponseRecentNotifications()
 
 
 
 @Serializable
 @SerialName("POST_COMMENT")
-data class UsersWatchUserResponseRecentNotificationsItemPostComment(
+data class UsersWatchUserResponseRecentNotificationsRecentNotificationsPostComment(
     val postId: String,
     val userId: String,
     val commentText: String,
-) : UsersWatchUserResponseRecentNotificationsItem()
+) : UsersWatchUserResponseRecentNotifications()
 
 
 @Serializable
-data class UsersWatchUserResponseBookmarksValue(
+data class UsersWatchUserResponseBookmarks(
     val postId: String,
     val userId: String,
 )
@@ -1815,7 +1815,7 @@ private suspend fun handleSseRequest(
             TestClientError(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e),
+                data = JsonInstance.encodeToJsonElement(e.toString()),
                 stack = e.stackTraceToString().split("\n"),
             )
         )
@@ -1842,7 +1842,7 @@ private suspend fun handleSseRequest(
             TestClientError(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e),
+                data = JsonInstance.encodeToJsonElement(e.toString()),
                 stack = e.stackTraceToString().split("\n"),
             )
         )

@@ -94,7 +94,9 @@ export function kotlinClientFromDef(
         const modelResult = kotlinPropertyFromSchema(model, {
             generatedTypes,
             modelPrefix: options.modelPrefix ?? "",
-            instancePath: model.metadata?.id ?? key,
+            instancePath: `/${pascalCase(model.metadata?.id ?? key, {
+                normalize: true,
+            })}`,
             schemaPath: "",
         });
         if (modelResult.content) {
@@ -308,6 +310,7 @@ export function kotlinHttpRpcFromDef(
 // MODEL GENERATION
 
 export interface ModelContext {
+    parentId?: string;
     modelPrefix: string;
     generatedTypes: string[];
     instancePath: string;
@@ -436,9 +439,7 @@ export function kotlinEnumFromSchema(
     schema: SchemaFormEnum,
     context: ModelContext,
 ): KotlinProperty {
-    const name = pascalCase(
-        schema.metadata?.id ?? context.instancePath.split("/").join("_"),
-    );
+    const name = getTypeName(schema, context);
     const parts: string[] = [];
     for (const opt of schema.enum) {
         parts.push(
@@ -463,32 +464,54 @@ ${parts.join("\n")}
     };
 }
 
-export function kotlinClassFromSchema(
-    schema: SchemaFormProperties,
-    context: ModelContext,
-): KotlinProperty {
-    let name = pascalCase(
-        `${context.modelPrefix}_${
-            schema.metadata?.id ?? context.instancePath.split("/").join("_")
-        }`,
-        {
+export function getTypeName(schema: Schema, context: ModelContext): string {
+    if (schema.metadata?.id) {
+        return pascalCase(`${context.modelPrefix}_${schema.metadata.id}`, {
             normalize: true,
-        },
-    ) as string;
-    const annotationParts = ["@Serializable"];
+        });
+    }
     if (context.discriminatorKey && context.discriminatorValue) {
-        annotationParts.push(`@SerialName("${context.discriminatorValue}")`);
-        name = pascalCase(
-            `${context.modelPrefix}_${
-                schema.metadata?.id ??
-                `${context.instancePath.split("/").join("_")}_${
-                    context.discriminatorValue
-                }`
-            }`,
+        if (context.parentId) {
+            let instanceKey = context.instancePath.split("/").pop() ?? "";
+            if (instanceKey === context.parentId) {
+                instanceKey = "";
+            }
+            return pascalCase(
+                `${context.parentId}_${instanceKey}_${context.discriminatorValue}`,
+                {
+                    normalize: true,
+                },
+            );
+        }
+        return pascalCase(
+            `${context.modelPrefix}_${context.instancePath.split("/").join("_")}_${context.discriminatorValue}`,
             {
                 normalize: true,
             },
         );
+    }
+    if (context.parentId) {
+        const instanceKey = context.instancePath.split("/").pop() ?? "";
+        return pascalCase(`${context.parentId}_${instanceKey}`, {
+            normalize: true,
+        });
+    }
+    return pascalCase(
+        `${context.modelPrefix}_${context.instancePath.split("/").join("_")}`,
+        {
+            normalize: true,
+        },
+    );
+}
+
+export function kotlinClassFromSchema(
+    schema: SchemaFormProperties,
+    context: ModelContext,
+): KotlinProperty {
+    const name = getTypeName(schema, context);
+    const annotationParts = ["@Serializable"];
+    if (context.discriminatorKey && context.discriminatorValue) {
+        annotationParts.push(`@SerialName("${context.discriminatorValue}")`);
     }
     const subContentParts: string[] = [];
     const constructorParts: string[] = [];
@@ -507,6 +530,7 @@ export function kotlinClassFromSchema(
             schemaPath: `${context.schemaPath}/properties/${key}`,
             generatedTypes: context.generatedTypes,
             modelPrefix: context.modelPrefix,
+            parentId: name,
         });
         if (isSchemaFormType(propSchema) && propSchema.type === "timestamp") {
             needsAdditionalMethods = true;
@@ -560,6 +584,7 @@ export function kotlinClassFromSchema(
                 schemaPath: `${context.schemaPath}/properties/${key}`,
                 generatedTypes: context.generatedTypes,
                 modelPrefix: context.modelPrefix,
+                parentId: name,
             });
             if (
                 isSchemaFormType(propSchema) &&
@@ -657,10 +682,11 @@ export function kotlinArrayFromSchema(
     context: ModelContext,
 ): KotlinProperty {
     const subType = kotlinPropertyFromSchema(schema.elements, {
-        instancePath: `${context.instancePath}/Item`,
+        instancePath: `${context.instancePath}`,
         schemaPath: `${context.schemaPath}/elements`,
         generatedTypes: context.generatedTypes,
         modelPrefix: context.modelPrefix,
+        parentId: context.parentId,
     });
     const dataType = schema.nullable
         ? `List<${subType.dataType}>?`
@@ -678,26 +704,25 @@ export function kotlinArrayFromSchema(
     };
 }
 
+// TODO: create separate JsonInstance for each sealed class
+
 export function kotlinSealedClassedFromSchema(
     schema: SchemaFormDiscriminator,
     context: ModelContext,
 ): KotlinProperty {
-    const name = pascalCase(
-        `${context.modelPrefix}_${
-            schema.metadata?.id ?? context.instancePath.split("/").join("_")
-        }`,
-    ) as string;
+    const name = getTypeName(schema, context);
     const subContentParts: string[] = [];
     for (const discriminatorVal of Object.keys(schema.mapping)) {
         const mappingSchema = schema.mapping[discriminatorVal]!;
         const mapping = kotlinClassFromSchema(mappingSchema, {
             generatedTypes: context.generatedTypes,
-            instancePath: `${context.instancePath}`,
+            instancePath: context.instancePath,
             schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
             discriminatorValue: discriminatorVal,
             discriminatorKey: schema.discriminator,
             discriminatorParent: name,
             modelPrefix: context.modelPrefix,
+            parentId: name,
         });
         if (mapping.content) {
             subContentParts.push(mapping.content);
@@ -726,10 +751,11 @@ export function kotlinMapFromSchema(
     context: ModelContext,
 ): KotlinProperty {
     const subType = kotlinPropertyFromSchema(schema.values, {
-        instancePath: `${context.instancePath}/Value`,
+        instancePath: context.instancePath,
         schemaPath: `${context.schemaPath}/values`,
         generatedTypes: context.generatedTypes,
         modelPrefix: context.modelPrefix,
+        parentId: context.parentId,
     });
     const dataType = `Map<String, ${subType.dataType}>${
         schema.nullable ? "?" : ""
@@ -746,7 +772,9 @@ export function kotlinRefFromSchema(
     schema: SchemaFormRef,
     context: ModelContext,
 ): KotlinProperty {
-    const typeName = pascalCase(schema.ref, { normalize: true });
+    const typeName = pascalCase(`${context.modelPrefix}_${schema.ref}`, {
+        normalize: true,
+    }) as string;
     const dataType = `${typeName}${schema.nullable ? "?" : ""}`;
     return {
         dataType,
@@ -989,7 +1017,7 @@ private suspend fun handleSseRequest(
             ${clientName}Error(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e),
+                data = JsonInstance.encodeToJsonElement(e.toString()),
                 stack = e.stackTraceToString().split("\\n"),
             )
         )
@@ -1016,7 +1044,7 @@ private suspend fun handleSseRequest(
             ${clientName}Error(
                 code = 503,
                 message = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e),
+                data = JsonInstance.encodeToJsonElement(e.toString()),
                 stack = e.stackTraceToString().split("\\n"),
             )
         )

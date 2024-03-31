@@ -18,12 +18,6 @@ const app = new ArriApp({
             origin: "*",
         });
     },
-    onBeforeResponse(event) {
-        console.log({
-            rpc: event.context.rpcName,
-            response: event.context.response,
-        });
-    },
 });
 
 app.use(
@@ -38,12 +32,6 @@ app.use(
                 message: "Missing test auth header 'x-test-header'",
             });
         }
-    }),
-);
-
-app.use(
-    defineMiddleware((event) => {
-        console.log(`REQUEST`, event.context.rpcName);
     }),
 );
 

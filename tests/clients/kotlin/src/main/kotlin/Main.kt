@@ -1,7 +1,8 @@
 import io.ktor.client.*
 import io.ktor.client.plugins.*
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.time.Instant
 
@@ -48,8 +49,8 @@ fun main() {
         float64 = 11.1,
         enumerator = ObjectWithEveryTypeEnumerator.B,
         array = listOf(true, false, true),
-        discriminator = ObjectWithEveryTypeDiscriminatorB(title = "Hello world", description = "hi"),
-        nestedArray = listOf(listOf(ObjectWithEveryTypeNestedArrayItemItem(id = "2", timestamp = Instant.now()))),
+        discriminator = ObjectWithEveryTypeDiscriminatorDiscriminatorB(title = "Hello world", description = "hi"),
+        nestedArray = listOf(listOf(ObjectWithEveryTypeNestedArray(id = "2", timestamp = Instant.now()))),
         record = mutableMapOf(Pair("01", true), Pair("02", false)),
         nestedObject = ObjectWithEveryTypeNestedObject(
             id = "d1", timestamp = Instant.now(), data = ObjectWithEveryTypeNestedObjectData(
@@ -67,6 +68,7 @@ fun main() {
         val tag = "SEND/RECEIVE OBJECT OF EVERY TYPE"
         val result = client.tests.sendObject(objectInput)
         expect(tag, result, objectInput)
+        expect(tag, result.string, "hello world")
     }
 
     runBlocking {
@@ -146,17 +148,81 @@ fun main() {
     }
 
     runBlocking {
-        // val tag = "SEND/RECEIVE RECURSIVE UNION"
-        // val input = RecursiveUnionChildren(
-        //    data = listOf(
-        //        JsonObject(
-        //            content = mapOf(Pair("data", JsonPrimitive("data")))
-        //        )
-        //    )
-        // )
-        // val result = client.tests.sendRecursiveUnion(input)
-        // expect(tag, input, result)
+        val tag = "SEND/RECEIVE RECURSIVE UNION"
+        val input = RecursiveUnionChildren(
+            data = listOf(
+                RecursiveUnionChild(
+                    data = RecursiveUnionText(
+                        data = "hello world"
+                    )
+                ),
+                RecursiveUnionText(
+                    data = "hello world"
+                ),
+                RecursiveUnionShape(
+                    data = RecursiveUnionShapeData(
+                        width = 10.0,
+                        height = 10.0,
+                        color = "red"
+                    )
+                ),
+                RecursiveUnionChildren(
+                    data = mutableListOf(
+                        RecursiveUnionText(
+                            data = "hello world 2"
+                        )
+                    )
+                )
+            )
+        )
+        val result = client.tests.sendRecursiveUnion(input)
+        expect(tag, input, result)
     }
+
+    val sseScope = CoroutineScope(CoroutineName("SSE Scope"))
+
+    val streamMessagesTag = "SSE Support"
+    val streamMessagesMessages: MutableList<ChatMessage> = mutableListOf()
+    val streamMessagesErrors: MutableList<TestClientError> = mutableListOf()
+    val streamMessagesChannelId = "12345"
+    val streamMessagesJob = client.tests.streamMessages(sseScope, ChatMessageParams(
+        channelId = streamMessagesChannelId
+    ),
+        onData = { message ->
+            println("MESSAGE $message")
+            streamMessagesMessages.add(message)
+            when (message) {
+                is ChatMessageImage -> {
+                    expect(streamMessagesTag, message.channelId, streamMessagesChannelId)
+                    expect(streamMessagesTag, message.image.isNotEmpty(), true)
+                }
+
+                is ChatMessageText -> {
+                    expect(streamMessagesTag, message.channelId, streamMessagesChannelId)
+                    expect(streamMessagesTag, message.text.isNotEmpty(), true)
+                }
+
+                is ChatMessageUrl -> {
+                    expect(streamMessagesTag, message.channelId, streamMessagesChannelId)
+                    expect(streamMessagesTag, message.url.isNotEmpty(), true)
+                }
+            }
+        },
+        onConnectionError = { err ->
+            println("ERROR $err")
+            streamMessagesErrors.add(err)
+        },
+        onError = { err ->
+            println("ERROR $err")
+            streamMessagesErrors.add(err)
+        })
+
+    Thread.sleep(1000)
+    println(streamMessagesMessages)
+    println(streamMessagesErrors)
+    streamMessagesJob.cancel()
+    expect(streamMessagesTag, streamMessagesMessages.isNotEmpty(), true)
+    expect(streamMessagesTag, streamMessagesErrors.isEmpty(), true)
 }
 
 
