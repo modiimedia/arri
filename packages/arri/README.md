@@ -18,6 +18,7 @@ Typescript implementation of Arri RPC. It's built on top of [H3](https://github.
 -   [Key Concepts](#key-concepts)
     -   [Arri Definition File](#arri-definition-file)
     -   [How Procedures Map To Endpoints](#how-procedures-map-to-endpoints)
+    -   [H3 Support](#h3-support)
 -   [Arri CLI](#arri-cli)
 
 ## Quickstart
@@ -491,6 +492,37 @@ arri build [flags]
 
 # create a new project
 arri init [dir]
+```
+
+### H3 Support
+Arri is built on top of [H3](https://h3.unjs.io/utils/request#getrequestipevent) so many of the concepts that apply to H3 also apply to Arri.
+
+#### Accessing Utilities
+Arri re-eports all of the H3 utilities.
+
+```ts
+import { getRequestIP, setResponseHeader } from 'arri';
+```
+
+#### Accessing H3 Events
+You can access H3 events from inside procedures handlers.
+
+```ts
+defineRpc({
+  params: undefined,
+  response: undefined,
+  handler(_, event) {
+    getRequestIP(event);
+  }
+)
+
+defineEventStreamRpc({
+  params: undefined,
+  response: undefined,
+  handler(_, event) {
+    getRequestIP(event);
+  }
+)
 ```
 
 ## Development
