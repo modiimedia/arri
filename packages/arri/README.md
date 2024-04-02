@@ -481,19 +481,6 @@ The supported HTTP methods are as follows:
 
 When using a get method the RPC params will be mapped as query parameters which will be coerced into their type using the `a.coerce` method from `arri-validate`. Get methods support all basic scalar types however arrays and nested objects are not supported.
 
-## Arri CLI
-
-```bash
-# start the dev server
-arri dev [flags]
-
-# create a production build
-arri build [flags]
-
-# create a new project
-arri init [dir]
-```
-
 ### H3 Support
 Arri is built on top of [H3](https://h3.unjs.io/utils/request#getrequestipevent) so many of the concepts that apply to H3 also apply to Arri.
 
@@ -523,6 +510,19 @@ defineEventStreamRpc({
     getRequestIP(event);
   }
 )
+```
+
+## Arri CLI
+
+```bash
+# start the dev server
+arri dev [flags]
+
+# create a production build
+arri build [flags]
+
+# create a new project
+arri init [dir]
 ```
 
 ## Development
