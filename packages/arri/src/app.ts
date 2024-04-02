@@ -7,6 +7,7 @@ import {
     SCHEMA_VERSION,
 } from "arri-codegen-utils";
 import { type AObjectSchema, type ASchema } from "arri-validate";
+import consola from "consola";
 import {
     type App,
     createApp,
@@ -55,6 +56,7 @@ export class ArriApp implements ArriRouterBase {
     private readonly _onBeforeResponse: ArriOptions["onBeforeResponse"];
     private readonly _onError: ArriOptions["onError"];
     private readonly _debug: boolean;
+    readonly definitionPath: string;
 
     constructor(opts: ArriOptions = {}) {
         this.appInfo = opts?.appInfo;
@@ -69,16 +71,20 @@ export class ArriApp implements ArriRouterBase {
         this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3App.use(this.h3Router);
+        this.definitionPath = this._rpcRoutePrefix
+            ? `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`
+                  .split("//")
+                  .join("/")
+            : `/${this._rpcDefinitionPath}`;
         this.h3Router.get(
-            this._rpcRoutePrefix
-                ? `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`
-                      .split("//")
-                      .join("/")
-                : `/${this._rpcDefinitionPath}`,
+            this.definitionPath,
             eventHandler(() => this.getAppDefinition()),
         );
         // this route is used by the dev server when auto-generating client code
         if (process.env.ARRI_DEV_MODE === "true") {
+            consola.info(
+                `Arri definition available at \`http://<host>${this.definitionPath}\``,
+            );
             this.h3Router.get(
                 DEV_DEFINITION_ENDPOINT,
                 eventHandler(() => this.getAppDefinition()),
