@@ -112,20 +112,6 @@ import { a } from "arri-validate";
 
 const app = new ArriApp();
 
-app.rpc("sayHello", {
-    params: a.object({
-        name: a.string(),
-    }),
-    response: a.object({
-        message: a.string(),
-    }),
-    handler({ params }) {
-        return {
-            message: `Hello ${params.name}`,
-        };
-    },
-});
-
 export default app;
 ```
 
