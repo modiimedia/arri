@@ -108,7 +108,6 @@ Create an app entry file in your src directory. The name of the file must match 
 ```ts
 // ./src/app.ts
 import { ArriApp } from "arri";
-import { a } from "arri-validate";
 
 const app = new ArriApp();
 
