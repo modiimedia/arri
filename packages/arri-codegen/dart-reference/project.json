@@ -2,5 +2,14 @@
   "name": "arri-codegen-dart-reference",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "type": "library",
-  "sourceRoot": "packages/arri-codegen/dart-reference"
+  "sourceRoot": "packages/arri-codegen/dart-reference",
+  "targets": {
+    "pub": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub",
+        "cwd": "packages/arri-codegen/dart-reference"
+      }
+    }
+  }
 }

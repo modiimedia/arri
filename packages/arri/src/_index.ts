@@ -6,4 +6,5 @@ export * from "./config";
 export * from "./router";
 export * from "./route";
 export * from "./eventStreamRpc";
+export * from "./websocketRpc";
 export * from "h3";

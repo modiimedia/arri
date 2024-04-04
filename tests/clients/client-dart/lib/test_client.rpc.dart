@@ -337,6 +337,16 @@ class TestClientTestsService {
       lastEventId: lastEventId,
     );
   }
+
+  Future<ArriWebsocketController<WsMessageResponse, WsMessageParams>>
+      websocketRpc() {
+    return arriWebsocketRequest<WsMessageResponse, WsMessageParams>(
+      "$_baseUrl/rpcs/tests/websocket-rpc",
+      headers: _headers,
+      parser: (body) => WsMessageResponse.fromJson(json.decode(body)),
+      serializer: (body) => json.encode(body.toJson()),
+    );
+  }
 }
 
 class TestClientAdaptersService {
@@ -2817,6 +2827,259 @@ class ChatMessageUrl implements ChatMessage {
       userId: userId ?? this.userId,
       date: date ?? this.date,
       url: url ?? this.url,
+    );
+  }
+}
+
+sealed class WsMessageParams {
+  final String type;
+  const WsMessageParams({
+    required this.type,
+  });
+  factory WsMessageParams.fromJson(Map<String, dynamic> json) {
+    if (json["type"] is! String) {
+      throw Exception(
+        "Unable to decode WsMessageParams. Expected String from \"type\". Received ${json["type"]}}",
+      );
+    }
+    switch (json["type"]) {
+      case "CREATE_ENTITY":
+        return WsMessageParamsCreateEntity.fromJson(json);
+      case "UPDATE_ENTITY":
+        return WsMessageParamsUpdateEntity.fromJson(json);
+      case "DISCONNECT":
+        return WsMessageParamsDisconnect.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode WsMessageParams. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class WsMessageParamsCreateEntity implements WsMessageParams {
+  @override
+  final String type = "CREATE_ENTITY";
+  final String entityId;
+  final double x;
+  final double y;
+  const WsMessageParamsCreateEntity({
+    required this.entityId,
+    required this.x,
+    required this.y,
+  });
+  factory WsMessageParamsCreateEntity.fromJson(Map<String, dynamic> json) {
+    return WsMessageParamsCreateEntity(
+      entityId: typeFromDynamic<String>(json["entityId"], ""),
+      x: doubleFromDynamic(json["x"], 0),
+      y: doubleFromDynamic(json["y"], 0),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "type": type,
+      "entityId": entityId,
+      "x": x,
+      "y": y,
+    };
+
+    return __result;
+  }
+
+  WsMessageParamsCreateEntity copyWith({
+    String? entityId,
+    double? x,
+    double? y,
+  }) {
+    return WsMessageParamsCreateEntity(
+      entityId: entityId ?? this.entityId,
+      x: x ?? this.x,
+      y: y ?? this.y,
+    );
+  }
+}
+
+class WsMessageParamsUpdateEntity implements WsMessageParams {
+  @override
+  final String type = "UPDATE_ENTITY";
+  final String entityId;
+  final double x;
+  final double y;
+  const WsMessageParamsUpdateEntity({
+    required this.entityId,
+    required this.x,
+    required this.y,
+  });
+  factory WsMessageParamsUpdateEntity.fromJson(Map<String, dynamic> json) {
+    return WsMessageParamsUpdateEntity(
+      entityId: typeFromDynamic<String>(json["entityId"], ""),
+      x: doubleFromDynamic(json["x"], 0),
+      y: doubleFromDynamic(json["y"], 0),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "type": type,
+      "entityId": entityId,
+      "x": x,
+      "y": y,
+    };
+
+    return __result;
+  }
+
+  WsMessageParamsUpdateEntity copyWith({
+    String? entityId,
+    double? x,
+    double? y,
+  }) {
+    return WsMessageParamsUpdateEntity(
+      entityId: entityId ?? this.entityId,
+      x: x ?? this.x,
+      y: y ?? this.y,
+    );
+  }
+}
+
+class WsMessageParamsDisconnect implements WsMessageParams {
+  @override
+  final String type = "DISCONNECT";
+  final String reason;
+  const WsMessageParamsDisconnect({
+    required this.reason,
+  });
+  factory WsMessageParamsDisconnect.fromJson(Map<String, dynamic> json) {
+    return WsMessageParamsDisconnect(
+      reason: typeFromDynamic<String>(json["reason"], ""),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "type": type,
+      "reason": reason,
+    };
+
+    return __result;
+  }
+
+  WsMessageParamsDisconnect copyWith({
+    String? reason,
+  }) {
+    return WsMessageParamsDisconnect(
+      reason: reason ?? this.reason,
+    );
+  }
+}
+
+sealed class WsMessageResponse {
+  final String type;
+  const WsMessageResponse({
+    required this.type,
+  });
+  factory WsMessageResponse.fromJson(Map<String, dynamic> json) {
+    if (json["type"] is! String) {
+      throw Exception(
+        "Unable to decode WsMessageResponse. Expected String from \"type\". Received ${json["type"]}}",
+      );
+    }
+    switch (json["type"]) {
+      case "ENTITY_CREATED":
+        return WsMessageResponseEntityCreated.fromJson(json);
+      case "ENTITY_UPDATED":
+        return WsMessageResponseEntityUpdated.fromJson(json);
+    }
+    throw Exception(
+      "Unable to decode WsMessageResponse. \"${json["type"]}\" doesn't match any of the accepted discriminator values.",
+    );
+  }
+  Map<String, dynamic> toJson();
+}
+
+class WsMessageResponseEntityCreated implements WsMessageResponse {
+  @override
+  final String type = "ENTITY_CREATED";
+  final String entityId;
+  final double x;
+  final double y;
+  const WsMessageResponseEntityCreated({
+    required this.entityId,
+    required this.x,
+    required this.y,
+  });
+  factory WsMessageResponseEntityCreated.fromJson(Map<String, dynamic> json) {
+    return WsMessageResponseEntityCreated(
+      entityId: typeFromDynamic<String>(json["entityId"], ""),
+      x: doubleFromDynamic(json["x"], 0),
+      y: doubleFromDynamic(json["y"], 0),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "type": type,
+      "entityId": entityId,
+      "x": x,
+      "y": y,
+    };
+
+    return __result;
+  }
+
+  WsMessageResponseEntityCreated copyWith({
+    String? entityId,
+    double? x,
+    double? y,
+  }) {
+    return WsMessageResponseEntityCreated(
+      entityId: entityId ?? this.entityId,
+      x: x ?? this.x,
+      y: y ?? this.y,
+    );
+  }
+}
+
+class WsMessageResponseEntityUpdated implements WsMessageResponse {
+  @override
+  final String type = "ENTITY_UPDATED";
+  final String entityId;
+  final double x;
+  final double y;
+  const WsMessageResponseEntityUpdated({
+    required this.entityId,
+    required this.x,
+    required this.y,
+  });
+  factory WsMessageResponseEntityUpdated.fromJson(Map<String, dynamic> json) {
+    return WsMessageResponseEntityUpdated(
+      entityId: typeFromDynamic<String>(json["entityId"], ""),
+      x: doubleFromDynamic(json["x"], 0),
+      y: doubleFromDynamic(json["y"], 0),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "type": type,
+      "entityId": entityId,
+      "x": x,
+      "y": y,
+    };
+
+    return __result;
+  }
+
+  WsMessageResponseEntityUpdated copyWith({
+    String? entityId,
+    double? x,
+    double? y,
+  }) {
+    return WsMessageResponseEntityUpdated(
+      entityId: entityId ?? this.entityId,
+      x: x ?? this.x,
+      y: y ?? this.y,
     );
   }
 }

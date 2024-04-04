@@ -135,11 +135,16 @@ export function serialize<T = any>(schema: ASchema<T>, input: T) {
 
 export function errors(schema: ASchema, input: unknown): ValueError[] {
     const errorList: ValueError[] = [];
-    schema.metadata[SCHEMA_METADATA].parse(input, {
-        errors: errorList,
-        instancePath: "",
-        schemaPath: "",
-    });
+    try {
+        schema.metadata[SCHEMA_METADATA].parse(input, {
+            errors: errorList,
+            instancePath: "",
+            schemaPath: "",
+        });
+    } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        errorList.push({ instancePath: "", schemaPath: "", message: `${err}` });
+    }
     return errorList;
 }
 
