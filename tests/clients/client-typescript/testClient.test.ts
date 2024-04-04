@@ -371,16 +371,16 @@ test("Websocket Requests", async () => {
     let messageCount = 0;
     const errorCount = 0;
     const msgMap: Record<string, WsMessageResponse> = {};
-    const controller = client.miscTests.websocketRpc({
+    const controller = client.tests.websocketRpc({
         onMessage(msg) {
             messageCount++;
             msgMap[msg.entityId] = msg;
         },
         onConnectionError(err) {
             console.error(err);
-            throw new ArriRequestErrorInstance({
-                statusCode: err.statusCode,
-                statusMessage: err.statusMessage,
+            throw new ArriErrorInstance({
+                code: err.code,
+                message: err.message,
                 data: err.data,
                 stack: err.stack,
             });
@@ -417,12 +417,12 @@ test("Websocket Requests", async () => {
     expect(connectionCount).toBe(1);
     expect(messageCount).toBe(3);
     expect(errorCount).toBe(0);
-    expect(msgMap["1"].x).toBe(100);
-    expect(msgMap["1"].y).toBe(200);
-    expect(msgMap["2"].x).toBe(1);
-    expect(msgMap["2"].y).toBe(2);
-    expect(msgMap["3"].x).toBe(5);
-    expect(msgMap["3"].y).toBe(-5);
+    expect(msgMap["1"]!.x).toBe(100);
+    expect(msgMap["1"]!.y).toBe(200);
+    expect(msgMap["2"]!.x).toBe(1);
+    expect(msgMap["2"]!.y).toBe(2);
+    expect(msgMap["3"]!.x).toBe(5);
+    expect(msgMap["3"]!.y).toBe(-5);
 });
 
 describe("arri adapters", () => {
