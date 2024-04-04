@@ -245,6 +245,19 @@ export class TestClientTestsService {
             options,
         );
     }
+    websocketRpc(options: WsOptions<WsMessageResponse> = {}) {
+        return arriWsRequest<WsMessageParams, WsMessageResponse>({
+            url: `${this.baseUrl}/rpcs/tests/websocket-rpc`,
+            headers: this.headers,
+            parser: $$WsMessageResponse.parse,
+            serializer: $$WsMessageParams.serialize,
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+        });
+    }
 }
 
 export class TestClientAdaptersService {
@@ -263,189 +276,6 @@ export class TestClientAdaptersService {
             params,
             parser: $$TypeBoxObject.parse,
             serializer: $$TypeBoxObject.serialize,
-        });
-    }
-}
-
-export class TestClientMiscTestsService {
-    private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
-
-    constructor(options: TestClientOptions = {}) {
-        this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
-    }
-    /**
-     * This RPC is no longer supported
-     * @deprecated
-     */
-    deprecatedRpc(params: DeprecatedRpcParams) {
-        return arriRequest<undefined, DeprecatedRpcParams>({
-            url: `${this.baseUrl}/rpcs/misc-tests/deprecated-rpc`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: (_) => {},
-            serializer: $$DeprecatedRpcParams.serialize,
-        });
-    }
-    sendObject(params: ObjectWithEveryType) {
-        return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
-            url: `${this.baseUrl}/rpcs/misc-tests/send-object`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$ObjectWithEveryType.parse,
-            serializer: $$ObjectWithEveryType.serialize,
-        });
-    }
-    sendObjectWithNullableFields(params: ObjectWithEveryNullableType) {
-        return arriRequest<
-            ObjectWithEveryNullableType,
-            ObjectWithEveryNullableType
-        >({
-            url: `${this.baseUrl}/rpcs/misc-tests/send-object-with-nullable-fields`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$ObjectWithEveryNullableType.parse,
-            serializer: $$ObjectWithEveryNullableType.serialize,
-        });
-    }
-    sendPartialObject(params: ObjectWithEveryOptionalType) {
-        return arriRequest<
-            ObjectWithEveryOptionalType,
-            ObjectWithEveryOptionalType
-        >({
-            url: `${this.baseUrl}/rpcs/misc-tests/send-partial-object`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$ObjectWithEveryOptionalType.parse,
-            serializer: $$ObjectWithEveryOptionalType.serialize,
-        });
-    }
-    sendRecursiveObject(params: RecursiveObject) {
-        return arriRequest<RecursiveObject, RecursiveObject>({
-            url: `${this.baseUrl}/rpcs/misc-tests/send-recursive-object`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$RecursiveObject.parse,
-            serializer: $$RecursiveObject.serialize,
-        });
-    }
-    sendRecursiveUnion(params: RecursiveUnion) {
-        return arriRequest<RecursiveUnion, RecursiveUnion>({
-            url: `${this.baseUrl}/rpcs/misc-tests/send-recursive-union`,
-            method: "post",
-            headers: this.headers,
-            params,
-            parser: $$RecursiveUnion.parse,
-            serializer: $$RecursiveUnion.serialize,
-        });
-    }
-    streamAutoReconnect(
-        params: AutoReconnectParams,
-        options: SseOptions<AutoReconnectResponse>,
-    ) {
-        return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/stream-auto-reconnect`,
-                method: "get",
-                headers: this.headers,
-                params,
-                parser: $$AutoReconnectResponse.parse,
-                serializer: $$AutoReconnectParams.serialize,
-            },
-            options,
-        );
-    }
-    streamConnectionErrorTest(
-        params: StreamConnectionErrorTestParams,
-        options: SseOptions<StreamConnectionErrorTestResponse>,
-    ) {
-        return arriSseRequest<
-            StreamConnectionErrorTestResponse,
-            StreamConnectionErrorTestParams
-        >(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/stream-connection-error-test`,
-                method: "get",
-                headers: this.headers,
-                params,
-                parser: $$StreamConnectionErrorTestResponse.parse,
-                serializer: $$StreamConnectionErrorTestParams.serialize,
-            },
-            options,
-        );
-    }
-    streamLargeObjects(options: SseOptions<StreamLargeObjectsResponse>) {
-        return arriSseRequest<StreamLargeObjectsResponse, undefined>(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/stream-large-objects`,
-                method: "get",
-                headers: this.headers,
-                params: undefined,
-                parser: $$StreamLargeObjectsResponse.parse,
-                serializer: (_) => {},
-            },
-            options,
-        );
-    }
-    streamMessages(
-        params: ChatMessageParams,
-        options: SseOptions<ChatMessage>,
-    ) {
-        return arriSseRequest<ChatMessage, ChatMessageParams>(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/stream-messages`,
-                method: "get",
-                headers: this.headers,
-                params,
-                parser: $$ChatMessage.parse,
-                serializer: $$ChatMessageParams.serialize,
-            },
-            options,
-        );
-    }
-    streamTenEventsThenEnd(options: SseOptions<ChatMessage>) {
-        return arriSseRequest<ChatMessage, undefined>(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/stream-ten-events-then-end`,
-                method: "get",
-                headers: this.headers,
-                params: undefined,
-                parser: $$ChatMessage.parse,
-                serializer: (_) => {},
-            },
-            options,
-        );
-    }
-    streamTenEventsThenError(options: SseOptions<ChatMessage>) {
-        return arriSseRequest<ChatMessage, undefined>(
-            {
-                url: `${this.baseUrl}/rpcs/misc-tests/stream-ten-events-then-error`,
-                method: "post",
-                headers: this.headers,
-                params: undefined,
-                parser: $$ChatMessage.parse,
-                serializer: (_) => {},
-            },
-            options,
-        );
-    }
-    websocketRpc(options: WsOptions<WsMessageResponse> = {}) {
-        return arriWsRequest<WsMessageParams, WsMessageResponse>({
-            url: `${this.baseUrl}/rpcs/misc-tests/websocket-rpc`,
-            headers: this.headers,
-            parser: $$WsMessageResponse.parse,
-            serializer: $$WsMessageParams.serialize,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
         });
     }
 }
