@@ -7,9 +7,9 @@ import 'package:http/http.dart' as http;
 
 typedef SseHookOnData<T> = void Function(T data, EventSource<T> connection);
 typedef SseHookOnError<T> = void Function(
-    ArriRequestError error, EventSource<T> connection);
+    ArriError error, EventSource<T> connection);
 typedef SseHookOnConnectionError<T> = void Function(
-    ArriRequestError error, EventSource<T> connection);
+    ArriError error, EventSource<T> connection);
 typedef SseHookOnOpen<T> = void Function(
     http.StreamedResponse response, EventSource<T> connection);
 typedef SseHookOnClose<T> = void Function(EventSource<T> connection);
@@ -65,8 +65,8 @@ class EventSource<T> {
 
   // hooks
   late final void Function(T data) _onData;
-  late final void Function(ArriRequestError error) _onError;
-  late final void Function(ArriRequestError error) _onConnectionError;
+  late final void Function(ArriError error) _onError;
+  late final void Function(ArriError error) _onConnectionError;
   late final void Function(http.StreamedResponse response) _onOpen;
   late final void Function() _onClose;
 
@@ -160,12 +160,11 @@ class EventSource<T> {
           parsedJson = json.decode(body);
         } catch (_) {}
         if (parsedJson != null) {
-          throw ArriRequestError.fromJson(parsedJson);
+          throw ArriError.fromJson(parsedJson);
         }
-        throw ArriRequestError(
-          statusCode: response.statusCode,
-          statusMessage:
-              response.reasonPhrase ?? "Unknown error connection to $url",
+        throw ArriError(
+          code: response.statusCode,
+          message: response.reasonPhrase ?? "Unknown error connection to $url",
         );
       }
       if (response.statusCode != 200) {
@@ -222,21 +221,21 @@ class EventSource<T> {
     if (_closedByClient) {
       return;
     }
-    if (err is ArriRequestError) {
+    if (err is ArriError) {
       _onConnectionError.call(err);
     } else if (err is http.ClientException) {
       _onConnectionError(
-        ArriRequestError(
-          statusCode: 0,
-          statusMessage: err.message,
+        ArriError(
+          code: 0,
+          message: err.message,
           data: err,
         ),
       );
     } else {
       _onConnectionError.call(
-        ArriRequestError(
-          statusCode: 0,
-          statusMessage: "Unknown error connecting to $url",
+        ArriError(
+          code: 0,
+          message: "Unknown error connecting to $url",
         ),
       );
     }
@@ -388,14 +387,14 @@ class SseMessageEvent<TData> extends SseEvent<TData> {
 }
 
 class SseErrorEvent<TData> extends SseEvent<TData> {
-  final ArriRequestError data;
+  final ArriError data;
   const SseErrorEvent({super.id, super.event, required this.data});
 
   factory SseErrorEvent.fromRawSseEvent(SseRawEvent event) {
     return SseErrorEvent(
       id: event.id,
       event: event.event,
-      data: ArriRequestError.fromString(event.data),
+      data: ArriError.fromString(event.data),
     );
   }
 }

@@ -31,7 +31,7 @@ export function parse<T = any>(schema: ASchema<T>, input: unknown): T {
     });
     if (errors.length) {
         throw new ValidationError({
-            message: `Unable to parse input. ${errors[0].message}`,
+            message: `Unable to parse input. ${errors[0]!.message}`,
             errors,
         });
     }

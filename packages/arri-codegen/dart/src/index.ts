@@ -431,7 +431,7 @@ export function dartClassFromJtdSchema(
 
     for (const key of Object.keys(def.properties ?? {})) {
         const keyPath = `${nodePath}.${key}`;
-        const prop = def.properties[key];
+        const prop = def.properties[key]!;
         const mappedProp = dartTypeFromJtdSchema(keyPath, prop, {
             parentId: className,
             isOptional: false,
@@ -448,7 +448,7 @@ export function dartClassFromJtdSchema(
     if (def.optionalProperties) {
         for (const key of Object.keys(def.optionalProperties ?? {})) {
             const keyPath = `${nodePath}.${key}`;
-            const prop = def.optionalProperties[key];
+            const prop = def.optionalProperties[key]!;
             const mappedProp = dartTypeFromJtdSchema(keyPath, prop, {
                 parentId: className,
                 isOptional: true,

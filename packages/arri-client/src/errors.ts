@@ -1,40 +1,49 @@
-export interface ArriRequestError {
-    statusCode: number;
-    statusMessage: string;
+export interface ArriError {
+    code: number;
+    message: string;
     data?: any;
     stack?: string;
 }
 
-export function isArriRequestError(input: unknown): input is ArriRequestError {
+export function isArriError(input: unknown): input is ArriError {
     if (typeof input !== "object" || input === null) {
         return false;
     }
     return (
-        "statusCode" in input &&
-        typeof input.statusCode === "number" &&
-        "statusMessage" in input &&
-        typeof input.statusMessage === "string"
+        "code" in input &&
+        typeof input.code === "number" &&
+        "message" in input &&
+        typeof input.message === "string"
     );
 }
 
-export class ArriRequestErrorInstance
-    extends Error
-    implements ArriRequestError
-{
-    statusCode: number;
-    statusMessage: string;
+export class ArriErrorInstance extends Error implements ArriError {
+    code: number;
     data?: any;
+    private readonly _internalMessage: string;
 
     constructor(input: {
-        statusCode: number;
-        statusMessage: string;
+        code: number;
+        message: string;
         stack?: string;
         data?: any;
     }) {
-        super(`ERROR ${input.statusCode}: ${input.statusMessage}`);
-        this.statusCode = input.statusCode;
-        this.statusMessage = input.statusMessage;
+        super(`ERROR ${input.code}: ${input.message}`);
+        this.code = input.code;
+        this._internalMessage = input.message;
         this.data = input.data;
+        if (input.stack) {
+            super.stack = input.stack;
+        }
+    }
+
+    toJSON() {
+        return {
+            code: this.code,
+            message: this._internalMessage,
+            stack: this.stack?.split("\n").map((l) => l.trim()),
+            data: this.data,
+        };
     }
 
     static fromJson(json: unknown) {
@@ -45,26 +54,25 @@ export class ArriRequestErrorInstance
             } catch (_) {}
         }
         if (typeof parsedJson !== "object" || parsedJson === null) {
-            return new ArriRequestErrorInstance({
-                statusCode: 500,
-                statusMessage: "Unknown error",
+            return new ArriErrorInstance({
+                code: 500,
+                message: "Unknown error",
                 data: parsedJson,
             });
         }
-        return new ArriRequestErrorInstance({
-            statusCode:
-                "statusCode" in parsedJson &&
-                typeof parsedJson.statusCode === "number"
-                    ? parsedJson.statusCode
+        return new ArriErrorInstance({
+            code:
+                "code" in parsedJson && typeof parsedJson.code === "number"
+                    ? parsedJson.code
                     : 500,
-            statusMessage:
-                "statusMessage" in parsedJson &&
-                typeof parsedJson.statusMessage === "string"
-                    ? parsedJson.statusMessage
+            message:
+                "message" in parsedJson &&
+                typeof parsedJson.message === "string"
+                    ? parsedJson.message
                     : "",
             stack:
-                "stack" in parsedJson && typeof parsedJson.stack === "string"
-                    ? parsedJson.stack
+                "stack" in parsedJson && Array.isArray(parsedJson.stack)
+                    ? parsedJson.stack.join("\n")
                     : undefined,
             data: "data" in parsedJson ? parsedJson.data : undefined,
         });

@@ -10,7 +10,7 @@ main() {
     final response =
         await parsedArriRequestSafe(nonExistentUrl, parser: (data) {});
     if (response.error != null) {
-      expect(response.error!.statusCode, equals(500));
+      expect(response.error!.code, equals(500));
     }
   });
 
@@ -77,7 +77,7 @@ event: message
 data: {"hello": "world"}
 
 event: error
-data: {"statusCode": 500, "statusMessage": "Unknown Error"}
+data: {"code": 500, "message": "Unknown Error"}
 
 event: ping
 data:
@@ -112,8 +112,8 @@ data: {"hello":""";
     final msg3 = result.events[2];
     switch (msg3) {
       case SseErrorEvent<Map<String, dynamic>>():
-        expect(msg3.data.statusCode, equals(500));
-        expect(msg3.data.statusMessage, equals("Unknown Error"));
+        expect(msg3.data.code, equals(500));
+        expect(msg3.data.message, equals("Unknown Error"));
         expect(msg3.data.data, equals(null));
         expect(msg3.data.stack, equals(null));
       default:

@@ -102,72 +102,74 @@ function packageJsonTemplate(packageName: string) {
 
 function projectJsonTemplate(packageName: string) {
     return `{
-    "name": "${packageName}",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/${packageName}/src",
-    "projectType": "library",
-    "targets": {
-        "build": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist"],
-            "options": {
-                "command": "unbuild",
-                "cwd": "packages/${packageName}"
-            }
-        },
-        "publish": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "pnpm publish",
-                "cwd": "packages/${packageName}"
-            },
-            "dependsOn": ["build"]
-        },
-        "lint": {
-            "executor": "@nx/eslint:eslint",
-            "outputs": ["{options.outputFile}"],
-            "options": {
-                "lintFilePatterns": ["packages/${packageName}/**/*.ts"]
-            }
-        },
-        "test": {
-            "executor": "nx:run-commands",
-            "outputs": ["{workspaceRoot}/coverage/packages/${packageName}"],
-            "options": {
-                "command": "vitest run --passWithNoTests --globals",
-                "cwd": "packages/${packageName}"
-            },
-            "configurations": {
-                "watch": {
-                    "command": "vitest watch --passWithNoTests --globals"
-                }
-            }
-        }
+  "name": "${packageName}",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/${packageName}/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "packages/${packageName}"
+      }
     },
-    "tags": []
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "packages/${packageName}"
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/${packageName}/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/packages/${packageName}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/packages/arri-validate",
+        "watch": false
+      },
+      "configurations": {
+        "watch": {
+          "command": "vitest watch --passWithNoTests --globals"
+        }
+      }
+    }
+  },
+  "tags": []
 }
 `;
 }
 
 function eslintConfigTemplate() {
     return `{
-    "extends": ["../../.eslintrc.js"],
-    "ignorePatterns": [],
-    "overrides": [
-        {
-            "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-            "rules": {}
-        },
-        {
-            "files": ["*.ts", "*.tsx"],
-            "rules": {}
-        },
-        {
-            "files": ["*.js", "*.jsx"],
-            "rules": {}
-        }
-    ]
-}`;
+  "extends": ["../../.eslintrc.js"],
+  "ignorePatterns": [],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "rules": {}
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {}
+    },
+    {
+      "files": ["*.js", "*.jsx"],
+      "rules": {}
+    }
+  ]
+}
+`;
 }
 
 function buildConfigTemplate(packageName: string) {
@@ -201,63 +203,55 @@ export default defineBuildConfig({
 
 function tsConfigTemplate() {
     return `{
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "noImplicitOverride": true,
-        "noPropertyAccessFromIndexSignature": false,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": false,
-        "types": ["vitest"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vitest"]
+  },
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
     },
-    "files": [],
-    "include": [],
-    "references": [
-        {
-            "path": "./tsconfig.lib.json"
-        },
-        {
-            "path": "./tsconfig.spec.json"
-        }
-    ]
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
 }
 `;
 }
 
 function tsConfigLibTemplate() {
     return `{
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "outDir": "../../dist/out-tsc",
-        "declaration": true,
-        "types": ["node"]
-    },
-    "include": ["src/**/*.ts"],
-    "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }
 `;
 }
 
 function tsConfigSpecTemplate() {
     return `{
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "outDir": "../../dist/out-tsc",
-        "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node"]
-    },
-    "include": [
-        "vite.config.ts",
-        "src/**/*.test.ts",
-        "src/**/*.spec.ts",
-        "src/**/*.test.tsx",
-        "src/**/*.spec.tsx",
-        "src/**/*.test.js",
-        "src/**/*.spec.js",
-        "src/**/*.test.jsx",
-        "src/**/*.spec.jsx",
-        "src/**/*.d.ts"
-    ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node"]
+  },
+  "include": [
+    "vite.config.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.tsx",
+    "src/**/*.test.js",
+    "src/**/*.spec.js",
+    "src/**/*.test.jsx",
+    "src/**/*.spec.jsx",
+    "src/**/*.d.ts"
+  ]
 }
 `;
 }
@@ -287,6 +281,12 @@ export default defineConfig({
     test: {
         globals: true,
         reporters: ["default"],
+        pool: "threads",
+        pollOptions: {
+            threads: {
+                singleThread: true,
+            },
+        },
         cache: {
             dir: "../../node_modules/.vitest",
         },

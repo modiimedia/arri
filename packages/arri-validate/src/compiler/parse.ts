@@ -567,7 +567,7 @@ export function discriminatorTemplate(
     const switchParts: string[] = [];
     const types = Object.keys(input.schema.mapping);
     for (const type of types) {
-        const innerSchema = input.schema.mapping[type];
+        const innerSchema = input.schema.mapping[type]!;
         const template = objectTemplate({
             val: input.val,
             targetVal: input.targetVal,

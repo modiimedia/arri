@@ -41,7 +41,7 @@ export function object<
                 : true,
     };
     for (const key of Object.keys(input)) {
-        const prop = input[key];
+        const prop = input[key]!;
         if (prop.metadata[SCHEMA_METADATA].optional) {
             if (!schema.optionalProperties) {
                 schema.optionalProperties = {};
@@ -49,7 +49,7 @@ export function object<
             schema.optionalProperties[key] = prop;
             continue;
         }
-        schema.properties[key] = input[key];
+        schema.properties[key] = prop;
     }
     const result: AObjectSchema<any, TAdditionalProps> = {
         ...(schema as any),
@@ -150,7 +150,7 @@ export function parseObjectSchema<T>(
     }
     for (const key of requiredKeys) {
         const val = parsedInput[key];
-        const prop = schema.properties[key];
+        const prop = schema.properties[key]!;
         if (coerce) {
             result[key] = prop.metadata[SCHEMA_METADATA].coerce(val, {
                 instancePath: `${data.instancePath}/${key}`,
@@ -167,7 +167,7 @@ export function parseObjectSchema<T>(
     }
     for (const key of optionalKeys) {
         const val = parsedInput[key];
-        const prop = optionalProps[key];
+        const prop = optionalProps[key]!;
         if (val === undefined) {
             continue;
         }
@@ -252,7 +252,7 @@ export function pick<
             return;
         }
         if (keys.includes(key as any)) {
-            schema.properties[key] = inputSchema.properties[key];
+            schema.properties[key] = inputSchema.properties[key]!;
         }
     });
     if (inputSchema.optionalProperties) {
@@ -263,7 +263,7 @@ export function pick<
             }
             if (keys.includes(key as any)) {
                 schema.optionalProperties[key] =
-                    inputSchema.optionalProperties[key];
+                    inputSchema.optionalProperties[key]!;
             }
         });
     }
@@ -381,7 +381,7 @@ export function serializeObject(
         );
     }
     for (const key of Object.keys(schema.properties)) {
-        const prop = schema.properties[key];
+        const prop = schema.properties[key]!;
         const val = input[key];
         if (typeof val !== "undefined") {
             strParts.push(
@@ -395,7 +395,7 @@ export function serializeObject(
     }
     if (schema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
-            const prop = schema.optionalProperties[key];
+            const prop = schema.optionalProperties[key]!;
             const val = input[key];
             if (typeof val !== "undefined") {
                 strParts.push(
@@ -480,12 +480,12 @@ export function partial<
         nullable: schema.nullable,
     };
     for (const key of Object.keys(schema.properties)) {
-        const prop = schema.properties[key];
+        const prop = schema.properties[key]!;
         (newSchema.optionalProperties as any)[key] = optional(prop);
     }
     if (schema.optionalProperties && newSchema.optionalProperties) {
         for (const key of Object.keys(schema.optionalProperties)) {
-            const prop = schema.optionalProperties[key];
+            const prop = schema.optionalProperties[key]!;
             if (prop.metadata[SCHEMA_METADATA].optional) {
                 newSchema.optionalProperties[key] = prop;
             } else {

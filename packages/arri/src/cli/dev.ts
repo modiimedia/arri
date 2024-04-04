@@ -119,13 +119,19 @@ async function startDevServer(config: ResolvedArriConfig) {
             if (fileWatcher) {
                 await fileWatcher.close();
             }
-            const dirToWatch = path.resolve(
-                config.rootDir ?? "",
-                config.srcDir,
-            );
+            const srcDir = path.resolve(config.rootDir ?? "", config.srcDir);
+            const dirsToWatch = [srcDir];
+            if (config.esbuild.alias) {
+                for (const key of Object.keys(config.esbuild.alias)) {
+                    const alias = config.esbuild.alias[key];
+                    if (alias) {
+                        dirsToWatch.push(alias);
+                    }
+                }
+            }
             const buildDir = path.resolve(config.rootDir, config.buildDir);
             const outDir = path.resolve(config.rootDir, ".output");
-            fileWatcher = chokidar.watch([path.resolve(dirToWatch)], {
+            fileWatcher = chokidar.watch(dirsToWatch, {
                 ignored: [buildDir, outDir],
                 ignoreInitial: true,
             });

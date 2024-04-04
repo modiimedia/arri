@@ -77,7 +77,7 @@ export class ArriRouter implements ArriRouterBase {
 
     registerModels(models: ModelMap) {
         for (const key of Object.keys(models)) {
-            this.models[key] = models[key];
+            this.models[key] = models[key]!;
         }
     }
 

@@ -8,6 +8,7 @@ import {
     isObject,
     type ValidationData,
 } from "../schemas";
+import { ValidationError } from "./validation";
 
 /**
  * Create a discriminated union / tagged union
@@ -88,6 +89,9 @@ export function discriminator<
                 serialize(input, data) {
                     const discriminatorVal = input[discriminator];
                     const targetSchema = mapping[discriminatorVal];
+                    if (!targetSchema) {
+                        throw discriminatorMappingError(discriminatorVal, data);
+                    }
                     const result = targetSchema.metadata[
                         SCHEMA_METADATA
                     ].serialize(input, {
@@ -187,6 +191,9 @@ function parse(
         return undefined;
     }
     const targetSchema = mapping[parsedInput[discriminator]];
+    if (!targetSchema) {
+        throw discriminatorMappingError(discriminatorVal, data);
+    }
     if (coerce) {
         const result = targetSchema.metadata[SCHEMA_METADATA].coerce(
             parsedInput,
@@ -208,4 +215,20 @@ function parse(
         discriminatorValue: discriminatorVal,
     });
     return result;
+}
+
+function discriminatorMappingError(
+    discriminatorVal: string,
+    data: ValidationData,
+) {
+    return new ValidationError({
+        message: `Error fetching discriminator schema for "${discriminatorVal}"`,
+        errors: [
+            {
+                message: "Error fetching discriminator schema",
+                instancePath: data.instancePath,
+                schemaPath: data.schemaPath,
+            },
+        ],
+    });
 }

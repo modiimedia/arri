@@ -10,7 +10,12 @@ import {
     createEventStream,
     type EventStreamMessage,
 } from "h3-sse";
-import { handleH3Error, type ErrorResponse } from "./errors";
+import {
+    type ArriServerError,
+    handleH3Error,
+    defineError,
+    type ArriServerErrorResponse,
+} from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 import {
@@ -129,12 +134,11 @@ export class EventStreamConnection<TData> {
                     continue;
                 }
                 const errors = this.validationErrors(item);
-                const errorResponse: ErrorResponse = {
-                    statusCode: 500,
-                    statusMessage:
+                const errorResponse: ArriServerError = defineError(500, {
+                    message:
                         "Failed to serialize response. Response does not match specified schema.",
                     data: errors,
-                };
+                });
                 events.push({
                     id: eventId,
                     event: "error",
@@ -153,12 +157,11 @@ export class EventStreamConnection<TData> {
             return;
         }
         const errors = this.validationErrors(data);
-        const errorResponse: ErrorResponse = {
-            statusCode: 500,
-            statusMessage:
+        const errorResponse = defineError(500, {
+            message:
                 "Failed to serialize response. Response does not match specified schema.",
             data: errors,
-        };
+        });
         await this.eventStream.push({
             id: eventId,
             event: "error",
@@ -186,7 +189,7 @@ export class EventStreamConnection<TData> {
     /**
      * Publish an error event. This will trigger the `onError` hooks of any connected clients.
      */
-    async pushError(error: ErrorResponse, eventId?: string) {
+    async pushError(error: ArriServerErrorResponse, eventId?: string) {
         await this.eventStream.push({
             id: eventId,
             event: "error",
@@ -263,6 +266,7 @@ export function registerEventStreamRpc(
                         return true;
                     } as any),
                 serializer:
+                    // eslint-disable-next-line @typescript-eslint/unbound-method
                     responseValidator?.serialize ??
                     function (_) {
                         return "";
@@ -284,7 +288,7 @@ export function registerEventStreamRpc(
                 stream.send();
             }
         } catch (err) {
-            await handleH3Error(err, event, opts.onError);
+            await handleH3Error(err, event, opts.onError, opts.debug ?? false);
         }
         return "";
     });

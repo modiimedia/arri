@@ -40,7 +40,7 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
             description: opts.description,
             isDeprecated: opts.isDeprecated,
             [SCHEMA_METADATA]: {
-                output: values[0],
+                output: values[0] ?? ("" as any),
                 parse(input, data) {
                     if (isType(input)) {
                         return input;
