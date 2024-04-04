@@ -64,6 +64,20 @@ class ArriError implements Exception {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{
+      "code": code,
+      "message": message,
+    };
+    if (data != null) {
+      result["data"] = data;
+    }
+    if (stack != null) {
+      result["stack"] = stack;
+    }
+    return result;
+  }
+
   factory ArriError.fromString(String input) {
     try {
       final val = json.decode(input);

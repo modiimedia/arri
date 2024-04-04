@@ -337,6 +337,16 @@ class TestClientTestsService {
       lastEventId: lastEventId,
     );
   }
+
+  Future<ArriWebsocketController<WsMessageResponse, WsMessageParams>>
+      websocketRpc() {
+    return arriWebsocketRequest<WsMessageResponse, WsMessageParams>(
+      "$_baseUrl/rpcs/tests/websocket-rpc",
+      headers: _headers,
+      parser: (body) => WsMessageResponse.fromJson(json.decode(body)),
+      serializer: (body) => json.encode(body.toJson()),
+    );
+  }
 }
 
 class TestClientAdaptersService {
