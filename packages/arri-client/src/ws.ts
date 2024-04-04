@@ -1,5 +1,5 @@
 import NodeWebsocket from "ws";
-import { type ArriRequestError, ArriRequestErrorInstance } from "./errors";
+import { type ArriError, ArriErrorInstance } from "./errors";
 
 function isBrowser() {
     return typeof window !== "undefined";
@@ -85,7 +85,7 @@ export function arriWsRequest<
     }
 }
 
-type WsErrorHook = (err: ArriRequestError) => void;
+type WsErrorHook = (err: ArriError) => void;
 type WsMessageHook<TResponse> = (msg: TResponse) => any;
 
 class WsController<TParams, TResponse> {
@@ -128,8 +128,8 @@ class WsController<TParams, TResponse> {
             console.error(event);
             if (this.onConnectionError) {
                 this.onConnectionError({
-                    statusCode: 500,
-                    statusMessage: "IDK",
+                    code: 500,
+                    message: "IDK",
                 });
             }
         };
@@ -158,7 +158,7 @@ class WsController<TParams, TResponse> {
                 if (!this.onError) {
                     return;
                 }
-                const err = ArriRequestErrorInstance.fromJson(response.data);
+                const err = ArriErrorInstance.fromJson(response.data);
                 this.onError(err);
                 break;
             }
