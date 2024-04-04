@@ -124,12 +124,12 @@ describe("Service Creation", () => {
             /**
              * Create a ws connection to send messages
              */
-            createConnection(options: WsOptions<User>) {
+            createConnection(options: WsOptions<User> = {}) {
                 return arriWsRequest<User, User>({
                     url: \`\${this.baseUrl}/create-connection\`,
                     headers: this.headers,
-                    parser: $$User.parse(input),
-                    serializer: $$User.serialize(input),
+                    parser: $$User.parse,
+                    serializer: $$User.serialize,
                     onOpen: options.onOpen,
                     onClose: options.onClose,
                     onError: options.onError,
