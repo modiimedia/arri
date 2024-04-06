@@ -4,6 +4,24 @@ Arri is an RPC framework designed for effortless type-safety between multiple la
 
 This is a work in progress. Things will break.
 
+## Language Client Support
+
+Below are the language client generators that are planned to have first party support. This chart tracks the current progress the implementations for these clients.
+
+| Language   | HTTP | WebSockets |
+| ---------- | ---- | ---------- |
+| Typescript | ✅   | ✅         |
+| Dart       | ✅   | 🚧         |
+| Rust       | 🚧   | 🚧         |
+| Kotlin     | 🚧   | 🚧         |
+| Swift      |      |            |
+| Go         |      |            |
+| Python     |      |            |
+
+✅ completed
+
+🚧 in progress
+
 ## Packages
 
 -   [arri](packages/arri/README.md)

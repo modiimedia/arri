@@ -28,7 +28,7 @@ export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== "head";
 };
 
-export const SCHEMA_VERSION = "0.0.4" as const;
+export const SCHEMA_VERSION = "0.0.4";
 
 export interface AppDefinition {
     arriSchemaVersion: typeof SCHEMA_VERSION;
@@ -36,6 +36,7 @@ export interface AppDefinition {
         title?: string;
         description?: string;
         version?: string;
+        [key: string]: string | undefined;
     };
     externalDocs?: {
         description?: string;

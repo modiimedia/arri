@@ -316,6 +316,19 @@ importers:
 
   packages/jtd-utils: {}
 
+  playground:
+    dependencies:
+      arri:
+        specifier: workspace:*
+        version: link:../packages/arri
+      arri-validate:
+        specifier: workspace:*
+        version: link:../packages/arri-validate
+    devDependencies:
+      typescript:
+        specifier: ^5.4.2
+        version: 5.4.4
+
   tests/clients/client-typescript:
     dependencies:
       arri-client:
