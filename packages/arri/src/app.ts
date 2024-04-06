@@ -97,9 +97,10 @@ export class ArriApp implements ArriRouterBase {
                         schemaPath = `/${this._rpcDefinitionPath}`;
                     }
                     return {
-                        title: this.appInfo?.title ?? "Arri Server",
-                        description: this.appInfo?.description ?? null,
-                        version: this.appInfo?.version ?? null,
+                        title: this.appInfo?.title ?? "Arri-RPC Server",
+                        description:
+                            this.appInfo?.description ??
+                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
                         schemaPath,
                         ...this.appInfo,
                     };
