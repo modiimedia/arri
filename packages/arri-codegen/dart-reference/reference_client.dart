@@ -115,6 +115,15 @@ class TestClientUsersService {
       lastEventId: lastEventId,
     );
   }
+
+  Future<ArriWebsocketController<User, UserParams>> createConnection() {
+    return arriWebsocketRequest<User, UserParams>(
+      "$_baseUrl/users/create-connection",
+      headers: _headers,
+      parser: (body) => User.fromJson(json.decode(body)),
+      serializer: (body) => json.encode(body.toJson()),
+    );
+  }
 }
 
 class TestClientUsersSettingsService {

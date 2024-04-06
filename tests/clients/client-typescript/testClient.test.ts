@@ -6,6 +6,7 @@ import {
     type ObjectWithEveryType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryNullableType,
+    type WsMessageResponse,
     type RecursiveObject,
     type RecursiveUnion,
     type TypeBoxObject,
@@ -363,6 +364,65 @@ test("[SSE] auto-reconnects when connection is closed by server", async () => {
     expect(connectionCount > 0).toBe(true);
     expect(errorCount).toBe(0);
     controller.abort();
+});
+
+test("Websocket Requests", async () => {
+    let connectionCount = 0;
+    let messageCount = 0;
+    const errorCount = 0;
+    const msgMap: Record<string, WsMessageResponse> = {};
+    const controller = client.tests.websocketRpc({
+        onMessage(msg) {
+            messageCount++;
+            msgMap[msg.entityId] = msg;
+        },
+        onConnectionError(err) {
+            console.error(err);
+            throw new ArriErrorInstance({
+                code: err.code,
+                message: err.message,
+                data: err.data,
+                stack: err.stack,
+            });
+        },
+    });
+    controller.onOpen = () => {
+        connectionCount++;
+        controller.send({
+            type: "CREATE_ENTITY",
+            entityId: "1",
+            x: 100,
+            y: 200,
+        });
+        controller.send({
+            type: "UPDATE_ENTITY",
+            entityId: "2",
+            x: 1,
+            y: 2,
+        });
+        controller.send({
+            type: "UPDATE_ENTITY",
+            entityId: "3",
+            x: 5,
+            y: -5,
+        });
+    };
+    controller.connect();
+    await new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 2000);
+    });
+    controller.close();
+    expect(connectionCount).toBe(1);
+    expect(messageCount).toBe(3);
+    expect(errorCount).toBe(0);
+    expect(msgMap["1"]!.x).toBe(100);
+    expect(msgMap["1"]!.y).toBe(200);
+    expect(msgMap["2"]!.x).toBe(1);
+    expect(msgMap["2"]!.y).toBe(2);
+    expect(msgMap["3"]!.x).toBe(5);
+    expect(msgMap["3"]!.y).toBe(-5);
 });
 
 describe("arri adapters", () => {

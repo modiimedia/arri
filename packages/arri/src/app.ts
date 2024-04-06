@@ -7,6 +7,7 @@ import {
     SCHEMA_VERSION,
 } from "arri-codegen-utils";
 import { type AObjectSchema, type ASchema } from "arri-validate";
+import consola from "consola";
 import {
     type App,
     createApp,
@@ -28,7 +29,13 @@ import {
     registerRpc,
     isRpcParamSchema,
     type NamedRpc,
+    type RpcParamSchema,
 } from "./rpc";
+import {
+    createWsRpcDefinition,
+    registerWebsocketRpc,
+    type NamedWebsocketRpc,
+} from "./websocketRpc";
 
 export const DEV_ENDPOINT_ROOT = `/__arri_dev__`;
 export const DEV_DEFINITION_ENDPOINT = `${DEV_ENDPOINT_ROOT}/__definition`;
@@ -55,6 +62,7 @@ export class ArriApp implements ArriRouterBase {
     private readonly _onBeforeResponse: ArriOptions["onBeforeResponse"];
     private readonly _onError: ArriOptions["onError"];
     private readonly _debug: boolean;
+    readonly definitionPath: string;
 
     constructor(opts: ArriOptions = {}) {
         this.appInfo = opts?.appInfo;
@@ -69,16 +77,20 @@ export class ArriApp implements ArriRouterBase {
         this._rpcRoutePrefix = opts?.rpcRoutePrefix ?? "";
         this._rpcDefinitionPath = opts?.rpcDefinitionPath ?? "__definition";
         this.h3App.use(this.h3Router);
+        this.definitionPath = this._rpcRoutePrefix
+            ? `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`
+                  .split("//")
+                  .join("/")
+            : `/${this._rpcDefinitionPath}`;
         this.h3Router.get(
-            this._rpcRoutePrefix
-                ? `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`
-                      .split("//")
-                      .join("/")
-                : `/${this._rpcDefinitionPath}`,
+            this.definitionPath,
             eventHandler(() => this.getAppDefinition()),
         );
         // this route is used by the dev server when auto-generating client code
         if (process.env.ARRI_DEV_MODE === "true") {
+            consola.info(
+                `Arri definition available at \`http://<host>${this.definitionPath}\``,
+            );
             this.h3Router.get(
                 DEV_DEFINITION_ENDPOINT,
                 eventHandler(() => this.getAppDefinition()),
@@ -111,7 +123,11 @@ export class ArriApp implements ArriRouterBase {
                 this.route(route);
             }
             for (const rpc of input.getProcedures()) {
-                this.rpc(rpc);
+                if (rpc.transport === "http") {
+                    this.rpc(rpc);
+                } else {
+                    this.wsRpc(rpc);
+                }
             }
             this.registerModels(input.getModels());
             return;
@@ -123,28 +139,33 @@ export class ArriApp implements ArriRouterBase {
         TIsEventStream extends boolean = false,
         TParams extends AObjectSchema<any, any> | undefined = undefined,
         TResponse extends AObjectSchema<any, any> | undefined = undefined,
-    >(procedure: NamedRpc<TIsEventStream, TParams, TResponse>) {
-        const path =
-            procedure.path ?? getRpcPath(procedure.name, this._rpcRoutePrefix);
-        this._procedures[procedure.name] = createHttpRpcDefinition(
-            procedure.name,
-            path,
-            procedure,
-        );
-        if (isRpcParamSchema(procedure.params)) {
-            const paramName = getRpcParamName(procedure.name, procedure);
+    >(
+        procedure: Omit<
+            NamedRpc<TIsEventStream, TParams, TResponse>,
+            "transport"
+        >,
+    ) {
+        (procedure as any).transport = "http";
+        const p = procedure as NamedRpc<TIsEventStream, TParams, TResponse>;
+        const path = p.path ?? getRpcPath(p.name, this._rpcRoutePrefix);
+        this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
+
+        if (isRpcParamSchema(p.params)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const paramName = getRpcParamName(p.name, p);
             if (paramName) {
-                this._models[paramName] = procedure.params;
+                this._models[paramName] = p.params;
             }
         }
-        if (isRpcParamSchema(procedure.response)) {
-            const responseName = getRpcResponseName(procedure.name, procedure);
+        if (isRpcParamSchema(p.response)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const responseName = getRpcResponseName(p.name, p as any);
             if (responseName) {
-                this._models[responseName] = procedure.response;
+                this._models[responseName] = p.response;
             }
         }
-        if (isEventStreamRpc(procedure)) {
-            registerEventStreamRpc(this.h3Router, path, procedure, {
+        if (isEventStreamRpc(p)) {
+            registerEventStreamRpc(this.h3Router, path, p, {
                 middleware: this._middlewares,
                 onRequest: this._onRequest,
                 onError: this._onError,
@@ -154,7 +175,7 @@ export class ArriApp implements ArriRouterBase {
             });
             return;
         }
-        registerRpc(this.h3Router, path, procedure, {
+        registerRpc(this.h3Router, path, p, {
             middleware: this._middlewares,
             onRequest: this._onRequest,
             onError: this._onError,
@@ -162,6 +183,34 @@ export class ArriApp implements ArriRouterBase {
             onBeforeResponse: this._onBeforeResponse,
             debug: this._debug,
         });
+    }
+
+    wsRpc<
+        TParams extends RpcParamSchema | undefined,
+        TResponse extends RpcParamSchema | undefined,
+    >(procedure: Omit<NamedWebsocketRpc<TParams, TResponse>, "transport">) {
+        (procedure as any).transport = "ws";
+        const p = procedure as NamedWebsocketRpc<TParams, TResponse>;
+        const path =
+            procedure.path ?? getRpcPath(procedure.name, this._rpcRoutePrefix);
+        this._procedures[procedure.name] = createWsRpcDefinition(
+            procedure.name,
+            path,
+            p,
+        );
+        if (isRpcParamSchema(procedure.params)) {
+            const paramName = getRpcParamName(procedure.name, p);
+            if (paramName) {
+                this._models[paramName] = procedure.params;
+            }
+        }
+        if (isRpcParamSchema(procedure.response)) {
+            const responseName = getRpcResponseName(procedure.name, p);
+            if (responseName) {
+                this._models[responseName] = procedure.response;
+            }
+        }
+        registerWebsocketRpc(this.h3Router, path, p);
     }
 
     route<

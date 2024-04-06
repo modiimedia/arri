@@ -77,10 +77,17 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
             .join(",\n")}
         ];
         for(const route of routes) {
-            app.rpc({
-                name: route.id,
-                ...route.route,
-            });
+            if(route.route.transport === 'http') {
+                app.rpc({
+                    name: route.id,
+                    ...route.route,
+                });
+            } else {
+                app.wsRpc({
+                    name: route.id,
+                    ...route.route,
+                });
+            }
         }
         export default app`,
         { parser: "typescript", tabWidth: 4 },

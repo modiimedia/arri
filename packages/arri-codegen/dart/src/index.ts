@@ -26,6 +26,8 @@ import {
     type SchemaMetadata,
     isSchemaFormRef,
     type SchemaFormRef,
+    type WsRpcDefinition,
+    type HttpRpcDefinition,
 } from "arri-codegen-utils";
 import { a } from "arri-validate";
 
@@ -252,12 +254,23 @@ export function dartRpcFromDefinition(
     def: RpcDefinition,
     opts: DartClientGeneratorOptions,
 ): string {
-    if (def.transport !== "http") {
-        console.warn(
-            `[codegen-dart] WARNING: non-http RPCs not supported at this time`,
-        );
-        return "";
+    if (def.transport === "http") {
+        return dartHttpRpcFromSchema(key, def, opts);
     }
+    if (def.transport === "ws") {
+        return dartWsRpcFromSchema(key, def, opts);
+    }
+    console.warn(
+        `[codegen-dart] WARNING: unsupported transport "${def.transport}". Skipping "${def.path}".`,
+    );
+    return "";
+}
+
+export function dartHttpRpcFromSchema(
+    key: string,
+    def: HttpRpcDefinition,
+    opts: DartClientGeneratorOptions,
+): string {
     let returnType:
         | `Future<String>`
         | "Future<int>"
@@ -352,6 +365,34 @@ export function dartRpcFromDefinition(
       parser: ${responseParser},
     );
   }`;
+}
+
+export function dartWsRpcFromSchema(
+    key: string,
+    def: WsRpcDefinition,
+    opts: DartClientGeneratorOptions,
+): string {
+    const serverMsg = def.response
+        ? pascalCase(def.response, { normalize: true })
+        : "null";
+    const clientMsg = def.params
+        ? pascalCase(def.params, { normalize: true })
+        : "null";
+    const returnType = `Future<ArriWebsocketController<${serverMsg}, ${clientMsg}>>`;
+    const parser = def.response
+        ? `(body) => ${serverMsg}.fromJson(json.decode(body))`
+        : `(_) => null`;
+    const serializer = def.params
+        ? `(body) => json.encode(body.toJson())`
+        : `(_) => {}`;
+    return `${getAnnotations({ description: def.description, isDeprecated: def.isDeprecated })}${returnType} ${key}() {
+        return arriWebsocketRequest<${serverMsg}, ${clientMsg}>(
+            "$_baseUrl${def.path}",
+            headers: _headers,
+            parser: ${parser},
+            serializer: ${serializer},
+        );
+    }`;
 }
 
 export function dartTypeFromJtdSchema(

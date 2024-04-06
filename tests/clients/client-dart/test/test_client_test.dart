@@ -407,4 +407,66 @@ Future<void> main() async {
       equals(true),
     );
   });
+  test("[WS] can send/receive objects", () async {
+    final connection = await client.tests.websocketRpc();
+    final messages = <WsMessageResponse>[];
+    final errors = <ArriError>[];
+    final connectionErrors = <ArriError>[];
+    connection.listen(
+      onData: (data) {
+        messages.add(data);
+      },
+      onError: (error) {
+        errors.add(error);
+      },
+      onConnectionError: (error) {
+        print(error);
+      },
+    );
+    connection.send(
+      WsMessageParamsCreateEntity(
+        entityId: "1",
+        x: 10,
+        y: 10,
+      ),
+    );
+    connection.send(
+      WsMessageParamsUpdateEntity(
+        entityId: "2",
+        x: 10,
+        y: 100,
+      ),
+    );
+    connection.send(
+      WsMessageParamsUpdateEntity(
+        entityId: "3",
+        x: 250,
+        y: 50,
+      ),
+    );
+    await Future.delayed(Duration(milliseconds: 500));
+    connection.close();
+    expect(messages.length, equals(3));
+    expect(errors.length, equals(0));
+    expect(connectionErrors.length, equals(0));
+    for (final message in messages) {
+      switch (message) {
+        case WsMessageResponseEntityCreated():
+          expect(message.entityId, equals("1"));
+          expect(message.x, equals(10));
+          expect(message.y, equals(10));
+          break;
+        case WsMessageResponseEntityUpdated():
+          if (message.entityId == "2") {
+            expect(message.x, equals(10));
+            expect(message.y, equals(100));
+          }
+          if (message.entityId == "3") {
+            expect(message.x, equals(250));
+            expect(message.y, equals(50));
+          }
+          break;
+      }
+    }
+  });
 }
