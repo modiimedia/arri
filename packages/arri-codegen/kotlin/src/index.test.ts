@@ -12,7 +12,7 @@ import {
     kotlinClientFromDef,
     kotlinPropertyFromSchema,
     kotlinHttpRpcFromDef,
-    kotlinSealedClassedFromSchema,
+    kotlinSealedClassFromSchema,
     kotlinServiceFromDef,
 } from "./index";
 
@@ -44,6 +44,7 @@ describe("Model Generation", () => {
             schemaPath: "",
             generatedTypes: [],
             modelPrefix: "",
+            polymorphicClasses: {},
         });
         expect(result.content).toBe(`@Serializable
 data class User(
@@ -123,6 +124,7 @@ enum class UserEnum() {
             instancePath: "Schema",
             schemaPath: "",
             modelPrefix: "",
+            polymorphicClasses: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -154,6 +156,7 @@ data class Schema(
             instancePath: "Schema",
             schemaPath: "",
             modelPrefix: "",
+            polymorphicClasses: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -183,11 +186,12 @@ data class Schema(
             },
             { id: "Message" },
         );
-        const result = kotlinSealedClassedFromSchema(Message, {
+        const result = kotlinSealedClassFromSchema(Message, {
             generatedTypes: [],
             instancePath: "message",
             schemaPath: "",
             modelPrefix: "",
+            polymorphicClasses: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -231,6 +235,7 @@ data class MessageImage(
             instancePath: "Schema",
             schemaPath: "",
             modelPrefix: "",
+            polymorphicClasses: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -287,7 +292,11 @@ describe("procedures", () => {
                 params = null,
                 headers = headers,
             ).execute()
-            return JsonInstance.decodeFromString<Status>(response.body())
+            if (response.status.value in 200..299) {
+                return JsonInstance.decodeFromString<Status>(response.body())
+            }
+            val error = JsonInstance.decodeFromString<ClientError>(response.body())
+            throw error
         }`),
         );
     });
@@ -304,13 +313,18 @@ describe("procedures", () => {
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`suspend fun createUser(params: CreateUserParams): Unit {
-            prepareRequest(
+            val response = prepareRequest(
                 client = httpClient,
                 url = "$baseUrl/create-user",
                 method = HttpMethod.Put,
                 params = JsonInstance.encodeToJsonElement<CreateUserParams>(params),
                 headers = headers,
             ).execute()
+            if (response.status.value in 200..299) {
+                return
+            }
+            val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+            throw error
         }`),
         );
     });
@@ -371,16 +385,25 @@ describe("services", () => {
                     params = JsonInstance.encodeToJsonElement<UserParams>(params),
                     headers = headers,
                 ).execute()
-                return JsonInstance.decodeFromString<User>(response.body())
+                if (response.status.value in 200.299) {
+                    return JsonInstance.decodeFromString<User>(response.body())
+                }
+                val error = JsonInstance.decodeFromString<ArriClientError>(response.body())
+                throw error
             }
             suspend fun updateUser(params: UpdateUserParams): Unit {
-                prepareRequest(
+                val response = prepareRequest(
                     client = httpClient,
                     url = "$baseUrl/users/update-user",
                     method = HttpMethod.Patch,
                     params = JsonInstance.encodeToJsonElement<UpdateUserParams>(params),
                     headers = headers,
                 ).execute()
+                if (response.status.value in 200.299) {
+                    return
+                }
+                val error = JsonInstance.decodeFromString<ArriClientError>(response.body())
+                throw error
             }
             fun watchUser(
                 scope: CoroutineScope,

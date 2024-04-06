@@ -53,7 +53,7 @@ class TestClient(
             return JsonInstance.decodeFromString<GetStatusResponse>(response.body())
 
         }
-        val error =  JsonInstance.decodeFromString<TestClientError>(response.body())
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
         throw error
     }
 }
@@ -88,7 +88,7 @@ class TestClientUsersService(
             params = JsonInstance.encodeToJsonElement<UpdateUserParams>(params),
             headers = headers,
         ).execute()
-        if(response.status.value in 200..299) {
+        if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<User>(response.body())
         }
         val error = JsonInstance.decodeFromString<TestClientError>(response.body())
@@ -144,17 +144,17 @@ class TestClientUsersSettingsService(
     private val headers: Map<String, String> = mutableMapOf(),
 ) {
     suspend fun getUserSettings(): Unit {
-        val request = prepareRequest(
+        val response = prepareRequest(
             client = httpClient,
             url = "$baseUrl/users/settings/get-user-settings",
             method = HttpMethod.Get,
             params = null,
             headers = headers,
         ).execute()
-        if(request.status.value in 200..299) {
+        if (response.status.value in 200..299) {
             return
         }
-        val error = JsonInstance.decodeFromString<TestClientError>(request.body())
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
         throw error
     }
 }
@@ -193,10 +193,12 @@ data class User(
         if (createdAt.toEpochMilli() != other.createdAt.toEpochMilli()) return false
         if (numFollowers != other.numFollowers) return false
         if (settings != other.settings) return false
+        if (lastNotification != other.lastNotification) return false
         if (recentNotifications != other.recentNotifications) return false
         if (bookmarks != other.bookmarks) return false
         if (metadata != other.metadata) return false
         if (randomList != other.randomList) return false
+        if (binaryTree != other.binaryTree) return false
         if (bio != other.bio) return false
 
         return true
