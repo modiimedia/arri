@@ -8,20 +8,63 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import java.nio.ByteBuffer
 import java.time.Instant
 
-val JsonInstance = Json { ignoreUnknownKeys = true }
+val JsonInstanceModule = SerializersModule {
+    polymorphic(ObjectWithEveryTypeDiscriminator::class) {
+        subclass(ObjectWithEveryTypeDiscriminatorDiscriminatorA::class)
+        subclass(ObjectWithEveryTypeDiscriminatorDiscriminatorB::class)
+    }
+    polymorphic(ObjectWithEveryNullableTypeDiscriminator::class) {
+        subclass(ObjectWithEveryNullableTypeDiscriminatorDiscriminatorA::class)
+        subclass(ObjectWithEveryNullableTypeDiscriminatorDiscriminatorB::class)
+    }
+    polymorphic(ObjectWithEveryOptionalTypeDiscriminator::class) {
+        subclass(ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorA::class)
+        subclass(ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorB::class)
+    }
+    polymorphic(RecursiveUnion::class) {
+        subclass(RecursiveUnionChild::class)
+        subclass(RecursiveUnionChildren::class)
+        subclass(RecursiveUnionText::class)
+        subclass(RecursiveUnionShape::class)
+    }
+    polymorphic(ChatMessage::class) {
+        subclass(ChatMessageText::class)
+        subclass(ChatMessageImage::class)
+        subclass(ChatMessageUrl::class)
+    }
+    polymorphic(WsMessageParams::class) {
+        subclass(WsMessageParamsCreateEntity::class)
+        subclass(WsMessageParamsUpdateEntity::class)
+        subclass(WsMessageParamsDisconnect::class)
+    }
+    polymorphic(WsMessageResponse::class) {
+        subclass(WsMessageResponseEntityCreated::class)
+        subclass(WsMessageResponseEntityUpdated::class)
+    }
+    polymorphic(UsersWatchUserResponseRecentNotifications::class) {
+        subclass(UsersWatchUserResponseRecentNotificationsRecentNotificationsPostLike::class)
+        subclass(UsersWatchUserResponseRecentNotificationsRecentNotificationsPostComment::class)
+    }
+}
+
+val JsonInstance = Json { 
+    ignoreUnknownKeys = true
+    encodeDefaults = true
+    serializersModule = JsonInstanceModule
+}
 
 class TestClient(
     private val httpClient: HttpClient,
@@ -51,8 +94,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<DefaultPayload>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun emptyParamsPostRequest(): DefaultPayload {
         val response = prepareRequest(
@@ -65,8 +108,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<DefaultPayload>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun emptyResponseGetRequest(params: DefaultPayload): Unit {
         val response = prepareRequest(
@@ -79,8 +122,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun emptyResponsePostRequest(params: DefaultPayload): Unit {
         val response = prepareRequest(
@@ -93,8 +136,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         val response = prepareRequest(
@@ -107,8 +150,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun sendObject(params: ObjectWithEveryType): ObjectWithEveryType {
         val response = prepareRequest(
@@ -121,8 +164,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<ObjectWithEveryType>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun sendObjectWithNullableFields(params: ObjectWithEveryNullableType): ObjectWithEveryNullableType {
         val response = prepareRequest(
@@ -135,8 +178,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<ObjectWithEveryNullableType>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun sendPartialObject(params: ObjectWithEveryOptionalType): ObjectWithEveryOptionalType {
         val response = prepareRequest(
@@ -149,8 +192,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<ObjectWithEveryOptionalType>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun sendRecursiveObject(params: RecursiveObject): RecursiveObject {
         val response = prepareRequest(
@@ -163,8 +206,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<RecursiveObject>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     suspend fun sendRecursiveUnion(params: RecursiveUnion): RecursiveUnion {
         val response = prepareRequest(
@@ -177,8 +220,8 @@ class TestClientTestsService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<RecursiveUnion>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
     fun streamAutoReconnect(
         scope: CoroutineScope,
@@ -439,8 +482,8 @@ class TestClientAdaptersService(
         if (response.status.value in 200..299) {
             return JsonInstance.decodeFromString<TypeBoxObject>(response.body())
         }
-        val err = JsonInstance.decodeFromString<TestClientError>(response.body())
-        throw err
+        val error = JsonInstance.decodeFromString<TestClientError>(response.body())
+        throw error
     }
 }
 
