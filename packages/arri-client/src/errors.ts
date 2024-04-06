@@ -3,10 +3,17 @@ export interface ArriError {
     message: string;
     data?: any;
     stack?: string;
+    serverStack?: string;
 }
 
 export function isArriError(input: unknown): input is ArriError {
     if (typeof input !== "object" || input === null) {
+        return false;
+    }
+    if ("stack" in input && typeof input !== "string") {
+        return false;
+    }
+    if ("serverStack" in input && typeof input !== "string") {
         return false;
     }
     return (
@@ -20,6 +27,7 @@ export function isArriError(input: unknown): input is ArriError {
 export class ArriErrorInstance extends Error implements ArriError {
     code: number;
     data?: any;
+    serverStack?: string;
     private readonly _internalMessage: string;
 
     constructor(input: {
@@ -28,20 +36,19 @@ export class ArriErrorInstance extends Error implements ArriError {
         stack?: string;
         data?: any;
     }) {
-        super(`ERROR ${input.code}: ${input.message}`);
+        super(input.message);
         this.code = input.code;
+        this.serverStack = input.stack;
         this._internalMessage = input.message;
         this.data = input.data;
-        if (input.stack) {
-            super.stack = input.stack;
-        }
     }
 
     toJSON() {
+        const stack = this.serverStack ?? this.stack;
         return {
             code: this.code,
             message: this._internalMessage,
-            stack: this.stack?.split("\n").map((l) => l.trim()),
+            stack: stack?.split("\n").map((l) => l.trim()),
             data: this.data,
         };
     }
