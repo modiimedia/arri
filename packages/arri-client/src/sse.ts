@@ -14,6 +14,7 @@ export interface SseOptions<TData> {
     onOpen?: (response: Response) => any;
     onData?: (data: TData) => any;
     onError?: (error: ArriError) => any;
+    onConnectionError?: (error: ArriError) => any;
     onClose?: () => any;
     maxRetryCount?: number;
     retryTimeout?: number;
@@ -83,7 +84,7 @@ export function arriSseRequest<
                 throw error;
             }
             if (isArriError(error)) {
-                options.onError?.(error);
+                options.onConnectionError?.(error);
                 return;
             }
             const err = new ArriErrorInstance({
@@ -91,9 +92,13 @@ export function arriSseRequest<
                 message: `Error connecting to ${opts.url}`,
                 data: error,
             });
-            options.onError?.(err);
+            options.onConnectionError?.(err);
         },
         onclose() {
+            if (options.onClose) {
+                options.onClose();
+                return;
+            }
             throw new NonFatalError({
                 code: 500,
                 message: "Connection closed. Reopening.",
@@ -110,7 +115,7 @@ export function arriSseRequest<
                 throw ArriErrorInstance.fromJson(json);
             }
             throw new ArriErrorInstance({
-                code: 500,
+                code: response.status,
                 message: response.statusText,
                 data: json,
             });
