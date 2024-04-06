@@ -419,6 +419,7 @@ class TestClientTestsService(
         }
         return job
     }
+
 }
 
 
@@ -568,6 +569,8 @@ data class ObjectWithEveryType(
     val nestedObject: ObjectWithEveryTypeNestedObject,
     val nestedArray: List<List<ObjectWithEveryTypeNestedArray>>,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -640,6 +643,8 @@ data class ObjectWithEveryTypeObject(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -662,14 +667,19 @@ data class ObjectWithEveryTypeObject(
 }
 
 
-@Serializable
-sealed class ObjectWithEveryTypeDiscriminator()
+@Serializable(with = ObjectWithEveryTypeDiscriminatorSerializer::class)
+sealed class ObjectWithEveryTypeDiscriminator() {
+    abstract val type: String
+}
 
 @Serializable
 @SerialName("A")
 data class ObjectWithEveryTypeDiscriminatorDiscriminatorA(
     val title: String,
-) : ObjectWithEveryTypeDiscriminator()
+) : ObjectWithEveryTypeDiscriminator() {
+    override val type: String
+        get() = "A"
+}
 
 
 
@@ -678,9 +688,26 @@ data class ObjectWithEveryTypeDiscriminatorDiscriminatorA(
 data class ObjectWithEveryTypeDiscriminatorDiscriminatorB(
     val title: String,
     val description: String,
-) : ObjectWithEveryTypeDiscriminator()
+) : ObjectWithEveryTypeDiscriminator() {
+    override val type: String
+        get() = "B"
+}
 
 
+
+object ObjectWithEveryTypeDiscriminatorSerializer : 
+    JsonContentPolymorphicSerializer<ObjectWithEveryTypeDiscriminator>(ObjectWithEveryTypeDiscriminator::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ObjectWithEveryTypeDiscriminator> {
+        val discriminatorKey = "type";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "A" -> ObjectWithEveryTypeDiscriminatorDiscriminatorA.serializer()
+            "B" -> ObjectWithEveryTypeDiscriminatorDiscriminatorB.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
 @Serializable
 data class ObjectWithEveryTypeNestedObject(
     val id: String,
@@ -688,6 +715,8 @@ data class ObjectWithEveryTypeNestedObject(
     val timestamp: Instant,
     val data: ObjectWithEveryTypeNestedObjectData,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -716,6 +745,8 @@ data class ObjectWithEveryTypeNestedObjectData(
     val timestamp: Instant,
     val data: ObjectWithEveryTypeNestedObjectDataData,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -743,6 +774,8 @@ data class ObjectWithEveryTypeNestedObjectDataData(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -769,6 +802,8 @@ data class ObjectWithEveryTypeNestedArray(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -815,6 +850,8 @@ data class ObjectWithEveryNullableType(
     val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
     val nestedArray: List<List<ObjectWithEveryNullableTypeNestedArray?>?>?,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -887,6 +924,8 @@ data class ObjectWithEveryNullableTypeObject(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant?,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -909,14 +948,19 @@ data class ObjectWithEveryNullableTypeObject(
 }
 
 
-@Serializable
-sealed class ObjectWithEveryNullableTypeDiscriminator()
+@Serializable(with = ObjectWithEveryNullableTypeDiscriminatorSerializer::class)
+sealed class ObjectWithEveryNullableTypeDiscriminator() {
+    abstract val type: String
+}
 
 @Serializable
 @SerialName("A")
 data class ObjectWithEveryNullableTypeDiscriminatorDiscriminatorA(
     val title: String?,
-) : ObjectWithEveryNullableTypeDiscriminator()
+) : ObjectWithEveryNullableTypeDiscriminator() {
+    override val type: String
+        get() = "A"
+}
 
 
 
@@ -925,9 +969,26 @@ data class ObjectWithEveryNullableTypeDiscriminatorDiscriminatorA(
 data class ObjectWithEveryNullableTypeDiscriminatorDiscriminatorB(
     val title: String?,
     val description: String?,
-) : ObjectWithEveryNullableTypeDiscriminator()
+) : ObjectWithEveryNullableTypeDiscriminator() {
+    override val type: String
+        get() = "B"
+}
 
 
+
+object ObjectWithEveryNullableTypeDiscriminatorSerializer : 
+    JsonContentPolymorphicSerializer<ObjectWithEveryNullableTypeDiscriminator>(ObjectWithEveryNullableTypeDiscriminator::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ObjectWithEveryNullableTypeDiscriminator> {
+        val discriminatorKey = "type";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "A" -> ObjectWithEveryNullableTypeDiscriminatorDiscriminatorA.serializer()
+            "B" -> ObjectWithEveryNullableTypeDiscriminatorDiscriminatorB.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
 @Serializable
 data class ObjectWithEveryNullableTypeNestedObject(
     val id: String?,
@@ -935,6 +996,8 @@ data class ObjectWithEveryNullableTypeNestedObject(
     val timestamp: Instant?,
     val data: ObjectWithEveryNullableTypeNestedObjectData?,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -963,6 +1026,8 @@ data class ObjectWithEveryNullableTypeNestedObjectData(
     val timestamp: Instant?,
     val data: ObjectWithEveryNullableTypeNestedObjectDataData?,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -990,6 +1055,8 @@ data class ObjectWithEveryNullableTypeNestedObjectDataData(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant?,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1016,6 +1083,8 @@ data class ObjectWithEveryNullableTypeNestedArray(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant?,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1062,6 +1131,8 @@ data class ObjectWithEveryOptionalType(
     val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
     val nestedArray: List<List<ObjectWithEveryOptionalTypeNestedArray>>? = null,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1134,6 +1205,8 @@ data class ObjectWithEveryOptionalTypeObject(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1156,14 +1229,19 @@ data class ObjectWithEveryOptionalTypeObject(
 }
 
 
-@Serializable
-sealed class ObjectWithEveryOptionalTypeDiscriminator()
+@Serializable(with = ObjectWithEveryOptionalTypeDiscriminatorSerializer::class)
+sealed class ObjectWithEveryOptionalTypeDiscriminator() {
+    abstract val type: String
+}
 
 @Serializable
 @SerialName("A")
 data class ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorA(
     val title: String,
-) : ObjectWithEveryOptionalTypeDiscriminator()
+) : ObjectWithEveryOptionalTypeDiscriminator() {
+    override val type: String
+        get() = "A"
+}
 
 
 
@@ -1172,9 +1250,26 @@ data class ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorA(
 data class ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorB(
     val title: String,
     val description: String,
-) : ObjectWithEveryOptionalTypeDiscriminator()
+) : ObjectWithEveryOptionalTypeDiscriminator() {
+    override val type: String
+        get() = "B"
+}
 
 
+
+object ObjectWithEveryOptionalTypeDiscriminatorSerializer : 
+    JsonContentPolymorphicSerializer<ObjectWithEveryOptionalTypeDiscriminator>(ObjectWithEveryOptionalTypeDiscriminator::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ObjectWithEveryOptionalTypeDiscriminator> {
+        val discriminatorKey = "type";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "A" -> ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorA.serializer()
+            "B" -> ObjectWithEveryOptionalTypeDiscriminatorDiscriminatorB.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
 @Serializable
 data class ObjectWithEveryOptionalTypeNestedObject(
     val id: String,
@@ -1182,6 +1277,8 @@ data class ObjectWithEveryOptionalTypeNestedObject(
     val timestamp: Instant,
     val data: ObjectWithEveryOptionalTypeNestedObjectData,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1210,6 +1307,8 @@ data class ObjectWithEveryOptionalTypeNestedObjectData(
     val timestamp: Instant,
     val data: ObjectWithEveryOptionalTypeNestedObjectDataData,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1237,6 +1336,8 @@ data class ObjectWithEveryOptionalTypeNestedObjectDataData(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1263,6 +1364,8 @@ data class ObjectWithEveryOptionalTypeNestedArray(
     @Serializable(with = InstantAsStringSerializer::class)
     val timestamp: Instant,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1291,14 +1394,19 @@ data class RecursiveObject(
 )
 
 
-@Serializable
-sealed class RecursiveUnion()
+@Serializable(with = RecursiveUnionSerializer::class)
+sealed class RecursiveUnion() {
+    abstract val type: String
+}
 
 @Serializable
 @SerialName("CHILD")
 data class RecursiveUnionChild(
     val data: RecursiveUnion,
-) : RecursiveUnion()
+) : RecursiveUnion() {
+    override val type: String
+        get() = "CHILD"
+}
 
 
 
@@ -1306,7 +1414,10 @@ data class RecursiveUnionChild(
 @SerialName("CHILDREN")
 data class RecursiveUnionChildren(
     val data: List<RecursiveUnion>,
-) : RecursiveUnion()
+) : RecursiveUnion() {
+    override val type: String
+        get() = "CHILDREN"
+}
 
 
 
@@ -1314,7 +1425,10 @@ data class RecursiveUnionChildren(
 @SerialName("TEXT")
 data class RecursiveUnionText(
     val data: String,
-) : RecursiveUnion()
+) : RecursiveUnion() {
+    override val type: String
+        get() = "TEXT"
+}
 
 
 
@@ -1322,7 +1436,10 @@ data class RecursiveUnionText(
 @SerialName("SHAPE")
 data class RecursiveUnionShape(
     val data: RecursiveUnionShapeData,
-) : RecursiveUnion()
+) : RecursiveUnion() {
+    override val type: String
+        get() = "SHAPE"
+}
 
 @Serializable
 data class RecursiveUnionShapeData(
@@ -1332,6 +1449,22 @@ data class RecursiveUnionShapeData(
 )
 
 
+
+object RecursiveUnionSerializer : 
+    JsonContentPolymorphicSerializer<RecursiveUnion>(RecursiveUnion::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<RecursiveUnion> {
+        val discriminatorKey = "type";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "CHILD" -> RecursiveUnionChild.serializer()
+            "CHILDREN" -> RecursiveUnionChildren.serializer()
+            "TEXT" -> RecursiveUnionText.serializer()
+            "SHAPE" -> RecursiveUnionShape.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
 @Serializable
 data class AutoReconnectParams(
     val messageCount: UByte,
@@ -1378,8 +1511,10 @@ data class ChatMessageParams(
 )
 
 
-@Serializable
-sealed class ChatMessage()
+@Serializable(with = ChatMessageSerializer::class)
+sealed class ChatMessage() {
+    abstract val messageType: String
+}
 
 @Serializable
 @SerialName("TEXT")
@@ -1391,6 +1526,9 @@ data class ChatMessageText(
     val date: Instant,
     val text: String,
 ) : ChatMessage() {
+    override val messageType: String
+        get() = "TEXT"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1428,6 +1566,9 @@ data class ChatMessageImage(
     val date: Instant,
     val image: String,
 ) : ChatMessage() {
+    override val messageType: String
+        get() = "IMAGE"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1465,6 +1606,9 @@ data class ChatMessageUrl(
     val date: Instant,
     val url: String,
 ) : ChatMessage() {
+    override val messageType: String
+        get() = "URL"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1491,6 +1635,121 @@ data class ChatMessageUrl(
 }
 
 
+
+object ChatMessageSerializer : 
+    JsonContentPolymorphicSerializer<ChatMessage>(ChatMessage::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ChatMessage> {
+        val discriminatorKey = "messageType";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "TEXT" -> ChatMessageText.serializer()
+            "IMAGE" -> ChatMessageImage.serializer()
+            "URL" -> ChatMessageUrl.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
+@Serializable(with = WsMessageParamsSerializer::class)
+sealed class WsMessageParams() {
+    abstract val type: String
+}
+
+@Serializable
+@SerialName("CREATE_ENTITY")
+data class WsMessageParamsCreateEntity(
+    val entityId: String,
+    val x: Double,
+    val y: Double,
+) : WsMessageParams() {
+    override val type: String
+        get() = "CREATE_ENTITY"
+}
+
+
+
+@Serializable
+@SerialName("UPDATE_ENTITY")
+data class WsMessageParamsUpdateEntity(
+    val entityId: String,
+    val x: Double,
+    val y: Double,
+) : WsMessageParams() {
+    override val type: String
+        get() = "UPDATE_ENTITY"
+}
+
+
+
+@Serializable
+@SerialName("DISCONNECT")
+data class WsMessageParamsDisconnect(
+    val reason: String,
+) : WsMessageParams() {
+    override val type: String
+        get() = "DISCONNECT"
+}
+
+
+
+object WsMessageParamsSerializer : 
+    JsonContentPolymorphicSerializer<WsMessageParams>(WsMessageParams::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<WsMessageParams> {
+        val discriminatorKey = "type";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "CREATE_ENTITY" -> WsMessageParamsCreateEntity.serializer()
+            "UPDATE_ENTITY" -> WsMessageParamsUpdateEntity.serializer()
+            "DISCONNECT" -> WsMessageParamsDisconnect.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
+@Serializable(with = WsMessageResponseSerializer::class)
+sealed class WsMessageResponse() {
+    abstract val type: String
+}
+
+@Serializable
+@SerialName("ENTITY_CREATED")
+data class WsMessageResponseEntityCreated(
+    val entityId: String,
+    val x: Double,
+    val y: Double,
+) : WsMessageResponse() {
+    override val type: String
+        get() = "ENTITY_CREATED"
+}
+
+
+
+@Serializable
+@SerialName("ENTITY_UPDATED")
+data class WsMessageResponseEntityUpdated(
+    val entityId: String,
+    val x: Double,
+    val y: Double,
+) : WsMessageResponse() {
+    override val type: String
+        get() = "ENTITY_UPDATED"
+}
+
+
+
+object WsMessageResponseSerializer : 
+    JsonContentPolymorphicSerializer<WsMessageResponse>(WsMessageResponse::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<WsMessageResponse> {
+        val discriminatorKey = "type";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "ENTITY_CREATED" -> WsMessageResponseEntityCreated.serializer()
+            "ENTITY_UPDATED" -> WsMessageResponseEntityUpdated.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
 @Serializable
 data class UsersWatchUserParams(
     val userId: String,
@@ -1512,6 +1771,8 @@ data class UsersWatchUserResponse(
     val randomList: List<JsonElement>,
     val bio: String? = null,
 ) {
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -1579,15 +1840,20 @@ enum class UserSettingsPreferredTheme() {
     @SerialName("system")
     System,
 }
-@Serializable
-sealed class UsersWatchUserResponseRecentNotifications()
+@Serializable(with = UsersWatchUserResponseRecentNotificationsSerializer::class)
+sealed class UsersWatchUserResponseRecentNotifications() {
+    abstract val notificationType: String
+}
 
 @Serializable
 @SerialName("POST_LIKE")
 data class UsersWatchUserResponseRecentNotificationsRecentNotificationsPostLike(
     val postId: String,
     val userId: String,
-) : UsersWatchUserResponseRecentNotifications()
+) : UsersWatchUserResponseRecentNotifications() {
+    override val notificationType: String
+        get() = "POST_LIKE"
+}
 
 
 
@@ -1597,9 +1863,26 @@ data class UsersWatchUserResponseRecentNotificationsRecentNotificationsPostComme
     val postId: String,
     val userId: String,
     val commentText: String,
-) : UsersWatchUserResponseRecentNotifications()
+) : UsersWatchUserResponseRecentNotifications() {
+    override val notificationType: String
+        get() = "POST_COMMENT"
+}
 
 
+
+object UsersWatchUserResponseRecentNotificationsSerializer : 
+    JsonContentPolymorphicSerializer<UsersWatchUserResponseRecentNotifications>(UsersWatchUserResponseRecentNotifications::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<UsersWatchUserResponseRecentNotifications> {
+        val discriminatorKey = "notificationType";
+        val discriminatorVal =
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "POST_LIKE" -> UsersWatchUserResponseRecentNotificationsRecentNotificationsPostLike.serializer()
+            "POST_COMMENT" -> UsersWatchUserResponseRecentNotificationsRecentNotificationsPostComment.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}
 @Serializable
 data class UsersWatchUserResponseBookmarks(
     val postId: String,
@@ -1642,7 +1925,11 @@ private suspend fun prepareRequest(
         HttpMethod.Get, HttpMethod.Head -> {
             val queryParts = mutableListOf<String>()
             params?.jsonObject?.entries?.forEach {
-                queryParts.add("${it.key}=${it.value}")
+                var finalVal = it.value.toString()
+                if (finalVal.startsWith("\"") && finalVal.endsWith("\"")) {
+                    finalVal = finalVal.substring(1, finalVal.length - 1)
+                }
+                queryParts.add("${it.key}=$finalVal")
             }
             finalUrl = "$finalUrl?${queryParts.joinToString("&")}"
         }
