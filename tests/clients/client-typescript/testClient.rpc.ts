@@ -11,18 +11,21 @@ import {
 
 interface TestClientOptions {
     baseUrl?: string;
-    headers?: Record<string, string>;
+    headers?: Record<string, string> | (() => Record<string, string>);
 }
 
 export class TestClient {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
+    private readonly headers:
+        | Record<string, string>
+        | (() => Record<string, string>);
+    private readonly clientVersion = "10";
     tests: TestClientTestsService;
     adapters: TestClientAdaptersService;
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
+        this.headers = options.headers ?? {};
         this.tests = new TestClientTestsService(options);
         this.adapters = new TestClientAdaptersService(options);
     }
@@ -30,11 +33,14 @@ export class TestClient {
 
 export class TestClientTestsService {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
+    private readonly headers:
+        | Record<string, string>
+        | (() => Record<string, string>);
+    private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
+        this.headers = options.headers ?? {};
     }
     emptyParamsGetRequest() {
         return arriRequest<DefaultPayload, undefined>({
@@ -44,6 +50,7 @@ export class TestClientTestsService {
             params: undefined,
             parser: $$DefaultPayload.parse,
             serializer: (_) => {},
+            clientVersion: this.clientVersion,
         });
     }
     emptyParamsPostRequest() {
@@ -54,6 +61,7 @@ export class TestClientTestsService {
             params: undefined,
             parser: $$DefaultPayload.parse,
             serializer: (_) => {},
+            clientVersion: this.clientVersion,
         });
     }
     emptyResponseGetRequest(params: DefaultPayload) {
@@ -64,6 +72,7 @@ export class TestClientTestsService {
             params,
             parser: (_) => {},
             serializer: $$DefaultPayload.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     emptyResponsePostRequest(params: DefaultPayload) {
@@ -74,6 +83,7 @@ export class TestClientTestsService {
             params,
             parser: (_) => {},
             serializer: $$DefaultPayload.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     /**
@@ -88,6 +98,7 @@ export class TestClientTestsService {
             params,
             parser: (_) => {},
             serializer: $$DeprecatedRpcParams.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     sendObject(params: ObjectWithEveryType) {
@@ -98,6 +109,7 @@ export class TestClientTestsService {
             params,
             parser: $$ObjectWithEveryType.parse,
             serializer: $$ObjectWithEveryType.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     sendObjectWithNullableFields(params: ObjectWithEveryNullableType) {
@@ -111,6 +123,7 @@ export class TestClientTestsService {
             params,
             parser: $$ObjectWithEveryNullableType.parse,
             serializer: $$ObjectWithEveryNullableType.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     sendPartialObject(params: ObjectWithEveryOptionalType) {
@@ -124,6 +137,7 @@ export class TestClientTestsService {
             params,
             parser: $$ObjectWithEveryOptionalType.parse,
             serializer: $$ObjectWithEveryOptionalType.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     sendRecursiveObject(params: RecursiveObject) {
@@ -134,6 +148,7 @@ export class TestClientTestsService {
             params,
             parser: $$RecursiveObject.parse,
             serializer: $$RecursiveObject.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     sendRecursiveUnion(params: RecursiveUnion) {
@@ -144,6 +159,7 @@ export class TestClientTestsService {
             params,
             parser: $$RecursiveUnion.parse,
             serializer: $$RecursiveUnion.serialize,
+            clientVersion: this.clientVersion,
         });
     }
     streamAutoReconnect(
@@ -158,6 +174,7 @@ export class TestClientTestsService {
                 params,
                 parser: $$AutoReconnectResponse.parse,
                 serializer: $$AutoReconnectParams.serialize,
+                clientVersion: this.clientVersion,
             },
             options,
         );
@@ -180,6 +197,7 @@ export class TestClientTestsService {
                 params,
                 parser: $$StreamConnectionErrorTestResponse.parse,
                 serializer: $$StreamConnectionErrorTestParams.serialize,
+                clientVersion: this.clientVersion,
             },
             options,
         );
@@ -196,6 +214,7 @@ export class TestClientTestsService {
                 params: undefined,
                 parser: $$StreamLargeObjectsResponse.parse,
                 serializer: (_) => {},
+                clientVersion: this.clientVersion,
             },
             options,
         );
@@ -212,6 +231,26 @@ export class TestClientTestsService {
                 params,
                 parser: $$ChatMessage.parse,
                 serializer: $$ChatMessageParams.serialize,
+                clientVersion: this.clientVersion,
+            },
+            options,
+        );
+    }
+    streamRetryWithNewCredentials(
+        options: SseOptions<TestsStreamRetryWithNewCredentialsResponse>,
+    ) {
+        return arriSseRequest<
+            TestsStreamRetryWithNewCredentialsResponse,
+            undefined
+        >(
+            {
+                url: `${this.baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
+                method: "get",
+                headers: this.headers,
+                params: undefined,
+                parser: $$TestsStreamRetryWithNewCredentialsResponse.parse,
+                serializer: (_) => {},
+                clientVersion: this.clientVersion,
             },
             options,
         );
@@ -228,6 +267,7 @@ export class TestClientTestsService {
                 params: undefined,
                 parser: $$ChatMessage.parse,
                 serializer: (_) => {},
+                clientVersion: this.clientVersion,
             },
             options,
         );
@@ -241,6 +281,7 @@ export class TestClientTestsService {
                 params: undefined,
                 parser: $$ChatMessage.parse,
                 serializer: (_) => {},
+                clientVersion: this.clientVersion,
             },
             options,
         );
@@ -256,17 +297,21 @@ export class TestClientTestsService {
             onError: options.onError,
             onConnectionError: options.onConnectionError,
             onMessage: options.onMessage,
+            clientVersion: this.clientVersion,
         });
     }
 }
 
 export class TestClientAdaptersService {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
+    private readonly headers:
+        | Record<string, string>
+        | (() => Record<string, string>);
+    private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
+        this.headers = options.headers ?? {};
     }
     typebox(params: TypeBoxObject) {
         return arriRequest<TypeBoxObject, TypeBoxObject>({
@@ -276,6 +321,7 @@ export class TestClientAdaptersService {
             params,
             parser: $$TypeBoxObject.parse,
             serializer: $$TypeBoxObject.serialize,
+            clientVersion: this.clientVersion,
         });
     }
 }
@@ -10058,6 +10104,105 @@ export interface ChatMessageUrl {
     date: Date;
     url: string;
 }
+
+export interface TestsStreamRetryWithNewCredentialsResponse {
+    message: string;
+}
+const $$TestsStreamRetryWithNewCredentialsResponse = {
+    parse(input: Record<any, any>): TestsStreamRetryWithNewCredentialsResponse {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const __D1 = {};
+                if (typeof json.message === "string") {
+                    __D1.message = json.message;
+                } else {
+                    $fallback(
+                        "/message",
+                        "/properties/message/type",
+                        "Expected string at /message",
+                    );
+                }
+                result = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const __D1 = {};
+            if (typeof input.message === "string") {
+                __D1.message = input.message;
+            } else {
+                $fallback(
+                    "/message",
+                    "/properties/message/type",
+                    "Expected string at /message",
+                );
+            }
+            result = __D1;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: TestsStreamRetryWithNewCredentialsResponse): string {
+        let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        json += "{";
+        json += `"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
+        }
+        json += "}";
+        return json;
+    },
+};
 
 export type WsMessageParams =
     | WsMessageParamsCreateEntity

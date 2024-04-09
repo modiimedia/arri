@@ -26,7 +26,7 @@ export interface WsOptions<TResponse> {
 
 interface ArriWsRequestOptions<TParams = any, TResponse = any> {
     url: string;
-    headers?: Record<string, string>;
+    headers?: Record<string, string> | (() => Record<string, string>);
     params?: TParams;
     parser: (input: unknown) => TResponse;
     serializer: (input: TParams) => string;
@@ -35,6 +35,7 @@ interface ArriWsRequestOptions<TParams = any, TResponse = any> {
     onConnectionError?: WsErrorHook;
     onOpen?: () => any;
     onClose?: () => any;
+    clientVersion?: string;
 }
 
 function connectWebsocket(url: string, protocol?: string) {
@@ -56,10 +57,17 @@ export function arriWsRequest<
     let url = opts.url
         .replace("http://", "ws://")
         .replace("https://", "wss://");
-    if (opts.headers) {
+    let headers: Record<string, string> | undefined;
+    if (typeof opts.headers === "function") {
+        headers = opts.headers();
+    } else {
+        headers = opts.headers;
+    }
+    if (headers) {
+        if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
         const queryParts: string[] = [];
-        for (const key of Object.keys(opts.headers)) {
-            queryParts.push(`${key}=${opts.headers[key]}`);
+        for (const key of Object.keys(headers)) {
+            queryParts.push(`${key}=${headers[key]}`);
         }
         url += `?${queryParts.join("&")}`;
     }

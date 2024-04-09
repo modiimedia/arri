@@ -7,16 +7,22 @@ import 'package:web_socket_channel/status.dart' as status;
 Future<ArriWebsocketController<TServerMessage, TClientMessage>>
     arriWebsocketRequest<TServerMessage, TClientMessage>(
   String url, {
-  Map<String, dynamic>? headers,
+  Map<String, String> Function()? headers,
   required TServerMessage Function(String msg) parser,
   required String Function(TClientMessage msg) serializer,
+  String? clientVersion,
 }) async {
   var finalUrl =
       url.replaceAll("http://", "ws://").replaceAll("https://", "wss://");
-  if (headers != null) {
+
+  if (headers != null || clientVersion != null) {
     final queryParts = <String>[];
-    for (final entry in headers.entries) {
+    for (final entry
+        in headers?.call().entries ?? <MapEntry<String, String>>[]) {
       queryParts.add("${entry.key}=${entry.value}");
+    }
+    if (clientVersion != null) {
+      queryParts.add("client-version=$clientVersion");
     }
     finalUrl = "$finalUrl?${queryParts.join("&")}";
   }

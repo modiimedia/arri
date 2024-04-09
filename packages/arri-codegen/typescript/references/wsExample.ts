@@ -21,6 +21,7 @@ export class UserService {
             onError: opts.onError,
             onConnectionError: opts.onConnectionError,
             onMessage: opts.onMessage,
+            clientVersion: "1",
         });
     }
 }
