@@ -1,9 +1,5 @@
 import { randomUUID } from "crypto";
-import {
-    type ArriError,
-    ArriErrorInstance,
-    type SseOptions,
-} from "arri-client";
+import { type ArriError, ArriErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import { test, expect, describe } from "vitest";
 import {
@@ -15,7 +11,6 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     type TypeBoxObject,
-    type TestsStreamRetryWithNewCredentialsResponse,
 } from "./testClient.rpc";
 
 function wait(ms: number) {
@@ -262,35 +257,31 @@ test("[SSE] supports server sent events", async () => {
     const controller = client.tests.streamMessages(
         { channelId: "1" },
         {
-            onData(data) {
+            onMessage(msg) {
                 receivedMessageCount++;
-                expect(data.channelId).toBe("1");
-                switch (data.messageType) {
+                expect(msg.channelId).toBe("1");
+                switch (msg.messageType) {
                     case "IMAGE":
-                        expect(data.date instanceof Date).toBe(true);
-                        expect(typeof data.image).toBe("string");
+                        expect(msg.date instanceof Date).toBe(true);
+                        expect(typeof msg.image).toBe("string");
                         break;
                     case "TEXT":
-                        expect(data.date instanceof Date).toBe(true);
-                        expect(typeof data.text).toBe("string");
+                        expect(msg.date instanceof Date).toBe(true);
+                        expect(typeof msg.text).toBe("string");
                         break;
                     case "URL":
-                        expect(data.date instanceof Date).toBe(true);
-                        expect(typeof data.url).toBe("string");
+                        expect(msg.date instanceof Date).toBe(true);
+                        expect(typeof msg.url).toBe("string");
                         break;
                 }
             },
-            onOpen(response) {
+            onResponse({ response }) {
                 wasConnected = response.status === 200;
             },
         },
     );
-    await new Promise((resolve, reject) => {
-        setTimeout(() => {
-            controller.abort();
-            resolve(true);
-        }, 500);
-    });
+    await wait(500);
+    controller.abort();
     expect(receivedMessageCount > 0).toBe(true);
     expect(wasConnected).toBe(true);
 }, 2000);
@@ -299,24 +290,28 @@ test("[SSE] parses both 'message' and 'error' events", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriError | undefined;
+    let otherErrorCount = 0;
     const controller = client.tests.streamTenEventsThenError({
-        onData(_) {
+        onMessage(_) {
             messageCount++;
         },
-        onError(error) {
+        onErrorMessage(error) {
             errorReceived = error;
             controller.abort();
         },
-        onOpen() {
+        onRequestError() {
+            otherErrorCount++;
+        },
+        onResponseError() {
+            otherErrorCount++;
+        },
+        onRequest() {
             timesConnected++;
         },
     });
-    await new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, 500);
-    });
+    await wait(500);
     expect(errorReceived?.code).toBe(400);
+    expect(otherErrorCount).toBe(0);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
     expect(messageCount).toBe(10);
@@ -327,21 +322,20 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
     let messageCount = 0;
     let errorReceived: ArriError | undefined;
     const controller = client.tests.streamTenEventsThenEnd({
-        onData(_) {
+        onMessage(_) {
             messageCount++;
         },
-        onError(error) {
+        onRequestError({ error }) {
             errorReceived = error;
         },
-        onOpen() {
+        onResponseError({ error }) {
+            errorReceived = error;
+        },
+        onRequest() {
             timesConnected++;
         },
     });
-    await new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, 500);
-    });
+    await wait(500);
     expect(errorReceived).toBe(undefined);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);
@@ -357,23 +351,19 @@ test("[SSE] auto-reconnects when connection is closed by server", async () => {
             messageCount: 10,
         },
         {
-            onOpen() {
+            onRequest() {
                 connectionCount++;
             },
-            onData(data) {
+            onMessage(data) {
                 messageCount++;
                 expect(data.count > 0).toBe(true);
             },
-            onError(_) {
+            onResponseError(_) {
                 errorCount++;
             },
         },
     );
-    await new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, 2000);
-    });
+    await wait(2000);
     expect(messageCount > 10).toBe(true);
     expect(connectionCount > 0).toBe(true);
     expect(errorCount).toBe(0);
@@ -383,43 +373,34 @@ test("[SSE] auto-reconnects when connection is closed by server", async () => {
 test("[SSE] reconnect with new credentials", async () => {
     const dynamicClient = new TestClient({
         baseUrl,
-        headers: {
-            "x-auth-token": randomUUID(),
-            "x-test-header": "1",
+        headers() {
+            return {
+                "x-test-header": randomUUID(),
+            };
         },
     });
     let msgCount = 0;
     let openCount = 0;
     let errorCount = 0;
-    const options: SseOptions<TestsStreamRetryWithNewCredentialsResponse> = {
-        onData: (_) => {
+    const controller = dynamicClient.tests.streamRetryWithNewCredentials({
+        onMessage(_) {
             msgCount++;
         },
-        onOpen: (_) => {
+        onRequestError(context) {
+            errorCount++;
+        },
+        onResponse(context) {
             openCount++;
         },
-        onConnectionError: handleError,
-    };
-    function handleError(error: ArriError) {
-        errorCount++;
-        if (error.code === 403) {
-            console.log("RETRYING");
-            dynamicClient.initClient({
-                baseUrl,
-                headers: { "x-auth-token": randomUUID(), "x-test-header": "1" },
-            });
-            controller =
-                dynamicClient.tests.streamRetryWithNewCredentials(options);
-            return;
-        }
-        throw error as any;
-    }
-    let controller = dynamicClient.tests.streamRetryWithNewCredentials(options);
-    await wait(5000);
+        onResponseError(context) {
+            errorCount++;
+        },
+    });
+    await wait(2000);
     controller.abort();
-    expect(openCount > 1).toBe(true);
-    expect(errorCount > 1).toBe(true);
     expect(msgCount > 1).toBe(true);
+    expect(openCount > 1).toBe(true);
+    expect(errorCount).toBe(0);
 });
 
 test("Websocket Requests", async () => {
@@ -464,11 +445,7 @@ test("Websocket Requests", async () => {
         });
     };
     controller.connect();
-    await new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, 2000);
-    });
+    await wait(2000);
     controller.close();
     expect(connectionCount).toBe(1);
     expect(messageCount).toBe(3);

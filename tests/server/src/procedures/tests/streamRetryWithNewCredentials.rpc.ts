@@ -9,8 +9,7 @@ export default defineEventStreamRpc({
         message: a.string(),
     }),
     async handler({ stream }, event) {
-        const authToken = getHeader(event, "x-auth-token");
-        console.log("NEW_REQUEST", authToken);
+        const authToken = getHeader(event, "x-test-header");
         if (!authToken) {
             throw defineError(400);
         }
@@ -20,11 +19,15 @@ export default defineEventStreamRpc({
             });
         }
         usedTokens[authToken] = true;
-        console.log(usedTokens);
         stream.send();
         await stream.push({ message: "ok" });
+        let msgCount = 0;
         const interval = setInterval(async () => {
             await stream.push({ message: "ok" });
+            msgCount++;
+            if (msgCount >= 10) {
+                event.node.res.end();
+            }
         });
         stream.onClose(() => {
             clearInterval(interval);
