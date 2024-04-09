@@ -7,11 +7,11 @@ import "package:http/http.dart" as http;
 class TestClient {
   final http.Client? _httpClient;
   final String _baseUrl;
-  late final Map<String, String> _headers;
+  late final Map<String, String> Function()? _headers;
   TestClient({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> headers = const {},
+    Map<String, String> Function()? headers,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl {
     _headers = {"client-version": "11", ...headers};
