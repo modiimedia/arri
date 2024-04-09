@@ -241,7 +241,7 @@ export function dartServiceFromDefinition(
     return ${sub.name}Service(
         httpClient: _httpClient,
         baseUrl: _baseUrl,
-        headers: _headers
+        headers: _headers,
     );
   }`,
       )

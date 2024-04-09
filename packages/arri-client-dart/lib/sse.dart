@@ -39,7 +39,7 @@ EventSource<T> parsedArriSseRequest<T>(
     params: params,
     headers: () {
       final result = headers?.call() ?? {};
-      if (clientVersion != null) {
+      if (clientVersion != null && clientVersion.isNotEmpty) {
         result["client-version"] = clientVersion;
       }
       return result;

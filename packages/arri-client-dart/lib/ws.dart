@@ -15,7 +15,7 @@ Future<ArriWebsocketController<TServerMessage, TClientMessage>>
   var finalUrl =
       url.replaceAll("http://", "ws://").replaceAll("https://", "wss://");
 
-  if (headers != null || clientVersion != null) {
+  if (headers != null || clientVersion?.isNotEmpty == true) {
     final queryParts = <String>[];
     for (final entry
         in headers?.call().entries ?? <MapEntry<String, String>>[]) {

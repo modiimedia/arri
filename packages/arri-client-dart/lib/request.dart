@@ -41,7 +41,7 @@ Future<http.Response> arriRequest(
     400,
   );
   final finalHeaders = {...headers?.call() ?? {}};
-  if (clientVersion != null) {
+  if (clientVersion != null && clientVersion.isNotEmpty) {
     finalHeaders["client-version"] = clientVersion;
   }
   final client = httpClient ?? http.Client();
