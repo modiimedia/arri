@@ -1,4 +1,9 @@
-import { type ArriError, ArriErrorInstance } from "arri-client";
+import { randomUUID } from "crypto";
+import {
+    type ArriError,
+    ArriErrorInstance,
+    type SseOptions,
+} from "arri-client";
 import { ofetch } from "ofetch";
 import { test, expect, describe } from "vitest";
 import {
@@ -10,7 +15,16 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     type TypeBoxObject,
+    type TestsStreamRetryWithNewCredentialsResponse,
 } from "./testClient.rpc";
+
+function wait(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, ms);
+    });
+}
 
 const baseUrl = "http://127.0.0.1:2020";
 const headers = {
@@ -364,6 +378,48 @@ test("[SSE] auto-reconnects when connection is closed by server", async () => {
     expect(connectionCount > 0).toBe(true);
     expect(errorCount).toBe(0);
     controller.abort();
+});
+
+test("[SSE] reconnect with new credentials", async () => {
+    const dynamicClient = new TestClient({
+        baseUrl,
+        headers: {
+            "x-auth-token": randomUUID(),
+            "x-test-header": "1",
+        },
+    });
+    let msgCount = 0;
+    let openCount = 0;
+    let errorCount = 0;
+    const options: SseOptions<TestsStreamRetryWithNewCredentialsResponse> = {
+        onData: (_) => {
+            msgCount++;
+        },
+        onOpen: (_) => {
+            openCount++;
+        },
+        onConnectionError: handleError,
+    };
+    function handleError(error: ArriError) {
+        errorCount++;
+        if (error.code === 403) {
+            console.log("RETRYING");
+            dynamicClient.initClient({
+                baseUrl,
+                headers: { "x-auth-token": randomUUID(), "x-test-header": "1" },
+            });
+            controller =
+                dynamicClient.tests.streamRetryWithNewCredentials(options);
+            return;
+        }
+        throw error as any;
+    }
+    let controller = dynamicClient.tests.streamRetryWithNewCredentials(options);
+    await wait(5000);
+    controller.abort();
+    expect(openCount > 1).toBe(true);
+    expect(errorCount > 1).toBe(true);
+    expect(msgCount > 1).toBe(true);
 });
 
 test("Websocket Requests", async () => {

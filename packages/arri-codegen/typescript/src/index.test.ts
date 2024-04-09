@@ -76,10 +76,11 @@ describe("Service Creation", () => {
                 await prettier.format(
                     `export class UserService {
             private readonly baseUrl: string;
-            private readonly headers: Record<string, string>;
+            private readonly headers: Record<string, string> | (() => Record<string, string>);
+            private readonly clientVersion = '1';
             constructor(options: ClientOptions = {}) {
                 this.baseUrl = options.baseUrl ?? "";
-                this.headers = { "client-version": "1", ...options.headers };
+                this.headers = options.headers ?? {};
             }
             /**
              * Fetch a user by id
@@ -93,6 +94,7 @@ describe("Service Creation", () => {
                     params,
                     parser: $$User.parse,
                     serializer: $$GetUserParams.serialize,
+                    clientVersion: this.clientVersion,
                 });
             }
             /**
@@ -106,6 +108,7 @@ describe("Service Creation", () => {
                     params,
                     parser: $$User.parse,
                     serializer: $$UpdateUserParams.serialize,
+                    clientVersion: this.clientVersion,
                 });
             }
             /**
@@ -119,6 +122,7 @@ describe("Service Creation", () => {
                     params,
                     parser: $$User.parse,
                     serializer: $$GetUserParams.serialize,
+                    clientVersion: this.clientVersion,
                 }, options);
             }
             /**
@@ -135,6 +139,7 @@ describe("Service Creation", () => {
                     onError: options.onError,
                     onConnectionError: options.onConnectionError,
                     onMessage: options.onMessage,
+                    clientVersion: this.clientVersion,
                 });
             }
         }`,

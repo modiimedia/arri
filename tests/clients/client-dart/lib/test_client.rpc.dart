@@ -285,6 +285,34 @@ class TestClientTestsService {
     );
   }
 
+  EventSource<TestsStreamRetryWithNewCredentialsResponse>
+      streamRetryWithNewCredentials({
+    SseHookOnData<TestsStreamRetryWithNewCredentialsResponse>? onData,
+    SseHookOnError<TestsStreamRetryWithNewCredentialsResponse>? onError,
+    SseHookOnConnectionError<TestsStreamRetryWithNewCredentialsResponse>?
+        onConnectionError,
+    SseHookOnOpen<TestsStreamRetryWithNewCredentialsResponse>? onOpen,
+    SseHookOnClose<TestsStreamRetryWithNewCredentialsResponse>? onClose,
+    String? lastEventId,
+  }) {
+    return parsedArriSseRequest<TestsStreamRetryWithNewCredentialsResponse>(
+      "$_baseUrl/rpcs/tests/stream-retry-with-new-credentials",
+      httpClient: _httpClient,
+      method: HttpMethod.get,
+      headers: _headers,
+      params: null,
+      parser: (body) => TestsStreamRetryWithNewCredentialsResponse.fromJson(
+        json.decode(body),
+      ),
+      onData: onData,
+      onError: onError,
+      onConnectionError: onConnectionError,
+      onOpen: onOpen,
+      onClose: onClose,
+      lastEventId: lastEventId,
+    );
+  }
+
   /// When the client receives the 'done' event, it should close the connection and NOT reconnect
   EventSource<ChatMessage> streamTenEventsThenEnd({
     SseHookOnData<ChatMessage>? onData,
@@ -2827,6 +2855,35 @@ class ChatMessageUrl implements ChatMessage {
       userId: userId ?? this.userId,
       date: date ?? this.date,
       url: url ?? this.url,
+    );
+  }
+}
+
+class TestsStreamRetryWithNewCredentialsResponse {
+  final String message;
+  const TestsStreamRetryWithNewCredentialsResponse({
+    required this.message,
+  });
+  factory TestsStreamRetryWithNewCredentialsResponse.fromJson(
+      Map<String, dynamic> json) {
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: typeFromDynamic<String>(json["message"], ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final __result = <String, dynamic>{
+      "message": message,
+    };
+
+    return __result;
+  }
+
+  TestsStreamRetryWithNewCredentialsResponse copyWith({
+    String? message,
+  }) {
+    return TestsStreamRetryWithNewCredentialsResponse(
+      message: message ?? this.message,
     );
   }
 }

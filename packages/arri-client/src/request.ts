@@ -1,3 +1,4 @@
+import { type HttpMethod } from "event-source-plus";
 import { FetchError, ofetch } from "ofetch";
 import { ArriErrorInstance, isArriError } from "./errors";
 
@@ -6,13 +7,14 @@ export interface ArriRequestOpts<
     TParams extends Record<any, any> | undefined = undefined,
 > {
     url: string;
-    method: string;
-    headers?: any;
+    method: HttpMethod;
+    headers?: Record<string, string> | (() => Record<string, string>);
     params?: TParams;
     parser: (input: unknown) => TType;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
+    clientVersion?: string;
 }
 
 export async function arriRequest<
@@ -42,10 +44,18 @@ export async function arriRequest<
             break;
     }
     try {
+        let headers: Record<string, string> = {};
+        if (typeof opts.headers === "function") {
+            headers = opts.headers();
+        } else {
+            headers = opts.headers ?? {};
+        }
+        if (contentType) headers["Content-Type"] = contentType;
+        if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
         const result = await ofetch(url, {
             method: opts.method,
             body,
-            headers: { ...opts.headers, "Content-Type": contentType },
+            headers,
         });
         return opts.parser(result);
     } catch (err) {
