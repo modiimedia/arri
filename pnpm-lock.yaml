@@ -123,6 +123,28 @@ importers:
         specifier: ^3.22.4
         version: 3.22.4
 
+  packages/adapters/typebox:
+    dependencies:
+      '@sinclair/typebox':
+        specifier: ^0.32
+        version: 0.32.20
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../arri-validate
+      json-schema-to-jtd:
+        specifier: workspace:*
+        version: link:../../json-schema-to-jtd
+    devDependencies:
+      arri:
+        specifier: workspace:*
+        version: link:../../arri
+
+  packages/adapters/zod:
+    dependencies:
+      arri-validate:
+        specifier: workspace:*
+        version: link:../../arri-validate
+
   packages/arri:
     dependencies:
       '@joshmossas/listhen':
@@ -201,22 +223,6 @@ importers:
       bun-types:
         specifier: ^1.1.2
         version: 1.1.2
-
-  packages/arri-adapter-typebox:
-    dependencies:
-      '@sinclair/typebox':
-        specifier: ^0.32
-        version: 0.32.20
-      arri-validate:
-        specifier: workspace:*
-        version: link:../arri-validate
-      json-schema-to-jtd:
-        specifier: workspace:*
-        version: link:../json-schema-to-jtd
-    devDependencies:
-      arri:
-        specifier: workspace:*
-        version: link:../arri
 
   packages/arri-client:
     dependencies:
@@ -355,7 +361,7 @@ importers:
     devDependencies:
       arri-adapter-typebox:
         specifier: workspace:*
-        version: link:../../packages/arri-adapter-typebox
+        version: link:../../packages/adapters/typebox
       arri-codegen-utils:
         specifier: workspace:*
         version: link:../../packages/arri-codegen/utils

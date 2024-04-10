@@ -1,0 +1,28 @@
+{
+  "name": "arri-adapter-zod",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modiimedia/arri.git",
+    "directory": "packages/arri-adapter-zod"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "arri-validate": "workspace:*"
+  },
+  "private": true
+}
