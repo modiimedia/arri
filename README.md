@@ -11,7 +11,7 @@ Below are the language client generators that are planned to have first party su
 | Language   | HTTP | WebSockets |
 | ---------- | ---- | ---------- |
 | Typescript | ✅   | ✅         |
-| Dart       | ✅   | 🚧         |
+| Dart       | ✅   | ✅         |
 | Rust       | 🚧   | 🚧         |
 | Kotlin     | 🚧   | 🚧         |
 | Swift      |      |            |

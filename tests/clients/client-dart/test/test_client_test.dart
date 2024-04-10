@@ -438,14 +438,11 @@ Future<void> main() async {
     final errors = <ArriError>[];
     final connectionErrors = <ArriError>[];
     connection.listen(
-      onData: (data) {
+      onMessage: (data) {
         messages.add(data);
       },
-      onError: (error) {
+      onErrorMessage: (error) {
         errors.add(error);
-      },
-      onConnectionError: (error) {
-        print(error);
       },
     );
     connection.send(
@@ -493,5 +490,21 @@ Future<void> main() async {
           break;
       }
     }
+  });
+  test("[WS] can receive large objects", () async {
+    final connection = await client.tests.websocketRpcSendTenLargeMessages();
+    var msgCount = 0;
+    connection.listen(
+      onMessage: (msg) {
+        msgCount++;
+      },
+    );
+    await Future.delayed(Duration(milliseconds: 2000));
+    connection.close();
+    expect(msgCount, equals(10));
+  });
+  test("[WS] connection errors", () async {
+    final connection = await client.tests.websocketRpc();
+    connection.listen(onMessage: (message) {});
   });
 }

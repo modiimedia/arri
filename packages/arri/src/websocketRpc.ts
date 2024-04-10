@@ -32,10 +32,19 @@ export interface WebsocketRpc<
     params: TParams;
     response: TResponse;
     pingInterval?: boolean;
-    handler: WebSocketRpcHandler<
-        TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-        TResponse extends RpcParamSchema ? InferType<TResponse> : undefined
-    >;
+    handler:
+        | WebSocketRpcHandler<
+              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
+              TResponse extends RpcParamSchema
+                  ? InferType<TResponse>
+                  : undefined
+          >
+        | (() => WebSocketRpcHandler<
+              TParams extends RpcParamSchema ? InferType<TParams> : undefined,
+              TResponse extends RpcParamSchema
+                  ? InferType<TResponse>
+                  : undefined
+          >);
 }
 
 interface WsPeerOpts<TResponse> {
@@ -71,11 +80,11 @@ export class WsPeer<TResponse> {
             return;
         }
         const payload = this._validator.serialize(data);
-        return this._peer.send(`type: message\ndata: ${payload}`);
+        return this._peer.send(`event: message\ndata: ${payload}`);
     }
 
     sendError(err: ArriServerErrorResponse) {
-        return this._peer.send(`type: error\ndata: ${JSON.stringify(err)}`);
+        return this._peer.send(`event: error\ndata: ${JSON.stringify(err)}`);
     }
 
     close() {
@@ -152,6 +161,9 @@ export function registerWebsocketRpc(
         console.error("ERROR COMPILING PARAMS", err);
     }
 
+    const rpcHandler =
+        typeof rpc.handler === "function" ? rpc.handler() : rpc.handler;
+
     const handler = defineWebSocketHandler({
         upgrade(req) {},
         open(peer) {
@@ -174,7 +186,7 @@ export function registerWebsocketRpc(
                 context,
             });
             peer.ctx.__wsPeer = wsPeer;
-            rpc.handler.onOpen(peer.ctx.__wsPeer as WsPeer<any>);
+            rpcHandler.onOpen(peer.ctx.__wsPeer as WsPeer<any>);
         },
         message(peer, message) {
             if (!paramValidator) {
@@ -191,10 +203,10 @@ export function registerWebsocketRpc(
                 (peer.ctx.__wsPeer as WsPeer<any>).sendError(errorResponse);
                 return;
             }
-            rpc.handler.onMessage(peer.ctx.__wsPeer as WsPeer<any>, data.value);
+            rpcHandler.onMessage(peer.ctx.__wsPeer as WsPeer<any>, data.value);
         },
         close(peer, details) {
-            rpc.handler.onClose(peer.ctx.__wsPeer as WsPeer<any>, details);
+            rpcHandler.onClose(peer.ctx.__wsPeer as WsPeer<any>, details);
         },
     });
 

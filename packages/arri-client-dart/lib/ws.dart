@@ -61,9 +61,18 @@ class ArriWebsocketController<TIncoming, TOutgoing> {
   }
 
   StreamSubscription listen({
-    required Function(TIncoming data) onData,
+    /**
+     * Fires when receiving a "message" event from the server
+     */
+    required Function(TIncoming message) onMessage,
+    /**
+     * Fires when receiving an "error" event from the server
+     */
+    Function(ArriError error)? onErrorMessage,
+    /**
+     * Fires when receiving any event from the server
+     */
     Function(WsEvent<TIncoming> event)? onEvent,
-    Function(ArriError error)? onError,
     Function(Object?)? onConnectionError,
     Function()? onDone,
     bool? cancelOnError,
@@ -77,10 +86,10 @@ class ArriWebsocketController<TIncoming, TOutgoing> {
         onEvent?.call(event);
         switch (event) {
           case WsMessageEvent<TIncoming>():
-            onData(event.data);
+            onMessage(event.data);
             break;
           case WsErrorEvent<TIncoming>():
-            onError?.call(event.data);
+            onErrorMessage?.call(event.data);
             break;
           case WsRawEvent<TIncoming>():
             break;
@@ -96,14 +105,14 @@ class ArriWebsocketController<TIncoming, TOutgoing> {
 /// implemented by [WsMessageEvent], [WsErrorEvent], and [WsRawEvent]
 sealed class WsEvent<T> {
   factory WsEvent.fromString(String input, T Function(String data) parser) {
-    final event = WsRawEvent<T>.fromString(input);
-    switch (event.type) {
+    final evt = WsRawEvent<T>.fromString(input);
+    switch (evt.event) {
       case "message":
-        return WsMessageEvent(parser(event.data));
+        return WsMessageEvent(parser(evt.data));
       case "error":
-        return WsErrorEvent(ArriError.fromString(event.data));
+        return WsErrorEvent(ArriError.fromString(evt.data));
       default:
-        return event;
+        return evt;
     }
   }
 }
@@ -119,24 +128,24 @@ class WsErrorEvent<T> implements WsEvent<T> {
 }
 
 class WsRawEvent<T> implements WsEvent<T> {
-  final String type;
+  final String event;
   final String data;
-  const WsRawEvent({required this.type, required this.data});
+  const WsRawEvent({required this.event, required this.data});
 
   factory WsRawEvent.fromString(String input) {
     final lines = input.split("\n");
-    String type = "unknown";
+    String event = "unknown";
     String data = "";
     for (final line in lines) {
-      if (line.startsWith("type:")) {
-        type = line.replaceFirst("type:", "").trim();
+      if (line.startsWith("event: ")) {
+        event = line.replaceFirst("event: ", "").trim();
         continue;
       }
       if (line.startsWith("data:")) {
-        data = line.replaceFirst("data:", "");
+        data = line.replaceFirst("data:", "").trim();
         continue;
       }
     }
-    return WsRawEvent(type: type, data: data);
+    return WsRawEvent(event: event, data: data);
   }
 }

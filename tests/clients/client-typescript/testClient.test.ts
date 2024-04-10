@@ -444,7 +444,7 @@ test("[ws] support websockets", async () => {
         });
     };
     controller.connect();
-    await wait(500);
+    await wait(1000);
     controller.close();
     expect(connectionCount).toBe(1);
     expect(messageCount).toBe(3);
@@ -455,6 +455,19 @@ test("[ws] support websockets", async () => {
     expect(msgMap["2"]!.y).toBe(2);
     expect(msgMap["3"]!.x).toBe(5);
     expect(msgMap["3"]!.y).toBe(-5);
+});
+
+test("[ws] receive large messages", async () => {
+    let messageCount = 0;
+    const controller = client.tests.websocketRpcSendTenLargeMessages({
+        onMessage(msg) {
+            messageCount++;
+        },
+    });
+    controller.connect();
+    await wait(2000);
+    controller.close();
+    expect(messageCount).toBe(10);
 });
 
 test("[ws] connection errors", async () => {

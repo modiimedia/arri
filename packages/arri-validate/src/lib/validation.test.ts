@@ -7,7 +7,7 @@ import {
 } from "../testSuites";
 
 for (const key of Object.keys(validationTestSuites)) {
-    const suite = validationTestSuites[key];
+    const suite = validationTestSuites[key]!;
     test(key, () => {
         for (const input of suite.goodInputs) {
             expect(a.validate(suite.schema, input));
@@ -23,7 +23,7 @@ for (const key of Object.keys(validationTestSuites)) {
 
 describe("parsing test suites", () => {
     for (const key of Object.keys(parsingTestSuites)) {
-        const suite = parsingTestSuites[key];
+        const suite = parsingTestSuites[key]!;
         test(key, () => {
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
@@ -39,7 +39,7 @@ describe("parsing test suites", () => {
 
 describe("serialization test suites", () => {
     for (const key of Object.keys(serializationTestSuites)) {
-        const suite = serializationTestSuites[key];
+        const suite = serializationTestSuites[key]!;
         test(key, () => {
             for (const input of suite.inputs) {
                 const result = a.serialize(suite.schema, input);
@@ -76,8 +76,8 @@ describe("errors()", () => {
             test(schema.type, () => {
                 const result = a.errors(schema, null);
                 expect(result.length).toBe(1);
-                expect(result[0].schemaPath).toBe("/type");
-                expect(result[0].instancePath).toBe("");
+                expect(result[0]!.schemaPath).toBe("/type");
+                expect(result[0]!.instancePath).toBe("");
             });
         }
     });
@@ -89,8 +89,8 @@ describe("errors()", () => {
         expect(result1.length).toBe(0);
         expect(result2.length).toBe(0);
         expect(result3.length).toBe(1);
-        expect(result3[0].instancePath).toBe("");
-        expect(result3[0].schemaPath).toBe("/type");
+        expect(result3[0]!.instancePath).toBe("");
+        expect(result3[0]!.schemaPath).toBe("/type");
     });
     test("enum errors", () => {
         const schema = a.enumerator(["USER", "BOT"]);
@@ -100,8 +100,8 @@ describe("errors()", () => {
         expect(result1.length).toBe(0);
         expect(result2.length).toBe(0);
         expect(result3.length).toBe(1);
-        expect(result3[0].schemaPath).toBe("/enum");
-        expect(result3[0].instancePath).toBe("");
+        expect(result3[0]!.schemaPath).toBe("/enum");
+        expect(result3[0]!.instancePath).toBe("");
     });
     test("object errors", () => {
         const schema = a.object({
@@ -127,16 +127,16 @@ describe("errors()", () => {
         const result4 = a.errors(schema, true);
         expect(result1.length).toBe(0);
         expect(result2.length).toBe(1);
-        expect(result2[0].instancePath).toBe("/date");
-        expect(result2[0].schemaPath).toBe("/properties/date/type");
+        expect(result2[0]!.instancePath).toBe("/date");
+        expect(result2[0]!.schemaPath).toBe("/properties/date/type");
         expect(result3.length).toBe(2);
-        expect(result3[0].instancePath).toBe("/date");
-        expect(result3[0].schemaPath).toBe("/properties/date/type");
-        expect(result3[1].instancePath).toBe("/role");
-        expect(result3[1].schemaPath).toBe("/properties/role/enum");
+        expect(result3[0]!.instancePath).toBe("/date");
+        expect(result3[0]!.schemaPath).toBe("/properties/date/type");
+        expect(result3[1]!.instancePath).toBe("/role");
+        expect(result3[1]!.schemaPath).toBe("/properties/role/enum");
         expect(result4.length).toBe(1);
-        expect(result4[0].instancePath).toBe("");
-        expect(result4[0].schemaPath).toBe("/properties");
+        expect(result4[0]!.instancePath).toBe("");
+        expect(result4[0]!.schemaPath).toBe("/properties");
     });
     test("optional object property errors", () => {
         const schema = a.object({
@@ -152,8 +152,8 @@ describe("errors()", () => {
         });
         expect(result1.length).toBe(0);
         expect(result2.length).toBe(1);
-        expect(result2[0].instancePath).toBe("/date");
-        expect(result2[0].schemaPath).toBe("/optionalProperties/date/type");
+        expect(result2[0]!.instancePath).toBe("/date");
+        expect(result2[0]!.schemaPath).toBe("/optionalProperties/date/type");
     });
     test("object strict additional field errors", () => {
         const looseSchema = a.object({
@@ -179,8 +179,8 @@ describe("errors()", () => {
         });
         expect(looseResult.length).toBe(0);
         expect(strictResult.length).toBe(1);
-        expect(strictResult[0].instancePath).toBe("/message");
-        expect(strictResult[0].schemaPath).toBe("/additionalProperties");
+        expect(strictResult[0]!.instancePath).toBe("/message");
+        expect(strictResult[0]!.schemaPath).toBe("/additionalProperties");
     });
     test("record errors", () => {
         const schema = a.record(
@@ -210,12 +210,12 @@ describe("errors()", () => {
         });
         expect(result1.length).toBe(0);
         expect(result2.length).toBe(1);
-        expect(result2[0].instancePath).toBe("");
-        expect(result2[0].schemaPath).toBe("/values");
+        expect(result2[0]!.instancePath).toBe("");
+        expect(result2[0]!.schemaPath).toBe("/values");
         expect(result3.length).toBe(0);
         expect(result4.length).toBe(1);
-        expect(result4[0].instancePath).toBe("/2/id");
-        expect(result4[0].schemaPath).toBe("/values/properties/id/type");
+        expect(result4[0]!.instancePath).toBe("/2/id");
+        expect(result4[0]!.schemaPath).toBe("/values/properties/id/type");
     });
     test("array errors", () => {
         const schema = a.array(a.boolean());
@@ -226,13 +226,13 @@ describe("errors()", () => {
         expect(result1.length).toBe(0);
         expect(result2.length).toBe(0);
         expect(result3.length).toBe(2);
-        expect(result3[0].instancePath).toBe("/0");
-        expect(result3[0].schemaPath).toBe("/elements/type");
-        expect(result3[1].instancePath).toBe("/1");
-        expect(result3[1].schemaPath).toBe("/elements/type");
+        expect(result3[0]!.instancePath).toBe("/0");
+        expect(result3[0]!.schemaPath).toBe("/elements/type");
+        expect(result3[1]!.instancePath).toBe("/1");
+        expect(result3[1]!.schemaPath).toBe("/elements/type");
         expect(result4.length).toBe(1);
-        expect(result4[0].instancePath).toBe("");
-        expect(result4[0].schemaPath).toBe("/elements");
+        expect(result4[0]!.instancePath).toBe("");
+        expect(result4[0]!.schemaPath).toBe("/elements");
     });
     test("discriminator errors", () => {
         const schema = a.discriminator("messageType", {
@@ -264,16 +264,16 @@ describe("errors()", () => {
         });
         const result4 = a.errors(schema, "");
         expect(result1.length).toBe(1);
-        expect(result1[0].instancePath).toBe("/messageType");
-        expect(result1[0].schemaPath).toBe("/discriminator");
+        expect(result1[0]!.instancePath).toBe("/messageType");
+        expect(result1[0]!.schemaPath).toBe("/discriminator");
         expect(result2.length).toBe(1);
-        expect(result2[0].instancePath).toBe("/imageUrl");
-        expect(result2[0].schemaPath).toBe(
+        expect(result2[0]!.instancePath).toBe("/imageUrl");
+        expect(result2[0]!.schemaPath).toBe(
             "/mapping/IMAGE/properties/imageUrl/type",
         );
         expect(result3.length).toBe(0);
         expect(result4.length).toBe(1);
-        expect(result4[0].instancePath).toBe("");
-        expect(result4[0].schemaPath).toBe("/discriminator");
+        expect(result4[0]!.instancePath).toBe("");
+        expect(result4[0]!.schemaPath).toBe("/discriminator");
     });
 });
