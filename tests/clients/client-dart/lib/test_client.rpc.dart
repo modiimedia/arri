@@ -445,15 +445,15 @@ class TestClientAdaptersService {
 class TestClientUsersService {
   final http.Client? _httpClient;
   final String _baseUrl;
-  late final Map<String, String> _headers;
+  final String _clientVersion = "10";
+  late final Map<String, String> Function()? _headers;
   TestClientUsersService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> headers = const {},
+    Map<String, String> Function()? headers,
   })  : _httpClient = httpClient,
-        _baseUrl = baseUrl {
-    _headers = {"client-version": "10", ...headers};
-  }
+        _baseUrl = baseUrl,
+        _headers = headers;
 
   EventSource<UsersWatchUserResponse> watchUser(
     UsersWatchUserParams params, {
@@ -479,6 +479,7 @@ class TestClientUsersService {
       onOpen: onOpen,
       onClose: onClose,
       lastEventId: lastEventId,
+      clientVersion: _clientVersion,
     );
   }
 }

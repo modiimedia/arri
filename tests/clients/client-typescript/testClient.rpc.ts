@@ -346,11 +346,14 @@ export class TestClientAdaptersService {
 
 export class TestClientUsersService {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
+    private readonly headers:
+        | Record<string, string>
+        | (() => Record<string, string>);
+    private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = { "client-version": "10", ...options.headers };
+        this.headers = options.headers ?? {};
     }
     watchUser(
         params: UsersWatchUserParams,
@@ -364,6 +367,7 @@ export class TestClientUsersService {
                 params,
                 parser: $$UsersWatchUserResponse.parse,
                 serializer: $$UsersWatchUserParams.serialize,
+                clientVersion: this.clientVersion,
             },
             options,
         );

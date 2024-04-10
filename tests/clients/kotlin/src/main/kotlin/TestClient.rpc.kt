@@ -382,6 +382,45 @@ class TestClientTestsService(
         }
         return job
     }
+    fun streamRetryWithNewCredentials(
+        scope: CoroutineScope,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onError: ((error: TestClientError) -> Unit) = {},
+        onConnectionError: ((error: TestClientError) -> Unit) = {},
+        onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
+    ): Job {
+        val finalHeaders = mutableMapOf<String, String>()
+        for (item in headers.entries) {
+            finalHeaders[item.key] = item.value
+        }
+        finalHeaders["Accept"] = "application/json, text/event-stream"
+        val job = scope.launch {
+            handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
+                method = HttpMethod.Get,
+                params = null,
+                headers = finalHeaders,
+                backoffTime = 0,
+                maxBackoffTime = 32000,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onConnectionError = onConnectionError,
+                onData = { str -> 
+                    val data = JsonInstance.decodeFromString<TestsStreamRetryWithNewCredentialsResponse>(str)
+                    onData(data)
+                },
+            )
+        }
+        return job
+    }
     fun streamTenEventsThenEnd(
         scope: CoroutineScope,
         lastEventId: String? = null,
@@ -460,6 +499,7 @@ class TestClientTestsService(
         }
         return job
     }
+
 
 }
 
@@ -1691,6 +1731,12 @@ object ChatMessageSerializer :
         }
     }
 }
+@Serializable
+data class TestsStreamRetryWithNewCredentialsResponse(
+    val message: String,
+)
+
+
 @Serializable(with = WsMessageParamsSerializer::class)
 sealed class WsMessageParams() {
     abstract val type: String
