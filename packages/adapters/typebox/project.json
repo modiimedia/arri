@@ -1,5 +1,5 @@
 {
-  "name": "adapter-typebox",
+  "name": "arri-adapter-typebox",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/adapters/typebox/src",
   "projectType": "library",
