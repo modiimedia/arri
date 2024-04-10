@@ -133,7 +133,7 @@ class WsRawEvent<T> implements WsEvent<T> {
         continue;
       }
       if (line.startsWith("data:")) {
-        data = line.replaceFirst("data:", "");
+        data = line.replaceFirst("data:", "").trim();
         continue;
       }
     }
