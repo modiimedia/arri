@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
@@ -6,17 +7,19 @@ import 'package:test_client_dart/test_client.rpc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/io_client.dart';
 
+const baseUrl = "http://127.0.0.1:2020";
+
 Future<void> main() async {
-  final client = TestClient(
-      baseUrl: "http://127.0.0.1:2020", headers: {"x-test-header": 'test'});
+  final client =
+      TestClient(baseUrl: baseUrl, headers: () => {"x-test-header": 'test'});
   final unauthenticatedClient = TestClient(baseUrl: "http://127.0.0.1:2020");
   final httpClient =
       HttpClient(context: SecurityContext(withTrustedRoots: true));
   final ioClient = IOClient(httpClient);
   final clientWCustomHttpClient = TestClient(
-    baseUrl: "http://127.0.0.1:2020",
+    baseUrl: baseUrl,
     httpClient: ioClient,
-    headers: {"x-test-header": 'test'},
+    headers: () => {"x-test-header": 'test'},
   );
 
   test("supports RPCs with no params", () async {
@@ -407,20 +410,39 @@ Future<void> main() async {
       equals(true),
     );
   });
+  test("[SSE] can retry with new credentials", () async {
+    final dynamicClient = TestClient(
+      baseUrl: baseUrl,
+      headers: () {
+        return {"x-test-header": Random.secure().toString()};
+      },
+    );
+    var msgCount = 0;
+    var openCount = 0;
+    final eventSource = dynamicClient.tests.streamRetryWithNewCredentials(
+      onData: (data, connection) {
+        msgCount++;
+      },
+      onOpen: (response, connection) {
+        openCount++;
+      },
+    );
+    await Future.delayed(Duration(milliseconds: 1000));
+    eventSource.close();
+    expect(msgCount > 0, equals(true));
+    expect(openCount > 0, equals(true));
+  });
   test("[WS] can send/receive objects", () async {
     final connection = await client.tests.websocketRpc();
     final messages = <WsMessageResponse>[];
     final errors = <ArriError>[];
     final connectionErrors = <ArriError>[];
     connection.listen(
-      onData: (data) {
+      onMessage: (data) {
         messages.add(data);
       },
-      onError: (error) {
+      onErrorMessage: (error) {
         errors.add(error);
-      },
-      onConnectionError: (error) {
-        print(error);
       },
     );
     connection.send(
@@ -468,5 +490,21 @@ Future<void> main() async {
           break;
       }
     }
+  });
+  test("[WS] can receive large objects", () async {
+    final connection = await client.tests.websocketRpcSendTenLargeMessages();
+    var msgCount = 0;
+    connection.listen(
+      onMessage: (msg) {
+        msgCount++;
+      },
+    );
+    await Future.delayed(Duration(milliseconds: 2000));
+    connection.close();
+    expect(msgCount, equals(10));
+  });
+  test("[WS] connection errors", () async {
+    final connection = await client.tests.websocketRpc();
+    connection.listen(onMessage: (message) {});
   });
 }

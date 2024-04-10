@@ -1,5 +1,12 @@
-import { fetchEventSource } from "@fortaine/fetch-event-source";
-import { type ArriError, ArriErrorInstance, isArriError } from "./errors";
+import {
+    type EventSourceController,
+    EventSourcePlus,
+    type OnRequestContext,
+    type OnRequestErrorContext,
+    type OnResponseContext,
+    type OnResponseErrorContext,
+} from "event-source-plus";
+import { ArriErrorInstance } from "./errors";
 import { type ArriRequestOpts } from "./request";
 
 export interface SseEvent<TData = string> {
@@ -8,22 +15,33 @@ export interface SseEvent<TData = string> {
     data: TData;
 }
 
-class NonFatalError extends ArriErrorInstance {}
-
 export interface SseOptions<TData> {
-    onOpen?: (response: Response) => any;
-    onData?: (data: TData) => any;
-    onError?: (error: ArriError) => any;
+    onMessage?: (data: TData) => any;
+    onErrorMessage?: (error: ArriErrorInstance) => any;
+    onRequest?: (context: OnRequestContext) => any;
+    onRequestError?: (
+        context: Omit<OnRequestErrorContext, "error"> & {
+            error: ArriErrorInstance;
+        },
+    ) => any;
+    onResponse?: (context: OnResponseContext) => any;
+    onResponseError?: (
+        context: Omit<OnResponseErrorContext, "error"> & {
+            error: ArriErrorInstance;
+        },
+    ) => any;
     onClose?: () => any;
     maxRetryCount?: number;
-    retryTimeout?: number;
-    retryCount?: number;
+    maxRetryInterval?: number;
 }
 
 export function arriSseRequest<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
->(opts: ArriRequestOpts<TType, TParams>, options: SseOptions<TType>) {
+>(
+    opts: ArriRequestOpts<TType, TParams>,
+    options: SseOptions<TType>,
+): EventSourceController {
     let url = opts.url;
     let body: undefined | string;
     switch (opts.method) {
@@ -47,75 +65,81 @@ export function arriSseRequest<
             }
             break;
     }
-    const headers = {
-        ...opts.headers,
-    };
-    const controller = new AbortController();
-    let shouldAbort = false;
-    void fetchEventSource(url, {
-        method: opts.method.toUpperCase(),
-        headers,
+
+    const eventSource = new EventSourcePlus(url, {
+        method: opts.method ?? "get",
+        headers: () => {
+            let headers: Record<string, string>;
+            if (typeof opts.headers === "function") {
+                headers = opts.headers();
+            } else {
+                headers = opts.headers ?? {};
+            }
+            if (opts.clientVersion) {
+                headers["client-version"] = opts.clientVersion;
+            }
+            return headers;
+        },
         body,
-        signal: controller.signal,
-        onmessage(event) {
+        maxRetryCount: options.maxRetryCount,
+        maxRetryInterval: options.maxRetryInterval,
+    });
+    const controller = eventSource.listen({
+        onMessage(message) {
             if (
-                event.event === "message" ||
-                event.event === undefined ||
-                event.event === ""
+                message.event === "message" ||
+                message.event === undefined ||
+                message.event === ""
             ) {
-                options.onData?.(opts.parser(event.data));
+                options.onMessage?.(opts.parser(message.data));
                 return;
             }
-            if (event.event === "error") {
-                options.onError?.(ArriErrorInstance.fromJson(event.data));
+            if (message.event === "error") {
+                options.onErrorMessage?.(
+                    ArriErrorInstance.fromJson(message.data),
+                );
                 return;
             }
-            if (event.event === "done") {
+            if (message.event === "done") {
                 controller.abort();
             }
         },
-        onerror(error) {
-            if (error instanceof NonFatalError) {
-                // do nothing to automatically retry
-                return;
-            }
-            if (shouldAbort) {
-                throw error;
-            }
-            if (isArriError(error)) {
-                options.onError?.(error);
-                return;
-            }
-            const err = new ArriErrorInstance({
-                code: 500,
-                message: `Error connecting to ${opts.url}`,
-                data: error,
-            });
-            options.onError?.(err);
+        onRequest(context) {
+            options.onRequest?.(context);
         },
-        onclose() {
-            throw new NonFatalError({
-                code: 500,
-                message: "Connection closed. Reopening.",
+        onRequestError(context) {
+            options.onRequestError?.({
+                ...context,
+                error: new ArriErrorInstance({
+                    code: 0,
+                    message: context.error.message,
+                    data: context.error,
+                }),
             });
         },
-        async onopen(response) {
-            if (response.status >= 200 && response.status <= 299) {
-                options.onOpen?.(response);
+        onResponse(context) {
+            options.onResponse?.(context);
+        },
+        async onResponseError(context) {
+            if (!options.onResponseError) {
                 return;
             }
-            shouldAbort = true;
-            const json = await response.text();
-            if (json.includes("{") && json.includes("}")) {
-                throw ArriErrorInstance.fromJson(json);
+            try {
+                const arriError = ArriErrorInstance.fromJson(
+                    await context.response.json(),
+                );
+                options.onResponseError({
+                    ...context,
+                    error: arriError,
+                });
+            } catch (_) {
+                const arriError = new ArriErrorInstance({
+                    code: context.response.status ?? 0,
+                    message: context.response.statusText,
+                });
+                options.onResponseError({ ...context, error: arriError });
             }
-            throw new ArriErrorInstance({
-                code: 500,
-                message: response.statusText,
-                data: json,
-            });
         },
-        openWhenHidden: true,
     });
     return controller;
 }

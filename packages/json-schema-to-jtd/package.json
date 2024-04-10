@@ -1,6 +1,6 @@
 {
   "name": "json-schema-to-jtd",
-  "version": "0.37.0",
+  "version": "0.39.1",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
   "bugs": { "url": "https://github.com/modiimedia/arri/issues" },

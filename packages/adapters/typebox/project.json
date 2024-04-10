@@ -1,7 +1,7 @@
 {
   "name": "arri-adapter-typebox",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/arri-adapter-typebox/src",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/adapters/typebox/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,14 +9,14 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "packages/arri-adapter-typebox"
+        "cwd": "packages/adapters/typebox"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "packages/arri-adapter-typebox"
+        "cwd": "packages/adapters/typebox"
       },
       "dependsOn": ["build"]
     },
@@ -26,17 +26,17 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/packages/arri-adapter-typebox"],
+      "outputs": ["{workspaceRoot}/coverage/packages/adapters/typebox"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/packages/arri-adapter-typebox"
+        "reportsDirectory": "../../../coverage/packages/adapters/typebox"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "packages/arri-adapter-typebox"
+        "cwd": "packages/adapters/typebox"
       }
     }
   },

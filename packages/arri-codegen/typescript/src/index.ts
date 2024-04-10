@@ -144,19 +144,18 @@ import { ${importParts.join(", ")} } from 'arri-client';
     
 interface ${clientName}Options {
     baseUrl?: string;
-    headers?: Record<string, string>;
+    headers?: Record<string, string> | (() => Record<string, string>);
 }
 
 export class ${clientName} {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
+    private readonly headers: Record<string, string> | (() => Record<string, string>)
+    private readonly clientVersion = '${rpcOptions.versionNumber}';
     ${serviceFieldParts.join("\n    ")}
 
     constructor(options: ${clientName}Options = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = { 'client-version': '${
-            rpcOptions.versionNumber
-        }', ...options.headers };
+        this.headers = options.headers ?? {};
         ${serviceInitializationParts.join(";\n        ")}
     }
     ${procedureParts.join("\n    ")}
@@ -227,6 +226,7 @@ export function tsHttpRpcFromDefinition(
                 ${paramsOutput},
                 parser: ${parserPart},
                 serializer: ${serializerPart},
+                clientVersion: this.clientVersion,
             }, options);
         }`;
     }
@@ -240,6 +240,7 @@ export function tsHttpRpcFromDefinition(
             ${paramsOutput},
             parser: ${parserPart},
             serializer: ${serializerPart},
+            clientVersion: this.clientVersion,
         });
     }`;
 }
@@ -249,10 +250,12 @@ export function tsWsRpcFromDefinition(
     options: RpcOptions,
 ): string {
     options.hasWsProcedures = true;
-    const paramName = pascalCase(schema.params ?? "undefined");
-    const responseName = pascalCase(schema.response ?? "undefined");
-    const hasInput = paramName.length > 0;
-    const hasOutput = responseName.length > 0;
+    const paramName = schema.params ? pascalCase(schema.params) : "undefined";
+    const responseName = schema.response
+        ? pascalCase(schema.response)
+        : "undefined";
+    const hasInput = paramName.length > 0 && paramName !== "undefined";
+    const hasOutput = responseName.length > 0 && paramName !== "undefined";
     let serializerPart = `(_) => {}`;
     let parserPart = `(_) => {}`;
     if (hasInput) {
@@ -272,6 +275,7 @@ export function tsWsRpcFromDefinition(
             onError: options.onError,
             onConnectionError: options.onConnectionError,
             onMessage: options.onMessage,
+            clientVersion: this.clientVersion,
         })
     }`;
 }
@@ -282,6 +286,7 @@ export function tsServiceFromDefinition(
     options: RpcOptions,
 ): string {
     const serviceFieldParts: string[] = [];
+    const serviceInitParts: string[] = [];
     const serviceConstructorParts: string[] = [];
     const subServiceContent: string[] = [];
     const rpcContent: string[] = [];
@@ -299,6 +304,8 @@ export function tsServiceFromDefinition(
             const serviceName: string = pascalCase(`${name}_${key}`);
             const service = tsServiceFromDefinition(serviceName, def, options);
             serviceFieldParts.push(`${key}: ${serviceName}Service;`);
+            serviceInitParts.push(`this.${key}.initClient(options);`);
+
             serviceConstructorParts.push(
                 `this.${key} = new ${serviceName}Service(options);`,
             );
@@ -308,15 +315,15 @@ export function tsServiceFromDefinition(
 
     return `export class ${name}Service {
         private readonly baseUrl: string;
-        private readonly headers: Record<string, string>;
+        private readonly headers: Record<string, string> | (() => Record<string, string>);
+        private readonly clientVersion = '${options.versionNumber}';
         ${serviceFieldParts.join("\n    ")}
+
         constructor(options: ${pascalCase(
             `${options.clientName}_Options`,
         )} = {}) {
             this.baseUrl = options.baseUrl ?? '';
-            this.headers = { 'client-version': '${
-                options.versionNumber
-            }', ...options.headers };
+            this.headers = options.headers ?? {};
             ${serviceConstructorParts.join("\n        ")}
         }
         ${rpcContent.join("\n    ")}

@@ -35,7 +35,8 @@
     "typeof",
     "uncrypto",
     "unflatten",
-    "vals"
+    "vals",
+    "websockets"
   ],
   "eslint.validate": ["json"],
   "java.compile.nullAnalysis.mode": "automatic"
