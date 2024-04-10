@@ -1209,7 +1209,7 @@ class ObjectWithEveryNullableType {
       uint32: nullableIntFromDynamic(json["uint32"]),
       int64: nullableBigIntFromDynamic(json["int64"]),
       uint64: nullableBigIntFromDynamic(json["uint64"]),
-      enumerator: json["enumerator"] is Map<String, dynamic>
+      enumerator: json["enumerator"] is String
           ? ObjectWithEveryNullableTypeEnumerator.fromJson(json["enumerator"])
           : null,
       array: json["array"] is List
@@ -1713,7 +1713,7 @@ class ObjectWithEveryOptionalType {
       uint32: nullableIntFromDynamic(json["uint32"]),
       int64: nullableBigIntFromDynamic(json["int64"]),
       uint64: nullableBigIntFromDynamic(json["uint64"]),
-      enumerator: json["enumerator"] is Map<String, dynamic>
+      enumerator: json["enumerator"] is String
           ? ObjectWithEveryOptionalTypeEnumerator.fromJson(json["enumerator"])
           : null,
       array: json["array"] is List
