@@ -395,9 +395,9 @@ class TestClientTestsService {
   }
 
   Future<ArriWebsocketController<StreamLargeObjectsResponse, Null>>
-      websocketRpcWithLargeMessages() {
+      websocketRpcSendTenLargeMessages() {
     return arriWebsocketRequest<StreamLargeObjectsResponse, Null>(
-      "$_baseUrl/rpcs/tests/websocket-rpc-with-large-messages",
+      "$_baseUrl/rpcs/tests/websocket-rpc-send-ten-large-messages",
       headers: _headers,
       parser: (body) => StreamLargeObjectsResponse.fromJson(json.decode(body)),
       serializer: (_) => "",

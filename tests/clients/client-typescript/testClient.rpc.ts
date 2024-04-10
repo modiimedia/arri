@@ -300,11 +300,11 @@ export class TestClientTestsService {
             clientVersion: this.clientVersion,
         });
     }
-    websocketRpcWithLargeMessages(
+    websocketRpcSendTenLargeMessages(
         options: WsOptions<StreamLargeObjectsResponse> = {},
     ) {
         return arriWsRequest<undefined, StreamLargeObjectsResponse>({
-            url: `${this.baseUrl}/rpcs/tests/websocket-rpc-with-large-messages`,
+            url: `${this.baseUrl}/rpcs/tests/websocket-rpc-send-ten-large-messages`,
             headers: this.headers,
             parser: (_) => {},
             serializer: (_) => {},

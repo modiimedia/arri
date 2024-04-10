@@ -459,15 +459,15 @@ test("[ws] support websockets", async () => {
 
 test("[ws] receive large messages", async () => {
     let messageCount = 0;
-    const controller = client.tests.websocketRpcWithLargeMessages({
+    const controller = client.tests.websocketRpcSendTenLargeMessages({
         onMessage(msg) {
             messageCount++;
         },
     });
     controller.connect();
-    await wait(500);
+    await wait(2000);
     controller.close();
-    expect(messageCount > 1).toBe(true);
+    expect(messageCount).toBe(10);
 });
 
 test("[ws] connection errors", async () => {
