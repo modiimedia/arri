@@ -2,18 +2,19 @@ import { parsedWsResponse } from "./ws";
 
 test("Parse WS Response", () => {
     const result = parsedWsResponse(
-        `type: message\ndata: {"message":"hello world"}`,
+        `event: message\ndata: {"message":"hello world"}`,
     );
+    console.log(result);
     expect(result).toStrictEqual({
-        type: "message",
+        event: "message",
         data: `{"message":"hello world"}`,
     });
 
     const result2 = parsedWsResponse(
-        `type: error\ndata: {"code": 1, "message": "there was an error"}`,
+        `event: error\ndata: {"code": 1, "message": "there was an error"}`,
     );
     expect(result2).toStrictEqual({
-        type: "error",
+        event: "error",
         data: `{"code": 1, "message": "there was an error"}`,
     });
 });

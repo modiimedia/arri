@@ -438,14 +438,11 @@ Future<void> main() async {
     final errors = <ArriError>[];
     final connectionErrors = <ArriError>[];
     connection.listen(
-      onData: (data) {
+      onMessage: (data) {
         messages.add(data);
       },
-      onError: (error) {
+      onErrorMessage: (error) {
         errors.add(error);
-      },
-      onConnectionError: (error) {
-        print(error);
       },
     );
     connection.send(
@@ -493,5 +490,9 @@ Future<void> main() async {
           break;
       }
     }
+  });
+  test("[WS] connection errors", () async {
+    final connection = await client.tests.websocketRpc();
+    connection.listen(onMessage: (message) {});
   });
 }

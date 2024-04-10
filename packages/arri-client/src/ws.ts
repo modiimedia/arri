@@ -164,11 +164,12 @@ class WsController<TParams, TResponse> {
     }
 
     private _handleMessage(msg: MessageEvent) {
+        console.log("MESSAGE", msg.data);
         if (typeof msg.data !== "string") {
             return;
         }
         const response = parsedWsResponse(msg.data);
-        switch (response.type) {
+        switch (response.event) {
             case "error": {
                 if (!this.onErrorMessage) {
                     return;
@@ -193,21 +194,21 @@ class WsController<TParams, TResponse> {
 }
 
 export function parsedWsResponse(input: string): {
-    type: "message" | "error" | "unknown";
+    event: "message" | "error" | "unknown";
     data: string;
 } {
     const lines = input.split("\n");
-    let type: "message" | "error" | "unknown" = "unknown";
+    let event: "message" | "error" | "unknown" = "unknown";
     let data = "";
     for (const line of lines) {
         const trimmedLine = line.trim();
-        if (trimmedLine.startsWith("type: ")) {
-            switch (trimmedLine.substring(5).trim()) {
+        if (trimmedLine.startsWith("event: ")) {
+            switch (trimmedLine.substring(6).trim()) {
                 case "error":
-                    type = "error";
+                    event = "error";
                     break;
                 case "message":
-                    type = "message";
+                    event = "message";
                     break;
             }
             continue;
@@ -218,7 +219,7 @@ export function parsedWsResponse(input: string): {
         }
     }
     return {
-        type,
+        event,
         data,
     };
 }

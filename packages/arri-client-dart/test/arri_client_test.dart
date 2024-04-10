@@ -134,7 +134,7 @@ data: {"hello":""";
   );
 
   test("[ws] parsing message", () {
-    final input = "type: message\ndata: {\"message\": \"hello world\"}";
+    final input = "event: message\ndata: {\"message\": \"hello world\"}";
     final message = WsEvent<ExampleMessage>.fromString(
       input,
       (data) => ExampleMessage.fromJson(json.decode(data)),
@@ -152,7 +152,7 @@ data: {"hello":""";
 
   test("[ws] parsing error message", () {
     final input =
-        "type: error\ndata: {\"code\": 1, \"message\": \"there was an error\"}";
+        "event: error\ndata: {\"code\": 1, \"message\": \"there was an error\"}";
     final message = WsEvent.fromString(
       input,
       (data) => null,

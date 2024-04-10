@@ -71,11 +71,11 @@ export class WsPeer<TResponse> {
             return;
         }
         const payload = this._validator.serialize(data);
-        return this._peer.send(`type: message\ndata: ${payload}`);
+        return this._peer.send(`event: message\ndata: ${payload}`);
     }
 
     sendError(err: ArriServerErrorResponse) {
-        return this._peer.send(`type: error\ndata: ${JSON.stringify(err)}`);
+        return this._peer.send(`event: error\ndata: ${JSON.stringify(err)}`);
     }
 
     close() {
