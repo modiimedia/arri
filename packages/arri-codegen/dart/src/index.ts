@@ -1036,7 +1036,7 @@ function dartEnumFromJtdSchema(
             : `required this.${key}`,
         fromJsonTemplate: (input) => {
             if (isNullable) {
-                return `${input} is Map<String, dynamic> ? ${className}.fromJson(${input}) : null`;
+                return `${input} is String ? ${className}.fromJson(${input}) : null`;
             }
             return `${className}.fromJson(${input})`;
         },
