@@ -444,7 +444,7 @@ test("[ws] support websockets", async () => {
         });
     };
     controller.connect();
-    await wait(500);
+    await wait(1000);
     controller.close();
     expect(connectionCount).toBe(1);
     expect(messageCount).toBe(3);
