@@ -457,6 +457,19 @@ test("[ws] support websockets", async () => {
     expect(msgMap["3"]!.y).toBe(-5);
 });
 
+test("[ws] receive large messages", async () => {
+    let messageCount = 0;
+    const controller = client.tests.websocketRpcWithLargeMessages({
+        onMessage(msg) {
+            messageCount++;
+        },
+    });
+    controller.connect();
+    await wait(500);
+    controller.close();
+    expect(messageCount > 1).toBe(true);
+});
+
 test("[ws] connection errors", async () => {
     let connectionCount = 0;
     let messageCount = 0;

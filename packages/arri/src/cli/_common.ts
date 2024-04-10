@@ -162,7 +162,7 @@ export const getRpcMetaFromPath = (
         return undefined;
     }
     const rpcName = removeDisallowedChars(
-        fileNameParts[0],
+        fileNameParts[0]!,
         disallowedNameChars,
     );
     const httpParts = [

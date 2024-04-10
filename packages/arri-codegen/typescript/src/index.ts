@@ -250,10 +250,12 @@ export function tsWsRpcFromDefinition(
     options: RpcOptions,
 ): string {
     options.hasWsProcedures = true;
-    const paramName = pascalCase(schema.params ?? "undefined");
-    const responseName = pascalCase(schema.response ?? "undefined");
-    const hasInput = paramName.length > 0;
-    const hasOutput = responseName.length > 0;
+    const paramName = schema.params ? pascalCase(schema.params) : "undefined";
+    const responseName = schema.response
+        ? pascalCase(schema.response)
+        : "undefined";
+    const hasInput = paramName.length > 0 && paramName !== "undefined";
+    const hasOutput = responseName.length > 0 && paramName !== "undefined";
     let serializerPart = `(_) => {}`;
     let parserPart = `(_) => {}`;
     if (hasInput) {

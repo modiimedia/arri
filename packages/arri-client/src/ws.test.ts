@@ -4,7 +4,6 @@ test("Parse WS Response", () => {
     const result = parsedWsResponse(
         `event: message\ndata: {"message":"hello world"}`,
     );
-    console.log(result);
     expect(result).toStrictEqual({
         event: "message",
         data: `{"message":"hello world"}`,

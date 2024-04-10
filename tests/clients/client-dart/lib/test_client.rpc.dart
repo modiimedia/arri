@@ -393,6 +393,17 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
     );
   }
+
+  Future<ArriWebsocketController<StreamLargeObjectsResponse, Null>>
+      websocketRpcWithLargeMessages() {
+    return arriWebsocketRequest<StreamLargeObjectsResponse, Null>(
+      "$_baseUrl/rpcs/tests/websocket-rpc-with-large-messages",
+      headers: _headers,
+      parser: (body) => StreamLargeObjectsResponse.fromJson(json.decode(body)),
+      serializer: (_) => "",
+      clientVersion: _clientVersion,
+    );
+  }
 }
 
 class TestClientAdaptersService {

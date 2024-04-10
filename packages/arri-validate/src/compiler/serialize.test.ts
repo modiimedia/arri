@@ -3,10 +3,10 @@ import { compile } from "../compile";
 import { validationTestSuites } from "../testSuites";
 
 for (const key of Object.keys(validationTestSuites)) {
-    const suite = validationTestSuites[key];
+    const suite = validationTestSuites[key]!;
     const Compiled = compile(suite.schema);
     for (let i = 0; i < suite.goodInputs.length; i++) {
-        const input = suite.goodInputs[i];
+        const input = suite.goodInputs[i]!;
         test(`${key} - ${i + 1}`, () => {
             try {
                 const result = Compiled.serialize(input);

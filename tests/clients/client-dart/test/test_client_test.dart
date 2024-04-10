@@ -491,6 +491,16 @@ Future<void> main() async {
       }
     }
   });
+  test("[WS] can receive large objects", () async {
+    final connection = await client.tests.websocketRpcWithLargeMessages();
+    var msgCount = 0;
+    connection.listen(onMessage: (msg) {
+      msgCount++;
+    });
+    await Future.delayed(Duration(milliseconds: 200));
+    connection.close();
+    expect(msgCount > 1, equals(true));
+  });
   test("[WS] connection errors", () async {
     final connection = await client.tests.websocketRpc();
     connection.listen(onMessage: (message) {});

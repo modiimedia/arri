@@ -164,7 +164,6 @@ class WsController<TParams, TResponse> {
     }
 
     private _handleMessage(msg: MessageEvent) {
-        console.log("MESSAGE", msg.data);
         if (typeof msg.data !== "string") {
             return;
         }

@@ -379,17 +379,17 @@ export function dartWsRpcFromSchema(
 ): string {
     const serverMsg = def.response
         ? pascalCase(def.response, { normalize: true })
-        : "null";
+        : "Null";
     const clientMsg = def.params
         ? pascalCase(def.params, { normalize: true })
-        : "null";
+        : "Null";
     const returnType = `Future<ArriWebsocketController<${serverMsg}, ${clientMsg}>>`;
     const parser = def.response
         ? `(body) => ${serverMsg}.fromJson(json.decode(body))`
         : `(_) => null`;
     const serializer = def.params
         ? `(body) => json.encode(body.toJson())`
-        : `(_) => {}`;
+        : `(_) => ""`;
     return `${getAnnotations({ description: def.description, isDeprecated: def.isDeprecated })}${returnType} ${key}() {
         return arriWebsocketRequest<${serverMsg}, ${clientMsg}>(
             "$_baseUrl${def.path}",

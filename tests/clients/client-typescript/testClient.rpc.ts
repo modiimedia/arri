@@ -300,6 +300,22 @@ export class TestClientTestsService {
             clientVersion: this.clientVersion,
         });
     }
+    websocketRpcWithLargeMessages(
+        options: WsOptions<StreamLargeObjectsResponse> = {},
+    ) {
+        return arriWsRequest<undefined, StreamLargeObjectsResponse>({
+            url: `${this.baseUrl}/rpcs/tests/websocket-rpc-with-large-messages`,
+            headers: this.headers,
+            parser: (_) => {},
+            serializer: (_) => {},
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: this.clientVersion,
+        });
+    }
 }
 
 export class TestClientAdaptersService {
