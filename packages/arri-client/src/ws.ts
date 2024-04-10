@@ -1,5 +1,5 @@
 import NodeWebsocket from "ws";
-import { type ArriError, ArriErrorInstance } from "./errors";
+import { ArriErrorInstance } from "./errors";
 
 function isBrowser() {
     return typeof window !== "undefined";
@@ -10,7 +10,7 @@ interface WsControllerOptions<TParams, TResponse> {
     serializer: (input: TParams) => string;
     parser: (input: unknown) => TResponse;
     onMessage?: WsMessageHook<TResponse>;
-    onError?: WsErrorHook;
+    onErrorMessage?: WsErrorHook;
     onConnectionError?: WsErrorHook;
     onOpen?: () => any;
     onClose?: () => any;
@@ -79,7 +79,7 @@ export function arriWsRequest<
             onOpen: opts.onOpen,
             onClose: opts.onClose,
             onMessage: opts.onMessage,
-            onError: opts.onError,
+            onErrorMessage: opts.onError,
             onConnectionError: opts.onConnectionError,
         });
         return controller;
@@ -93,7 +93,7 @@ export function arriWsRequest<
     }
 }
 
-type WsErrorHook = (err: ArriError) => void;
+type WsErrorHook = (err: ArriErrorInstance) => void;
 type WsMessageHook<TResponse> = (msg: TResponse) => any;
 
 class WsController<TParams, TResponse> {
@@ -102,7 +102,7 @@ class WsController<TParams, TResponse> {
     private readonly _serializer: (input: TParams) => string;
     private readonly _parser: (input: unknown) => TResponse;
     onMessage?: WsMessageHook<TResponse>;
-    onError?: WsErrorHook;
+    onErrorMessage?: WsErrorHook;
     onConnectionError?: WsErrorHook;
     onOpen?: () => any;
     onClose?: () => any;
@@ -112,7 +112,7 @@ class WsController<TParams, TResponse> {
         this._parser = opts.parser;
         this.onOpen = opts.onOpen;
         this.onClose = opts.onClose;
-        this.onError = opts.onError;
+        this.onErrorMessage = opts.onErrorMessage;
         this.onConnectionError = opts.onConnectionError;
         this.onMessage = opts.onMessage;
     }
@@ -120,26 +120,33 @@ class WsController<TParams, TResponse> {
     connect() {
         this._ws = connectWebsocket(this.url);
         this._ws.onopen = () => {
-            if (this.onOpen) {
-                this.onOpen();
-            }
+            this.onOpen?.();
         };
         this._ws.onclose = () => {
-            if (this.onClose) {
-                this.onClose();
-            }
+            this.onClose?.();
         };
         this._ws.onmessage = (event: MessageEvent) => {
             this._handleMessage(event);
         };
-        this._ws.onerror = (event: any) => {
-            console.error(event);
-            if (this.onConnectionError) {
-                this.onConnectionError({
-                    code: 500,
-                    message: "IDK",
-                });
-            }
+        this._ws.onerror = (event: NodeWebsocket.ErrorEvent) => {
+            this.onConnectionError?.(
+                new ArriErrorInstance({
+                    code:
+                        "errno" in event.error &&
+                        typeof event.error.errno === "number"
+                            ? event.error.errno
+                            : 0,
+                    message:
+                        event.error instanceof Error
+                            ? event.error.message
+                            : `Error connecting to ${this.url}`,
+                    data: event.error,
+                    stack:
+                        event.error instanceof Error
+                            ? event.error.stack
+                            : undefined,
+                }),
+            );
         };
     }
 
@@ -163,11 +170,11 @@ class WsController<TParams, TResponse> {
         const response = parsedWsResponse(msg.data);
         switch (response.type) {
             case "error": {
-                if (!this.onError) {
+                if (!this.onErrorMessage) {
                     return;
                 }
                 const err = ArriErrorInstance.fromJson(response.data);
-                this.onError(err);
+                this.onErrorMessage(err);
                 break;
             }
             case "message": {
@@ -185,7 +192,7 @@ class WsController<TParams, TResponse> {
     }
 }
 
-function parsedWsResponse(input: string): {
+export function parsedWsResponse(input: string): {
     type: "message" | "error" | "unknown";
     data: string;
 } {

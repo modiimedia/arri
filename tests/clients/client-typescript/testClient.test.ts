@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { type ArriError, ArriErrorInstance } from "arri-client";
+import { ArriErrorInstance } from "arri-client";
 import { ofetch } from "ofetch";
 import { test, expect, describe } from "vitest";
 import {
@@ -289,7 +289,7 @@ test("[SSE] supports server sent events", async () => {
 test("[SSE] parses both 'message' and 'error' events", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriError | undefined;
+    let errorReceived: ArriErrorInstance | undefined;
     let otherErrorCount = 0;
     const controller = client.tests.streamTenEventsThenError({
         onMessage(_) {
@@ -320,7 +320,7 @@ test("[SSE] parses both 'message' and 'error' events", async () => {
 test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
-    let errorReceived: ArriError | undefined;
+    let errorReceived: ArriErrorInstance | undefined;
     const controller = client.tests.streamTenEventsThenEnd({
         onMessage(_) {
             messageCount++;
@@ -403,7 +403,7 @@ test("[SSE] reconnect with new credentials", async () => {
     expect(errorCount).toBe(0);
 });
 
-test("Websocket Requests", async () => {
+test("[ws] support websockets", async () => {
     let connectionCount = 0;
     let messageCount = 0;
     const errorCount = 0;
@@ -414,7 +414,6 @@ test("Websocket Requests", async () => {
             msgMap[msg.entityId] = msg;
         },
         onConnectionError(err) {
-            console.error(err);
             throw new ArriErrorInstance({
                 code: err.code,
                 message: err.message,
@@ -445,7 +444,7 @@ test("Websocket Requests", async () => {
         });
     };
     controller.connect();
-    await wait(2000);
+    await wait(500);
     controller.close();
     expect(connectionCount).toBe(1);
     expect(messageCount).toBe(3);
@@ -456,6 +455,31 @@ test("Websocket Requests", async () => {
     expect(msgMap["2"]!.y).toBe(2);
     expect(msgMap["3"]!.x).toBe(5);
     expect(msgMap["3"]!.y).toBe(-5);
+});
+
+test("[ws] connection errors", async () => {
+    let connectionCount = 0;
+    let messageCount = 0;
+    let errorCount = 0;
+    const controller = new TestClient({
+        baseUrl: "http://127.0.0.1:2021",
+    }).tests.websocketRpc({
+        onOpen() {
+            connectionCount++;
+        },
+        onMessage() {
+            messageCount++;
+        },
+        onConnectionError() {
+            errorCount++;
+        },
+        onClose() {},
+    });
+    controller.connect();
+    await wait(500);
+    expect(connectionCount).toBe(0);
+    expect(errorCount).toBe(1);
+    expect(messageCount).toBe(0);
 });
 
 describe("arri adapters", () => {
