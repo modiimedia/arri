@@ -362,7 +362,7 @@ Future<void> main() async {
         errorCount++;
       },
     );
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1000));
     eventSource.close();
     expect(openCount, equals(1));
     expect(msgCount > 2, equals(true));
@@ -411,24 +411,28 @@ Future<void> main() async {
     );
   });
   test("[SSE] can retry with new credentials", () async {
+    final tokensUsed = <String>[];
     final dynamicClient = TestClient(
       baseUrl: baseUrl,
       headers: () {
-        return {"x-test-header": Random.secure().toString()};
+        final token = Random.secure().nextInt(4294967296).toString();
+        tokensUsed.add(token);
+        return {"x-test-header": "dart_$token"};
       },
     );
     var msgCount = 0;
     var openCount = 0;
     final eventSource = dynamicClient.tests.streamRetryWithNewCredentials(
-      onData: (data, connection) {
-        msgCount++;
-      },
-      onOpen: (response, connection) {
-        openCount++;
-      },
-    );
-    await Future.delayed(Duration(milliseconds: 1000));
+        onData: (data, connection) {
+      msgCount++;
+    }, onOpen: (response, connection) {
+      openCount++;
+    }, onConnectionError: (err, connection) {
+      print(err.toString());
+    });
+    await Future.delayed(Duration(milliseconds: 2000));
     eventSource.close();
+    expect(tokensUsed.isNotEmpty, equals(true));
     expect(msgCount > 0, equals(true));
     expect(openCount > 0, equals(true));
   });
