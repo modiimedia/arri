@@ -170,21 +170,57 @@ Future<void> main() async {
     final result = await client.tests.sendObjectWithNullableFields(input);
     expect(result.string, equals(null));
     expect(result.array, equals(null));
-    final input2 = input.copyWith(
-      int64: BigInt.zero,
-      discriminator: ObjectWithEveryNullableTypeDiscriminatorA(title: null),
+    final input2 = ObjectWithEveryNullableType(
+      any: {"hello": "world", "goodbye": "world"},
+      boolean: true,
+      string: "",
+      timestamp: DateTime.now(),
+      float32: 1,
+      float64: 1,
+      int8: 1,
+      uint8: 1,
+      int16: 1,
+      uint16: 1,
+      int32: 1,
+      uint32: 1,
+      int64: BigInt.from(1),
+      uint64: BigInt.from(1),
+      enumerator: ObjectWithEveryNullableTypeEnumerator.a,
+      array: [true, false],
+      object: ObjectWithEveryNullableTypeObject(
+          boolean: true, string: "", timestamp: DateTime.now()),
+      record: {
+        "A": true,
+        "B": false,
+      },
+      discriminator:
+          ObjectWithEveryNullableTypeDiscriminatorA(title: "Hello World"),
       nestedObject: ObjectWithEveryNullableTypeNestedObject(
-        id: null,
-        timestamp: null,
+        id: "",
+        timestamp: DateTime.now(),
         data: ObjectWithEveryNullableTypeNestedObjectData(
-            id: "", timestamp: null, data: null),
+            id: "",
+            timestamp: DateTime.now(),
+            data: ObjectWithEveryNullableTypeNestedObjectDataData(
+              id: "",
+              timestamp: DateTime.now(),
+            )),
       ),
-      nestedArray: [null],
+      nestedArray: [
+        [
+          ObjectWithEveryNullableTypeNestedArrayItemItem(
+            id: "",
+            timestamp: DateTime.now(),
+          )
+        ]
+      ],
     );
     final result2 = await client.tests.sendObjectWithNullableFields(input2);
-    expect(result2.nestedArray?[0], equals(null));
+    expect(result2.nestedArray?.length, equals(1));
+    expect(result2.nestedArray?.length, equals(1));
+    expect(result2.nestedArray?[0]?[0]?.id, equals(""));
     expect(result2.nestedObject?.data?.id, equals(""));
-    expect(result2.int64, equals(BigInt.zero));
+    expect(result2.int64, equals(BigInt.from(1)));
     expect(
       result2.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
       equals(true),
