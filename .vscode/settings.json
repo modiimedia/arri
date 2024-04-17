@@ -6,6 +6,7 @@
   "dart.analysisExcludedFolders": [
     "**/node_modules",
     "**/dist",
+    "**/build",
     ".nx",
     "coverage",
     "node_modules",
