@@ -1,9 +1,10 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { listenAndWatch } from "@joshmossas/listhen";
+import watcher from "@parcel/watcher";
+import type ParcelWatcher from "@parcel/watcher";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
-import chokidar from "chokidar";
 import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
 import { ofetch } from "ofetch";
@@ -90,7 +91,7 @@ export default app.h3App;`;
 
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
-    let fileWatcher: chokidar.FSWatcher | undefined;
+    let fileWatcher: ParcelWatcher.AsyncSubscription | undefined;
     await Promise.all([
         createEntryModule(config),
         createAppWithRoutesModule(config),
@@ -108,7 +109,7 @@ async function startDevServer(config: ResolvedArriConfig) {
     process.on("exit", async () => {
         await Promise.allSettled([
             listener.close(),
-            fileWatcher?.close(),
+            fileWatcher?.unsubscribe(),
             bundleFiles.dispose(),
         ]);
     });
@@ -117,7 +118,7 @@ async function startDevServer(config: ResolvedArriConfig) {
     async function load(isRestart: boolean, reason?: string) {
         try {
             if (fileWatcher) {
-                await fileWatcher.close();
+                await fileWatcher.unsubscribe();
             }
             const srcDir = path.resolve(config.rootDir ?? "", config.srcDir);
             const dirsToWatch = [srcDir];
@@ -131,34 +132,76 @@ async function startDevServer(config: ResolvedArriConfig) {
             }
             const buildDir = path.resolve(config.rootDir, config.buildDir);
             const outDir = path.resolve(config.rootDir, ".output");
-            fileWatcher = chokidar.watch(dirsToWatch, {
-                ignored: [buildDir, outDir],
-                ignoreInitial: true,
-            });
-            fileWatcher.on("all", async (event, file) => {
-                if (event === "add" || event === "addDir") {
-                    return;
-                }
-                await createAppWithRoutesModule(config);
-                let bundleCreated = false;
-                try {
-                    logger.log(
-                        "Change detected. Bundling files and restarting server....",
-                    );
-                    await transpileFiles(config);
-                    await bundleFiles.rebuild();
-                    bundleCreated = true;
-                } catch (err) {
-                    logger.error("ERROR", err);
-                    bundleCreated = false;
-                }
-                if (bundleCreated && config.generators.length) {
-                    setTimeout(async () => {
-                        await generateClients(config);
+            fileWatcher = await watcher.subscribe(
+                srcDir,
+                async (err, events) => {
+                    if (err) {
+                        logger.error(err);
+                        return;
+                    }
+                    let doNothing = true;
+                    for (const event of events) {
+                        if (event.type === "create") {
+                            continue;
+                        }
+                        doNothing = false;
+                        break;
+                    }
+                    if (doNothing) {
+                        return;
+                    }
+                    await createAppWithRoutesModule(config);
+                    let bundleCreated = false;
+                    try {
+                        logger.log(
+                            "Change detected. Bundling files and restarting server....",
+                        );
+                        await transpileFiles(config);
+                        await bundleFiles.rebuild();
+                        bundleCreated = true;
+                    } catch (err) {
+                        logger.error("ERROR", err);
                         bundleCreated = false;
-                    }, 1000);
-                }
-            });
+                    }
+                    if (bundleCreated && config.generators.length) {
+                        setTimeout(async () => {
+                            await generateClients(config);
+                            bundleCreated = false;
+                        }, 1000);
+                    }
+                },
+                {
+                    ignore: ["**.test.ts", "**.spec.ts", buildDir, outDir],
+                },
+            );
+            // fileWatcher = chokidar.watch(dirsToWatch, {
+            //     ignored: [buildDir, outDir],
+            //     ignoreInitial: true,
+            // });
+            // fileWatcher.on("all", async (event, file) => {
+            //     if (event === "add" || event === "addDir") {
+            //         return;
+            //     }
+            //     await createAppWithRoutesModule(config);
+            //     let bundleCreated = false;
+            //     try {
+            //         logger.log(
+            //             "Change detected. Bundling files and restarting server....",
+            //         );
+            //         await transpileFiles(config);
+            //         await bundleFiles.rebuild();
+            //         bundleCreated = true;
+            //     } catch (err) {
+            //         logger.error("ERROR", err);
+            //         bundleCreated = false;
+            //     }
+            //     if (bundleCreated && config.generators.length) {
+            //         setTimeout(async () => {
+            //             await generateClients(config);
+            //             bundleCreated = false;
+            //         }, 1000);
+            //     }
+            // });
         } catch (err) {}
     }
     await load(false);

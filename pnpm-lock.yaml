@@ -144,6 +144,9 @@ importers:
       '@joshmossas/listhen':
         specifier: 1.8.0
         version: 1.8.0
+      '@parcel/watcher':
+        specifier: ^2.4.1
+        version: 2.4.1
       arri-codegen-dart:
         specifier: workspace:*
         version: link:../arri-codegen/dart
@@ -159,9 +162,6 @@ importers:
       c12:
         specifier: ^1.10.0
         version: 1.10.0
-      chokidar:
-        specifier: ^3.6.0
-        version: 3.6.0
       citty:
         specifier: ^0.1.6
         version: 0.1.6
