@@ -158,8 +158,6 @@ class TestClientUsersSettingsService {
   }
 }
 
-class _$NoInput {}
-
 class GetStatusResponse {
   final String message;
   const GetStatusResponse({
@@ -618,8 +616,8 @@ class BinaryTree {
   }
 
   BinaryTree copyWith({
-    ArriBox<BinaryTree>? left,
-    ArriBox<BinaryTree>? right,
+    ArriBox<BinaryTree?>? left,
+    ArriBox<BinaryTree?>? right,
   }) {
     return BinaryTree(
       left: left != null ? left.value : this.left,

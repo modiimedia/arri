@@ -531,16 +531,24 @@ final String ${camelCaseWrapper(discOptions.discriminatorKey)} = "${
         );
         if (prop.templates.typeName === "dynamic") {
             copyWithParamParts.push(`dynamic ${subKey}`);
+            copyWithInitParts.push(`${subKey}: ${subKey} ?? this.${subKey}`);
         } else {
             if (prop.templates.typeName.endsWith("?")) {
-                copyWithParamParts.push(`${prop.templates.typeName} ${subKey}`);
+                copyWithParamParts.push(
+                    `ArriBox<${prop.templates.typeName}>? ${subKey}`,
+                );
+                copyWithInitParts.push(
+                    `${subKey}: ${subKey} != null ? ${subKey}.value : this.${subKey}`,
+                );
             } else {
                 copyWithParamParts.push(
                     `${prop.templates.typeName}? ${subKey}`,
                 );
+                copyWithInitParts.push(
+                    `${subKey}: ${subKey} ?? this.${subKey}`,
+                );
             }
         }
-        copyWithInitParts.push(`${subKey}: ${subKey} ?? this.${subKey}`);
     }
     for (const prop of optionalProperties) {
         fieldParts.push(prop.templates.fieldTemplate);
@@ -554,16 +562,24 @@ final String ${camelCaseWrapper(discOptions.discriminatorKey)} = "${
         );
         if (prop.templates.typeName === "dynamic") {
             copyWithParamParts.push(`dynamic ${subKey}`);
+            copyWithInitParts.push(`${subKey}: ${subKey} ?? this.${subKey}`);
         } else {
             if (prop.templates.typeName.endsWith("?")) {
-                copyWithParamParts.push(`${prop.templates.typeName} ${subKey}`);
+                copyWithParamParts.push(
+                    `ArriBox<${prop.templates.typeName}>? ${subKey}`,
+                );
+                copyWithInitParts.push(
+                    `${subKey}: ${subKey} != null ? ${subKey}.value : this.${subKey}`,
+                );
             } else {
                 copyWithParamParts.push(
                     `${prop.templates.typeName}? ${subKey}`,
                 );
+                copyWithInitParts.push(
+                    `${subKey}: ${subKey} ?? this.${subKey}`,
+                );
             }
         }
-        copyWithInitParts.push(`${subKey}: ${subKey} ?? this.${subKey}`);
     }
     let classNamePart = `class ${className}`;
     if (isDiscriminatorChild) {
