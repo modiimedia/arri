@@ -3346,7 +3346,7 @@ class UsersWatchUserResponse {
   UsersWatchUserResponse copyWith({
     String? id,
     UsersWatchUserResponseRole? role,
-    UserPhoto? photo,
+    ArriBox<UserPhoto?>? photo,
     DateTime? createdAt,
     int? numFollowers,
     UserSettings? settings,
@@ -3354,12 +3354,12 @@ class UsersWatchUserResponse {
     Map<String, UsersWatchUserResponseBookmarksValue>? bookmarks,
     Map<String, dynamic>? metadata,
     List<dynamic>? randomList,
-    String? bio,
+    ArriBox<String?>? bio,
   }) {
     return UsersWatchUserResponse(
       id: id ?? this.id,
       role: role ?? this.role,
-      photo: photo ?? this.photo,
+      photo: photo != null ? photo.value : this.photo,
       createdAt: createdAt ?? this.createdAt,
       numFollowers: numFollowers ?? this.numFollowers,
       settings: settings ?? this.settings,
@@ -3367,7 +3367,7 @@ class UsersWatchUserResponse {
       bookmarks: bookmarks ?? this.bookmarks,
       metadata: metadata ?? this.metadata,
       randomList: randomList ?? this.randomList,
-      bio: bio ?? this.bio,
+      bio: bio != null ? bio.value : this.bio,
     );
   }
 }

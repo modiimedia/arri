@@ -63,7 +63,7 @@ fun main() {
             string = "hello world", boolean = false, timestamp = Instant.now()
         )
     )
-    // SEND/RECEIVE OBJECT OF EVERY TYPE
+
     runBlocking {
         val tag = "SEND/RECEIVE OBJECT OF EVERY TYPE"
         val result = client.tests.sendObject(objectInput)
@@ -111,8 +111,60 @@ fun main() {
                 record = null,
             )
         )
+        val input2 = client.tests.sendObjectWithNullableFields(
+            ObjectWithEveryNullableType(
+                any = JsonPrimitive("Hello world"),
+                string = "Hello world",
+                boolean = true,
+                timestamp = Instant.now(),
+                int8 = 10,
+                uint8 = 10u,
+                int16 = 10,
+                uint16 = 10u,
+                int32 = 10,
+                uint32 = 10u,
+                int64 = 10L,
+                uint64 = 10UL,
+                float64 = 10.0,
+                float32 = 10.0F,
+                enumerator = ObjectWithEveryNullableTypeEnumerator.B,
+                array = mutableListOf(true, false, true),
+                nestedArray = mutableListOf(
+                    mutableListOf(
+                        ObjectWithEveryNullableTypeNestedArray(
+                            id = "1",
+                            timestamp = Instant.now()
+                        )
+                    )
+                ),
+                _object = ObjectWithEveryNullableTypeObject(
+                    string = "Hello world",
+                    boolean = true,
+                    timestamp = Instant.now(),
+                ),
+                nestedObject = ObjectWithEveryNullableTypeNestedObject(
+                    id = "1",
+                    timestamp = Instant.now(),
+                    data = ObjectWithEveryNullableTypeNestedObjectData(
+                        id = "2",
+                        timestamp = Instant.now(),
+                        data = ObjectWithEveryNullableTypeNestedObjectDataData(
+                            id = "3",
+                            timestamp = Instant.now(),
+                        ),
+                    ),
+                ),
+                discriminator = ObjectWithEveryNullableTypeDiscriminatorDiscriminatorB(
+                    title = "Hello world",
+                    description = ""
+                ),
+                record = mutableMapOf(Pair("A", true), Pair("B", false)),
+            )
+        )
         val result = client.tests.sendObjectWithNullableFields(input)
+        val result2 = client.tests.sendObjectWithNullableFields(input2)
         expect(tag, result, input)
+        expect(tag, result2, input2)
     }
 
     runBlocking {
