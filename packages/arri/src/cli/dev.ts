@@ -1,9 +1,10 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { listenAndWatch } from "@joshmossas/listhen";
+import watcher from "@parcel/watcher";
+import type ParcelWatcher from "@parcel/watcher";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
-import chokidar from "chokidar";
 import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
 import { ofetch } from "ofetch";
@@ -73,7 +74,7 @@ export default app.h3App;`;
         path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
         serverContent,
     );
-    return await esbuild.context({
+    await esbuild.build({
         ...config.esbuild,
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
@@ -82,22 +83,22 @@ export default app.h3App;`;
         format: "esm",
         bundle: true,
         sourcemap: true,
-        target: "node18",
+        target: "node20",
         platform: "node",
         packages: "external",
+        allowOverwrite: true,
     });
 }
 
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
-    let fileWatcher: chokidar.FSWatcher | undefined;
+    let fileWatcher: ParcelWatcher.AsyncSubscription | undefined;
     await Promise.all([
         createEntryModule(config),
         createAppWithRoutesModule(config),
         transpileFiles(config),
     ]);
-    const bundleFiles = await bundleFilesContext(config);
-    await bundleFiles.rebuild();
+    await bundleFilesContext(config);
     const listener = await startListener(config, true);
     setTimeout(async () => {
         await generateClients(config);
@@ -108,35 +109,43 @@ async function startDevServer(config: ResolvedArriConfig) {
     process.on("exit", async () => {
         await Promise.allSettled([
             listener.close(),
-            fileWatcher?.close(),
-            bundleFiles.dispose(),
+            fileWatcher?.unsubscribe(),
         ]);
     });
     process.on("SIGINT", cleanExit);
     process.on("SIGTERM", cleanExit);
     async function load(isRestart: boolean, reason?: string) {
-        try {
-            if (fileWatcher) {
-                await fileWatcher.close();
-            }
-            const srcDir = path.resolve(config.rootDir ?? "", config.srcDir);
-            const dirsToWatch = [srcDir];
-            if (config.esbuild.alias) {
-                for (const key of Object.keys(config.esbuild.alias)) {
-                    const alias = config.esbuild.alias[key];
-                    if (alias) {
-                        dirsToWatch.push(alias);
-                    }
+        if (fileWatcher) {
+            await fileWatcher.unsubscribe();
+        }
+        const srcDir = path.resolve(config.rootDir ?? "", config.srcDir);
+        const dirsToWatch = [srcDir];
+        if (config.esbuild.alias) {
+            for (const key of Object.keys(config.esbuild.alias)) {
+                const alias = config.esbuild.alias[key];
+                if (alias) {
+                    dirsToWatch.push(alias);
                 }
             }
-            const buildDir = path.resolve(config.rootDir, config.buildDir);
-            const outDir = path.resolve(config.rootDir, ".output");
-            fileWatcher = chokidar.watch(dirsToWatch, {
-                ignored: [buildDir, outDir],
-                ignoreInitial: true,
-            });
-            fileWatcher.on("all", async (event, file) => {
-                if (event === "add" || event === "addDir") {
+        }
+        const buildDir = path.resolve(config.rootDir, config.buildDir);
+        const outDir = path.resolve(config.rootDir, ".output");
+        fileWatcher = await watcher.subscribe(
+            srcDir,
+            async (err, events) => {
+                if (err) {
+                    logger.error(err);
+                    return;
+                }
+                let doNothing = true;
+                for (const event of events) {
+                    if (event.type === "create") {
+                        continue;
+                    }
+                    doNothing = false;
+                    break;
+                }
+                if (doNothing) {
                     return;
                 }
                 await createAppWithRoutesModule(config);
@@ -146,7 +155,7 @@ async function startDevServer(config: ResolvedArriConfig) {
                         "Change detected. Bundling files and restarting server....",
                     );
                     await transpileFiles(config);
-                    await bundleFiles.rebuild();
+                    await bundleFilesContext(config);
                     bundleCreated = true;
                 } catch (err) {
                     logger.error("ERROR", err);
@@ -158,8 +167,11 @@ async function startDevServer(config: ResolvedArriConfig) {
                         bundleCreated = false;
                     }, 1000);
                 }
-            });
-        } catch (err) {}
+            },
+            {
+                ignore: [buildDir, outDir],
+            },
+        );
     }
     await load(false);
 }

@@ -25,13 +25,13 @@
     "arri": "./dist/cli.mjs"
   },
   "dependencies": {
-    "@joshmossas/listhen": "1.8.0",
+    "@joshmossas/listhen": "1.10.0",
+    "@parcel/watcher": "^2.4.1",
     "arri-codegen-dart": "workspace:*",
     "arri-codegen-ts": "workspace:*",
     "arri-codegen-utils": "workspace:*",
     "arri-validate": "workspace:*",
     "c12": "^1.10.0",
-    "chokidar": "^3.6.0",
     "citty": "^0.1.6",
     "consola": "^3.2.3",
     "crossws": "^0.2.4",
