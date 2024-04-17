@@ -1,6 +1,6 @@
 {
   "name": "arri-adapter-typebox",
-  "version": "0.39.2",
+  "version": "0.40.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
