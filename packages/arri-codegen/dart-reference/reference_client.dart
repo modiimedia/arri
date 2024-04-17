@@ -285,32 +285,34 @@ class User {
   User copyWith({
     String? id,
     UserRole? role,
-    UserPhoto? photo,
+    ArriBox<UserPhoto?>? photo,
     DateTime? createdAt,
     int? numFollowers,
     UserSettings? settings,
-    UserNotification? lastNotification,
+    ArriBox<UserNotification?>? lastNotification,
     List<UserNotification>? recentNotifications,
     Map<String, UserBookmarksValue>? bookmarks,
     Map<String, dynamic>? metadata,
     List<dynamic>? randomList,
     BinaryTree? binaryTree,
-    String? bio,
+    ArriBox<String?>? bio,
   }) {
     return User(
       id: id ?? this.id,
       role: role ?? this.role,
-      photo: photo ?? this.photo,
+      photo: photo != null ? photo.value : this.photo,
       createdAt: createdAt ?? this.createdAt,
       numFollowers: numFollowers ?? this.numFollowers,
       settings: settings ?? this.settings,
-      lastNotification: lastNotification ?? this.lastNotification,
+      lastNotification: lastNotification != null
+          ? lastNotification.value
+          : this.lastNotification,
       recentNotifications: recentNotifications ?? this.recentNotifications,
       bookmarks: bookmarks ?? this.bookmarks,
       metadata: metadata ?? this.metadata,
       randomList: randomList ?? this.randomList,
       binaryTree: binaryTree ?? this.binaryTree,
-      bio: bio ?? this.bio,
+      bio: bio != null ? bio.value : this.bio,
     );
   }
 }
@@ -614,12 +616,12 @@ class BinaryTree {
   }
 
   BinaryTree copyWith({
-    BinaryTree? left,
-    BinaryTree? right,
+    ArriBox<BinaryTree?>? left,
+    ArriBox<BinaryTree?>? right,
   }) {
     return BinaryTree(
-      left: left ?? this.left,
-      right: right ?? this.right,
+      left: left != null ? left.value : this.left,
+      right: right != null ? right.value : this.right,
     );
   }
 }
@@ -685,13 +687,13 @@ class UpdateUserParams {
 
   UpdateUserParams copyWith({
     String? id,
-    UserPhoto? photo,
-    String? bio,
+    ArriBox<UserPhoto?>? photo,
+    ArriBox<String?>? bio,
   }) {
     return UpdateUserParams(
       id: id ?? this.id,
-      photo: photo ?? this.photo,
-      bio: bio ?? this.bio,
+      photo: photo != null ? photo.value : this.photo,
+      bio: bio != null ? bio.value : this.bio,
     );
   }
 }
