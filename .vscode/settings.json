@@ -6,8 +6,8 @@
   "dart.analysisExcludedFolders": [
     "packages/arri",
     "packages/arri-adapter-typebox",
-    "packages/arri-client",
-    "packages/arri-codegen",
+    "packages/arri-client/",
+    // "packages/arri-codegen",
     "packages/arri-validate",
     "node_modules",
     "dist",

@@ -602,7 +602,7 @@ class TypeBoxObject {
     TypeBoxObjectEnumField? enumField,
     TypeBoxObjectObject? object,
     List<bool>? array,
-    String? optionalString,
+    ArriBox<String?>? optionalString,
   }) {
     return TypeBoxObject(
       string: string ?? this.string,
@@ -612,7 +612,8 @@ class TypeBoxObject {
       enumField: enumField ?? this.enumField,
       object: object ?? this.object,
       array: array ?? this.array,
-      optionalString: optionalString ?? this.optionalString,
+      optionalString:
+          optionalString != null ? optionalString.value : this.optionalString,
     );
   }
 }
@@ -1337,49 +1338,52 @@ class ObjectWithEveryNullableType {
 
   ObjectWithEveryNullableType copyWith({
     dynamic any,
-    bool? boolean,
-    String? string,
-    DateTime? timestamp,
-    double? float32,
-    double? float64,
-    int? int8,
-    int? uint8,
-    int? int16,
-    int? uint16,
-    int? int32,
-    int? uint32,
-    BigInt? int64,
-    BigInt? uint64,
+    ArriBox<bool?>? boolean,
+    ArriBox<String?>? string,
+    ArriBox<DateTime?>? timestamp,
+    ArriBox<double?>? float32,
+    ArriBox<double?>? float64,
+    ArriBox<int?>? int8,
+    ArriBox<int?>? uint8,
+    ArriBox<int?>? int16,
+    ArriBox<int?>? uint16,
+    ArriBox<int?>? int32,
+    ArriBox<int?>? uint32,
+    ArriBox<BigInt?>? int64,
+    ArriBox<BigInt?>? uint64,
     ObjectWithEveryNullableTypeEnumerator? enumerator,
-    List<bool?>? array,
-    ObjectWithEveryNullableTypeObject? object,
-    Map<String, bool?>? record,
-    ObjectWithEveryNullableTypeDiscriminator? discriminator,
-    ObjectWithEveryNullableTypeNestedObject? nestedObject,
-    List<List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?>? nestedArray,
+    ArriBox<List<bool?>?>? array,
+    ArriBox<ObjectWithEveryNullableTypeObject?>? object,
+    ArriBox<Map<String, bool?>?>? record,
+    ArriBox<ObjectWithEveryNullableTypeDiscriminator?>? discriminator,
+    ArriBox<ObjectWithEveryNullableTypeNestedObject?>? nestedObject,
+    ArriBox<List<List<ObjectWithEveryNullableTypeNestedArrayItemItem?>?>?>?
+        nestedArray,
   }) {
     return ObjectWithEveryNullableType(
       any: any ?? this.any,
-      boolean: boolean ?? this.boolean,
-      string: string ?? this.string,
-      timestamp: timestamp ?? this.timestamp,
-      float32: float32 ?? this.float32,
-      float64: float64 ?? this.float64,
-      int8: int8 ?? this.int8,
-      uint8: uint8 ?? this.uint8,
-      int16: int16 ?? this.int16,
-      uint16: uint16 ?? this.uint16,
-      int32: int32 ?? this.int32,
-      uint32: uint32 ?? this.uint32,
-      int64: int64 ?? this.int64,
-      uint64: uint64 ?? this.uint64,
+      boolean: boolean != null ? boolean.value : this.boolean,
+      string: string != null ? string.value : this.string,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
+      float32: float32 != null ? float32.value : this.float32,
+      float64: float64 != null ? float64.value : this.float64,
+      int8: int8 != null ? int8.value : this.int8,
+      uint8: uint8 != null ? uint8.value : this.uint8,
+      int16: int16 != null ? int16.value : this.int16,
+      uint16: uint16 != null ? uint16.value : this.uint16,
+      int32: int32 != null ? int32.value : this.int32,
+      uint32: uint32 != null ? uint32.value : this.uint32,
+      int64: int64 != null ? int64.value : this.int64,
+      uint64: uint64 != null ? uint64.value : this.uint64,
       enumerator: enumerator ?? this.enumerator,
-      array: array ?? this.array,
-      object: object ?? this.object,
-      record: record ?? this.record,
-      discriminator: discriminator ?? this.discriminator,
-      nestedObject: nestedObject ?? this.nestedObject,
-      nestedArray: nestedArray ?? this.nestedArray,
+      array: array != null ? array.value : this.array,
+      object: object != null ? object.value : this.object,
+      record: record != null ? record.value : this.record,
+      discriminator:
+          discriminator != null ? discriminator.value : this.discriminator,
+      nestedObject:
+          nestedObject != null ? nestedObject.value : this.nestedObject,
+      nestedArray: nestedArray != null ? nestedArray.value : this.nestedArray,
     );
   }
 }
@@ -1436,14 +1440,14 @@ class ObjectWithEveryNullableTypeObject {
   }
 
   ObjectWithEveryNullableTypeObject copyWith({
-    String? string,
-    bool? boolean,
-    DateTime? timestamp,
+    ArriBox<String?>? string,
+    ArriBox<bool?>? boolean,
+    ArriBox<DateTime?>? timestamp,
   }) {
     return ObjectWithEveryNullableTypeObject(
-      string: string ?? this.string,
-      boolean: boolean ?? this.boolean,
-      timestamp: timestamp ?? this.timestamp,
+      string: string != null ? string.value : this.string,
+      boolean: boolean != null ? boolean.value : this.boolean,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
     );
   }
 }
@@ -1498,10 +1502,10 @@ class ObjectWithEveryNullableTypeDiscriminatorA
   }
 
   ObjectWithEveryNullableTypeDiscriminatorA copyWith({
-    String? title,
+    ArriBox<String?>? title,
   }) {
     return ObjectWithEveryNullableTypeDiscriminatorA(
-      title: title ?? this.title,
+      title: title != null ? title.value : this.title,
     );
   }
 }
@@ -1535,12 +1539,12 @@ class ObjectWithEveryNullableTypeDiscriminatorB
   }
 
   ObjectWithEveryNullableTypeDiscriminatorB copyWith({
-    String? title,
-    String? description,
+    ArriBox<String?>? title,
+    ArriBox<String?>? description,
   }) {
     return ObjectWithEveryNullableTypeDiscriminatorB(
-      title: title ?? this.title,
-      description: description ?? this.description,
+      title: title != null ? title.value : this.title,
+      description: description != null ? description.value : this.description,
     );
   }
 }
@@ -1576,14 +1580,14 @@ class ObjectWithEveryNullableTypeNestedObject {
   }
 
   ObjectWithEveryNullableTypeNestedObject copyWith({
-    String? id,
-    DateTime? timestamp,
-    ObjectWithEveryNullableTypeNestedObjectData? data,
+    ArriBox<String?>? id,
+    ArriBox<DateTime?>? timestamp,
+    ArriBox<ObjectWithEveryNullableTypeNestedObjectData?>? data,
   }) {
     return ObjectWithEveryNullableTypeNestedObject(
-      id: id ?? this.id,
-      timestamp: timestamp ?? this.timestamp,
-      data: data ?? this.data,
+      id: id != null ? id.value : this.id,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
+      data: data != null ? data.value : this.data,
     );
   }
 }
@@ -1620,14 +1624,14 @@ class ObjectWithEveryNullableTypeNestedObjectData {
   }
 
   ObjectWithEveryNullableTypeNestedObjectData copyWith({
-    String? id,
-    DateTime? timestamp,
-    ObjectWithEveryNullableTypeNestedObjectDataData? data,
+    ArriBox<String?>? id,
+    ArriBox<DateTime?>? timestamp,
+    ArriBox<ObjectWithEveryNullableTypeNestedObjectDataData?>? data,
   }) {
     return ObjectWithEveryNullableTypeNestedObjectData(
-      id: id ?? this.id,
-      timestamp: timestamp ?? this.timestamp,
-      data: data ?? this.data,
+      id: id != null ? id.value : this.id,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
+      data: data != null ? data.value : this.data,
     );
   }
 }
@@ -1657,12 +1661,12 @@ class ObjectWithEveryNullableTypeNestedObjectDataData {
   }
 
   ObjectWithEveryNullableTypeNestedObjectDataData copyWith({
-    String? id,
-    DateTime? timestamp,
+    ArriBox<String?>? id,
+    ArriBox<DateTime?>? timestamp,
   }) {
     return ObjectWithEveryNullableTypeNestedObjectDataData(
-      id: id ?? this.id,
-      timestamp: timestamp ?? this.timestamp,
+      id: id != null ? id.value : this.id,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
     );
   }
 }
@@ -1692,12 +1696,12 @@ class ObjectWithEveryNullableTypeNestedArrayItemItem {
   }
 
   ObjectWithEveryNullableTypeNestedArrayItemItem copyWith({
-    String? id,
-    DateTime? timestamp,
+    ArriBox<String?>? id,
+    ArriBox<DateTime?>? timestamp,
   }) {
     return ObjectWithEveryNullableTypeNestedArrayItemItem(
-      id: id ?? this.id,
-      timestamp: timestamp ?? this.timestamp,
+      id: id != null ? id.value : this.id,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
     );
   }
 }
@@ -1880,49 +1884,52 @@ class ObjectWithEveryOptionalType {
 
   ObjectWithEveryOptionalType copyWith({
     dynamic any,
-    bool? boolean,
-    String? string,
-    DateTime? timestamp,
-    double? float32,
-    double? float64,
-    int? int8,
-    int? uint8,
-    int? int16,
-    int? uint16,
-    int? int32,
-    int? uint32,
-    BigInt? int64,
-    BigInt? uint64,
+    ArriBox<bool?>? boolean,
+    ArriBox<String?>? string,
+    ArriBox<DateTime?>? timestamp,
+    ArriBox<double?>? float32,
+    ArriBox<double?>? float64,
+    ArriBox<int?>? int8,
+    ArriBox<int?>? uint8,
+    ArriBox<int?>? int16,
+    ArriBox<int?>? uint16,
+    ArriBox<int?>? int32,
+    ArriBox<int?>? uint32,
+    ArriBox<BigInt?>? int64,
+    ArriBox<BigInt?>? uint64,
     ObjectWithEveryOptionalTypeEnumerator? enumerator,
-    List<bool>? array,
-    ObjectWithEveryOptionalTypeObject? object,
-    Map<String, bool>? record,
-    ObjectWithEveryOptionalTypeDiscriminator? discriminator,
-    ObjectWithEveryOptionalTypeNestedObject? nestedObject,
-    List<List<ObjectWithEveryOptionalTypeNestedArrayItemItem>>? nestedArray,
+    ArriBox<List<bool>?>? array,
+    ArriBox<ObjectWithEveryOptionalTypeObject?>? object,
+    ArriBox<Map<String, bool>?>? record,
+    ArriBox<ObjectWithEveryOptionalTypeDiscriminator?>? discriminator,
+    ArriBox<ObjectWithEveryOptionalTypeNestedObject?>? nestedObject,
+    ArriBox<List<List<ObjectWithEveryOptionalTypeNestedArrayItemItem>>?>?
+        nestedArray,
   }) {
     return ObjectWithEveryOptionalType(
       any: any ?? this.any,
-      boolean: boolean ?? this.boolean,
-      string: string ?? this.string,
-      timestamp: timestamp ?? this.timestamp,
-      float32: float32 ?? this.float32,
-      float64: float64 ?? this.float64,
-      int8: int8 ?? this.int8,
-      uint8: uint8 ?? this.uint8,
-      int16: int16 ?? this.int16,
-      uint16: uint16 ?? this.uint16,
-      int32: int32 ?? this.int32,
-      uint32: uint32 ?? this.uint32,
-      int64: int64 ?? this.int64,
-      uint64: uint64 ?? this.uint64,
+      boolean: boolean != null ? boolean.value : this.boolean,
+      string: string != null ? string.value : this.string,
+      timestamp: timestamp != null ? timestamp.value : this.timestamp,
+      float32: float32 != null ? float32.value : this.float32,
+      float64: float64 != null ? float64.value : this.float64,
+      int8: int8 != null ? int8.value : this.int8,
+      uint8: uint8 != null ? uint8.value : this.uint8,
+      int16: int16 != null ? int16.value : this.int16,
+      uint16: uint16 != null ? uint16.value : this.uint16,
+      int32: int32 != null ? int32.value : this.int32,
+      uint32: uint32 != null ? uint32.value : this.uint32,
+      int64: int64 != null ? int64.value : this.int64,
+      uint64: uint64 != null ? uint64.value : this.uint64,
       enumerator: enumerator ?? this.enumerator,
-      array: array ?? this.array,
-      object: object ?? this.object,
-      record: record ?? this.record,
-      discriminator: discriminator ?? this.discriminator,
-      nestedObject: nestedObject ?? this.nestedObject,
-      nestedArray: nestedArray ?? this.nestedArray,
+      array: array != null ? array.value : this.array,
+      object: object != null ? object.value : this.object,
+      record: record != null ? record.value : this.record,
+      discriminator:
+          discriminator != null ? discriminator.value : this.discriminator,
+      nestedObject:
+          nestedObject != null ? nestedObject.value : this.nestedObject,
+      nestedArray: nestedArray != null ? nestedArray.value : this.nestedArray,
     );
   }
 }
@@ -2288,13 +2295,13 @@ class RecursiveObject {
   }
 
   RecursiveObject copyWith({
-    RecursiveObject? left,
-    RecursiveObject? right,
+    ArriBox<RecursiveObject?>? left,
+    ArriBox<RecursiveObject?>? right,
     String? value,
   }) {
     return RecursiveObject(
-      left: left ?? this.left,
-      right: right ?? this.right,
+      left: left != null ? left.value : this.left,
+      right: right != null ? right.value : this.right,
       value: value ?? this.value,
     );
   }

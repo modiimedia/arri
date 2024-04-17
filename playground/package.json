@@ -13,7 +13,7 @@
     "arri-validate": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.5"
   },
   "private": true
 }
