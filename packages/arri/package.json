@@ -25,7 +25,7 @@
     "arri": "./dist/cli.mjs"
   },
   "dependencies": {
-    "@joshmossas/listhen": "1.8.0",
+    "@joshmossas/listhen": "1.10.0",
     "@parcel/watcher": "^2.4.1",
     "arri-codegen-dart": "workspace:*",
     "arri-codegen-ts": "workspace:*",

@@ -191,5 +191,6 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         format: "esm",
         target: "node20",
         platform: "node",
+        allowOverwrite: true,
     });
 }

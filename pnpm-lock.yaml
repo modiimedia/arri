@@ -142,8 +142,8 @@ importers:
   packages/arri:
     dependencies:
       '@joshmossas/listhen':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 1.10.0
+        version: 1.10.0
       '@parcel/watcher':
         specifier: ^2.4.1
         version: 2.4.1
@@ -1341,8 +1341,8 @@ packages:
     resolution: {integrity: sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
-  '@joshmossas/listhen@1.8.0':
-    resolution: {integrity: sha512-zu6sLLv7RKThPqaJBwHsgnAXuSzbtvuVVRqLfViD4ejsWDXglZfJzdWHaPG8CGmraUAnzysEKi//kxnkpWIKug==}
+  '@joshmossas/listhen@1.10.0':
+    resolution: {integrity: sha512-DnVlguupg5vl3eslE38OWfGTnxRAwQnoOqlHGv+5BzCm0a6TpKN0QoQuibzfkiWmIXTSZ5b4Kkh6rU6Rk3Xa+Q==}
     hasBin: true
 
   '@jridgewell/gen-mapping@0.3.5':
@@ -6219,7 +6219,7 @@ snapshots:
     dependencies:
       '@sinclair/typebox': 0.27.8
 
-  '@joshmossas/listhen@1.8.0':
+  '@joshmossas/listhen@1.10.0':
     dependencies:
       '@parcel/watcher': 2.4.1
       '@parcel/watcher-wasm': 2.4.1
