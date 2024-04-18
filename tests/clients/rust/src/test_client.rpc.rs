@@ -5,17 +5,16 @@ use arri_client::{
     parsed_arri_request,
     reqwest::Method,
     serde_json::{self},
-    ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
-    EmptyArriModel,
+    ArriClientConfig, ArriError, ArriModel, ArriParsedRequestOptions, ArriService, EmptyArriModel,
 };
 use std::{collections::HashMap, str::FromStr};
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct ManuallyAddedModel {
+pub struct TestsAdaptersManuallyAddedModel {
     pub hello: String,
 }
 
-impl ArriModel for ManuallyAddedModel {
+impl ArriModel for TestsAdaptersManuallyAddedModel {
     fn new() -> Self {
         Self {
             hello: "".to_string(),
@@ -61,30 +60,24 @@ impl ArriModel for ManuallyAddedModel {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct AuthorsUpdateAuthorParams {
-    pub author_id: String,
-    pub data: UpdateAuthorData,
+pub struct DefaultPayload {
+    pub message: String,
 }
 
-impl ArriModel for AuthorsUpdateAuthorParams {
+impl ArriModel for DefaultPayload {
     fn new() -> Self {
         Self {
-            author_id: "".to_string(),
-            data: UpdateAuthorData::new(),
+            message: "".to_string(),
         }
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::Object(val) => {
-                let author_id = match val.get("authorId") {
-                    Some(serde_json::Value::String(author_id_val)) => author_id_val.to_owned(),
+                let message = match val.get("message") {
+                    Some(serde_json::Value::String(message_val)) => message_val.to_owned(),
                     _ => "".to_string(),
                 };
-                let data = match val.get("data") {
-                    Some(data_val) => UpdateAuthorData::from_json(data_val.to_owned()),
-                    _ => UpdateAuthorData::new(),
-                };
-                Self { author_id, data }
+                Self { message }
             }
             _ => Self::new(),
         }
@@ -97,288 +90,21 @@ impl ArriModel for AuthorsUpdateAuthorParams {
     }
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
-        let _key_count_ = 2;
-        _json_output_.push_str("\"authorId\":");
+        let _key_count_ = 1;
+        _json_output_.push_str("\"message\":");
         _json_output_.push_str(
             format!(
                 "\"{}\"",
-                &self.author_id.replace("\n", "\\n").replace("\"", "\\\"")
+                &self.message.replace("\n", "\\n").replace("\"", "\\\"")
             )
             .as_str(),
         );
-        _json_output_.push_str(",\"data\":");
-        _json_output_.push_str(&self.data.to_json_string().as_str());
         _json_output_.push('}');
         _json_output_
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("authorId={}", &self.author_id));
-        _query_parts_.push(format!("data={}", &self.data.to_query_params_string()));
-        _query_parts_.join("&")
-    }
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct UpdateAuthorData {
-    pub name: Option<String>,
-    pub bio: Option<String>,
-    pub created_at: Option<DateTime<FixedOffset>>,
-    pub updated_at: Option<DateTime<FixedOffset>>,
-}
-
-impl ArriModel for UpdateAuthorData {
-    fn new() -> Self {
-        Self {
-            name: None,
-            bio: None,
-            created_at: None,
-            updated_at: None,
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(val) => {
-                let name = match val.get("name") {
-                    Some(serde_json::Value::String(name_val)) => Some(name_val.to_owned()),
-                    _ => None,
-                };
-                let bio = match val.get("bio") {
-                    Some(serde_json::Value::String(bio_val)) => Some(bio_val.to_owned()),
-                    _ => None,
-                };
-                let created_at = match val.get("createdAt") {
-                    Some(serde_json::Value::String(created_at_val)) => Some(
-                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
-                            .unwrap_or(DateTime::default()),
-                    ),
-                    _ => None,
-                };
-                let updated_at = match val.get("updatedAt") {
-                    Some(serde_json::Value::String(updated_at_val)) => Some(
-                        DateTime::<FixedOffset>::parse_from_rfc3339(updated_at_val)
-                            .unwrap_or(DateTime::default()),
-                    ),
-                    _ => None,
-                };
-                Self {
-                    name,
-                    bio,
-                    created_at,
-                    updated_at,
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        let mut _key_count_ = 0;
-        match &self.name {
-            Some(name_val) => {
-                if _key_count_ > 0 {
-                    _json_output_.push(',');
-                }
-                _json_output_.push_str("\"name\":");
-                _json_output_.push_str(
-                    format!(
-                        "\"{}\"",
-                        name_val.replace("\n", "\\n").replace("\"", "\\\"")
-                    )
-                    .as_str(),
-                );
-                _key_count_ += 1;
-            }
-            _ => {}
-        };
-        match &self.bio {
-            Some(bio_val) => {
-                if _key_count_ > 0 {
-                    _json_output_.push(',');
-                }
-                _json_output_.push_str("\"bio\":");
-                match bio_val {
-                    Some(bio_val) => _json_output_.push_str(
-                        format!("\"{}\"", bio_val.replace("\n", "\\n").replace("\"", "\\\""))
-                            .as_str(),
-                    ),
-                    _ => _json_output_.push_str("null"),
-                };
-                _key_count_ += 1;
-            }
-            _ => {}
-        };
-        match &self.created_at {
-            Some(created_at_val) => {
-                if _key_count_ > 0 {
-                    _json_output_.push(',');
-                }
-                _json_output_.push_str("\"createdAt\":");
-                _json_output_.push_str(format!("\"{}\"", created_at_val.to_rfc3339()).as_str());
-                _key_count_ += 1;
-            }
-            _ => {}
-        };
-        match &self.updated_at {
-            Some(updated_at_val) => {
-                if _key_count_ > 0 {
-                    _json_output_.push(',');
-                }
-                _json_output_.push_str("\"updatedAt\":");
-                _json_output_.push_str(format!("\"{}\"", updated_at_val.to_rfc3339()).as_str());
-                _key_count_ += 1;
-            }
-            _ => {}
-        };
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self.name {
-            Some(name_val) => {
-                _query_parts_.push(format!("name={}", name_val));
-            }
-            _ => {}
-        };
-        match &self.bio {
-            Some(bio_val) => {
-                match bio_val {
-                    Some(bio_val) => _query_parts_.push(format!("bio={}", bio_val)),
-                    _ => _query_parts_.push("bio=null".to_string()),
-                };
-            }
-            _ => {}
-        };
-        match &self.created_at {
-            Some(created_at_val) => {
-                _query_parts_.push(format!("createdAt={}", created_at_val.to_rfc3339()));
-            }
-            _ => {}
-        };
-        match &self.updated_at {
-            Some(updated_at_val) => {
-                _query_parts_.push(format!("updatedAt={}", updated_at_val.to_rfc3339()));
-            }
-            _ => {}
-        };
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Author {
-    pub id: String,
-    pub name: String,
-    pub bio: Option<String>,
-    pub created_at: DateTime<FixedOffset>,
-    pub updated_at: DateTime<FixedOffset>,
-}
-
-impl ArriModel for Author {
-    fn new() -> Self {
-        Self {
-            id: "".to_string(),
-            name: "".to_string(),
-            bio: None,
-            created_at: DateTime::default(),
-            updated_at: DateTime::default(),
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(val) => {
-                let id = match val.get("id") {
-                    Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                let name = match val.get("name") {
-                    Some(serde_json::Value::String(name_val)) => name_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                let bio = match val.get("bio") {
-                    Some(serde_json::Value::String(bio_val)) => Some(bio_val.to_owned()),
-                    _ => None,
-                };
-                let created_at = match val.get("createdAt") {
-                    Some(serde_json::Value::String(created_at_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
-                            .unwrap_or(DateTime::default())
-                    }
-                    _ => DateTime::default(),
-                };
-                let updated_at = match val.get("updatedAt") {
-                    Some(serde_json::Value::String(updated_at_val)) => {
-                        DateTime::<FixedOffset>::parse_from_rfc3339(updated_at_val)
-                            .unwrap_or(DateTime::default())
-                    }
-                    _ => DateTime::default(),
-                };
-                Self {
-                    id,
-                    name,
-                    bio,
-                    created_at,
-                    updated_at,
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        let _key_count_ = 5;
-        _json_output_.push_str("\"id\":");
-        _json_output_.push_str(
-            format!(
-                "\"{}\"",
-                &self.id.replace("\n", "\\n").replace("\"", "\\\"")
-            )
-            .as_str(),
-        );
-        _json_output_.push_str(",\"name\":");
-        _json_output_.push_str(
-            format!(
-                "\"{}\"",
-                &self.name.replace("\n", "\\n").replace("\"", "\\\"")
-            )
-            .as_str(),
-        );
-        _json_output_.push_str(",\"bio\":");
-        match &self.bio {
-            Some(bio_val) => _json_output_.push_str(
-                format!("\"{}\"", bio_val.replace("\n", "\\n").replace("\"", "\\\"")).as_str(),
-            ),
-            _ => _json_output_.push_str("null"),
-        };
-        _json_output_.push_str(",\"createdAt\":");
-        _json_output_.push_str(format!("\"{}\"", &self.created_at.to_rfc3339()).as_str());
-        _json_output_.push_str(",\"updatedAt\":");
-        _json_output_.push_str(format!("\"{}\"", &self.updated_at.to_rfc3339()).as_str());
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("id={}", &self.id));
-        _query_parts_.push(format!("name={}", &self.name));
-        match &self.bio {
-            Some(bio_val) => _query_parts_.push(format!("bio={}", bio_val)),
-            _ => _query_parts_.push("bio=null".to_string()),
-        };
-        _query_parts_.push(format!("createdAt={}", &self.created_at.to_rfc3339()));
-        _query_parts_.push(format!("updatedAt={}", &self.updated_at.to_rfc3339()));
+        _query_parts_.push(format!("message={}", &self.message));
         _query_parts_.join("&")
     }
 }
@@ -5206,6 +4932,342 @@ impl ArriModel for ChatMessage {
                 _query_parts_.push(format!("userId={}", user_id));
                 _query_parts_.push(format!("date={}", date.to_rfc3339()));
                 _query_parts_.push(format!("url={}", url));
+                _query_parts_.join("&")
+            }
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TestsAdaptersTestsStreamRetryWithNewCredentialsResponse {
+    pub message: String,
+}
+
+impl ArriModel for TestsAdaptersTestsStreamRetryWithNewCredentialsResponse {
+    fn new() -> Self {
+        Self {
+            message: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(val) => {
+                let message = match val.get("message") {
+                    Some(serde_json::Value::String(message_val)) => message_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { message }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        let _key_count_ = 1;
+        _json_output_.push_str("\"message\":");
+        _json_output_.push_str(
+            format!(
+                "\"{}\"",
+                &self.message.replace("\n", "\\n").replace("\"", "\\\"")
+            )
+            .as_str(),
+        );
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("message={}", &self.message));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+enum WsMessageParams {
+    CreateEntity { entity_id: String, x: f64, y: f64 },
+    UpdateEntity { entity_id: String, x: f64, y: f64 },
+    Disconnect { reason: String },
+}
+
+impl ArriModel for WsMessageParams {
+    fn new() -> Self {
+        Self::CreateEntity {
+            entity_id: "".to_string(),
+            x: 0.0,
+            y: 0.0,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(val) => match val.get("type") {
+                Some(serde_json::Value::String(r#type_val)) => match r#type_val.as_str() {
+                    "CREATE_ENTITY" => {
+                        let entity_id = match val.get("entityId") {
+                            Some(serde_json::Value::String(entity_id_val)) => {
+                                entity_id_val.to_owned()
+                            }
+                            _ => "".to_string(),
+                        };
+                        let x = match val.get("x") {
+                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        let y = match val.get("y") {
+                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        Self::CreateEntity { entity_id, x, y }
+                    }
+                    "UPDATE_ENTITY" => {
+                        let entity_id = match val.get("entityId") {
+                            Some(serde_json::Value::String(entity_id_val)) => {
+                                entity_id_val.to_owned()
+                            }
+                            _ => "".to_string(),
+                        };
+                        let x = match val.get("x") {
+                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        let y = match val.get("y") {
+                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        Self::UpdateEntity { entity_id, x, y }
+                    }
+                    "DISCONNECT" => {
+                        let reason = match val.get("reason") {
+                            Some(serde_json::Value::String(reason_val)) => reason_val.to_owned(),
+                            _ => "".to_string(),
+                        };
+                        Self::Disconnect { reason }
+                    }
+                    _ => Self::new(),
+                },
+                _ => Self::new(),
+            },
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        match &self {
+            Self::CreateEntity { entity_id, x, y } => {
+                let mut _json_output_ = "{".to_string();
+                _json_output_.push_str("\"type\":\"CREATE_ENTITY\"");
+                _json_output_.push_str(",\"entityId\":");
+                _json_output_.push_str(
+                    format!(
+                        "\"{}\"",
+                        entity_id.replace("\n", "\\n").replace("\"", "\\\"")
+                    )
+                    .as_str(),
+                );
+                _json_output_.push_str(",\"x\":");
+                _json_output_.push_str(x.to_string().as_str());
+                _json_output_.push_str(",\"y\":");
+                _json_output_.push_str(y.to_string().as_str());
+                _json_output_.push('}');
+                _json_output_
+            }
+            Self::UpdateEntity { entity_id, x, y } => {
+                let mut _json_output_ = "{".to_string();
+                _json_output_.push_str("\"type\":\"UPDATE_ENTITY\"");
+                _json_output_.push_str(",\"entityId\":");
+                _json_output_.push_str(
+                    format!(
+                        "\"{}\"",
+                        entity_id.replace("\n", "\\n").replace("\"", "\\\"")
+                    )
+                    .as_str(),
+                );
+                _json_output_.push_str(",\"x\":");
+                _json_output_.push_str(x.to_string().as_str());
+                _json_output_.push_str(",\"y\":");
+                _json_output_.push_str(y.to_string().as_str());
+                _json_output_.push('}');
+                _json_output_
+            }
+            Self::Disconnect { reason } => {
+                let mut _json_output_ = "{".to_string();
+                _json_output_.push_str("\"type\":\"DISCONNECT\"");
+                _json_output_.push_str(",\"reason\":");
+                _json_output_.push_str(
+                    format!("\"{}\"", reason.replace("\n", "\\n").replace("\"", "\\\"")).as_str(),
+                );
+                _json_output_.push('}');
+                _json_output_
+            }
+        }
+    }
+
+    fn to_query_params_string(&self) -> String {
+        match &self {
+            Self::CreateEntity { entity_id, x, y } => {
+                let mut _query_parts_: Vec<String> = Vec::new();
+                _query_parts_.push("type=CREATE_ENTITY".to_string());
+                _query_parts_.push(format!("entityId={}", entity_id));
+                _query_parts_.push(format!("x={}", x));
+                _query_parts_.push(format!("y={}", y));
+                _query_parts_.join("&")
+            }
+            Self::UpdateEntity { entity_id, x, y } => {
+                let mut _query_parts_: Vec<String> = Vec::new();
+                _query_parts_.push("type=UPDATE_ENTITY".to_string());
+                _query_parts_.push(format!("entityId={}", entity_id));
+                _query_parts_.push(format!("x={}", x));
+                _query_parts_.push(format!("y={}", y));
+                _query_parts_.join("&")
+            }
+            Self::Disconnect { reason } => {
+                let mut _query_parts_: Vec<String> = Vec::new();
+                _query_parts_.push("type=DISCONNECT".to_string());
+                _query_parts_.push(format!("reason={}", reason));
+                _query_parts_.join("&")
+            }
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+enum WsMessageResponse {
+    EntityCreated { entity_id: String, x: f64, y: f64 },
+    EntityUpdated { entity_id: String, x: f64, y: f64 },
+}
+
+impl ArriModel for WsMessageResponse {
+    fn new() -> Self {
+        Self::EntityCreated {
+            entity_id: "".to_string(),
+            x: 0.0,
+            y: 0.0,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(val) => match val.get("type") {
+                Some(serde_json::Value::String(r#type_val)) => match r#type_val.as_str() {
+                    "ENTITY_CREATED" => {
+                        let entity_id = match val.get("entityId") {
+                            Some(serde_json::Value::String(entity_id_val)) => {
+                                entity_id_val.to_owned()
+                            }
+                            _ => "".to_string(),
+                        };
+                        let x = match val.get("x") {
+                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        let y = match val.get("y") {
+                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        Self::EntityCreated { entity_id, x, y }
+                    }
+                    "ENTITY_UPDATED" => {
+                        let entity_id = match val.get("entityId") {
+                            Some(serde_json::Value::String(entity_id_val)) => {
+                                entity_id_val.to_owned()
+                            }
+                            _ => "".to_string(),
+                        };
+                        let x = match val.get("x") {
+                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        let y = match val.get("y") {
+                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
+                            _ => 0.0,
+                        };
+                        Self::EntityUpdated { entity_id, x, y }
+                    }
+                    _ => Self::new(),
+                },
+                _ => Self::new(),
+            },
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        match &self {
+            Self::EntityCreated { entity_id, x, y } => {
+                let mut _json_output_ = "{".to_string();
+                _json_output_.push_str("\"type\":\"ENTITY_CREATED\"");
+                _json_output_.push_str(",\"entityId\":");
+                _json_output_.push_str(
+                    format!(
+                        "\"{}\"",
+                        entity_id.replace("\n", "\\n").replace("\"", "\\\"")
+                    )
+                    .as_str(),
+                );
+                _json_output_.push_str(",\"x\":");
+                _json_output_.push_str(x.to_string().as_str());
+                _json_output_.push_str(",\"y\":");
+                _json_output_.push_str(y.to_string().as_str());
+                _json_output_.push('}');
+                _json_output_
+            }
+            Self::EntityUpdated { entity_id, x, y } => {
+                let mut _json_output_ = "{".to_string();
+                _json_output_.push_str("\"type\":\"ENTITY_UPDATED\"");
+                _json_output_.push_str(",\"entityId\":");
+                _json_output_.push_str(
+                    format!(
+                        "\"{}\"",
+                        entity_id.replace("\n", "\\n").replace("\"", "\\\"")
+                    )
+                    .as_str(),
+                );
+                _json_output_.push_str(",\"x\":");
+                _json_output_.push_str(x.to_string().as_str());
+                _json_output_.push_str(",\"y\":");
+                _json_output_.push_str(y.to_string().as_str());
+                _json_output_.push('}');
+                _json_output_
+            }
+        }
+    }
+
+    fn to_query_params_string(&self) -> String {
+        match &self {
+            Self::EntityCreated { entity_id, x, y } => {
+                let mut _query_parts_: Vec<String> = Vec::new();
+                _query_parts_.push("type=ENTITY_CREATED".to_string());
+                _query_parts_.push(format!("entityId={}", entity_id));
+                _query_parts_.push(format!("x={}", x));
+                _query_parts_.push(format!("y={}", y));
+                _query_parts_.join("&")
+            }
+            Self::EntityUpdated { entity_id, x, y } => {
+                let mut _query_parts_: Vec<String> = Vec::new();
+                _query_parts_.push("type=ENTITY_UPDATED".to_string());
+                _query_parts_.push(format!("entityId={}", entity_id));
+                _query_parts_.push(format!("x={}", x));
+                _query_parts_.push(format!("y={}", y));
                 _query_parts_.join("&")
             }
         }

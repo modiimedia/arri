@@ -89,7 +89,7 @@ export function createRustClient(
     }
     const modelParts: string[] = [];
     for (const key of Object.keys(def.models)) {
-        const result = rustTypeFromSchema(def.models[key], {
+        const result = rustTypeFromSchema(def.models[key]!, {
             ...context,
             instancePath: key,
             schemaPath: "",
@@ -105,7 +105,7 @@ use arri_client::{
     parsed_arri_request,
     reqwest::Method,
     serde_json::{self},
-    ArriClientConfig, ArriModel, ArriParsedRequestOptions, ArriRequestError, ArriService,
+    ArriClientConfig, ArriError, ArriModel, ArriParsedRequestOptions, ArriService,
     EmptyArriModel,
 };
 use std::{collections::HashMap, str::FromStr};`;
@@ -187,10 +187,13 @@ export function rustServiceFromDef(
             rpcsParts.push(rpc);
         }
     }
+    return "";
 }
 
 export function rustProcedureFromDef(
     key: string,
     schema: RpcDefinition,
     context: GeneratorContext,
-): string {}
+): string {
+    return "";
+}
