@@ -194,3 +194,10 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         allowOverwrite: true,
     });
 }
+
+export function isInsideDir(dir: string, parentDir: string) {
+    if (path.resolve(dir).startsWith(path.resolve(parentDir))) {
+        return true;
+    }
+    return false;
+}
