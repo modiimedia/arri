@@ -27,6 +27,12 @@ export interface ArriConfig {
           }
         | boolean;
     http2?: boolean;
+    devServer?: {
+        /**
+         * Use this to add directories outside of the srcDir that should trigger a dev server reload
+         */
+        additionalWatchDirs?: string[];
+    };
 }
 
 export function isArriConfig(input: unknown): input is ArriConfig {
@@ -83,6 +89,7 @@ export const defaultConfig: Required<ArriConfig> = {
     esbuild: {},
     https: false,
     http2: false,
+    devServer: {},
 };
 
 export function defineConfig(config: ArriConfig): ResolvedArriConfig {
@@ -100,5 +107,6 @@ export function defineConfig(config: ArriConfig): ResolvedArriConfig {
         serverEntry: config.serverEntry ?? "",
         https: config.https ?? false,
         http2: config.http2 ?? false,
+        devServer: config.devServer ?? {},
     };
 }

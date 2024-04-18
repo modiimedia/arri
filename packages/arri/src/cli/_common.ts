@@ -11,9 +11,8 @@ import { type ResolvedArriConfig } from "../config";
 
 export const logger = createConsola().withTag("arri");
 
-export const GEN_APP_FILE = "__arri_app.js";
-export const GEN_SERVER_ENTRY_FILE = "__arri_server.js";
-export const GEN_CODEGEN_FILE = "__arri_codegen.js";
+export const GEN_APP_FILE = "__arri_app.ts";
+export const GEN_SERVER_ENTRY_FILE = "__arri_server.ts";
 export const OUT_APP_FILE = "app.mjs";
 export const OUT_SERVER_ENTRY = "server.mjs";
 export const OUT_CODEGEN = "codegen.mjs";
@@ -44,7 +43,7 @@ interface RpcRoute {
 export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
+        .relative(path.resolve(config.rootDir, config.buildDir), appModule)
         .split(".");
     appImportParts.pop();
     const routes: RpcRoute[] = [];
@@ -62,14 +61,16 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
     );
     routes.sort((a, b) => (a.name < b.name ? -1 : 1));
     const module = await prettier.format(
-        `import app from './${appImportParts.join(".")}';
+        `import sourceMapSupport from 'source-map-support';
+        sourceMapSupport.install();
+        import app from '${appImportParts.join(".")}';
         ${routes
             .map(
                 (route) =>
                     `import ${route.importName} from '${route.importPath}';`,
             )
             .join("\n")}
-        const routes = [${routes
+        const routes: {id: string; route: any}[] = [${routes
             .map(
                 (route) =>
                     `{ id: '${route.name}', route: ${route.importName} }`,
@@ -82,11 +83,14 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
                     name: route.id,
                     ...route.route,
                 });
-            } else {
+                continue;
+            }
+            if (route.route.transport === 'ws') {
                 app.wsRpc({
                     name: route.id,
                     ...route.route,
                 });
+                continue;
             }
         }
         export default app`,
@@ -119,7 +123,7 @@ export async function getFsRouteBatch(
         const meta = getRpcMetaFromPath(config, file);
         if (meta) {
             const importParts = path
-                .relative(path.resolve(config.rootDir, config.srcDir), file)
+                .relative(path.resolve(config.rootDir, config.buildDir), file)
                 .split(".");
             importParts.pop();
             importParts.push("js");
@@ -175,6 +179,10 @@ export const getRpcMetaFromPath = (
     };
 };
 
+/**
+ *
+ * @deprecated
+ */
 export async function transpileFiles(config: ResolvedArriConfig) {
     const outDir = path.resolve(config.rootDir, config.buildDir);
     const files = await globby(["**/*.ts"], {

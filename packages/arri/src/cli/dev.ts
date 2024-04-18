@@ -21,7 +21,6 @@ import {
     OUT_APP_FILE,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
-    transpileFiles,
 } from "./_common";
 
 export default defineCommand({
@@ -98,7 +97,6 @@ async function startDevServer(config: ResolvedArriConfig) {
     await Promise.all([
         createEntryModule(config),
         createAppWithRoutesModule(config),
-        transpileFiles(config),
     ]);
     const context = await bundleFilesContext(config);
     await context.rebuild();
@@ -134,6 +132,11 @@ async function startDevServer(config: ResolvedArriConfig) {
                 }
             }
         }
+        if (config.devServer.additionalWatchDirs?.length) {
+            for (const dir of config.devServer.additionalWatchDirs) {
+                dirsToWatch.push(dir);
+            }
+        }
         const buildDir = path.resolve(config.rootDir, config.buildDir);
         const outDir = path.resolve(config.rootDir, ".output");
         fileWatcher = watcher.watch(dirsToWatch, {
@@ -157,7 +160,6 @@ async function startDevServer(config: ResolvedArriConfig) {
                 logger.log(
                     "Change detected. Bundling files and restarting server....",
                 );
-                await transpileFiles(config);
                 await context.rebuild();
                 bundleCreated = true;
             } catch (err) {
