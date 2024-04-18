@@ -51,6 +51,13 @@ describe("Service Creation", () => {
                 response: "User",
                 isEventStream: true,
             },
+            createConnection: {
+                transport: "ws",
+                description: "Create a ws connection to send messages",
+                path: "/create-connection",
+                params: "User",
+                response: "User",
+            },
         };
 
         const result = await prettier.format(
@@ -60,6 +67,7 @@ describe("Service Creation", () => {
                 typesNeedingParser: [],
                 versionNumber: "1",
                 hasSseProcedures: true,
+                hasWsProcedures: true,
             }),
             { parser: "typescript" },
         );
@@ -68,10 +76,11 @@ describe("Service Creation", () => {
                 await prettier.format(
                     `export class UserService {
             private readonly baseUrl: string;
-            private readonly headers: Record<string, string>;
+            private readonly headers: Record<string, string> | (() => Record<string, string>);
+            private readonly clientVersion = '1';
             constructor(options: ClientOptions = {}) {
                 this.baseUrl = options.baseUrl ?? "";
-                this.headers = { "client-version": "1", ...options.headers };
+                this.headers = options.headers ?? {};
             }
             /**
              * Fetch a user by id
@@ -85,6 +94,7 @@ describe("Service Creation", () => {
                     params,
                     parser: $$User.parse,
                     serializer: $$GetUserParams.serialize,
+                    clientVersion: this.clientVersion,
                 });
             }
             /**
@@ -98,6 +108,7 @@ describe("Service Creation", () => {
                     params,
                     parser: $$User.parse,
                     serializer: $$UpdateUserParams.serialize,
+                    clientVersion: this.clientVersion,
                 });
             }
             /**
@@ -111,7 +122,25 @@ describe("Service Creation", () => {
                     params,
                     parser: $$User.parse,
                     serializer: $$GetUserParams.serialize,
+                    clientVersion: this.clientVersion,
                 }, options);
+            }
+            /**
+             * Create a ws connection to send messages
+             */
+            createConnection(options: WsOptions<User> = {}) {
+                return arriWsRequest<User, User>({
+                    url: \`\${this.baseUrl}/create-connection\`,
+                    headers: this.headers,
+                    parser: $$User.parse,
+                    serializer: $$User.serialize,
+                    onOpen: options.onOpen,
+                    onClose: options.onClose,
+                    onError: options.onError,
+                    onConnectionError: options.onConnectionError,
+                    onMessage: options.onMessage,
+                    clientVersion: this.clientVersion,
+                });
             }
         }`,
                     { parser: "typescript" },
@@ -145,6 +174,7 @@ describe("Model Creation", () => {
                 versionNumber: "",
                 typesNeedingParser: ["User", "user"],
                 hasSseProcedures: false,
+                hasWsProcedures: false,
             },
             { existingTypeNames: [], isOptional: false },
         );
@@ -191,6 +221,7 @@ describe("Model Creation", () => {
                 versionNumber: "",
                 typesNeedingParser: ["User", "PartialUser"],
                 hasSseProcedures: false,
+                hasWsProcedures: false,
             },
             {
                 existingTypeNames: [],

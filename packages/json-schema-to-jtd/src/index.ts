@@ -126,6 +126,9 @@ export function jsonSchemaObjectToJtdObject(input: JsonSchemaObject): Schema {
     };
     Object.keys(input.properties).forEach((key) => {
         const prop = input.properties[key];
+        if (!prop) {
+            return;
+        }
         const isOptional = !(input.required ?? []).includes(key);
         if (isOptional) {
             if (!result.optionalProperties) {
@@ -155,7 +158,11 @@ export function jsonSchemaArrayToJtdArray(input: JsonSchemaArray) {
 export function jsonSchemaRecordToJtdRecord(input: JsonSchemaRecord): Schema {
     const types: Schema[] = [];
     Object.keys(input.patternProperties).forEach((key) => {
-        types.push(jsonSchemaToJtdSchema(input.patternProperties[key]));
+        const pattern = input.patternProperties[key];
+        if (!pattern) {
+            return;
+        }
+        types.push(jsonSchemaToJtdSchema(pattern));
     });
     if (types.length === 0) {
         console.warn(
@@ -164,7 +171,8 @@ export function jsonSchemaRecordToJtdRecord(input: JsonSchemaRecord): Schema {
         return {};
     }
     const result: SchemaFormValues = {
-        values: types[0],
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        values: types[0]!,
         metadata: {
             id: input.$id ?? input.title,
             description: input.description,

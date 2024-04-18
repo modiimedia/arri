@@ -47,14 +47,15 @@ describe("Service Generation", () => {
             normalizeWhitespace(`class UserService {
   final http.Client? _httpClient;
   final String _baseUrl;
-  late final Map<String, String> _headers;
+  final String _clientVersion = "";
+  late final Map<String, String> Function()? _headers;
   UserService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> headers = const {},
+    Map<String, String> Function()? headers,
   })  : _httpClient = httpClient,
-      _baseUrl = baseUrl
-  { _headers = { "client-version": "", ...headers }; }
+      _baseUrl = baseUrl,
+      _headers = headers;
   UserSettingsService get settings {
     return UserSettingsService(
       httpClient: _httpClient,
@@ -72,6 +73,7 @@ describe("Service Generation", () => {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
+      clientVersion: _clientVersion,
     );
   }
   Future<User> updateUser(UserUpdateData params) {
@@ -84,20 +86,23 @@ describe("Service Generation", () => {
       parser: (body) => User.fromJson(
         json.decode(body),
       ),
+      clientVersion: _clientVersion,
     );
   }
 }
 class UserSettingsService {
   final http.Client? _httpClient;
   final String _baseUrl;
-  late final Map<String, String> _headers;
+  final String _clientVersion = "";
+  late final Map<String, String> Function()? _headers;
   UserSettingsService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> headers = const {},
+    Map<String, String> Function()? headers,
   })  : _httpClient = httpClient,
-      _baseUrl = baseUrl
-  { _headers = { "client-version": "", ...headers }; }
+      _baseUrl = baseUrl,
+      _headers = headers;
+
   Future<UserSettingsGetUserSettingsResponse> getUserSettings(UserSettingsGetUserSettingsParams params) {
     return parsedArriRequest(
       "$_baseUrl/users/settings/get-user-settings",
@@ -108,6 +113,7 @@ class UserSettingsService {
       parser: (body) => UserSettingsGetUserSettingsResponse.fromJson(
         json.decode(body),
       ),
+      clientVersion: _clientVersion,
     );
   }
 }`),
@@ -132,14 +138,15 @@ class UserSettingsService {
             normalizeWhitespace(`class PostsService {
         final http.Client? _httpClient;
         final String _baseUrl;
-        late final Map<String, String> _headers;
+        final String _clientVersion = "";
+        late final Map<String, String> Function()? _headers;
         PostsService({
           http.Client? httpClient,
           String baseUrl = "",
-          Map<String, String> headers = const {},
+          Map<String, String> Function()? headers,
         })  : _httpClient = httpClient,
-            _baseUrl = baseUrl
-            { _headers = { "client-version": "", ...headers }; }
+            _baseUrl = baseUrl,
+            _headers = headers;
 
         Future<void> getPost() {
           return parsedArriRequest(
@@ -149,6 +156,7 @@ class UserSettingsService {
             headers: _headers,
             params: null,
             parser: (body) {},
+            clientVersion: _clientVersion,
           );
         }
       }`),
@@ -218,16 +226,16 @@ describe("Model Generation", () => {
           String? name,
           int? count,
           DateTime? createdAt,
-          DateTime? lastSignedIn,
-          String? email,
+          ArriBox<DateTime?>? lastSignedIn,
+          ArriBox<String?>? email,
         }) {
           return User(
             id: id ?? this.id,
             name: name ?? this.name,
             count: count ?? this.count,
             createdAt: createdAt ?? this.createdAt,
-            lastSignedIn: lastSignedIn ?? this.lastSignedIn,
-            email: email ?? this.email,
+            lastSignedIn: lastSignedIn != null ? lastSignedIn.value : this.lastSignedIn,
+            email: email != null ? email.value : this.email,
           );
         }
       }
@@ -435,13 +443,13 @@ describe("Model Generation", () => {
           }
           Model copyWith({
             List<double>? items,
-            List<String>? nullableItems,
-            List<ModelObjectItemsItem>? objectItems,
+            ArriBox<List<String>?>? nullableItems,
+            ArriBox<List<ModelObjectItemsItem>?>? objectItems,
           }) {
             return Model(
               items: items ?? this.items,
-              nullableItems: nullableItems ?? this.nullableItems,
-              objectItems: objectItems ?? this.objectItems,
+              nullableItems: nullableItems != null ? nullableItems.value : this.nullableItems,
+              objectItems: objectItems != null ? objectItems.value : this.objectItems,
             );
           }
         }
@@ -513,12 +521,12 @@ describe("Model Generation", () => {
             return __result;
           }
           Model copyWith({
-            String? id,
-            List<String>? tags,
+            ArriBox<String?>? id,
+            ArriBox<List<String>?>? tags,
           }) {
             return Model(
-              id: id ?? this.id,
-              tags: tags ?? this.tags,
+              id: id != null ? id.value : this.id,
+              tags: tags != null ? tags.value : this.tags,
             );
           }
         }`),

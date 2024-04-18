@@ -1,18 +1,20 @@
+import { type HttpMethod } from "event-source-plus";
 import { FetchError, ofetch } from "ofetch";
-import { ArriRequestErrorInstance, isArriRequestError } from "./errors";
+import { ArriErrorInstance, isArriError } from "./errors";
 
 export interface ArriRequestOpts<
     TType,
     TParams extends Record<any, any> | undefined = undefined,
 > {
     url: string;
-    method: string;
-    headers?: any;
+    method: HttpMethod;
+    headers?: Record<string, string> | (() => Record<string, string>);
     params?: TParams;
     parser: (input: unknown) => TType;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
+    clientVersion?: string;
 }
 
 export async function arriRequest<
@@ -42,20 +44,28 @@ export async function arriRequest<
             break;
     }
     try {
+        let headers: Record<string, string> = {};
+        if (typeof opts.headers === "function") {
+            headers = opts.headers();
+        } else {
+            headers = opts.headers ?? {};
+        }
+        if (contentType) headers["Content-Type"] = contentType;
+        if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
         const result = await ofetch(url, {
             method: opts.method,
             body,
-            headers: { ...opts.headers, "Content-Type": contentType },
+            headers,
         });
         return opts.parser(result);
     } catch (err) {
         const error = err as any as FetchError;
-        if (isArriRequestError(error.data)) {
-            throw new ArriRequestErrorInstance(error.data);
+        if (isArriError(error.data)) {
+            throw new ArriErrorInstance(error.data);
         } else {
-            throw new ArriRequestErrorInstance({
-                statusCode: error.statusCode ?? 500,
-                statusMessage:
+            throw new ArriErrorInstance({
+                code: error.statusCode ?? 500,
+                message:
                     error.statusMessage ??
                     error.message ??
                     `Error connecting to ${url}`,
@@ -77,7 +87,7 @@ export async function arriSafeRequest<
             value: result,
         };
     } catch (err) {
-        if (err instanceof ArriRequestErrorInstance) {
+        if (err instanceof ArriErrorInstance) {
             return {
                 success: false,
                 error: err,
@@ -86,9 +96,9 @@ export async function arriSafeRequest<
         if (err instanceof FetchError) {
             return {
                 success: false,
-                error: new ArriRequestErrorInstance({
-                    statusCode: err.statusCode ?? 0,
-                    statusMessage: err.statusMessage ?? "",
+                error: new ArriErrorInstance({
+                    code: err.statusCode ?? 0,
+                    message: err.statusMessage ?? "",
                     stack: err.stack,
                     data: err.data,
                 }),
@@ -96,9 +106,9 @@ export async function arriSafeRequest<
         }
         return {
             success: false,
-            error: new ArriRequestErrorInstance({
-                statusCode: 500,
-                statusMessage: `Unknown error connecting to ${opts.url}`,
+            error: new ArriErrorInstance({
+                code: 500,
+                message: `Unknown error connecting to ${opts.url}`,
                 data: err,
             }),
         };
@@ -110,4 +120,4 @@ export type SafeResponse<T> =
           success: true;
           value: T;
       }
-    | { success: false; error: ArriRequestErrorInstance };
+    | { success: false; error: ArriErrorInstance };

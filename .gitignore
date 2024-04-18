@@ -52,3 +52,5 @@ build
 .nx/cache
 
 **/target
+**/.gradle
+**/.idea

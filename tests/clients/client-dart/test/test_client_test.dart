@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:arri_client/arri_client.dart';
 import "package:test/test.dart";
@@ -6,17 +7,19 @@ import 'package:test_client_dart/test_client.rpc.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/io_client.dart';
 
+const baseUrl = "http://127.0.0.1:2020";
+
 Future<void> main() async {
-  final client = TestClient(
-      baseUrl: "http://127.0.0.1:2020", headers: {"x-test-header": 'test'});
+  final client =
+      TestClient(baseUrl: baseUrl, headers: () => {"x-test-header": 'test'});
   final unauthenticatedClient = TestClient(baseUrl: "http://127.0.0.1:2020");
   final httpClient =
       HttpClient(context: SecurityContext(withTrustedRoots: true));
   final ioClient = IOClient(httpClient);
   final clientWCustomHttpClient = TestClient(
-    baseUrl: "http://127.0.0.1:2020",
+    baseUrl: baseUrl,
     httpClient: ioClient,
-    headers: {"x-test-header": 'test'},
+    headers: () => {"x-test-header": 'test'},
   );
 
   test("supports RPCs with no params", () async {
@@ -116,8 +119,8 @@ Future<void> main() async {
       await unauthenticatedClient.tests.sendObject(input);
       expect(false, equals(true));
     } catch (err) {
-      if (err is ArriRequestError) {
-        expect(err.statusCode, equals(401));
+      if (err is ArriError) {
+        expect(err.code, equals(401));
         return;
       }
       expect(false, equals(true));
@@ -167,21 +170,57 @@ Future<void> main() async {
     final result = await client.tests.sendObjectWithNullableFields(input);
     expect(result.string, equals(null));
     expect(result.array, equals(null));
-    final input2 = input.copyWith(
-      int64: BigInt.zero,
-      discriminator: ObjectWithEveryNullableTypeDiscriminatorA(title: null),
+    final input2 = ObjectWithEveryNullableType(
+      any: {"hello": "world", "goodbye": "world"},
+      boolean: true,
+      string: "",
+      timestamp: DateTime.now(),
+      float32: 1,
+      float64: 1,
+      int8: 1,
+      uint8: 1,
+      int16: 1,
+      uint16: 1,
+      int32: 1,
+      uint32: 1,
+      int64: BigInt.from(1),
+      uint64: BigInt.from(1),
+      enumerator: ObjectWithEveryNullableTypeEnumerator.a,
+      array: [true, false],
+      object: ObjectWithEveryNullableTypeObject(
+          boolean: true, string: "", timestamp: DateTime.now()),
+      record: {
+        "A": true,
+        "B": false,
+      },
+      discriminator:
+          ObjectWithEveryNullableTypeDiscriminatorA(title: "Hello World"),
       nestedObject: ObjectWithEveryNullableTypeNestedObject(
-        id: null,
-        timestamp: null,
+        id: "",
+        timestamp: DateTime.now(),
         data: ObjectWithEveryNullableTypeNestedObjectData(
-            id: "", timestamp: null, data: null),
+            id: "",
+            timestamp: DateTime.now(),
+            data: ObjectWithEveryNullableTypeNestedObjectDataData(
+              id: "",
+              timestamp: DateTime.now(),
+            )),
       ),
-      nestedArray: [null],
+      nestedArray: [
+        [
+          ObjectWithEveryNullableTypeNestedArrayItemItem(
+            id: "",
+            timestamp: DateTime.now(),
+          )
+        ]
+      ],
     );
     final result2 = await client.tests.sendObjectWithNullableFields(input2);
-    expect(result2.nestedArray?[0], equals(null));
+    expect(result2.nestedArray?.length, equals(1));
+    expect(result2.nestedArray?.length, equals(1));
+    expect(result2.nestedArray?[0]?[0]?.id, equals(""));
     expect(result2.nestedObject?.data?.id, equals(""));
-    expect(result2.int64, equals(BigInt.zero));
+    expect(result2.int64, equals(BigInt.from(1)));
     expect(
       result2.discriminator is ObjectWithEveryNullableTypeDiscriminatorA,
       equals(true),
@@ -359,7 +398,7 @@ Future<void> main() async {
         errorCount++;
       },
     );
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1000));
     eventSource.close();
     expect(openCount, equals(1));
     expect(msgCount > 2, equals(true));
@@ -371,7 +410,7 @@ Future<void> main() async {
     var errorCount = 0;
     var connectionErrorCount = 0;
     var msgCount = 0;
-    final List<ArriRequestError> errors = [];
+    final List<ArriError> errors = [];
     final statusCode = 555;
     final statusMessage = "test_message";
     final eventSource = client.tests.streamConnectionErrorTest(
@@ -402,10 +441,110 @@ Future<void> main() async {
     expect(
       errors.every(
         (element) =>
-            element.statusCode == statusCode &&
-            element.statusMessage == statusMessage,
+            element.code == statusCode && element.message == statusMessage,
       ),
       equals(true),
     );
+  });
+  test("[SSE] can retry with new credentials", () async {
+    final tokensUsed = <String>[];
+    final dynamicClient = TestClient(
+      baseUrl: baseUrl,
+      headers: () {
+        final token = Random.secure().nextInt(4294967296).toString();
+        tokensUsed.add(token);
+        return {"x-test-header": "dart_$token"};
+      },
+    );
+    var msgCount = 0;
+    var openCount = 0;
+    final eventSource = dynamicClient.tests.streamRetryWithNewCredentials(
+        onData: (data, connection) {
+      msgCount++;
+    }, onOpen: (response, connection) {
+      openCount++;
+    }, onConnectionError: (err, connection) {
+      print(err.toString());
+    });
+    await Future.delayed(Duration(milliseconds: 2000));
+    eventSource.close();
+    expect(tokensUsed.isNotEmpty, equals(true));
+    expect(msgCount > 0, equals(true));
+    expect(openCount > 0, equals(true));
+  });
+  test("[WS] can send/receive objects", () async {
+    final connection = await client.tests.websocketRpc();
+    final messages = <WsMessageResponse>[];
+    final errors = <ArriError>[];
+    final connectionErrors = <ArriError>[];
+    connection.listen(
+      onMessage: (data) {
+        messages.add(data);
+      },
+      onErrorMessage: (error) {
+        errors.add(error);
+      },
+    );
+    connection.send(
+      WsMessageParamsCreateEntity(
+        entityId: "1",
+        x: 10,
+        y: 10,
+      ),
+    );
+    connection.send(
+      WsMessageParamsUpdateEntity(
+        entityId: "2",
+        x: 10,
+        y: 100,
+      ),
+    );
+    connection.send(
+      WsMessageParamsUpdateEntity(
+        entityId: "3",
+        x: 250,
+        y: 50,
+      ),
+    );
+    await Future.delayed(Duration(milliseconds: 500));
+    connection.close();
+    expect(messages.length, equals(3));
+    expect(errors.length, equals(0));
+    expect(connectionErrors.length, equals(0));
+    for (final message in messages) {
+      switch (message) {
+        case WsMessageResponseEntityCreated():
+          expect(message.entityId, equals("1"));
+          expect(message.x, equals(10));
+          expect(message.y, equals(10));
+          break;
+        case WsMessageResponseEntityUpdated():
+          if (message.entityId == "2") {
+            expect(message.x, equals(10));
+            expect(message.y, equals(100));
+          }
+          if (message.entityId == "3") {
+            expect(message.x, equals(250));
+            expect(message.y, equals(50));
+          }
+          break;
+      }
+    }
+  });
+  test("[WS] can receive large objects", () async {
+    final connection = await client.tests.websocketRpcSendTenLargeMessages();
+    var msgCount = 0;
+    connection.listen(
+      onMessage: (msg) {
+        msgCount++;
+      },
+    );
+    await Future.delayed(Duration(milliseconds: 2000));
+    connection.close();
+    expect(msgCount, equals(10));
+  });
+  test("[WS] connection errors", () async {
+    final connection = await client.tests.websocketRpc();
+    connection.listen(onMessage: (message) {});
   });
 }

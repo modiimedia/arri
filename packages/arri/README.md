@@ -18,6 +18,7 @@ Typescript implementation of Arri RPC. It's built on top of [H3](https://github.
 -   [Key Concepts](#key-concepts)
     -   [Arri Definition File](#arri-definition-file)
     -   [How Procedures Map To Endpoints](#how-procedures-map-to-endpoints)
+    -   [H3 Support](#h3-support)
 -   [Arri CLI](#arri-cli)
 
 ## Quickstart
@@ -107,23 +108,8 @@ Create an app entry file in your src directory. The name of the file must match 
 ```ts
 // ./src/app.ts
 import { ArriApp } from "arri";
-import { a } from "arri-validate";
 
 const app = new ArriApp();
-
-app.rpc("sayHello", {
-    params: a.object({
-        name: a.string(),
-    }),
-    response: a.object({
-        message: a.string(),
-    }),
-    handler({ params }) {
-        return {
-            message: `Hello ${params.name}`,
-        };
-    },
-});
 
 export default app;
 ```
@@ -479,6 +465,37 @@ The supported HTTP methods are as follows:
 -   put
 
 When using a get method the RPC params will be mapped as query parameters which will be coerced into their type using the `a.coerce` method from `arri-validate`. Get methods support all basic scalar types however arrays and nested objects are not supported.
+
+### H3 Support
+Arri is built on top of [H3](https://h3.unjs.io/utils/request#getrequestipevent) so many of the concepts that apply to H3 also apply to Arri.
+
+#### Accessing Utilities
+Arri re-eports all of the H3 utilities.
+
+```ts
+import { getRequestIP, setResponseHeader } from 'arri';
+```
+
+#### Accessing H3 Events
+You can access H3 events from inside procedures handlers.
+
+```ts
+defineRpc({
+  params: undefined,
+  response: undefined,
+  handler(_, event) {
+    getRequestIP(event);
+  }
+)
+
+defineEventStreamRpc({
+  params: undefined,
+  response: undefined,
+  handler(_, event) {
+    getRequestIP(event);
+  }
+)
+```
 
 ## Arri CLI
 

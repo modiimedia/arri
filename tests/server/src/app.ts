@@ -25,11 +25,12 @@ app.use(
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&
+            event.path !== "/" &&
             event.path !== "/status" &&
             event.path !== "/favicon.ico"
         ) {
             throw defineError(401, {
-                statusMessage: "Missing test auth header 'x-test-header'",
+                message: "Missing test auth header 'x-test-header'",
             });
         }
     }),

@@ -77,10 +77,17 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
             .join(",\n")}
         ];
         for(const route of routes) {
-            app.rpc({
-                name: route.id,
-                ...route.route,
-            });
+            if(route.route.transport === 'http') {
+                app.rpc({
+                    name: route.id,
+                    ...route.route,
+                });
+            } else {
+                app.wsRpc({
+                    name: route.id,
+                    ...route.route,
+                });
+            }
         }
         export default app`,
         { parser: "typescript", tabWidth: 4 },
@@ -155,7 +162,7 @@ export const getRpcMetaFromPath = (
         return undefined;
     }
     const rpcName = removeDisallowedChars(
-        fileNameParts[0],
+        fileNameParts[0]!,
         disallowedNameChars,
     );
     const httpParts = [
@@ -184,5 +191,6 @@ export async function transpileFiles(config: ResolvedArriConfig) {
         format: "esm",
         target: "node20",
         platform: "node",
+        allowOverwrite: true,
     });
 }

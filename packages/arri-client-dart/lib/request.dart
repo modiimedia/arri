@@ -25,13 +25,14 @@ Future<http.Response> arriRequest(
   http.Client? httpClient,
   HttpMethod method = HttpMethod.get,
   Map<String, dynamic>? params,
-  Map<String, String>? headers,
+  Map<String, String> Function()? headers,
 
   /// manually specify specific url query parameters
   Map<String, String>? query,
 
   /// manually specify a specific encoding
   Encoding? encoding,
+  String? clientVersion,
 }) async {
   String defaultErrorMsg =
       "Placeholder request. If you see this that means a request was never sent to the server.";
@@ -39,7 +40,10 @@ Future<http.Response> arriRequest(
     """{"statusCode": 400,"statusMessage":"$defaultErrorMsg"}""",
     400,
   );
-  final finalHeaders = {...headers ?? {}};
+  final finalHeaders = {...headers?.call() ?? {}};
+  if (clientVersion != null && clientVersion.isNotEmpty) {
+    finalHeaders["client-version"] = clientVersion;
+  }
   final client = httpClient ?? http.Client();
   String? bodyInput;
   if (method != HttpMethod.get && method != HttpMethod.head && params != null) {
@@ -107,7 +111,7 @@ Future<http.Response> arriRequest(
           headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
     default:
-      throw ArriRequestError.fromResponse(result);
+      throw ArriError.fromResponse(result);
   }
   return result;
 }
@@ -119,41 +123,55 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   http.Client? httpClient,
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
-  Map<String, String>? headers,
+  Map<String, String> Function()? headers,
+  String? clientVersion,
   required T Function(String) parser,
 }) async {
-  final result = await arriRequest(url,
-      httpClient: httpClient, method: method, params: params, headers: headers);
+  final result = await arriRequest(
+    url,
+    httpClient: httpClient,
+    method: method,
+    params: params,
+    headers: headers,
+    clientVersion: clientVersion,
+  );
   if (result.statusCode >= 200 && result.statusCode <= 299) {
     return parser(utf8.decode(result.bodyBytes));
   }
-  throw ArriRequestError.fromResponse(result);
+  throw ArriError.fromResponse(result);
 }
 
 /// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result
 /// in which both value and the error can be null.
 Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
   String url, {
+  http.Client? httpClient,
   HttpMethod httpMethod = HttpMethod.get,
   Map<String, dynamic>? params,
-  Map<String, String>? headers,
+  Map<String, String> Function()? headers,
   required T Function(String) parser,
+  String? clientVersion,
 }) async {
   try {
     final result = await parsedArriRequest(
       url,
       parser: parser,
+      headers: headers,
+      params: params,
+      clientVersion: clientVersion,
+      method: httpMethod,
+      httpClient: httpClient,
     );
     return ArriRequestResult(value: result);
   } catch (err) {
-    return ArriRequestResult(error: err is ArriRequestError ? err : null);
+    return ArriRequestResult(error: err is ArriError ? err : null);
   }
 }
 
 /// Container for holding a request result or a request error
 class ArriRequestResult<T> {
   final T? value;
-  final ArriRequestError? error;
+  final ArriError? error;
   const ArriRequestResult({this.value, this.error});
 }
 

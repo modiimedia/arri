@@ -60,7 +60,7 @@ const main = defineCommand({
             }
         };
         const tasks = Object.keys(publishConfig).map(async (key) => {
-            const config = publishConfig[key];
+            const config = publishConfig[key]!;
             if (!config.allowPublish) {
                 return;
             }

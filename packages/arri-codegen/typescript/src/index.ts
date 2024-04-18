@@ -22,6 +22,8 @@ import {
     isRpcDefinition,
     isServiceDefinition,
     type ServiceDefinition,
+    type HttpRpcDefinition,
+    type WsRpcDefinition,
     isSchemaFormRef,
     type SchemaFormRef,
 } from "arri-codegen-utils";
@@ -74,6 +76,7 @@ export async function createTypescriptClient(
         versionNumber: def.info?.version ?? "",
         typesNeedingParser: Object.keys(def.models),
         hasSseProcedures: false,
+        hasWsProcedures: false,
     };
     Object.keys(services).forEach((key) => {
         const item = services[key];
@@ -117,6 +120,10 @@ export async function createTypescriptClient(
         importParts.push("arriSseRequest");
         importParts.push("type SseOptions");
     }
+    if (rpcOptions.hasWsProcedures) {
+        importParts.push("arriWsRequest");
+        importParts.push("type WsOptions");
+    }
 
     // generated only types if no procedures are found
     if (procedureParts.length === 0 && serviceFieldParts.length === 0) {
@@ -137,19 +144,18 @@ import { ${importParts.join(", ")} } from 'arri-client';
     
 interface ${clientName}Options {
     baseUrl?: string;
-    headers?: Record<string, string>;
+    headers?: Record<string, string> | (() => Record<string, string>);
 }
 
 export class ${clientName} {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string>;
+    private readonly headers: Record<string, string> | (() => Record<string, string>)
+    private readonly clientVersion = '${rpcOptions.versionNumber}';
     ${serviceFieldParts.join("\n    ")}
 
     constructor(options: ${clientName}Options = {}) {
         this.baseUrl = options.baseUrl ?? "";
-        this.headers = { 'client-version': '${
-            rpcOptions.versionNumber
-        }', ...options.headers };
+        this.headers = options.headers ?? {};
         ${serviceInitializationParts.join(";\n        ")}
     }
     ${procedureParts.join("\n    ")}
@@ -167,6 +173,7 @@ interface RpcOptions extends GeneratorOptions {
     versionNumber: string;
     typesNeedingParser: string[];
     hasSseProcedures: boolean;
+    hasWsProcedures: boolean;
 }
 
 export function tsRpcFromDefinition(
@@ -174,12 +181,23 @@ export function tsRpcFromDefinition(
     schema: RpcDefinition,
     options: RpcOptions,
 ): string {
-    if (schema.transport !== "http") {
-        console.warn(
-            "[codegen-ts] WARNING: Non-http RPCs are not supported at this time",
-        );
-        return "";
+    if (schema.transport === "http") {
+        return tsHttpRpcFromDefinition(key, schema, options);
     }
+    if (schema.transport === "ws") {
+        return tsWsRpcFromDefinition(key, schema, options);
+    }
+    console.warn(
+        `[codegen-ts] Unsupported transport "${schema.transport}". Ignoring rpc.`,
+    );
+    return "";
+}
+
+export function tsHttpRpcFromDefinition(
+    key: string,
+    schema: HttpRpcDefinition,
+    options: RpcOptions,
+) {
     const paramName = pascalCase(schema.params ?? "");
     const responseName = pascalCase(schema.response ?? "");
     const paramsInput = schema.params ? `params: ${paramName}` : "";
@@ -208,6 +226,7 @@ export function tsRpcFromDefinition(
                 ${paramsOutput},
                 parser: ${parserPart},
                 serializer: ${serializerPart},
+                clientVersion: this.clientVersion,
             }, options);
         }`;
     }
@@ -221,7 +240,43 @@ export function tsRpcFromDefinition(
             ${paramsOutput},
             parser: ${parserPart},
             serializer: ${serializerPart},
+            clientVersion: this.clientVersion,
         });
+    }`;
+}
+export function tsWsRpcFromDefinition(
+    key: string,
+    schema: WsRpcDefinition,
+    options: RpcOptions,
+): string {
+    options.hasWsProcedures = true;
+    const paramName = schema.params ? pascalCase(schema.params) : "undefined";
+    const responseName = schema.response
+        ? pascalCase(schema.response)
+        : "undefined";
+    const hasInput = paramName.length > 0 && paramName !== "undefined";
+    const hasOutput = responseName.length > 0 && paramName !== "undefined";
+    let serializerPart = `(_) => {}`;
+    let parserPart = `(_) => {}`;
+    if (hasInput) {
+        serializerPart = `$$${paramName}.serialize`;
+    }
+    if (hasOutput) {
+        parserPart = `$$${responseName}.parse`;
+    }
+    return `${getJsDocComment(schema)}${key}(options: WsOptions<${responseName}> = {}) {
+        return arriWsRequest<${paramName}, ${responseName}>({
+            url: \`\${this.baseUrl}${schema.path}\`,
+            headers: this.headers,
+            parser: ${parserPart},
+            serializer: ${serializerPart},
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: this.clientVersion,
+        })
     }`;
 }
 
@@ -231,6 +286,7 @@ export function tsServiceFromDefinition(
     options: RpcOptions,
 ): string {
     const serviceFieldParts: string[] = [];
+    const serviceInitParts: string[] = [];
     const serviceConstructorParts: string[] = [];
     const subServiceContent: string[] = [];
     const rpcContent: string[] = [];
@@ -248,6 +304,8 @@ export function tsServiceFromDefinition(
             const serviceName: string = pascalCase(`${name}_${key}`);
             const service = tsServiceFromDefinition(serviceName, def, options);
             serviceFieldParts.push(`${key}: ${serviceName}Service;`);
+            serviceInitParts.push(`this.${key}.initClient(options);`);
+
             serviceConstructorParts.push(
                 `this.${key} = new ${serviceName}Service(options);`,
             );
@@ -257,15 +315,15 @@ export function tsServiceFromDefinition(
 
     return `export class ${name}Service {
         private readonly baseUrl: string;
-        private readonly headers: Record<string, string>;
+        private readonly headers: Record<string, string> | (() => Record<string, string>);
+        private readonly clientVersion = '${options.versionNumber}';
         ${serviceFieldParts.join("\n    ")}
+
         constructor(options: ${pascalCase(
             `${options.clientName}_Options`,
         )} = {}) {
             this.baseUrl = options.baseUrl ?? '';
-            this.headers = { 'client-version': '${
-                options.versionNumber
-            }', ...options.headers };
+            this.headers = options.headers ?? {};
             ${serviceConstructorParts.join("\n        ")}
         }
         ${rpcContent.join("\n    ")}
@@ -569,7 +627,7 @@ export function tsObjectFromJtdSchema(
     }
     if (def.properties) {
         for (const propKey of Object.keys(def.properties)) {
-            const propSchema = def.properties[propKey];
+            const propSchema = def.properties[propKey]!;
             const type = tsTypeFromJtdSchema(
                 `${nodePath}.${propKey}`,
                 propSchema,
@@ -591,7 +649,7 @@ export function tsObjectFromJtdSchema(
     }
     if (def.optionalProperties) {
         for (const propKey of Object.keys(def.optionalProperties)) {
-            const propSchema = def.optionalProperties[propKey];
+            const propSchema = def.optionalProperties[propKey]!;
             const type = tsTypeFromJtdSchema(
                 `${nodePath}.${propKey}`,
                 propSchema,

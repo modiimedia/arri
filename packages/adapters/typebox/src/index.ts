@@ -31,7 +31,7 @@ export function typeboxAdapter<TInput extends TSchema>(
     const schema = jsonSchemaToJtdSchema(input as unknown as JsonSchemaType);
     const compiled = TypeCompiler.Compile<any>(input);
     return {
-        ...(schema as any),
+        ...schema,
         metadata: {
             id: input.$id ?? input.title,
             description: input.description,
@@ -54,7 +54,7 @@ export function typeboxAdapter<TInput extends TSchema>(
                     }
                     throw typeboxErrorsToArriError(compiled.Errors(val));
                 },
-                coerce(val: unknown) {
+                coerce(val: unknown): any {
                     return Value.Cast(input, val);
                 },
                 validate(val: unknown): val is Static<TInput> {
@@ -65,7 +65,7 @@ export function typeboxAdapter<TInput extends TSchema>(
                 },
             },
         },
-    } satisfies AAdaptedSchema<TInput>;
+    } satisfies AAdaptedSchema<Static<TInput>> as any;
 }
 
 function typeboxErrorsToArriError(errs: ValueErrorIterator): ValidationError {

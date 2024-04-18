@@ -3,6 +3,30 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
+  "dart.analysisExcludedFolders": [
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    ".nx",
+    "coverage",
+    "node_modules",
+    "packages/arri/",
+    "packages/arri-adapter-typebox/",
+    "packages/arri-client/",
+    "packages/arri-codegen/kotlin/",
+    "packages/arri-codegen/kotlin-reference/",
+    "packages/arri-codegen/typescript/",
+    "packages/arri-codegen/utils/",
+    "packages/arri-validate/",
+    "packages/arri-rs/",
+    "packages/arri-validate/",
+    "packages/json-schema-to-jtd/",
+    "packages/jtd-utils/",
+    "node_modules",
+    "dist",
+    "packages/json-schema-to-jtd",
+    "tests/server"
+  ],
   "cSpell.words": [
     "Arri",
     "autoroutes",
@@ -24,7 +48,8 @@
     "typeof",
     "uncrypto",
     "unflatten",
-    "vals"
+    "vals",
+    "websockets"
   ],
   "rust-analyzer.linkedProjects": [
     "packages/arri-rs/Cargo.toml",

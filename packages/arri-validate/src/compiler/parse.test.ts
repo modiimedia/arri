@@ -4,7 +4,7 @@ import { compile } from "../compile";
 import { parsingTestSuites, validationTestSuites } from "../testSuites";
 
 for (const key of Object.keys(validationTestSuites)) {
-    const suite = validationTestSuites[key];
+    const suite = validationTestSuites[key]!;
     test(key, () => {
         const Compiled = compile(suite.schema);
         for (const input of suite.goodInputs) {
@@ -24,7 +24,7 @@ for (const key of Object.keys(validationTestSuites)) {
 
 describe("parsing test suites", () => {
     for (const key of Object.keys(parsingTestSuites)) {
-        const suite = parsingTestSuites[key];
+        const suite = parsingTestSuites[key]!;
         test(key, () => {
             const Compiled = compile(suite.schema);
             for (let i = 0; i < suite.goodInputs.length; i++) {

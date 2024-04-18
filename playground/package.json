@@ -1,0 +1,19 @@
+{
+  "name": "playground",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "An RPC server created with Arri RPC",
+  "scripts": {
+    "dev": "arri dev",
+    "build": "arri build"
+  },
+  "keywords": [],
+  "dependencies": {
+    "arri": "workspace:*",
+    "arri-validate": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
