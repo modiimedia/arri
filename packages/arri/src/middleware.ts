@@ -1,8 +1,5 @@
-import { type H3EventContext, type H3Event } from "h3";
-
-export interface MiddlewareEventContext extends H3EventContext {
-    rpcName?: string;
-}
+import { type H3Event } from "h3";
+import { type MiddlewareEventContext } from "./context";
 
 export interface MiddlewareEvent extends H3Event {
     context: MiddlewareEventContext;

@@ -10,6 +10,7 @@ import {
     createEventStream,
     type EventStreamMessage,
 } from "h3-sse";
+import { type RpcEventContext } from "./context";
 import {
     type ArriServerError,
     handleH3Error,
@@ -21,7 +22,6 @@ import { type RouteOptions } from "./route";
 import {
     type Rpc,
     type RpcParamSchema,
-    type RpcHandlerContext,
     type RpcEvent,
     isRpcParamSchema,
     validateRpcRequestInput,
@@ -70,7 +70,7 @@ export type EventStreamRpcHandler<TParams, TResponse> = (
 ) => void | Promise<void>;
 
 export interface EventStreamRpcHandlerContext<TParams = any, TResponse = any>
-    extends RpcHandlerContext<TParams> {
+    extends RpcEventContext<TParams> {
     stream: EventStreamConnection<TResponse>;
 }
 

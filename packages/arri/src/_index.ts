@@ -2,6 +2,7 @@ export * from "./app";
 export * from "./rpc";
 export * from "./middleware";
 export * from "./errors";
+export * from "./context";
 export * from "./config";
 export * from "./router";
 export * from "./route";
