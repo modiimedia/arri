@@ -115,8 +115,8 @@ async function bundleAppEntry(config: ResolvedArriConfig, allowCodegen = true) {
         bundle: true,
         packages: "external",
         format: "esm",
-        sourcemap: true,
-        minifyWhitespace: true,
+        sourcemap: config.esbuild.sourcemap ?? true,
+        minify: config.esbuild.minify ?? true,
         banner: {
             js: `import { createRequire as topLevelCreateRequire } from 'module';
 const require = topLevelCreateRequire(import.meta.url);`,

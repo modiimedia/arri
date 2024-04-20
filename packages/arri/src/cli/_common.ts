@@ -2,7 +2,6 @@ import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { removeDisallowedChars } from "arri-codegen-utils";
 import { createConsola } from "consola";
-import * as esbuild from "esbuild";
 import { globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
@@ -178,30 +177,6 @@ export const getRpcMetaFromPath = (
         httpPath: `/${httpParts.join("/")}`,
     };
 };
-
-/**
- *
- * @deprecated
- */
-export async function transpileFiles(config: ResolvedArriConfig) {
-    const outDir = path.resolve(config.rootDir, config.buildDir);
-    const files = await globby(["**/*.ts"], {
-        cwd: path.resolve(config.rootDir, config.srcDir),
-    });
-    await esbuild.build({
-        entryPoints: [
-            ...files.map((file) =>
-                path.resolve(config.rootDir, config.srcDir, file),
-            ),
-        ],
-        outdir: outDir,
-        bundle: false,
-        format: "esm",
-        target: "node20",
-        platform: "node",
-        allowOverwrite: true,
-    });
-}
 
 export function isInsideDir(dir: string, parentDir: string) {
     if (path.resolve(dir).startsWith(path.resolve(parentDir))) {

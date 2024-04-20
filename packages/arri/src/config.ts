@@ -17,7 +17,13 @@ export interface ArriConfig {
     buildDir?: string;
     esbuild?: Omit<
         BuildOptions,
-        "outfile" | "outdir" | "entryNames" | "entryPoints"
+        | "bundle"
+        | "format"
+        | "outfile"
+        | "outdir"
+        | "entryNames"
+        | "entryPoints"
+        | "packages"
     >;
     https?:
         | {

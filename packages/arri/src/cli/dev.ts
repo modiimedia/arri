@@ -83,10 +83,10 @@ export default app.h3App;`;
         outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
         format: "esm",
         bundle: true,
-        sourcemap: true,
-        target: "node20",
-        platform: "node",
         packages: "external",
+        sourcemap: config.esbuild.sourcemap ?? true,
+        target: config.esbuild.target ?? "node20",
+        platform: config.esbuild.platform ?? "node",
     });
 }
 
@@ -198,7 +198,7 @@ async function generateClients(config: ResolvedArriConfig) {
         }
         logger.log(`Generating client code...`);
         const clientCount = config.generators.length;
-        await Promise.all(
+        await Promise.allSettled(
             config.generators.map((generator) =>
                 generator.generator(result, true),
             ),
@@ -207,7 +207,7 @@ async function generateClients(config: ResolvedArriConfig) {
             `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,
         );
     } catch (err) {
-        console.error(err);
+        logger.error(err);
     }
 }
 
