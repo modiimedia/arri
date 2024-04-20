@@ -1,4 +1,6 @@
 pub mod sse;
+pub mod utils;
+
 pub use async_trait::{self};
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
@@ -26,8 +28,8 @@ pub struct ArriParsedRequestOptions<'a> {
 
 #[derive(Debug)]
 pub struct ArriError {
-    pub status_code: u16,
-    pub status_message: String,
+    pub code: u16,
+    pub message: String,
     pub stack: Option<String>,
     pub data: Option<serde_json::Value>,
 }
@@ -39,11 +41,11 @@ trait ArriRequestErrorMethods {
 impl ArriRequestErrorMethods for ArriError {
     fn from_response_data(status: u16, body: String) -> Self {
         let mut err = Self::from_json_string(body.to_owned());
-        if err.status_code == 0 {
-            err.status_code = status.to_owned();
+        if err.code == 0 {
+            err.code = status.to_owned();
         }
-        if err.status_message.is_empty() {
-            err.status_message = status_message_from_status_code(err.status_code);
+        if err.message.is_empty() {
+            err.message = status_message_from_status_code(err.code);
         }
         err
     }
@@ -52,8 +54,8 @@ impl ArriRequestErrorMethods for ArriError {
 impl ArriModel for ArriError {
     fn new() -> Self {
         Self {
-            status_code: 0,
-            status_message: "".to_string(),
+            code: 0,
+            message: "".to_string(),
             stack: None,
             data: None,
         }
@@ -85,8 +87,8 @@ impl ArriModel for ArriError {
                 };
 
                 Self {
-                    status_code,
-                    status_message,
+                    code: status_code,
+                    message: status_message,
                     stack,
                     data,
                 }
@@ -103,11 +105,60 @@ impl ArriModel for ArriError {
     }
 
     fn to_json_string(&self) -> String {
-        todo!()
+        let mut result = "{".to_string();
+        result.push_str("\"code\":");
+        result.push_str(format!("{}", &self.code).as_str());
+        result.push_str(",\"message\":");
+        result.push_str(
+            format!(
+                "\"{}\"",
+                &self.message.replace("\n", "\\n").replace("\"", "\\\"")
+            )
+            .as_str(),
+        );
+        match &self.stack {
+            Some(val) => {
+                result.push_str(",\"stack\":");
+                result.push_str(
+                    format!("\"{}\"", val.replace("\n", "\\n").replace("\"", "\\\"")).as_str(),
+                );
+            }
+            _ => {}
+        }
+        match &self.data {
+            Some(val) => {
+                result.push_str(",\"data\":");
+                result.push_str(
+                    serde_json::to_string(val)
+                        .unwrap_or("null".to_string())
+                        .as_str(),
+                )
+            }
+            _ => {}
+        }
+        result
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        let mut query_parts: Vec<String> = Vec::new();
+        query_parts.push(format!("code={}", &self.code));
+        query_parts.push(format!("message={}", &self.message));
+        match &self.stack {
+            Some(stack) => {
+                query_parts.push(format!("stack={}", stack));
+            }
+            _ => {}
+        }
+        match &self.data {
+            Some(data) => {
+                query_parts.push(format!(
+                    "data={}",
+                    serde_json::to_string(data).unwrap_or("null".to_string())
+                ));
+            }
+            _ => {}
+        }
+        query_parts.join("&")
     }
 }
 
@@ -192,8 +243,8 @@ pub async fn arri_request<'a>(
         Ok(res) => return Ok(res),
         Err(err) => {
             return Err(ArriError {
-                status_code: err.status().unwrap_or(StatusCode::default()).as_u16(),
-                status_message: format!("Error requesting \"{}\"", opts.url),
+                code: err.status().unwrap_or(StatusCode::default()).as_u16(),
+                message: format!("Error requesting \"{}\"", opts.url),
                 stack: None,
                 data: None,
             })
@@ -224,7 +275,7 @@ impl ArriModel for EmptyArriModel {
     }
 
     fn to_json_string(&self) -> String {
-        "".to_string()
+        "{}".to_string()
     }
 
     fn to_query_params_string(&self) -> String {
@@ -266,8 +317,8 @@ pub async fn parsed_arri_request<'a, TResponse>(
         Ok(text) => return Ok(parser(text)),
         Err(err) => {
             return Err(ArriError {
-                status_code: status,
-                status_message: "Expected server to return plaintext".to_string(),
+                code: status,
+                message: "Expected server to return plaintext".to_string(),
                 stack: None,
                 data: Some(serde_json::Value::String(err.to_string())),
             })
