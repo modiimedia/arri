@@ -1,10 +1,11 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { listenAndWatch } from "@joshmossas/listhen";
-import watcher from "@parcel/watcher";
-import type ParcelWatcher from "@parcel/watcher";
+// import watcher from "@parcel/watcher";
+// import type ParcelWatcher from "@parcel/watcher";
 import { isAppDefinition } from "arri-codegen-utils";
 import { loadConfig } from "c12";
+import { type FSWatcher } from "chokidar";
 import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
 import { ofetch } from "ofetch";
@@ -15,11 +16,11 @@ import {
     createAppWithRoutesModule,
     GEN_APP_FILE,
     GEN_SERVER_ENTRY_FILE,
+    isInsideDir,
     logger,
     OUT_APP_FILE,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
-    transpileFiles,
 } from "./_common";
 
 export default defineCommand({
@@ -74,7 +75,7 @@ export default app.h3App;`;
         path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
         serverContent,
     );
-    await esbuild.build({
+    return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
             path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
@@ -82,23 +83,23 @@ export default app.h3App;`;
         outfile: path.resolve(config.rootDir, ".output", OUT_APP_FILE),
         format: "esm",
         bundle: true,
-        sourcemap: true,
-        target: "node20",
-        platform: "node",
         packages: "external",
-        allowOverwrite: true,
+        sourcemap: config.esbuild.sourcemap ?? true,
+        target: config.esbuild.target ?? "node20",
+        platform: config.esbuild.platform ?? "node",
     });
 }
 
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
-    let fileWatcher: ParcelWatcher.AsyncSubscription | undefined;
+    const watcher = await import("chokidar");
+    let fileWatcher: FSWatcher | undefined;
     await Promise.all([
         createEntryModule(config),
         createAppWithRoutesModule(config),
-        transpileFiles(config),
     ]);
-    await bundleFilesContext(config);
+    const context = await bundleFilesContext(config);
+    await context.rebuild();
     const listener = await startListener(config, true);
     setTimeout(async () => {
         await generateClients(config);
@@ -109,14 +110,15 @@ async function startDevServer(config: ResolvedArriConfig) {
     process.on("exit", async () => {
         await Promise.allSettled([
             listener.close(),
-            fileWatcher?.unsubscribe(),
+            fileWatcher?.close(),
+            context.dispose(),
         ]);
     });
     process.on("SIGINT", cleanExit);
     process.on("SIGTERM", cleanExit);
     async function load(isRestart: boolean, reason?: string) {
         if (fileWatcher) {
-            await fileWatcher.unsubscribe();
+            await fileWatcher.close();
         }
         const srcDir = path.resolve(config.rootDir ?? "", config.srcDir);
         const dirsToWatch = [srcDir];
@@ -124,54 +126,53 @@ async function startDevServer(config: ResolvedArriConfig) {
             for (const key of Object.keys(config.esbuild.alias)) {
                 const alias = config.esbuild.alias[key];
                 if (alias) {
-                    dirsToWatch.push(alias);
+                    if (!isInsideDir(alias, srcDir)) {
+                        dirsToWatch.push(alias);
+                    }
                 }
+            }
+        }
+        if (config.devServer.additionalWatchDirs?.length) {
+            for (const dir of config.devServer.additionalWatchDirs) {
+                dirsToWatch.push(dir);
             }
         }
         const buildDir = path.resolve(config.rootDir, config.buildDir);
         const outDir = path.resolve(config.rootDir, ".output");
-        fileWatcher = await watcher.subscribe(
-            srcDir,
-            async (err, events) => {
-                if (err) {
-                    logger.error(err);
-                    return;
-                }
-                let doNothing = true;
-                for (const event of events) {
-                    if (event.type === "create") {
-                        continue;
-                    }
-                    doNothing = false;
-                    break;
-                }
-                if (doNothing) {
-                    return;
-                }
-                await createAppWithRoutesModule(config);
-                let bundleCreated = false;
-                try {
-                    logger.log(
-                        "Change detected. Bundling files and restarting server....",
-                    );
-                    await transpileFiles(config);
-                    await bundleFilesContext(config);
-                    bundleCreated = true;
-                } catch (err) {
-                    logger.error("ERROR", err);
+        fileWatcher = watcher.watch(dirsToWatch, {
+            ignoreInitial: true,
+            ignored: [
+                buildDir,
+                outDir,
+                "**/.output",
+                "**/dist/**",
+                "**/node_modules/**",
+                "**/.git/**",
+            ],
+        });
+        fileWatcher.on("all", async (eventName, path) => {
+            if (eventName === "addDir" || eventName === "add") {
+                return;
+            }
+            await createAppWithRoutesModule(config);
+            let bundleCreated = false;
+            try {
+                logger.log(
+                    "Change detected. Bundling files and restarting server....",
+                );
+                await context.rebuild();
+                bundleCreated = true;
+            } catch (err) {
+                logger.error("ERROR", err);
+                bundleCreated = false;
+            }
+            if (bundleCreated && config.generators.length) {
+                setTimeout(async () => {
+                    await generateClients(config);
                     bundleCreated = false;
-                }
-                if (bundleCreated && config.generators.length) {
-                    setTimeout(async () => {
-                        await generateClients(config);
-                        bundleCreated = false;
-                    }, 1000);
-                }
-            },
-            {
-                ignore: [buildDir, outDir],
-            },
-        );
+                }, 1000);
+            }
+        });
     }
     await load(false);
 }
@@ -197,7 +198,7 @@ async function generateClients(config: ResolvedArriConfig) {
         }
         logger.log(`Generating client code...`);
         const clientCount = config.generators.length;
-        await Promise.all(
+        await Promise.allSettled(
             config.generators.map((generator) =>
                 generator.generator(result, true),
             ),
@@ -206,7 +207,7 @@ async function generateClients(config: ResolvedArriConfig) {
             `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,
         );
     } catch (err) {
-        console.error(err);
+        logger.error(err);
     }
 }
 

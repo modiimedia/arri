@@ -8,33 +8,19 @@ import {
 } from "arri-validate";
 import {
     type Router,
-    type H3Event,
     defineEventHandler,
     setHeader,
     send,
-    type H3EventContext,
     isPreflightRequest,
     getQuery,
     type HTTPMethod,
     readRawBody,
+    type H3Event,
 } from "h3";
 import { type ArriOptions } from "./app";
+import { type RoutePostEventContext, type RouteEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
-import {
-    type MiddlewareEvent,
-    type Middleware,
-    type ExtractParams,
-} from "./middleware";
-
-export interface RouteEventContext<
-    TPath extends string,
-    TQuery extends Record<any, any> = any,
-    TBody = any,
-> extends H3EventContext {
-    params: ExtractParams<TPath>;
-    query: TQuery;
-    body: TBody;
-}
+import { type MiddlewareEvent, type Middleware } from "./middleware";
 
 export interface RouteEvent<
     TPath extends string,
@@ -44,22 +30,13 @@ export interface RouteEvent<
     context: RouteEventContext<TPath, TQuery, TBody>;
 }
 
-export interface PostRouteEventContext<
-    TPath extends string,
-    TQuery extends Record<any, any> = any,
-    TBody = any,
-    TResponse = any,
-> extends RouteEventContext<TPath, TQuery, TBody> {
-    response: TResponse;
-}
-
 export interface PostRouteEvent<
     TPath extends string,
     TQuery extends Record<any, any> = any,
     TBody = any,
     TResponse = any,
 > extends H3Event {
-    context: PostRouteEventContext<TPath, TQuery, TBody, TResponse>;
+    context: RoutePostEventContext<TPath, TQuery, TBody, TResponse>;
 }
 
 export interface ArriRoute<
