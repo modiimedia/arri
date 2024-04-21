@@ -25,6 +25,7 @@ app.use(
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&
+            event.path !== "/" &&
             event.path !== "/status" &&
             event.path !== "/favicon.ico"
         ) {

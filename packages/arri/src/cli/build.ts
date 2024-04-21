@@ -14,7 +14,6 @@ import {
     createAppWithRoutesModule,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
-    transpileFiles,
     GEN_APP_FILE,
     OUT_APP_FILE,
     logger,
@@ -41,6 +40,14 @@ export default defineCommand({
         if (!config) {
             throw new Error("Unable to find arri config");
         }
+        const appEntry = path.resolve(
+            config.rootDir,
+            config.srcDir,
+            config.entry,
+        );
+        if (!existsSync(appEntry)) {
+            throw new Error(`Unable to find entry at ${appEntry}`);
+        }
         await startBuild(config, args.skipCodegen);
     },
 });
@@ -59,7 +66,6 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
         createAppWithRoutesModule(config),
         createServerEntryFile(config),
         createCodegenEntryFile(config),
-        transpileFiles(config),
     ]);
     await bundleAppEntry(config);
     logger.log("Finished bundling");
@@ -109,8 +115,8 @@ async function bundleAppEntry(config: ResolvedArriConfig, allowCodegen = true) {
         bundle: true,
         packages: "external",
         format: "esm",
-        sourcemap: true,
-        minifyWhitespace: true,
+        sourcemap: config.esbuild.sourcemap ?? true,
+        minify: config.esbuild.minify ?? true,
         banner: {
             js: `import { createRequire as topLevelCreateRequire } from 'module';
 const require = topLevelCreateRequire(import.meta.url);`,

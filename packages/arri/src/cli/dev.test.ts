@@ -16,6 +16,7 @@ describe("Naming RPCs", () => {
             serverEntry: "",
             https: false,
             http2: false,
+            devServer: {},
         };
         const result = getRpcMetaFromPath(
             config,
@@ -38,6 +39,7 @@ describe("Naming RPCs", () => {
             serverEntry: "",
             https: false,
             http2: false,
+            devServer: {},
         };
         const result = getRpcMetaFromPath(
             config,

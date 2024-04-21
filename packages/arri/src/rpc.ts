@@ -23,9 +23,9 @@ import {
     type H3Event,
     getValidatedQuery,
     readRawBody,
-    type H3EventContext,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
+import { type RpcPostEventContext, type RpcEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
 import {
     type EventStreamRpc,
@@ -91,39 +91,23 @@ export type HttpRpc<
     TResponse extends RpcParamSchema | undefined,
 > = Omit<Rpc<false, TParams, TResponse>, "isEventStream">;
 
-export type HandlerContext = Record<string, any>;
-
-export interface RpcHandlerContext<TParams = undefined>
-    extends HandlerContext,
-        Omit<H3EventContext, "params"> {
-    rpcName: string;
-    params: TParams;
-}
-
-export interface RpcPostHandlerContext<
-    TParams = undefined,
-    TResponse = undefined,
-> extends RpcHandlerContext<TParams> {
-    response: TResponse;
-}
-
 export interface RpcEvent<TParams = undefined>
     extends Omit<H3Event, "context"> {
-    context: RpcHandlerContext<TParams>;
+    context: RpcEventContext<TParams>;
 }
 
 export interface RpcPostEvent<TParams = undefined, TResponse = undefined>
     extends Omit<H3Event, "context"> {
-    context: RpcPostHandlerContext<TParams, TResponse>;
+    context: RpcPostEventContext<TParams, TResponse>;
 }
 
 export type RpcHandler<TParams, TResponse> = (
-    context: RpcHandlerContext<TParams>,
+    context: RpcEventContext<TParams>,
     event: RpcEvent<TParams>,
 ) => TResponse | Promise<TResponse>;
 
 export type RpcPostHandler<TParams, TResponse> = (
-    context: RpcPostHandlerContext<TParams, TResponse>,
+    context: RpcPostEventContext<TParams, TResponse>,
     event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
@@ -310,7 +294,7 @@ export function registerRpc(
             }
             if (procedure.postHandler) {
                 await procedure.postHandler(
-                    event.context as RpcPostHandlerContext,
+                    event.context as RpcPostEventContext,
                     event as RpcPostEvent,
                 );
             }
