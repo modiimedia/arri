@@ -46,7 +46,8 @@ describe("Model Generation", () => {
             modelPrefix: "",
             polymorphicClasses: {},
         });
-        expect(result.content).toBe(`@Serializable
+        expect(normalizeWhitespace(result.content ?? "")).toBe(
+            normalizeWhitespace(`@Serializable
 data class User(
     val boolean: Boolean,
     val string: String,
@@ -72,7 +73,7 @@ data class User(
 
         if (boolean != other.boolean) return false
         if (string != other.string) return false
-        if (timestamp != other.timestamp) return false
+        if (timestamp.toEpochMilli() != other.timestamp.toEpochMilli()) return false
         if (float64 != other.float64) return false
         if (float32 != other.float32) return false
         if (int8 != other.int8) return false
@@ -112,7 +113,8 @@ enum class UserEnum() {
     OptionA,
     @SerialName("OPTION_B")
     OptionB,
-}`);
+}`),
+        );
     });
     it("handles nullable and optional types", () => {
         const Schema = a.object({
@@ -194,8 +196,10 @@ data class Schema(
             polymorphicClasses: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
-            normalizeWhitespace(`@Serializable
-sealed class Message()
+            normalizeWhitespace(`@Serializable(with = MessageSerializer::class)
+sealed class Message() {
+    abstract val type: String
+}
 
 @Serializable
 @SerialName("TEXT")
@@ -203,7 +207,10 @@ data class MessageText(
     val id: String,
     val userId: String,
     val content: String,
-) : Message()
+) : Message() {
+    override val type: String
+    get() = "TEXT"
+}
 
 @Serializable
 @SerialName("IMAGE")
@@ -211,7 +218,24 @@ data class MessageImage(
     val id: String,
     val userId: String,
     val imageUrl: String,
-) : Message()`),
+) : Message() {
+    override val type: String
+    get() = "IMAGE"
+}
+
+object MessageSerializer : 
+    JsonContentPolymorphicSerializer<Message>(Message::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<Message> {
+        val discriminatorKey = "type";
+        val discriminatorVal = 
+            if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
+        return when (discriminatorVal) {
+            "TEXT" -> MessageText.serializer()
+            "IMAGE" -> MessageImage.serializer()
+            else -> throw Exception("Unsupported discriminator type: $discriminatorVal")
+        }
+    }
+}`),
         );
     });
 
@@ -268,7 +292,11 @@ describe("procedures", () => {
                 params = JsonInstance.encodeToJsonElement<SayHelloParams>(params),
                 headers = headers,
             ).execute()
-            return JsonInstance.decodeFromString<SayHelloResponse>(response.body())
+            if (response.status.value in 200..299) {
+                return JsonInstance.decodeFromString<SayHelloResponse>(response.body())
+            }
+            val error = JsonInstance.decodeFromString<ClientError>(response.body())
+            throw error
         }`),
         );
     });
@@ -385,7 +413,7 @@ describe("services", () => {
                     params = JsonInstance.encodeToJsonElement<UserParams>(params),
                     headers = headers,
                 ).execute()
-                if (response.status.value in 200.299) {
+                if (response.status.value in 200..299) {
                     return JsonInstance.decodeFromString<User>(response.body())
                 }
                 val error = JsonInstance.decodeFromString<ArriClientError>(response.body())
@@ -399,7 +427,7 @@ describe("services", () => {
                     params = JsonInstance.encodeToJsonElement<UpdateUserParams>(params),
                     headers = headers,
                 ).execute()
-                if (response.status.value in 200.299) {
+                if (response.status.value in 200..299) {
                     return
                 }
                 val error = JsonInstance.decodeFromString<ArriClientError>(response.body())
@@ -460,7 +488,11 @@ describe("services", () => {
                     params = JsonInstance.encodeToJsonElement<UserSettingsParams>(params),
                     headers = headers,
                 ).execute()
-                return JsonInstance.decodeFromString<UserSettings>(response.body())
+                if (response.status.value in 200..299) {
+                    return JsonInstance.decodeFromString<UserSettings>(response.body())
+                }
+                val error = JsonInstance.decodeFromString<ArriClientError>(response.body())
+                throw error
             }
         }`),
         );

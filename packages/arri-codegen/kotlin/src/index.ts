@@ -492,12 +492,8 @@ export function getTypeName(schema: Schema, context: ModelContext): string {
     }
     if (context.discriminatorKey && context.discriminatorValue) {
         if (context.parentId) {
-            let instanceKey = context.instancePath.split("/").pop() ?? "";
-            if (instanceKey === context.parentId) {
-                instanceKey = "";
-            }
             return pascalCase(
-                `${context.parentId}_${instanceKey}_${context.discriminatorValue}`,
+                `${context.parentId}_${context.discriminatorValue}`,
                 {
                     normalize: true,
                 },
