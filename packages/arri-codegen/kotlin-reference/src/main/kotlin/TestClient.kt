@@ -22,13 +22,13 @@ import java.nio.ByteBuffer
 import java.time.Instant
 
 
-val JsonInstanceModule = SerializersModule {
+private val JsonInstanceModule = SerializersModule {
     polymorphic(UserNotification::class) {
         subclass(UserNotificationPostLike::class)
         subclass(UserNotificationPostComment::class)
     }
 }
-val JsonInstance = Json {
+private val JsonInstance = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
     serializersModule = JsonInstanceModule
