@@ -53,7 +53,7 @@ const ObjectWithEveryField = a.object(
         uint32: a.uint32(),
         int64: a.int64(),
         uint64: a.uint64(),
-        enum: a.enumerator(["FOO", "BAR", "BAZ"]),
+        enum: Enumerator,
         object: NestedObject,
         array: a.array(a.boolean()),
         record: a.record(a.boolean()),
@@ -99,19 +99,33 @@ const ObjectWithNullableFields = a.object(
 );
 type ObjectWithNullableFields = a.infer<typeof ObjectWithNullableFields>;
 
+interface RecursiveObject {
+    left: RecursiveObject | null;
+    right: RecursiveObject | null;
+}
+const RecursiveObject = a.recursive<RecursiveObject>(
+    (self) =>
+        a.object({
+            left: a.nullable(self),
+            right: a.nullable(self),
+        }),
+    { id: "RecursiveObject" },
+);
+
 const def: AppDefinition = {
     arriSchemaVersion: "0.0.4",
     procedures: {},
     models: {
         NestedObject,
-        Object: ObjectWithEveryField,
+        ObjectWithEveryField,
         ObjectWithOptionalFields,
         ObjectWithNullableFields,
+        RecursiveObject,
     },
 };
 
 async function main() {
-    const outDir = path.resolve(__dirname, "../../tests/utils");
+    const outDir = path.resolve(__dirname, "../../tests/test-files");
     if (existsSync(outDir)) {
         rmSync(outDir, { recursive: true, force: true });
     }
@@ -218,7 +232,7 @@ async function main() {
         array: null,
         record: null,
         discriminator: null,
-        any: undefined,
+        any: null,
     };
     files.push({
         filename: `ObjectWithNullableFields_AllNull.json`,
@@ -267,6 +281,27 @@ async function main() {
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,
         ),
+    });
+
+    const recursiveObject: RecursiveObject = {
+        left: {
+            left: {
+                left: null,
+                right: {
+                    left: null,
+                    right: null,
+                },
+            },
+            right: null,
+        },
+        right: {
+            left: null,
+            right: null,
+        },
+    };
+    files.push({
+        filename: "RecursiveObject.json",
+        content: a.serialize(RecursiveObject, recursiveObject),
     });
     const mdParts: string[] = [
         "Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.",

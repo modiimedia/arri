@@ -104,7 +104,8 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": null,
   "array": null,
   "record": null,
-  "discriminator": null
+  "discriminator": null,
+  "any": null
 }
 ```
 
@@ -136,5 +137,17 @@ Below are all of the contents of the test JSON files in an easier to read format
     "date": "2001-01-01T16:00:00.000Z"
   },
   "any": { "message": "hello world" }
+}
+```
+
+## RecursiveObject.json
+
+```json
+{
+  "left": {
+    "left": { "left": null, "right": { "left": null, "right": null } },
+    "right": null
+  },
+  "right": { "left": null, "right": null }
 }
 ```
