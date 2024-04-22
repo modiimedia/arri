@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
 import { type AppDefinition } from "../../packages/arri-codegen/utils/dist";
@@ -112,9 +112,10 @@ const def: AppDefinition = {
 
 async function main() {
     const outDir = path.resolve(__dirname, "../../tests/utils");
-    if (!existsSync(outDir)) {
-        mkdirSync(outDir);
+    if (existsSync(outDir)) {
+        rmSync(outDir, { recursive: true, force: true });
     }
+    mkdirSync(outDir);
     writeFileSync(
         path.resolve(outDir, `AppDefinition.json`),
         await prettier.format(JSON.stringify(def), {
@@ -123,26 +124,27 @@ async function main() {
             endOfLine: "lf",
         }),
     );
-    const targetDate = new Date("01/01/2001 10:00 AM CST");
+    const files: { filename: string; content: string }[] = [];
 
+    const targetDate = new Date("01/01/2001 10:00 AM CST");
     const nestedObject: NestedObject = {
         id: "1",
         content: "hello world",
     };
-    writeFileSync(
-        path.resolve(outDir, "NestedObject_NoSpecialChars.json"),
-        a.serialize(NestedObject, nestedObject),
-    );
+    files.push({
+        filename: `NestedObject_NoSpecialChars.json`,
+        content: a.serialize(NestedObject, nestedObject),
+    });
 
     const nestedObjectWithSpecialChars: NestedObject = {
         id: "1",
         content:
             'double-quote: " | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000',
     };
-    writeFileSync(
-        path.resolve(outDir, "NestedObject_SpecialChars.json"),
-        a.serialize(NestedObject, nestedObjectWithSpecialChars),
-    );
+    files.push({
+        filename: "NestedObject_SpecialChars.json",
+        content: a.serialize(NestedObject, nestedObjectWithSpecialChars),
+    });
 
     const objectWithEveryFieldValue: ObjectWithEveryField = {
         string: "",
@@ -176,27 +178,27 @@ async function main() {
         },
         any: "hello world",
     };
-    writeFileSync(
-        path.resolve(outDir, "ObjectWithEveryField.json"),
-        a.serialize(ObjectWithEveryField, objectWithEveryFieldValue),
-    );
+    files.push({
+        filename: "ObjectWithEveryField.json",
+        content: a.serialize(ObjectWithEveryField, objectWithEveryFieldValue),
+    });
     const objectWithOptionalFieldsAllUndefined: ObjectWithOptionalFields = {};
-    writeFileSync(
-        path.resolve(outDir, "ObjectWithOptionalFields_AllUndefined.json"),
-        a.serialize(
+    files.push({
+        filename: "ObjectWithOptionalFields_AllUndefined.json",
+        content: a.serialize(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsAllUndefined,
         ),
-    );
+    });
     const objectWithOptionalFieldsNoUndefined: ObjectWithOptionalFields =
         objectWithEveryFieldValue;
-    writeFileSync(
-        path.resolve(outDir, "ObjectWithOptionalFields_NoUndefined.json"),
-        a.serialize(
+    files.push({
+        filename: "ObjectWithOptionalFields_NoUndefined.json",
+        content: a.serialize(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsNoUndefined,
         ),
-    );
+    });
     const objectWithNullableFieldsAllNull: ObjectWithNullableFields = {
         string: null,
         boolean: null,
@@ -218,10 +220,13 @@ async function main() {
         discriminator: null,
         any: undefined,
     };
-    writeFileSync(
-        path.resolve(outDir, "ObjectWithNullableFields__AllNull.json"),
-        a.serialize(ObjectWithNullableFields, objectWithNullableFieldsAllNull),
-    );
+    files.push({
+        filename: `ObjectWithNullableFields_AllNull.json`,
+        content: a.serialize(
+            ObjectWithNullableFields,
+            objectWithNullableFieldsAllNull,
+        ),
+    });
     const objectWithNullableFieldsNoNull: ObjectWithNullableFields = {
         string: "",
         boolean: true,
@@ -256,9 +261,32 @@ async function main() {
             message: "hello world",
         },
     };
+    files.push({
+        filename: "ObjectWithNullableFields_NoNull.json",
+        content: a.serialize(
+            ObjectWithNullableFields,
+            objectWithNullableFieldsNoNull,
+        ),
+    });
+    const mdParts: string[] = [
+        "Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.",
+        "",
+    ];
+    for (const file of files) {
+        writeFileSync(path.resolve(outDir, file.filename), file.content);
+        mdParts.push(`## ${file.filename}
+\`\`\`json
+${file.content}
+\`\`\`
+`);
+    }
     writeFileSync(
-        path.resolve(outDir, "ObjectWithNullableFields__NoNull.json"),
-        a.serialize(ObjectWithNullableFields, objectWithNullableFieldsNoNull),
+        path.resolve(outDir, "README.md"),
+        await prettier.format(mdParts.join("\n"), {
+            tabWidth: 2,
+            endOfLine: "lf",
+            parser: "markdown",
+        }),
     );
 }
 
