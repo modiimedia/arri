@@ -257,6 +257,8 @@ enum class UserSettingsPreferredTheme() {
 }
 
 @Serializable(with = UserNotificationSerializer::class)
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("notificationType")
 sealed class UserNotification() {
     abstract val notificationType: String
 }
@@ -267,8 +269,7 @@ data class UserNotificationPostLike(
     val postId: String,
     val userId: String,
 ) : UserNotification() {
-    override val notificationType: String
-        get() = "POST_LIKE"
+    override val notificationType: String = "POST_LIKE"
 }
 
 @Serializable
@@ -278,10 +279,8 @@ data class UserNotificationPostComment(
     val userId: String,
     val commentText: String,
 ) : UserNotification() {
-    override val notificationType: String
-        get() = "POST_COMMENT"
+    override val notificationType: String = "POST_COMMENT"
 }
-
 
 object UserNotificationSerializer :
     JsonContentPolymorphicSerializer<UserNotification>(UserNotification::class) {
@@ -471,8 +470,8 @@ private suspend fun handleSseRequest(
                 onConnectionError(
                     TestClientError(
                         code = httpResponse.status.value,
-                        message = "Error fetching stream",
-                        data = JsonInstance.encodeToJsonElement(httpResponse),
+                        message = "Error fetching stream from $url",
+                        data = JsonInstance.encodeToJsonElement(httpResponse.toString()),
                         stack = null,
                     )
                 )

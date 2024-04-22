@@ -49,7 +49,7 @@ fun main() {
         float64 = 11.1,
         enumerator = ObjectWithEveryTypeEnumerator.B,
         array = listOf(true, false, true),
-        discriminator = ObjectWithEveryTypeDiscriminatorDiscriminatorB(title = "Hello world", description = "hi"),
+        discriminator = ObjectWithEveryTypeDiscriminatorB(title = "Hello world", description = "hi"),
         nestedArray = listOf(listOf(ObjectWithEveryTypeNestedArray(id = "2", timestamp = Instant.now()))),
         record = mutableMapOf(Pair("01", true), Pair("02", false)),
         nestedObject = ObjectWithEveryTypeNestedObject(
@@ -154,7 +154,7 @@ fun main() {
                         ),
                     ),
                 ),
-                discriminator = ObjectWithEveryNullableTypeDiscriminatorDiscriminatorB(
+                discriminator = ObjectWithEveryNullableTypeDiscriminatorB(
                     title = "Hello world",
                     description = ""
                 ),

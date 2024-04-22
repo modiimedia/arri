@@ -173,7 +173,7 @@ data class Schema(
 
     it("handles discriminated unions", () => {
         const Message = a.discriminator(
-            "type",
+            "messageType",
             {
                 TEXT: a.object({
                     id: a.string(),
@@ -197,8 +197,10 @@ data class Schema(
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable(with = MessageSerializer::class)
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("messageType")
 sealed class Message() {
-    abstract val type: String
+    abstract val messageType: String
 }
 
 @Serializable
@@ -208,8 +210,7 @@ data class MessageText(
     val userId: String,
     val content: String,
 ) : Message() {
-    override val type: String
-    get() = "TEXT"
+    override val messageType: String = "TEXT"
 }
 
 @Serializable
@@ -219,14 +220,13 @@ data class MessageImage(
     val userId: String,
     val imageUrl: String,
 ) : Message() {
-    override val type: String
-    get() = "IMAGE"
+    override val messageType: String = "IMAGE"
 }
 
 object MessageSerializer : 
     JsonContentPolymorphicSerializer<Message>(Message::class) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<Message> {
-        val discriminatorKey = "type";
+        val discriminatorKey = "messageType";
         val discriminatorVal = 
             if (element.jsonObject[discriminatorKey]?.jsonPrimitive?.isString == true) element.jsonObject[discriminatorKey]!!.jsonPrimitive.content else null
         return when (discriminatorVal) {

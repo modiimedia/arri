@@ -31,6 +31,7 @@ import {
 export interface ServiceContext {
     clientName: string;
     modelPrefix?: string;
+    modelJsonInstances: Record<string, string>;
 }
 
 export interface KotlinClientOptions {
@@ -63,13 +64,31 @@ export function kotlinClientFromDef(
     const rpcParts: string[] = [];
     const modelParts: string[] = [];
     const polymorphicClasses: Record<string, string[]> = {};
-
+    const modelJsonInstances: Record<string, string> = {};
+    const generatedTypes: string[] = [];
+    for (const key of Object.keys(def.models)) {
+        const model = def.models[key]!;
+        const modelResult = kotlinPropertyFromSchema(model, {
+            generatedTypes,
+            modelPrefix: options.modelPrefix ?? "",
+            instancePath: `/${pascalCase(model.metadata?.id ?? key, {
+                normalize: true,
+            })}`,
+            schemaPath: "",
+            polymorphicClasses,
+            modelJsonInstances,
+        });
+        if (modelResult.content) {
+            modelParts.push(modelResult.content);
+        }
+    }
     for (const key of Object.keys(serviceDefs)) {
         const subDef = serviceDefs[key];
         if (isServiceDefinition(subDef)) {
             const service = kotlinServiceFromDef(key, subDef, {
                 clientName,
                 modelPrefix,
+                modelJsonInstances,
             });
             services.push({
                 key: camelCase(key, { normalize: true }),
@@ -84,27 +103,13 @@ export function kotlinClientFromDef(
                 const rpc = kotlinHttpRpcFromDef(rpcName, subDef, {
                     clientName,
                     modelPrefix,
+                    modelJsonInstances,
                 });
                 rpcParts.push(rpc);
             }
         }
     }
-    const generatedTypes: string[] = [];
-    for (const key of Object.keys(def.models)) {
-        const model = def.models[key]!;
-        const modelResult = kotlinPropertyFromSchema(model, {
-            generatedTypes,
-            modelPrefix: options.modelPrefix ?? "",
-            instancePath: `/${pascalCase(model.metadata?.id ?? key, {
-                normalize: true,
-            })}`,
-            schemaPath: "",
-            polymorphicClasses,
-        });
-        if (modelResult.content) {
-            modelParts.push(modelResult.content);
-        }
-    }
+
     const serializerModuleParts: string[] = [];
     for (const key of Object.keys(polymorphicClasses)) {
         let part = `    polymorphic(${key}::class) {\n`;
@@ -245,6 +250,8 @@ export function kotlinHttpRpcFromDef(
               normalize: true,
           }) as string)
         : undefined;
+    const paramJson = `JsonInstance`;
+    const responseJson = `JsonInstance`;
 
     if (def.isEventStream) {
         return `    fun ${name}(
@@ -274,7 +281,7 @@ export function kotlinHttpRpcFromDef(
                 })},
                 params = ${
                     paramType
-                        ? `JsonInstance.encodeToJsonElement<${paramType}>(params)`
+                        ? `${paramJson}.encodeToJsonElement<${paramType}>(params)`
                         : "null"
                 },
                 headers = finalHeaders,
@@ -289,7 +296,7 @@ export function kotlinHttpRpcFromDef(
                 onData = { str -> 
                     val data = ${
                         returnType
-                            ? `JsonInstance.decodeFromString<${returnType}>(str)`
+                            ? `${responseJson}.decodeFromString<${returnType}>(str)`
                             : `null`
                     }
                     onData(data)
@@ -309,7 +316,7 @@ export function kotlinHttpRpcFromDef(
             method = HttpMethod.${pascalCase(def.method)},
             params = ${
                 paramType
-                    ? `JsonInstance.encodeToJsonElement<${paramType}>(params)`
+                    ? `${paramJson}.encodeToJsonElement<${paramType}>(params)`
                     : "null"
             },
             headers = headers,
@@ -317,7 +324,7 @@ export function kotlinHttpRpcFromDef(
         if (response.status.value in 200..299) {
             ${
                 returnType
-                    ? `return JsonInstance.decodeFromString<${returnType}>(response.body())`
+                    ? `return ${responseJson}.decodeFromString<${returnType}>(response.body())`
                     : "return"
             }
         }
@@ -338,6 +345,7 @@ export interface ModelContext {
     discriminatorValue?: string;
     discriminatorParent?: string;
     polymorphicClasses: Record<string, string[]>;
+    modelJsonInstances: Record<string, string>;
 }
 
 export interface KotlinProperty {
@@ -529,8 +537,7 @@ export function kotlinClassFromSchema(
     const annotationParts = ["@Serializable"];
     if (context.discriminatorKey && context.discriminatorValue) {
         annotationParts.push(`@SerialName("${context.discriminatorValue}")`);
-        discriminatorGetter = `    override val ${camelCase(context.discriminatorKey, { normalize: true })}: String
-        get() = "${context.discriminatorValue}"`;
+        discriminatorGetter = `    // override val ${camelCase(context.discriminatorKey, { normalize: true })}: String = "${context.discriminatorValue}"`;
     }
     const subContentParts: string[] = [];
     const constructorParts: string[] = [];
@@ -551,6 +558,7 @@ export function kotlinClassFromSchema(
             modelPrefix: context.modelPrefix,
             parentId: name,
             polymorphicClasses: context.polymorphicClasses,
+            modelJsonInstances: context.modelJsonInstances,
         });
         if (isSchemaFormType(propSchema) && propSchema.type === "timestamp") {
             needsAdditionalMethods = true;
@@ -606,6 +614,7 @@ export function kotlinClassFromSchema(
                 modelPrefix: context.modelPrefix,
                 parentId: name,
                 polymorphicClasses: context.polymorphicClasses,
+                modelJsonInstances: context.modelJsonInstances,
             });
             if (
                 isSchemaFormType(propSchema) &&
@@ -715,6 +724,7 @@ export function kotlinArrayFromSchema(
         modelPrefix: context.modelPrefix,
         parentId: context.parentId,
         polymorphicClasses: context.polymorphicClasses,
+        modelJsonInstances: context.modelJsonInstances,
     });
     const dataType = schema.nullable
         ? `List<${subType.dataType}>?`
@@ -753,6 +763,7 @@ export function kotlinSealedClassFromSchema(
             modelPrefix: context.modelPrefix,
             parentId: name,
             polymorphicClasses: context.polymorphicClasses,
+            modelJsonInstances: context.modelJsonInstances,
         });
         subTypes.push({
             discriminatorVal,
@@ -764,10 +775,21 @@ export function kotlinSealedClassFromSchema(
     }
     context.polymorphicClasses[name] = subTypes.map((type) => type.dataType);
     let content: string | undefined;
+    let hasJsonInstance = false;
     if (!context.generatedTypes.includes(name)) {
-        content = `@Serializable(with = ${name}Serializer::class)
+        const annotations = [`@Serializable(with = ${name}Serializer::class)`];
+
+        if (schema.discriminator !== "type") {
+            annotations.push(
+                "@OptIn(ExperimentalSerializationApi::class)",
+                `@JsonClassDiscriminator("${schema.discriminator}")`,
+            );
+            context.modelJsonInstances[name] = `JsonInstance${name}`;
+            hasJsonInstance = true;
+        }
+        content = `${annotations.join("\n")}
 sealed class ${name}() {
-    abstract val ${camelCase(schema.discriminator, { normalize: true })}: String
+    // abstract val ${camelCase(schema.discriminator, { normalize: true })}: String
 }
 
 ${subContentParts.join("\n\n")}
@@ -784,6 +806,15 @@ ${subTypes.map((type) => `            "${type.discriminatorVal}" -> ${type.dataT
         }
     }
 }`;
+        if (hasJsonInstance) {
+            content =
+                `val JsonInstance${name} = Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = true
+    serializersModule = JsonInstanceModule
+    classDiscriminator = "${schema.discriminator}"
+}\n\n` + content;
+        }
         context.generatedTypes.push(name);
     }
 
@@ -806,6 +837,7 @@ export function kotlinMapFromSchema(
         modelPrefix: context.modelPrefix,
         parentId: context.parentId,
         polymorphicClasses: context.polymorphicClasses,
+        modelJsonInstances: context.modelJsonInstances,
     });
     const dataType = `Map<String, ${subType.dataType}>${
         schema.nullable ? "?" : ""
@@ -1008,8 +1040,8 @@ private suspend fun handleSseRequest(
                 onConnectionError(
                     ${clientName}Error(
                         code = httpResponse.status.value,
-                        message = "Error fetching stream",
-                        data = JsonInstance.encodeToJsonElement(httpResponse),
+                        message = "Error fetching stream from $url",
+                        data = JsonInstance.encodeToJsonElement(httpResponse.toString()),
                         stack = null,
                     )
                 )

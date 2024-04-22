@@ -156,3 +156,113 @@ export const TestAppDefinition: AppDefinition = {
         UpdateUserParams: TestUpdateUserParams,
     },
 };
+
+const ExampleEnum = a.enumerator(["FOO", "BAR", "BAZ"], { id: "ExampleEnum" });
+
+const ExampleObject = a.object(
+    {
+        id: a.string(),
+        content: a.string(),
+    },
+    {
+        id: "ExampleObject",
+    },
+);
+
+const ExamplePayload = a.object(
+    {
+        string: a.string(),
+        boolean: a.boolean(),
+        timestamp: a.timestamp(),
+        float32: a.float32(),
+        float64: a.float64(),
+        int8: a.int8(),
+        uint8: a.uint8(),
+        int16: a.int16(),
+        uint16: a.uint16(),
+        int32: a.int32(),
+        uint32: a.uint32(),
+        int64: a.int64(),
+        uint64: a.uint64(),
+        enum: ExampleEnum,
+        object: ExampleObject,
+        array: a.array(a.boolean()),
+        record: a.record(a.boolean()),
+        any: a.any(),
+    },
+    {
+        id: "ExamplePayload",
+    },
+);
+
+export const ExamplePayloadNullable = a.object(
+    {
+        string: a.nullable(a.string()),
+        boolean: a.nullable(a.boolean()),
+        timestamp: a.nullable(a.timestamp()),
+        float32: a.nullable(a.float32()),
+        float64: a.nullable(a.float64()),
+        int8: a.nullable(a.int8()),
+        uint8: a.nullable(a.uint8()),
+        int16: a.nullable(a.int16()),
+        uint16: a.nullable(a.uint16()),
+        int32: a.nullable(a.int32()),
+        uint32: a.nullable(a.uint32()),
+        int64: a.nullable(a.int64()),
+        uint64: a.nullable(a.uint64()),
+        enum: a.nullable(ExampleEnum),
+        object: ExampleObject,
+        array: a.nullable(a.array(a.boolean())),
+        record: a.nullable(a.record(a.boolean())),
+        any: a.nullable(a.any()),
+    },
+    {
+        id: "ExamplePayloadNullable",
+    },
+);
+
+export const ExampleDiscriminator = a.discriminator(
+    "typeName",
+    {
+        A: a.object({
+            id: a.string(),
+        }),
+        B: a.object({
+            id: a.string(),
+            name: a.string(),
+        }),
+        C: a.object({
+            id: a.string(),
+            name: a.string(),
+            date: a.timestamp(),
+        }),
+    },
+    {
+        id: "ExampleDiscriminator",
+    },
+);
+
+export interface ExampleRecursive {
+    left: ExampleRecursive | null;
+    right: ExampleRecursive | null;
+}
+
+export const ExampleRecursive = a.recursive<ExampleRecursive>(
+    (self) =>
+        a.object({
+            left: a.nullable(self),
+            right: a.nullable(self),
+        }),
+    { id: "ExampleRecursive" },
+);
+
+export const ReferenceAppDefinition: AppDefinition = {
+    arriSchemaVersion: "0.0.4",
+    procedures: {},
+    models: {
+        ExamplePayload,
+        ExamplePayloadNullable,
+        ExampleDiscriminator,
+        BinaryTree: ExampleRecursive,
+    },
+};
