@@ -26,6 +26,18 @@ data class ExamplePayload(
 ) {
     companion object Factory {
         fun fromJson(input: JsonElement): ExamplePayload {
+
+            val array = mutableListOf<Boolean>()
+            for (item in input.jsonObject["array"]?.jsonArray ?: listOf()) {
+                array.add(item.jsonPrimitive.booleanOrNull ?: false)
+            }
+            val record = mutableMapOf<String, Boolean>()
+            if(input.jsonObject["record"] != null) {
+                for (item in input.jsonObject["record"]!!.jsonObject.entries) {
+                    record[item.key] = item.value.jsonPrimitive.booleanOrNull ?: false
+                }
+            }
+
             return ExamplePayload(
                 string =
                     if (input.jsonObject["string"]?.jsonPrimitive?.isString == true)
@@ -81,9 +93,9 @@ data class ExamplePayload(
                     else 0UL,
                 enum = ExampleEnum.fromJson(input.jsonObject["enum"] ?: JsonPrimitive("")),
                 _object = ExampleObject.fromJson(input.jsonObject["object"] ?: JsonObject(mapOf())),
-                array = listOf(),
-                record = mapOf(),
-                any = JsonNull,
+                array = array,
+                record = record,
+                any = input.jsonObject["any"] ?: JsonNull,
             )
         }
     }
@@ -135,9 +147,66 @@ data class ExampleObject(
     fun toJsonString(): String {
         var result = "{"
         result += "\"id\":"
-        result += "\"${id}\""
+        result += buildString { printQuoted(id) }
         result += ",\"content\":"
-        result += "\"${content}\""
+        result += buildString { printQuoted(content) }
+        result += "}"
         return result
     }
+}
+
+// Implementation copied from https://github.com/Kotlin/kotlinx.serialization/blob/d0ae697b9394103879e6c7f836d0f7cf128f4b1e/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt#L45
+internal const val STRING = '"'
+
+private fun toHexChar(i: Int) : Char {
+    val d = i and 0xf
+    return if (d < 10) (d + '0'.code).toChar()
+    else (d - 10 + 'a'.code).toChar()
+}
+
+internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
+    for (c in 0..0x1f) {
+        val c1 = toHexChar(c shr 12)
+        val c2 = toHexChar(c shr 8)
+        val c3 = toHexChar(c shr 4)
+        val c4 = toHexChar(c)
+        this[c] = "\\u$c1$c2$c3$c4"
+    }
+    this['"'.code] = "\\\""
+    this['\\'.code] = "\\\\"
+    this['\t'.code] = "\\t"
+    this['\b'.code] = "\\b"
+    this['\n'.code] = "\\n"
+    this['\r'.code] = "\\r"
+    this[0x0c] = "\\f"
+}
+
+internal val ESCAPE_MARKERS: ByteArray = ByteArray(93).apply {
+    for (c in 0..0x1f) {
+        this[c] = 1.toByte()
+    }
+    this['"'.code] = '"'.code.toByte()
+    this['\\'.code] = '\\'.code.toByte()
+    this['\t'.code] = 't'.code.toByte()
+    this['\b'.code] = 'b'.code.toByte()
+    this['\n'.code] = 'n'.code.toByte()
+    this['\r'.code] = 'r'.code.toByte()
+    this[0x0c] = 'f'.code.toByte()
+}
+
+internal fun StringBuilder.printQuoted(value: String) {
+    append(STRING)
+    var lastPos = 0
+    for (i in value.indices) {
+        val c = value[i].code
+        if (c < ESCAPE_STRINGS.size && ESCAPE_STRINGS[c] != null) {
+            append(value, lastPos, i) // flush prev
+            append(ESCAPE_STRINGS[c])
+            lastPos = i + 1
+        }
+    }
+
+    if (lastPos != 0) append(value, lastPos, value.length)
+    else append(value)
+    append(STRING)
 }
