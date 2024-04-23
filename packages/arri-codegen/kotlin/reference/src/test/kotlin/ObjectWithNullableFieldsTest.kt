@@ -3,7 +3,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.Instant
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class ObjectWithNullableFieldsTest {
@@ -75,56 +74,20 @@ class ObjectWithNullableFieldsTest {
 
     @Test
     fun toUrlQueryParams() {
+        assertEquals(
+            allNullValue.toUrlQueryParams(),
+            "string=null&boolean=null&timestamp=null&float32=null&float64=null&int8=null&uint8=null&int16=null&uint16=null&int32=null&uint32=null&int64=null&uint64=null&enum=null"
+        )
+        assertEquals(
+            noNullValue.toUrlQueryParams(),
+            "string=&boolean=true&timestamp=2001-01-01T16:00:00.000Z&float32=1.5&float64=1.5&int8=1&uint8=1&int16=10&uint16=10&int32=100&uint32=100&int64=1000&uint64=1000&enum=BAZ"
+        )
     }
 
     @Test
     fun fromJson() {
         val result = ObjectWithNullableFields.fromJson(allNullReference);
-        println("EXPECTED: ${result.any}, ACTUAL: ${allNullValue.any}")
-        assertContentEquals(
-            listOf(
-                result.string,
-                result.boolean,
-                result.timestamp,
-                result.float32,
-                result.float64,
-                result.int8,
-                result.uint8,
-                result.int16,
-                result.uint16,
-                result.int32,
-                result.uint32,
-                result.int64,
-                result.uint64,
-                result.enum,
-                result.`object`,
-                result.array,
-                result.record,
-                result.discriminator,
-                result.any,
-            ),
-            listOf(
-                allNullValue.string,
-                allNullValue.boolean,
-                allNullValue.timestamp,
-                allNullValue.float32,
-                allNullValue.float64,
-                allNullValue.int8,
-                allNullValue.uint8,
-                allNullValue.int16,
-                allNullValue.uint16,
-                allNullValue.int32,
-                allNullValue.uint32,
-                allNullValue.int64,
-                allNullValue.uint64,
-                allNullValue.enum,
-                allNullValue.`object`,
-                allNullValue.array,
-                allNullValue.record,
-                allNullValue.discriminator,
-                allNullValue.any,
-            ),
-        )
+        assertEquals(result, allNullValue)
         assertEquals(ObjectWithNullableFields.fromJson(noNullReference), noNullValue)
     }
 }

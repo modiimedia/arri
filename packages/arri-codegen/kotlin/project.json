@@ -24,12 +24,28 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
     },
-    "test": {
+    "test-codegen": {
       "executor": "@nx/vite:test",
       "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen/kotlin"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/packages/arri-codegen/kotlin"
+      }
+    },
+    "test-reference": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew test --console=plain",
+        "cwd": "packages/arri-codegen/kotlin/reference"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx test-codegen arri-codegen-kotlin",
+          "nx test-reference arri-codegen-kotlin"
+        ]
       }
     },
     "typecheck": {

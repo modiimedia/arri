@@ -30,12 +30,12 @@ class ObjectWithEveryFieldTest {
         any = JsonPrimitive("hello world")
     )
 
-    private val fileReader = File("../../../../tests/test-files/ObjectWithEveryField.json").bufferedReader()
+    private val json =
+        File("../../../../tests/test-files/ObjectWithEveryField.json").bufferedReader().use { it.readText() }
 
     @Test
     fun toJson() {
-        val expectedResult = fileReader.use { it.readText() }
-        assertEquals(expectedResult, `val`.toJson())
+        assertEquals(json, `val`.toJson())
     }
 
     @Test
@@ -44,7 +44,11 @@ class ObjectWithEveryFieldTest {
 
     @Test
     fun fromJson() {
-        val actualResult = ObjectWithEveryField.fromJson(fileReader.use { it.readText() })
+        val actualResult = ObjectWithEveryField.fromJson(json)
         assertEquals(actualResult, `val`)
+
+        val badDataResult = ObjectWithEveryField.fromJson("false")
+        assertEquals(badDataResult, ObjectWithEveryField.new().copy(timestamp = badDataResult.timestamp))
     }
+
 }
