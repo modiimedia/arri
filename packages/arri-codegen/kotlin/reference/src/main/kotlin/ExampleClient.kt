@@ -22,7 +22,7 @@ interface ExampleClientModel {
 interface ExampleClientModelFactory<T> {
     fun new(): T
     fun fromJson(input: String): T
-    fun fromJsonElement(input: JsonElement): T
+    fun fromJsonElement(input: JsonElement, instancePath: String = ""): T
 }
 
 class ExampleClient {
@@ -60,13 +60,13 @@ data class NestedObject(
 
         @JvmStatic
         override fun fromJson(input: String): NestedObject {
-            return NestedObject.fromJsonElement(JsonInstance.parseToJsonElement(input))
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): NestedObject {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): NestedObject {
             if (input !is JsonObject) {
-                System.err.println("[WARNING] NestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject. Got ${input.javaClass}. Initializing empty NestedObject.")
+                System.err.println("[WARNING] NestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty NestedObject.")
                 return new()
             }
             val id = when (input.jsonObject["id"]) {
@@ -222,47 +222,103 @@ data class ObjectWithEveryField(
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): ObjectWithEveryField {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): ObjectWithEveryField {
             if (input !is JsonObject) {
-                System.err.println("[WARNING] ObjectWithEveryField.fromJson() expected kotlinx.serialization.json.JsonObject. Got ${input.javaClass}. Initializing empty ObjectWithEveryField.")
+                System.err.println("[WARNING] ObjectWithEveryField.fromJson() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty ObjectWithEveryField.")
                 return new()
             }
-            val string: String = input.jsonObject["string"]?.jsonPrimitive?.contentOrNull ?: ""
-            val boolean: Boolean = input.jsonObject["boolean"]?.jsonPrimitive?.booleanOrNull ?: false
-            val timestamp: Instant =
-                if (input.jsonObject["timestamp"]?.jsonPrimitive?.isString == true)
-                    Instant.parse(input.jsonObject["timestamp"]!!.jsonPrimitive.content)
-                else Instant.now()
-            val float32: Float = input.jsonObject["float32"]?.jsonPrimitive?.floatOrNull ?: 0.0F
-            val float64: Double = input.jsonObject["float64"]?.jsonPrimitive?.doubleOrNull ?: 0.0
-            val int8: Byte = input.jsonObject["int8"]?.jsonPrimitive?.intOrNull?.toByte() ?: 0
-            val uint8: UByte = input.jsonObject["uint8"]?.jsonPrimitive?.intOrNull?.toUByte() ?: 0u
-            val int16: Short = input.jsonObject["int16"]?.jsonPrimitive?.intOrNull?.toShort() ?: 0
-            val uint16: UShort = input.jsonObject["uint16"]?.jsonPrimitive?.intOrNull?.toUShort() ?: 0u
+            val string: String = when (input.jsonObject["string"]) {
+                is JsonPrimitive -> input.jsonObject["string"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val boolean: Boolean = when (input.jsonObject["boolean"]) {
+                is JsonPrimitive -> input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull ?: false
+                else -> false
+            }
+            val timestamp: Instant = when (input.jsonObject["timestamp"]) {
+                is JsonPrimitive ->
+                    if (input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
+                        Instant.parse(input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                    else
+                        Instant.now()
+
+                else -> Instant.now()
+            }
+
+            val float32: Float = when (input.jsonObject["float32"]) {
+                is JsonPrimitive -> input.jsonObject["float32"]!!.jsonPrimitive.floatOrNull ?: 0.0F
+                else -> 0.0F
+            }
+            val float64: Double = when (input.jsonObject["float64"]) {
+                is JsonPrimitive -> input.jsonObject["float64"]!!.jsonPrimitive.doubleOrNull ?: 0.0
+                else -> 0.0
+            }
+            val int8: Byte = when (input.jsonObject["int8"]) {
+                is JsonPrimitive -> input.jsonObject["int8"]!!.jsonPrimitive.contentOrNull?.toByteOrNull() ?: 0
+                else -> 0
+            }
+            val uint8: UByte = when (input.jsonObject["uint8"]) {
+                is JsonPrimitive -> input.jsonObject["uint8"]!!.jsonPrimitive.contentOrNull?.toUByteOrNull() ?: 0u
+                else -> 0u
+            }
+            val int16: Short = when (input.jsonObject["int16"]) {
+                is JsonPrimitive -> input.jsonObject["int16"]!!.jsonPrimitive.contentOrNull?.toShortOrNull() ?: 0
+                else -> 0
+            }
+            val uint16: UShort = when (input.jsonObject["uint16"]) {
+                is JsonPrimitive -> input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
+                else -> 0u
+            }
             val int32: Int = input.jsonObject["int32"]?.jsonPrimitive?.intOrNull ?: 0
             val uint32: UInt = input.jsonObject["uint32"]?.jsonPrimitive?.contentOrNull?.toUIntOrNull() ?: 0u
             val int64: Long = input.jsonObject["int64"]?.jsonPrimitive?.longOrNull ?: 0L
             val uint64: ULong = input.jsonObject["uint64"]?.jsonPrimitive?.contentOrNull?.toULongOrNull() ?: 0UL
-            val enum: Enumerator = Enumerator.fromJsonElement(input.jsonObject["enum"] ?: JsonPrimitive(""))
-            val `object`: NestedObject =
-                NestedObject.fromJsonElement(input.jsonObject["object"]?.jsonObject ?: JsonObject(mapOf()))
-            val array: MutableList<Boolean> = mutableListOf()
-            if (input.jsonObject["array"]?.jsonArray != null) {
-                for (item in input.jsonObject["array"]!!.jsonArray) {
-                    array.add(item.jsonPrimitive.booleanOrNull ?: false)
-                }
+            val enum: Enumerator = when (input.jsonObject["enum"]) {
+                is JsonElement -> Enumerator.fromJsonElement(input.jsonObject["enum"]!!, "${instancePath}/enum")
+                else -> Enumerator.new()
             }
-            val record: MutableMap<String, Boolean> = mutableMapOf()
-            if (input.jsonObject["record"]?.jsonObject != null) {
-                for (entry in input.jsonObject["record"]!!.jsonObject) {
-                    record[entry.key] = entry.value.jsonPrimitive.booleanOrNull ?: false
-                }
+            val `object`: NestedObject = when (input.jsonObject["object"]) {
+                is JsonElement -> NestedObject.fromJsonElement(input.jsonObject["object"]!!, "${instancePath}/object")
+                else -> NestedObject.new()
             }
-            val discriminator: Discriminator = Discriminator.fromJsonElement(
-                input.jsonObject["discriminator"]?.jsonObject ?: JsonObject(
-                    mapOf()
+            val array: MutableList<Boolean> = when (input.jsonObject["array"]) {
+                is JsonArray -> {
+                    val arrayValue: MutableList<Boolean> = mutableListOf()
+                    for (item in input.jsonObject["array"]!!.jsonArray) {
+                        arrayValue.add(
+                            when (item) {
+                                is JsonPrimitive -> item.jsonPrimitive.booleanOrNull ?: false
+                                else -> false
+                            }
+                        )
+                    }
+                    arrayValue
+                }
+
+                else -> mutableListOf()
+            }
+            val record: MutableMap<String, Boolean> = when (input.jsonObject["record"]) {
+                is JsonObject -> {
+                    val recordValue: MutableMap<String, Boolean> = mutableMapOf()
+                    for (entry in input.jsonObject["record"]!!.jsonObject) {
+                        recordValue[entry.key] = when (entry.value) {
+                            is JsonPrimitive -> entry.value.jsonPrimitive.booleanOrNull ?: false
+                            else -> false
+                        }
+                    }
+                    recordValue
+                }
+
+                else -> mutableMapOf()
+            }
+            val discriminator: Discriminator = when (input.jsonObject["discriminator"]) {
+                is JsonObject -> Discriminator.fromJsonElement(
+                    input.jsonObject["discriminator"]!!,
+                    "${instancePath}/discriminator"
                 )
-            )
+
+                else -> Discriminator.new()
+            }
             val any: JsonElement = input.jsonObject["any"] ?: JsonNull
             return ObjectWithEveryField(
                 string,
@@ -313,9 +369,9 @@ enum class Enumerator {
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): Enumerator {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): Enumerator {
             if (input !is JsonPrimitive) {
-                System.err.println("[WARNING] Enumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive. Got ${input.javaClass}. Initializing empty Enumerator.")
+                System.err.println("[WARNING] Enumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at ${instancePath}. Got ${input.javaClass}. Initializing empty Enumerator.")
                 return new()
             }
             return when (input.jsonPrimitive.contentOrNull) {
@@ -343,16 +399,16 @@ sealed interface Discriminator : ExampleClientModel {
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): Discriminator {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): Discriminator {
             if (input !is JsonObject) {
-                System.err.println("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject. Got ${input.javaClass}. Initializing empty Discriminator.")
+                System.err.println("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty Discriminator.")
                 return new()
             }
             return when (input.jsonObject["typeName"]) {
                 is JsonPrimitive -> when (input.jsonObject["typeName"]!!.jsonPrimitive.contentOrNull) {
-                    "A" -> DiscriminatorA.fromJsonElement(input)
-                    "B" -> DiscriminatorB.fromJsonElement(input)
-                    "C" -> DiscriminatorC.fromJsonElement(input)
+                    "A" -> DiscriminatorA.fromJsonElement(input, instancePath)
+                    "B" -> DiscriminatorB.fromJsonElement(input, instancePath)
+                    "C" -> DiscriminatorC.fromJsonElement(input, instancePath)
                     else -> new()
                 }
 
@@ -397,9 +453,9 @@ data class DiscriminatorA(
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): DiscriminatorA {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): DiscriminatorA {
             if (input !is JsonObject) {
-                System.err.println("[WARNING] DiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject. Got ${input.javaClass}. Initializing empty DiscriminatorA.")
+                System.err.println("[WARNING] DiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty DiscriminatorA.")
                 return new()
             }
             val id = when (input.jsonObject["id"]) {
@@ -453,9 +509,9 @@ data class DiscriminatorB(
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): DiscriminatorB {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): DiscriminatorB {
             if (input !is JsonObject) {
-                System.err.println("[WARNING] DiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject. Got ${input.javaClass}. Initializing empty DiscriminatorB.")
+                System.err.println("[WARNING] DiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty DiscriminatorB.")
                 return new()
             }
             val id = input.jsonObject["id"]?.jsonPrimitive?.contentOrNull ?: ""
@@ -508,9 +564,9 @@ data class DiscriminatorC(val id: String, val name: String, val date: Instant) :
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement): DiscriminatorC {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): DiscriminatorC {
             if (input !is JsonObject) {
-                System.err.println("[WARNING] DiscriminatorC.fromJsonElement() expected kotlinx.serialization.json.JsonObject. Got ${input.javaClass}. Initializing empty DiscriminatorC.")
+                System.err.println("[WARNING] DiscriminatorC.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty DiscriminatorC.")
             }
             val id = when (input.jsonObject["id"]) {
                 is JsonPrimitive -> input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -697,14 +753,19 @@ data class ObjectWithOptionalFields(
         TODO("Not yet implemented")
     }
 
-    companion object Factory {
+    companion object Factory : ExampleClientModelFactory<ObjectWithOptionalFields> {
         @JvmStatic
-        fun fromJson(input: String): ObjectWithOptionalFields {
+        override fun new(): ObjectWithOptionalFields {
+            TODO("Not yet implemented")
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithOptionalFields {
             return fromJsonElement(JsonInstance.parseToJsonElement(input))
         }
 
         @JvmStatic
-        fun fromJsonElement(input: JsonElement): ObjectWithOptionalFields {
+        override fun fromJsonElement(input: JsonElement, instancePath: String): ObjectWithOptionalFields {
             val string: String? = input.jsonObject["string"]?.jsonPrimitive?.contentOrNull
             val boolean: Boolean? = input.jsonObject["boolean"]?.jsonPrimitive?.booleanOrNull
             val timestamp: Instant? =
@@ -723,11 +784,11 @@ data class ObjectWithOptionalFields(
             val uint64: ULong? = input.jsonObject["uint64"]?.jsonPrimitive?.contentOrNull?.toULongOrNull()
             val enum: Enumerator? =
                 if (input.jsonObject["enum"]?.jsonPrimitive?.isString == true)
-                    Enumerator.fromJsonElement(input.jsonObject["enum"]!!)
+                    Enumerator.fromJsonElement(input.jsonObject["enum"]!!, "${instancePath}/enum")
                 else null
             val `object`: NestedObject? =
                 if (input.jsonObject["object"] != null)
-                    NestedObject.fromJsonElement(input.jsonObject["object"]!!)
+                    NestedObject.fromJsonElement(input.jsonObject["object"]!!, "${instancePath}/object")
                 else null
             val array: MutableList<Boolean>? =
                 if (input.jsonObject["array"]?.jsonArray != null) mutableListOf() else null
@@ -747,7 +808,7 @@ data class ObjectWithOptionalFields(
             }
             val discriminator: Discriminator? =
                 if (input.jsonObject["discriminator"] != null)
-                    Discriminator.fromJsonElement(input.jsonObject["discriminator"]!!)
+                    Discriminator.fromJsonElement(input.jsonObject["discriminator"]!!, "${instancePath}/discriminator")
                 else null
             val any: JsonElement? = input.jsonObject["any"]
             return ObjectWithOptionalFields(

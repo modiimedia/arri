@@ -5,7 +5,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 
 class ObjectWithEveryFieldTest {
-    private val `val` = ObjectWithEveryField(
+    private val value = ObjectWithEveryField(
         string = "",
         boolean = false,
         timestamp = Instant.parse("2001-01-01T16:00:00.000Z"),
@@ -32,10 +32,13 @@ class ObjectWithEveryFieldTest {
 
     private val json =
         File("../../../../tests/test-files/ObjectWithEveryField.json").bufferedReader().use { it.readText() }
+    private val mismatchedJson =
+        File("../../../../tests/test-files/ObjectWithNullableFields_AllNull.json").bufferedReader()
+            .use { it.readText() }
 
     @Test
     fun toJson() {
-        assertEquals(json, `val`.toJson())
+        assertEquals(json, value.toJson())
     }
 
     @Test
@@ -45,10 +48,12 @@ class ObjectWithEveryFieldTest {
     @Test
     fun fromJson() {
         val actualResult = ObjectWithEveryField.fromJson(json)
-        assertEquals(actualResult, `val`)
+        assertEquals(actualResult, value)
 
         val badDataResult = ObjectWithEveryField.fromJson("false")
+        val badDataResult2 = ObjectWithEveryField.fromJson(mismatchedJson)
         assertEquals(badDataResult, ObjectWithEveryField.new().copy(timestamp = badDataResult.timestamp))
+        assertEquals(badDataResult2, ObjectWithEveryField.new().copy(timestamp = badDataResult2.timestamp))
     }
 
 }
