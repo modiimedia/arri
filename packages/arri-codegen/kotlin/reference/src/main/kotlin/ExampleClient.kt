@@ -269,10 +269,22 @@ data class ObjectWithEveryField(
                 is JsonPrimitive -> input.jsonObject["uint16"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
                 else -> 0u
             }
-            val int32: Int = input.jsonObject["int32"]?.jsonPrimitive?.intOrNull ?: 0
-            val uint32: UInt = input.jsonObject["uint32"]?.jsonPrimitive?.contentOrNull?.toUIntOrNull() ?: 0u
-            val int64: Long = input.jsonObject["int64"]?.jsonPrimitive?.longOrNull ?: 0L
-            val uint64: ULong = input.jsonObject["uint64"]?.jsonPrimitive?.contentOrNull?.toULongOrNull() ?: 0UL
+            val int32: Int = when (input.jsonObject["int32"]) {
+                is JsonPrimitive -> input.jsonObject["int32"]!!.jsonPrimitive.intOrNull ?: 0
+                else -> 0
+            }
+            val uint32: UInt = when (input.jsonObject["uint32"]) {
+                is JsonPrimitive -> input.jsonObject["uint32"]!!.jsonPrimitive.contentOrNull?.toUIntOrNull() ?: 0u
+                else -> 0u
+            }
+            val int64: Long = when (input.jsonObject["int64"]) {
+                is JsonPrimitive -> input.jsonObject["int64"]!!.jsonPrimitive.longOrNull ?: 0L
+                else -> 0L
+            }
+            val uint64: ULong = when (input.jsonObject["uint64"]) {
+                is JsonPrimitive -> input.jsonObject["uint64"]!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
+                else -> 0UL
+            }
             val enum: Enumerator = when (input.jsonObject["enum"]) {
                 is JsonElement -> Enumerator.fromJsonElement(input.jsonObject["enum"]!!, "${instancePath}/enum")
                 else -> Enumerator.new()
@@ -312,14 +324,17 @@ data class ObjectWithEveryField(
                 else -> mutableMapOf()
             }
             val discriminator: Discriminator = when (input.jsonObject["discriminator"]) {
-                is JsonObject -> Discriminator.fromJsonElement(
+                is JsonElement -> Discriminator.fromJsonElement(
                     input.jsonObject["discriminator"]!!,
                     "${instancePath}/discriminator"
                 )
 
                 else -> Discriminator.new()
             }
-            val any: JsonElement = input.jsonObject["any"] ?: JsonNull
+            val any: JsonElement = when (input.jsonObject["any"]) {
+                is JsonElement -> input.jsonObject["any"]!!
+                else -> JsonNull
+            }
             return ObjectWithEveryField(
                 string,
                 boolean,
@@ -365,7 +380,12 @@ enum class Enumerator {
 
         @JvmStatic
         override fun fromJson(input: String): Enumerator {
-            return Enumerator.fromJsonElement(JsonInstance.parseToJsonElement(input))
+            return when (input) {
+                Foo.serialValue -> Foo
+                Bar.serialValue -> Bar
+                Baz.serialValue -> Baz
+                else -> Foo
+            }
         }
 
         @JvmStatic
@@ -514,8 +534,14 @@ data class DiscriminatorB(
                 System.err.println("[WARNING] DiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty DiscriminatorB.")
                 return new()
             }
-            val id = input.jsonObject["id"]?.jsonPrimitive?.contentOrNull ?: ""
-            val name = input.jsonObject["name"]?.jsonPrimitive?.contentOrNull ?: ""
+            val id = when (input.jsonObject["id"]) {
+                is JsonPrimitive -> input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val name = when (input.jsonObject["name"]) {
+                is JsonPrimitive -> input.jsonObject["name"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
             return DiscriminatorB(
                 id,
                 name,
@@ -756,7 +782,7 @@ data class ObjectWithOptionalFields(
     companion object Factory : ExampleClientModelFactory<ObjectWithOptionalFields> {
         @JvmStatic
         override fun new(): ObjectWithOptionalFields {
-            TODO("Not yet implemented")
+            return ObjectWithOptionalFields()
         }
 
         @JvmStatic
@@ -766,12 +792,22 @@ data class ObjectWithOptionalFields(
 
         @JvmStatic
         override fun fromJsonElement(input: JsonElement, instancePath: String): ObjectWithOptionalFields {
-            val string: String? = input.jsonObject["string"]?.jsonPrimitive?.contentOrNull
-            val boolean: Boolean? = input.jsonObject["boolean"]?.jsonPrimitive?.booleanOrNull
-            val timestamp: Instant? =
-                if (input.jsonObject["timestamp"]?.jsonPrimitive?.contentOrNull != null)
-                    Instant.parse(input.jsonObject["timestamp"]!!.jsonPrimitive.content)
-                else null
+            val string: String? = when (input.jsonObject["string"]) {
+                is JsonPrimitive -> input.jsonObject["string"]!!.jsonPrimitive.contentOrNull
+                else -> null
+            }
+            val boolean: Boolean? = when (input.jsonObject["boolean"]) {
+                is JsonPrimitive -> input.jsonObject["boolean"]!!.jsonPrimitive.booleanOrNull
+                else -> null
+            }
+            val timestamp: Instant? = when (input.jsonObject["timestamp"]) {
+                is JsonPrimitive ->
+                    if (input.jsonObject["timestamp"]!!.jsonPrimitive.isString)
+                        Instant.parse(input.jsonObject["timestamp"]!!.jsonPrimitive.content)
+                    else null
+
+                else -> null
+            }
             val float32: Float? = input.jsonObject["float32"]?.jsonPrimitive?.floatOrNull
             val float64: Double? = input.jsonObject["float64"]?.jsonPrimitive?.doubleOrNull
             val int8: Byte? = input.jsonObject["int8"]?.jsonPrimitive?.contentOrNull?.toByteOrNull()
@@ -1113,6 +1149,55 @@ data class ObjectWithNullableFields(
             )
         }
     }
+}
+
+data class RecursiveObject(
+    val left: RecursiveObject?,
+    val right: RecursiveObject?,
+) : ExampleClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"left\":"
+        output += left?.toJson() ?: "null"
+        output += ",\"right\":"
+        output += right?.toJson() ?: "null"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        TODO("Not yet implemented")
+    }
+
+    companion object Factory : ExampleClientModelFactory<RecursiveObject> {
+        override fun new(): RecursiveObject {
+            return RecursiveObject(
+                left = null,
+                right = null
+            )
+        }
+
+        override fun fromJson(input: String): RecursiveObject {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        override fun fromJsonElement(input: JsonElement, instancePath: String): RecursiveObject {
+            val left = when (input.jsonObject["left"]) {
+                is JsonObject -> RecursiveObject.fromJsonElement(input.jsonObject["left"]!!)
+                else -> null
+            }
+            val right = when (input.jsonObject["right"]) {
+                is JsonObject -> RecursiveObject.fromJsonElement(input.jsonObject["right"]!!)
+                else -> null
+            }
+            return RecursiveObject(
+                left = left,
+                right = right,
+            )
+        }
+
+    }
+
 }
 
 // Implementation copied from https://github.com/Kotlin/kotlinx.serialization/blob/d0ae697b9394103879e6c7f836d0f7cf128f4b1e/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt#L45
