@@ -114,7 +114,28 @@ const RecursiveObject = a.recursive<RecursiveObject>(
 
 const def: AppDefinition = {
     arriSchemaVersion: "0.0.4",
-    procedures: {},
+    procedures: {
+        sendObject: {
+            path: "/send-object",
+            transport: "http",
+            method: "post",
+            params: "NestedObject",
+            response: "NestedObject",
+        },
+        watchObject: {
+            path: "/watch-object",
+            transport: "http",
+            method: "get",
+            params: "NestedObject",
+            response: "NestedObject",
+        },
+        createConnection: {
+            path: "/create-connection",
+            transport: "ws",
+            params: "RecursiveObject",
+            response: "RecursiveObject",
+        },
+    },
     models: {
         NestedObject,
         ObjectWithEveryField,

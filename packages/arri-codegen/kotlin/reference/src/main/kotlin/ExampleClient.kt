@@ -1,5 +1,16 @@
+import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import java.nio.ByteBuffer
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -25,7 +36,48 @@ interface ExampleClientModelFactory<T> {
     fun fromJsonElement(input: JsonElement, instancePath: String = ""): T
 }
 
-class ExampleClient {
+class ExampleClient(
+    private val httpClient: HttpClient,
+    private val baseUrl: String,
+    private val headers: (() -> Map<String, String>?)?
+) {
+    suspend fun sendObject(params: NestedObject): NestedObject {
+        val finalHeaders = headers?.invoke()
+        val request = prepareRequest(
+            url = "$baseUrl/send-object",
+            client = httpClient,
+            method = HttpMethod.Post,
+            params = params,
+            headers = finalHeaders,
+        )
+        val result = request.execute()
+        if (result.status.value in 200..299) {
+            return NestedObject.fromJson(result.bodyAsText())
+        }
+        throw ExampleClientError.fromJson(result.bodyAsText())
+    }
+
+    suspend fun watchObject(scope: CoroutineScope, params: NestedObject): Job {
+        val job = scope.launch {
+            handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = "$baseUrl/watch-object",
+                method = HttpMethod.Get,
+                params = params,
+                backoffTime = 0,
+                maxBackoffTime = 30000,
+                bufferCapacity = 1024,
+                onOpen = {},
+                onData = {},
+                onClose = {},
+                onError = { },
+                onConnectionError = {},
+                lastEventId = null,
+            )
+        }
+        return job
+    }
 }
 
 data class NestedObject(
@@ -1254,4 +1306,331 @@ internal fun StringBuilder.printQuoted(value: String) {
     if (lastPos != 0) append(value, lastPos, value.length)
     else append(value)
     append(STRING)
+}
+
+data class ExampleClientError(
+    val code: Int,
+    val errorMessage: String,
+    val data: JsonElement?,
+    val stack: List<String>?,
+) : Exception(message = errorMessage), ExampleClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"code\":"
+        output += "$code"
+        output += ",\"message\":"
+        output += buildString { printQuoted(message ?: "") }
+        if (data != null) {
+            output += ",\"data\":"
+            output += JsonInstance.encodeToString(data)
+        }
+        if (stack != null) {
+            output += ",\"stack\":"
+            output += "["
+            for ((index, item) in stack.withIndex()) {
+                if (index > 0) {
+                    output += ","
+                }
+                output += buildString { printQuoted(item) }
+            }
+            output += "]"
+        }
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        TODO("Not yet implemented")
+    }
+
+    companion object Factory : ExampleClientModelFactory<ExampleClientError> {
+        override fun new(): ExampleClientError {
+            return ExampleClientError(
+                code = 0,
+                errorMessage = "",
+                data = null,
+                stack = null
+            )
+        }
+
+        override fun fromJson(input: String): ExampleClientError {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        override fun fromJsonElement(input: JsonElement, instancePath: String): ExampleClientError {
+            if (input !is JsonObject) {
+                System.err.println("[WARNING] ExampleClientError.fromJsonElement() expected JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty ExampleClientError.")
+            }
+            val code = when (input.jsonObject["code"]) {
+                is JsonPrimitive -> input.jsonObject["code"]!!.jsonPrimitive.intOrNull ?: 0
+                else -> 0
+            }
+            val errorMessage = when (input.jsonObject["message"]) {
+                is JsonPrimitive -> input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val data = when (input.jsonObject["data"]) {
+                is JsonNull -> null
+                is JsonElement -> input.jsonObject["data"]!!
+                else -> null
+            }
+            val stack = when (input.jsonObject["stack"]) {
+                is JsonArray -> {
+                    val stackVal = mutableListOf<String>()
+                    for (item in input.jsonObject["stack"]!!.jsonArray) {
+                        stackVal.add(
+                            when (item) {
+                                is JsonPrimitive -> item.contentOrNull ?: ""
+                                else -> ""
+                            }
+                        )
+                    }
+                    stackVal
+                }
+
+                else -> null
+
+            }
+            return ExampleClientError(
+                code,
+                errorMessage,
+                data,
+                stack,
+            )
+        }
+
+    }
+}
+
+private suspend fun prepareRequest(
+    client: HttpClient,
+    url: String,
+    method: HttpMethod,
+    params: ExampleClientModel?,
+    headers: Map<String, String>?,
+): HttpStatement {
+    var finalUrl = url
+    var finalBody = ""
+
+    when (method) {
+        HttpMethod.Get, HttpMethod.Head -> {
+            finalUrl = "$finalUrl?${params?.toUrlQueryParams() ?: ""}"
+        }
+
+        HttpMethod.Post, HttpMethod.Put, HttpMethod.Patch, HttpMethod.Delete -> {
+            finalBody = params?.toString() ?: ""
+        }
+    }
+    val builder = HttpRequestBuilder()
+    builder.method = method
+    builder.url(finalUrl)
+    builder.timeout {
+        requestTimeoutMillis = 10 * 60 * 1000
+    }
+    if (headers != null) {
+        for (entry in headers.entries) {
+            builder.headers[entry.key] = entry.value
+        }
+    }
+    if (method != HttpMethod.Get && method != HttpMethod.Head) {
+        builder.setBody(finalBody)
+    }
+    return client.prepareRequest(builder)
+}
+
+private fun parseSseEvent(input: String): SseEvent {
+    val lines = input.split("\\n")
+    var id: String? = null
+    var event: String? = null
+    var data: String = ""
+    for (line in lines) {
+        if (line.startsWith("id: ")) {
+            id = line.substring(3).trim()
+            continue
+        }
+        if (line.startsWith("event: ")) {
+            event = line.substring(6).trim()
+            continue
+        }
+        if (line.startsWith("data: ")) {
+            data = line.substring(5).trim()
+            continue
+        }
+    }
+    return SseEvent(id, event, data)
+}
+
+private class SseEvent(val id: String? = null, val event: String? = null, val data: String)
+
+private fun parseSseEvents(input: String): List<SseEvent> {
+    val inputs = input.split("\\n\\n")
+    val events = mutableListOf<SseEvent>()
+    for (item in inputs) {
+        if (item.contains("data: ")) {
+            events.add(parseSseEvent(item))
+        }
+    }
+    return events
+}
+
+
+private suspend fun handleSseRequest(
+    scope: CoroutineScope,
+    httpClient: HttpClient,
+    url: String,
+    method: HttpMethod,
+    params: ExampleClientModel?,
+    headers: Map<String, String> = mutableMapOf(),
+    backoffTime: Long,
+    maxBackoffTime: Long,
+    lastEventId: String?,
+    onOpen: ((response: HttpResponse) -> Unit) = {},
+    onClose: (() -> Unit) = {},
+    onError: ((error: ExampleClientError) -> Unit) = {},
+    onData: ((data: String) -> Unit) = {},
+    onConnectionError: ((error: ExampleClientError) -> Unit) = {},
+    bufferCapacity: Int,
+) {
+    val finalHeaders = mutableMapOf<String, String>();
+    for (entry in headers.entries) {
+        finalHeaders[entry.key] = entry.value
+    }
+    var lastId = lastEventId
+    // exponential backoff maxing out at 32 seconds
+    if (backoffTime > 0) {
+        withContext(scope.coroutineContext) {
+            Thread.sleep(backoffTime)
+        }
+    }
+    val newBackoffTime =
+        if (backoffTime == 0L) 2L else if (backoffTime * 2L >= maxBackoffTime) maxBackoffTime else backoffTime * 2L
+    if (lastId != null) {
+        finalHeaders["Last-Event-ID"] = lastId.toString()
+    }
+    val request = prepareRequest(
+        client = httpClient,
+        url = url,
+        method = HttpMethod.Get,
+        params = params,
+        headers = finalHeaders,
+    )
+    try {
+        request.execute { httpResponse ->
+
+            onOpen(httpResponse)
+            if (httpResponse.status.value != 200) {
+
+                onConnectionError(
+                    ExampleClientError(
+                        code = httpResponse.status.value,
+                        errorMessage = "Error fetching stream from $url",
+                        data = JsonInstance.encodeToJsonElement(httpResponse.toString()),
+                        stack = null,
+                    )
+                )
+                handleSseRequest(
+                    scope = scope,
+                    httpClient = httpClient,
+                    url = url,
+                    method = method,
+                    params = params,
+                    headers = headers,
+                    backoffTime = newBackoffTime,
+                    maxBackoffTime = maxBackoffTime,
+                    lastEventId = lastId,
+                    bufferCapacity = bufferCapacity,
+                    onOpen = onOpen,
+                    onClose = onClose,
+                    onError = onError,
+                    onData = onData,
+                    onConnectionError = onConnectionError,
+                )
+                return@execute
+            }
+            val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            while (!channel.isClosedForRead) {
+                val buffer = ByteBuffer.allocateDirect(bufferCapacity)
+                val read = channel.readAvailable(buffer)
+                if (read == -1) break;
+                buffer.flip()
+                val input = Charsets.UTF_8.decode(buffer).toString()
+                val events = parseSseEvents(input)
+                for (event in events) {
+                    if (event.id != null) {
+                        lastId = event.id
+                    }
+                    when (event.event) {
+                        "message" -> {
+                            onData(event.data)
+                        }
+
+                        "done" -> {
+                            onClose()
+                            return@execute
+                        }
+
+                        "error" -> {
+                            val error = JsonInstance.decodeFromString<ExampleClientError>(event.data)
+                            onError(error)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+    } catch (e: java.net.ConnectException) {
+        onConnectionError(
+            ExampleClientError(
+                code = 503,
+                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                data = JsonInstance.encodeToJsonElement(e.toString()),
+                stack = e.stackTraceToString().split("\\n"),
+            )
+        )
+        handleSseRequest(
+            scope = scope,
+            httpClient = httpClient,
+            url = url,
+            method = method,
+            params = params,
+            headers = headers,
+            backoffTime = newBackoffTime,
+            maxBackoffTime = maxBackoffTime,
+            lastEventId = lastId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onData = onData,
+            onConnectionError = onConnectionError,
+        )
+        return
+    } catch (e: Exception) {
+        onConnectionError(
+            ExampleClientError(
+                code = 503,
+                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
+                data = JsonInstance.encodeToJsonElement(e.toString()),
+                stack = e.stackTraceToString().split("\\n"),
+            )
+        )
+        handleSseRequest(
+            scope = scope,
+            httpClient = httpClient,
+            url = url,
+            method = method,
+            params = params,
+            headers = headers,
+            backoffTime = newBackoffTime,
+            maxBackoffTime = maxBackoffTime,
+            lastEventId = lastId,
+            bufferCapacity = bufferCapacity,
+            onOpen = onOpen,
+            onClose = onClose,
+            onError = onError,
+            onData = onData,
+            onConnectionError = onConnectionError,
+        )
+    }
 }
