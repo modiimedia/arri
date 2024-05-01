@@ -45,6 +45,7 @@ describe("Model Generation", () => {
             generatedTypes: [],
             modelPrefix: "",
             polymorphicClasses: {},
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -127,6 +128,7 @@ enum class UserEnum() {
             schemaPath: "",
             modelPrefix: "",
             polymorphicClasses: {},
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -159,6 +161,7 @@ data class Schema(
             schemaPath: "",
             modelPrefix: "",
             polymorphicClasses: {},
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -194,6 +197,7 @@ data class Schema(
             schemaPath: "",
             modelPrefix: "",
             polymorphicClasses: {},
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable(with = MessageSerializer::class)
@@ -260,6 +264,7 @@ object MessageSerializer :
             schemaPath: "",
             modelPrefix: "",
             polymorphicClasses: {},
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result.content ?? "")).toBe(
             normalizeWhitespace(`@Serializable
@@ -282,6 +287,7 @@ describe("procedures", () => {
         };
         const result = kotlinHttpRpcFromDef("sayHello", input, {
             clientName: "Client",
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`suspend fun sayHello(params: SayHelloParams): SayHelloResponse {
@@ -310,6 +316,7 @@ describe("procedures", () => {
         };
         const result = kotlinHttpRpcFromDef("getStatus", input, {
             clientName: "Client",
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`suspend fun getStatus(): Status {
@@ -338,6 +345,7 @@ describe("procedures", () => {
         };
         const result = kotlinHttpRpcFromDef("createUser", input, {
             clientName: "TestClient",
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`suspend fun createUser(params: CreateUserParams): Unit {
@@ -396,6 +404,7 @@ describe("services", () => {
         };
         const result = kotlinServiceFromDef("Users", input, {
             clientName: "ArriClient",
+            modelJsonInstances: {},
         });
         expect(normalizeWhitespace(result)).toBe(
             normalizeWhitespace(`class ArriClientUsersService(

@@ -375,7 +375,7 @@ class TestClientTestsService(
                 onError = onError,
                 onConnectionError = onConnectionError,
                 onData = { str -> 
-                    val data = JsonInstanceChatMessage.decodeFromString<ChatMessage>(str)
+                    val data = JsonInstance.decodeFromString<ChatMessage>(str)
                     onData(data)
                 },
             )
@@ -453,7 +453,7 @@ class TestClientTestsService(
                 onError = onError,
                 onConnectionError = onConnectionError,
                 onData = { str -> 
-                    val data = JsonInstanceChatMessage.decodeFromString<ChatMessage>(str)
+                    val data = JsonInstance.decodeFromString<ChatMessage>(str)
                     onData(data)
                 },
             )
@@ -492,7 +492,7 @@ class TestClientTestsService(
                 onError = onError,
                 onConnectionError = onConnectionError,
                 onData = { str -> 
-                    val data = JsonInstanceChatMessage.decodeFromString<ChatMessage>(str)
+                    val data = JsonInstance.decodeFromString<ChatMessage>(str)
                     onData(data)
                 },
             )
