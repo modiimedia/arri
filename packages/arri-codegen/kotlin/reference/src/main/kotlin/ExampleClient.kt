@@ -16,14 +16,102 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
+private const val generatedClientVersion = "20"
+private val timestampFormatter =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        .withZone(ZoneId.ofOffset("GMT", ZoneOffset.UTC))
 private val JsonInstance = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
 }
+private typealias headersFn = (() -> MutableMap<String, String>?)?
 
-private val timestampFormatter =
-    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        .withZone(ZoneId.ofOffset("GMT", ZoneOffset.UTC))
+
+class ExampleClient(
+    private val httpClient: HttpClient,
+    private val baseUrl: String,
+    private val headers: headersFn
+) {
+    suspend fun sendObject(params: NestedObject): NestedObject {
+        throw NotImplementedError()
+    }
+
+    val books: ExampleClientBooksService = ExampleClientBooksService(
+        httpClient = httpClient,
+        baseUrl = baseUrl,
+        headers = headers
+    )
+}
+
+class ExampleClientBooksService(
+    private val httpClient: HttpClient,
+    private val baseUrl: String,
+    private val headers: headersFn
+) {
+    suspend fun getBook(params: BookParams): Book {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/books/get-book",
+            method = HttpMethod.Get,
+            params = params,
+            headers = headers?.invoke(),
+        ).execute()
+        if (response.status.value in 200..299) {
+            return Book.fromJson(response.bodyAsText())
+        }
+        throw ExampleClientError.fromJson(response.bodyAsText())
+    }
+
+    suspend fun createBook(params: Book): Book {
+        val response = prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/books/create-book",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers?.invoke()
+        ).execute()
+        if (response.status.value in 200..299) {
+            return Book.fromJson(response.bodyAsText())
+        }
+        throw ExampleClientError.fromJson(response.bodyAsText())
+    }
+
+    fun watchBook(
+        scope: CoroutineScope,
+        params: BookParams,
+        lastEventId: String? = null,
+        bufferCapacity: Int = 1024,
+        onOpen: ((response: HttpResponse) -> Unit) = {},
+        onClose: (() -> Unit) = {},
+        onError: ((error: ExampleClientError) -> Unit) = {},
+        onConnectionError: ((error: ExampleClientError) -> Unit) = {},
+        onData: ((data: Book) -> Unit) = {},
+    ): Job {
+        val job = scope.launch {
+            handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = "$baseUrl/books/watch-book",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onConnectionError = onConnectionError,
+                onData = { str ->
+                    val data = Book.fromJson(str)
+                    onData(data)
+                }
+            )
+        }
+        return job
+    }
+}
 
 interface ExampleClientModel {
     fun toJson(): String
@@ -36,47 +124,136 @@ interface ExampleClientModelFactory<T> {
     fun fromJsonElement(input: JsonElement, instancePath: String = ""): T
 }
 
-class ExampleClient(
-    private val httpClient: HttpClient,
-    private val baseUrl: String,
-    private val headers: (() -> Map<String, String>?)?
-) {
-    suspend fun sendObject(params: NestedObject): NestedObject {
-        val finalHeaders = headers?.invoke()
-        val request = prepareRequest(
-            url = "$baseUrl/send-object",
-            client = httpClient,
-            method = HttpMethod.Post,
-            params = params,
-            headers = finalHeaders,
-        )
-        val result = request.execute()
-        if (result.status.value in 200..299) {
-            return NestedObject.fromJson(result.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(result.bodyAsText())
+data class Book(
+    val id: String,
+    val name: String,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+) : ExampleClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"id\":"
+        output += buildString { printQuoted(id) }
+        output += ",\"name\":"
+        output += buildString { printQuoted(name) }
+        output += ",\"createdAt\":"
+        output += "\"${timestampFormatter.format(createdAt)}\""
+        output += ",\"updatedAt\":"
+        output += "\"${timestampFormatter.format(updatedAt)}\""
+        output += "}"
+        return output
     }
 
-    suspend fun watchObject(scope: CoroutineScope, params: NestedObject): Job {
-        val job = scope.launch {
-            handleSseRequest(
-                scope = scope,
-                httpClient = httpClient,
-                url = "$baseUrl/watch-object",
-                method = HttpMethod.Get,
-                params = params,
-                backoffTime = 0,
-                maxBackoffTime = 30000,
-                bufferCapacity = 1024,
-                onOpen = {},
-                onData = {},
-                onClose = {},
-                onError = { },
-                onConnectionError = {},
-                lastEventId = null,
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("id=$id")
+        queryParts.add("name=$name")
+        queryParts.add("createdAt=${timestampFormatter.format(createdAt)}")
+        queryParts.add("updatedAt=${timestampFormatter.format(updatedAt)}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : ExampleClientModelFactory<Book> {
+        @JvmStatic
+        override fun new(): Book {
+            return Book(
+                id = "",
+                name = "",
+                createdAt = Instant.now(),
+                updatedAt = Instant.now(),
             )
         }
-        return job
+
+        @JvmStatic
+        override fun fromJson(input: String): Book {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(input: JsonElement, instancePath: String): Book {
+            if (input !is JsonObject) {
+                System.err.println("[WARNING] Book.fromJsonElement() expected kotlinx.serialization.json.JsonObject at ${instancePath}. Got ${input.javaClass}. Initializing empty Book.")
+                return new()
+            }
+            val id = when (input.jsonObject["id"]) {
+                is JsonPrimitive -> input.jsonObject["id"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val name = when (input.jsonObject["name"]) {
+                is JsonPrimitive -> input.jsonObject["name"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            val createdAt = when (input.jsonObject["createdAt"]) {
+                is JsonPrimitive ->
+                    if (input.jsonObject["createdAt"]!!.jsonPrimitive.isString)
+                        Instant.parse(input.jsonObject["createdAt"]!!.jsonPrimitive.content)
+                    else Instant.now()
+
+                else -> Instant.now()
+            }
+            val updatedAt = when (input.jsonObject["updatedAt"]) {
+                is JsonPrimitive ->
+                    if (input.jsonObject["updatedAt"]!!.jsonPrimitive.isString)
+                        Instant.parse(input.jsonObject["updatedAt"]!!.jsonPrimitive.content)
+                    else Instant.now()
+
+                else -> Instant.now()
+            }
+            return Book(
+                id,
+                name,
+                createdAt,
+                updatedAt,
+            )
+        }
+
+    }
+}
+
+data class BookParams(
+    val bookId: String,
+) : ExampleClientModel {
+    override fun toJson(): String {
+        var output = "{"
+        output += "\"bookId\":${bookId}"
+        output += "}"
+        return output
+    }
+
+    override fun toUrlQueryParams(): String {
+        val queryParts = mutableListOf<String>()
+        queryParts.add("bookId=${bookId}")
+        return queryParts.joinToString("&")
+    }
+
+    companion object Factory : ExampleClientModelFactory<BookParams> {
+        @JvmStatic
+        override fun new(): BookParams {
+            return BookParams(
+                bookId = ""
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): BookParams {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(input: JsonElement, instancePath: String): BookParams {
+            if (input !is JsonObject) {
+                System.err.println("[WARNING] BookParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${input.javaClass}. Initializing empty BookParams.")
+                return new()
+            }
+            val bookId = when (input.jsonObject["bookId"]) {
+                is JsonPrimitive -> input.jsonObject["bookId"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return BookParams(
+                bookId
+            )
+        }
+
     }
 }
 
@@ -1407,11 +1584,10 @@ private suspend fun prepareRequest(
     url: String,
     method: HttpMethod,
     params: ExampleClientModel?,
-    headers: Map<String, String>?,
+    headers: MutableMap<String, String>?,
 ): HttpStatement {
     var finalUrl = url
     var finalBody = ""
-
     when (method) {
         HttpMethod.Get, HttpMethod.Head -> {
             finalUrl = "$finalUrl?${params?.toUrlQueryParams() ?: ""}"
@@ -1432,6 +1608,7 @@ private suspend fun prepareRequest(
             builder.headers[entry.key] = entry.value
         }
     }
+    builder.headers["client-version"] = generatedClientVersion
     if (method != HttpMethod.Get && method != HttpMethod.Head) {
         builder.setBody(finalBody)
     }
@@ -1480,7 +1657,7 @@ private suspend fun handleSseRequest(
     url: String,
     method: HttpMethod,
     params: ExampleClientModel?,
-    headers: Map<String, String> = mutableMapOf(),
+    headers: headersFn,
     backoffTime: Long,
     maxBackoffTime: Long,
     lastEventId: String?,
@@ -1491,10 +1668,7 @@ private suspend fun handleSseRequest(
     onConnectionError: ((error: ExampleClientError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
-    val finalHeaders = mutableMapOf<String, String>();
-    for (entry in headers.entries) {
-        finalHeaders[entry.key] = entry.value
-    }
+    val finalHeaders = headers?.invoke() ?: mutableMapOf<String, String>();
     var lastId = lastEventId
     // exponential backoff maxing out at 32 seconds
     if (backoffTime > 0) {
@@ -1634,3 +1808,24 @@ private suspend fun handleSseRequest(
         )
     }
 }
+
+
+//// THis is a work in progress
+//private suspend fun handleWebsocketRequest(
+//    client: HttpClient,
+//    url: String,
+//    headers: headersFn,
+//) {
+//    val finalHeaders = headers?.invoke() ?: mutableMapOf()
+//    finalHeaders["client-version"] = generatedClientVersion
+//    var finalUrl = url.replace("https://", "wss://").replace("http://", "ws://")
+//    val queryParts = mutableListOf<String>()
+//    for (entry in finalHeaders) {
+//        queryParts.add("${entry.key}=${entry.value}")
+//    }
+//    finalUrl += "?${queryParts.joinToString("&")}"
+//    client.webSocket(
+//        urlString = finalUrl
+//    ) { }
+//
+//}

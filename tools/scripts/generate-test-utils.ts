@@ -112,8 +112,30 @@ const RecursiveObject = a.recursive<RecursiveObject>(
     { id: "RecursiveObject" },
 );
 
+const Book = a.object(
+    {
+        id: a.string(),
+        name: a.string(),
+        createdAt: a.timestamp(),
+        updatedAt: a.timestamp(),
+    },
+    { id: "Book" },
+);
+type Book = a.infer<typeof Book>;
+
+const BookParams = a.object(
+    {
+        bookId: a.string(),
+    },
+    { id: "BookParams" },
+);
+type BookParams = a.infer<typeof BookParams>;
+
 const def: AppDefinition = {
     arriSchemaVersion: "0.0.4",
+    info: {
+        version: "20",
+    },
     procedures: {
         sendObject: {
             path: "/send-object",
@@ -122,21 +144,38 @@ const def: AppDefinition = {
             params: "NestedObject",
             response: "NestedObject",
         },
-        watchObject: {
-            path: "/watch-object",
+        "books.getBook": {
+            path: "/books/get-book",
             transport: "http",
             method: "get",
-            params: "NestedObject",
-            response: "NestedObject",
+            params: "BookParams",
+            response: "Book",
         },
-        createConnection: {
-            path: "/create-connection",
+        "books.createBook": {
+            path: "/books/create-book",
+            transport: "http",
+            method: "post",
+            params: "Book",
+            response: "Book",
+        },
+        "books.watchBook": {
+            path: "/books/watch-book",
+            transport: "http",
+            method: "get",
+            params: "BookParams",
+            response: "Book",
+            isEventStream: true,
+        },
+        "books.createConnection": {
+            path: "/books/create-connection",
             transport: "ws",
-            params: "RecursiveObject",
-            response: "RecursiveObject",
+            params: "BookParams",
+            response: "Book",
         },
     },
     models: {
+        Book,
+        BookParams,
         NestedObject,
         ObjectWithEveryField,
         ObjectWithOptionalFields,
@@ -162,6 +201,26 @@ async function main() {
     const files: { filename: string; content: string }[] = [];
 
     const targetDate = new Date("01/01/2001 10:00 AM CST");
+
+    const book: Book = {
+        id: "1",
+        name: "The Adventures of Tom Sawyer",
+        createdAt: targetDate,
+        updatedAt: targetDate,
+    };
+    files.push({
+        filename: "Book.json",
+        content: a.serialize(Book, book),
+    });
+
+    const bookParams: BookParams = {
+        bookId: "1",
+    };
+    files.push({
+        filename: "BookParams.json",
+        content: a.serialize(BookParams, bookParams),
+    });
+
     const nestedObject: NestedObject = {
         id: "1",
         content: "hello world",

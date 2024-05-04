@@ -2,4 +2,4 @@
 /dist
 /coverage
 /.nx/cache
-/tests/utils
+/tests/test-files

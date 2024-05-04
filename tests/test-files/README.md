@@ -1,5 +1,22 @@
 Below are all of the contents of the test JSON files in an easier to read format. Since all of the test files are minified.
 
+## Book.json
+
+```json
+{
+  "id": "1",
+  "name": "The Adventures of Tom Sawyer",
+  "createdAt": "2001-01-01T16:00:00.000Z",
+  "updatedAt": "2001-01-01T16:00:00.000Z"
+}
+```
+
+## BookParams.json
+
+```json
+{ "bookId": "1" }
+```
+
 ## NestedObject_NoSpecialChars.json
 
 ```json

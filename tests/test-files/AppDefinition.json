@@ -1,5 +1,6 @@
 {
   "arriSchemaVersion": "0.0.4",
+  "info": { "version": "20" },
   "procedures": {
     "sendObject": {
       "path": "/send-object",
@@ -8,21 +9,51 @@
       "params": "NestedObject",
       "response": "NestedObject"
     },
-    "watchObject": {
-      "path": "/watch-object",
+    "books.getBook": {
+      "path": "/books/get-book",
       "transport": "http",
       "method": "get",
-      "params": "NestedObject",
-      "response": "NestedObject"
+      "params": "BookParams",
+      "response": "Book"
     },
-    "createConnection": {
-      "path": "/create-connection",
+    "books.createBook": {
+      "path": "/books/create-book",
+      "transport": "http",
+      "method": "post",
+      "params": "Book",
+      "response": "Book"
+    },
+    "books.watchBook": {
+      "path": "/books/watch-book",
+      "transport": "http",
+      "method": "get",
+      "params": "BookParams",
+      "response": "Book",
+      "isEventStream": true
+    },
+    "books.createConnection": {
+      "path": "/books/create-connection",
       "transport": "ws",
-      "params": "RecursiveObject",
-      "response": "RecursiveObject"
+      "params": "BookParams",
+      "response": "Book"
     }
   },
   "models": {
+    "Book": {
+      "properties": {
+        "id": { "type": "string", "metadata": {} },
+        "name": { "type": "string", "metadata": {} },
+        "createdAt": { "type": "timestamp", "metadata": {} },
+        "updatedAt": { "type": "timestamp", "metadata": {} }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "Book" }
+    },
+    "BookParams": {
+      "properties": { "bookId": { "type": "string", "metadata": {} } },
+      "additionalProperties": true,
+      "metadata": { "id": "BookParams" }
+    },
     "NestedObject": {
       "properties": {
         "id": { "type": "string", "metadata": {} },

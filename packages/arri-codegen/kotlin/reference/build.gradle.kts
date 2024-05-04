@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    
+
 }
 
 val ktorVersion: String by project
@@ -21,6 +21,7 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-websockets:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
