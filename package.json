@@ -35,8 +35,8 @@
     "@types/node": "20.12.8",
     "@typescript-eslint/eslint-plugin": "7.8.0",
     "@typescript-eslint/parser": "7.8.0",
-    "@vitest/coverage-v8": "1.5.3",
-    "@vitest/ui": "1.5.3",
+    "@vitest/coverage-v8": "1.6.0",
+    "@vitest/ui": "1.6.0",
     "benny": "^3.7.1",
     "bun-types": "^1.1.7",
     "citty": "^0.1.6",
@@ -60,9 +60,9 @@
     "typescript": "^5.4.5",
     "unbuild": "^2.0.0",
     "verdaccio": "^5.30.3",
-    "vite": "5.2.10",
+    "vite": "5.2.11",
     "vite-tsconfig-paths": "4.2.3",
-    "vitest": "1.5.3",
+    "vitest": "1.6.0",
     "zod": "^3.23.6"
   },
   "nx": {
