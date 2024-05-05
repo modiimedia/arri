@@ -3,6 +3,7 @@ import {
     setNestedObjectProperty,
     removeDisallowedChars,
     type RpcDefinition,
+    stringStartsWithNumber,
 } from "./index";
 
 describe("unflattenObject()", () => {
@@ -122,5 +123,26 @@ describe("String utils", () => {
         const disallowed = "!@#$%^&*()+|}{[];:'\"~/,=";
         const input = "+hello_%world!";
         expect(removeDisallowedChars(input, disallowed)).toBe("hello_world");
+    });
+
+    test("String starts with number", () => {
+        const passingInputs = [
+            "1foo",
+            "2foo",
+            "3foo",
+            "4foo",
+            "5foo",
+            "6foo",
+            "7foo",
+            "8foo",
+            "9foo",
+        ];
+        const failingInputs = ["foo", "bar", "baz", "oof"];
+        for (const input of passingInputs) {
+            expect(stringStartsWithNumber(input)).toBe(true);
+        }
+        for (const input of failingInputs) {
+            expect(stringStartsWithNumber(input)).toBe(false);
+        }
     });
 });
