@@ -30,15 +30,15 @@
     "@nx/eslint": "18.3.4",
     "@nx/vite": "18.3.4",
     "@nx/workspace": "18.3.4",
-    "@sinclair/typebox": "^0.32.27",
-    "@types/lodash": "^4.17.0",
+    "@sinclair/typebox": "^0.32.29",
+    "@types/lodash": "^4.17.1",
     "@types/node": "20.12.8",
     "@typescript-eslint/eslint-plugin": "7.8.0",
     "@typescript-eslint/parser": "7.8.0",
     "@vitest/coverage-v8": "1.5.3",
     "@vitest/ui": "1.5.3",
     "benny": "^3.7.1",
-    "bun-types": "^1.1.6",
+    "bun-types": "^1.1.7",
     "citty": "^0.1.6",
     "depcheck": "^1.4.7",
     "esbuild": "0.20.2",
@@ -63,7 +63,7 @@
     "vite": "5.2.10",
     "vite-tsconfig-paths": "4.2.3",
     "vitest": "1.5.3",
-    "zod": "^3.23.5"
+    "zod": "^3.23.6"
   },
   "nx": {
     "includedScripts": []
