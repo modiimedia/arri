@@ -1,5 +1,6 @@
 import io.ktor.client.*
 import io.ktor.client.plugins.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
@@ -22,6 +23,7 @@ fun main() {
         baseUrl = "http://localhost:2020",
         null
     )
+    val targetDate = Instant.parse("2002-02-02T08:02:00.000Z")
 
     runBlocking {
         val tag = "EMPTY PARAM REQUESTS"
@@ -42,7 +44,7 @@ fun main() {
         any = JsonPrimitive("hello"),
         string = "hello world",
         boolean = false,
-        timestamp = Instant.now(),
+        timestamp = targetDate,
         int8 = 1,
         uint8 = 1u,
         int16 = 11,
@@ -60,20 +62,20 @@ fun main() {
             mutableListOf(
                 ObjectWithEveryTypeNestedArrayElementElement(
                     id = "2",
-                    timestamp = Instant.now()
+                    timestamp = targetDate
                 )
             )
         ),
         record = mutableMapOf(Pair("01", true), Pair("02", false)),
         nestedObject = ObjectWithEveryTypeNestedObject(
-            id = "d1", timestamp = Instant.now(), data = ObjectWithEveryTypeNestedObjectData(
-                id = "d2", timestamp = Instant.now(), data = ObjectWithEveryTypeNestedObjectDataData(
-                    id = "d3", timestamp = Instant.now()
+            id = "d1", timestamp = targetDate, data = ObjectWithEveryTypeNestedObjectData(
+                id = "d2", timestamp = targetDate, data = ObjectWithEveryTypeNestedObjectDataData(
+                    id = "d3", timestamp = targetDate
                 )
             )
         ),
         `object` = ObjectWithEveryTypeObject(
-            string = "hello world", boolean = false, timestamp = Instant.now()
+            string = "hello world", boolean = false, timestamp = targetDate
         )
     )
 
@@ -129,7 +131,7 @@ fun main() {
                 any = JsonPrimitive("Hello world"),
                 string = "Hello world",
                 boolean = true,
-                timestamp = Instant.now(),
+                timestamp = targetDate,
                 int8 = 10,
                 uint8 = 10u,
                 int16 = 10,
@@ -146,24 +148,24 @@ fun main() {
                     mutableListOf(
                         ObjectWithEveryNullableTypeNestedArrayElementElement(
                             id = "1",
-                            timestamp = Instant.now()
+                            timestamp = targetDate
                         )
                     )
                 ),
                 `object` = ObjectWithEveryNullableTypeObject(
                     string = "Hello world",
                     boolean = true,
-                    timestamp = Instant.now(),
+                    timestamp = targetDate,
                 ),
                 nestedObject = ObjectWithEveryNullableTypeNestedObject(
                     id = "1",
-                    timestamp = Instant.now(),
+                    timestamp = targetDate,
                     data = ObjectWithEveryNullableTypeNestedObjectData(
                         id = "2",
-                        timestamp = Instant.now(),
+                        timestamp = targetDate,
                         data = ObjectWithEveryNullableTypeNestedObjectDataData(
                             id = "3",
-                            timestamp = Instant.now(),
+                            timestamp = targetDate,
                         ),
                     ),
                 ),
@@ -246,50 +248,123 @@ fun main() {
 
     val sseScope = CoroutineScope(CoroutineName("SSE Scope"))
 
-    val streamMessagesTag = "SSE Support"
-    val streamMessagesMessages: MutableList<ChatMessage> = mutableListOf()
-    val streamMessagesErrors: MutableList<TestClientError> = mutableListOf()
-    val streamMessagesChannelId = "12345"
-    val streamMessagesJob = client.tests.streamMessages(sseScope, ChatMessageParams(
-        channelId = streamMessagesChannelId
+    testSseSupport(sseScope, client)
+    testSseParsesMessageAndErrorEvents(sseScope, client)
+    testSseClosesOnDone(sseScope, client)
+
+}
+
+fun testSseSupport(
+    scope: CoroutineScope,
+    client: TestClient,
+) {
+    val tag = "SSE Support"
+    val messages: MutableList<ChatMessage> = mutableListOf()
+    val errors: MutableList<TestClientError> = mutableListOf()
+    val channelId = "12345"
+    val job = client.tests.streamMessages(scope, ChatMessageParams(
+        channelId = channelId
     ),
         onData = { message ->
-            println("MESSAGE $message")
-            streamMessagesMessages.add(message)
+            messages.add(message)
             when (message) {
                 is ChatMessageImage -> {
-                    expect(streamMessagesTag, message.channelId, streamMessagesChannelId)
-                    expect(streamMessagesTag, message.image.isNotEmpty(), true)
+                    expect(tag, message.channelId, channelId)
+                    expect(tag, message.image.isNotEmpty(), true)
                 }
 
                 is ChatMessageText -> {
-                    expect(streamMessagesTag, message.channelId, streamMessagesChannelId)
-                    expect(streamMessagesTag, message.text.isNotEmpty(), true)
+                    expect(tag, message.channelId, channelId)
+                    expect(tag, message.text.isNotEmpty(), true)
                 }
 
                 is ChatMessageUrl -> {
-                    expect(streamMessagesTag, message.channelId, streamMessagesChannelId)
-                    expect(streamMessagesTag, message.url.isNotEmpty(), true)
+                    expect(tag, message.channelId, channelId)
+                    expect(tag, message.url.isNotEmpty(), true)
                 }
             }
         },
         onConnectionError = { err ->
             println("ERROR $err")
-            streamMessagesErrors.add(err)
+            errors.add(err)
         },
         onError = { err ->
             println("ERROR $err")
-            streamMessagesErrors.add(err)
+            errors.add(err)
         })
 
     Thread.sleep(1000)
-    println(streamMessagesMessages)
-    println(streamMessagesErrors)
-    streamMessagesJob.cancel()
-    expect(streamMessagesTag, streamMessagesMessages.isNotEmpty(), true)
-    expect(streamMessagesTag, streamMessagesErrors.isEmpty(), true)
+    job.cancel()
+    expect(tag, messages.isNotEmpty(), true)
+    expect(tag, errors.isEmpty(), true)
 }
 
+fun testSseParsesMessageAndErrorEvents(
+    scope: CoroutineScope,
+    client: TestClient,
+) {
+    val tag = "SSE parses both 'message' and 'error' events"
+    var openCount = 0
+    var messageCount = 0
+    var errorReceived: TestClientError? = null
+    var otherErrorCount = 0
+    var closeCount = 0
+    val job = client.tests.streamTenEventsThenError(
+        scope = scope,
+        onOpen = {
+            openCount++
+        },
+        onData = { data ->
+            messageCount++
+        },
+        onError = { err ->
+            errorReceived = err
+            throw CancellationException()
+        },
+        onConnectionError = { err ->
+            println("ERROR: ${err.code} ${err.errorMessage}")
+            otherErrorCount++
+        },
+        onClose = {
+            closeCount++
+        }
+    )
+    Thread.sleep(1000)
+    println("OPEN: $openCount CLOSE: $closeCount MESSAGES: $messageCount ERROR: $errorReceived OTHER ERRORS: $otherErrorCount")
+    expect(tag, openCount, 1)
+    expect(tag, closeCount, 1)
+    expect(tag, messageCount, 10)
+    expect(tag, errorReceived is TestClientError, true)
+    expect(tag, otherErrorCount, 0)
+}
+
+fun testSseClosesOnDone(
+    scope: CoroutineScope,
+    client: TestClient,
+) {
+    val tag = "SSE closes connection on 'done'"
+    var openCount = 0
+    var messageCount = 0
+    var errorCount = 0
+    var closeCount = 0
+    val job = client.tests.streamTenEventsThenEnd(scope, onOpen = {
+        openCount++
+    }, onData = {
+        messageCount++
+    }, onError = {
+        errorCount++
+    }, onConnectionError = {
+        errorCount++
+    }, onClose = {
+        closeCount++
+    })
+    Thread.sleep(1000)
+    if (!job.isCancelled) job.cancel()
+    expect(tag, openCount, 1)
+    expect(tag, messageCount, 10)
+    expect(tag, errorCount, 0)
+    expect(tag, closeCount, 1)
+}
 
 fun <A, B> expect(tag: String?, input: A, result: B) {
     if (input != result) {

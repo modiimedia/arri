@@ -1819,7 +1819,7 @@ private suspend fun __prepareRequest(
         }
 
         HttpMethod.Post, HttpMethod.Put, HttpMethod.Patch, HttpMethod.Delete -> {
-            finalBody = params?.toString() ?: ""
+            finalBody = params?.toJson() ?: ""
         }
     }
     val builder = HttpRequestBuilder()
@@ -1909,24 +1909,33 @@ private suspend fun __handleSseRequest(
     val request = __prepareRequest(
         client = httpClient,
         url = url,
-        method = HttpMethod.Get,
+        method = method,
         params = params,
         headers = finalHeaders,
     )
     try {
         request.execute { httpResponse ->
-
-            onOpen(httpResponse)
+            try {
+                onOpen(httpResponse)
+            } catch (e: CancellationException) {
+                onClose()
+                return@execute
+            }
             if (httpResponse.status.value != 200) {
-
-                onConnectionError(
-                    ExampleClientError(
-                        code = httpResponse.status.value,
-                        errorMessage = "Error fetching stream from $url",
-                        data = JsonInstance.encodeToJsonElement(httpResponse.toString()),
-                        stack = null,
+                try {
+                    onConnectionError(
+                        ExampleClientError(
+                            code = httpResponse.status.value,
+                            errorMessage = "Error fetching stream from $url",
+                            data = JsonPrimitive(httpResponse.toString()),
+                            stack = null,
+                        )
                     )
-                )
+
+                } catch (e: CancellationException) {
+                    onClose()
+                    return@execute
+                }
                 __handleSseRequest(
                     scope = scope,
                     httpClient = httpClient,
@@ -1960,7 +1969,12 @@ private suspend fun __handleSseRequest(
                     }
                     when (event.event) {
                         "message" -> {
-                            onData(event.data)
+                            try {
+                                onData(event.data)
+                            } catch (e: CancellationException) {
+                                onClose()
+                                return@execute
+                            }
                         }
 
                         "done" -> {
@@ -1969,8 +1983,13 @@ private suspend fun __handleSseRequest(
                         }
 
                         "error" -> {
-                            val error = JsonInstance.decodeFromString<ExampleClientError>(event.data)
-                            onError(error)
+                            val error = ExampleClientError.fromJson(event.data)
+                            try {
+                                onError(error)
+                            } catch (e: CancellationException) {
+                                onClose()
+                                return@execute
+                            }
                         }
 
                         else -> {}
@@ -1983,7 +2002,7 @@ private suspend fun __handleSseRequest(
             ExampleClientError(
                 code = 503,
                 errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e.toString()),
+                data = JsonPrimitive(e.toString()),
                 stack = e.stackTraceToString().split("\n"),
             )
         )
@@ -2010,7 +2029,7 @@ private suspend fun __handleSseRequest(
             ExampleClientError(
                 code = 503,
                 errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonInstance.encodeToJsonElement(e.toString()),
+                data = JsonPrimitive(e.toString()),
                 stack = e.stackTraceToString().split("\n"),
             )
         )
