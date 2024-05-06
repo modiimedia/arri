@@ -1,6 +1,9 @@
 import { type Schema, type SchemaFormType } from "arri-codegen-utils";
-import { isNullable } from "./_common";
-import { type KotlinProperty, type CodegenContext } from ".";
+import {
+    isNullable,
+    type KotlinProperty,
+    type CodegenContext,
+} from "./_common";
 
 function defaultToQueryString(
     context: CodegenContext,
@@ -10,10 +13,10 @@ function defaultToQueryString(
 ) {
     if (context.isOptional) {
         return `if (${input} != null) {
-                    ${target}.add("${key}=$${input}")
-                }`;
+            ${target}.add("${key}=$${input}")
+        }`;
     }
-    return `${target}.add("${key}=${input}")`;
+    return `${target}.add("${key}=$${input}")`;
 }
 
 function defaultToJsonString(
@@ -21,11 +24,6 @@ function defaultToJsonString(
     input: string,
     target: string,
 ) {
-    if (context.isOptional) {
-        return `if (${input} != null) {
-                    ${target} += ${input}
-                }`;
-    }
     return `${target} += ${input}`;
 }
 
@@ -33,25 +31,27 @@ export function kotlinStringFromSchema(
     schema: SchemaFormType,
     context: CodegenContext,
 ): KotlinProperty {
-    const defaultValue = schema.nullable ? "null" : '""';
+    const nullable = isNullable(schema, context);
+    const defaultValue = nullable ? "null" : '""';
     return {
         typeName: "String",
-        isNullable: schema.nullable ?? false,
+        isNullable: nullable,
         defaultValue,
         fromJson(input) {
-            return `when (${input}) {
-                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull ?: ${defaultValue}
-                    else -> ${defaultValue}
-                }`;
-        },
-        toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target} += buildString { printQuoted(${input}) }
+            if (nullable) {
+                return `when (${input}) {
+                    is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull
+                    else -> null
                 }`;
             }
+            return `when (${input}) {
+                is JsonPrimitive -> ${input}!!.jsonPrimitive.contentOrNull ?: ${defaultValue}
+                else -> ${defaultValue}
+            }`;
+        },
+        toJson(input, target) {
             if (schema.nullable) {
-                return `${target} += when ${input} {
+                return `${target} += when (${input}) {
                     is String -> buildString { printQuoted(${input}) }
                     else -> "null"
                 }`;
@@ -69,12 +69,19 @@ export function kotlinBooleanFromSchema(
     schema: SchemaFormType,
     context: CodegenContext,
 ): KotlinProperty {
-    const defaultValue = schema.nullable ? "null" : "false";
+    const nullable = isNullable(schema, context);
+    const defaultValue = nullable ? "null" : "false";
     return {
         typeName: "Boolean",
-        isNullable: schema.nullable ?? false,
+        isNullable: nullable,
         defaultValue,
         fromJson(input) {
+            if (nullable) {
+                return `when (${input}) {
+                    is JsonPrimitive -> ${input}!!.jsonPrimitive.booleanOrNull
+                    else -> null
+                }`;
+            }
             return `when (${input}) {
                 is JsonPrimitive -> ${input}!!.jsonPrimitive.booleanOrNull ?: ${defaultValue}
                 else -> ${defaultValue}
@@ -94,10 +101,11 @@ export function kotlinTimestampFromSchema(
     schema: SchemaFormType,
     context: CodegenContext,
 ): KotlinProperty {
-    const defaultValue = schema.nullable ? "null" : "Instant.now()";
+    const nullable = isNullable(schema, context);
+    const defaultValue = nullable ? "null" : "Instant.now()";
     return {
         typeName: "Instant",
-        isNullable: schema.nullable ?? false,
+        isNullable: nullable,
         defaultValue,
         fromJson(input) {
             return `when (${input}) {
@@ -110,11 +118,6 @@ export function kotlinTimestampFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${target} != null) {
-                    ${target} += "\\"\${timestampFormatter.format(${input})}\\""
-                }`;
-            }
             if (schema.nullable) {
                 return `${target} += when (${input}) {
                     is Instant -> "\\"\${timestampFormatter.format(${input})}\\""
@@ -126,18 +129,28 @@ export function kotlinTimestampFromSchema(
         toQueryString(input, target, key) {
             if (context.isOptional) {
                 return `if (${input} != null) {
-                    ${target}.add("${key}=\${timestampFormatter.format(${input})}")
-                }`;
+                    ${target}.add(
+                        "${key}=\${
+                            timestampFormatter.format(${input})
+                        }"
+                )
+            }`;
             }
             if (schema.nullable) {
-                return `${target}.add("${key}=\${
-                when (${input}) {
-                    is Instant -> timestampFormatter.format(${input})
-                    else -> "null"
-                }
-            }")`;
+                return `${target}.add(
+                    "${key}=\${
+                        when (${input}) {
+                            is Instant -> timestampFormatter.format(${input})
+                            else -> "null"
+                        }
+                    }"
+        )`;
             }
-            return `${target}.add("${key}=\${timestampFormatter.format(${input})}")`;
+            return `${target}.add(
+                "${key}=\${
+                    timestampFormatter.format(${input})
+                }"
+        )`;
         },
         content: "",
     };
@@ -326,13 +339,8 @@ export function kotlinInt64FromSchema(
             }`;
         },
         toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target} += "\\"$${input}\\""
-                }`;
-            }
             if (schema.nullable) {
-                return `${target} += match (${input}) {
+                return `${target} += when (${input}) {
                     is Long -> "\\"$${input}\\""
                     else -> "null"
                 }`;
@@ -465,11 +473,6 @@ export function kotlinUint64FromSchema(
             }`;
         },
         toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target} += "\\"$${input}\\""
-                }`;
-            }
             if (schema.nullable) {
                 return `${target} += when (${input}) {
                     is ULong -> "\\"$${input}\\""

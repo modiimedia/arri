@@ -4,8 +4,30 @@ import {
     pascalCase,
     removeDisallowedChars,
 } from "arri-codegen-utils";
-import { stringStartsWithNumber } from "packages/arri-codegen/utils/dist";
-import { type CodegenContext } from ".";
+import { stringStartsWithNumber } from "arri-codegen-utils";
+
+export interface CodegenContext {
+    modelPrefix: string;
+    clientName: string;
+    clientVersion: string;
+    instancePath: string;
+    schemaPath: string;
+    existingTypeIds: string[];
+    isOptional?: boolean;
+    discriminatorParentId?: string;
+    discriminatorKey?: string;
+    discriminatorValue?: string;
+}
+
+export interface KotlinProperty {
+    typeName: string;
+    isNullable: boolean;
+    content: string;
+    defaultValue: string;
+    fromJson: (input: string, key?: string) => string;
+    toJson: (input: string, target: string) => string;
+    toQueryString: (input: string, target: string, key: string) => string;
+}
 
 const reservedIdentifierKeywords = [
     "as",
@@ -49,7 +71,7 @@ export function kotlinIdentifier(input: string): string {
         stringStartsWithNumber(name) ||
         reservedIdentifierKeywords.includes(name)
     ) {
-        return `_${name}`;
+        return `\`${name}\``;
     }
     return name;
 }
@@ -66,6 +88,52 @@ export function kotlinClassName(input: string): string {
         return `_${name}`;
     }
     return name;
+}
+
+export function getClassName(schema: Schema, context: CodegenContext): string {
+    if (schema.metadata?.id) {
+        const className = kotlinClassName(
+            pascalCase(schema.metadata.id, {
+                normalize: true,
+            }),
+        );
+        return `${context.modelPrefix}${className}`;
+    }
+    const depth = instanceDepth(context);
+    if (depth === 1) {
+        const className = kotlinClassName(
+            pascalCase(context.schemaPath.replace("/", ""), {
+                normalize: true,
+            }),
+        );
+        return `${context.modelPrefix}${className}`;
+    }
+
+    if (
+        context.discriminatorParentId &&
+        context.discriminatorKey &&
+        context.discriminatorValue
+    ) {
+        const className = kotlinClassName(
+            pascalCase(
+                `${context.discriminatorParentId}_${context.discriminatorValue}`,
+                { normalize: true },
+            ),
+        );
+        return `${context.modelPrefix}${className}`;
+    }
+
+    const className = kotlinClassName(
+        pascalCase(context.schemaPath.split("/").join("_"), {
+            normalize: true,
+        }),
+    );
+    return `${context.modelPrefix}${className}`;
+}
+
+export function instanceDepth(context: CodegenContext) {
+    const parts = context.instancePath.split("/");
+    return parts.length - 1;
 }
 
 export function isNullable(schema: Schema, context: CodegenContext) {

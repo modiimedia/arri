@@ -269,9 +269,6 @@ importers:
       json-schema-to-jtd:
         specifier: workspace:*
         version: link:../../json-schema-to-jtd
-      jtd-utils:
-        specifier: workspace:*
-        version: link:../../jtd-utils
 
   packages/arri-codegen/typescript:
     dependencies:

@@ -1,6 +1,9 @@
 import { type SchemaFormEmpty } from "arri-codegen-utils";
-import { isNullable } from "./_common";
-import { type CodegenContext, type KotlinProperty } from ".";
+import {
+    isNullable,
+    type CodegenContext,
+    type KotlinProperty,
+} from "./_common";
 
 export function kotlinAnyFromSchema(
     schema: SchemaFormEmpty,
@@ -38,7 +41,7 @@ export function kotlinAnyFromSchema(
                 }`;
             }
             if (schema.nullable) {
-                return `${target} += match (${input}) {
+                return `${target} += when (${input}) {
                     null -> "null"
                     else -> JsonInstance.encodeToString(${input})
                 }`;
@@ -46,7 +49,7 @@ export function kotlinAnyFromSchema(
             return `${target} += JsonInstance.encodeToString(${input})`;
         },
         toQueryString() {
-            return `System.err.println("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}")`;
+            return `System.err.println("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };
