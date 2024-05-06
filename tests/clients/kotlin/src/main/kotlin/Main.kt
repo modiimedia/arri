@@ -11,9 +11,10 @@ fun main() {
     val httpClient = HttpClient() {
         install(HttpTimeout)
     }
+    val baseUrl = "http://localhost:2020"
     val client = TestClient(
         httpClient = httpClient,
-        baseUrl = "http://localhost:2020",
+        baseUrl = baseUrl,
         headers = {
             mutableMapOf(Pair("x-test-header", "12345"))
         }
@@ -251,6 +252,8 @@ fun main() {
     testSseSupport(sseScope, client)
     testSseParsesMessageAndErrorEvents(sseScope, client)
     testSseClosesOnDone(sseScope, client)
+    testSseAutoReconnectsWhenClosedByServer(sseScope, client)
+    testSseReconnectsWithNewCredentials(sseScope, httpClient, baseUrl)
 
 }
 
@@ -285,11 +288,9 @@ fun testSseSupport(
             }
         },
         onConnectionError = { err ->
-            println("ERROR $err")
             errors.add(err)
         },
         onError = { err ->
-            println("ERROR $err")
             errors.add(err)
         })
 
@@ -321,8 +322,7 @@ fun testSseParsesMessageAndErrorEvents(
             errorReceived = err
             throw CancellationException()
         },
-        onConnectionError = { err ->
-            println("ERROR: ${err.code} ${err.errorMessage}")
+        onConnectionError = {
             otherErrorCount++
         },
         onClose = {
@@ -330,7 +330,7 @@ fun testSseParsesMessageAndErrorEvents(
         }
     )
     Thread.sleep(1000)
-    println("OPEN: $openCount CLOSE: $closeCount MESSAGES: $messageCount ERROR: $errorReceived OTHER ERRORS: $otherErrorCount")
+    job.cancel()
     expect(tag, openCount, 1)
     expect(tag, closeCount, 1)
     expect(tag, messageCount, 10)
@@ -359,11 +359,64 @@ fun testSseClosesOnDone(
         closeCount++
     })
     Thread.sleep(1000)
-    if (!job.isCancelled) job.cancel()
+    job.cancel()
     expect(tag, openCount, 1)
     expect(tag, messageCount, 10)
     expect(tag, errorCount, 0)
     expect(tag, closeCount, 1)
+}
+
+fun testSseAutoReconnectsWhenClosedByServer(scope: CoroutineScope, client: TestClient) {
+    val tag = "SSE auto-reconnects when closed by server"
+    var openCount = 0;
+    var messageCount = 0;
+    val job = client.tests.streamAutoReconnect(
+        scope = scope,
+        params = AutoReconnectParams(messageCount = 10u),
+        onOpen = {
+            openCount++
+        },
+        onData = { msg ->
+            messageCount++
+            expect(tag, msg.count, 10u)
+        },
+    )
+    Thread.sleep(1000)
+    job.cancel()
+    expect(tag, openCount > 1, true)
+    expect(tag, messageCount > 1, true)
+}
+
+fun testSseReconnectsWithNewCredentials(scope: CoroutineScope, httpClient: HttpClient, baseUrl: String) {
+    val tag = "SSE reconnects with new credentials"
+    val dynamicClient = TestClient(
+        httpClient = httpClient,
+        baseUrl = baseUrl,
+        headers = {
+            mutableMapOf(Pair("x-test-header", "kt_${java.util.UUID.randomUUID().toString()}"))
+        }
+    )
+    var msgCount = 0
+    var openCount = 0
+    var errorCount = 0
+    val job = dynamicClient.tests.streamRetryWithNewCredentials(
+        scope = scope,
+        onData = {
+            msgCount++
+        },
+        onConnectionError = {
+            errorCount++
+        },
+        onOpen = {
+            openCount++
+            println("OPENED $openCount")
+        }
+    )
+    Thread.sleep(2000)
+    job.cancel()
+    expect(tag, msgCount > 1, true)
+    expect(tag, openCount > 1, true)
+    expect(tag, errorCount > 1, true)
 }
 
 fun <A, B> expect(tag: String?, input: A, result: B) {

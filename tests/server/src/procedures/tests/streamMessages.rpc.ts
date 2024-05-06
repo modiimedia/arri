@@ -48,7 +48,6 @@ export default defineEventStreamRpc({
     params: ChatMessageParams,
     response: ChatMessage,
     handler({ params, stream }) {
-        console.log(params.channelId);
         const randomItem = (): ChatMessage => {
             const userId = randomUUID();
             const now = new Date();

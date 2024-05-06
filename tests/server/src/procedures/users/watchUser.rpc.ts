@@ -82,7 +82,6 @@ export default defineEventStreamRpc({
         const interval = setInterval(async () => {
             await connection.push(user, randomUUID());
             count++;
-            console.log(`sent ${count} users`);
             if (count >= 10) {
                 await connection.end();
             }
