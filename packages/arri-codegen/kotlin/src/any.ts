@@ -35,11 +35,6 @@ export function kotlinAnyFromSchema(
             }`;
         },
         toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target} += JsonInstance.encodeToString(${input})
-                }`;
-            }
             if (schema.nullable) {
                 return `${target} += when (${input}) {
                     null -> "null"

@@ -56,7 +56,7 @@ export function kotlinStringFromSchema(
                     else -> "null"
                 }`;
             }
-            return `buildString { printQuoted(${input}) }`;
+            return `${target} += buildString { printQuoted(${input}) }`;
         },
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
@@ -479,7 +479,7 @@ export function kotlinUint64FromSchema(
                     else -> "null"
                 }`;
             }
-            return `${target} += "\\"${input}\\""`;
+            return `${target} += "\\"$${input}\\""`;
         },
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);

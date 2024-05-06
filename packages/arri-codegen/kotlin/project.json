@@ -48,6 +48,12 @@
         ]
       }
     },
+    "show-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm vite preview --outDir packages/arri-codegen/kotlin/.temp/test-results"
+      }
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

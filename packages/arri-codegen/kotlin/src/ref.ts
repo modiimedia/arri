@@ -19,7 +19,7 @@ export function kotlinRefFromSchema(
         defaultValue,
         fromJson(input, key) {
             return `when (${input}) {
-                is JsonElement -> ${typeName}.fromJsonElement(
+                is JsonObject -> ${typeName}.fromJsonElement(
                     ${input}!!,
                     "$instancePath/${key}",
                 )

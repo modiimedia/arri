@@ -2,6 +2,9 @@ import fs from "node:fs";
 import {
     type AppDefinition,
     defineClientGeneratorPlugin,
+    isServiceDefinition,
+    isRpcDefinition,
+    unflattenProcedures,
 } from "arri-codegen-utils";
 import {
     isSchemaFormDiscriminator,
@@ -13,7 +16,11 @@ import {
     isSchemaFormValues,
     type Schema,
 } from "jtd-utils";
-import { type CodegenContext, kotlinClassName } from "./_common";
+import {
+    type CodegenContext,
+    kotlinClassName,
+    kotlinIdentifier,
+} from "./_common";
 import { kotlinAnyFromSchema } from "./any";
 import { kotlinArrayFromSchema } from "./array";
 import { kotlinDiscriminatorFromSchema } from "./discriminator";
@@ -35,6 +42,10 @@ import {
     kotlinUint64FromSchema as kotlinUInt64FromSchema,
     kotlinUint8FromSchema as kotlinUInt8FromSchema,
 } from "./primitives";
+import {
+    kotlinProcedureFromSchema,
+    kotlinServiceFromSchema,
+} from "./procedures";
 import { kotlinRefFromSchema } from "./ref";
 
 export interface ServiceContext {
@@ -61,7 +72,6 @@ export const kotlinClientGenerator = defineClientGeneratorPlugin(
     },
 );
 
-// CLIENT GENERATION
 export function kotlinClientFromDef(
     def: AppDefinition,
     options: KotlinClientOptions,
@@ -90,7 +100,58 @@ export function kotlinClientFromDef(
             modelParts.push(type.content);
         }
     }
-    return `
+    const procedureParts: string[] = [];
+    const subServiceParts: string[] = [];
+    const services = unflattenProcedures(def.procedures);
+    for (const key of Object.keys(services)) {
+        const subSchema = services[key];
+        if (isServiceDefinition(subSchema)) {
+            const kotlinKey = kotlinIdentifier(key);
+            const subService = kotlinServiceFromSchema(subSchema, {
+                ...context,
+                instancePath: `${key}`,
+            });
+            procedureParts.push(`val ${kotlinKey}: ${subService.name} = ${subService.name}(
+                httpClient = httpClient,
+                baseUrl = baseUrl,
+                headers = headers,
+            )`);
+            if (subService.content) {
+                subServiceParts.push(subService.content);
+            }
+            continue;
+        }
+        if (isRpcDefinition(subSchema)) {
+            const procedure = kotlinProcedureFromSchema(subSchema, {
+                ...context,
+                instancePath: key,
+            });
+            if (procedure.length) {
+                procedureParts.push(procedure);
+            }
+            continue;
+        }
+    }
+    if (procedureParts.length === 0) {
+        return `${getHeader({ clientName, clientVersion: context.clientVersion, packageName: "" })}
+${getUtilityClasses(clientName)}
+
+${modelParts.join("\n\n")}
+
+${getUtilityFunctions(clientName)}`;
+    }
+    return `${getHeader({ clientName, clientVersion: context.clientVersion, packageName: "" })}
+
+class ${clientName}(
+    private val httpClient: HttpClient,
+    private val baseUrl: String,
+    private val headers: headersFn,
+) {
+    ${procedureParts.join("\n\n    ")}
+}
+
+${subServiceParts.join("\n\n")}
+
 ${getUtilityClasses(clientName)}
 
 ${modelParts.join("\n\n")}
@@ -175,13 +236,13 @@ data class ${clientName}Error(
     val errorMessage: String,
     val data: JsonElement?,
     val stack: List<String>?,
-) : Exception(message = errorMessage), ${clientName}Model {
+) : Exception(errorMessage), ${clientName}Model {
     override fun toJson(): String {
         var output = "{"
         output += "\\"code\\":"
         output += "$code"
         output += ",\\"message\\":"
-        output += buildString { printQuoted(message ?: "") }
+        output += buildString { printQuoted(errorMessage ?: "") }
         if (data != null) {
             output += ",\\"data\\":"
             output += JsonInstance.encodeToString(data)
@@ -189,11 +250,11 @@ data class ${clientName}Error(
         if (stack != null) {
             output += ",\\"stack\\":"
             output += "["
-            for ((index, item) in stack.withIndex()) {
-                if (index > 0) {
+            for ((__index, __element) in stack.withIndex()) {
+                if (__index > 0) {
                     output += ","
                 }
-                output += buildString { printQuoted(item) }
+                output += buildString { printQuoted(__element) }
             }
             output += "]"
         }
@@ -224,7 +285,7 @@ data class ${clientName}Error(
 
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${clientName}Error {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ${clientName}Error.fromJsonElement() expected JsonObject at \${instancePath}. Got \${__input.javaClass}. Initializing empty ${clientName}Error.")
+                System.err.println("[WARNING] ${clientName}Error.fromJsonElement() expected JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${clientName}Error.")
             }
             val code = when (__input.jsonObject["code"]) {
                 is JsonPrimitive -> __input.jsonObject["code"]!!.jsonPrimitive.intOrNull ?: 0
@@ -278,6 +339,7 @@ private fun toHexChar(i: Int): Char {
     else (d - 10 + 'a'.code).toChar()
 }
 
+@Suppress("KotlinConstantConditions")
 internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     for (c in 0..0x1f) {
         val c1 = toHexChar(c shr 12)
@@ -575,4 +637,38 @@ private suspend fun handleSseRequest(
 //    ) { }
 //
 //}`;
+}
+
+function getHeader(options: {
+    packageName: string;
+    clientName: string;
+    clientVersion: string;
+}): string {
+    return `import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.*
+import java.nio.ByteBuffer
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+private const val generatedClientVersion = "${options.clientVersion}"
+private val timestampFormatter =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        .withZone(ZoneId.ofOffset("GMT", ZoneOffset.UTC))
+private val JsonInstance = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+}
+private typealias headersFn = (() -> MutableMap<String, String>?)?`;
 }

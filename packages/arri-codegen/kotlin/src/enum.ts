@@ -23,19 +23,18 @@ export function kotlinEnumFromSchema(
             `Enum schemas must have at least one enum value. At ${context.schemaPath}.`,
         );
     }
-    const defaultValue = nullable
-        ? "null"
-        : `${className}.${enumItems[0]!.name}`;
+    const defaultValue = nullable ? "null" : `${className}.new()`;
     let content = "";
     if (!context.existingTypeIds.includes(className)) {
-        content = `enum class ${className} {
+        content = `@Suppress("LocalVariableName")
+enum class ${className} {
     ${enumItems.map((item) => item.name).join(",\n    ")};
     val serialValue: String
         get() = when (this) {
             ${enumItems.map((item) => `${item.name} -> "${item.value}"`).join("\n            ")}
         }
     
-    companion object Factory: ${context.clientName}ModelFactory<${className}> {
+    companion object Factory : ${context.clientName}ModelFactory<${className}> {
         @JvmStatic
         override fun new(): ${className} {
             return ${enumItems[0]!.name}
@@ -50,12 +49,12 @@ export function kotlinEnumFromSchema(
         }
 
         @JvmStatic
-        override fun fromJsonElement(input: JsonElement, instancePath: String): ${className} {
-            if (input !is JsonPrimitive) {
-                System.err.println("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at \${instancePath}. Got \${input.javaClass}. Initializing empty ${className}.")
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
+            if (__input !is JsonPrimitive) {
+                System.err.println("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
-            return when (input.jsonPrimitive.contentOrNull) {
+            return when (__input.jsonPrimitive.contentOrNull) {
                 ${enumItems.map((item) => `"${item.value}" -> ${item.name}`).join("\n                ")}
                 else -> new()
             }
@@ -71,21 +70,18 @@ export function kotlinEnumFromSchema(
         fromJson(input, key) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonElement -> ${className}.fromJsonElement(${input}!!, "$instancePath/${key ?? ""}")
+                    is JsonNull -> null
+                    is JsonPrimitive -> ${className}.fromJsonElement(${input}!!, "$instancePath/${key ?? ""}")
                     else -> null
                 }`;
             }
             return `when (${input}) {
-                is JsonElement -> ${className}.fromJsonElement(${input}!!, "$instancePath/${key})
+                is JsonNull -> ${defaultValue}
+                is JsonPrimitive -> ${className}.fromJsonElement(${input}!!, "$instancePath/${key}")
                 else -> ${defaultValue}
             }`;
         },
         toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target} += "\\"\${${input}.serialValue}\\""
-                }`;
-            }
             if (schema.nullable) {
                 return `${target} += when (${input}) {
                     is ${className} -> "\\"\${${input}.serialValue}\\""

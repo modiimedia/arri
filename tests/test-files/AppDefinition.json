@@ -62,7 +62,7 @@
       "additionalProperties": true,
       "metadata": { "id": "NestedObject" }
     },
-    "ObjectWithEveryField": {
+    "ObjectWithEveryType": {
       "properties": {
         "string": { "type": "string", "metadata": {} },
         "boolean": { "type": "boolean", "metadata": {} },

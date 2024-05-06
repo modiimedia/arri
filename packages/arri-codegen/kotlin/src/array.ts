@@ -4,7 +4,7 @@ import {
     type CodegenContext,
     type KotlinProperty,
 } from "./_common";
-import { kotlinTypeFromSchema } from ".";
+import { kotlinTypeFromSchema } from "./_index";
 
 export function kotlinArrayFromSchema(
     schema: SchemaFormElements,
@@ -51,21 +51,11 @@ export function kotlinArrayFromSchema(
                     }
                     __value
                 }
+
+                else -> mutableListOf()
             }`;
         },
         toJson(input, target) {
-            if (context.isOptional) {
-                return `if (${input} != null) {
-                    ${target} += "["
-                    for ((__index, __element) in ${input}.withIndex()) {
-                        if(__index != 0) {
-                            ${target} += ","
-                        }
-                        ${subType.toJson("__element", target)}
-                    }
-                    ${target} += "]"
-                }`;
-            }
             if (schema.nullable) {
                 return `if (${input} == null) {
                     ${target} += "null"

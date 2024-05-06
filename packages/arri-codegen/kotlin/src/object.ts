@@ -6,7 +6,7 @@ import {
     type CodegenContext,
     type KotlinProperty,
 } from "./_common";
-import { kotlinTypeFromSchema } from ".";
+import { kotlinTypeFromSchema } from "./_index";
 
 export function kotlinObjectFromSchema(
     schema: SchemaFormProperties,
@@ -22,7 +22,7 @@ export function kotlinObjectFromSchema(
         fromJson(input, key) {
             if (nullable) {
                 return `when (${input}) {
-                    is JsonElement -> ${className}.fromJsonElement(
+                    is JsonObject -> ${className}.fromJsonElement(
                         ${input}!!,
                         "$instancePath/${key}",
                     )
@@ -31,7 +31,7 @@ export function kotlinObjectFromSchema(
                 }`;
             }
             return `when (${input}) {
-                is JsonElement -> ${className}.fromJsonElement(
+                is JsonObject -> ${className}.fromJsonElement(
                     ${input}!!,
                     "$instancePath/${key}",
                 )
@@ -66,12 +66,15 @@ export function kotlinObjectFromSchema(
         requiredKeys.length > 0 ||
         (context.discriminatorKey && context.discriminatorValue);
     if (!hasKnownKeys) {
-        toQueryParts.push("var hasProperties = false");
+        toJsonParts.push("var hasProperties = false");
     }
 
     if (context.discriminatorKey && context.discriminatorValue) {
         toJsonParts.push(
             `output += "\\"${context.discriminatorKey}\\":\\"${context.discriminatorValue}\\""`,
+        );
+        toQueryParts.push(
+            `queryParts.add("${context.discriminatorKey}=${context.discriminatorValue}")`,
         );
     }
     let hasArrayOrRecord = false;
@@ -100,7 +103,7 @@ export function kotlinObjectFromSchema(
         fieldParts.push(
             `    val ${kotlinKey}: ${type.typeName}${type.isNullable ? "?" : ""},`,
         );
-        if (i === 0) {
+        if (i === 0 && !context.discriminatorKey) {
             toJsonParts.push(`output += "\\"${key}\\":"`);
         } else {
             toJsonParts.push(`output += ",\\"${key}\\":"`);
@@ -116,6 +119,8 @@ export function kotlinObjectFromSchema(
     }
 
     for (let i = 0; i < optionalKeys.length; i++) {
+        const isFirst =
+            i === 0 && requiredKeys.length === 0 && !context.discriminatorKey;
         const isLast = i === optionalKeys.length - 1;
         const key = optionalKeys[i]!;
         const kotlinKey = kotlinIdentifier(key);
@@ -139,9 +144,11 @@ export function kotlinObjectFromSchema(
         if (type.content) {
             subContent.push(type.content);
         }
+        const addCommaPart = isFirst
+            ? ""
+            : `\n        if (hasProperties) output += ","\n`;
         fieldParts.push(`    val ${kotlinKey}: ${type.typeName}? = null,`);
-        toJsonParts.push(`if (${kotlinKey} != null) {
-    if (hasProperties) output += ","
+        toJsonParts.push(`if (${kotlinKey} != null) {${addCommaPart}
     output += "\\"${key}\\":"
     ${type.toJson(kotlinKey, "output")}
 ${isLast ? "" : "    hasProperties = true"}\n}`);
@@ -149,7 +156,6 @@ ${isLast ? "" : "    hasProperties = true"}\n}`);
         fromJsonParts.push(
             `val ${kotlinKey}: ${type.typeName}? = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
         );
-        defaultParts.push(`                ${kotlinKey} = null,`);
     }
 
     toJsonParts.push('output += "}"');
@@ -192,7 +198,7 @@ ${defaultParts.join("\n")}
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at \${instancePath}. Got \${__input.javaClass}. Initializing empty ${className}.")
+                System.err.println("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
 ${fromJsonParts.join("\n")}

@@ -32,7 +32,7 @@ Below are all of the contents of the test JSON files in an easier to read format
 }
 ```
 
-## ObjectWithEveryField.json
+## ObjectWithEveryType.json
 
 ```json
 {

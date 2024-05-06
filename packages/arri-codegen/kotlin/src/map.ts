@@ -4,7 +4,7 @@ import {
     type KotlinProperty,
     isNullable,
 } from "./_common";
-import { kotlinTypeFromSchema } from ".";
+import { kotlinTypeFromSchema } from "./_index";
 
 export function kotlinMapFromSchema(
     schema: SchemaFormValues,

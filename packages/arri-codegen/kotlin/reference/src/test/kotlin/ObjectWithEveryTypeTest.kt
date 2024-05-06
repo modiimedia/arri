@@ -4,8 +4,8 @@ import java.io.File
 import java.time.Instant
 import kotlin.test.assertEquals
 
-class ObjectWithEveryFieldTest {
-    private val value = ObjectWithEveryField(
+class ObjectWithEveryTypeTest {
+    private val value = ObjectWithEveryType(
         string = "",
         boolean = false,
         timestamp = Instant.parse("2001-01-01T16:00:00.000Z"),
@@ -24,14 +24,14 @@ class ObjectWithEveryFieldTest {
             id = "1",
             content = "hello world"
         ),
-        array = listOf(true, false, false),
-        record = mapOf(Pair("A", true), Pair("B", false)),
+        array = mutableListOf(true, false, false),
+        record = mutableMapOf(Pair("A", true), Pair("B", false)),
         discriminator = DiscriminatorC(id = "", name = "", date = Instant.parse("2001-01-01T16:00:00.000Z")),
         any = JsonPrimitive("hello world")
     )
 
     private val json =
-        File("../../../../tests/test-files/ObjectWithEveryField.json").bufferedReader().use { it.readText() }
+        File("../../../../tests/test-files/ObjectWithEveryType.json").bufferedReader().use { it.readText() }
     private val mismatchedJson =
         File("../../../../tests/test-files/ObjectWithNullableFields_AllNull.json").bufferedReader()
             .use { it.readText() }
@@ -47,13 +47,13 @@ class ObjectWithEveryFieldTest {
 
     @Test
     fun fromJson() {
-        val actualResult = ObjectWithEveryField.fromJson(json)
+        val actualResult = ObjectWithEveryType.fromJson(json)
         assertEquals(actualResult, value)
 
-        val badDataResult = ObjectWithEveryField.fromJson("false")
-        val badDataResult2 = ObjectWithEveryField.fromJson(mismatchedJson)
-        assertEquals(badDataResult, ObjectWithEveryField.new().copy(timestamp = badDataResult.timestamp))
-        assertEquals(badDataResult2, ObjectWithEveryField.new().copy(timestamp = badDataResult2.timestamp))
+        val badDataResult = ObjectWithEveryType.fromJson("false")
+        val badDataResult2 = ObjectWithEveryType.fromJson(mismatchedJson)
+        assertEquals(badDataResult, ObjectWithEveryType.new().copy(timestamp = badDataResult.timestamp))
+        assertEquals(badDataResult2, ObjectWithEveryType.new().copy(timestamp = badDataResult2.timestamp))
     }
 
 }

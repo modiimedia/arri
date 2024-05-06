@@ -26,8 +26,8 @@ export function kotlinDiscriminatorFromSchema(
             instancePath: context.instancePath,
             schemaPath: `${context.schemaPath}/mapping/${key}`,
             existingTypeIds: context.existingTypeIds,
-            discriminatorKey: key,
-            discriminatorValue: schema.discriminator,
+            discriminatorKey: schema.discriminator,
+            discriminatorValue: key,
             discriminatorParentId: className,
         });
         subTypes.push({
@@ -41,14 +41,14 @@ export function kotlinDiscriminatorFromSchema(
     if (subTypes.length === 0) {
         throw new Error("Discriminator schemas must have at least one mapping");
     }
-    const defaultValue = nullable ? "null" : `${subTypes[0]!.typeName}.new()`;
+    const defaultValue = nullable ? "null" : `${className}.new()`;
     const result: KotlinProperty = {
         typeName: className,
         isNullable: nullable,
         defaultValue,
         fromJson(input, key) {
             return `when (${input}) {
-                is JsonElement -> ${className}.fromJsonElement(
+                is JsonObject -> ${className}.fromJsonElement(
                     ${input}!!,
                     "$instancePath/${key}",
                 )
@@ -70,10 +70,10 @@ export function kotlinDiscriminatorFromSchema(
         return result;
     }
     result.content = `@Suppress("LocalVariableName")
-sealed interface ${className}: ${context.clientName}Model {
+sealed interface ${className} : ${context.clientName}Model {
     val ${kotlinDiscriminatorKey}: String
 
-    companion object Factory: ${context.clientName}ModelFactory<${className}> {
+    companion object Factory : ${context.clientName}ModelFactory<${className}> {
         @JvmStatic
         override fun new(): ${className} {
             return ${subTypes[0]!.typeName}.new()
@@ -87,7 +87,7 @@ sealed interface ${className}: ${context.clientName}Model {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at \${instancePath}. Got \${__input.javaClass}. Initializing empty ${className}.")
+                System.err.println("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
             return when (__input.jsonObject["${schema.discriminator}"]) {

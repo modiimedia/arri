@@ -38,7 +38,7 @@ const Discriminator = a.discriminator(
 );
 type Discriminator = a.infer<typeof Discriminator>;
 
-const ObjectWithEveryField = a.object(
+const ObjectWithEveryType = a.object(
     {
         string: a.string(),
         boolean: a.boolean(),
@@ -64,9 +64,9 @@ const ObjectWithEveryField = a.object(
         id: "ObjectWithEveryType",
     },
 );
-type ObjectWithEveryField = a.infer<typeof ObjectWithEveryField>;
+type ObjectWithEveryType = a.infer<typeof ObjectWithEveryType>;
 
-const ObjectWithOptionalFields = a.partial(ObjectWithEveryField, {
+const ObjectWithOptionalFields = a.partial(ObjectWithEveryType, {
     id: "ObjectWithOptionalFields",
 });
 type ObjectWithOptionalFields = a.infer<typeof ObjectWithOptionalFields>;
@@ -177,7 +177,7 @@ const def: AppDefinition = {
         Book,
         BookParams,
         NestedObject,
-        ObjectWithEveryField,
+        ObjectWithEveryType,
         ObjectWithOptionalFields,
         ObjectWithNullableFields,
         RecursiveObject,
@@ -240,7 +240,7 @@ async function main() {
         content: a.serialize(NestedObject, nestedObjectWithSpecialChars),
     });
 
-    const objectWithEveryFieldValue: ObjectWithEveryField = {
+    const objectWithEveryFieldValue: ObjectWithEveryType = {
         string: "",
         boolean: false,
         timestamp: targetDate,
@@ -273,8 +273,8 @@ async function main() {
         any: "hello world",
     };
     files.push({
-        filename: "ObjectWithEveryField.json",
-        content: a.serialize(ObjectWithEveryField, objectWithEveryFieldValue),
+        filename: "ObjectWithEveryType.json",
+        content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
     });
     const objectWithOptionalFieldsAllUndefined: ObjectWithOptionalFields = {};
     files.push({

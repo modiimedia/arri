@@ -47,8 +47,8 @@ class ObjectWithNullableFieldsTest {
             id = "",
             content = "",
         ),
-        array = listOf(true, false, false),
-        record = mapOf(Pair("A", true), Pair("B", false)),
+        array = mutableListOf(true, false, false),
+        record = mutableMapOf(Pair("A", true), Pair("B", false)),
         discriminator = DiscriminatorC(
             id = "",
             name = "",
