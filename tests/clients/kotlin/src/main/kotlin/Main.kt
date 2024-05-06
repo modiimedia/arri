@@ -13,9 +13,15 @@ fun main() {
     val client = TestClient(
         httpClient = httpClient,
         baseUrl = "http://localhost:2020",
-        headers = mutableMapOf(Pair("x-test-header", "12345"))
+        headers = {
+            mutableMapOf(Pair("x-test-header", "12345"))
+        }
     )
-    val unauthenticatedClient = TestClient(httpClient = httpClient, baseUrl = "http://localhost:2020")
+    val unauthenticatedClient = TestClient(
+        httpClient = httpClient,
+        baseUrl = "http://localhost:2020",
+        null
+    )
 
     runBlocking {
         val tag = "EMPTY PARAM REQUESTS"
@@ -48,9 +54,16 @@ fun main() {
         float32 = 1.1F,
         float64 = 11.1,
         enumerator = ObjectWithEveryTypeEnumerator.B,
-        array = listOf(true, false, true),
+        array = mutableListOf(true, false, true),
         discriminator = ObjectWithEveryTypeDiscriminatorB(title = "Hello world", description = "hi"),
-        nestedArray = listOf(listOf(ObjectWithEveryTypeNestedArray(id = "2", timestamp = Instant.now()))),
+        nestedArray = mutableListOf(
+            mutableListOf(
+                ObjectWithEveryTypeNestedArrayElementElement(
+                    id = "2",
+                    timestamp = Instant.now()
+                )
+            )
+        ),
         record = mutableMapOf(Pair("01", true), Pair("02", false)),
         nestedObject = ObjectWithEveryTypeNestedObject(
             id = "d1", timestamp = Instant.now(), data = ObjectWithEveryTypeNestedObjectData(
@@ -59,7 +72,7 @@ fun main() {
                 )
             )
         ),
-        _object = ObjectWithEveryTypeObject(
+        `object` = ObjectWithEveryTypeObject(
             string = "hello world", boolean = false, timestamp = Instant.now()
         )
     )
@@ -105,7 +118,7 @@ fun main() {
                 enumerator = null,
                 array = null,
                 nestedArray = null,
-                _object = null,
+                `object` = null,
                 nestedObject = null,
                 discriminator = null,
                 record = null,
@@ -131,13 +144,13 @@ fun main() {
                 array = mutableListOf(true, false, true),
                 nestedArray = mutableListOf(
                     mutableListOf(
-                        ObjectWithEveryNullableTypeNestedArray(
+                        ObjectWithEveryNullableTypeNestedArrayElementElement(
                             id = "1",
                             timestamp = Instant.now()
                         )
                     )
                 ),
-                _object = ObjectWithEveryNullableTypeObject(
+                `object` = ObjectWithEveryNullableTypeObject(
                     string = "Hello world",
                     boolean = true,
                     timestamp = Instant.now(),
@@ -202,7 +215,7 @@ fun main() {
     runBlocking {
         val tag = "SEND/RECEIVE RECURSIVE UNION"
         val input = RecursiveUnionChildren(
-            data = listOf(
+            data = mutableListOf(
                 RecursiveUnionChild(
                     data = RecursiveUnionText(
                         data = "hello world"

@@ -46,7 +46,7 @@ export function kotlinObjectFromSchema(
             return `${target} += ${input}.toJson()`;
         },
         toQueryString() {
-            return `System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };
@@ -77,7 +77,6 @@ export function kotlinObjectFromSchema(
             `queryParts.add("${context.discriminatorKey}=${context.discriminatorValue}")`,
         );
     }
-    let hasArrayOrRecord = false;
     for (let i = 0; i < requiredKeys.length; i++) {
         const key = requiredKeys[i]!;
         const kotlinKey = kotlinIdentifier(key);
@@ -91,12 +90,7 @@ export function kotlinObjectFromSchema(
             schemaPath: `${context.schemaPath}/properties/${key}`,
             existingTypeIds: context.existingTypeIds,
         });
-        if (
-            type.typeName.includes("MutableList<") ||
-            type.typeName.includes("MutableMap<")
-        ) {
-            hasArrayOrRecord = true;
-        }
+
         if (type.content) {
             subContent.push(type.content);
         }
@@ -134,12 +128,6 @@ export function kotlinObjectFromSchema(
             existingTypeIds: context.existingTypeIds,
             isOptional: true,
         });
-        if (
-            type.typeName.includes("MutableList<") ||
-            type.typeName.includes("MutableMap<")
-        ) {
-            hasArrayOrRecord = true;
-        }
 
         if (type.content) {
             subContent.push(type.content);
@@ -148,10 +136,18 @@ export function kotlinObjectFromSchema(
             ? ""
             : `\n        if (hasProperties) output += ","\n`;
         fieldParts.push(`    val ${kotlinKey}: ${type.typeName}? = null,`);
-        toJsonParts.push(`if (${kotlinKey} != null) {${addCommaPart}
+        if (hasKnownKeys) {
+            toJsonParts.push(`if (${kotlinKey} != null) {
+                output += ",\\"${key}\\":"
+                ${type.toJson(kotlinKey, "output")}
+            }`);
+        } else {
+            toJsonParts.push(`if (${kotlinKey} != null) {${addCommaPart}
     output += "\\"${key}\\":"
     ${type.toJson(kotlinKey, "output")}
 ${isLast ? "" : "    hasProperties = true"}\n}`);
+        }
+
         toQueryParts.push(type.toQueryString(kotlinKey, "queryParts", key));
         fromJsonParts.push(
             `val ${kotlinKey}: ${type.typeName}? = ${type.fromJson(`__input.jsonObject["${key}"]`, key)}`,
@@ -167,11 +163,7 @@ ${isLast ? "" : "    hasProperties = true"}\n}`);
     if (context.discriminatorKey && context.discriminatorValue) {
         discriminatorField = `\n    override val ${kotlinIdentifier(context.discriminatorKey)} get() = "${context.discriminatorValue}"\n`;
     }
-    const suppression = hasArrayOrRecord
-        ? `@Suppress("LocalVariableName", "UNNECESSARY_NOT_NULL_ASSERTION")`
-        : `@Suppress("LocalVariableName")`;
-    result.content = `${suppression}
-data class ${className}(
+    const content = `data class ${className}(
 ${fieldParts.join("\n")}
 ) : ${implementedClass} {${discriminatorField}
     override fun toJson(): String {
@@ -198,7 +190,7 @@ ${defaultParts.join("\n")}
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
+                __logError("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
 ${fromJsonParts.join("\n")}
@@ -211,5 +203,8 @@ ${fromJsonParts.join("\n")}
 
 ${subContent.join("\n\n")}`;
     context.existingTypeIds.push(className);
-    return result;
+    return {
+        ...result,
+        content,
+    };
 }

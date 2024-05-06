@@ -16,7 +16,7 @@ export function kotlinArrayFromSchema(
         modelPrefix: context.modelPrefix,
         clientName: context.clientName,
         clientVersion: context.clientVersion,
-        instancePath: `${context.instancePath}/[item]`,
+        instancePath: `${context.instancePath}/[element]`,
         schemaPath: `${context.schemaPath}/elements`,
         existingTypeIds: context.existingTypeIds,
     });
@@ -80,8 +80,8 @@ export function kotlinArrayFromSchema(
                 ${target} += "]"`;
         },
         toQueryString() {
-            return `System.err.println("[WARNING] arrays cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: subType.content,
     };
 }

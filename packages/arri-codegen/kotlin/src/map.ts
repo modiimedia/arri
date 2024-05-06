@@ -15,7 +15,7 @@ export function kotlinMapFromSchema(
         modelPrefix: context.modelPrefix,
         clientName: context.clientName,
         clientVersion: context.clientVersion,
-        instancePath: `${context.instancePath}/[element]`,
+        instancePath: `${context.instancePath}/[value]`,
         schemaPath: `${context.schemaPath}/values`,
         existingTypeIds: context.existingTypeIds,
     });
@@ -66,8 +66,8 @@ export function kotlinMapFromSchema(
             ${target} += "}"`;
         },
         toQueryString() {
-            return `System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
-        content: "",
+        content: subType.content,
     };
 }

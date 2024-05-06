@@ -5,8 +5,6 @@ import {
     isServiceDefinition,
     isRpcDefinition,
     unflattenProcedures,
-} from "arri-codegen-utils";
-import {
     isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
@@ -15,7 +13,7 @@ import {
     isSchemaFormType,
     isSchemaFormValues,
     type Schema,
-} from "jtd-utils";
+} from "arri-codegen-utils";
 import {
     type CodegenContext,
     kotlinClassName,
@@ -88,7 +86,7 @@ export function kotlinClientFromDef(
     const modelParts: string[] = [];
     for (const key of Object.keys(def.models)) {
         const subSchema = def.models[key]!;
-        const type = kotlinTypeFromSchema(subSchema, {
+        const model = kotlinTypeFromSchema(subSchema, {
             modelPrefix: context.modelPrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,
@@ -96,8 +94,8 @@ export function kotlinClientFromDef(
             schemaPath: `/models`,
             existingTypeIds: context.existingTypeIds,
         });
-        if (type.content) {
-            modelParts.push(type.content);
+        if (model.content) {
+            modelParts.push(model.content);
         }
     }
     const procedureParts: string[] = [];
@@ -220,7 +218,6 @@ function getUtilityClasses(clientName: string): string {
     fun toUrlQueryParams(): String
 }
 
-@Suppress("LocalVariableName")
 interface ${clientName}ModelFactory<T> {
     fun new(): T
     fun fromJson(input: String): T
@@ -230,7 +227,6 @@ interface ${clientName}ModelFactory<T> {
     ): T
 }
 
-@Suppress("LocalVariableName")
 data class ${clientName}Error(
     val code: Int,
     val errorMessage: String,
@@ -242,7 +238,7 @@ data class ${clientName}Error(
         output += "\\"code\\":"
         output += "$code"
         output += ",\\"message\\":"
-        output += buildString { printQuoted(errorMessage ?: "") }
+        output += buildString { printQuoted(errorMessage) }
         if (data != null) {
             output += ",\\"data\\":"
             output += JsonInstance.encodeToString(data)
@@ -285,7 +281,7 @@ data class ${clientName}Error(
 
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${clientName}Error {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ${clientName}Error.fromJsonElement() expected JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${clientName}Error.")
+                __logError("[WARNING] ${clientName}Error.fromJsonElement() expected JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${clientName}Error.")
             }
             val code = when (__input.jsonObject["code"]) {
                 is JsonPrimitive -> __input.jsonObject["code"]!!.jsonPrimitive.intOrNull ?: 0
@@ -339,7 +335,6 @@ private fun toHexChar(i: Int): Char {
     else (d - 10 + 'a'.code).toChar()
 }
 
-@Suppress("KotlinConstantConditions")
 internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     for (c in 0..0x1f) {
         val c1 = toHexChar(c shr 12)
@@ -387,7 +382,11 @@ internal fun StringBuilder.printQuoted(value: String) {
     append(STRING)
 }
 
-private suspend fun prepareRequest(
+private fun __logError(string: String) {
+    System.err.println(string)
+}
+
+private suspend fun __prepareRequest(
     client: HttpClient,
     url: String,
     method: HttpMethod,
@@ -423,7 +422,7 @@ private suspend fun prepareRequest(
     return client.prepareRequest(builder)
 }
 
-private fun parseSseEvent(input: String): SseEvent {
+private fun __parseSseEvent(input: String): __SseEvent {
     val lines = input.split("\\n")
     var id: String? = null
     var event: String? = null
@@ -442,24 +441,24 @@ private fun parseSseEvent(input: String): SseEvent {
             continue
         }
     }
-    return SseEvent(id, event, data)
+    return __SseEvent(id, event, data)
 }
 
-private class SseEvent(val id: String? = null, val event: String? = null, val data: String)
+private class __SseEvent(val id: String? = null, val event: String? = null, val data: String)
 
-private fun parseSseEvents(input: String): List<SseEvent> {
+private fun __parseSseEvents(input: String): List<__SseEvent> {
     val inputs = input.split("\\n\\n")
-    val events = mutableListOf<SseEvent>()
+    val events = mutableListOf<__SseEvent>()
     for (item in inputs) {
         if (item.contains("data: ")) {
-            events.add(parseSseEvent(item))
+            events.add(__parseSseEvent(item))
         }
     }
     return events
 }
 
 
-private suspend fun handleSseRequest(
+private suspend fun __handleSseRequest(
     scope: CoroutineScope,
     httpClient: HttpClient,
     url: String,
@@ -476,7 +475,7 @@ private suspend fun handleSseRequest(
     onConnectionError: ((error: ${clientName}Error) -> Unit) = {},
     bufferCapacity: Int,
 ) {
-    val finalHeaders = headers?.invoke() ?: mutableMapOf<String, String>();
+    val finalHeaders = headers?.invoke() ?: mutableMapOf()
     var lastId = lastEventId
     // exponential backoff maxing out at 32 seconds
     if (backoffTime > 0) {
@@ -489,7 +488,7 @@ private suspend fun handleSseRequest(
     if (lastId != null) {
         finalHeaders["Last-Event-ID"] = lastId.toString()
     }
-    val request = prepareRequest(
+    val request = __prepareRequest(
         client = httpClient,
         url = url,
         method = HttpMethod.Get,
@@ -510,7 +509,7 @@ private suspend fun handleSseRequest(
                         stack = null,
                     )
                 )
-                handleSseRequest(
+                __handleSseRequest(
                     scope = scope,
                     httpClient = httpClient,
                     url = url,
@@ -533,10 +532,10 @@ private suspend fun handleSseRequest(
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
                 val read = channel.readAvailable(buffer)
-                if (read == -1) break;
+                if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()
-                val events = parseSseEvents(input)
+                val events = __parseSseEvents(input)
                 for (event in events) {
                     if (event.id != null) {
                         lastId = event.id
@@ -570,7 +569,7 @@ private suspend fun handleSseRequest(
                 stack = e.stackTraceToString().split("\\n"),
             )
         )
-        handleSseRequest(
+        __handleSseRequest(
             scope = scope,
             httpClient = httpClient,
             url = url,
@@ -597,7 +596,7 @@ private suspend fun handleSseRequest(
                 stack = e.stackTraceToString().split("\\n"),
             )
         )
-        handleSseRequest(
+        __handleSseRequest(
             scope = scope,
             httpClient = httpClient,
             url = url,
@@ -644,7 +643,13 @@ function getHeader(options: {
     clientName: string;
     clientVersion: string;
 }): string {
-    return `import io.ktor.client.*
+    return `@file:Suppress(
+    "FunctionName", "LocalVariableName", "UNNECESSARY_NOT_NULL_ASSERTION", "ClassName", "NAME_SHADOWING",
+    "USELESS_IS_CHECK", "unused", "RemoveRedundantQualifierName", "CanBeParameter", "RedundantUnitReturnType",
+    "RedundantExplicitType"
+)
+
+import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*

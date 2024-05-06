@@ -62,15 +62,14 @@ export function kotlinDiscriminatorFromSchema(
             return `${target} += ${input}.toJson()`;
         },
         toQueryString() {
-            return `System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };
     if (context.existingTypeIds.includes(className)) {
         return result;
     }
-    result.content = `@Suppress("LocalVariableName")
-sealed interface ${className} : ${context.clientName}Model {
+    const content = `sealed interface ${className} : ${context.clientName}Model {
     val ${kotlinDiscriminatorKey}: String
 
     companion object Factory : ${context.clientName}ModelFactory<${className}> {
@@ -87,7 +86,7 @@ sealed interface ${className} : ${context.clientName}Model {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
             return when (__input.jsonObject["${schema.discriminator}"]) {
@@ -104,5 +103,8 @@ sealed interface ${className} : ${context.clientName}Model {
 
 ${subContent.join("\n\n")}`;
     context.existingTypeIds.push(className);
-    return result;
+    return {
+        ...result,
+        content,
+    };
 }

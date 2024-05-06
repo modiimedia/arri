@@ -1,3 +1,9 @@
+@file:Suppress(
+    "FunctionName", "LocalVariableName", "UNNECESSARY_NOT_NULL_ASSERTION", "ClassName", "NAME_SHADOWING",
+    "USELESS_IS_CHECK", "unused", "RemoveRedundantQualifierName", "CanBeParameter", "RedundantUnitReturnType",
+    "RedundantExplicitType"
+)
+
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -33,7 +39,7 @@ class ExampleClient(
     private val headers: headersFn,
 ) {
     suspend fun sendObject(params: NestedObject): NestedObject {
-        val response = prepareRequest(
+        val response = __prepareRequest(
             client = httpClient,
             url = "$baseUrl/send-object",
             method = HttpMethod.Post,
@@ -59,7 +65,7 @@ class ExampleClientBooksService(
     private val headers: headersFn,
 ) {
     suspend fun getBook(params: BookParams): Book {
-        val response = prepareRequest(
+        val response = __prepareRequest(
             client = httpClient,
             url = "$baseUrl/books/get-book",
             method = HttpMethod.Get,
@@ -73,7 +79,7 @@ class ExampleClientBooksService(
     }
 
     suspend fun createBook(params: Book): Book {
-        val response = prepareRequest(
+        val response = __prepareRequest(
             client = httpClient,
             url = "$baseUrl/books/create-book",
             method = HttpMethod.Post,
@@ -98,7 +104,7 @@ class ExampleClientBooksService(
         onData: ((data: Book) -> Unit) = {},
     ): Job {
         val job = scope.launch {
-            handleSseRequest(
+            __handleSseRequest(
                 scope = scope,
                 httpClient = httpClient,
                 url = "$baseUrl/books/watch-book",
@@ -128,7 +134,6 @@ interface ExampleClientModel {
     fun toUrlQueryParams(): String
 }
 
-@Suppress("LocalVariableName")
 interface ExampleClientModelFactory<T> {
     fun new(): T
     fun fromJson(input: String): T
@@ -138,7 +143,6 @@ interface ExampleClientModelFactory<T> {
     ): T
 }
 
-@Suppress("LocalVariableName")
 data class ExampleClientError(
     val code: Int,
     val errorMessage: String,
@@ -150,7 +154,7 @@ data class ExampleClientError(
         output += "\"code\":"
         output += "$code"
         output += ",\"message\":"
-        output += buildString { printQuoted(errorMessage ?: "") }
+        output += buildString { printQuoted(errorMessage) }
         if (data != null) {
             output += ",\"data\":"
             output += JsonInstance.encodeToString(data)
@@ -193,7 +197,7 @@ data class ExampleClientError(
 
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ExampleClientError {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ExampleClientError.fromJsonElement() expected JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ExampleClientError.")
+                __logError("[WARNING] ExampleClientError.fromJsonElement() expected JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ExampleClientError.")
             }
             val code = when (__input.jsonObject["code"]) {
                 is JsonPrimitive -> __input.jsonObject["code"]!!.jsonPrimitive.intOrNull ?: 0
@@ -236,7 +240,6 @@ data class ExampleClientError(
     }
 }
 
-@Suppress("LocalVariableName")
 data class Book(
     val id: String,
     val name: String,
@@ -293,7 +296,7 @@ data class Book(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): Book {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] Book.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty Book.")
+                __logError("[WARNING] Book.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty Book.")
                 return new()
             }
             val id: String = when (__input.jsonObject["id"]) {
@@ -333,7 +336,6 @@ data class Book(
     }
 }
 
-@Suppress("LocalVariableName")
 data class BookParams(
     val bookId: String,
 ) : ExampleClientModel {
@@ -367,7 +369,7 @@ data class BookParams(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): BookParams {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] BookParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty BookParams.")
+                __logError("[WARNING] BookParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty BookParams.")
                 return new()
             }
             val bookId: String = when (__input.jsonObject["bookId"]) {
@@ -382,7 +384,6 @@ data class BookParams(
     }
 }
 
-@Suppress("LocalVariableName")
 data class NestedObject(
     val id: String,
     val content: String,
@@ -421,7 +422,7 @@ data class NestedObject(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): NestedObject {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] NestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty NestedObject.")
+                __logError("[WARNING] NestedObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty NestedObject.")
                 return new()
             }
             val id: String = when (__input.jsonObject["id"]) {
@@ -441,7 +442,6 @@ data class NestedObject(
 
 }
 
-@Suppress("LocalVariableName", "UNNECESSARY_NOT_NULL_ASSERTION")
 data class ObjectWithEveryType(
     val string: String,
     val boolean: Boolean,
@@ -543,11 +543,11 @@ data class ObjectWithEveryType(
         queryParts.add("int64=$int64")
         queryParts.add("uint64=$uint64")
         queryParts.add("enum=${enum.serialValue}")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
-        System.err.println("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
-        System.err.println("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
+        __logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
         return queryParts.joinToString("&")
     }
 
@@ -585,7 +585,7 @@ data class ObjectWithEveryType(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithEveryType {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ObjectWithEveryType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryType.")
+                __logError("[WARNING] ObjectWithEveryType.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithEveryType.")
                 return new()
             }
             val string: String = when (__input.jsonObject["string"]) {
@@ -726,7 +726,6 @@ data class ObjectWithEveryType(
     }
 }
 
-@Suppress("LocalVariableName")
 enum class Enumerator {
     Foo,
     Bar,
@@ -758,7 +757,7 @@ enum class Enumerator {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): Enumerator {
             if (__input !is JsonPrimitive) {
-                System.err.println("[WARNING] Enumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty Enumerator.")
+                __logError("[WARNING] Enumerator.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got ${__input.javaClass}. Initializing empty Enumerator.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {
@@ -771,7 +770,6 @@ enum class Enumerator {
     }
 }
 
-@Suppress("LocalVariableName")
 sealed interface Discriminator : ExampleClientModel {
     val typeName: String
 
@@ -789,7 +787,7 @@ sealed interface Discriminator : ExampleClientModel {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): Discriminator {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty Discriminator.")
+                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty Discriminator.")
                 return new()
             }
             return when (__input.jsonObject["typeName"]) {
@@ -808,7 +806,6 @@ sealed interface Discriminator : ExampleClientModel {
     }
 }
 
-@Suppress("LocalVariableName")
 data class DiscriminatorA(
     val id: String,
 ) : Discriminator {
@@ -846,7 +843,7 @@ data class DiscriminatorA(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorA {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] DiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorA.")
+                __logError("[WARNING] DiscriminatorA.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorA.")
                 return new()
             }
             val id: String = when (__input.jsonObject["id"]) {
@@ -860,7 +857,6 @@ data class DiscriminatorA(
     }
 }
 
-@Suppress("LocalVariableName")
 data class DiscriminatorB(
     val id: String,
     val name: String,
@@ -903,7 +899,7 @@ data class DiscriminatorB(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorB {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] DiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorB.")
+                __logError("[WARNING] DiscriminatorB.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorB.")
                 return new()
             }
             val id: String = when (__input.jsonObject["id"]) {
@@ -922,7 +918,6 @@ data class DiscriminatorB(
     }
 }
 
-@Suppress("LocalVariableName")
 data class DiscriminatorC(
     val id: String,
     val name: String,
@@ -973,7 +968,7 @@ data class DiscriminatorC(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): DiscriminatorC {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] DiscriminatorC.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorC.")
+                __logError("[WARNING] DiscriminatorC.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty DiscriminatorC.")
                 return new()
             }
             val id: String = when (__input.jsonObject["id"]) {
@@ -1002,7 +997,6 @@ data class DiscriminatorC(
     }
 }
 
-@Suppress("LocalVariableName", "UNNECESSARY_NOT_NULL_ASSERTION")
 data class ObjectWithOptionalFields(
     val string: String? = null,
     val boolean: Boolean? = null,
@@ -1206,11 +1200,11 @@ data class ObjectWithOptionalFields(
         if (enum != null) {
             queryParts.add("enum=${enum.serialValue}")
         }
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
-        System.err.println("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.")
-        System.err.println("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.")
+        __logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.")
         return queryParts.joinToString("&")
     }
 
@@ -1229,7 +1223,7 @@ data class ObjectWithOptionalFields(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithOptionalFields {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ObjectWithOptionalFields.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithOptionalFields.")
+                __logError("[WARNING] ObjectWithOptionalFields.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithOptionalFields.")
                 return new()
             }
             val string: String? = when (__input.jsonObject["string"]) {
@@ -1371,7 +1365,6 @@ data class ObjectWithOptionalFields(
     }
 }
 
-@Suppress("LocalVariableName", "UNNECESSARY_NOT_NULL_ASSERTION")
 data class ObjectWithNullableFields(
     val string: String?,
     val boolean: Boolean?,
@@ -1501,11 +1494,11 @@ data class ObjectWithNullableFields(
         queryParts.add("int64=$int64")
         queryParts.add("uint64=$uint64")
         queryParts.add("enum=${enum?.serialValue}")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
-        System.err.println("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.")
-        System.err.println("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
+        __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.")
+        __logError("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.")
         return queryParts.joinToString("&")
     }
 
@@ -1543,7 +1536,7 @@ data class ObjectWithNullableFields(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithNullableFields {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] ObjectWithNullableFields.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithNullableFields.")
+                __logError("[WARNING] ObjectWithNullableFields.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithNullableFields.")
                 return new()
             }
             val string: String? = when (__input.jsonObject["string"]) {
@@ -1684,7 +1677,6 @@ data class ObjectWithNullableFields(
     }
 }
 
-@Suppress("LocalVariableName")
 data class RecursiveObject(
     val left: RecursiveObject?,
     val right: RecursiveObject?,
@@ -1701,8 +1693,8 @@ data class RecursiveObject(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
-        System.err.println("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
+        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
         return queryParts.joinToString("&")
     }
 
@@ -1723,7 +1715,7 @@ data class RecursiveObject(
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): RecursiveObject {
             if (__input !is JsonObject) {
-                System.err.println("[WARNING] RecursiveObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveObject.")
+                __logError("[WARNING] RecursiveObject.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty RecursiveObject.")
                 return new()
             }
             val left: RecursiveObject? = when (__input.jsonObject["left"]) {
@@ -1761,7 +1753,6 @@ private fun toHexChar(i: Int): Char {
     else (d - 10 + 'a'.code).toChar()
 }
 
-@Suppress("KotlinConstantConditions")
 internal val ESCAPE_STRINGS: Array<String?> = arrayOfNulls<String>(93).apply {
     for (c in 0..0x1f) {
         val c1 = toHexChar(c shr 12)
@@ -1809,7 +1800,11 @@ internal fun StringBuilder.printQuoted(value: String) {
     append(STRING)
 }
 
-private suspend fun prepareRequest(
+private fun __logError(string: String) {
+    System.err.println(string)
+}
+
+private suspend fun __prepareRequest(
     client: HttpClient,
     url: String,
     method: HttpMethod,
@@ -1845,7 +1840,7 @@ private suspend fun prepareRequest(
     return client.prepareRequest(builder)
 }
 
-private fun parseSseEvent(input: String): SseEvent {
+private fun __parseSseEvent(input: String): __SseEvent {
     val lines = input.split("\n")
     var id: String? = null
     var event: String? = null
@@ -1864,24 +1859,24 @@ private fun parseSseEvent(input: String): SseEvent {
             continue
         }
     }
-    return SseEvent(id, event, data)
+    return __SseEvent(id, event, data)
 }
 
-private class SseEvent(val id: String? = null, val event: String? = null, val data: String)
+private class __SseEvent(val id: String? = null, val event: String? = null, val data: String)
 
-private fun parseSseEvents(input: String): List<SseEvent> {
+private fun __parseSseEvents(input: String): List<__SseEvent> {
     val inputs = input.split("\n\n")
-    val events = mutableListOf<SseEvent>()
+    val events = mutableListOf<__SseEvent>()
     for (item in inputs) {
         if (item.contains("data: ")) {
-            events.add(parseSseEvent(item))
+            events.add(__parseSseEvent(item))
         }
     }
     return events
 }
 
 
-private suspend fun handleSseRequest(
+private suspend fun __handleSseRequest(
     scope: CoroutineScope,
     httpClient: HttpClient,
     url: String,
@@ -1898,7 +1893,7 @@ private suspend fun handleSseRequest(
     onConnectionError: ((error: ExampleClientError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
-    val finalHeaders = headers?.invoke() ?: mutableMapOf<String, String>();
+    val finalHeaders = headers?.invoke() ?: mutableMapOf()
     var lastId = lastEventId
     // exponential backoff maxing out at 32 seconds
     if (backoffTime > 0) {
@@ -1911,7 +1906,7 @@ private suspend fun handleSseRequest(
     if (lastId != null) {
         finalHeaders["Last-Event-ID"] = lastId.toString()
     }
-    val request = prepareRequest(
+    val request = __prepareRequest(
         client = httpClient,
         url = url,
         method = HttpMethod.Get,
@@ -1932,7 +1927,7 @@ private suspend fun handleSseRequest(
                         stack = null,
                     )
                 )
-                handleSseRequest(
+                __handleSseRequest(
                     scope = scope,
                     httpClient = httpClient,
                     url = url,
@@ -1955,10 +1950,10 @@ private suspend fun handleSseRequest(
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
                 val read = channel.readAvailable(buffer)
-                if (read == -1) break;
+                if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()
-                val events = parseSseEvents(input)
+                val events = __parseSseEvents(input)
                 for (event in events) {
                     if (event.id != null) {
                         lastId = event.id
@@ -1992,7 +1987,7 @@ private suspend fun handleSseRequest(
                 stack = e.stackTraceToString().split("\n"),
             )
         )
-        handleSseRequest(
+        __handleSseRequest(
             scope = scope,
             httpClient = httpClient,
             url = url,
@@ -2019,7 +2014,7 @@ private suspend fun handleSseRequest(
                 stack = e.stackTraceToString().split("\n"),
             )
         )
-        handleSseRequest(
+        __handleSseRequest(
             scope = scope,
             httpClient = httpClient,
             url = url,

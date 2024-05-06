@@ -55,7 +55,7 @@ export function kotlinHttpRpcFromSchema(
             onData: ((${response ? `data: ${response}` : ""}) -> Unit) = {},
         ): Job {
             val job = scope.launch {
-                handleSseRequest(
+                __handleSseRequest(
                     scope = scope,
                     httpClient = httpClient,
                     url = "$baseUrl${schema.path}",
@@ -80,11 +80,11 @@ export function kotlinHttpRpcFromSchema(
         }`;
     }
     return `suspend fun ${name}(${params ? `params: ${params}` : ""}): ${response ?? "Unit"} {
-        val response = prepareRequest(
+        val response = __prepareRequest(
             client = httpClient,
             url = "$baseUrl${schema.path}",
             method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-            ${params ? `params = params,` : ""}
+            params = ${params ? "params" : null},
             headers = headers?.invoke(),
         ).execute()
         if (response.status.value in 200..299) {

@@ -100,9 +100,9 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
         return `${context.modelPrefix}${className}`;
     }
     const depth = instanceDepth(context);
-    if (depth === 1) {
+    if (depth === 1 && !context.discriminatorKey) {
         const className = kotlinClassName(
-            pascalCase(context.schemaPath.replace("/", ""), {
+            pascalCase(context.instancePath.replace("/", ""), {
                 normalize: true,
             }),
         );
@@ -124,9 +124,18 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
     }
 
     const className = kotlinClassName(
-        pascalCase(context.schemaPath.split("/").join("_"), {
-            normalize: true,
-        }),
+        pascalCase(
+            context.instancePath
+                .split("/")
+                .join("_")
+                .split("[")
+                .join("_")
+                .split("]")
+                .join("_"),
+            {
+                normalize: true,
+            },
+        ),
     );
     return `${context.modelPrefix}${className}`;
 }

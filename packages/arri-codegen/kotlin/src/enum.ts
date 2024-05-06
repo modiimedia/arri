@@ -26,8 +26,7 @@ export function kotlinEnumFromSchema(
     const defaultValue = nullable ? "null" : `${className}.new()`;
     let content = "";
     if (!context.existingTypeIds.includes(className)) {
-        content = `@Suppress("LocalVariableName")
-enum class ${className} {
+        content = `enum class ${className} {
     ${enumItems.map((item) => item.name).join(",\n    ")};
     val serialValue: String
         get() = when (this) {
@@ -51,7 +50,7 @@ enum class ${className} {
         @JvmStatic
         override fun fromJsonElement(__input: JsonElement, instancePath: String): ${className} {
             if (__input !is JsonPrimitive) {
-                System.err.println("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
+                __logError("[WARNING] ${className}.fromJsonElement() expected kotlinx.serialization.json.JsonPrimitive at $instancePath. Got \${__input.javaClass}. Initializing empty ${className}.")
                 return new()
             }
             return when (__input.jsonPrimitive.contentOrNull) {

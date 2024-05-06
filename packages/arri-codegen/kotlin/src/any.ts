@@ -44,7 +44,7 @@ export function kotlinAnyFromSchema(
             return `${target} += JsonInstance.encodeToString(${input})`;
         },
         toQueryString() {
-            return `System.err.println("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `__logError("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };
