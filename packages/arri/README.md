@@ -326,7 +326,7 @@ export default defineWebsocketRpc(
 )
 ```
 
-Under the hook Websocket RPCs use [crossws](https://crossws.unjs.io/).
+Under the hood Websocket RPCs use [crossws](https://crossws.unjs.io/).
 
 The possible payloads sent by the server will look like the following:
 
