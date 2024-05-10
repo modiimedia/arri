@@ -13,6 +13,7 @@ Typescript implementation of Arri RPC. It's built on top of [H3](https://github.
         -   [File-Based Routing](#file-based-routing)
         -   [Manual Routing](#manual-routing)
         -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
+        -   [Creating Websocket Procedures](#creating-websocket-procedures)
     -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
     -   [Adding Middleware](#adding-middleware)
 -   [Key Concepts](#key-concepts)
@@ -277,6 +278,68 @@ stream.end()
 stream.on(e: 'request:close' | 'close', callback: () => any)
 ```
 
+### Creating Websocket Procedures
+
+```ts
+// Websocket procedures work really well with discriminated unions
+const IncomingMsg = a.discriminator('type', {
+    FOO: a.object({
+        message: a.string(),
+    }),
+    PING: a.object({
+        message: a.string(),
+    })
+});
+
+const OutgoingMsg = a.discriminator('type', {
+    BAR: a.object({
+        message: a.string(),
+    }),
+    PONG: a.object({
+    message: a.string()
+    })
+});
+
+export default defineWebsocketRpc(
+    params: IncomingMsg,
+    response: OutgoingMsg,
+    handler: {
+        onOpen: (peer) => {},
+        onMessage: (peer, message) => {
+            switch(message.type) {
+                case "FOO":
+                    peer.send({
+                        type: "BAR",
+                        message: "You sent a FOO message"
+                    });
+                    break;
+                case "PING":
+                    peer.send({
+                        type: "PONG",
+                        message: "You sent a PING message"
+                    });
+                    break;
+            }
+        },
+        onError: (peer, error) => {}
+    }
+)
+```
+
+Under the hook Websocket RPCs use [crossws](https://crossws.unjs.io/).
+
+The possible payloads sent by the server will look like the following:
+
+```
+event: message
+data: <response serialized to json>
+```
+
+```
+event: error
+data: {"code": <some-err-code>, "message": <some-error-msg>}
+```
+
 ### Adding Non-RPC Routes
 
 You can also add generic endpoints for instances when a message-based RPC endpoint doesn't fit.
@@ -467,16 +530,19 @@ The supported HTTP methods are as follows:
 When using a get method the RPC params will be mapped as query parameters which will be coerced into their type using the `a.coerce` method from `arri-validate`. Get methods support all basic scalar types however arrays and nested objects are not supported.
 
 ### H3 Support
+
 Arri is built on top of [H3](https://h3.unjs.io/utils/request#getrequestipevent) so many of the concepts that apply to H3 also apply to Arri.
 
 #### Accessing Utilities
+
 Arri re-eports all of the H3 utilities.
 
 ```ts
-import { getRequestIP, setResponseHeader } from 'arri';
+import { getRequestIP, setResponseHeader } from "arri";
 ```
 
 #### Accessing H3 Events
+
 You can access H3 events from inside procedures handlers.
 
 ```ts
@@ -508,6 +574,9 @@ arri build [flags]
 
 # create a new project
 arri init [dir]
+
+# run codegen
+arri codegen [path-to-definition-file]
 ```
 
 ## Development

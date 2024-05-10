@@ -2,6 +2,7 @@ import {
     type SchemaFormDiscriminator,
     type SchemaFormProperties,
 } from "jtd-utils";
+import { pascalCase } from "scule";
 export * from "jtd-utils";
 export * from "scule";
 
@@ -42,7 +43,7 @@ export interface AppDefinition {
         description?: string;
         url: string;
     };
-    procedures: Record<string, RpcDefinition>;
+    procedures: Record<string, RpcDefinition<string>>;
     models: Record<string, SchemaFormProperties | SchemaFormDiscriminator>;
 }
 
@@ -63,30 +64,30 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
     return true;
 }
 
-export interface RpcDefinitionBase {
+export interface RpcDefinitionBase<T = string> {
     path: string;
-    params?: string;
-    response?: string;
+    params?: T;
+    response?: T;
     description?: string;
     isDeprecated?: boolean;
 }
 
-export interface HttpRpcDefinition extends RpcDefinitionBase {
+export interface HttpRpcDefinition<T = string> extends RpcDefinitionBase<T> {
     transport: "http";
     method: RpcHttpMethod;
     isEventStream?: boolean;
 }
-export interface WsRpcDefinition extends RpcDefinitionBase {
+export interface WsRpcDefinition<T = string> extends RpcDefinitionBase<T> {
     transport: "ws";
 }
-export interface CustomRpcDefinition extends RpcDefinitionBase {
+export interface CustomRpcDefinition<T = string> extends RpcDefinitionBase<T> {
     transport: `custom:${string}`;
     [key: string]: unknown;
 }
-export type RpcDefinition =
-    | HttpRpcDefinition
-    | WsRpcDefinition
-    | CustomRpcDefinition;
+export type RpcDefinition<T = string> =
+    | HttpRpcDefinition<T>
+    | WsRpcDefinition<T>
+    | CustomRpcDefinition<T>;
 
 export function isRpcDefinitionBase(
     input: unknown,
@@ -242,4 +243,52 @@ export function defineClientGeneratorPlugin<
     TOptions extends Record<string, any> | undefined,
 >(plugin: ClientGeneratorPlugin<TOptions>) {
     return plugin;
+}
+
+type RpcDefinitionHelper = RpcDefinition<
+    SchemaFormProperties | SchemaFormDiscriminator
+>;
+
+type AppDefinitionHelper = Omit<
+    AppDefinition,
+    "procedures" | "models" | "arriSchemaVersion"
+> & {
+    procedures: Record<string, RpcDefinitionHelper>;
+    models?: AppDefinition["models"];
+};
+
+export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
+    const models = { ...input.models };
+    const procedures: AppDefinition["procedures"] = {};
+    for (const key of Object.keys(input.procedures)) {
+        const def = input.procedures[key]!;
+        let paramName: string | undefined;
+        if (def.params) {
+            paramName =
+                def.params.metadata?.id ??
+                pascalCase(`${key.split(".").join("_")}Params`);
+            models[paramName] = def.params;
+        }
+        let responseName: string | undefined;
+        if (def.response) {
+            responseName =
+                def.response.metadata?.id ??
+                pascalCase(`${key.split(".").join("_")}Response`);
+            models[responseName] = def.response;
+        }
+        delete def.params;
+        delete def.response;
+        procedures[key] = {
+            ...def,
+            params: paramName,
+            response: responseName,
+        };
+    }
+    const result: AppDefinition = {
+        arriSchemaVersion: "0.0.4",
+        ...input,
+        procedures,
+        models,
+    };
+    return result;
 }
