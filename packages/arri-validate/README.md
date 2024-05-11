@@ -733,6 +733,7 @@ Metadata is used during cross-language code generation. Arri schemas allow you t
 A schema with this metadata:
 
 ```ts
+// metadata object
 const BookSchema = a.object(
     {
         title: a.string(),
@@ -799,6 +800,39 @@ data class Book(
     val author: String,
     val publishDate: Instant,
 )
+```
+
+### ID Shorthand
+
+Because IDs are really important for producing consise type names. Arri validate also provides a shorthand for defining IDs of objects, discriminators, and recursive types.
+
+```ts
+// ID will be set to "Book"
+const BookSchema = a.object("Book", {
+    title: a.string(),
+    author: a.string(),
+    publishDate: a.timestamp(),
+});
+
+// ID will be set to "Message"
+const MessageSchema = a.discriminator("Message", "type", {
+    TEXT: a.object({
+        userId: a.string(),
+        content: a.string(),
+    }),
+    IMAGE: a.object({
+        userId: a.string(),
+        imageUrl: a.string(),
+    }),
+});
+
+// ID will be set to "BTree"
+const BinaryTreeSchema = a.recursive("BTree", (self) =>
+    a.object({
+        left: a.nullable(self),
+        right: a.nullable(self),
+    }),
+);
 ```
 
 ## Benchmarks

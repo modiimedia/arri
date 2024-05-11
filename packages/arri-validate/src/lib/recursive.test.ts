@@ -203,3 +203,28 @@ describe("parsing", () => {
         }
     });
 });
+
+test("overloaded functions produce the same result", () => {
+    const SchemaA = a.recursive<BinaryTree>(
+        (self) => a.object({ left: a.nullable(self), right: a.nullable(self) }),
+        {
+            id: "BTree",
+        },
+    );
+    const SchemaB = a.recursive<BinaryTree>("BTree", (self) =>
+        a.object({ left: a.nullable(self), right: a.nullable(self) }),
+    );
+    expect(JSON.stringify(SchemaA)).toEqual(JSON.stringify(SchemaB));
+    const input: BinaryTree = {
+        left: {
+            left: null,
+            right: {
+                left: null,
+                right: null,
+            },
+        },
+        right: null,
+    };
+    expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
+    expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+});

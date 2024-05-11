@@ -9,12 +9,49 @@ import {
 
 let recursiveTypeCount = 0;
 
+type RecursiveCallback<T> = (
+    self: ARefSchema<T>,
+) => AObjectSchema<T> | ADiscriminatorSchema<T>;
+
+/**
+ * @example
+ * ```ts
+ * type BinaryTree = {
+ *   left: BinaryTree | null;
+ *   right: BinaryTree | null;
+ * }
+ *
+ * const BinaryTree = a.recursive<BinaryTree>(
+ *   "BinaryTree",
+ *   (self) => a.object({
+ *     left: a.nullable(self),
+ *     right: a.nullable(self),
+ *   })
+ * );
+ * ```
+ */
 export function recursive<T>(
-    callback: (
-        self: ARefSchema<T>,
-    ) => AObjectSchema<T> | ADiscriminatorSchema<T>,
+    id: string,
+    callback: RecursiveCallback<T>,
+    options?: Omit<ASchemaOptions, "id">,
+): AObjectSchema<T> | ADiscriminatorSchema<T>;
+export function recursive<T>(
+    callback: RecursiveCallback<T>,
     options?: ASchemaOptions,
+): AObjectSchema<T> | ADiscriminatorSchema<T>;
+export function recursive<T>(
+    propA: string | RecursiveCallback<T>,
+    propB?: RecursiveCallback<T> | ASchemaOptions,
+    propC?: ASchemaOptions,
 ): AObjectSchema<T> | ADiscriminatorSchema<T> {
+    const isIdShorthand = typeof propA === "string";
+    const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
+    const options = isIdShorthand
+        ? propC ?? {}
+        : ((propB ?? {}) as ASchemaOptions);
+    if (isIdShorthand) {
+        options.id = propA;
+    }
     const recursiveFns: Record<
         string,
         {
@@ -24,13 +61,13 @@ export function recursive<T>(
             serialize: (input: unknown, data: ValidationData) => any;
         }
     > = {};
-    if (!options?.id) {
+    if (!options.id) {
         recursiveTypeCount++;
         console.warn(
             `[arri-validate] WARNING: It is highly recommended to specify an ID for recursive types.`,
         );
     }
-    const id = options?.id ?? `TypeRef${recursiveTypeCount}`;
+    const id = options.id ?? `TypeRef${recursiveTypeCount}`;
     const mainSchema = callback({
         ref: id,
         metadata: {

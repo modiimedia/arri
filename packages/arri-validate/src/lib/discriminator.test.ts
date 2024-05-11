@@ -1,18 +1,22 @@
 import * as a from "./_namespace";
 
-const DiscriminatorSchema = a.discriminator("eventType", {
-    USER_CREATED: a.object({
-        id: a.string(),
-    }),
-    USER_PAYMENT_PLAN_CHANGED: a.object({
-        id: a.string(),
-        plan: a.stringEnum(["FREE", "PAID"]),
-    }),
-    USER_DELETED: a.object({
-        id: a.string(),
-        softDelete: a.boolean(),
-    }),
-});
+const DiscriminatorSchema = a.discriminator(
+    "DiscriminatorSchema",
+    "eventType",
+    {
+        USER_CREATED: a.object({
+            id: a.string(),
+        }),
+        USER_PAYMENT_PLAN_CHANGED: a.object({
+            id: a.string(),
+            plan: a.stringEnum(["FREE", "PAID"]),
+        }),
+        USER_DELETED: a.object({
+            id: a.string(),
+            softDelete: a.boolean(),
+        }),
+    },
+);
 type DiscriminatorSchema = a.infer<typeof DiscriminatorSchema>;
 
 describe("Type Inference", () => {
@@ -68,4 +72,45 @@ describe("Parsing", () => {
         expect(!parse(additionalFieldInput));
         expect(!parse(missingFieldsInput));
     });
+});
+
+test("overloaded functions produce the same result", () => {
+    const SchemaA = a.discriminator(
+        "msgType",
+        {
+            TEXT: a.object({
+                userId: a.string(),
+                content: a.string(),
+            }),
+            IMAGE: a.object({
+                userId: a.string(),
+                imageUrl: a.string(),
+            }),
+        },
+        {
+            id: "Message",
+        },
+    );
+    type SchemaA = a.infer<typeof SchemaA>;
+    const SchemaB = a.discriminator("Message", "msgType", {
+        TEXT: a.object({
+            userId: a.string(),
+            content: a.string(),
+        }),
+        IMAGE: a.object({
+            userId: a.string(),
+            imageUrl: a.string(),
+        }),
+    });
+    type SchemaB = a.infer<typeof SchemaB>;
+    const input: SchemaA = {
+        msgType: "TEXT",
+        userId: "1",
+        content: "",
+    };
+    assertType<SchemaA>(input);
+    assertType<SchemaB>(input);
+    expect(JSON.stringify(SchemaA)).toBe(JSON.stringify(SchemaB));
+    expect(a.validate(SchemaA, input)).toBe(a.validate(SchemaB, input));
+    expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
 });
