@@ -30,16 +30,16 @@ type RecursiveCallback<T> = (
  * );
  * ```
  */
-export function recursive<T>(
+export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
     options?: Omit<ASchemaOptions, "id">,
 ): AObjectSchema<T> | ADiscriminatorSchema<T>;
-export function recursive<T>(
+export function recursive<T = any>(
     callback: RecursiveCallback<T>,
     options?: ASchemaOptions,
 ): AObjectSchema<T> | ADiscriminatorSchema<T>;
-export function recursive<T>(
+export function recursive<T = any>(
     propA: string | RecursiveCallback<T>,
     propB?: RecursiveCallback<T> | ASchemaOptions,
     propC?: ASchemaOptions,

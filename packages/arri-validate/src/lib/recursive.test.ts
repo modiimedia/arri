@@ -14,6 +14,7 @@ const BinaryTree = a.recursive<BinaryTree>(
         id: "BinaryTree",
     },
 );
+
 type RecursiveUnion =
     | { type: "CHILD"; data: RecursiveUnion }
     | { type: "CHILDREN"; data: RecursiveUnion[] }
