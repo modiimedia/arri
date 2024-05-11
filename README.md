@@ -89,21 +89,13 @@ Additionally if you only need cross language types, you can skip defining proced
 import { createAppDefinition } from "arri/dist/codegen";
 import { a } from "arri-validate";
 
-const HelloParams = a.object(
-    {
-        message: a.string(),
-    },
-    { id: "HelloParams" },
-);
+const HelloParams = a.object("HelloParams", {
+    message: a.string(),
+});
 
-const HelloResponse = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "HelloResponse",
-    },
-);
+const HelloResponse = a.object("HelloResponse", {
+    message: a.string(),
+});
 
 export default createAppDefinition({
     models: {
