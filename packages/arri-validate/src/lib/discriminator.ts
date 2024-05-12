@@ -51,7 +51,6 @@ export function discriminator<
     id: string,
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
-    opts?: Omit<ASchemaOptions, "id">,
 ): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
@@ -80,7 +79,6 @@ export function discriminator<
     propA: string | TDiscriminatorKey,
     propB: TDiscriminatorKey | TMapping,
     propC?: TMapping | ASchemaOptions,
-    propD?: ASchemaOptions,
 ): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
@@ -91,7 +89,9 @@ export function discriminator<
     const isIdShorthand = typeof propB === "string";
     const discriminator = isIdShorthand ? propB : propA;
     const mapping = (isIdShorthand ? propC : propB) as TMapping;
-    const opts = (isIdShorthand ? propD ?? {} : propC ?? {}) as ASchemaOptions;
+    const opts = (
+        isIdShorthand ? { id: propA } : propC ?? {}
+    ) as ASchemaOptions;
     if (isIdShorthand) {
         opts.id = propA;
     }

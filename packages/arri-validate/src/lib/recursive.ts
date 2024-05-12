@@ -33,7 +33,6 @@ type RecursiveCallback<T> = (
 export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
-    options?: Omit<ASchemaOptions, "id">,
 ): AObjectSchema<T> | ADiscriminatorSchema<T>;
 export function recursive<T = any>(
     callback: RecursiveCallback<T>,
@@ -42,16 +41,12 @@ export function recursive<T = any>(
 export function recursive<T = any>(
     propA: string | RecursiveCallback<T>,
     propB?: RecursiveCallback<T> | ASchemaOptions,
-    propC?: ASchemaOptions,
 ): AObjectSchema<T> | ADiscriminatorSchema<T> {
     const isIdShorthand = typeof propA === "string";
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;
     const options = isIdShorthand
-        ? propC ?? {}
+        ? { id: propA }
         : ((propB ?? {}) as ASchemaOptions);
-    if (isIdShorthand) {
-        options.id = propA;
-    }
     const recursiveFns: Record<
         string,
         {

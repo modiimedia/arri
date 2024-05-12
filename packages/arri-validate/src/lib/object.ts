@@ -29,7 +29,6 @@ export function object<
 >(
     id: string,
     input: TInput,
-    opts?: Omit<AObjectSchemaOptions<TAdditionalProps>, "id">,
 ): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
 export function object<
     TInput extends Record<any, ASchema> = any,
@@ -44,20 +43,15 @@ export function object<
 >(
     propA: TInput | string,
     propB?: TInput | AObjectSchemaOptions<TAdditionalProps>,
-    propC?: AObjectSchemaOptions<TAdditionalProps>,
 ): AObjectSchema<
     InferObjectOutput<TInput, TAdditionalProps>,
     TAdditionalProps
 > {
     const isIdShorthand = typeof propA === "string";
-    const id = isIdShorthand
-        ? propA
-        : (propB as AObjectSchemaOptions<TAdditionalProps> | undefined)?.id;
     const input = isIdShorthand ? (propB as TInput) : propA;
     const opts = isIdShorthand
-        ? propC ?? {}
+        ? { id: propA }
         : ((propB ?? {}) as AObjectSchemaOptions<TAdditionalProps>);
-    opts.id = id;
     const schema: SchemaFormProperties = {
         properties: {},
         additionalProperties:
