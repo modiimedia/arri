@@ -75,6 +75,7 @@ export type RecursiveUnion =
     | { type: "TEXT"; data: string }
     | { type: "SHAPE"; data: { width: number; height: number } };
 export const RecursiveUnion = a.recursive<RecursiveUnion>(
+    "RecursiveUnion",
     (self) =>
         a.discriminator("type", {
             CHILD: a.object({ data: self }),
@@ -91,9 +92,6 @@ export const RecursiveUnion = a.recursive<RecursiveUnion>(
                 }),
             }),
         }),
-    {
-        id: "RecursiveUnion",
-    },
 );
 
 export const validationTestSuites: Record<
@@ -396,20 +394,15 @@ export const validationTestSuites: Record<
         ],
     },
     "object with nullable fields": {
-        schema: a.object(
-            {
-                id: a.nullable(a.string()),
-                createdAt: a.nullable(a.timestamp()),
-                count: a.nullable(a.number()),
-                isActive: a.nullable(a.boolean()),
-                tags: a.nullable(a.array(a.string())),
-                metadata: a.nullable(a.record(a.string())),
-                unknown: a.nullable(a.any()),
-            },
-            {
-                id: "logserializer",
-            },
-        ),
+        schema: a.object({
+            id: a.nullable(a.string()),
+            createdAt: a.nullable(a.timestamp()),
+            count: a.nullable(a.number()),
+            isActive: a.nullable(a.boolean()),
+            tags: a.nullable(a.array(a.string())),
+            metadata: a.nullable(a.record(a.string())),
+            unknown: a.nullable(a.any()),
+        }),
         goodInputs: [
             {
                 id: null,

@@ -16,7 +16,7 @@ import { optional } from "./modifiers";
  * Create an object schema
  *
  * @example
- * const Schema = a.object({
+ * const Schema = a.object('Schema', {
  *   foo: a.string(),
  *   bar: a.number()
  * });
@@ -27,12 +27,31 @@ export function object<
     TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
 >(
+    id: string,
     input: TInput,
-    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
+export function object<
+    TInput extends Record<any, ASchema> = any,
+    TAdditionalProps extends boolean = false,
+>(
+    input: TInput,
+    opts?: AObjectSchemaOptions<TAdditionalProps>,
+): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
+export function object<
+    TInput extends Record<any, ASchema> = any,
+    TAdditionalProps extends boolean = false,
+>(
+    propA: TInput | string,
+    propB?: TInput | AObjectSchemaOptions<TAdditionalProps>,
 ): AObjectSchema<
     InferObjectOutput<TInput, TAdditionalProps>,
     TAdditionalProps
 > {
+    const isIdShorthand = typeof propA === "string";
+    const input = isIdShorthand ? (propB as TInput) : propA;
+    const opts = isIdShorthand
+        ? { id: propA }
+        : ((propB ?? {}) as AObjectSchemaOptions<TAdditionalProps>);
     const schema: SchemaFormProperties = {
         properties: {},
         additionalProperties:
