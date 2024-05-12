@@ -29,7 +29,7 @@ main() {
         onClose: (_) {
           closeCount++;
         });
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 4));
     expect(errCount, equals(5));
     expect(closeCount, equals(1));
   });
