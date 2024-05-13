@@ -802,9 +802,9 @@ data class Book(
 )
 ```
 
-### ID Shorthand
+### ID Shorthand (Experimental)
 
-Because IDs are really important for producing consise type names. Arri validate also provides a shorthand for defining IDs of objects, discriminators, and recursive types.
+Because IDs are really important for producing concise type names. Arri validate also provides an _experimental\*_ shorthand for defining IDs of objects, discriminators, and recursive types.
 
 ```ts
 // ID will be set to "Book"
@@ -834,6 +834,8 @@ const BinaryTreeSchema = a.recursive("BTree", (self) =>
     }),
 );
 ```
+
+\* Because this is experimental it may be removed in the future. The main thing I'm testings is whether added convenience is worth the overhead of maintaining 2 versions of each of these functions. The shorthand could also introduce unintended confusion for users of this library as it creates two places to look for an id.
 
 ## Benchmarks
 

@@ -53,13 +53,23 @@ Arri comes with some useful helpers that reduces the boilerplate of manually cre
 import { createAppDefinition } from "arri/dist/codegen";
 import { a } from "arri-validate";
 
-const HelloParams = a.object("HelloParams", {
-    message: a.string(),
-});
+const HelloParams = a.object(
+    {
+        message: a.string(),
+    },
+    {
+        id: "HelloParams",
+    },
+);
 
-const HelloResponse = a.object("HelloResponse", {
-    message: a.string(),
-});
+const HelloResponse = a.object(
+    {
+        message: a.string(),
+    },
+    {
+        id: "HelloResponse",
+    },
+);
 
 export default createAppDefinition({
     procedures: {
@@ -81,13 +91,23 @@ Additionally if you only need cross language types, you can skip defining proced
 import { createAppDefinition } from "arri/dist/codegen";
 import { a } from "arri-validate";
 
-const HelloParams = a.object("HelloParams", {
-    message: a.string(),
-});
+const HelloParams = a.object(
+    {
+        message: a.string(),
+    },
+    {
+        id: "HelloParams",
+    },
+);
 
-const HelloResponse = a.object("HelloResponse", {
-    message: a.string(),
-});
+const HelloResponse = a.object(
+    {
+        message: a.string(),
+    },
+    {
+        id: "HelloResponse",
+    },
+);
 
 export default createAppDefinition({
     models: {

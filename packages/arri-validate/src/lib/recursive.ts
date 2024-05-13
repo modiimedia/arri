@@ -22,6 +22,28 @@ type RecursiveCallback<T> = (
  * }
  *
  * const BinaryTree = a.recursive<BinaryTree>(
+ *   (self) => a.object({
+ *     left: a.nullable(self),
+ *     right: a.nullable(self),
+ *   })
+ * );
+ * ```
+ */
+export function recursive<T = any>(
+    callback: RecursiveCallback<T>,
+    metadata?: ASchemaOptions,
+): AObjectSchema<T> | ADiscriminatorSchema<T>;
+/**
+ * Recursive ID Shorthand
+ *
+ * @example
+ * ```ts
+ * type BinaryTree = {
+ *   left: BinaryTree | null;
+ *   right: BinaryTree | null;
+ * }
+ *
+ * const BinaryTree = a.recursive<BinaryTree>(
  *   "BinaryTree",
  *   (self) => a.object({
  *     left: a.nullable(self),
@@ -30,18 +52,13 @@ type RecursiveCallback<T> = (
  * );
  * ```
  */
-
-export function recursive<T = any>(
-    callback: RecursiveCallback<T>,
-    options?: ASchemaOptions,
-): AObjectSchema<T> | ADiscriminatorSchema<T>;
 export function recursive<T = any>(
     id: string,
     callback: RecursiveCallback<T>,
 ): AObjectSchema<T> | ADiscriminatorSchema<T>;
 export function recursive<T = any>(
-    propA: string | RecursiveCallback<T>,
-    propB?: RecursiveCallback<T> | ASchemaOptions,
+    propA: RecursiveCallback<T> | string,
+    propB?: ASchemaOptions | RecursiveCallback<T>,
 ): AObjectSchema<T> | ADiscriminatorSchema<T> {
     const isIdShorthand = typeof propA === "string";
     const callback = isIdShorthand ? (propB as RecursiveCallback<T>) : propA;

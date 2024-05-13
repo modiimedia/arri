@@ -35,3 +35,17 @@ describe("validation", () => {
         expect(!validate({ j: 0 }));
     });
 });
+
+test("ID shorthand matches standard function", () => {
+    const SchemaA = a.enumerator(["A", "B", "C"], {
+        id: "MyEnum",
+    });
+    type SchemaA = a.infer<typeof SchemaA>;
+    const SchemaB = a.enumerator("MyEnum", ["A", "B", "C"]);
+    type SchemaB = a.infer<typeof SchemaB>;
+    expect(JSON.stringify(SchemaA)).toBe(JSON.stringify(SchemaB));
+    const input: SchemaA = "A";
+    assertType<SchemaA>(input);
+    assertType<SchemaB>(input);
+    expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+});
