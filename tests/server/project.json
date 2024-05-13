@@ -20,6 +20,14 @@
       },
       "cache": false
     },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["tests/server/**/*.ts"]
+      }
+    },
+
     "serve": {
       "dependsOn": ["build-server"],
       "executor": "nx:run-commands",

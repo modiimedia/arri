@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { mkdir, writeFile } from "fs/promises";
 import { defineCommand, runMain } from "citty";
 import path from "pathe";
@@ -11,6 +12,16 @@ const main = defineCommand({
         },
     },
     async run({ args }) {
+        const rootPackageJson = JSON.parse(
+            readFileSync(path.resolve(__dirname, "../../package.json"), {
+                encoding: "utf8",
+            }),
+        ) as Record<string, any>;
+        const version =
+            "version" in rootPackageJson &&
+            typeof rootPackageJson.version === "string"
+                ? rootPackageJson.version
+                : "0.0.1";
         const name = kebabCase(args.packageName.toLowerCase());
         const outDir = path.resolve(__dirname, "../../packages", name);
         await mkdir(outDir);
@@ -30,7 +41,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "package.json"),
-                packageJsonTemplate(name),
+                packageJsonTemplate(name, version),
             ),
             writeFile(
                 path.resolve(outDir, "project.json"),
@@ -74,9 +85,10 @@ Run \`nx test ${packageName}\` to execute the unit tests via [Vitest](https://vi
 `;
 }
 
-function packageJsonTemplate(packageName: string) {
+function packageJsonTemplate(packageName: string, version: string) {
     return `{
     "name": "${packageName}",
+    "version": ${version},
     "type": "module",
     "license": "MIT",
     "author": {
@@ -124,7 +136,7 @@ function projectJsonTemplate(packageName: string) {
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/${packageName}/**/*.ts"]
