@@ -3,14 +3,9 @@ import { a } from "arri-validate";
 
 const router = new ArriRouter();
 
-const DefaultPayload = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "DefaultPayload",
-    },
-);
+const DefaultPayload = a.object("DefaultPayload", {
+    message: a.string(),
+});
 
 router.route({
     path: "/routes/hello-world",

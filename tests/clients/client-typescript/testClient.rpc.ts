@@ -377,7 +377,7 @@ export class TestClientUsersService {
 export interface ManuallyAddedModel {
     hello: string;
 }
-const $$ManuallyAddedModel = {
+export const $$ManuallyAddedModel = {
     parse(input: Record<any, any>): ManuallyAddedModel {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -473,7 +473,7 @@ const $$ManuallyAddedModel = {
 export interface DefaultPayload {
     message: string;
 }
-const $$DefaultPayload = {
+export const $$DefaultPayload = {
     parse(input: Record<any, any>): DefaultPayload {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -579,7 +579,7 @@ export interface TypeBoxObject {
     array: Array<boolean>;
     optionalString?: string;
 }
-const $$TypeBoxObject = {
+export const $$TypeBoxObject = {
     parse(input: Record<any, any>): TypeBoxObject {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -1000,7 +1000,7 @@ export interface DeprecatedRpcParams {
      */
     deprecatedField: string;
 }
-const $$DeprecatedRpcParams = {
+export const $$DeprecatedRpcParams = {
     parse(input: Record<any, any>): DeprecatedRpcParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -1120,7 +1120,7 @@ export interface ObjectWithEveryType {
     nestedObject: ObjectWithEveryTypeNestedObject;
     nestedArray: Array<Array<ObjectWithEveryTypeNestedArrayItemItem>>;
 }
-const $$ObjectWithEveryType = {
+export const $$ObjectWithEveryType = {
     parse(input: Record<any, any>): ObjectWithEveryType {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -2878,7 +2878,7 @@ export interface ObjectWithEveryNullableType {
     nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
     nestedArray: Array<Array<ObjectWithEveryNullableTypeNestedArrayItemItem | null> | null> | null;
 }
-const $$ObjectWithEveryNullableType = {
+export const $$ObjectWithEveryNullableType = {
     parse(input: Record<any, any>): ObjectWithEveryNullableType {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -5290,7 +5290,7 @@ export interface ObjectWithEveryOptionalType {
     nestedObject?: ObjectWithEveryOptionalTypeNestedObject;
     nestedArray?: Array<Array<ObjectWithEveryOptionalTypeNestedArrayItemItem>>;
 }
-const $$ObjectWithEveryOptionalType = {
+export const $$ObjectWithEveryOptionalType = {
     parse(input: Record<any, any>): ObjectWithEveryOptionalType {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -7924,7 +7924,7 @@ export interface RecursiveObject {
     right: RecursiveObject | null;
     value: string;
 }
-const $$RecursiveObject = {
+export const $$RecursiveObject = {
     parse(input: Record<any, any>): RecursiveObject {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -8040,7 +8040,7 @@ export type RecursiveUnion =
     | RecursiveUnionChildren
     | RecursiveUnionText
     | RecursiveUnionShape;
-const $$RecursiveUnion = {
+export const $$RecursiveUnion = {
     parse(input: Record<any, any>): RecursiveUnion {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -8366,7 +8366,7 @@ export interface RecursiveUnionShapeData {
 export interface AutoReconnectParams {
     messageCount: number;
 }
-const $$AutoReconnectParams = {
+export const $$AutoReconnectParams = {
     parse(input: Record<any, any>): AutoReconnectParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -8441,7 +8441,7 @@ export interface AutoReconnectResponse {
     count: number;
     message: string;
 }
-const $$AutoReconnectResponse = {
+export const $$AutoReconnectResponse = {
     parse(input: Record<any, any>): AutoReconnectResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -8574,7 +8574,7 @@ export interface StreamConnectionErrorTestParams {
     statusCode: number;
     statusMessage: string;
 }
-const $$StreamConnectionErrorTestParams = {
+export const $$StreamConnectionErrorTestParams = {
     parse(input: Record<any, any>): StreamConnectionErrorTestParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -8706,7 +8706,7 @@ const $$StreamConnectionErrorTestParams = {
 export interface StreamConnectionErrorTestResponse {
     message: string;
 }
-const $$StreamConnectionErrorTestResponse = {
+export const $$StreamConnectionErrorTestResponse = {
     parse(input: Record<any, any>): StreamConnectionErrorTestResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -8806,7 +8806,7 @@ export interface StreamLargeObjectsResponse {
     numbers: Array<number>;
     objects: Array<StreamLargeObjectsResponseObjectsItem>;
 }
-const $$StreamLargeObjectsResponse = {
+export const $$StreamLargeObjectsResponse = {
     parse(input: Record<any, any>): StreamLargeObjectsResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -9143,7 +9143,7 @@ export interface StreamLargeObjectsResponseObjectsItem {
 export interface ChatMessageParams {
     channelId: string;
 }
-const $$ChatMessageParams = {
+export const $$ChatMessageParams = {
     parse(input: Record<any, any>): ChatMessageParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -9240,7 +9240,7 @@ const $$ChatMessageParams = {
 };
 
 export type ChatMessage = ChatMessageText | ChatMessageImage | ChatMessageUrl;
-const $$ChatMessage = {
+export const $$ChatMessage = {
     parse(input: Record<any, any>): ChatMessage {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -10156,7 +10156,7 @@ export interface ChatMessageUrl {
 export interface TestsStreamRetryWithNewCredentialsResponse {
     message: string;
 }
-const $$TestsStreamRetryWithNewCredentialsResponse = {
+export const $$TestsStreamRetryWithNewCredentialsResponse = {
     parse(input: Record<any, any>): TestsStreamRetryWithNewCredentialsResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -10256,7 +10256,7 @@ export type WsMessageParams =
     | WsMessageParamsCreateEntity
     | WsMessageParamsUpdateEntity
     | WsMessageParamsDisconnect;
-const $$WsMessageParams = {
+export const $$WsMessageParams = {
     parse(input: Record<any, any>): WsMessageParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -10695,7 +10695,7 @@ export interface WsMessageParamsDisconnect {
 export type WsMessageResponse =
     | WsMessageResponseEntityCreated
     | WsMessageResponseEntityUpdated;
-const $$WsMessageResponse = {
+export const $$WsMessageResponse = {
     parse(input: Record<any, any>): WsMessageResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(

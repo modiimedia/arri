@@ -273,6 +273,27 @@ describe("a.object()", () => {
         JSON.parse(result);
         expect(a.parse(NestedObject, result)).toStrictEqual(input);
     });
+    it("has consistent output across function overloads", () => {
+        const User1 = a.object(
+            {
+                id: a.string(),
+                name: a.string(),
+                createdAt: a.timestamp(),
+            },
+            {
+                id: "User",
+            },
+        );
+        const User2 = a.object("User", {
+            id: a.string(),
+            name: a.string(),
+            createdAt: a.timestamp(),
+        });
+        expect(JSON.stringify(User1)).toBe(JSON.stringify(User2));
+        const input = { id: "", name: "", createdAt: new Date() };
+        expect(a.validate(User1, input)).toEqual(a.validate(User2, input));
+        expect(a.serialize(User1, input)).toEqual(a.serialize(User2, input));
+    });
 });
 
 describe("a.object() -> Coersion", () => {

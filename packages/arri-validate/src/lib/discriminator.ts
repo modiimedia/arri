@@ -50,7 +50,35 @@ export function discriminator<
 >(
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
-    opts: ASchemaOptions = {},
+    opts?: ASchemaOptions,
+): ADiscriminatorSchema<
+    InferDiscriminatorType<
+        TDiscriminatorKey,
+        TMapping,
+        JoinedDiscriminator<TDiscriminatorKey, TMapping>
+    >
+>;
+export function discriminator<
+    TDiscriminatorKey extends string,
+    TMapping extends Record<string, AObjectSchema<any>>,
+>(
+    id: string,
+    discriminator: TDiscriminatorKey,
+    mapping: TMapping,
+): ADiscriminatorSchema<
+    InferDiscriminatorType<
+        TDiscriminatorKey,
+        TMapping,
+        JoinedDiscriminator<TDiscriminatorKey, TMapping>
+    >
+>;
+export function discriminator<
+    TDiscriminatorKey extends string,
+    TMapping extends Record<string, AObjectSchema<any>>,
+>(
+    propA: string | TDiscriminatorKey,
+    propB: TDiscriminatorKey | TMapping,
+    propC?: TMapping | ASchemaOptions,
 ): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
@@ -58,6 +86,15 @@ export function discriminator<
         JoinedDiscriminator<TDiscriminatorKey, TMapping>
     >
 > {
+    const isIdShorthand = typeof propB === "string";
+    const discriminator = isIdShorthand ? propB : propA;
+    const mapping = (isIdShorthand ? propC : propB) as TMapping;
+    const opts = (
+        isIdShorthand ? { id: propA } : propC ?? {}
+    ) as ASchemaOptions;
+    if (isIdShorthand) {
+        opts.id = propA;
+    }
     return {
         discriminator,
         mapping,
@@ -87,7 +124,7 @@ export function discriminator<
                     return parse(discriminator, mapping, input, data, true);
                 },
                 serialize(input, data) {
-                    const discriminatorVal = input[discriminator];
+                    const discriminatorVal = input[discriminator] ?? "";
                     const targetSchema = mapping[discriminatorVal];
                     if (!targetSchema) {
                         throw discriminatorMappingError(discriminatorVal, data);

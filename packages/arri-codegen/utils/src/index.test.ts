@@ -1,9 +1,12 @@
+import { a } from "packages/arri-validate/dist";
 import {
     unflattenObject,
     setNestedObjectProperty,
     removeDisallowedChars,
     type RpcDefinition,
     stringStartsWithNumber,
+    createAppDefinition,
+    type AppDefinition,
 } from "./index";
 
 describe("unflattenObject()", () => {
@@ -145,4 +148,124 @@ describe("String utils", () => {
             expect(stringStartsWithNumber(input)).toBe(false);
         }
     });
+});
+
+test("create app definition", () => {
+    const SettingsParams = a.object(
+        {
+            userId: a.string(),
+        },
+        {
+            id: "SettingsParams",
+        },
+    );
+    const Settings = a.object(
+        {
+            colorScheme: a.enumerator(["SYSTEM", "LIGHT", "DARK"]),
+        },
+        {
+            id: "Settings",
+        },
+    );
+
+    const result = createAppDefinition({
+        procedures: {
+            sayHello: {
+                transport: "http",
+                method: "post",
+                path: "/say-hello",
+            },
+            createConnection: {
+                transport: "ws",
+                path: "/ws",
+                params: a.object({
+                    message: a.string(),
+                }),
+                response: a.object({
+                    message: a.string(),
+                }),
+            },
+            "utils.getSettings": {
+                transport: "http",
+                method: "get",
+                path: "/utils/get-settings",
+                params: SettingsParams,
+                response: Settings,
+            },
+        },
+    });
+    const expectedResult: AppDefinition = {
+        arriSchemaVersion: "0.0.4",
+        procedures: {
+            sayHello: {
+                transport: "http",
+                method: "post",
+                path: "/say-hello",
+                params: undefined,
+                response: undefined,
+            },
+            createConnection: {
+                transport: "ws",
+                path: "/ws",
+                params: "CreateConnectionParams",
+                response: "CreateConnectionResponse",
+            },
+            "utils.getSettings": {
+                transport: "http",
+                method: "get",
+                path: "/utils/get-settings",
+                params: "SettingsParams",
+                response: "Settings",
+            },
+        },
+        models: {
+            CreateConnectionParams: {
+                properties: {
+                    message: {
+                        type: "string",
+                        metadata: {},
+                    },
+                },
+                additionalProperties: true,
+                metadata: {},
+            },
+            CreateConnectionResponse: {
+                properties: {
+                    message: {
+                        type: "string",
+                        metadata: {},
+                    },
+                },
+                additionalProperties: true,
+                metadata: {},
+            },
+            SettingsParams: {
+                properties: {
+                    userId: {
+                        type: "string",
+                        metadata: {},
+                    },
+                },
+                additionalProperties: true,
+                metadata: {
+                    id: "SettingsParams",
+                },
+            },
+            Settings: {
+                properties: {
+                    colorScheme: {
+                        enum: ["SYSTEM", "LIGHT", "DARK"],
+                        metadata: {},
+                    },
+                },
+                additionalProperties: true,
+                metadata: {
+                    id: "Settings",
+                },
+            },
+        },
+    };
+    expect(JSON.parse(JSON.stringify(result))).toStrictEqual(
+        JSON.parse(JSON.stringify(expectedResult)),
+    );
 });

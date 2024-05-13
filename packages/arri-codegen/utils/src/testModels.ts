@@ -1,17 +1,12 @@
 import { a } from "arri-validate";
 import { type AppDefinition } from "./index";
 
-export const TestUserSettingsSchema = a.object(
-    {
-        notificationsEnabled: a.boolean(),
-        preferredTheme: a.stringEnum(["dark-mode", "light-mode", "system"], {
-            isDeprecated: true,
-        }),
-    },
-    {
-        id: "UserSettings",
-    },
-);
+export const TestUserSettingsSchema = a.object("UserSettings", {
+    notificationsEnabled: a.boolean(),
+    preferredTheme: a.stringEnum(["dark-mode", "light-mode", "system"], {
+        isDeprecated: true,
+    }),
+});
 
 export const TestUserPhotoSchema = a.object(
     {
@@ -27,6 +22,7 @@ export const TestUserPhotoSchema = a.object(
 );
 
 export const TestUserNotificationSchema = a.discriminator(
+    "UserNotification",
     "notificationType",
     {
         POST_LIKE: a.object({
@@ -39,43 +35,39 @@ export const TestUserNotificationSchema = a.discriminator(
             commentText: a.string(),
         }),
     },
-    { id: "UserNotification" },
 );
 
-export const TestUserSchema = a.object(
-    {
-        id: a.string(),
-        role: a.stringEnum(["standard", "admin"]),
-        photo: a.nullable(TestUserPhotoSchema),
-        createdAt: a.timestamp(),
-        numFollowers: a.int32(),
-        settings: TestUserSettingsSchema,
-        lastNotification: a.nullable(TestUserNotificationSchema),
-        recentNotifications: a.array(TestUserNotificationSchema),
-        bookmarks: a.record(
-            a.object({ postId: a.string(), userId: a.string() }),
-        ),
-        bio: a.optional(a.string()),
-        metadata: a.record(a.any()),
-        randomList: a.array(a.any()),
-        binaryTree: a.recursive(
-            (self) =>
-                a.object({
-                    left: a.nullable(self),
-                    right: a.nullable(self),
-                }),
-            { id: "BinaryTree" },
-        ),
-    },
-    { id: "User" },
-);
+interface BinaryTree {
+    left: BinaryTree | null;
+    right: BinaryTree | null;
+}
 
-export const TestUserParams = a.object(
-    {
-        userId: a.string(),
-    },
-    { id: "UserParams" },
-);
+export const TestUserSchema = a.object("User", {
+    id: a.string(),
+    role: a.stringEnum(["standard", "admin"]),
+    photo: a.nullable(TestUserPhotoSchema),
+    createdAt: a.timestamp(),
+    numFollowers: a.int32(),
+    settings: TestUserSettingsSchema,
+    lastNotification: a.nullable(TestUserNotificationSchema),
+    recentNotifications: a.array(TestUserNotificationSchema),
+    bookmarks: a.record(a.object({ postId: a.string(), userId: a.string() })),
+    bio: a.optional(a.string()),
+    metadata: a.record(a.any()),
+    randomList: a.array(a.any()),
+    binaryTree: a.recursive<BinaryTree>(
+        (self) =>
+            a.object({
+                left: a.nullable(self),
+                right: a.nullable(self),
+            }),
+        { id: "BinaryTree" },
+    ),
+});
+
+export const TestUserParams = a.object("UserParams", {
+    userId: a.string(),
+});
 
 export const TestUpdateUserParams = a.pick(
     TestUserSchema,
@@ -84,13 +76,6 @@ export const TestUpdateUserParams = a.pick(
         id: "UpdateUserParams",
     },
 );
-
-export const TestErrorResponse = a.object({
-    statusCode: a.int8(),
-    statusMessage: a.string(),
-    data: a.any(),
-    stack: a.nullable(a.string()),
-});
 
 export const TestAppDefinition: AppDefinition = {
     arriSchemaVersion: "0.0.4",

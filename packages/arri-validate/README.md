@@ -733,6 +733,7 @@ Metadata is used during cross-language code generation. Arri schemas allow you t
 A schema with this metadata:
 
 ```ts
+// metadata object
 const BookSchema = a.object(
     {
         title: a.string(),
@@ -800,6 +801,41 @@ data class Book(
     val publishDate: Instant,
 )
 ```
+
+### ID Shorthand (Experimental)
+
+Because IDs are really important for producing concise type names. Arri validate also provides an _experimental\*_ shorthand for defining IDs of objects, discriminators, and recursive types.
+
+```ts
+// ID will be set to "Book"
+const BookSchema = a.object("Book", {
+    title: a.string(),
+    author: a.string(),
+    publishDate: a.timestamp(),
+});
+
+// ID will be set to "Message"
+const MessageSchema = a.discriminator("Message", "type", {
+    TEXT: a.object({
+        userId: a.string(),
+        content: a.string(),
+    }),
+    IMAGE: a.object({
+        userId: a.string(),
+        imageUrl: a.string(),
+    }),
+});
+
+// ID will be set to "BTree"
+const BinaryTreeSchema = a.recursive("BTree", (self) =>
+    a.object({
+        left: a.nullable(self),
+        right: a.nullable(self),
+    }),
+);
+```
+
+\* Because this is experimental it may be removed in the future. The main thing I'm testings is whether added convenience is worth the overhead of maintaining 2 versions of each of these functions. The shorthand could also introduce unintended confusion for users of this library as it creates two places to look for an id.
 
 ## Benchmarks
 

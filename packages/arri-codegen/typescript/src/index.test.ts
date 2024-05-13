@@ -191,7 +191,7 @@ describe("Model Creation", () => {
             followedUsers: Array<string>;
             bio?: string;
         }
-        const $$User = {
+        export const $$User = {
             parse(input: Record<any, any>): User {
                 ${CompiledValidator.compiledCode.parse}
             },
@@ -234,7 +234,7 @@ describe("Model Creation", () => {
             name?: string;
             createdAt?: Date;
         }
-        const $$PartialUser = {
+        export const $$PartialUser = {
             parse(input: Record<any, any>): PartialUser {
                 ${UserValidator.compiledCode.parse}
             },

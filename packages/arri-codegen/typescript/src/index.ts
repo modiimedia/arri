@@ -685,7 +685,7 @@ export function tsObjectFromJtdSchema(
             "input",
             modifiedDef,
         );
-        validatorPart = `const $$${typeName} = {
+        validatorPart = `export const $$${typeName} = {
             parse(input: Record<any, any>): ${typeName} {
                 ${parsingCode}
             },
@@ -856,7 +856,7 @@ export function tsDiscriminatedUnionFromJtdSchema(
             "input",
             modifiedDef,
         );
-        validatorPart = `const $$${typeName} = {
+        validatorPart = `export const $$${typeName} = {
     parse(input: Record<any, any>): ${typeName} {
         ${parsingCode}
     },
@@ -926,7 +926,7 @@ export function tsRecordFromJtdSchema(
                 "input",
                 modifiedDef as Schema,
             );
-            validatorPart = `const $$${typeName} = {
+            validatorPart = `export const $$${typeName} = {
     parse(input: Record<any, any>): ${typeName} {
         ${parsingCode}
     },

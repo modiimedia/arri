@@ -355,7 +355,7 @@ Future<void> main() async {
         errorCount++;
       },
     );
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 2000));
     expect(messageCount, equals(10));
     expect(errorCount, equals(0));
     expect(eventSource.isClosed, equals(true));

@@ -2,6 +2,7 @@ import { defineRpc } from "arri";
 import { a } from "arri-validate";
 
 export const ObjectWithEveryNullableType = a.object(
+    "ObjectWithEveryNullableType",
     {
         any: a.nullable(a.any()),
         boolean: a.nullable(a.boolean()),
@@ -70,9 +71,6 @@ export const ObjectWithEveryNullableType = a.object(
                 ),
             ),
         ),
-    },
-    {
-        id: "ObjectWithEveryNullableType",
     },
 );
 
