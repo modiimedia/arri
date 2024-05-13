@@ -14,15 +14,15 @@ pnpm i --save-dev @arrirpc/eslint-plugin
 
 ### Use the default recommended configuration
 
-```json
+```jsonc
 {
-    "extends": ["plugin:@arrirpc/recommended"]
+    "extends": ["plugin:@arrirpc/recommended"],
 }
 ```
 
 ### Access the rules directly
 
-```json
+```jsonc
 {
     "plugins": ["@arrirpc"],
     "rules": {
@@ -33,7 +33,7 @@ pnpm i --save-dev @arrirpc/eslint-plugin
         // check to see if an ID has been assigned to a.discriminator() schemas
         "@arrirpc/no-anonymous-discriminator": 2,
         // check to see if an ID has been assigned to a.recursive() schemas
-        "@arrirpc/no-anonymous-recursive": 2
-    }
+        "@arrirpc/no-anonymous-recursive": 2,
+    },
 }
 ```
