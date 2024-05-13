@@ -136,7 +136,7 @@ function projectJsonTemplate(packageName: string) {
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/${packageName}/**/*.ts"]
