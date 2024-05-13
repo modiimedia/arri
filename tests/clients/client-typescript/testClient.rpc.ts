@@ -11046,7 +11046,7 @@ export interface WsMessageResponseEntityUpdated {
 export interface UsersWatchUserParams {
     userId: string;
 }
-const $$UsersWatchUserParams = {
+export const $$UsersWatchUserParams = {
     parse(input: Record<any, any>): UsersWatchUserParams {
         function $fallback(instancePath, schemaPath) {
             throw new Error(
@@ -11158,7 +11158,7 @@ export interface UsersWatchUserResponse {
     randomList: Array<any>;
     bio?: string;
 }
-const $$UsersWatchUserResponse = {
+export const $$UsersWatchUserResponse = {
     parse(input: Record<any, any>): UsersWatchUserResponse {
         function $fallback(instancePath, schemaPath) {
             throw new Error(

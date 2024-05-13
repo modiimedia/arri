@@ -86,7 +86,7 @@ class ObjectWithNullableFieldsTest {
 
     @Test
     fun fromJson() {
-        val result = ObjectWithNullableFields.fromJson(allNullReference);
+        val result = ObjectWithNullableFields.fromJson(allNullReference)
         assertEquals(result, allNullValue)
         assertEquals(ObjectWithNullableFields.fromJson(noNullReference), noNullValue)
     }

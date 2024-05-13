@@ -254,7 +254,7 @@ fun main() {
     testSseClosesOnDone(sseScope, client)
     testSseAutoReconnectsWhenClosedByServer(sseScope, client)
     testSseReconnectsWithNewCredentials(sseScope, httpClient, baseUrl)
-
+    
 }
 
 fun testSseSupport(
@@ -389,34 +389,32 @@ fun testSseAutoReconnectsWhenClosedByServer(scope: CoroutineScope, client: TestC
 
 fun testSseReconnectsWithNewCredentials(scope: CoroutineScope, httpClient: HttpClient, baseUrl: String) {
     val tag = "SSE reconnects with new credentials"
+    val headers = mutableListOf<String>()
     val dynamicClient = TestClient(
         httpClient = httpClient,
         baseUrl = baseUrl,
         headers = {
-            mutableMapOf(Pair("x-test-header", "kt_${java.util.UUID.randomUUID().toString()}"))
+            val newHeader = "kt_${java.util.UUID.randomUUID().toString()}"
+            headers.add(newHeader)
+            mutableMapOf(Pair("x-test-header", newHeader))
         }
     )
     var msgCount = 0
     var openCount = 0
-    var errorCount = 0
     val job = dynamicClient.tests.streamRetryWithNewCredentials(
         scope = scope,
         onData = {
             msgCount++
         },
-        onConnectionError = {
-            errorCount++
-        },
         onOpen = {
             openCount++
-            println("OPENED $openCount")
-        }
+        },
     )
     Thread.sleep(2000)
     job.cancel()
     expect(tag, msgCount > 1, true)
     expect(tag, openCount > 1, true)
-    expect(tag, errorCount > 1, true)
+    expect(tag, headers.size, openCount)
 }
 
 fun <A, B> expect(tag: String?, input: A, result: B) {

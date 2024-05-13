@@ -6501,7 +6501,7 @@ private suspend fun __handleSseRequest(
             Thread.sleep(backoffTime)
         }
     }
-    val newBackoffTime =
+    var newBackoffTime =
         if (backoffTime == 0L) 2L else if (backoffTime * 2L >= maxBackoffTime) maxBackoffTime else backoffTime * 2L
     if (lastId != null) {
         finalHeaders["Last-Event-ID"] = lastId.toString()
@@ -6521,7 +6521,7 @@ private suspend fun __handleSseRequest(
                 onClose()
                 return@execute
             }
-            if (httpResponse.status.value != 200) {
+            if (httpResponse.status.value !in 200..299) {
                 try {
                     onConnectionError(
                         TestClientError(
@@ -6554,6 +6554,7 @@ private suspend fun __handleSseRequest(
                 )
                 return@execute
             }
+            newBackoffTime = 0
             val channel: ByteReadChannel = httpResponse.bodyAsChannel()
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
@@ -6595,6 +6596,23 @@ private suspend fun __handleSseRequest(
                     }
                 }
             }
+            __handleSseRequest(
+                scope = scope,
+                httpClient = httpClient,
+                url = url,
+                method = method,
+                params = params,
+                headers = headers,
+                backoffTime = newBackoffTime,
+                maxBackoffTime = maxBackoffTime,
+                lastEventId = lastId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onError = onError,
+                onData = onData,
+                onConnectionError = onConnectionError,
+            )
         }
     } catch (e: java.net.ConnectException) {
         onConnectionError(
@@ -6651,24 +6669,3 @@ private suspend fun __handleSseRequest(
         )
     }
 }
-
-
-//// THis is a work in progress
-//private suspend fun handleWebsocketRequest(
-//    client: HttpClient,
-//    url: String,
-//    headers: headersFn,
-//) {
-//    val finalHeaders = headers?.invoke() ?: mutableMapOf()
-//    finalHeaders["client-version"] = generatedClientVersion
-//    var finalUrl = url.replace("https://", "wss://").replace("http://", "ws://")
-//    val queryParts = mutableListOf<String>()
-//    for (entry in finalHeaders) {
-//        queryParts.add("${entry.key}=${entry.value}")
-//    }
-//    finalUrl += "?${queryParts.joinToString("&")}"
-//    client.webSocket(
-//        urlString = finalUrl
-//    ) { }
-//
-//}

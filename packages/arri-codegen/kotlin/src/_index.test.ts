@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { type AppDefinition, normalizeWhitespace } from "arri-codegen-utils";
 import path from "pathe";
-import { kotlinClientFromDef } from "./_index";
+import { kotlinClientFromAppDefinition } from "./_index";
 
 test("output matches the reference client", () => {
     const referenceSchema = fs.readFileSync(
@@ -23,7 +23,7 @@ test("output matches the reference client", () => {
         },
     );
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const result = kotlinClientFromDef(JSON.parse(referenceSchema), {
+    const result = kotlinClientFromAppDefinition(JSON.parse(referenceSchema), {
         clientName: "ExampleClient",
         outputFile: "",
     });
@@ -53,7 +53,7 @@ test("blah", () => {
         },
         models: {},
     };
-    const client = kotlinClientFromDef(appDef, {
+    const client = kotlinClientFromAppDefinition(appDef, {
         clientName: "Client",
         modelPrefix: undefined,
         outputFile: "",
