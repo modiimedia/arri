@@ -6,17 +6,14 @@
   },
   "extends": "nx/presets/npm.json",
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "affected": {
-    "defaultBase": "master"
-  },
+  "defaultBase": "master",
   "namedInputs": {
     "default": [
       "{projectRoot}/package.json",
       "{projectRoot}/project.json",
       "{projectRoot}/tsconfig.json",
       "{projectRoot}/build.config.ts",
-      "{projectRoot}/src/**/*",
-      "{projectRoot}/node_modules"
+      "{projectRoot}/src/**/*"
     ],
     "shared-globals": [
       "{workspaceRoot}/pnpm-lock.yaml",
@@ -38,7 +35,7 @@
       "inputs": [
         "default",
         "shared-globals",
-        "{workspaceRoot}/jest.preset.js",
+        "{workspaceRoot}/vitest.workspace.js",
         "{projectRoot}/vite.config.ts"
       ],
       "cache": true
@@ -48,7 +45,7 @@
     },
     "@nx/vite:test": {
       "cache": true,
-      "inputs": ["default", "^default"]
+      "inputs": ["default", "^default", "shared-globals"]
     },
     "@nx/eslint:lint": {
       "inputs": [
