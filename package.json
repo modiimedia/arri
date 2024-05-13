@@ -22,7 +22,8 @@
     "integration-tests:start-server": "nx build-server test-server && node tests/server/.output/server.mjs --host",
     "integration-tests:run-tests": "nx run-many -t integration-test",
     "scaffold": "jiti tools/scripts/scaffold-package.ts",
-    "postversion": "jiti tools/scripts/version-sync.ts"
+    "postversion": "jiti tools/scripts/version-sync.ts",
+    "gen-test-utils": "jiti tools/scripts/generate-test-utils.ts"
   },
   "private": true,
   "devDependencies": {

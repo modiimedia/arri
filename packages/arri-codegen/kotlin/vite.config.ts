@@ -27,11 +27,12 @@ export default defineConfig({
             },
         },
         globals: true,
-        reporters: ["default"],
+        reporters: ["default", "html"],
         cache: {
-            dir: "../../node_modules/.vitest",
+            dir: "../../../node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+        outputFile: ".temp/test-results/index.html",
     },
 });

@@ -39,9 +39,6 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
                 },
                 validate: (input): input is any => true,
                 serialize(input) {
-                    if (typeof input === "string") {
-                        return input;
-                    }
                     return JSON.stringify(input);
                 },
             },

@@ -5,7 +5,7 @@ export default defineEventStreamRpc({
     description:
         "This route will always return an error. The client should automatically retry with exponential backoff.",
     params: a.object("StreamConnectionErrorTestParams", {
-        statusCode: a.uint16(),
+        statusCode: a.int32(),
         statusMessage: a.string(),
     }),
     response: a.object("StreamConnectionErrorTestResponse", {

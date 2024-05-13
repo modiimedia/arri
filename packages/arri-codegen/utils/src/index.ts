@@ -192,6 +192,9 @@ export const removeDisallowedChars = (
     return result;
 };
 
+export const stringStartsWithNumber = (input: string): boolean =>
+    input.length !== 0 && !Number.isNaN(Number(input.charAt(0)));
+
 export function setNestedObjectProperty<T>(
     targetProp: string,
     value: T,

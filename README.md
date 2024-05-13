@@ -13,15 +13,15 @@ This is a work in progress. Things will break.
 
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress the implementations for these clients.
 
-| Language                                        | HTTP | WebSockets |
-| ----------------------------------------------- | ---- | ---------- |
-| [Typescript](packages/arri-codegen/typescript/) | ✅   | ✅         |
-| [Dart](packages/arri-codegen/dart/)             | ✅   | ✅         |
-| [Rust](packages/arri-codegen/rust)              | 🚧   | 🚧         |
-| [Kotlin](packages/arri-codegen/kotlin/)         | 🚧   | 🚧         |
-| Swift                                           |      |            |
-| Go                                              |      |            |
-| Python                                          |      |            |
+| Language                                        | HTTP | SSE |
+| ----------------------------------------------- | ---- | --- |
+| [Typescript](packages/arri-codegen/typescript/) | ✅   | ✅  |
+| [Dart](packages/arri-codegen/dart/)             | ✅   | ✅  |
+| [Rust](packages/arri-codegen/rust)              | 🚧   | 🚧  |
+| [Kotlin](packages/arri-codegen/kotlin/)         | ✅   | ✅  |
+| Swift                                           |      |     |
+| Go                                              |      |     |
+| Python                                          |      |     |
 
 ✅ completed
 
@@ -40,7 +40,7 @@ arri codegen ./AppDefinition.ts
 
 arri codegen ./AppDefinition.json
 
-arri codegen https://myapi.com/rpcs/__definition # must be a get request
+arri codegen https://myapi.com/rpcs/__definition # must accept a GET request
 ```
 
 Before running this command. Make sure you have an arri config created already.

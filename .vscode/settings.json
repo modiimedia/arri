@@ -35,6 +35,8 @@
     "codegen",
     "Consola",
     "degit",
+    "kotlinx",
+    "ktor",
     "middlewares",
     "modii",
     "nitropack",
