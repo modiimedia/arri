@@ -317,6 +317,15 @@ importers:
         specifier: ^3.7.1
         version: 3.7.1
 
+  packages/eslint-plugin:
+    devDependencies:
+      '@types/eslint':
+        specifier: ^8.56.10
+        version: 8.56.10
+      eslint:
+        specifier: 8.57.0
+        version: 8.57.0
+
   packages/json-schema-to-jtd:
     dependencies:
       jtd-utils:
@@ -362,6 +371,9 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arri-validate
     devDependencies:
+      '@arrirpc/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../packages/eslint-plugin
       arri-adapter-typebox:
         specifier: workspace:*
         version: link:../../packages/adapters/typebox
@@ -2032,6 +2044,9 @@ packages:
 
   '@types/degit@2.8.6':
     resolution: {integrity: sha512-y0M7sqzsnHB6cvAeTCBPrCQNQiZe8U4qdzf8uBVmOWYap5MMTN/gB2iEqrIqFiYcsyvP74GnGD5tgsHttielFw==}
+
+  '@types/eslint@8.56.10':
+    resolution: {integrity: sha512-Shavhk87gCtY2fhXDctcfS3e6FdxWkCx1iUZ9eEUbh7rTqlZT0/IzOkCOVt0fCjcFuZ9FPYfuezTBImfHCDBGQ==}
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
@@ -7167,6 +7182,11 @@ snapshots:
   '@tsconfig/node16@1.0.4': {}
 
   '@types/degit@2.8.6': {}
+
+  '@types/eslint@8.56.10':
+    dependencies:
+      '@types/estree': 1.0.5
+      '@types/json-schema': 7.0.15
 
   '@types/estree@1.0.5': {}
 
