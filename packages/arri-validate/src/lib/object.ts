@@ -27,18 +27,19 @@ export function object<
     TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
 >(
-    id: string,
-    input: TInput,
-): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
-export function object<
-    TInput extends Record<any, ASchema> = any,
-    TAdditionalProps extends boolean = false,
->(
     input: TInput,
     opts?: AObjectSchemaOptions<TAdditionalProps>,
 ): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
 export function object<
     TInput extends Record<any, ASchema> = any,
+    TAdditionalProps extends boolean = false,
+>(
+    id: string,
+    input: TInput,
+): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
+export function object<
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    TInput extends Record<any, ASchema> = {},
     TAdditionalProps extends boolean = false,
 >(
     propA: TInput | string,

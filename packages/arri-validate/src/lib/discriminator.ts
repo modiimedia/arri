@@ -48,9 +48,9 @@ export function discriminator<
     TDiscriminatorKey extends string,
     TMapping extends Record<string, AObjectSchema<any>>,
 >(
-    id: string,
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
+    opts?: ASchemaOptions,
 ): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
@@ -62,9 +62,9 @@ export function discriminator<
     TDiscriminatorKey extends string,
     TMapping extends Record<string, AObjectSchema<any>>,
 >(
+    id: string,
     discriminator: TDiscriminatorKey,
     mapping: TMapping,
-    opts?: ASchemaOptions,
 ): ADiscriminatorSchema<
     InferDiscriminatorType<
         TDiscriminatorKey,
