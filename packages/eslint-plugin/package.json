@@ -1,5 +1,6 @@
 {
   "name": "@arrirpc/eslint-plugin",
+  "version": "0.43.2",
   "license": "MIT",
   "author": {
     "name": "joshmossas",

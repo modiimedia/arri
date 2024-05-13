@@ -1,11 +1,39 @@
-# eslint-plugin
+# Arri-RPC Eslint Plugin
 
-This library was generated with [Nx](https://nx.dev).
+## Installation
 
-## Building
+```bash
+# npm
+npm i --save-dev @arrirpc/eslint-plugin
 
-Run `nx build eslint-plugin` to build the library.
+# pnpm
+pnpm i --save-dev @arrirpc/eslint-plugin
+```
 
-## Running unit tests
+## Usage
 
-Run `nx test eslint-plugin` to execute the unit tests via [Vitest](https://vitest.dev).
+### Use the default recommended configuration
+
+```json
+{
+    "extends": ["plugin:@arrirpc/recommended"]
+}
+```
+
+### Access the rules directly
+
+```json
+{
+    "plugins": ["@arrirpc"],
+    "rules": {
+        // check to see if an ID has been assigned to root a.object() schemas
+        "@arrirpc/no-anonymous-object": 2,
+        // check to see if an ID has been assigned to a.enumerator() or a.stringEnum() schemas
+        "@arrirpc/no-anonymous-enumerator": 2,
+        // check to see if an ID has been assigned to a.discriminator() schemas
+        "@arrirpc/no-anonymous-discriminator": 2,
+        // check to see if an ID has been assigned to a.recursive() schemas
+        "@arrirpc/no-anonymous-recursive": 2
+    }
+}
+```

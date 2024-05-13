@@ -7,6 +7,7 @@ This is a work in progress. Things will break.
 ## Schema Builder
 
 -   [Arri Validate](packages/arri-validate/README.md)
+-   [Eslint Plugin](packages/eslint-plugin/README.md)
 
 ## Client Generators
 
