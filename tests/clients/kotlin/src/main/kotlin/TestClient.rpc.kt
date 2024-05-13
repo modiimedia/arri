@@ -69,6 +69,14 @@ class TestClientTestsService(
             params = null,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return DefaultPayload.fromJson(response.bodyAsText())
         }
@@ -83,6 +91,14 @@ class TestClientTestsService(
             params = null,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return DefaultPayload.fromJson(response.bodyAsText())
         }
@@ -97,6 +113,7 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        
         if (response.status.value in 200..299) {
             return 
         }
@@ -111,6 +128,7 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        
         if (response.status.value in 200..299) {
             return 
         }
@@ -125,6 +143,7 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        
         if (response.status.value in 200..299) {
             return 
         }
@@ -139,6 +158,14 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return ObjectWithEveryType.fromJson(response.bodyAsText())
         }
@@ -153,6 +180,14 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return ObjectWithEveryNullableType.fromJson(response.bodyAsText())
         }
@@ -167,6 +202,14 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return ObjectWithEveryOptionalType.fromJson(response.bodyAsText())
         }
@@ -181,6 +224,14 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return RecursiveObject.fromJson(response.bodyAsText())
         }
@@ -195,6 +246,14 @@ class TestClientTestsService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return RecursiveUnion.fromJson(response.bodyAsText())
         }
@@ -469,6 +528,14 @@ class TestClientAdaptersService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return TypeBoxObject.fromJson(response.bodyAsText())
         }
@@ -4468,7 +4535,7 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 data class StreamConnectionErrorTestParams(
-    val statusCode: UShort,
+    val statusCode: Int,
     val statusMessage: String,
 ) : TestClientModel {
     override fun toJson(): String {
@@ -4492,7 +4559,7 @@ return queryParts.joinToString("&")
         @JvmStatic
         override fun new(): StreamConnectionErrorTestParams {
             return StreamConnectionErrorTestParams(
-                statusCode = 0u,
+                statusCode = 0,
                 statusMessage = "",
             )
         }
@@ -4508,9 +4575,9 @@ return queryParts.joinToString("&")
                 __logError("[WARNING] StreamConnectionErrorTestParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty StreamConnectionErrorTestParams.")
                 return new()
             }
-val statusCode: UShort = when (__input.jsonObject["statusCode"]) {
-                is JsonPrimitive -> __input.jsonObject["statusCode"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
-                else -> 0u
+val statusCode: Int = when (__input.jsonObject["statusCode"]) {
+                is JsonPrimitive -> __input.jsonObject["statusCode"]!!.jsonPrimitive.intOrNull ?: 0
+                else -> 0
             }
 val statusMessage: String = when (__input.jsonObject["statusMessage"]) {
                 is JsonPrimitive -> __input.jsonObject["statusMessage"]!!.jsonPrimitive.contentOrNull ?: ""
@@ -6464,17 +6531,35 @@ private fun __parseSseEvent(input: String): __SseEvent {
 
 private class __SseEvent(val id: String? = null, val event: String? = null, val data: String)
 
-private fun __parseSseEvents(input: String): List<__SseEvent> {
-    val inputs = input.split("\n\n")
+private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
+
+private fun __parseSseEvents(input: String): __SseEventParsingResult {
+    val inputs = input.split("\n\n").toMutableList()
+    if (inputs.isEmpty()) {
+        return __SseEventParsingResult(
+            events = listOf(),
+            leftover = "",
+        )
+    }
+    if (inputs.size == 1) {
+        return __SseEventParsingResult(
+            events = listOf(),
+            leftover = inputs.last(),
+        )
+    }
+    val leftover = inputs.last()
+    inputs.removeLast()
     val events = mutableListOf<__SseEvent>()
     for (item in inputs) {
         if (item.contains("data: ")) {
             events.add(__parseSseEvent(item))
         }
     }
-    return events
+    return __SseEventParsingResult(
+        events = events,
+        leftover = leftover,
+    )
 }
-
 
 private suspend fun __handleSseRequest(
     scope: CoroutineScope,
@@ -6523,14 +6608,20 @@ private suspend fun __handleSseRequest(
             }
             if (httpResponse.status.value !in 200..299) {
                 try {
-                    onConnectionError(
-                        TestClientError(
-                            code = httpResponse.status.value,
-                            errorMessage = "Error fetching stream from $url",
-                            data = JsonPrimitive(httpResponse.toString()),
-                            stack = null,
+                    if (httpResponse.headers["Content-Type"] == "application/json") {
+                        onConnectionError(
+                            TestClientError.fromJson(httpResponse.bodyAsText())
                         )
-                    )
+                    } else {
+                        onConnectionError(
+                            TestClientError(
+                                code = httpResponse.status.value,
+                                errorMessage = httpResponse.status.description,
+                                data = JsonPrimitive(httpResponse.bodyAsText()),
+                                stack = null,
+                            )
+                        )
+                    }
                 } catch (e: CancellationException) {
                     onClose()
                     return@execute
@@ -6554,16 +6645,50 @@ private suspend fun __handleSseRequest(
                 )
                 return@execute
             }
+            if (httpResponse.headers["Content-Type"] != "text/event-stream") {
+                try {
+                    onConnectionError(
+                        TestClientError(
+                            code = 0,
+                            errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
+                            data = JsonPrimitive(httpResponse.bodyAsText()),
+                            stack = null,
+                        )
+                    )
+                } catch (e: CancellationException) {
+                    return@execute
+                }
+                __handleSseRequest(
+                    scope = scope,
+                    httpClient = httpClient,
+                    url = url,
+                    method = method,
+                    params = params,
+                    headers = headers,
+                    backoffTime = newBackoffTime,
+                    maxBackoffTime = maxBackoffTime,
+                    lastEventId = lastId,
+                    bufferCapacity = bufferCapacity,
+                    onOpen = onOpen,
+                    onClose = onClose,
+                    onError = onError,
+                    onData = onData,
+                    onConnectionError = onConnectionError,
+                )
+                return@execute
+            }
             newBackoffTime = 0
             val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
                 val read = channel.readAvailable(buffer)
                 if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()
-                val events = __parseSseEvents(input)
-                for (event in events) {
+                val parsedResult = __parseSseEvents("${pendingData}${input}")
+                pendingData = parsedResult.leftover
+                for (event in parsedResult.events) {
                     if (event.id != null) {
                         lastId = event.id
                     }
@@ -6642,14 +6767,6 @@ private suspend fun __handleSseRequest(
         )
         return
     } catch (e: Exception) {
-        onConnectionError(
-            TestClientError(
-                code = 503,
-                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonPrimitive(e.toString()),
-                stack = e.stackTraceToString().split("\n"),
-            )
-        )
         __handleSseRequest(
             scope = scope,
             httpClient = httpClient,

@@ -79,6 +79,14 @@ export function kotlinHttpRpcFromSchema(
             return job
         }`;
     }
+    const headingCheck = `if (response.headers["Content-Type"] != "application/json") {
+            throw ${context.clientName}Error(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \\"application/json\\". Got \\"\${response.headers["Content-Type"]}\\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }`;
     return `suspend fun ${name}(${params ? `params: ${params}` : ""}): ${response ?? "Unit"} {
         val response = __prepareRequest(
             client = httpClient,
@@ -87,6 +95,7 @@ export function kotlinHttpRpcFromSchema(
             params = ${params ? "params" : null},
             headers = headers?.invoke(),
         ).execute()
+        ${response ? headingCheck : ""}
         if (response.status.value in 200..299) {
             return ${response ? `${response}.fromJson(response.bodyAsText())` : ""}
         }

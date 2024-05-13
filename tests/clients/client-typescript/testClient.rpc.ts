@@ -8590,15 +8590,15 @@ export const $$StreamConnectionErrorTestParams = {
                 if (
                     typeof json.statusCode === "number" &&
                     Number.isInteger(json.statusCode) &&
-                    json.statusCode >= 0 &&
-                    json.statusCode <= 65535
+                    json.statusCode >= -2147483648 &&
+                    json.statusCode <= 2147483647
                 ) {
                     __D1.statusCode = json.statusCode;
                 } else {
                     $fallback(
                         "/statusCode",
                         "/properties/statusCode",
-                        "Expected valid integer between 0 and 65535",
+                        "Expected valid integer between -2147483648 and 2147483647",
                     );
                 }
                 if (typeof json.statusMessage === "string") {
@@ -8622,15 +8622,15 @@ export const $$StreamConnectionErrorTestParams = {
             if (
                 typeof input.statusCode === "number" &&
                 Number.isInteger(input.statusCode) &&
-                input.statusCode >= 0 &&
-                input.statusCode <= 65535
+                input.statusCode >= -2147483648 &&
+                input.statusCode <= 2147483647
             ) {
                 __D1.statusCode = input.statusCode;
             } else {
                 $fallback(
                     "/statusCode",
                     "/properties/statusCode",
-                    "Expected valid integer between 0 and 65535",
+                    "Expected valid integer between -2147483648 and 2147483647",
                 );
             }
             if (typeof input.statusMessage === "string") {

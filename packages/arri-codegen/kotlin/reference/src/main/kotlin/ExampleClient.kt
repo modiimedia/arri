@@ -46,6 +46,14 @@ class ExampleClient(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw ExampleClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return NestedObject.fromJson(response.bodyAsText())
         }
@@ -72,6 +80,14 @@ class ExampleClientBooksService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw ExampleClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return Book.fromJson(response.bodyAsText())
         }
@@ -86,6 +102,14 @@ class ExampleClientBooksService(
             params = params,
             headers = headers?.invoke(),
         ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw ExampleClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
         if (response.status.value in 200..299) {
             return Book.fromJson(response.bodyAsText())
         }
@@ -1864,15 +1888,34 @@ private fun __parseSseEvent(input: String): __SseEvent {
 
 private class __SseEvent(val id: String? = null, val event: String? = null, val data: String)
 
-private fun __parseSseEvents(input: String): List<__SseEvent> {
-    val inputs = input.split("\n\n")
+private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
+
+private fun __parseSseEvents(input: String): __SseEventParsingResult {
+    val inputs = input.split("\n\n").toMutableList()
+    if (inputs.isEmpty()) {
+        return __SseEventParsingResult(
+            events = listOf(),
+            leftover = "",
+        )
+    }
+    if (inputs.size == 1) {
+        return __SseEventParsingResult(
+            events = listOf(),
+            leftover = inputs.last(),
+        )
+    }
+    val leftover = inputs.last()
+    inputs.removeLast()
     val events = mutableListOf<__SseEvent>()
     for (item in inputs) {
         if (item.contains("data: ")) {
             events.add(__parseSseEvent(item))
         }
     }
-    return events
+    return __SseEventParsingResult(
+        events = events,
+        leftover = leftover,
+    )
 }
 
 
@@ -1923,15 +1966,20 @@ private suspend fun __handleSseRequest(
             }
             if (httpResponse.status.value !in 200..299) {
                 try {
-                    onConnectionError(
-                        ExampleClientError(
-                            code = httpResponse.status.value,
-                            errorMessage = "Error fetching stream from $url",
-                            data = JsonPrimitive(httpResponse.toString()),
-                            stack = null,
+                    if (httpResponse.headers["Content-Type"] == "application/json") {
+                        onConnectionError(
+                            ExampleClientError.fromJson(httpResponse.bodyAsText())
                         )
-                    )
-
+                    } else {
+                        onConnectionError(
+                            ExampleClientError(
+                                code = httpResponse.status.value,
+                                errorMessage = httpResponse.status.description,
+                                data = JsonPrimitive(httpResponse.bodyAsText()),
+                                stack = null,
+                            )
+                        )
+                    }
                 } catch (e: CancellationException) {
                     onClose()
                     return@execute
@@ -1955,16 +2003,50 @@ private suspend fun __handleSseRequest(
                 )
                 return@execute
             }
+            if (httpResponse.headers["Content-Type"] != "text/event-stream") {
+                try {
+                    onConnectionError(
+                        ExampleClientError(
+                            code = 0,
+                            errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
+                            data = JsonPrimitive(httpResponse.bodyAsText()),
+                            stack = null,
+                        )
+                    )
+                } catch (e: CancellationException) {
+                    return@execute
+                }
+                __handleSseRequest(
+                    scope = scope,
+                    httpClient = httpClient,
+                    url = url,
+                    method = method,
+                    params = params,
+                    headers = headers,
+                    backoffTime = newBackoffTime,
+                    maxBackoffTime = maxBackoffTime,
+                    lastEventId = lastId,
+                    bufferCapacity = bufferCapacity,
+                    onOpen = onOpen,
+                    onClose = onClose,
+                    onError = onError,
+                    onData = onData,
+                    onConnectionError = onConnectionError,
+                )
+                return@execute
+            }
             newBackoffTime = 0
             val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
                 val read = channel.readAvailable(buffer)
                 if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()
-                val events = __parseSseEvents(input)
-                for (event in events) {
+                val parsedResult = __parseSseEvents("${pendingData}${input}")
+                pendingData = parsedResult.leftover
+                for (event in parsedResult.events) {
                     if (event.id != null) {
                         lastId = event.id
                     }
@@ -2043,14 +2125,6 @@ private suspend fun __handleSseRequest(
         )
         return
     } catch (e: Exception) {
-        onConnectionError(
-            ExampleClientError(
-                code = 503,
-                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonPrimitive(e.toString()),
-                stack = e.stackTraceToString().split("\n"),
-            )
-        )
         __handleSseRequest(
             scope = scope,
             httpClient = httpClient,

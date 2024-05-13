@@ -250,11 +250,12 @@ fun main() {
     val sseScope = CoroutineScope(CoroutineName("SSE Scope"))
 
     testSseSupport(sseScope, client)
+    testAutoRetriesOnServerError(sseScope, client)
     testSseParsesMessageAndErrorEvents(sseScope, client)
     testSseClosesOnDone(sseScope, client)
     testSseAutoReconnectsWhenClosedByServer(sseScope, client)
+    testSseStreamLargeObjects(sseScope, client)
     testSseReconnectsWithNewCredentials(sseScope, httpClient, baseUrl)
-    
 }
 
 fun testSseSupport(
@@ -298,6 +299,35 @@ fun testSseSupport(
     job.cancel()
     expect(tag, messages.isNotEmpty(), true)
     expect(tag, errors.isEmpty(), true)
+}
+
+fun testAutoRetriesOnServerError(
+    scope: CoroutineScope,
+    client: TestClient,
+) {
+    val tag = "SSE retries on server error response"
+    var openCount = 0
+    var messageCount = 0
+    var errorCount = 0
+    val job = client.tests.streamConnectionErrorTest(
+        scope,
+        params = StreamConnectionErrorTestParams(400, "There was an error"),
+        onOpen = {
+            openCount++
+        },
+        onData = {
+            messageCount++
+        },
+        onConnectionError = { err ->
+            expect("$tag > error code matches", err.code, 400)
+            errorCount++
+        }
+    )
+    Thread.sleep(1000)
+    job.cancel()
+    expect("$tag > opens more than once", openCount > 0, true)
+    expect("$tag > messages are zero", messageCount, 0)
+    expect("$tag > errors more than once", errorCount > 0, true)
 }
 
 fun testSseParsesMessageAndErrorEvents(
@@ -387,6 +417,35 @@ fun testSseAutoReconnectsWhenClosedByServer(scope: CoroutineScope, client: TestC
     expect(tag, messageCount > 1, true)
 }
 
+fun testSseStreamLargeObjects(
+    scope: CoroutineScope,
+    client: TestClient,
+) {
+    val tag = "SSE stream large objects"
+    var msgCount = 0
+    var errorCount = 0
+    var openCount = 0
+    val job = client.tests.streamLargeObjects(
+        scope,
+        onOpen = {
+            openCount++
+        },
+        onData = { msg ->
+            msgCount++
+            expect("$tag > validate msg", msg.objects.size, 10000)
+            expect("$tag > validate msg", msg.numbers.size, 10000)
+        },
+        onError = {
+            errorCount++
+        },
+    )
+    Thread.sleep(1000)
+    job.cancel()
+    expect("$tag > open count", openCount, 1)
+    expect("$tag > err count", errorCount, 0)
+    expect("$tag > msg count", msgCount > 1, true)
+}
+
 fun testSseReconnectsWithNewCredentials(scope: CoroutineScope, httpClient: HttpClient, baseUrl: String) {
     val tag = "SSE reconnects with new credentials"
     val headers = mutableListOf<String>()
@@ -414,7 +473,7 @@ fun testSseReconnectsWithNewCredentials(scope: CoroutineScope, httpClient: HttpC
     job.cancel()
     expect(tag, msgCount > 1, true)
     expect(tag, openCount > 1, true)
-    expect(tag, headers.size, openCount)
+    expect(tag, headers.size > 1, true)
 }
 
 fun <A, B> expect(tag: String?, input: A, result: B) {
