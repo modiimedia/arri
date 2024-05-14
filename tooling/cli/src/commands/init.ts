@@ -111,11 +111,12 @@ async function initApp(dir: string, force: boolean) {
     delete packageJson.main;
     delete packageJson.author;
     delete packageJson.tags;
+    delete packageJson.packageManager;
     writeFileSync(
         path.resolve(dir, "package.json"),
         await prettier.format(JSON.stringify(packageJson), {
             parser: "json",
-            tabWidth: 4,
+            tabWidth: 2,
             semi: true,
             endOfLine: "lf",
             trailingComma: "all",
@@ -136,7 +137,18 @@ async function initPlugin(dir: string, force: boolean) {
         encoding: "utf8",
     });
     packageJson = packageJson.replace(`"arri-generator-name"`, `"${name}"`);
-    writeFileSync(path.resolve(dir, "package.json"), packageJson);
+    const parsedPackageJson = JSON.parse(packageJson) as Record<string, any>;
+    delete parsedPackageJson.packageManager;
+    writeFileSync(
+        path.resolve(dir, "package.json"),
+        await prettier.format(JSON.stringify(parsedPackageJson), {
+            parser: "json",
+            tabWidth: 2,
+            semi: true,
+            endOfLine: "lf",
+            trailingComma: "all",
+        }),
+    );
     logger.success(`Project initialized in ${dir}!`);
     logger.info(`To get started:\n- cd ${dir}\n- pnpm install`);
 }
