@@ -4,6 +4,7 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "mathiasfrohlich.kotlin",
-    "dart-code.flutter"
+    "dart-code.flutter",
+    "dart-code.dart-code"
   ]
 }
