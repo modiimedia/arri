@@ -17,12 +17,7 @@ module.exports = {
         "**/*.js",
         "**/**/dist/*.d.ts",
     ],
-    extends: [
-        "love",
-        "plugin:import/recommended",
-        // "json",
-        "prettier",
-    ],
+    extends: ["love", "plugin:import/recommended", "prettier"],
     overrides: [
         {
             env: {

@@ -1,16 +1,11 @@
-import { ArriRouter } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { ArriRouter } from "@arrirpc/server";
 
 const router = new ArriRouter();
 
-const DefaultPayload = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "DefaultPayload",
-    },
-);
+const DefaultPayload = a.object("DefaultPayload", {
+    message: a.string(),
+});
 
 router.route({
     path: "/routes/hello-world",

@@ -1,5 +1,5 @@
-import { defineRpc } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { defineRpc } from "@arrirpc/server";
 
 interface RecursiveObject {
     left: RecursiveObject | null;
@@ -8,13 +8,13 @@ interface RecursiveObject {
 }
 
 const RecursiveObject = a.recursive<RecursiveObject>(
+    "RecursiveObject",
     (self) =>
         a.object({
             left: a.nullable(self),
             right: a.nullable(self),
             value: a.string(),
         }),
-    { id: "RecursiveObject" },
 );
 
 export default defineRpc({

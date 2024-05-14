@@ -1,5 +1,5 @@
 packages:
+  - languages/**
   - playground/**
-  - packages/**
-  - examples/**
+  - tooling/**
   - tests/**

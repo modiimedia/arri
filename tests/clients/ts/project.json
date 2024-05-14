@@ -1,0 +1,15 @@
+{
+  "name": "test-client-ts",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "integration-test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/tests/clients/ts"],
+      "cache": false,
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../../coverage/tests/clients/ts"
+      }
+    }
+  }
+}

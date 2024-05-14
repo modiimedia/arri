@@ -1,0 +1,10 @@
+{
+  "extends": ["../../.eslintrc.json"],
+  "plugins": ["@arrirpc"],
+  "overrides": [
+    {
+      "extends": ["plugin:@arrirpc/recommended"],
+      "files": "src/linter-tests.ts"
+    }
+  ]
+}

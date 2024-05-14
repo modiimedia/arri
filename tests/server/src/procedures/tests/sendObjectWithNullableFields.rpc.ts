@@ -1,7 +1,8 @@
-import { defineRpc } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { defineRpc } from "@arrirpc/server";
 
 export const ObjectWithEveryNullableType = a.object(
+    "ObjectWithEveryNullableType",
     {
         any: a.nullable(a.any()),
         boolean: a.nullable(a.boolean()),
@@ -70,9 +71,6 @@ export const ObjectWithEveryNullableType = a.object(
                 ),
             ),
         ),
-    },
-    {
-        id: "ObjectWithEveryNullableType",
     },
 );
 

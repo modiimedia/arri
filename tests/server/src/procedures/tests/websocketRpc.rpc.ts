@@ -1,5 +1,5 @@
-import { defineWebsocketRpc } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { defineWebsocketRpc } from "@arrirpc/server";
 
 const EntityFields = a.object({
     entityId: a.string(),

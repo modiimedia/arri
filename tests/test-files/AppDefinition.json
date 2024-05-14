@@ -1,0 +1,284 @@
+{
+  "arriSchemaVersion": "0.0.5",
+  "info": { "version": "20" },
+  "procedures": {
+    "sendObject": {
+      "path": "/send-object",
+      "transport": "http",
+      "method": "post",
+      "params": "NestedObject",
+      "response": "NestedObject"
+    },
+    "books.getBook": {
+      "path": "/books/get-book",
+      "transport": "http",
+      "method": "get",
+      "params": "BookParams",
+      "response": "Book"
+    },
+    "books.createBook": {
+      "path": "/books/create-book",
+      "transport": "http",
+      "method": "post",
+      "params": "Book",
+      "response": "Book"
+    },
+    "books.watchBook": {
+      "path": "/books/watch-book",
+      "transport": "http",
+      "method": "get",
+      "params": "BookParams",
+      "response": "Book",
+      "isEventStream": true
+    },
+    "books.createConnection": {
+      "path": "/books/create-connection",
+      "transport": "ws",
+      "params": "BookParams",
+      "response": "Book"
+    }
+  },
+  "definitions": {
+    "Book": {
+      "properties": {
+        "id": { "type": "string", "metadata": {} },
+        "name": { "type": "string", "metadata": {} },
+        "createdAt": { "type": "timestamp", "metadata": {} },
+        "updatedAt": { "type": "timestamp", "metadata": {} }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "Book" }
+    },
+    "BookParams": {
+      "properties": { "bookId": { "type": "string", "metadata": {} } },
+      "additionalProperties": true,
+      "metadata": { "id": "BookParams" }
+    },
+    "NestedObject": {
+      "properties": {
+        "id": { "type": "string", "metadata": {} },
+        "content": { "type": "string", "metadata": {} }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "NestedObject" }
+    },
+    "ObjectWithEveryType": {
+      "properties": {
+        "string": { "type": "string", "metadata": {} },
+        "boolean": { "type": "boolean", "metadata": {} },
+        "timestamp": { "type": "timestamp", "metadata": {} },
+        "float32": { "type": "float32", "metadata": {} },
+        "float64": { "type": "float64", "metadata": {} },
+        "int8": { "type": "int8", "metadata": {} },
+        "uint8": { "type": "uint8", "metadata": {} },
+        "int16": { "type": "int16", "metadata": {} },
+        "uint16": { "type": "uint16", "metadata": {} },
+        "int32": { "type": "int32", "metadata": {} },
+        "uint32": { "type": "uint32", "metadata": {} },
+        "int64": { "type": "int64", "metadata": {} },
+        "uint64": { "type": "uint64", "metadata": {} },
+        "enum": {
+          "enum": ["FOO", "BAR", "BAZ"],
+          "metadata": { "id": "Enumerator" }
+        },
+        "object": {
+          "properties": {
+            "id": { "type": "string", "metadata": {} },
+            "content": { "type": "string", "metadata": {} }
+          },
+          "additionalProperties": true,
+          "metadata": { "id": "NestedObject" }
+        },
+        "array": {
+          "elements": { "type": "boolean", "metadata": {} },
+          "metadata": {}
+        },
+        "record": {
+          "values": { "type": "boolean", "metadata": {} },
+          "metadata": {}
+        },
+        "discriminator": {
+          "discriminator": "typeName",
+          "mapping": {
+            "A": {
+              "properties": { "id": { "type": "string", "metadata": {} } },
+              "additionalProperties": true,
+              "metadata": {}
+            },
+            "B": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "name": { "type": "string", "metadata": {} }
+              },
+              "additionalProperties": true,
+              "metadata": {}
+            },
+            "C": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "name": { "type": "string", "metadata": {} },
+                "date": { "type": "timestamp", "metadata": {} }
+              },
+              "additionalProperties": true,
+              "metadata": {}
+            }
+          },
+          "metadata": { "id": "Discriminator" }
+        },
+        "any": { "metadata": {} }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "ObjectWithEveryType" }
+    },
+    "ObjectWithOptionalFields": {
+      "properties": {},
+      "optionalProperties": {
+        "string": { "type": "string", "metadata": {} },
+        "boolean": { "type": "boolean", "metadata": {} },
+        "timestamp": { "type": "timestamp", "metadata": {} },
+        "float32": { "type": "float32", "metadata": {} },
+        "float64": { "type": "float64", "metadata": {} },
+        "int8": { "type": "int8", "metadata": {} },
+        "uint8": { "type": "uint8", "metadata": {} },
+        "int16": { "type": "int16", "metadata": {} },
+        "uint16": { "type": "uint16", "metadata": {} },
+        "int32": { "type": "int32", "metadata": {} },
+        "uint32": { "type": "uint32", "metadata": {} },
+        "int64": { "type": "int64", "metadata": {} },
+        "uint64": { "type": "uint64", "metadata": {} },
+        "enum": {
+          "enum": ["FOO", "BAR", "BAZ"],
+          "metadata": { "id": "Enumerator" }
+        },
+        "object": {
+          "properties": {
+            "id": { "type": "string", "metadata": {} },
+            "content": { "type": "string", "metadata": {} }
+          },
+          "additionalProperties": true,
+          "metadata": { "id": "NestedObject" }
+        },
+        "array": {
+          "elements": { "type": "boolean", "metadata": {} },
+          "metadata": {}
+        },
+        "record": {
+          "values": { "type": "boolean", "metadata": {} },
+          "metadata": {}
+        },
+        "discriminator": {
+          "discriminator": "typeName",
+          "mapping": {
+            "A": {
+              "properties": { "id": { "type": "string", "metadata": {} } },
+              "additionalProperties": true,
+              "metadata": {}
+            },
+            "B": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "name": { "type": "string", "metadata": {} }
+              },
+              "additionalProperties": true,
+              "metadata": {}
+            },
+            "C": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "name": { "type": "string", "metadata": {} },
+                "date": { "type": "timestamp", "metadata": {} }
+              },
+              "additionalProperties": true,
+              "metadata": {}
+            }
+          },
+          "metadata": { "id": "Discriminator" }
+        },
+        "any": { "metadata": {} }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "ObjectWithOptionalFields" }
+    },
+    "ObjectWithNullableFields": {
+      "properties": {
+        "string": { "type": "string", "metadata": {}, "nullable": true },
+        "boolean": { "type": "boolean", "metadata": {}, "nullable": true },
+        "timestamp": { "type": "timestamp", "metadata": {}, "nullable": true },
+        "float32": { "type": "float32", "metadata": {}, "nullable": true },
+        "float64": { "type": "float64", "metadata": {}, "nullable": true },
+        "int8": { "type": "int8", "metadata": {}, "nullable": true },
+        "uint8": { "type": "uint8", "metadata": {}, "nullable": true },
+        "int16": { "type": "int16", "metadata": {}, "nullable": true },
+        "uint16": { "type": "uint16", "metadata": {}, "nullable": true },
+        "int32": { "type": "int32", "metadata": {}, "nullable": true },
+        "uint32": { "type": "uint32", "metadata": {}, "nullable": true },
+        "int64": { "type": "int64", "metadata": {}, "nullable": true },
+        "uint64": { "type": "uint64", "metadata": {}, "nullable": true },
+        "enum": {
+          "enum": ["FOO", "BAR", "BAZ"],
+          "metadata": { "id": "Enumerator" },
+          "nullable": true
+        },
+        "object": {
+          "properties": {
+            "id": { "type": "string", "metadata": {} },
+            "content": { "type": "string", "metadata": {} }
+          },
+          "additionalProperties": true,
+          "metadata": { "id": "NestedObject" },
+          "nullable": true
+        },
+        "array": {
+          "elements": { "type": "boolean", "metadata": {} },
+          "metadata": {},
+          "nullable": true
+        },
+        "record": {
+          "values": { "type": "boolean", "metadata": {} },
+          "metadata": {},
+          "nullable": true
+        },
+        "discriminator": {
+          "discriminator": "typeName",
+          "mapping": {
+            "A": {
+              "properties": { "id": { "type": "string", "metadata": {} } },
+              "additionalProperties": true,
+              "metadata": {}
+            },
+            "B": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "name": { "type": "string", "metadata": {} }
+              },
+              "additionalProperties": true,
+              "metadata": {}
+            },
+            "C": {
+              "properties": {
+                "id": { "type": "string", "metadata": {} },
+                "name": { "type": "string", "metadata": {} },
+                "date": { "type": "timestamp", "metadata": {} }
+              },
+              "additionalProperties": true,
+              "metadata": {}
+            }
+          },
+          "metadata": { "id": "Discriminator" },
+          "nullable": true
+        },
+        "any": { "metadata": {}, "nullable": true }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "ObjectWithNullableFields" }
+    },
+    "RecursiveObject": {
+      "properties": {
+        "left": { "ref": "RecursiveObject", "metadata": {}, "nullable": true },
+        "right": { "ref": "RecursiveObject", "metadata": {}, "nullable": true }
+      },
+      "additionalProperties": true,
+      "metadata": { "id": "RecursiveObject" }
+    }
+  }
+}

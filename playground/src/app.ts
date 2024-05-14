@@ -1,4 +1,4 @@
-import { ArriApp } from "arri";
+import { ArriApp } from "@arrirpc/server";
 
 const app = new ArriApp({});
 

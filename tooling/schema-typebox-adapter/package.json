@@ -1,0 +1,23 @@
+{
+  "name": "@arrirpc/typebox-adapter",
+  "version": "0.45.1",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "license": "MIT",
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modiimedia/arri.git",
+    "directory": "tooling/schema-typebox-adapter"
+  },
+  "dependencies": {
+    "@arrirpc/schema": "workspace:*",
+    "json-schema-to-jtd": "workspace:*"
+  },
+  "devDependencies": { "@arrirpc/server": "workspace:*" },
+  "peerDependencies": { "@sinclair/typebox": "^0.32" }
+}

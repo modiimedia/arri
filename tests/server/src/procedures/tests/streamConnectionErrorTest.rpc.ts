@@ -1,26 +1,16 @@
-import { defineError, defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { defineError, defineEventStreamRpc } from "@arrirpc/server";
 
 export default defineEventStreamRpc({
     description:
         "This route will always return an error. The client should automatically retry with exponential backoff.",
-    params: a.object(
-        {
-            statusCode: a.uint16(),
-            statusMessage: a.string(),
-        },
-        {
-            id: "StreamConnectionErrorTestParams",
-        },
-    ),
-    response: a.object(
-        {
-            message: a.string(),
-        },
-        {
-            id: "StreamConnectionErrorTestResponse",
-        },
-    ),
+    params: a.object("StreamConnectionErrorTestParams", {
+        statusCode: a.int32(),
+        statusMessage: a.string(),
+    }),
+    response: a.object("StreamConnectionErrorTestResponse", {
+        message: a.string(),
+    }),
     async handler({ params }) {
         throw defineError(params.statusCode, {
             message: params.statusMessage,

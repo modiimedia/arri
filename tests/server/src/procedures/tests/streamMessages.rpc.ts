@@ -1,14 +1,11 @@
 import { randomUUID } from "crypto";
+import { a } from "@arrirpc/schema";
+import { defineEventStreamRpc } from "@arrirpc/server";
 import { faker } from "@faker-js/faker";
-import { defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
 
-export const ChatMessageParams = a.object(
-    {
-        channelId: a.string(),
-    },
-    { id: "ChatMessageParams" },
-);
+export const ChatMessageParams = a.object("ChatMessageParams", {
+    channelId: a.string(),
+});
 
 const ChatMessageBase = a.object({
     id: a.string(),
@@ -17,30 +14,26 @@ const ChatMessageBase = a.object({
     date: a.timestamp(),
 });
 
-export const ChatMessage = a.discriminator(
-    "messageType",
-    {
-        TEXT: a.extend(
-            ChatMessageBase,
-            a.object({
-                text: a.string(),
-            }),
-        ),
-        IMAGE: a.extend(
-            ChatMessageBase,
-            a.object({
-                image: a.string(),
-            }),
-        ),
-        URL: a.extend(
-            ChatMessageBase,
-            a.object({
-                url: a.string(),
-            }),
-        ),
-    },
-    { id: "ChatMessage" },
-);
+export const ChatMessage = a.discriminator("ChatMessage", "messageType", {
+    TEXT: a.extend(
+        ChatMessageBase,
+        a.object({
+            text: a.string(),
+        }),
+    ),
+    IMAGE: a.extend(
+        ChatMessageBase,
+        a.object({
+            image: a.string(),
+        }),
+    ),
+    URL: a.extend(
+        ChatMessageBase,
+        a.object({
+            url: a.string(),
+        }),
+    ),
+});
 
 export type ChatMessage = a.infer<typeof ChatMessage>;
 

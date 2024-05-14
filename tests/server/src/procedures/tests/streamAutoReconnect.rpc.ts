@@ -1,20 +1,14 @@
-import { defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { defineEventStreamRpc } from "@arrirpc/server";
 
 export default defineEventStreamRpc({
-    params: a.object(
-        {
-            messageCount: a.uint8(),
-        },
-        { id: "AutoReconnectParams" },
-    ),
-    response: a.object(
-        {
-            count: a.uint8(),
-            message: a.string(),
-        },
-        { id: "AutoReconnectResponse" },
-    ),
+    params: a.object("AutoReconnectParams", {
+        messageCount: a.uint8(),
+    }),
+    response: a.object("AutoReconnectResponse", {
+        count: a.uint8(),
+        message: a.string(),
+    }),
     handler({ params, stream }, event) {
         let messageCount = 0;
         const interval = setInterval(async () => {

@@ -1,11 +1,11 @@
 import { readFileSync } from "fs";
 import path from "path";
-import { defineConfig } from "arri";
 import {
+    defineConfig,
     typescriptClientGenerator,
     dartClientGenerator,
-    rustClientGenerator,
-} from "arri/dist/codegen";
+    kotlinClientGenerator,
+} from "arri";
 
 const prettierConfig = JSON.parse(
     readFileSync(path.resolve(__dirname, "../../.prettierrc"), {
@@ -24,7 +24,7 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/client-typescript/testClient.rpc.ts",
+                "../clients/ts/testClient.rpc.ts",
             ),
             prettierOptions: prettierConfig,
         }),
@@ -32,14 +32,14 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/client-dart/lib/test_client.rpc.dart",
+                "../clients/dart/lib/test_client.rpc.dart",
             ),
         }),
-        rustClientGenerator({
+        kotlinClientGenerator({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/rust/src/test_client.rpc.rs",
+                "../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
             ),
         }),
     ],

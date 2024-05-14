@@ -1,0 +1,13 @@
+{
+  "name": "kotlin-codegen-reference",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew test --console=plain",
+        "cwd": "languages/kotlin/kotlin-codegen-reference"
+      }
+    }
+  }
+}
