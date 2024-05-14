@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { faker } from "@faker-js/faker";
-import { defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
+import { defineEventStreamRpc } from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 
 export const ChatMessageParams = a.object("ChatMessageParams", {
     channelId: a.string(),

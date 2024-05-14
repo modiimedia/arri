@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { defineEventStreamRpc } from "arri";
+import { defineEventStreamRpc } from "@arrirpc/server";
 import { ChatMessage } from "./streamMessages.rpc";
 
 export default defineEventStreamRpc({

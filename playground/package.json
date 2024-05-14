@@ -10,7 +10,8 @@
   "keywords": [],
   "dependencies": {
     "arri": "workspace:*",
-    "arri-validate": "workspace:*"
+    "@arrirpc/server": "workspace:*",
+    "@arrirpc/schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

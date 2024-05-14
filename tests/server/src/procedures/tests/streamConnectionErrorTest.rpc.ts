@@ -1,5 +1,5 @@
-import { defineError, defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
+import { defineError, defineEventStreamRpc } from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 
 export default defineEventStreamRpc({
     description:

@@ -4,7 +4,7 @@
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
     "arri": "workspace:*",
-    "arri-validate": "workspace:*"
+    "@arrirpc/schema": "workspace:*"
   },
   "scripts": {
     "start-server": "nx serve test-server",
@@ -12,9 +12,10 @@
   },
   "devDependencies": {
     "arri": "workspace:*",
-    "arri-validate": "workspace:*",
-    "arri-adapter-typebox": "workspace:*",
-    "arri-codegen-utils": "workspace:*",
-    "@arrirpc/eslint-plugin": "workspace:*"
+    "@arrirpc/adapter-typebox": "workspace:*",
+    "@arrirpc/codegen-utils": "workspace:*",
+    "@arrirpc/eslint-plugin": "workspace:*",
+    "@arrirpc/schema": "workspace:*",
+    "@arrirpc/server": "workspace:*"
   }
 }

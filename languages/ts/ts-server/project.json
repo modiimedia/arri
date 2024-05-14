@@ -1,0 +1,46 @@
+{
+  "name": "ts-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/ts-server/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "languages/ts/ts-server"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "inputs": ["{projectRoot}/src/**/*.ts"],
+      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-server"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../../coverage/languages/ts/ts-server",
+        "watch": false
+      }
+    },
+    "publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "languages/ts/ts-server"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "languages/ts/ts-server"
+      }
+    }
+  },
+  "tags": []
+}

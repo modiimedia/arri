@@ -1,4 +1,4 @@
-import { defineWebsocketRpc } from "arri";
+import { defineWebsocketRpc } from "@arrirpc/server";
 import {
     StreamLargeObjectsResponse,
     randomLargeObjectResponse,

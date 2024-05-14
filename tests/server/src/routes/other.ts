@@ -1,5 +1,5 @@
-import { ArriRouter } from "arri";
-import { a } from "arri-validate";
+import { ArriRouter } from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 
 const router = new ArriRouter();
 

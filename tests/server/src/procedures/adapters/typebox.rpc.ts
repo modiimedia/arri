@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
-import { defineRpc } from "arri";
-import { typeboxAdapter } from "arri-adapter-typebox";
+import { defineRpc } from "@arrirpc/server";
+import { typeboxAdapter } from "@arrirpc/adapter-typebox";
 
 const TypeBoxObject = typeboxAdapter(
     Type.Object(

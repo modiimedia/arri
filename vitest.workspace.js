@@ -1,15 +1,16 @@
 import { defineWorkspace } from "vitest/config";
 
 export default defineWorkspace([
-    "./packages/json-schema-to-jtd/vite.config.ts",
-    "./packages/arri-codegen/dart/vite.config.ts",
-    "./packages/arri-validate/vite.config.ts",
-    "./packages/arri-codegen/typescript/vite.config.ts",
-    "./packages/arri-codegen/kotlin/vite.config.ts",
-    "./packages/arri-codegen/utils/vite.config.ts",
-    "./packages/arri/vite.config.ts",
-    "./packages/adapters/typebox/vite.config.ts",
-    "./packages/jtd-utils/vite.config.ts",
+    "./languages/dart/dart-codegen/vite.config.ts",
+    "./languages/kotlin/kotlin-codegen/vite.config.ts",
+    "./languages/ts/ts-client/vite.config.ts",
+    "./languages/ts/ts-codegen/vite.config.ts",
+    "./languages/ts/ts-server/vite.config.ts",
+    "./tooling/cli/vite.config.ts",
+    "./tooling/codegen-utils/vite.config.ts",
+    "./tooling/json-schema-to-jtd/vite.config.ts",
+    "./tooling/schema-adapter-typebox/vite.config.ts",
+    "./tooling/schema-builder/vite.config.ts",
+    "./tooling/jtd-utils/vite.config.ts",
     "./tests/clients/client-typescript/vite.config.ts",
-    "./packages/arri-client/vite.config.ts",
 ]);

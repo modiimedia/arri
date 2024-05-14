@@ -123,48 +123,91 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
 
-  packages/adapters/typebox:
+  languages/dart/dart-codegen:
     dependencies:
-      '@sinclair/typebox':
-        specifier: ^0.32
-        version: 0.32.30
-      arri-validate:
+      '@arrirpc/codegen-utils':
         specifier: workspace:*
-        version: link:../../arri-validate
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema-builder
+
+  languages/kotlin/kotlin-codegen:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema-builder
       json-schema-to-jtd:
         specifier: workspace:*
-        version: link:../../json-schema-to-jtd
-    devDependencies:
-      arri:
-        specifier: workspace:*
-        version: link:../../arri
+        version: link:../../../tooling/json-schema-to-jtd
 
-  packages/arri:
+  languages/ts/ts-client:
     dependencies:
-      '@joshmossas/listhen':
-        specifier: 1.10.1
-        version: 1.10.1
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema-builder
+      event-source-plus:
+        specifier: ^0.0.6
+        version: 0.0.6
+      ofetch:
+        specifier: ^1.3.4
+        version: 1.3.4
+      ws:
+        specifier: ^8.17.0
+        version: 8.17.0
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.5.10
+        version: 8.5.10
+
+  languages/ts/ts-codegen:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema-builder
+      ajv:
+        specifier: ^8.13.0
+        version: 8.13.0
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+    devDependencies:
+      '@arrirpc/client':
+        specifier: workspace:*
+        version: link:../ts-client
+
+  languages/ts/ts-server:
+    dependencies:
+      '@arrirpc/codegen-dart':
+        specifier: workspace:*
+        version: link:../../dart/dart-codegen
+      '@arrirpc/codegen-kotlin':
+        specifier: workspace:*
+        version: link:../../kotlin/kotlin-codegen
+      '@arrirpc/codegen-ts':
+        specifier: workspace:*
+        version: link:../ts-codegen
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema-builder
       '@parcel/watcher':
         specifier: ^2.4.1
         version: 2.4.1
       '@types/source-map-support':
         specifier: ^0.5.10
         version: 0.5.10
-      arri-codegen-dart:
+      arri:
         specifier: workspace:*
-        version: link:../arri-codegen/dart
-      arri-codegen-kotlin:
-        specifier: workspace:*
-        version: link:../arri-codegen/kotlin
-      arri-codegen-ts:
-        specifier: workspace:*
-        version: link:../arri-codegen/typescript
-      arri-codegen-utils:
-        specifier: workspace:*
-        version: link:../arri-codegen/utils
-      arri-validate:
-        specifier: workspace:*
-        version: link:../arri-validate
+        version: link:../../../tooling/cli
       c12:
         specifier: ^1.10.0
         version: 1.10.0
@@ -230,78 +273,163 @@ importers:
         specifier: ^1.1.8
         version: 1.1.8
 
-  packages/arri-client:
+  playground:
     dependencies:
-      arri-validate:
+      '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../arri-validate
-      event-source-plus:
-        specifier: ^0.0.6
-        version: 0.0.6
+        version: link:../tooling/schema-builder
+      '@arrirpc/server':
+        specifier: workspace:*
+        version: link:../languages/ts/ts-server
+      arri:
+        specifier: workspace:*
+        version: link:../tooling/cli
+    devDependencies:
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+
+  tests/clients/ts:
+    dependencies:
+      '@arrirpc/client':
+        specifier: workspace:*
+        version: link:../../../languages/ts/ts-client
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema-builder
       ofetch:
         specifier: ^1.3.4
         version: 1.3.4
-      ws:
-        specifier: ^8.17.0
-        version: 8.17.0
+
+  tests/server:
+    dependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../tooling/schema-builder
+      '@faker-js/faker':
+        specifier: ^8.4.1
+        version: 8.4.1
+      arri:
+        specifier: workspace:*
+        version: link:../../tooling/cli
     devDependencies:
-      '@types/ws':
-        specifier: ^8.5.10
-        version: 8.5.10
+      '@arrirpc/adapter-typebox':
+        specifier: workspace:*
+        version: link:../../tooling/schema-adapter-typebox
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../tooling/codegen-utils
+      '@arrirpc/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../tooling/eslint-plugin
+      '@arrirpc/server':
+        specifier: workspace:*
+        version: link:../../languages/ts/ts-server
 
-  packages/arri-codegen/dart:
+  tooling/cli:
     dependencies:
-      arri-codegen-utils:
+      '@arrirpc/codegen-dart':
         specifier: workspace:*
-        version: link:../utils
-      arri-validate:
+        version: link:../../languages/dart/dart-codegen
+      '@arrirpc/codegen-kotlin':
         specifier: workspace:*
-        version: link:../../arri-validate
-
-  packages/arri-codegen/kotlin:
-    dependencies:
-      arri-codegen-utils:
+        version: link:../../languages/kotlin/kotlin-codegen
+      '@arrirpc/codegen-ts':
         specifier: workspace:*
-        version: link:../utils
-      arri-validate:
+        version: link:../../languages/ts/ts-codegen
+      '@arrirpc/codegen-utils':
         specifier: workspace:*
-        version: link:../../arri-validate
-      json-schema-to-jtd:
-        specifier: workspace:*
-        version: link:../../json-schema-to-jtd
-
-  packages/arri-codegen/typescript:
-    dependencies:
-      ajv:
-        specifier: ^8.13.0
-        version: 8.13.0
-      arri-codegen-utils:
-        specifier: workspace:*
-        version: link:../utils
-      arri-validate:
-        specifier: workspace:*
-        version: link:../../arri-validate
+        version: link:../codegen-utils
+      '@joshmossas/listhen':
+        specifier: ^1.10.1
+        version: 1.10.1
+      c12:
+        specifier: ^1.10.0
+        version: 1.10.0
+      chokidar:
+        specifier: ^3.6.0
+        version: 3.6.0
+      citty:
+        specifier: ^0.1.6
+        version: 0.1.6
+      consola:
+        specifier: ^3.2.3
+        version: 3.2.3
+      degit:
+        specifier: ^2.8.4
+        version: 2.8.4
+      enquirer:
+        specifier: ^2.4.1
+        version: 2.4.1
+      esbuild:
+        specifier: ^0.21.2
+        version: 0.21.2
+      esbuild-plugin-replace:
+        specifier: ^1.4.0
+        version: 1.4.0
+      globby:
+        specifier: ^14.0.1
+        version: 14.0.1
+      ofetch:
+        specifier: ^1.3.4
+        version: 1.3.4
+      pathe:
+        specifier: ^1.1.2
+        version: 1.1.2
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
-    devDependencies:
-      arri-client:
-        specifier: workspace:*
-        version: link:../../arri-client
-
-  packages/arri-codegen/utils:
-    dependencies:
-      arri-validate:
-        specifier: workspace:*
-        version: link:../../arri-validate
-      jtd-utils:
-        specifier: workspace:*
-        version: link:../../jtd-utils
       scule:
         specifier: ^1.3.0
         version: 1.3.0
 
-  packages/arri-validate:
+  tooling/codegen-utils:
+    dependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../schema-builder
+      jtd-utils:
+        specifier: workspace:*
+        version: link:../jtd-utils
+      scule:
+        specifier: ^1.3.0
+        version: 1.3.0
+
+  tooling/eslint-plugin:
+    dependencies:
+      eslint:
+        specifier: '>=8.0.0'
+        version: 8.57.0
+    devDependencies:
+      '@types/eslint':
+        specifier: ^8.56.10
+        version: 8.56.10
+
+  tooling/json-schema-to-jtd:
+    dependencies:
+      jtd-utils:
+        specifier: workspace:*
+        version: link:../jtd-utils
+
+  tooling/jtd-utils: {}
+
+  tooling/schema-adapter-typebox:
+    dependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../schema-builder
+      '@sinclair/typebox':
+        specifier: ^0.32
+        version: 0.32.30
+      json-schema-to-jtd:
+        specifier: workspace:*
+        version: link:../json-schema-to-jtd
+    devDependencies:
+      arri:
+        specifier: workspace:*
+        version: link:../cli
+
+  tooling/schema-builder:
     dependencies:
       jtd-utils:
         specifier: workspace:*
@@ -322,71 +450,6 @@ importers:
       benny:
         specifier: ^3.7.1
         version: 3.7.1
-
-  packages/eslint-plugin:
-    dependencies:
-      eslint:
-        specifier: '>=8.0.0'
-        version: 8.57.0
-    devDependencies:
-      '@types/eslint':
-        specifier: ^8.56.10
-        version: 8.56.10
-
-  packages/json-schema-to-jtd:
-    dependencies:
-      jtd-utils:
-        specifier: workspace:*
-        version: link:../jtd-utils
-
-  packages/jtd-utils: {}
-
-  playground:
-    dependencies:
-      arri:
-        specifier: workspace:*
-        version: link:../packages/arri
-      arri-validate:
-        specifier: workspace:*
-        version: link:../packages/arri-validate
-    devDependencies:
-      typescript:
-        specifier: ^5.4.5
-        version: 5.4.5
-
-  tests/clients/client-typescript:
-    dependencies:
-      arri-client:
-        specifier: workspace:*
-        version: link:../../../packages/arri-client
-      arri-validate:
-        specifier: workspace:*
-        version: link:../../../packages/arri-validate
-      ofetch:
-        specifier: ^1.3.4
-        version: 1.3.4
-
-  tests/server:
-    dependencies:
-      '@faker-js/faker':
-        specifier: ^8.4.1
-        version: 8.4.1
-      arri:
-        specifier: workspace:*
-        version: link:../../packages/arri
-      arri-validate:
-        specifier: workspace:*
-        version: link:../../packages/arri-validate
-    devDependencies:
-      '@arrirpc/eslint-plugin':
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin
-      arri-adapter-typebox:
-        specifier: workspace:*
-        version: link:../../packages/adapters/typebox
-      arri-codegen-utils:
-        specifier: workspace:*
-        version: link:../../packages/arri-codegen/utils
 
 packages:
 

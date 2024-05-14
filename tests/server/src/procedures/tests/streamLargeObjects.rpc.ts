@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from "crypto";
 import { faker } from "@faker-js/faker";
-import { defineEventStreamRpc } from "arri";
-import { a } from "arri-validate";
+import { defineEventStreamRpc } from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 
 export const StreamLargeObjectsResponse = a.object(
     "StreamLargeObjectsResponse",

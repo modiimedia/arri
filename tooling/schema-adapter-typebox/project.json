@@ -1,0 +1,44 @@
+{
+  "name": "schema-adapter-typebox",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tooling/schema-adapter-typebox/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "tooling/schema-adapter-typebox"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "tooling/schema-adapter-typebox"
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/tooling/schema-adapter-typebox"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/tooling/schema-adapter-typebox"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "tooling/schema-adapter-typebox"
+      }
+    }
+  },
+  "tags": []
+}

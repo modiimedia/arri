@@ -1,4 +1,4 @@
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
 
 // eslint-disable-next-line @arrirpc/no-anonymous-object
 const ObjectSchema = a.object({

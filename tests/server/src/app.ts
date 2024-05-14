@@ -4,8 +4,8 @@ import {
     defineMiddleware,
     getHeader,
     handleCors,
-} from "arri";
-import { a } from "arri-validate";
+} from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 import manualRouter from "./routes/other";
 
 const app = new ArriApp({

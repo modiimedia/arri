@@ -1,5 +1,5 @@
 import { listen } from "@joshmossas/listhen";
-import { toNodeListener } from "arri";
+import { toNodeListener } from "@arrirpc/server";
 import app from "virtual:arri/app";
 
 void listen(toNodeListener(app.h3App), {

@@ -1,5 +1,5 @@
 {
-  "name": "@arrirpc/arri-source",
+  "name": "@arrirpc/source",
   "version": "0.44.0",
   "author": {
     "name": "joshmossas",
@@ -21,9 +21,9 @@
     "integration-tests": "start-server-and-test 'integration-tests:start-server' http-get://127.0.0.1:2020/status 'integration-tests:run-tests'",
     "integration-tests:start-server": "nx build-server test-server && node tests/server/.output/server.mjs --host",
     "integration-tests:run-tests": "nx run-many -t integration-test",
-    "scaffold": "jiti tools/scripts/scaffold-package.ts",
-    "postversion": "jiti tools/scripts/version-sync.ts",
-    "gen-test-utils": "jiti tools/scripts/generate-test-utils.ts"
+    "scaffold": "jiti _internal/scripts/scaffold-package.ts",
+    "postversion": "jiti _internal/scripts/version-sync.ts",
+    "gen-test-utils": "jiti _internal/scripts/generate-test-utils.ts"
   },
   "private": true,
   "devDependencies": {

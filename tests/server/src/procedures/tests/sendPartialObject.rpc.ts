@@ -1,5 +1,5 @@
-import { defineRpc } from "arri";
-import { a } from "arri-validate";
+import { defineRpc } from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 import { ObjectWithEveryType } from "./sendObject.rpc";
 
 const input = a.partial(ObjectWithEveryType, {
