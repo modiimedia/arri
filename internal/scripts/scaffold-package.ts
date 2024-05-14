@@ -1,17 +1,12 @@
 import { readFileSync } from "fs";
 import { mkdir, writeFile } from "fs/promises";
 import { defineCommand, runMain } from "citty";
+import enquirer from "enquirer";
 import path from "pathe";
 import { kebabCase } from "scule";
 
 const main = defineCommand({
-    args: {
-        packageName: {
-            type: "positional",
-            required: true,
-        },
-    },
-    async run({ args }) {
+    async run() {
         const rootPackageJson = JSON.parse(
             readFileSync(path.resolve(__dirname, "../../package.json"), {
                 encoding: "utf8",
@@ -22,35 +17,91 @@ const main = defineCommand({
             typeof rootPackageJson.version === "string"
                 ? rootPackageJson.version
                 : "0.0.1";
-        const name = kebabCase(args.packageName.toLowerCase());
-        const outDir = path.resolve(__dirname, "../../packages", name);
+        const result = await enquirer.prompt<{
+            name: string;
+            type: "codegen" | "tooling";
+        }>([
+            {
+                name: "type",
+                message: "Select a package type",
+                required: true,
+                type: "select",
+                choices: ["codegen", "tooling"],
+            },
+        ]);
+        let pkgName: string;
+        let pkgLocation: string;
+        let depth: number;
+        let outDir: string;
+        switch (result.type) {
+            case "codegen":
+                {
+                    const { language } = await enquirer.prompt<{
+                        language: string;
+                    }>([
+                        {
+                            name: "language",
+                            message: "What programming language is this for?",
+                            required: true,
+                            type: "input",
+                        },
+                    ]);
+                    const lang = language.toLowerCase();
+                    pkgName = `@arrirpc/codegen-${lang}`;
+                    pkgLocation = `languages/${lang}/${lang}-codegen`;
+                    depth = 3;
+                    outDir = path.resolve(
+                        __dirname,
+                        `../../languages/${language.toLowerCase()}/${lang}-codegen`,
+                    );
+                }
+                break;
+            case "tooling": {
+                const inputResult = await enquirer.prompt<{ name: string }>([
+                    {
+                        name: "name",
+                        message: "Name your package",
+                        type: "input",
+                        required: true,
+                    },
+                ]);
+                pkgName = kebabCase(inputResult.name);
+                pkgLocation = `tooling/${pkgName}`;
+                depth = 2;
+                outDir = path.resolve(__dirname, "../../tooling", pkgName);
+                break;
+            }
+        }
         await mkdir(outDir);
         await mkdir(path.resolve(outDir, "src"));
         await Promise.all([
             writeFile(
                 path.resolve(outDir, "src/index.ts"),
-                `// ${name} entry\n// todo`,
+                `// ${pkgName} entry\n// todo`,
             ),
             writeFile(
                 path.resolve(outDir, ".eslintrc.json"),
-                eslintConfigTemplate(),
+                eslintConfigTemplate(depth),
             ),
             writeFile(
                 path.resolve(outDir, "build.config.ts"),
-                buildConfigTemplate(name),
+                buildConfigTemplate(pkgName),
             ),
             writeFile(
                 path.resolve(outDir, "package.json"),
-                packageJsonTemplate(name, version),
+                packageJsonTemplate(pkgName, pkgLocation, version),
             ),
             writeFile(
                 path.resolve(outDir, "project.json"),
-                projectJsonTemplate(name),
+                projectJsonTemplate(pkgName, pkgLocation, depth),
             ),
-            writeFile(path.resolve(outDir, "README.md"), readmeTemplate(name)),
+            writeFile(
+                path.resolve(outDir, "README.md"),
+                readmeTemplate(pkgName),
+            ),
             writeFile(
                 path.resolve(outDir, "tsconfig.json"),
-                tsConfigTemplate(),
+                tsConfigTemplate(depth),
             ),
             writeFile(
                 path.resolve(outDir, "tsconfig.lib.json"),
@@ -62,7 +113,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "vite.config.ts"),
-                viteConfigTemplate(name),
+                viteConfigTemplate(pkgName, depth),
             ),
         ]);
     },
@@ -85,7 +136,11 @@ Run \`nx test ${packageName}\` to execute the unit tests via [Vitest](https://vi
 `;
 }
 
-function packageJsonTemplate(packageName: string, version: string) {
+function packageJsonTemplate(
+    packageName: string,
+    packageLocation: string,
+    version: string,
+) {
     return `{
     "name": "${packageName}",
     "version": "${version}",
@@ -101,7 +156,7 @@ function packageJsonTemplate(packageName: string, version: string) {
     "repository": {
         "type": "git",
         "url": "https://github.com/modiimedia/arri.git",
-        "directory": "tooling/${packageName}"
+        "directory": "${packageLocation}"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
@@ -113,11 +168,19 @@ function packageJsonTemplate(packageName: string, version: string) {
 }`;
 }
 
-function projectJsonTemplate(packageName: string) {
+function projectJsonTemplate(
+    packageName: string,
+    packageLocation: string,
+    depth: number,
+) {
+    let prefix = "";
+    for (let i = 0; i < depth; i++) {
+        prefix += "../";
+    }
     return `{
   "name": "${packageName}",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/${packageName}/src",
+  "$schema": "${prefix}node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "${packageLocation}/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -125,14 +188,14 @@ function projectJsonTemplate(packageName: string) {
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/${packageName}"
+        "cwd": "${packageLocation}"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/${packageName}"
+        "cwd": "${packageLocation}"
       },
       "dependsOn": ["build"]
     },
@@ -140,15 +203,15 @@ function projectJsonTemplate(packageName: string) {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["tooling/${packageName}/**/*.ts"]
+        "lintFilePatterns": ["${packageLocation}/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/tooling/${packageName}"],
+      "outputs": ["{workspaceRoot}/coverage/${packageLocation}"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/${packageName}",
+        "reportsDirectory": "../../coverage/${packageLocation}",
         "watch": false
       },
       "configurations": {
@@ -163,9 +226,13 @@ function projectJsonTemplate(packageName: string) {
 `;
 }
 
-function eslintConfigTemplate() {
+function eslintConfigTemplate(depth: number) {
+    let prefix = "";
+    for (let i = 0; i < depth; i++) {
+        prefix += "../";
+    }
     return `{
-  "extends": ["../../.eslintrc.js"],
+  "extends": ["${prefix}.eslintrc.js"],
   "ignorePatterns": [],
   "overrides": [
     {
@@ -214,9 +281,13 @@ export default defineBuildConfig({
 });`;
 }
 
-function tsConfigTemplate() {
+function tsConfigTemplate(depth: number) {
+    let prefix = "";
+    for (let i = 0; i < depth; i++) {
+        prefix += "../";
+    }
     return `{
-  "extends": "../../tsconfig.base.json",
+  "extends": "${prefix}tsconfig.base.json",
   "compilerOptions": {
     "types": ["vitest"]
   },
@@ -237,7 +308,6 @@ function tsConfigLibTemplate() {
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "../../dist/out-tsc",
     "declaration": true,
     "types": ["node"]
   },
@@ -252,7 +322,6 @@ function tsConfigSpecTemplate() {
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "../../dist/out-tsc",
     "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node"]
   },
   "include": [
@@ -273,16 +342,20 @@ function tsConfigSpecTemplate() {
 `;
 }
 
-function viteConfigTemplate(projectName: string) {
+function viteConfigTemplate(projectName: string, depth: number) {
+    let prefix = "";
+    for (let i = 0; i < depth; i++) {
+        prefix += "../";
+    }
     return `import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/tooling/${projectName}",
+    cacheDir: "${prefix}node_modules/.vite/tooling/${projectName}",
 
     plugins: [
         viteTsConfigPaths({
-            root: "../../",
+            root: "${prefix}",
         }) as any,
     ],
 
@@ -290,7 +363,7 @@ export default defineConfig({
     // worker: {
     //  plugins: [
     //    viteTsConfigPaths({
-    //      root: '../../',
+    //      root: '${prefix}',
     //    }),
     //  ],
     // },
@@ -305,7 +378,7 @@ export default defineConfig({
             },
         },
         cache: {
-            dir: "../../node_modules/.vitest",
+            dir: "${prefix}node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
