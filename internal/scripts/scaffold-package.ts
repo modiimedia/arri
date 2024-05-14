@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { mkdir, writeFile } from "fs/promises";
 import { defineCommand, runMain } from "citty";
 import enquirer from "enquirer";
@@ -33,6 +33,7 @@ const main = defineCommand({
         let pkgLocation: string;
         let depth: number;
         let outDir: string;
+        let isCodegen: boolean;
         switch (result.type) {
             case "codegen":
                 {
@@ -46,9 +47,18 @@ const main = defineCommand({
                             type: "input",
                         },
                     ]);
+                    isCodegen = true;
                     const lang = language.toLowerCase();
+                    const langDir = path.resolve(
+                        __dirname,
+                        `../../languages/${lang}`,
+                    );
+                    if (!existsSync(langDir)) {
+                        await mkdir(langDir);
+                    }
                     pkgName = `@arrirpc/codegen-${lang}`;
                     pkgLocation = `languages/${lang}/${lang}-codegen`;
+
                     depth = 3;
                     outDir = path.resolve(
                         __dirname,
@@ -65,6 +75,7 @@ const main = defineCommand({
                         required: true,
                     },
                 ]);
+                isCodegen = false;
                 pkgName = kebabCase(inputResult.name);
                 pkgLocation = `tooling/${pkgName}`;
                 depth = 2;
@@ -89,7 +100,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "package.json"),
-                packageJsonTemplate(pkgName, pkgLocation, version),
+                packageJsonTemplate(pkgName, pkgLocation, version, isCodegen),
             ),
             writeFile(
                 path.resolve(outDir, "project.json"),
@@ -116,6 +127,7 @@ const main = defineCommand({
                 viteConfigTemplate(pkgName, depth),
             ),
         ]);
+        console.info(`Scaffolded new project in ${outDir}`);
     },
 });
 
@@ -140,6 +152,7 @@ function packageJsonTemplate(
     packageName: string,
     packageLocation: string,
     version: string,
+    isCodegen: boolean,
 ) {
     return `{
     "name": "${packageName}",
@@ -164,7 +177,12 @@ function packageJsonTemplate(
     "files": [
         "dist"
     ],
-    "dependencies": {}
+    "dependencies": {
+      ${isCodegen ? `"@arrirpc/codegen-utils": "workspace:*"` : ""}
+    },
+    "devDependencies": {
+      ${isCodegen ? `"@arrirpc/schema": "workspace:*"` : ""}
+    }
 }`;
 }
 
@@ -263,6 +281,7 @@ const packageJson = JSON.parse(
     }),
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
