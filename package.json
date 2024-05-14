@@ -14,6 +14,7 @@
     "url": "https://github.com/modiimedia/arri.git"
   },
   "scripts": {
+    "typecheck": "nx run-many -t typecheck",
     "test": "nx run-many -t test",
     "test:skip-cache": "nx run-many -t build --skip-nx-cache",
     "build": "nx run-many -t build",
