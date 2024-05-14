@@ -1,4 +1,4 @@
-# Arri Schema Builder
+# Arri Schema
 
 A type builder and validation library built on top of the [Json Type Definition (RFC 8927)](https://jsontypedef.com) This library is pretty similar to [Typebox](https://github.com/sinclairzx81/typebox) except that it creates Json Type Definition (JTD) objects instead of Json Schema objects.
 
