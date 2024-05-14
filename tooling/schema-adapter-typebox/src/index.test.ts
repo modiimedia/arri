@@ -1,6 +1,6 @@
 import { a } from "@arrirpc/schema";
 import { type Static, Type } from "@sinclair/typebox";
-import { defineRpc, defineEventStreamRpc } from "arri";
+import { defineRpc, defineEventStreamRpc } from "@arrirpc/server";
 import { typeboxAdapter } from "./index";
 
 it("infers types correctly", () => {

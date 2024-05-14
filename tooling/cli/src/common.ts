@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import { removeDisallowedChars } from "@arrirpc/codegen-utils";
 import { createConsola } from "consola";
-import { globby } from "globby";
+import { type globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
@@ -40,6 +40,7 @@ interface RpcRoute {
 }
 
 export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
+    const glob = await import("globby");
     const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
     const appImportParts = path
         .relative(path.resolve(config.rootDir, config.buildDir), appModule)
@@ -49,7 +50,7 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
     const existingRoutes: string[] = [];
     await Promise.all(
         config.procedureGlobPatterns.map(async (pattern) => {
-            const results = await getFsRouteBatch(pattern, config);
+            const results = await getFsRouteBatch(glob.globby, pattern, config);
             for (const result of results) {
                 if (!existingRoutes.includes(result.name)) {
                     routes.push(result);
@@ -102,6 +103,7 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
 }
 
 export async function getFsRouteBatch(
+    glob: typeof globby,
     globPattern: string,
     config: ResolvedArriConfig,
 ): Promise<RpcRoute[]> {
@@ -114,7 +116,7 @@ export async function getFsRouteBatch(
             .join("/")
             .split("//")
             .join("/");
-    const files = await globby(target, {
+    const files = await glob(target, {
         onlyFiles: true,
     });
     const routes: RpcRoute[] = [];

@@ -26,7 +26,7 @@
     "json-schema-to-jtd": "workspace:*"
   },
   "devDependencies": {
-    "arri": "workspace:*"
+    "@arrirpc/server": "workspace:*"
   },
   "peerDependencies": {
     "@sinclair/typebox": "^0.32"

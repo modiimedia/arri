@@ -1,4 +1,4 @@
-# Arri Validate
+# Arri Schema Builder
 
 A type builder and validation library built on top of the [Json Type Definition (RFC 8927)](https://jsontypedef.com) This library is pretty similar to [Typebox](https://github.com/sinclairzx81/typebox) except that it creates Json Type Definition (JTD) objects instead of Json Schema objects.
 
@@ -54,16 +54,16 @@ To represent the data-models in a language agnostic way this library heavily rel
 
 ```bash
 # npm
-npm install arri-validate
+npm install @arrirpc/schema
 
 # pnpm
-pnpm install arri-validate
+pnpm install @arrirpc/schema
 ```
 
 ## Basic Example
 
 ```ts
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
 
 const User = a.object({
     id: a.string(),
@@ -196,7 +196,7 @@ a.validate({
 
 #### Strict Mode
 
-By default arri-validate will ignore and strip out any additional properties when validating objects. If you want validation to fail when additional properties are present then modify the `additionalProperties` option.
+By default @arrirpc/schema will ignore and strip out any additional properties when validating objects. If you want validation to fail when additional properties are present then modify the `additionalProperties` option.
 
 ```ts
 const UserStrict = a.object(
@@ -694,7 +694,7 @@ a.errors(User, { id: 1, date: "hello world" });
 
 ## Compiled Validators
 
-`arri-validate` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions.
+`@arrirpc/schema` comes with a high performance JIT compiler that transforms Arri Schemas into highly optimized validation, parsing, serialization functions.
 
 ```ts
 const User = a.object({
@@ -972,12 +972,12 @@ The following benchmarks measure how quickly each library operates on a single i
 
 ### Building
 
-Run `nx build arri-validate` to build the library.
+Run `nx build @arrirpc/schema` to build the library.
 
 ### Running unit tests
 
-Run `nx test arri-validate` to execute the unit tests via Vitest
+Run `nx test @arrirpc/schema` to execute the unit tests via Vitest
 
 ### Benchmarking
 
-Run `nx benchmark arri-validate` to execute benchmarks
+Run `nx benchmark @arrirpc/schema` to execute benchmarks

@@ -19,7 +19,7 @@ test("output matches the reference client", () => {
     const referenceClient = fs.readFileSync(
         path.resolve(
             __dirname,
-            "../reference/src/main/kotlin/ExampleClient.kt",
+            "../../kotlin-codegen-reference/src/main/kotlin/ExampleClient.kt",
         ),
         {
             encoding: "utf8",

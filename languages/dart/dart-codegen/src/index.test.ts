@@ -548,7 +548,10 @@ it("Matches the dart example client", () => {
     execSync(`dart format ${outputFilePath}`);
     const targetResult = readFileSync(outputFilePath, { encoding: "utf-8" });
     const expectedResult = readFileSync(
-        path.resolve(__dirname, "../../dart-reference/reference_client.dart"),
+        path.resolve(
+            __dirname,
+            "../../dart-codegen-reference/reference_client.dart",
+        ),
         { encoding: "utf-8" },
     );
     expect(normalizeWhitespace(targetResult)).toBe(

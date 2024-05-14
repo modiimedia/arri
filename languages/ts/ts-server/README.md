@@ -44,10 +44,10 @@ pnpm run dev
 
 ```bash
 # npm
-npm install arri arri-validate
+npm install arri @arri/server @arri/schema
 
 # pnpm
-pnpm install arri arri-validate
+pnpm install arri @arri/server @arri/schema
 ```
 
 ### Scaffold Your Project

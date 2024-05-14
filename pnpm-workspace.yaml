@@ -1,6 +1,5 @@
 packages:
-  - playground/**
-  - examples/**
-  - tests/**
   - languages/**
+  - playground/**
   - tooling/**
+  - tests/**

@@ -1,13 +1,13 @@
 {
   "name": "dart-client",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "languages/dart-client/lib",
+  "sourceRoot": "languages/dart/dart-client/lib",
   "targets": {
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dart pub publish -f",
-        "cwd": "languages/dart-client"
+        "cwd": "languages/dart/dart-client"
       }
     },
     "test": {
@@ -19,28 +19,28 @@
       ],
       "options": {
         "command": "dart test",
-        "cwd": "languages/dart-client"
+        "cwd": "languages/dart/dart-client"
       }
     },
     "pub": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dart pub",
-        "cwd": "languages/dart-client"
+        "cwd": "languages/dart/dart-client"
       }
     },
     "dart": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dart",
-        "cwd": "languages/dart-client"
+        "cwd": "languages/dart/dart-client"
       }
     },
     "pub-get": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dart pub get",
-        "cwd": "languages/dart-client"
+        "cwd": "languages/dart/dart-client"
       }
     }
   }
