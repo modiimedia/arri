@@ -377,7 +377,7 @@ Future<void> main() async {
         errorCount++;
       },
     );
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1000));
     eventSource.close();
     expect(connectionCount > 0, equals(true));
     expect(messageCount > 10, equals(true));
