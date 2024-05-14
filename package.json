@@ -15,9 +15,13 @@
   },
   "scripts": {
     "test": "nx run-many -t test",
+    "test:skip-cache": "nx run-many -t build --skip-nx-cache",
     "build": "nx run-many -t build",
+    "build:skip-cache": "nx run-many -t build --skip-nx-cache",
     "lint": "nx run-many -t lint",
     "lint:fix": "nx run-many -t lint --fix",
+    "lint:skip-cache": "nx run-many -t lint --skip-nx-cache",
+    "lint:fix:skip-cache": "nx-run-many -t lint --skip-nx-cache",
     "integration-tests": "start-server-and-test 'integration-tests:start-server' http-get://127.0.0.1:2020/status 'integration-tests:run-tests'",
     "integration-tests:start-server": "nx build-server test-server && node tests/server/.output/server.mjs --host",
     "integration-tests:run-tests": "nx run-many -t integration-test",
