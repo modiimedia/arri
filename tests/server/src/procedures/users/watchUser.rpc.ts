@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
-import { defineEventStreamRpc } from "@arrirpc/server";
 import { a } from "@arrirpc/schema";
+import { defineEventStreamRpc } from "@arrirpc/server";
 
 export const TestUserSettingsSchema = a.object(
     {

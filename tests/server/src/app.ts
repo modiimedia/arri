@@ -1,3 +1,4 @@
+import { a } from "@arrirpc/schema";
 import {
     ArriApp,
     defineError,
@@ -5,7 +6,6 @@ import {
     getHeader,
     handleCors,
 } from "@arrirpc/server";
-import { a } from "@arrirpc/schema";
 import manualRouter from "./routes/other";
 
 const app = new ArriApp({

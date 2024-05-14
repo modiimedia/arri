@@ -1,5 +1,5 @@
-import { defineRpc } from "@arrirpc/server";
 import { a } from "@arrirpc/schema";
+import { defineRpc } from "@arrirpc/server";
 
 export const ObjectWithEveryNullableType = a.object(
     "ObjectWithEveryNullableType",

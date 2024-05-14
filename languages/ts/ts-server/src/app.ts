@@ -7,6 +7,7 @@ import {
     SCHEMA_VERSION,
 } from "@arrirpc/codegen-utils";
 import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
+import { DEV_DEFINITION_ENDPOINT } from "arri";
 import {
     type App,
     createApp,
@@ -35,7 +36,6 @@ import {
     registerWebsocketRpc,
     type NamedWebsocketRpc,
 } from "./websocketRpc";
-import { DEV_DEFINITION_ENDPOINT } from "arri";
 
 export type ModelMap = Record<
     string,

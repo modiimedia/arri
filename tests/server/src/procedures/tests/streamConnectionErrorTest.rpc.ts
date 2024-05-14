@@ -1,5 +1,5 @@
-import { defineError, defineEventStreamRpc } from "@arrirpc/server";
 import { a } from "@arrirpc/schema";
+import { defineError, defineEventStreamRpc } from "@arrirpc/server";
 
 export default defineEventStreamRpc({
     description:

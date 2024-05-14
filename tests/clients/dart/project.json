@@ -6,21 +6,21 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "dart pub",
-        "cwd": "tests/clients/client-dart"
+        "cwd": "tests/clients/dart"
       }
     },
     "pub-get": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dart pub get",
-        "cwd": "tests/clients/client-dart"
+        "cwd": "tests/clients/dart"
       }
     },
     "integration-test": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dart test --reporter=expanded",
-        "cwd": "tests/clients/client-dart"
+        "cwd": "tests/clients/dart"
       }
     }
   }
