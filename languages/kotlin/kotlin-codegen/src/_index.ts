@@ -84,14 +84,14 @@ export function kotlinClientFromAppDefinition(
         existingTypeIds: [],
     };
     const modelParts: string[] = [];
-    for (const key of Object.keys(def.models)) {
-        const subSchema = def.models[key]!;
+    for (const key of Object.keys(def.definitions)) {
+        const subSchema = def.definitions[key]!;
         const model = kotlinTypeFromSchema(subSchema, {
             modelPrefix: context.modelPrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,
             instancePath: `/${key}`,
-            schemaPath: `/models`,
+            schemaPath: `/definitions`,
             existingTypeIds: context.existingTypeIds,
         });
         if (model.content) {

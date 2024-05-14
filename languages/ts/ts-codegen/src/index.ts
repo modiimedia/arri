@@ -74,7 +74,8 @@ export async function createTypescriptClient(
     const rpcOptions: RpcOptions = {
         ...options,
         versionNumber: def.info?.version ?? "",
-        typesNeedingParser: Object.keys(def.models),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        typesNeedingParser: Object.keys(def.definitions),
         hasSseProcedures: false,
         hasWsProcedures: false,
     };
@@ -103,7 +104,7 @@ export async function createTypescriptClient(
         }
     });
     for (const key of rpcOptions.typesNeedingParser) {
-        const schema = def.models[key];
+        const schema = def.definitions[key];
         if (
             isSchemaFormProperties(schema) ||
             isSchemaFormDiscriminator(schema)

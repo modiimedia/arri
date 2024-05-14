@@ -37,7 +37,7 @@ import {
     type NamedWebsocketRpc,
 } from "./websocketRpc";
 
-export type ModelMap = Record<
+export type DefinitionMap = Record<
     string,
     SchemaFormProperties | SchemaFormDiscriminator | SchemaFormValues
 >;
@@ -52,7 +52,7 @@ export class ArriApp implements ArriRouterBase {
     private readonly _rpcRoutePrefix: string;
     appInfo: AppDefinition["info"];
     private _procedures: Record<string, RpcDefinition> = {};
-    private _models: ModelMap = {};
+    private _definitions: DefinitionMap = {};
     private readonly _middlewares: Middleware[] = [];
     private readonly _onRequest: ArriOptions["onRequest"];
     private readonly _onAfterResponse: ArriOptions["onAfterResponse"];
@@ -145,7 +145,7 @@ export class ArriApp implements ArriRouterBase {
                     this.wsRpc(rpc);
                 }
             }
-            this.registerModels(input.getModels());
+            this.registerDefinitions(input.getDefinitions());
             return;
         }
         this._middlewares.push(input);
@@ -170,14 +170,14 @@ export class ArriApp implements ArriRouterBase {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const paramName = getRpcParamName(p.name, p);
             if (paramName) {
-                this._models[paramName] = p.params;
+                this._definitions[paramName] = p.params;
             }
         }
         if (isRpcParamSchema(p.response)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const responseName = getRpcResponseName(p.name, p as any);
             if (responseName) {
-                this._models[responseName] = p.response;
+                this._definitions[responseName] = p.response;
             }
         }
         if (isEventStreamRpc(p)) {
@@ -217,13 +217,13 @@ export class ArriApp implements ArriRouterBase {
         if (isRpcParamSchema(procedure.params)) {
             const paramName = getRpcParamName(procedure.name, p);
             if (paramName) {
-                this._models[paramName] = procedure.params;
+                this._definitions[paramName] = procedure.params;
             }
         }
         if (isRpcParamSchema(procedure.response)) {
             const responseName = getRpcResponseName(procedure.name, p);
             if (responseName) {
-                this._models[responseName] = procedure.response;
+                this._definitions[responseName] = procedure.response;
             }
         }
         registerWebsocketRpc(this.h3Router, path, p);
@@ -245,9 +245,9 @@ export class ArriApp implements ArriRouterBase {
         });
     }
 
-    registerModels(models: ModelMap) {
-        for (const key of Object.keys(models)) {
-            this._models[key] = models[key]!;
+    registerDefinitions(definitions: DefinitionMap) {
+        for (const key of Object.keys(definitions)) {
+            this._definitions[key] = definitions[key]!;
         }
     }
 
@@ -256,7 +256,7 @@ export class ArriApp implements ArriRouterBase {
             arriSchemaVersion: SCHEMA_VERSION,
             info: this.appInfo,
             procedures: {},
-            models: this._models as any,
+            definitions: this._definitions as any,
         };
         for (const key of Object.keys(this._procedures)) {
             const rpc = this._procedures[key]!;

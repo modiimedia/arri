@@ -43,5 +43,8 @@
     "pathe": "^1.1.2",
     "prettier": "^3.2.5",
     "scule": "^1.3.0"
+  },
+  "devDependencies": {
+    "@types/degit": "^2.8.6"
   }
 }

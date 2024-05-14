@@ -132,7 +132,7 @@ const BookParams = a.object(
 type BookParams = a.infer<typeof BookParams>;
 
 const def: AppDefinition = {
-    arriSchemaVersion: "0.0.4",
+    arriSchemaVersion: "0.0.5",
     info: {
         version: "20",
     },
@@ -173,7 +173,7 @@ const def: AppDefinition = {
             response: "Book",
         },
     },
-    models: {
+    definitions: {
         Book,
         BookParams,
         NestedObject,

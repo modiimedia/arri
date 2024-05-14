@@ -43,7 +43,7 @@ it("creates valid app definition", () => {
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.4",
+        arriSchemaVersion: "0.0.5",
         procedures: {
             sayHello: {
                 transport: "http",
@@ -61,7 +61,7 @@ it("creates valid app definition", () => {
                 isEventStream: true,
             },
         },
-        models: {
+        definitions: {
             SayHelloParams,
             SayHelloResponse,
         },

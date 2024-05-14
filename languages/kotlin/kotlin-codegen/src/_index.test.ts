@@ -37,7 +37,7 @@ test("output matches the reference client", () => {
 
 test("blah", () => {
     const appDef: AppDefinition = {
-        arriSchemaVersion: "0.0.4",
+        arriSchemaVersion: "0.0.5",
         procedures: {
             sayHello: {
                 transport: "http",
@@ -54,7 +54,7 @@ test("blah", () => {
                 response: "GetAnimalResponse",
             },
         },
-        models: {},
+        definitions: {},
     };
     const client = kotlinClientFromAppDefinition(appDef, {
         clientName: "Client",

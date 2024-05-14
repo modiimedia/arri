@@ -119,7 +119,7 @@ export function kotlinObjectFromSchema(
         const key = optionalKeys[i]!;
         const kotlinKey = kotlinIdentifier(key);
         kotlinKeys.push(kotlinKey);
-        const type = kotlinTypeFromSchema(schema.optionalProperties![key], {
+        const type = kotlinTypeFromSchema(schema.optionalProperties![key]!, {
             modelPrefix: context.modelPrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,

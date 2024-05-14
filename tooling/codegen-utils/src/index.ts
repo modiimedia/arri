@@ -29,7 +29,7 @@ export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== "head";
 };
 
-export const SCHEMA_VERSION = "0.0.4";
+export const SCHEMA_VERSION = "0.0.5";
 
 export interface AppDefinition {
     arriSchemaVersion: typeof SCHEMA_VERSION;
@@ -44,7 +44,7 @@ export interface AppDefinition {
         url: string;
     };
     procedures: Record<string, RpcDefinition<string>>;
-    models: Record<string, SchemaFormProperties | SchemaFormDiscriminator>;
+    definitions: Record<string, SchemaFormProperties | SchemaFormDiscriminator>;
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {
@@ -58,7 +58,7 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
     if (typeof inputObj.procedures !== "object") {
         return false;
     }
-    if (typeof inputObj.models !== "object") {
+    if (typeof inputObj.definitions !== "object") {
         return false;
     }
     return true;
@@ -254,14 +254,14 @@ type RpcDefinitionHelper = RpcDefinition<
 
 type AppDefinitionHelper = Omit<
     AppDefinition,
-    "procedures" | "models" | "arriSchemaVersion"
+    "procedures" | "definitions" | "arriSchemaVersion"
 > & {
     procedures: Record<string, RpcDefinitionHelper>;
-    models?: AppDefinition["models"];
+    definitions?: AppDefinition["definitions"];
 };
 
 export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
-    const models = { ...input.models };
+    const definitions = { ...input.definitions };
     const procedures: AppDefinition["procedures"] = {};
     for (const key of Object.keys(input.procedures)) {
         const def = input.procedures[key]!;
@@ -270,14 +270,14 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
             paramName =
                 def.params.metadata?.id ??
                 pascalCase(`${key.split(".").join("_")}Params`);
-            models[paramName] = def.params;
+            definitions[paramName] = def.params;
         }
         let responseName: string | undefined;
         if (def.response) {
             responseName =
                 def.response.metadata?.id ??
                 pascalCase(`${key.split(".").join("_")}Response`);
-            models[responseName] = def.response;
+            definitions[responseName] = def.response;
         }
         delete def.params;
         delete def.response;
@@ -288,10 +288,10 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
         };
     }
     const result: AppDefinition = {
-        arriSchemaVersion: "0.0.4",
+        arriSchemaVersion: "0.0.5",
         ...input,
         procedures,
-        models,
+        definitions,
     };
     return result;
 }

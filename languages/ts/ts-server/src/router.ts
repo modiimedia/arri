@@ -1,5 +1,5 @@
 import { type ASchema, type AObjectSchema } from "@arrirpc/schema";
-import { type ModelMap } from "./app";
+import { type DefinitionMap } from "./app";
 import { type ArriRoute } from "./route";
 import { type RpcParamSchema, type NamedRpc } from "./rpc";
 import { type NamedWebsocketRpc } from "./websocketRpc";
@@ -30,7 +30,7 @@ export interface ArriRouterBase {
         route: ArriRoute<TPath, TQuery, TBody, TResponse>,
     ) => void;
 
-    registerModels: (models: ModelMap) => void;
+    registerDefinitions: (definitions: DefinitionMap) => void;
 }
 
 export class ArriRouter implements ArriRouterBase {
@@ -40,7 +40,7 @@ export class ArriRouter implements ArriRouterBase {
 
     private readonly routes: Array<ArriRoute<any>> = [];
 
-    private readonly models: ModelMap = {};
+    private readonly definitions: DefinitionMap = {};
 
     rpc<
         TIsEventStream extends boolean = false,
@@ -75,9 +75,9 @@ export class ArriRouter implements ArriRouterBase {
         this.routes.push(route);
     }
 
-    registerModels(models: ModelMap) {
+    registerDefinitions(models: DefinitionMap) {
         for (const key of Object.keys(models)) {
-            this.models[key] = models[key]!;
+            this.definitions[key] = models[key]!;
         }
     }
 
@@ -89,7 +89,7 @@ export class ArriRouter implements ArriRouterBase {
         return this.routes;
     }
 
-    getModels() {
-        return this.models;
+    getDefinitions() {
+        return this.definitions;
     }
 }

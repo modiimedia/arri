@@ -111,7 +111,7 @@ const HelloResponse = a.object(
 );
 
 export default createAppDefinition({
-    models: {
+    definitions: {
         HelloParams,
         HelloResponse,
     },
@@ -136,7 +136,7 @@ JSON app definitions are something that would normally be automatically generate
             "response": "HelloResponse"
         }
     },
-    "models": {
+    "definitions": {
         "HelloParams": {
             "properties": {
                 "message": {

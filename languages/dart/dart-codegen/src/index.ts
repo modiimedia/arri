@@ -135,8 +135,8 @@ export function createDartClient(
         }
     }
 
-    for (const key of Object.keys(def.models)) {
-        const item = def.models[key];
+    for (const key of Object.keys(def.definitions)) {
+        const item = def.definitions[key];
         if (
             isSchemaFormProperties(item) ||
             isSchemaFormDiscriminator(item) ||

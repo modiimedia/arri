@@ -80,7 +80,7 @@ export default defineCommand({
                     def ?? {
                         arriSchemaVersion: "0.0.4",
                         procedures: {},
-                        models: {},
+                        definitions: {},
                     },
                 ),
             ),

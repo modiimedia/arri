@@ -78,7 +78,7 @@ export const TestUpdateUserParams = a.pick(
 );
 
 export const TestAppDefinition: AppDefinition = {
-    arriSchemaVersion: "0.0.4",
+    arriSchemaVersion: "0.0.5",
     info: {
         title: "Test App Client",
         description: "This is a example app definition",
@@ -132,7 +132,7 @@ export const TestAppDefinition: AppDefinition = {
             isDeprecated: true,
         },
     },
-    models: {
+    definitions: {
         GetStatusResponse: a.object({
             message: a.string(),
         }),
@@ -242,9 +242,9 @@ export const ExampleRecursive = a.recursive<ExampleRecursive>(
 );
 
 export const ReferenceAppDefinition: AppDefinition = {
-    arriSchemaVersion: "0.0.4",
+    arriSchemaVersion: "0.0.5",
     procedures: {},
-    models: {
+    definitions: {
         ExamplePayload,
         ExamplePayloadNullable,
         ExampleDiscriminator,

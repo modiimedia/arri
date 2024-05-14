@@ -466,7 +466,7 @@ It looks something like this:
         }
         // rest of procedures
     },
-    "models": {
+    "definitions": {
         "SayHelloParams": {
             "properties": {
                 "name": {

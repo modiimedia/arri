@@ -195,7 +195,7 @@ test("create app definition", () => {
         },
     });
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.4",
+        arriSchemaVersion: "0.0.5",
         procedures: {
             sayHello: {
                 transport: "http",
@@ -218,7 +218,7 @@ test("create app definition", () => {
                 response: "Settings",
             },
         },
-        models: {
+        definitions: {
             CreateConnectionParams: {
                 properties: {
                     message: {

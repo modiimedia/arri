@@ -334,6 +334,10 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
+    devDependencies:
+      '@types/degit':
+        specifier: ^2.8.6
+        version: 2.8.6
 
   tooling/codegen-utils:
     dependencies:
@@ -1925,6 +1929,9 @@ packages:
 
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
+
+  '@types/degit@2.8.6':
+    resolution: {integrity: sha512-y0M7sqzsnHB6cvAeTCBPrCQNQiZe8U4qdzf8uBVmOWYap5MMTN/gB2iEqrIqFiYcsyvP74GnGD5tgsHttielFw==}
 
   '@types/eslint@8.56.10':
     resolution: {integrity: sha512-Shavhk87gCtY2fhXDctcfS3e6FdxWkCx1iUZ9eEUbh7rTqlZT0/IzOkCOVt0fCjcFuZ9FPYfuezTBImfHCDBGQ==}
@@ -6985,6 +6992,8 @@ snapshots:
   '@tsconfig/node14@1.0.3': {}
 
   '@tsconfig/node16@1.0.4': {}
+
+  '@types/degit@2.8.6': {}
 
   '@types/eslint@8.56.10':
     dependencies:
