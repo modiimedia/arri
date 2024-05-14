@@ -31,7 +31,6 @@
     "gen-test-utils": "jiti internal/scripts/generate-test-utils.ts"
   },
   "private": true,
-  "dependencies": {},
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@nx/eslint": "19.0.3",
@@ -39,7 +38,7 @@
     "@nx/workspace": "19.0.3",
     "@sinclair/typebox": "^0.32.30",
     "@types/lodash": "^4.17.1",
-    "@types/node": "20.12.11",
+    "@types/node": "20.12.12",
     "@typescript-eslint/eslint-plugin": "7.9.0",
     "@typescript-eslint/parser": "7.9.0",
     "@vitest/coverage-v8": "1.6.0",
