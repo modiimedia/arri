@@ -1,11 +1,11 @@
+import { a } from "@arrirpc/schema";
 import {
     ArriApp,
     defineError,
     defineMiddleware,
     getHeader,
     handleCors,
-} from "arri";
-import { a } from "arri-validate";
+} from "@arrirpc/server";
 import manualRouter from "./routes/other";
 
 const app = new ArriApp({
@@ -44,7 +44,7 @@ app.route({
     },
 });
 
-app.registerModels({
+app.registerDefinitions({
     ManuallyAddedModel: a.object({
         hello: a.string(),
     }),

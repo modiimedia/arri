@@ -1,5 +1,5 @@
-import { defineError, defineEventStreamRpc, getHeader } from "arri";
-import { a } from "arri-validate";
+import { a } from "@arrirpc/schema";
+import { defineError, defineEventStreamRpc, getHeader } from "@arrirpc/server";
 
 const usedTokens: Record<string, boolean> = {};
 

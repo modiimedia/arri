@@ -1,0 +1,44 @@
+{
+  "name": "json-schema-to-jtd",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tooling/json-schema-to-jtd/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/tooling/json-schema-to-jtd"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "tooling/json-schema-to-jtd"
+      }
+    },
+    "publish": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "tooling/json-schema-to-jtd"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/tooling/json-schema-to-jtd"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/tooling/json-schema-to-jtd"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "tooling/json-schema-to-jtd"
+      }
+    }
+  },
+  "tags": []
+}

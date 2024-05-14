@@ -1,5 +1,5 @@
 {
-  "name": "@arri/arri-source",
+  "name": "@arri/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
     "local-registry": {

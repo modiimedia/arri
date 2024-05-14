@@ -1,9 +1,0 @@
-{
-  "name": "test-client-typescript",
-  "type": "module",
-  "dependencies": {
-    "arri-client": "workspace:*",
-    "arri-validate": "workspace:*",
-    "ofetch": "^1.3.4"
-  }
-}

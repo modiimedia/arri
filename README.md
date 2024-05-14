@@ -13,15 +13,15 @@ This is a work in progress. Things will break.
 
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress the implementations for these clients.
 
-| Language                                        | HTTP | SSE |
-| ----------------------------------------------- | ---- | --- |
-| [Typescript](packages/arri-codegen/typescript/) | ✅   | ✅  |
-| [Dart](packages/arri-codegen/dart/)             | ✅   | ✅  |
-| [Rust](packages/arri-codegen/rust)              | 🚧   | 🚧  |
-| [Kotlin](packages/arri-codegen/kotlin/)         | ✅   | ✅  |
-| Swift                                           |      |     |
-| Go                                              |      |     |
-| Python                                          |      |     |
+| Language                                   | HTTP | SSE |
+| ------------------------------------------ | ---- | --- |
+| [Typescript](languages/ts/ts-codegen/)     | ✅   | ✅  |
+| [Dart](languages/dart/dart-codegen/)       | ✅   | ✅  |
+| Rust                                       | 🚧   | 🚧  |
+| [Kotlin](languages/kotlin/kotlin-codegen/) | ✅   | ✅  |
+| Swift                                      |      |     |
+| Go                                         |      |     |
+| Python                                     |      |     |
 
 ✅ completed
 
@@ -29,7 +29,7 @@ Below are the language client generators that are planned to have first party su
 
 ## Server Implementations
 
--   [Typescript](packages/arri/README.md)
+-   [Typescript](languages/ts/ts-server/)
 
 ## Creating Schemas For Custom Server Implementations
 
@@ -111,7 +111,7 @@ const HelloResponse = a.object(
 );
 
 export default createAppDefinition({
-    models: {
+    definitions: {
         HelloParams,
         HelloResponse,
     },
@@ -136,7 +136,7 @@ JSON app definitions are something that would normally be automatically generate
             "response": "HelloResponse"
         }
     },
-    "models": {
+    "definitions": {
         "HelloParams": {
             "properties": {
                 "message": {

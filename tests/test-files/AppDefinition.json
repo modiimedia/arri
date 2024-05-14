@@ -1,5 +1,5 @@
 {
-  "arriSchemaVersion": "0.0.4",
+  "arriSchemaVersion": "0.0.5",
   "info": { "version": "20" },
   "procedures": {
     "sendObject": {
@@ -38,7 +38,7 @@
       "response": "Book"
     }
   },
-  "models": {
+  "definitions": {
     "Book": {
       "properties": {
         "id": { "type": "string", "metadata": {} },
