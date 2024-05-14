@@ -1,7 +1,7 @@
 {
-  "name": "arri-codegen-rust",
+  "name": "rust-codegen",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/arri-codegen/rust/src",
+  "sourceRoot": "languages/rust/rust-codegen/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,14 +9,14 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "packages/arri-codegen/rust"
+        "cwd": "languages/rust/rust-codegen"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "packages/arri-codegen/rust"
+        "cwd": "languages/rust/rust-codegen"
       },
       "dependsOn": ["build"]
     },
@@ -24,19 +24,19 @@
       "executor": "@nx/eslint:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/arri-codegen/rust/**/*.ts"]
+        "lintFilePatterns": ["languages/rust/rust-codegen/**/*.ts"]
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{workspaceRoot}/coverage/packages/arri-codegen/rust-reference/src",
-        "{workspaceRoot}/coverage/packages/arri-codegen/rust/src"
+        "{workspaceRoot}/coverage/languages/rust/rust-codegen-reference/src",
+        "{workspaceRoot}/coverage/languages/rust/rust-codegen/src"
       ],
-      "outputs": ["{workspaceRoot}/coverage/packages/arri-codegen/rust"],
+      "outputs": ["{workspaceRoot}/coverage/languages/rust/rust-codegen"],
       "options": {
         "command": "vitest run --passWithNoTests --globals",
-        "cwd": "packages/arri-codegen/rust"
+        "cwd": "languages/rust/rust-codegen"
       },
       "configurations": {
         "watch": {

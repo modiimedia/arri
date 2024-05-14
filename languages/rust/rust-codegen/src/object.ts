@@ -1,4 +1,4 @@
-import { type SchemaFormProperties } from "arri-codegen-utils";
+import { type SchemaFormProperties } from "@arrirpc/codegen-utils";
 import {
     type GeneratorContext,
     type RustProperty,
@@ -37,7 +37,7 @@ export function rustStructFromSchema(
     for (const key of Object.keys(schema.properties)) {
         const rustKey = validRustKey(key);
         keyParts.push(rustKey);
-        const prop = rustTypeFromSchema(schema.properties[key], {
+        const prop = rustTypeFromSchema(schema.properties[key]!, {
             ...context,
             parentId: structName,
             instancePath: `${context.instancePath}/${key}`,
@@ -69,7 +69,7 @@ export function rustStructFromSchema(
         for (const key of Object.keys(schema.optionalProperties)) {
             const rustKey = validRustKey(key);
             keyParts.push(rustKey);
-            const subSchema = schema.optionalProperties[key];
+            const subSchema = schema.optionalProperties[key]!;
             const prop = rustTypeFromSchema(subSchema, {
                 ...context,
                 parentId: structName,

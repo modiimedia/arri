@@ -1,6 +1,7 @@
 export { dartClientGenerator } from "@arrirpc/codegen-dart";
 export { typescriptClientGenerator } from "@arrirpc/codegen-ts";
 export { kotlinClientGenerator } from "@arrirpc/codegen-kotlin";
+export { rustClientGenerator } from "@arrirpc/codegen-rust";
 export {
     type AppDefinition,
     createAppDefinition,

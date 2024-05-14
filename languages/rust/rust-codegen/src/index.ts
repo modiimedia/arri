@@ -17,7 +17,7 @@ import {
     type RpcDefinition,
     isRpcDefinition,
     pascalCase,
-} from "arri-codegen-utils";
+} from "@arrirpc/codegen-utils";
 import path from "pathe";
 import { rustAnyFromSchema } from "./any";
 import { rustVecFromSchema } from "./array";
@@ -88,8 +88,8 @@ export function createRustClient(
         }
     }
     const modelParts: string[] = [];
-    for (const key of Object.keys(def.models)) {
-        const result = rustTypeFromSchema(def.models[key]!, {
+    for (const key of Object.keys(def.definitions)) {
+        const result = rustTypeFromSchema(def.definitions[key]!, {
             ...context,
             instancePath: key,
             schemaPath: "",

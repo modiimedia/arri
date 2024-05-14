@@ -1,4 +1,4 @@
-import { type SchemaFormEnum, pascalCase } from "arri-codegen-utils";
+import { type SchemaFormEnum, pascalCase } from "@arrirpc/codegen-utils";
 import {
     type GeneratorContext,
     type RustProperty,
@@ -36,15 +36,15 @@ pub enum ${enumName} {
 
 impl ArriModel for ${enumName} {
     fn new() -> Self {
-        Self::${pascalCase(schema.enum[0], { normalize: true })}
+        Self::${pascalCase(schema.enum[0]!, { normalize: true })}
     }
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::String(input_val) => match input_val.as_str() {
                 ${fromJsonMatchParts.join(",\n\t\t\t\t")},
-                _ => Self::${pascalCase(schema.enum[0], { normalize: true })},
+                _ => Self::${pascalCase(schema.enum[0]!, { normalize: true })},
             },
-            _ => Self::${pascalCase(schema.enum[0], { normalize: true })}
+            _ => Self::${pascalCase(schema.enum[0]!, { normalize: true })}
         }
     }
     fn from_json_string(input: String) -> Self {

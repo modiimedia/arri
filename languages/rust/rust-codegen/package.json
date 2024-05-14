@@ -1,5 +1,5 @@
 {
-  "name": "arri-codegen-rust",
+  "name": "@arrirpc/codegen-rust",
   "type": "module",
   "license": "MIT",
   "author": {
@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
-    "directory": "packages/arri-codegen/rust"
+    "directory": "languages/rust/rust-codegen"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -22,9 +22,9 @@
   ],
   "dependencies": {
     "pathe": "^1.1.2",
-    "arri-codegen-utils": "workspace:*"
+    "@arrirpc/codegen-utils": "workspace:*"
   },
   "devDependencies": {
-    "arri-validate": "workspace:*"
+    "@arrirpc/schema": "workspace:*"
   }
 }

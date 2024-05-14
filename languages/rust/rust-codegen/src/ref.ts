@@ -1,4 +1,4 @@
-import { type SchemaFormRef, pascalCase } from "arri-codegen-utils";
+import { type SchemaFormRef, pascalCase } from "@arrirpc/codegen-utils";
 import {
     isOptionType,
     type GeneratorContext,

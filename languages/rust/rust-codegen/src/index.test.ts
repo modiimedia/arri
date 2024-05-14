@@ -1,7 +1,10 @@
 import { execSync } from "child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { normalizeWhitespace, type SchemaFormType } from "arri-codegen-utils";
-import { a } from "arri-validate";
+import {
+    normalizeWhitespace,
+    type SchemaFormType,
+} from "@arrirpc/codegen-utils";
+import { a } from "@arrirpc/schema";
 import path from "pathe";
 import { rustBoolFromSchema } from "./boolean";
 import { tmpDir, type GeneratorContext, refDir } from "./common";

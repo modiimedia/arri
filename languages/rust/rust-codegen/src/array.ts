@@ -1,4 +1,4 @@
-import { type SchemaFormElements } from "arri-codegen-utils";
+import { type SchemaFormElements } from "@arrirpc/codegen-utils";
 import {
     maybeOption,
     type GeneratorContext,

@@ -2,7 +2,7 @@ import {
     type SchemaFormProperties,
     type SchemaFormDiscriminator,
     pascalCase,
-} from "arri-codegen-utils";
+} from "@arrirpc/codegen-utils";
 import {
     getTypeName,
     type GeneratorContext,
@@ -37,7 +37,7 @@ export function rustTaggedUnionFromSchema(
             key,
             isOption,
             schema.nullable ?? false,
-            schema.mapping[key],
+            schema.mapping[key]!,
             {
                 ...context,
                 parentId: enumName,
@@ -170,7 +170,7 @@ function taggedUnionSubType(
     for (const key of Object.keys(schema.properties)) {
         const rustKey = validRustKey(key);
         keyParts.push(rustKey);
-        const prop = rustTypeFromSchema(schema.properties[key], {
+        const prop = rustTypeFromSchema(schema.properties[key]!, {
             ...context,
             parentId: subTypeName,
             instancePath: `${context.instancePath}/${key}`,
@@ -193,7 +193,7 @@ function taggedUnionSubType(
         for (const key of Object.keys(schema.optionalProperties)) {
             const rustKey = validRustKey(key);
             keyParts.push(rustKey);
-            const prop = rustTypeFromSchema(schema.optionalProperties[key], {
+            const prop = rustTypeFromSchema(schema.optionalProperties[key]!, {
                 ...context,
                 parentId: subTypeName,
                 instancePath: `${context.instancePath}/${key}`,

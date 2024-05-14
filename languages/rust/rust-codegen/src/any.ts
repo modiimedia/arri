@@ -1,4 +1,4 @@
-import { type Schema } from "arri-codegen-utils";
+import { type Schema } from "@arrirpc/codegen-utils";
 import {
     type GeneratorContext,
     maybeOption,
