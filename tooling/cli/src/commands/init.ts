@@ -94,7 +94,18 @@ export default defineCommand({
 });
 
 async function initApp(dir: string, force: boolean) {
-    const degit = Degit("modiimedia/arri-starters/app-starter-ts", {
+    const { eslint } = await enquirer.prompt<{ eslint: boolean }>([
+        {
+            name: "eslint",
+            type: "confirm",
+            message: "Do you want to setup Eslint?",
+            initial: true,
+        },
+    ]);
+    const repo = eslint
+        ? "modiimedia/arri-starters/app-starter-ts-with-eslint"
+        : "modiimedia/arri-starters/app-starter-ts";
+    const degit = Degit(repo, {
         force,
     });
     await degit.clone(dir);
