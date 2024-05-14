@@ -127,7 +127,7 @@ importers:
         version: link:../../../tooling/codegen-utils
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../../tooling/schema-builder
+        version: link:../../../tooling/schema
 
   languages/kotlin/kotlin-codegen:
     dependencies:
@@ -136,7 +136,7 @@ importers:
         version: link:../../../tooling/codegen-utils
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../../tooling/schema-builder
+        version: link:../../../tooling/schema
       json-schema-to-jtd:
         specifier: workspace:*
         version: link:../../../tooling/json-schema-to-jtd
@@ -145,7 +145,7 @@ importers:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../../tooling/schema-builder
+        version: link:../../../tooling/schema
       event-source-plus:
         specifier: ^0.0.6
         version: 0.0.6
@@ -167,7 +167,7 @@ importers:
         version: link:../../../tooling/codegen-utils
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../../tooling/schema-builder
+        version: link:../../../tooling/schema
       ajv:
         specifier: ^8.13.0
         version: 8.13.0
@@ -195,7 +195,7 @@ importers:
         version: link:../../../tooling/codegen-utils
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../../tooling/schema-builder
+        version: link:../../../tooling/schema
       '@types/source-map-support':
         specifier: ^0.5.10
         version: 0.5.10
@@ -229,7 +229,7 @@ importers:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../tooling/schema-builder
+        version: link:../tooling/schema
       '@arrirpc/server':
         specifier: workspace:*
         version: link:../languages/ts/ts-server
@@ -248,7 +248,7 @@ importers:
         version: link:../../../languages/ts/ts-client
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../../tooling/schema-builder
+        version: link:../../../tooling/schema
       ofetch:
         specifier: ^1.3.4
         version: 1.3.4
@@ -257,7 +257,7 @@ importers:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../tooling/schema-builder
+        version: link:../../tooling/schema
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
@@ -265,9 +265,6 @@ importers:
         specifier: workspace:*
         version: link:../../tooling/cli
     devDependencies:
-      '@arrirpc/adapter-typebox':
-        specifier: workspace:*
-        version: link:../../tooling/schema-adapter-typebox
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../../tooling/codegen-utils
@@ -277,6 +274,9 @@ importers:
       '@arrirpc/server':
         specifier: workspace:*
         version: link:../../languages/ts/ts-server
+      '@arrirpc/typebox-adapter':
+        specifier: workspace:*
+        version: link:../../tooling/schema-typebox-adapter
 
   tooling/cli:
     dependencies:
@@ -339,7 +339,7 @@ importers:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../schema-builder
+        version: link:../schema
       jtd-utils:
         specifier: workspace:*
         version: link:../jtd-utils
@@ -365,23 +365,7 @@ importers:
 
   tooling/jtd-utils: {}
 
-  tooling/schema-adapter-typebox:
-    dependencies:
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../schema-builder
-      '@sinclair/typebox':
-        specifier: ^0.32
-        version: 0.32.30
-      json-schema-to-jtd:
-        specifier: workspace:*
-        version: link:../json-schema-to-jtd
-    devDependencies:
-      '@arrirpc/server':
-        specifier: workspace:*
-        version: link:../../languages/ts/ts-server
-
-  tooling/schema-builder:
+  tooling/schema:
     dependencies:
       jtd-utils:
         specifier: workspace:*
@@ -402,6 +386,22 @@ importers:
       benny:
         specifier: ^3.7.1
         version: 3.7.1
+
+  tooling/schema-typebox-adapter:
+    dependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@sinclair/typebox':
+        specifier: ^0.32
+        version: 0.32.30
+      json-schema-to-jtd:
+        specifier: workspace:*
+        version: link:../json-schema-to-jtd
+    devDependencies:
+      '@arrirpc/server':
+        specifier: workspace:*
+        version: link:../../languages/ts/ts-server
 
 packages:
 

@@ -1,7 +1,7 @@
 {
-  "name": "schema-adapter-typebox",
+  "name": "schema-typebox-adapter",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/schema-adapter-typebox/src",
+  "sourceRoot": "tooling/schema-typebox-adapter/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,14 +9,14 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/schema-adapter-typebox"
+        "cwd": "tooling/schema-typebox-adapter"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/schema-adapter-typebox"
+        "cwd": "tooling/schema-typebox-adapter"
       },
       "dependsOn": ["build"]
     },
@@ -26,17 +26,17 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/tooling/schema-adapter-typebox"],
+      "outputs": ["{workspaceRoot}/coverage/tooling/schema-typebox-adapter"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/schema-adapter-typebox"
+        "reportsDirectory": "../../coverage/tooling/schema-typebox-adapter"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "tooling/schema-adapter-typebox"
+        "cwd": "tooling/schema-typebox-adapter"
       }
     }
   },

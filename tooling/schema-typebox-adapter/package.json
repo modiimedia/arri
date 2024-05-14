@@ -1,5 +1,5 @@
 {
-  "name": "@arrirpc/adapter-typebox",
+  "name": "@arrirpc/typebox-adapter",
   "version": "0.44.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
-    "directory": "tooling/schema-adapter-typebox"
+    "directory": "tooling/schema-typebox-adapter"
   },
   "dependencies": {
     "@arrirpc/schema": "workspace:*",

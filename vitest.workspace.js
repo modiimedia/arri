@@ -9,8 +9,8 @@ export default defineWorkspace([
     "./tooling/cli/vite.config.ts",
     "./tooling/codegen-utils/vite.config.ts",
     "./tooling/json-schema-to-jtd/vite.config.ts",
-    "./tooling/schema-adapter-typebox/vite.config.ts",
-    "./tooling/schema-builder/vite.config.ts",
+    "./tooling/schema-typebox-adapter/vite.config.ts",
+    "./tooling/schema/vite.config.ts",
     "./tooling/jtd-utils/vite.config.ts",
     "./tests/clients/client-typescript/vite.config.ts",
 ]);

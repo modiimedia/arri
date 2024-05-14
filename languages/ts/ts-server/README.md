@@ -1,6 +1,6 @@
 # Arri RPC
 
-Typescript implementation of Arri RPC. It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
+Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
 
 ## Table of Contents
 
@@ -81,17 +81,17 @@ Create an `arri.config.ts` in the project directory
 
 ```ts
 // arri.config.ts
-import { defineConfig } from "arri";
 import {
+    defineConfig,
     typescriptClientGenerator,
     dartClientGenerator,
-} from "arri/dist/codegen";
+} from "arri";
 
 export default defineConfig({
     entry: "app.ts",
     port: 3000,
     srcDir: "src",
-    clientGenerators: [
+    generators: [
         typescriptClientGenerator({
             // options
         }),
@@ -157,8 +157,8 @@ Example `.rpc.ts` file
 
 ```ts
 // ./src/users/getUser.rpc.ts
-import { defineRpc } from "arri";
-import { a } from "arri-validate";
+import { defineRpc } from "@arrirpc/server";
+import { a } from "@arrirpc/schema";
 
 export default defineRpc({
     params: a.object({
@@ -408,13 +408,13 @@ app.rpc("sayHello", {
 });
 ```
 
-To get type safety for these new properties create a `.d.ts` file and augment the `EventContext` provided by `H3`
+To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arri/server`
 
 ```ts
-import "h3";
+import "@arri/server";
 
-declare module "h3" {
-    interface H3EventContext {
+declare module "@arri/server" {
+    interface ArriEventContext {
         user?: {
             id: number;
             name: string;
@@ -430,17 +430,18 @@ Right now Arri RPC has client generators for the following languages:
 
 -   typescript
 -   dart
+-   kotlin
 
 ```ts
 // arri.config.ts
-import { defineConfig } from "arri";
-import { typescriptClientGenerator, dartClientGenerator } from "arri/dist/codegen";
+import { defineConfig, typescriptClientGenerator, dartClientGenerator, kotlinClientGenerator } from "arri";
 
 export default defineConfig({
     // rest of config
     clientGenerators: [
         typescriptClientGenerator({...}),
-        dartClientGenerator({...})
+        dartClientGenerator({...}),
+        kotlinClientGenerator({...})
     ]
 });
 ```
@@ -457,6 +458,7 @@ It looks something like this:
 {
     "procedures": {
         "sayHello": {
+            "transport": "http",
             "path": "/say-hello",
             "method": "post",
             "params": "SayHelloParams",
@@ -538,7 +540,7 @@ Arri is built on top of [H3](https://h3.unjs.io/utils/request#getrequestipevent)
 Arri re-eports all of the H3 utilities.
 
 ```ts
-import { getRequestIP, setResponseHeader } from "arri";
+import { getRequestIP, setResponseHeader } from "@arrirpc/server";
 ```
 
 #### Accessing H3 Events

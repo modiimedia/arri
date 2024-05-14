@@ -1,3 +1,3 @@
-# Arri Codegen
+# Languages
 
-This directory contains all of the first party arri code generation plugins.
+This directory contains libraries and generators for each target language

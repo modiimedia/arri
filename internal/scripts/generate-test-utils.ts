@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
 import { type AppDefinition } from "../../tooling/codegen-utils/dist";
-import { a } from "../../tooling/schema-builder/src/_index";
+import { a } from "../../tooling/schema/src/_index";
 
 const Enumerator = a.enumerator(["FOO", "BAR", "BAZ"], { id: "Enumerator" });
 type Enumerator = a.infer<typeof Enumerator>;

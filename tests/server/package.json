@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "arri": "workspace:*",
-    "@arrirpc/adapter-typebox": "workspace:*",
+    "@arrirpc/typebox-adapter": "workspace:*",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/eslint-plugin": "workspace:*",
     "@arrirpc/schema": "workspace:*",

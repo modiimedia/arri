@@ -9,7 +9,7 @@ const publishConfig: Record<string, { allowPublish: boolean; otp: boolean }> = {
         allowPublish: true,
         otp: true,
     },
-    "@arrirpc/adapter-typebox": {
+    "@arrirpc/typebox-adapter": {
         allowPublish: true,
         otp: true,
     },
