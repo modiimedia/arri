@@ -1,36 +1,30 @@
 import Foundation
 import ObjectMapper
 
-public protocol ExampleClientModel: Mappable {
-    init()
+public protocol ExampleClientModel: Mappable, Equatable {
     func toQueryString() -> String
 }
-
-public protocol ExampleClientEnum {
+public protocol ExampleClientEnum: Equatable {
     func toJsonString() -> String
     func toQueryString() -> String
 }
-
-
-private class __DateFormatter {
-    let RFC3339DateFormatter: DateFormatter
-    init() {
+public class ExampleClientDateFormatter {
+    public let RFC3339DateFormatter: DateFormatter
+    public init() {
         RFC3339DateFormatter   = DateFormatter()
         RFC3339DateFormatter.locale = Locale(identifier: "en_US_POSIX")
         RFC3339DateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         RFC3339DateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
-    func date(from: String) -> Date? {
+    public func date(from: String) -> Date? {
         return RFC3339DateFormatter.date(from: from)
     }
-    func string(from: Date) -> String {
+    public func string(from: Date) -> String {
         return RFC3339DateFormatter.string(from: from)
     }    
 }
 
-private let __dateFormatter = __DateFormatter()
-
-
+private let __dateFormatter = ExampleClientDateFormatter()
 private let __dateTransformer = TransformOf<Date, String>(
     fromJSON: {
         if($0 == nil) {
@@ -43,24 +37,34 @@ private let __dateTransformer = TransformOf<Date, String>(
     }
 )
 
-struct Book: ExampleClientModel {
+public struct Book: ExampleClientModel, Equatable {
+    public var id: String = ""
+    public var name: String = ""
+    public var createdAt: Date = Date.now
+    public var updatedAt: Date = Date.now
 
-    var id: String = ""
-    var name: String = ""
-    var createdAt: Date = Date.now
-    var updatedAt: Date = Date.now
+    public init() {}
+    public init(
+        id: String,
+        name: String,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.name = name
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+    public init?(map: Map) {}
 
-    init() {}
-    init(map: Map) {}
-
-    mutating func mapping(map: Map) {
+    public mutating func mapping(map: Map) {
        self.id <- map["id"]
        self.name <- map["name"]
        self.createdAt <- (map["createdAt"], __dateTransformer)
        self.updatedAt <- (map["updatedAt"], __dateTransformer)
     }
 
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("id=\(self.id)")
         __queryParts.append("name=\(self.name)")
@@ -72,17 +76,22 @@ struct Book: ExampleClientModel {
 
 
 
-struct BookParams: ExampleClientModel {
-    var bookId: String = ""
+public struct BookParams: ExampleClientModel {
+    public var bookId: String = ""
 
-    init() {}
-    init?(map: ObjectMapper.Map) {}
+    public init(
+        bookId: String
+    ) {
+        self.bookId = bookId
+    }
+    public init() {}
+    public init?(map: ObjectMapper.Map) {}
 
-    mutating func mapping(map: Map) {
+    public mutating func mapping(map: Map) {
         self.bookId <- map["bookId"]
     }
 
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("bookId=\(self.bookId)")
         return __queryParts.joined(separator: "&")
@@ -90,12 +99,17 @@ struct BookParams: ExampleClientModel {
 }
 
 struct NestedObject: ExampleClientModel {
-    var id: String = ""
-    var content: String = ""
-
+    public var id: String = ""
+    public var content: String = ""
+    init(
+        id: String,
+        content: String
+    ) {
+        self.id = id
+        self.content = content
+    }
     init() {}
     init?(map: Map) {}
-
     mutating func mapping(map: Map) {
         self.id <- map["id"]
         self.content <- map["content"]
@@ -177,12 +191,51 @@ struct ObjectWithEveryType: ExampleClientModel {
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any")
         return __queryParts.joined(separator: "&")
     }
+
+    static func == (left: ObjectWithEveryType, right: ObjectWithEveryType) -> Bool {
+        return 
+            left.string == right.string && 
+            left.boolean == right.boolean && 
+            left.timestamp == right.timestamp &&
+            left.float32 == right.float32 &&
+            left.float64 == right.float64 &&
+            left.int8 == right.int8 &&
+            left.uint8 == right.uint8 &&
+            left.int16 == right.int16 &&
+            left.uint16 == right.uint16 &&
+            left.int32 == right.int32 &&
+            left.uint32 == right.uint32 &&
+            left.int64 == right.int64 &&
+            left.uint64 == right.uint64 &&
+            left.enum == right.enum &&
+            left.object == right.object &&
+            left.array == right.array && 
+            left.record == right.record &&
+            left.discriminator == right.discriminator &&
+            left.any as? String == right.any as? String
+    }
 }
 
 enum Enumerator {
     case foo
     case bar
     case baz
+
+    init(string: String) {
+       switch(string) {
+        case "FOO":
+            self = .foo
+            break;
+        case "BAR":
+            self = .bar
+            break;
+        case "BAZ":
+            self = .baz
+            break;
+        default:
+            self = .foo
+       }
+    }
 
     func serialValue() -> String {
         switch (self) {
@@ -230,6 +283,11 @@ struct DiscriminatorA: ExampleClientModel {
     let typeName: String = "A"
     var id: String = ""
 
+    init(
+        id: String
+    ) {
+        self.id = id
+    }
     init() {}
     init?(map: Map) {}
 
@@ -250,6 +308,13 @@ struct DiscriminatorB: ExampleClientModel {
     var id: String = ""
     var name: String = ""
 
+    init(
+        id: String,
+        name: String
+    ) {
+        self.id = id
+        self.name = name
+    }
     init() {}
     init?(map: Map) {}
 
@@ -273,6 +338,15 @@ struct DiscriminatorC: ExampleClientModel {
     var name: String = ""
     var date: Date = Date.now
 
+    init(
+        id: String,
+        name: String,
+        date: Date
+    ) {
+        self.id = id
+        self.name = name
+        self.date = date
+    }
     init() {}
     init?(map: Map) {}
 

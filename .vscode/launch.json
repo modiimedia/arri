@@ -19,6 +19,26 @@
       "name": "Release swift-codegen-reference (languages/swift/swift-codegen-reference)",
       "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/release/swift-codegen-reference",
       "preLaunchTask": "swift: Build Release swift-codegen-reference (languages/swift/swift-codegen-reference)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference",
+      "name": "Debug SwiftCodegenReference (languages/swift/swift-codegen-reference)",
+      "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/debug/SwiftCodegenReference",
+      "preLaunchTask": "swift: Build Debug SwiftCodegenReference (languages/swift/swift-codegen-reference)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference",
+      "name": "Release SwiftCodegenReference (languages/swift/swift-codegen-reference)",
+      "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/release/SwiftCodegenReference",
+      "preLaunchTask": "swift: Build Release SwiftCodegenReference (languages/swift/swift-codegen-reference)"
     }
   ]
 }
