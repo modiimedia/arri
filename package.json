@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/source",
-  "version": "0.45.2",
+  "version": "0.45.3",
   "author": {
     "name": "joshmossas",
     "url": "https://github.com/joshmossas"
@@ -75,4 +75,3 @@
   },
   "packageManager": "pnpm@9.0.6"
 }
-
