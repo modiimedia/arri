@@ -28,7 +28,8 @@
     "integration-tests:run-tests": "nx run-many -t integration-test",
     "scaffold": "jiti internal/scripts/scaffold-package.ts",
     "postversion": "jiti internal/scripts/version-sync.ts",
-    "gen-test-utils": "jiti internal/scripts/generate-test-utils.ts"
+    "gen-test-utils": "jiti internal/scripts/generate-test-utils.ts",
+    "publish-all": "sh internal/scripts/publish-all.sh"
   },
   "private": true,
   "devDependencies": {
