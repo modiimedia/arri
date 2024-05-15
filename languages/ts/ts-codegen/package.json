@@ -1,15 +1,10 @@
 {
   "name": "@arrirpc/codegen-ts",
-  "version": "0.45.1",
+  "version": "0.45.2",
   "type": "module",
   "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -18,16 +13,12 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "dependencies": {
     "ajv": "^8.13.0",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "prettier": "^3.2.5"
   },
-  "devDependencies": {
-    "@arrirpc/client": "workspace:*"
-  }
+  "devDependencies": { "@arrirpc/client": "workspace:*" }
 }
