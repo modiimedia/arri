@@ -3,7 +3,7 @@
   "plugins": ["@arrirpc"],
   "overrides": [
     {
-      "extends": ["plugin:@arrirpc/recommended"],
+      "extends": ["plugin:@arrirpc/legacy-config-recommended"],
       "files": "src/linter-tests.ts"
     }
   ]

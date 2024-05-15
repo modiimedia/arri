@@ -12,16 +12,16 @@ const packageJson = JSON.parse(
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
-    entries: ["./src/index.ts"],
+    entries: ["./src/plugin.ts", "./src/configs.ts"],
     rollup: {
         emitCJS: true,
-        // dts: {
-        //     respectExternal: false,
-        // },
+        dts: {
+            respectExternal: true,
+        },
     },
     outDir: "dist",
     clean: true,
-    declaration: false,
+    declaration: true,
     failOnWarn: false,
     externals: deps,
 });
