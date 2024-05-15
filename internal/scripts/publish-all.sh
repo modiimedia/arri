@@ -1,4 +1,8 @@
 #!/bin/bash
-read -p "Enter NPM OTP: " otp
+
+echo "\n\nPublishing NPM packages..."
+read -p "Enter OTP: " otp
 pnpm publish -r --otp $otp
-# pnpm nx publish dart-client
+
+echo "\n\nPublishing Dart client..."
+pnpm nx publish dart-client
