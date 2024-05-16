@@ -42,22 +42,22 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
     paramA: TValues | string,
     paramB?: ASchemaOptions | TValues,
 ): AStringEnumSchema<TValues> {
+    const isIdShorthand = typeof paramA === "string";
+    const enumVal = isIdShorthand ? (paramB as TValues) : paramA;
+    const meta = isIdShorthand
+        ? { id: paramA }
+        : (paramB as ASchemaOptions | undefined);
     const isType = (input: unknown): input is TKeys => {
         if (typeof input !== "string") {
             return false;
         }
-        for (const val of paramA) {
+        for (const val of enumVal) {
             if (val === input) {
                 return true;
             }
         }
         return false;
     };
-    const isIdShorthand = typeof paramA === "string";
-    const enumVal = isIdShorthand ? (paramB as TValues) : paramA;
-    const meta = isIdShorthand
-        ? { id: paramA }
-        : (paramB as ASchemaOptions | undefined);
     return {
         enum: enumVal,
         metadata: {

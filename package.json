@@ -16,7 +16,7 @@
   "scripts": {
     "typecheck": "nx run-many -t typecheck",
     "test": "nx run-many -t test",
-    "test:skip-cache": "nx run-many -t build --skip-nx-cache",
+    "test:skip-cache": "nx run-many -t test --skip-nx-cache",
     "build": "nx run-many -t build",
     "build:skip-cache": "nx run-many -t build --skip-nx-cache",
     "lint": "nx run-many -t lint",
@@ -38,7 +38,7 @@
     "@nx/vite": "19.0.4",
     "@nx/workspace": "19.0.4",
     "@sinclair/typebox": "^0.32.30",
-    "@types/lodash": "^4.17.1",
+    "@types/lodash": "^4.17.3",
     "@types/node": "20.12.12",
     "@typescript-eslint/eslint-plugin": "7.9.0",
     "@typescript-eslint/parser": "7.9.0",

@@ -1,5 +1,5 @@
 import { type Rule } from "eslint";
-import { type CallExpression } from "estree";
+import { type CallExpression, Node } from "estree";
 import { argHasIdKey, isNestedInSchema } from "./_common";
 
 const guardedSchemaTypes = ["object", "partial", "pick", "extend"] as const;
@@ -49,7 +49,7 @@ function handleObject(
     node: CallExpression & Rule.NodeParentExtension,
     context: Rule.RuleContext,
 ) {
-    if (!isRootObjectSchema(context)) {
+    if (!isRootObjectSchema(node, context)) {
         return;
     }
     if (node.arguments.length < 2) {
@@ -78,7 +78,7 @@ function handlePartial(
     node: CallExpression & Rule.NodeParentExtension,
     context: Rule.RuleContext,
 ) {
-    if (!isRootObjectSchema(context)) {
+    if (!isRootObjectSchema(node, context)) {
         return;
     }
     if (node.arguments.length < 2) {
@@ -101,7 +101,7 @@ function handlePick(
     node: CallExpression & Rule.NodeParentExtension,
     context: Rule.RuleContext,
 ) {
-    if (!isRootObjectSchema(context)) {
+    if (!isRootObjectSchema(node, context)) {
         return;
     }
     if (node.arguments.length < 3) {
@@ -121,30 +121,35 @@ function handlePick(
 }
 
 function handleExtend(
-    node: CallExpression & Rule.NodeParentExtension,
+    expression: CallExpression & Rule.NodeParentExtension,
     context: Rule.RuleContext,
 ) {
-    if (!isRootObjectSchema(context)) {
+    if (!isRootObjectSchema(expression, context)) {
         return;
     }
-    if (node.arguments.length < 3) {
+    if (expression.arguments.length < 3) {
         context.report({
             message: defaultMessage,
-            node,
+            node: expression,
         });
         return;
     }
-    if (argHasIdKey(node.arguments[2]!)) {
+    if (argHasIdKey(expression.arguments[2]!)) {
         return;
     }
     context.report({
         message: defaultMessage,
-        node,
+        node: expression,
     });
 }
 
-function isRootObjectSchema(context: Rule.RuleContext, log = false) {
+function isRootObjectSchema(
+    node: Node,
+    context: Rule.RuleContext,
+    log = false,
+) {
     return !isNestedInSchema(
+        node,
         [...guardedSchemaTypes, "discriminator", "recursive"],
         context,
         log,

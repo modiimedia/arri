@@ -1,5 +1,5 @@
-import { type Rule } from "eslint";
-import { type BaseCallExpression } from "estree";
+import { SourceCode, type Rule } from "eslint";
+import { type BaseCallExpression, type Node } from "estree";
 
 export function argHasIdKey(
     arg: BaseCallExpression["arguments"][number],
@@ -23,11 +23,17 @@ export function argHasIdKey(
 }
 
 export function isNestedInSchema(
+    node: Node,
     schemaTypes: string[],
     context: Rule.RuleContext,
     log = false,
 ) {
-    const ancestors = context.getAncestors();
+    const sourceCode =
+        "sourceCode" in context
+            ? context.sourceCode
+            : // legacy method
+              ((context as any).getSourceCode() as SourceCode);
+    const ancestors = sourceCode.getAncestors(node);
     if (log) {
         console.log(ancestors);
     }
