@@ -1,6 +1,6 @@
 # Arri RPC Monorepo
 
-Arri is an RPC framework designed for effortless type-safety between multiple languages.
+Arri is an RPC framework designed for effortless end-to-end type safety across programming languages
 
 This is a work in progress. Things will break.
 
