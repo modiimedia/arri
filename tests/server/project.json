@@ -24,7 +24,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "command": "eslint **/*.ts",
+        "command": "eslint .",
         "cwd": "tests/server"
       }
     },

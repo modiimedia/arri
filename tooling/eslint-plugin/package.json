@@ -2,8 +2,13 @@
   "name": "@arrirpc/eslint-plugin",
   "version": "0.45.4",
   "license": "MIT",
-  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
-  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -11,8 +16,24 @@
   },
   "main": "./dist/plugin.cjs",
   "module": "./dist/plugin.mjs",
-  "files": ["dist"],
+  "exports": {
+    ".": {
+      "import": "./dist/plugin.mjs",
+      "require": "./dist/plugin.cjs"
+    },
+    "./configs": {
+      "import": "./dist/configs.mjs",
+      "require": "./dist/configs.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "dependencies": {},
-  "devDependencies": { "@types/eslint": "^8.56.10" },
-  "peerDependencies": { "eslint": ">=8.0.0" }
+  "devDependencies": {
+    "@types/eslint": "^8.56.10"
+  },
+  "peerDependencies": {
+    "eslint": ">=8.0.0"
+  }
 }
