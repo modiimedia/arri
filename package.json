@@ -26,7 +26,7 @@
     "lint:fix:skip-cache": "nx-run-many -t lint --skip-nx-cache",
     "integration-tests": "start-server-and-test 'integration-tests:start-server' http-get://127.0.0.1:2020/status 'integration-tests:run-tests'",
     "integration-tests:start-server": "nx build-server test-server && node tests/server/.output/server.mjs --host",
-    "integration-tests:run-tests": "nx run-many -t integration-test",
+    "integration-tests:run-tests": "nx run-many -t integration-test --parallel=false",
     "scaffold": "jiti internal/scripts/scaffold-package.ts",
     "postversion": "jiti internal/scripts/version-sync.ts",
     "gen-test-utils": "jiti internal/scripts/generate-test-utils.ts",
