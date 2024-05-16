@@ -18,6 +18,7 @@ export function prefixedRuleMap<T extends string>(
     prefix: T,
     rules: Record<RuleName, Linter.RuleEntry>,
 ): Record<PrefixedRuleName<T>, Linter.RuleEntry> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = {};
     for (const key of Object.keys(rules)) {
         result[`${prefix}/${key}`] = rules[key as RuleName];

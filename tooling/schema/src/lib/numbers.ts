@@ -54,14 +54,14 @@ function coerceNumber(input: unknown, options: ValidationData) {
 }
 
 export function float32(opts: ASchemaOptions = {}) {
-    return numberScalarType("float32", opts, (input) => {
+    return numberScalarType("float32", opts, () => {
         return {
             success: true,
         };
     });
 }
 export function float64(opts: ASchemaOptions = {}) {
-    return numberScalarType("float64", opts, (input) => {
+    return numberScalarType("float64", opts, () => {
         return {
             success: true,
         };
@@ -282,7 +282,7 @@ function validateNumber(input: unknown): input is number {
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number, data: ValidationData): string {
+function serializeNumber(input: number, _data: ValidationData): string {
     return input.toString();
 }
 function parseNumber(input: unknown, options: ValidationData) {

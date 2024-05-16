@@ -14,9 +14,9 @@ export default defineWebsocketRpc({
                     peer.send(randomLargeObjectResponse());
                 }
             },
-            onMessage: (peer, message) => {},
-            onClose: (peer) => {},
-            onError: (peer) => {},
+            onMessage: (_, __) => {},
+            onClose: (_) => {},
+            onError: (_) => {},
         };
     },
 });

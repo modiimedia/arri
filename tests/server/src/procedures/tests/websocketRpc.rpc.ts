@@ -36,8 +36,8 @@ export default defineWebsocketRpc({
     params: ParamsSchema,
     response: ResponseSchema,
     handler: {
-        onOpen: (peer) => {},
-        onClose: (peer) => {},
+        onOpen: (_) => {},
+        onClose: (_) => {},
         onMessage: async (peer, message) => {
             if (!peer.context.messageCount) {
                 peer.context.messageCount = 1;
@@ -63,6 +63,6 @@ export default defineWebsocketRpc({
                     break;
             }
         },
-        onError: (peer, error) => {},
+        onError: (_, __) => {},
     },
 });

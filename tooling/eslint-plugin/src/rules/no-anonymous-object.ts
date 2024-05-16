@@ -23,8 +23,7 @@ const noAnonymousObject: Rule.RuleModule = {
                     return;
                 }
                 const nodeName = node.callee.property.name;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                if (!guardedSchemaTypes.includes(nodeName as any)) {
+                if (!guardedSchemaTypes.includes(nodeName as never)) {
                     return;
                 }
                 switch (nodeName as SchemaType) {

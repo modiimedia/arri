@@ -171,7 +171,7 @@ export function registerWebsocketRpc(
         typeof rpc.handler === "function" ? rpc.handler() : rpc.handler;
 
     const handler = defineWebSocketHandler({
-        upgrade(req) {},
+        upgrade(_req) {},
         open(peer) {
             const urlParts = peer.url.split("?");
             const context: WsPeerContext = {

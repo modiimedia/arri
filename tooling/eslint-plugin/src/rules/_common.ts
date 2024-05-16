@@ -32,6 +32,7 @@ export function isNestedInSchema(
         "sourceCode" in context
             ? context.sourceCode
             : // legacy method
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((context as any).getSourceCode() as SourceCode);
     const ancestors = sourceCode.getAncestors(node);
     if (log) {
@@ -50,8 +51,8 @@ export function isNestedInSchema(
             continue;
         }
         const nodeName = node.callee.property.name;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        if (schemaTypes.includes(nodeName as any)) {
+
+        if (schemaTypes.includes(nodeName as never)) {
             return true;
         }
     }
