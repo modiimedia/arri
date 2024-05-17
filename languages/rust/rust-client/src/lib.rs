@@ -27,7 +27,7 @@ pub struct ArriParsedRequestOptions<'a> {
 }
 
 #[derive(Debug)]
-pub struct ArriError {
+pub struct ArriServerError {
     pub code: u16,
     pub message: String,
     pub stack: Option<String>,
@@ -38,7 +38,7 @@ trait ArriRequestErrorMethods {
     fn from_response_data(status: u16, body: String) -> Self;
 }
 
-impl ArriRequestErrorMethods for ArriError {
+impl ArriRequestErrorMethods for ArriServerError {
     fn from_response_data(status: u16, body: String) -> Self {
         let mut err = Self::from_json_string(body.to_owned());
         if err.code == 0 {
@@ -51,7 +51,7 @@ impl ArriRequestErrorMethods for ArriError {
     }
 }
 
-impl ArriModel for ArriError {
+impl ArriModel for ArriServerError {
     fn new() -> Self {
         Self {
             code: 0,
@@ -165,7 +165,7 @@ impl ArriModel for ArriError {
 pub async fn arri_request<'a>(
     opts: ArriRequestOptions<'a>,
     params: Option<impl ArriModel>,
-) -> Result<reqwest::Response, ArriError> {
+) -> Result<reqwest::Response, ArriServerError> {
     let response: Result<reqwest::Response, reqwest::Error>;
     match opts.method {
         reqwest::Method::GET => {
@@ -242,7 +242,7 @@ pub async fn arri_request<'a>(
     match response {
         Ok(res) => return Ok(res),
         Err(err) => {
-            return Err(ArriError {
+            return Err(ArriServerError {
                 code: err.status().unwrap_or(StatusCode::default()).as_u16(),
                 message: format!("Error requesting \"{}\"", opts.url),
                 stack: None,
@@ -258,6 +258,12 @@ pub trait ArriModel {
     fn from_json_string(input: String) -> Self;
     fn to_json_string(&self) -> String;
     fn to_query_params_string(&self) -> String;
+}
+
+pub trait ArriEnum {
+    fn default() -> Self;
+    fn from_string(input: String) -> Self;
+    fn serial_value(&self) -> String;
 }
 
 pub struct EmptyArriModel {}
@@ -290,7 +296,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
     opts: ArriParsedRequestOptions<'a>,
     params: Option<impl ArriModel>,
     parser: fn(body: String) -> TResponse,
-) -> Result<TResponse, ArriError> {
+) -> Result<TResponse, ArriServerError> {
     let result = arri_request(
         ArriRequestOptions {
             method: opts.method,
@@ -308,7 +314,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
     let status = response.status().as_u16();
     let body: Result<String, reqwest::Error> = response.text().await;
     if status >= 300 || status < 200 {
-        return Err(ArriError::from_response_data(
+        return Err(ArriServerError::from_response_data(
             status,
             body.unwrap_or_default(),
         ));
@@ -316,7 +322,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
     match body {
         Ok(text) => return Ok(parser(text)),
         Err(err) => {
-            return Err(ArriError {
+            return Err(ArriServerError {
                 code: status,
                 message: "Expected server to return plaintext".to_string(),
                 stack: None,

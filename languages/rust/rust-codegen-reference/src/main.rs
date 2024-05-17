@@ -1,43 +1,126 @@
-mod ref_client;
-mod ref_complete_object;
-mod ref_hashmap;
-mod ref_nullable_object;
-mod ref_partial_object;
-mod ref_recursive_discriminator;
-mod ref_recursive_object;
+mod example_client;
 
-use arri_client::{
-    reqwest::{header::HeaderMap, Client},
-    ArriClientConfig, ArriService,
-};
-use ref_client::{
-    TestClient, TestClientUserSettingsServiceMethods, TestClientUsersServiceMethods, UserParams,
-};
+fn main() {}
 
-#[tokio::main]
-async fn main() {
-    let config = ArriClientConfig {
-        client: Client::default(),
-        base_url: "https://google.com".to_string(),
-        headers: HeaderMap::new(),
+#[cfg(test)]
+mod parsing_and_serialization_tests {
+    use crate::example_client::{
+        Book, BookParams, Discriminator, Enumerator, NestedObject, ObjectWithEveryType,
     };
-    let client = TestClient::new();
-    let user = client
-        .users
-        .get_user(
-            &config,
-            UserParams {
-                user_id: "12345".to_string(),
+    use arri_client::{chrono::DateTime, serde_json, ArriModel};
+    use std::{
+        collections::{hash_map, BTreeMap, HashMap},
+        fs,
+    };
+
+    #[test]
+    fn book_test() {
+        let file_path: String = "../../../tests/test-files/Book.json".to_string();
+        let file_contents: String = fs::read_to_string(file_path).unwrap();
+
+        let reference: Book = Book {
+            id: "1".to_string(),
+            name: "The Adventures of Tom Sawyer".to_string(),
+            created_at: DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z").unwrap(),
+            updated_at: DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z").unwrap(),
+        };
+
+        assert_eq!(
+            Book::from_json_string(file_contents.clone()),
+            reference.clone()
+        );
+        assert_eq!(reference.to_json_string(), file_contents.clone());
+        assert_eq!(reference.to_query_params_string(), "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z")
+    }
+
+    #[test]
+    fn book_params_test() {
+        let file_path = "../../../tests/test-files/BookParams.json".to_string();
+        let file_contents = fs::read_to_string(file_path).unwrap();
+        let reference = BookParams {
+            book_id: "1".to_string(),
+        };
+        assert_eq!(
+            BookParams::from_json_string(file_contents.clone()),
+            reference.clone()
+        );
+        assert_eq!(reference.to_json_string(), file_contents.clone());
+        assert_eq!(reference.to_query_params_string(), "bookId=1");
+    }
+
+    #[test]
+    fn nested_object_no_special_chars_test() {
+        let file_content =
+            fs::read_to_string("../../../tests/test-files/NestedObject_NoSpecialChars.json")
+                .unwrap();
+        let reference = NestedObject {
+            id: "1".to_string(),
+            content: "hello world".to_string(),
+        };
+        assert_eq!(
+            NestedObject::from_json_string(file_content.clone()),
+            reference.clone()
+        );
+        assert_eq!(reference.to_json_string(), file_content.clone());
+    }
+
+    #[test]
+    fn nested_object_special_chars_test() {
+        let file_path = "../../../tests/test-files/NestedObject_SpecialChars.json";
+        let file_content = fs::read_to_string(file_path).unwrap();
+        let reference = NestedObject {
+            id: "1".to_string(),
+            content: "double-quote: \" | backslash: \\ | backspace: \x08 | form-feed: \x0C | newline: \n | carriage-return: \r | tab: \t | unicode: \u{0000}".to_string(),
+        };
+        assert_eq!(
+            NestedObject::from_json_string(file_content.clone()),
+            reference.clone()
+        );
+        assert_eq!(reference.to_json_string(), file_content.clone());
+    }
+
+    #[test]
+    fn object_with_every_type_test() {
+        let target_date =
+            DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z").unwrap_or(DateTime::default());
+        let file_path = "../../../tests/test-files/ObjectWithEveryType.json";
+        let file_content = fs::read_to_string(file_path).unwrap();
+        let mut record_val: BTreeMap<String, bool> = BTreeMap::new();
+        record_val.insert("A".to_string(), true);
+        record_val.insert("B".to_string(), false);
+        let reference = ObjectWithEveryType {
+            string: "".to_string(),
+            boolean: false,
+            timestamp: target_date,
+            float32: 1.5,
+            float64: 1.5,
+            int8: 1,
+            uint8: 1,
+            int16: 10,
+            uint16: 10,
+            int32: 100,
+            uint32: 100,
+            int64: 1000,
+            uint64: 1000,
+            r#enum: Enumerator::Baz,
+            object: NestedObject {
+                id: "1".to_string(),
+                content: "hello world".to_string(),
             },
-        )
-        .await;
-    match user {
-        Ok(user_val) => println!("{:?}", user_val),
-        Err(err) => println!("{:?}", err),
-    };
-    let user_settings = client.users.settings.get_user_settings(&config).await;
-    match user_settings {
-        Ok(user_settings_val) => println!("{:?}", user_settings_val),
-        Err(err) => println!("{:?}", err),
-    };
+            array: vec![true, false, false],
+            record: record_val,
+            discriminator: Discriminator::C {
+                id: "".to_string(),
+                name: "".to_string(),
+                date: target_date,
+            },
+            any: serde_json::Value::String("hello world".to_string()),
+        };
+
+        assert_eq!(
+            ObjectWithEveryType::from_json_string(file_content.clone()),
+            reference.clone()
+        );
+        assert_eq!(file_content.clone(), reference.to_json_string());
+    }
 }
