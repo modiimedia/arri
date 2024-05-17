@@ -101,7 +101,10 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
     );
 }
 
-async function bundleAppEntry(config: ResolvedArriConfig, allowCodegen = true) {
+async function bundleAppEntry(
+    config: ResolvedArriConfig,
+    _allowCodegen = true,
+) {
     const appEntry = path.resolve(
         config.rootDir,
         config.buildDir,

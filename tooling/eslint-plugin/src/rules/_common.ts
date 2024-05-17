@@ -1,5 +1,5 @@
-import { type Rule } from "eslint";
-import { type BaseCallExpression } from "estree";
+import { SourceCode, type Rule } from "eslint";
+import { type BaseCallExpression, type Node } from "estree";
 
 export function argHasIdKey(
     arg: BaseCallExpression["arguments"][number],
@@ -23,11 +23,18 @@ export function argHasIdKey(
 }
 
 export function isNestedInSchema(
+    node: Node,
     schemaTypes: string[],
     context: Rule.RuleContext,
     log = false,
 ) {
-    const ancestors = context.getAncestors();
+    const sourceCode =
+        "sourceCode" in context
+            ? context.sourceCode
+            : // legacy method
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((context as any).getSourceCode() as SourceCode);
+    const ancestors = sourceCode.getAncestors(node);
     if (log) {
         console.log(ancestors);
     }
@@ -44,8 +51,8 @@ export function isNestedInSchema(
             continue;
         }
         const nodeName = node.callee.property.name;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        if (schemaTypes.includes(nodeName as any)) {
+
+        if (schemaTypes.includes(nodeName as never)) {
             return true;
         }
     }

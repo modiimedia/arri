@@ -4,8 +4,8 @@ test("error messages", async () => {
     const request = await arriSafeRequest({
         url: "http://thisurldoesntexist.blah",
         method: "get",
-        parser(input) {},
-        serializer(_) {
+        parser() {},
+        serializer() {
             return undefined;
         },
     });

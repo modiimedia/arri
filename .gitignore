@@ -54,3 +54,6 @@ build
 **/target
 **/.gradle
 **/.idea
+
+# swift builds
+**/.build

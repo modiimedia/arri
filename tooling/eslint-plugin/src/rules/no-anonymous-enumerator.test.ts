@@ -1,7 +1,7 @@
 import { RuleTester } from "eslint";
 import noAnonymousEnumerator from "./no-anonymous-enumerator";
 
-const tester = new RuleTester({ parserOptions: { ecmaVersion: 2022 } });
+const tester = new RuleTester();
 
 tester.run("no-anonymous-enumerator", noAnonymousEnumerator, {
     valid: [

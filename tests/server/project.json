@@ -21,10 +21,11 @@
       "cache": false
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
+      "executor": "nx:run-commands",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["tests/server/**/*.ts"]
+        "command": "eslint .",
+        "cwd": "tests/server"
       }
     },
 

@@ -273,7 +273,7 @@ export function dartRpcFromDefinition(
 export function dartHttpRpcFromSchema(
     key: string,
     def: HttpRpcDefinition,
-    opts: DartClientGeneratorOptions,
+    _opts: DartClientGeneratorOptions,
 ): string {
     let returnType:
         | `Future<String>`
@@ -376,7 +376,7 @@ export function dartHttpRpcFromSchema(
 export function dartWsRpcFromSchema(
     key: string,
     def: WsRpcDefinition,
-    opts: DartClientGeneratorOptions,
+    _opts: DartClientGeneratorOptions,
 ): string {
     const serverMsg = def.response
         ? pascalCase(def.response, { normalize: true })

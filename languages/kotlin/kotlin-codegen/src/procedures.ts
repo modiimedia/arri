@@ -104,8 +104,8 @@ export function kotlinHttpRpcFromSchema(
 }
 
 export function kotlinWsRpcFromSchema(
-    schema: WsRpcDefinition,
-    context: CodegenContext,
+    _schema: WsRpcDefinition,
+    _context: CodegenContext,
 ): string {
     return "";
 }

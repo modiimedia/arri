@@ -118,7 +118,7 @@ async function startDevServer(config: ResolvedArriConfig) {
     });
     process.on("SIGINT", cleanExit);
     process.on("SIGTERM", cleanExit);
-    async function load(isRestart: boolean, reason?: string) {
+    async function load(_isRestart: boolean, _reason?: string) {
         if (fileWatcher) {
             await fileWatcher.close();
         }
@@ -152,7 +152,7 @@ async function startDevServer(config: ResolvedArriConfig) {
                 "**/.git/**",
             ],
         });
-        fileWatcher.on("all", async (eventName, path) => {
+        fileWatcher.on("all", async (eventName, _path) => {
             if (eventName === "addDir" || eventName === "add") {
                 return;
             }

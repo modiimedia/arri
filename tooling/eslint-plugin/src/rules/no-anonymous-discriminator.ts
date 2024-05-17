@@ -20,7 +20,7 @@ const noAnonymousDiscriminator: Rule.RuleModule = {
                 if (propName !== "discriminator") {
                     return;
                 }
-                if (isNestedInSchema(["recursive"], context)) {
+                if (isNestedInSchema(node, ["recursive"], context)) {
                     return;
                 }
                 if (node.arguments.length < 3) {

@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [
         viteTsConfigPaths({
             root: "../../../",
-        }) as any,
+        }),
     ],
 
     // Uncomment this if you are using workers.

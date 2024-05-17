@@ -58,7 +58,9 @@ export class ArriErrorInstance extends Error implements ArriError {
         if (typeof parsedJson === "string") {
             try {
                 parsedJson = JSON.parse(parsedJson);
-            } catch (_) {}
+            } catch (_) {
+                /* empty */
+            }
         }
         if (typeof parsedJson !== "object" || parsedJson === null) {
             return new ArriErrorInstance({
