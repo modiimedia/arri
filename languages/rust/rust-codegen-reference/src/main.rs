@@ -176,7 +176,7 @@ mod parsing_and_serialization_tests {
                 name: "".to_string(),
                 date: target_date,
             }),
-            any: Some(serde_json::Value::String("hello_world".to_string())),
+            any: Some(serde_json::Value::String("hello world".to_string())),
         };
 
         assert_eq!(
