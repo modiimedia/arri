@@ -1,0 +1,17 @@
+name: arri_schema
+description: A sample command-line application.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ">=3.5.0-0.0-dev <4.0.0"
+
+# Add regular dependencies here.
+dependencies:
+  collection: ^1.0.0
+  macros: ^0.1.0-main.5
+  # path: ^1.8.0
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0
