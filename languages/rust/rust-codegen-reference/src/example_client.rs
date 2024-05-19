@@ -1218,3 +1218,285 @@ impl ArriModel for ObjectWithOptionalFields {
         _query_parts_.join("&")
     }
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithNullableFields {
+    pub string: Option<String>,
+    pub boolean: Option<bool>,
+    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub float32: Option<f32>,
+    pub float64: Option<f64>,
+    pub int8: Option<i8>,
+    pub uint8: Option<u8>,
+    pub int16: Option<i16>,
+    pub uint16: Option<u16>,
+    pub int32: Option<i32>,
+    pub uint32: Option<u32>,
+    pub int64: Option<i64>,
+    pub uint64: Option<u64>,
+    pub r#enum: Option<Enumerator>,
+    pub object: Option<NestedObject>,
+    pub array: Option<Vec<bool>>,
+    pub record: Option<BTreeMap<String, bool>>,
+    pub discriminator: Option<Discriminator>,
+    pub any: Option<serde_json::Value>,
+}
+
+impl ArriModel for ObjectWithNullableFields {
+    fn new() -> Self {
+        ObjectWithNullableFields {
+            string: None,
+            boolean: None,
+            timestamp: None,
+            float32: None,
+            float64: None,
+            int8: None,
+            uint8: None,
+            int16: None,
+            uint16: None,
+            int32: None,
+            uint32: None,
+            int64: None,
+            uint64: None,
+            r#enum: None,
+            object: None,
+            array: None,
+            record: None,
+            discriminator: None,
+            any: None,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let string = match _val_.get("string") {
+                    Some(serde_json::Value::String(string_val)) => Some(string_val.to_owned()),
+                    _ => None,
+                };
+                let boolean = match _val_.get("boolean") {
+                    Some(serde_json::Value::Bool(boolean_val)) => Some(boolean_val.to_owned()),
+                    _ => None,
+                };
+                let timestamp = match _val_.get("timestamp") {
+                    Some(serde_json::Value::String(timestamp_val)) => {
+                        match DateTime::parse_from_rfc3339(timestamp_val) {
+                            Ok(timestamp_val_result) => Some(timestamp_val_result),
+                            Err(_) => None,
+                        }
+                    }
+                    _ => None,
+                };
+                let float32 = match _val_.get("float32") {
+                    Some(serde_json::Value::Number(float32_val)) => match float32_val.as_f64() {
+                        Some(float32_val_result) => Some(float32_val_result as f32),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let float64 = match _val_.get("float64") {
+                    Some(serde_json::Value::Number(float64_val)) => match float64_val.as_f64() {
+                        Some(float64_val_result) => Some(float64_val_result),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let int8 = match _val_.get("int8") {
+                    Some(serde_json::Value::Number(int8_val)) => match int8_val.as_i64() {
+                        Some(int8_val_result) => match i8::try_from(int8_val_result) {
+                            Ok(int8_val_result_val) => Some(int8_val_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let uint8 = match _val_.get("uint8") {
+                    Some(serde_json::Value::Number(uint8_val)) => match uint8_val.as_u64() {
+                        Some(uint8_val_result) => match u8::try_from(uint8_val_result) {
+                            Ok(uint8_val_result_val) => Some(uint8_val_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let int16 = match _val_.get("int16") {
+                    Some(serde_json::Value::Number(int16_val)) => match int16_val.as_i64() {
+                        Some(int16_val_result) => match i16::try_from(int16_val_result) {
+                            Ok(int16_val_result_val) => Some(int16_val_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let uint16 = match _val_.get("uint16") {
+                    Some(serde_json::Value::Number(uint16_val)) => match uint16_val.as_u64() {
+                        Some(uint16_val_result) => match u16::try_from(uint16_val_result) {
+                            Ok(uint16_val_result_val) => Some(uint16_val_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let int32 = match _val_.get("int32") {
+                    Some(serde_json::Value::Number(int32_val)) => match int32_val.as_i64() {
+                        Some(int32_val_result) => match i32::try_from(int32_val_result) {
+                            Ok(int32_val_result_val) => Some(int32_val_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let uint32 = match _val_.get("uint32") {
+                    Some(serde_json::Value::Number(uint32_val)) => match uint32_val.as_u64() {
+                        Some(uint32_val_result) => match u32::try_from(uint32_val_result) {
+                            Ok(uint32_val_result_val) => Some(uint32_val_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let int64 = match _val_.get("int64") {
+                    Some(serde_json::Value::String(int64_val)) => match int64_val.parse::<i64>() {
+                        Ok(int64_val_result) => Some(int64_val_result),
+                        Err(_) => None,
+                    },
+                    _ => None,
+                };
+                let uint64 = match _val_.get("uint64") {
+                    Some(serde_json::Value::String(uint64_val)) => {
+                        match uint64_val.parse::<u64>() {
+                            Ok(uint64_val_result) => Some(uint64_val_result),
+                            Err(_) => None,
+                        }
+                    }
+                    _ => None,
+                };
+                let r#enum = match _val_.get("enum") {
+                    Some(serde_json::Value::String(enum_val)) => {
+                        Some(Enumerator::from_string(enum_val.to_owned()))
+                    }
+                    _ => None,
+                };
+                let object = match _val_.get("object") {
+                    Some(object_val) => match object_val {
+                        serde_json::Value::Object(_) => {
+                            Some(NestedObject::from_json(object_val.to_owned()))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let array = match _val_.get("array") {
+                    Some(serde_json::Value::Array(array_val)) => {
+                        let mut array_val_result: Vec<bool> = Vec::new();
+                        for element in array_val {
+                            array_val_result.push(match Some(element) {
+                                Some(serde_json::Value::Bool(element_val)) => {
+                                    element_val.to_owned()
+                                }
+                                _ => false,
+                            });
+                        }
+                        Some(array_val_result)
+                    }
+                    _ => None,
+                };
+                let record = match _val_.get("record") {
+                    Some(serde_json::Value::Object(record_val)) => {
+                        let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
+                        for (key, value) in record_val {
+                            record_val_result.insert(
+                                key.to_owned(),
+                                match Some(value) {
+                                    Some(serde_json::Value::Bool(value_val)) => {
+                                        value_val.to_owned()
+                                    }
+                                    _ => false,
+                                },
+                            );
+                        }
+                        Some(record_val_result)
+                    }
+                    _ => None,
+                };
+                let discriminator = match _val_.get("discriminator") {
+                    Some(discriminator_val) => match discriminator_val {
+                        serde_json::Value::Object(_) => {
+                            Some(Discriminator::from_json(discriminator_val.to_owned()))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let any = match _val_.get("any") {
+                    Some(any_val) => Some(any_val.to_owned()),
+                    _ => None,
+                };
+
+                Self {
+                    string,
+                    boolean,
+                    timestamp,
+                    float32,
+                    float64,
+                    int8,
+                    uint8,
+                    int16,
+                    uint16,
+                    int32,
+                    uint32,
+                    int64,
+                    uint64,
+                    r#enum,
+                    object,
+                    array,
+                    record,
+                    discriminator,
+                    any,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        _json_output_.push_str("\"string\":");
+        match &self.string {
+            Some(string_val) => {
+                _json_output_.push_str(serialize_string(string_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        }
+        match &self.boolean {
+            Some(boolean_val) => {
+                _json_output_.push_str(boolean_val.to_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        }
+        todo!("Finish serialize");
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        todo!()
+    }
+}
