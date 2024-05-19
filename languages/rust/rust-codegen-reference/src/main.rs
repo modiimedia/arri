@@ -6,6 +6,7 @@ fn main() {}
 mod parsing_and_serialization_tests {
     use crate::example_client::{
         Book, BookParams, Discriminator, Enumerator, NestedObject, ObjectWithEveryType,
+        ObjectWithOptionalFields,
     };
     use arri_client::{chrono::DateTime, serde_json, ArriModel};
     use std::{
@@ -122,5 +123,66 @@ mod parsing_and_serialization_tests {
             reference.clone()
         );
         assert_eq!(file_content.clone(), reference.to_json_string());
+    }
+
+    #[test]
+    fn object_with_optional_fields_test() {
+        let file_content = fs::read_to_string(
+            "../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json",
+        )
+        .unwrap();
+        let reference = ObjectWithOptionalFields::new();
+        assert_eq!(
+            ObjectWithOptionalFields::from_json_string(file_content.clone()),
+            reference.clone()
+        );
+        assert_eq!(reference.to_json_string(), file_content.clone());
+    }
+
+    #[test]
+    fn object_with_optional_fields_no_undefined_test() {
+        let target_date =
+            DateTime::parse_from_rfc3339("2001-01-01T16:00:00.000Z").unwrap_or(DateTime::default());
+        let file_content = fs::read_to_string(
+            "../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json",
+        )
+        .unwrap();
+        let mut record_val: BTreeMap<String, bool> = BTreeMap::new();
+        record_val.insert("A".to_string(), true);
+        record_val.insert("B".to_string(), false);
+        let reference = ObjectWithOptionalFields {
+            string: Some("".to_string()),
+            boolean: Some(false),
+            timestamp: Some(target_date),
+            float32: Some(1.5),
+            float64: Some(1.5),
+            int8: Some(1),
+            uint8: Some(1),
+            int16: Some(10),
+            uint16: Some(10),
+            int32: Some(100),
+            uint32: Some(100),
+            int64: Some(1000),
+            uint64: Some(1000),
+            r#enum: Some(Enumerator::Baz),
+            object: Some(NestedObject {
+                id: "1".to_string(),
+                content: "hello world".to_string(),
+            }),
+            array: Some(vec![true, false, false]),
+            record: Some(record_val),
+            discriminator: Some(Discriminator::C {
+                id: "".to_string(),
+                name: "".to_string(),
+                date: target_date,
+            }),
+            any: Some(serde_json::Value::String("hello_world".to_string())),
+        };
+
+        assert_eq!(
+            ObjectWithOptionalFields::from_json_string(file_content.clone()),
+            reference.clone()
+        );
+        assert_eq!(reference.to_json_string(), file_content.clone());
     }
 }

@@ -643,26 +643,26 @@ impl ArriModel for Discriminator {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-struct ObjectWithOptionalFields {
-    string: Option<String>,
-    boolean: Option<bool>,
-    timestamp: Option<DateTime<FixedOffset>>,
-    float32: Option<f32>,
-    float64: Option<f64>,
-    int8: Option<i8>,
-    uint8: Option<u8>,
-    int16: Option<i16>,
-    uint16: Option<u16>,
-    int32: Option<i32>,
-    uint32: Option<u32>,
-    int64: Option<i64>,
-    uint64: Option<u64>,
-    r#enum: Option<Enumerator>,
-    object: Option<NestedObject>,
-    array: Option<Vec<bool>>,
-    record: Option<BTreeMap<String, bool>>,
-    discriminator: Option<Discriminator>,
-    any: Option<serde_json::Value>,
+pub struct ObjectWithOptionalFields {
+    pub string: Option<String>,
+    pub boolean: Option<bool>,
+    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub float32: Option<f32>,
+    pub float64: Option<f64>,
+    pub int8: Option<i8>,
+    pub uint8: Option<u8>,
+    pub int16: Option<i16>,
+    pub uint16: Option<u16>,
+    pub int32: Option<i32>,
+    pub uint32: Option<u32>,
+    pub int64: Option<i64>,
+    pub uint64: Option<u64>,
+    pub r#enum: Option<Enumerator>,
+    pub object: Option<NestedObject>,
+    pub array: Option<Vec<bool>>,
+    pub record: Option<BTreeMap<String, bool>>,
+    pub discriminator: Option<Discriminator>,
+    pub any: Option<serde_json::Value>,
 }
 
 impl ArriModel for ObjectWithOptionalFields {
@@ -922,18 +922,299 @@ impl ArriModel for ObjectWithOptionalFields {
                 if _has_keys_ {
                     _json_output_.push(',');
                 }
-                _json_output_.push_str(",\"timestamp\":");
+                _json_output_.push_str("\"timestamp\":");
                 _json_output_.push_str(serialize_date_time(&timestamp_val, true).as_str());
                 _has_keys_ = true;
             }
             _ => {}
         }
-        todo!("Finish serialization");
+        match &self.float32 {
+            Some(float32_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"float32\":");
+                _json_output_.push_str(float32_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.float64 {
+            Some(float64_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"float64\":");
+                _json_output_.push_str(float64_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.int8 {
+            Some(int8_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"int8\":");
+                _json_output_.push_str(int8_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.uint8 {
+            Some(uint8_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"uint8\":");
+                _json_output_.push_str(uint8_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.int16 {
+            Some(int16_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"int16\":");
+                _json_output_.push_str(int16_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.uint16 {
+            Some(uint16_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"uint16\":");
+                _json_output_.push_str(uint16_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.int32 {
+            Some(int32_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"int32\":");
+                _json_output_.push_str(int32_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.uint32 {
+            Some(uint32_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"uint32\":");
+                _json_output_.push_str(uint32_val.to_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.int64 {
+            Some(int64_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"int64\":");
+                _json_output_.push_str(format!("\"{}\"", int64_val).as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.uint64 {
+            Some(uint64_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"uint64\":");
+                _json_output_.push_str(format!("\"{}\"", uint64_val).as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.r#enum {
+            Some(enum_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"enum\":");
+                _json_output_.push_str(format!("\"{}\"", enum_val.serial_value()).as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.object {
+            Some(object_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"object\":");
+                _json_output_.push_str(object_val.to_json_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.array {
+            Some(array_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"array\":");
+                _json_output_.push('[');
+                for (_index_, _element_) in array_val.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(_element_.to_string().as_str());
+                }
+                _json_output_.push(']');
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.record {
+            Some(record_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"record\":");
+                _json_output_.push('{');
+                for (_index_, (_key_, _value_)) in record_val.iter().enumerate() {
+                    if _index_ != 0 {
+                        _json_output_.push(',');
+                    }
+                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(_value_.to_string().as_str());
+                }
+                _json_output_.push('}');
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.discriminator {
+            Some(discriminator_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"discriminator\":");
+                _json_output_.push_str(discriminator_val.to_json_string().as_str());
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
+        match &self.any {
+            Some(any_val) => {
+                if _has_keys_ {
+                    _json_output_.push(',');
+                }
+                _json_output_.push_str("\"any\":");
+                _json_output_.push_str(
+                    serde_json::to_string(any_val)
+                        .unwrap_or("null".to_string())
+                        .as_str(),
+                );
+                _has_keys_ = true;
+            }
+            _ => {}
+        }
         _json_output_.push('}');
         _json_output_
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        let mut _query_parts_: Vec<String> = Vec::new();
+        match &self.string {
+            Some(string_val) => {
+                _query_parts_.push(format!("string={}", string_val));
+            }
+            _ => {}
+        }
+        match &self.boolean {
+            Some(boolean_val) => {
+                _query_parts_.push(format!("boolean={}", boolean_val));
+            }
+            _ => {}
+        }
+        match &self.timestamp {
+            Some(timestamp_val) => {
+                _query_parts_.push(format!(
+                    "timestamp={}",
+                    serialize_date_time(timestamp_val, false)
+                ));
+            }
+            _ => {}
+        }
+        match &self.float32 {
+            Some(float32_val) => {
+                _query_parts_.push(format!("float32={}", float32_val));
+            }
+            _ => {}
+        }
+        match &self.float64 {
+            Some(float64_val) => {
+                _query_parts_.push(format!("float64={}", float64_val));
+            }
+            _ => {}
+        }
+        match &self.int8 {
+            Some(int8_val) => {
+                _query_parts_.push(format!("int8={}", int8_val));
+            }
+            _ => {}
+        }
+        match &self.uint8 {
+            Some(uint8_val) => {
+                _query_parts_.push(format!("uint8={}", uint8_val));
+            }
+            _ => {}
+        }
+        match &self.int16 {
+            Some(int16_val) => {
+                _query_parts_.push(format!("int16={}", int16_val));
+            }
+            _ => {}
+        }
+        match &self.int32 {
+            Some(int32_val) => {
+                _query_parts_.push(format!("int32={}", int32_val));
+            }
+            _ => {}
+        }
+        match &self.uint32 {
+            Some(uint32_val) => {
+                _query_parts_.push(format!("uint32={}", uint32_val));
+            }
+            _ => {}
+        }
+        match &self.int64 {
+            Some(int64_val) => {
+                _query_parts_.push(format!("int64={}", int64_val));
+            }
+            _ => {}
+        }
+        match &self.uint64 {
+            Some(uint64_val) => {
+                _query_parts_.push(format!("uint64={}", uint64_val));
+            }
+            _ => {}
+        }
+        match &self.r#enum {
+            Some(enum_val) => {
+                _query_parts_.push(format!("enum={}", enum_val.serial_value()));
+            }
+            _ => {}
+        }
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/object.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithOptionalFields/array");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/record");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/discriminator");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithOptionalFields/any");
+        _query_parts_.join("&")
     }
 }
