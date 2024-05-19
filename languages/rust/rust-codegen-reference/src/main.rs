@@ -9,10 +9,7 @@ mod parsing_and_serialization_tests {
         ObjectWithOptionalFields,
     };
     use arri_client::{chrono::DateTime, serde_json, ArriModel};
-    use std::{
-        collections::{hash_map, BTreeMap, HashMap},
-        fs,
-    };
+    use std::{collections::BTreeMap, fs};
 
     #[test]
     fn book_test() {
