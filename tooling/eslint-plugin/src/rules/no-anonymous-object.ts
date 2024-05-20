@@ -1,5 +1,6 @@
 import { type Rule } from "eslint";
 import { type CallExpression, Node } from "estree";
+
 import { argHasIdKey, isNestedInSchema } from "./_common";
 
 const guardedSchemaTypes = ["object", "partial", "pick", "extend"] as const;

@@ -1,11 +1,11 @@
+import {
+    dartClientGenerator,
+    defineConfig,
+    kotlinClientGenerator,
+    typescriptClientGenerator,
+} from "arri";
 import { readFileSync } from "fs";
 import path from "path";
-import {
-    defineConfig,
-    typescriptClientGenerator,
-    dartClientGenerator,
-    kotlinClientGenerator,
-} from "arri";
 
 const prettierConfig = JSON.parse(
     readFileSync(path.resolve(__dirname, "../../.prettierrc"), {

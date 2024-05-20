@@ -1,12 +1,13 @@
 import { type WsRpcDefinition } from "@arrirpc/codegen-utils";
 import {
-    type CompiledValidator,
-    type ASchema,
     a,
+    type ASchema,
+    type CompiledValidator,
     type InferType,
 } from "@arrirpc/schema";
 import { type Peer, type WSError } from "crossws";
 import { defineWebSocketHandler, type Router } from "h3";
+
 import { type ArriServerErrorResponse } from "./errors";
 import {
     getRpcParamName,

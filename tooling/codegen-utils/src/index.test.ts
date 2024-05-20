@@ -1,12 +1,13 @@
 import { a } from "@arrirpc/schema";
+
 import {
-    unflattenObject,
-    setNestedObjectProperty,
+    type AppDefinition,
+    createAppDefinition,
     removeDisallowedChars,
     type RpcDefinition,
+    setNestedObjectProperty,
     stringStartsWithNumber,
-    createAppDefinition,
-    type AppDefinition,
+    unflattenObject,
 } from "./index";
 
 describe("unflattenObject()", () => {

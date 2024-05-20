@@ -1,4 +1,5 @@
 import type { Linter } from "eslint";
+
 import noAnonymousDiscriminator from "./no-anonymous-discriminator";
 import noAnonymousEnumerator from "./no-anonymous-enumerator";
 import noAnonymousObject from "./no-anonymous-object";

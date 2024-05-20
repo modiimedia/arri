@@ -1,24 +1,25 @@
 import {
-    type SchemaFormDiscriminator,
-    type SchemaFormProperties,
-    type SchemaFormValues,
     type AppDefinition,
     type RpcDefinition,
     SCHEMA_VERSION,
+    type SchemaFormDiscriminator,
+    type SchemaFormProperties,
+    type SchemaFormValues,
 } from "@arrirpc/codegen-utils";
 import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
 import { DEV_DEFINITION_ENDPOINT } from "arri";
 import {
     type App,
     createApp,
-    type Router,
     createRouter,
     eventHandler,
+    type Router,
     setResponseStatus,
 } from "h3";
+
 import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
-import { type MiddlewareEvent, type Middleware } from "./middleware";
+import { type Middleware,type MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
 import { ArriRouter, type ArriRouterBase } from "./router";
 import {
@@ -26,15 +27,15 @@ import {
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
-    registerRpc,
     isRpcParamSchema,
     type NamedRpc,
+    registerRpc,
     type RpcParamSchema,
 } from "./rpc";
 import {
     createWsRpcDefinition,
-    registerWebsocketRpc,
     type NamedWebsocketRpc,
+    registerWebsocketRpc,
 } from "./websocketRpc";
 
 export type DefinitionMap = Record<

@@ -1,4 +1,5 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousRecursive from "./no-anonymous-recursive";
 
 const tester = new RuleTester();

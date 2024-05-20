@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
+
 import { isAppDefinition } from "@arrirpc/codegen-utils";
 import { listenAndWatch } from "@joshmossas/listhen";
 // import watcher from "@parcel/watcher";
@@ -10,6 +11,7 @@ import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
 import { ofetch } from "ofetch";
 import path from "pathe";
+
 import {
     createAppWithRoutesModule,
     GEN_APP_FILE,

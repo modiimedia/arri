@@ -1,4 +1,5 @@
 import { type H3Event } from "h3";
+
 import { type MiddlewareEventContext } from "./context";
 
 export interface MiddlewareEvent extends H3Event {

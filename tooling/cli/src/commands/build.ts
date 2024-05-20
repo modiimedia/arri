@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import fs from "node:fs/promises";
+
 import { isAppDefinition } from "@arrirpc/codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
@@ -8,14 +9,15 @@ import { build } from "esbuild";
 import { replace } from "esbuild-plugin-replace";
 import path from "pathe";
 import prettier from "prettier";
+
 import {
-    OUT_CODEGEN,
     createAppWithRoutesModule,
+    GEN_APP_FILE,
+    logger,
+    OUT_APP_FILE,
+    OUT_CODEGEN,
     OUT_SERVER_ENTRY,
     setupWorkingDir,
-    GEN_APP_FILE,
-    OUT_APP_FILE,
-    logger,
 } from "../common";
 import { defaultConfig, type ResolvedArriConfig } from "../config";
 

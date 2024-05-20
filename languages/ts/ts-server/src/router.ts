@@ -1,7 +1,8 @@
-import { type ASchema, type AObjectSchema } from "@arrirpc/schema";
+import { type AObjectSchema,type ASchema } from "@arrirpc/schema";
+
 import { type DefinitionMap } from "./app";
 import { type ArriRoute } from "./route";
-import { type RpcParamSchema, type NamedRpc } from "./rpc";
+import { type NamedRpc,type RpcParamSchema } from "./rpc";
 import { type NamedWebsocketRpc } from "./websocketRpc";
 
 export interface ArriRouterBase {

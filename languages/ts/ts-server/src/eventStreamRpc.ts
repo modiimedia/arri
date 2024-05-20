@@ -1,31 +1,32 @@
-import { type InferType, a, type ValueError } from "@arrirpc/schema";
+import { a, type InferType, type ValueError } from "@arrirpc/schema";
 import {
-    type H3Event,
-    type Router,
     eventHandler,
+    type H3Event,
     isPreflightRequest,
+    type Router,
 } from "h3";
 import {
-    type EventStream,
     createEventStream,
+    type EventStream,
     type EventStreamMessage,
 } from "h3-sse";
+
 import { type RpcEventContext } from "./context";
 import {
     type ArriServerError,
-    handleH3Error,
-    defineError,
     type ArriServerErrorResponse,
+    defineError,
+    handleH3Error,
 } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 import {
-    type Rpc,
-    type RpcParamSchema,
-    type RpcEvent,
-    isRpcParamSchema,
-    validateRpcRequestInput,
     isRpc,
+    isRpcParamSchema,
+    type Rpc,
+    type RpcEvent,
+    type RpcParamSchema,
+    validateRpcRequestInput,
 } from "./rpc";
 
 export function defineEventStreamRpc<

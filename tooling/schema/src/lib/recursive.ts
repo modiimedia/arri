@@ -1,9 +1,9 @@
 import {
+    type ADiscriminatorSchema,
+    type AObjectSchema,
+    type ARefSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
-    type ARefSchema,
-    type AObjectSchema,
-    type ADiscriminatorSchema,
     type ValidationData,
 } from "../schemas";
 

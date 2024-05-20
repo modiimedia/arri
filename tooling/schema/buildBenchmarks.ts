@@ -1,4 +1,5 @@
 import { rmSync } from "node:fs";
+
 import { buildSync } from "esbuild";
 import path from "pathe";
 

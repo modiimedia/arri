@@ -1,4 +1,5 @@
 import { a } from "@arrirpc/schema";
+
 import { type AppDefinition } from "./index";
 
 export const TestUserSettingsSchema = a.object("UserSettings", {

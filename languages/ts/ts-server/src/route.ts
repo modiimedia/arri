@@ -1,26 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { type HttpMethod } from "@arrirpc/codegen-utils";
 import {
-    type InferType,
-    type AObjectSchema,
     a,
+    type AObjectSchema,
     type ASchema,
+    type InferType,
 } from "@arrirpc/schema";
 import {
-    type Router,
     defineEventHandler,
-    setHeader,
-    send,
-    isPreflightRequest,
     getQuery,
-    type HTTPMethod,
-    readRawBody,
     type H3Event,
+    type HTTPMethod,
+    isPreflightRequest,
+    readRawBody,
+    type Router,
+    send,
+    setHeader,
 } from "h3";
+
 import { type ArriOptions } from "./app";
-import { type RoutePostEventContext, type RouteEventContext } from "./context";
+import { type RouteEventContext,type RoutePostEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
-import { type MiddlewareEvent, type Middleware } from "./middleware";
+import { type Middleware,type MiddlewareEvent } from "./middleware";
 
 export interface RouteEvent<
     TPath extends string,

@@ -1,8 +1,9 @@
-import { type SchemaFormEnum, pascalCase } from "@arrirpc/codegen-utils";
+import { pascalCase,type SchemaFormEnum } from "@arrirpc/codegen-utils";
+
 import {
+    type CodegenContext,
     getClassName,
     isNullable,
-    type CodegenContext,
     type KotlinProperty,
 } from "./_common";
 

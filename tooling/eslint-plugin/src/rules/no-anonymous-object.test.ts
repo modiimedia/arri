@@ -1,4 +1,5 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousObject from "./no-anonymous-object";
 
 const tester = new RuleTester();

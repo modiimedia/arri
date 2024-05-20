@@ -1,4 +1,5 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousEnumerator from "./no-anonymous-enumerator";
 
 const tester = new RuleTester();

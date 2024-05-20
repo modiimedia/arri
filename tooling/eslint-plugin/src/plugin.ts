@@ -1,4 +1,5 @@
 import type { ESLint } from "eslint";
+
 import { prefixedRuleMap, rules as allRules } from "./rules/_index";
 
 export const meta: ESLint.Plugin["meta"] = {
