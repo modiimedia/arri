@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fmt::format};
+use std::collections::BTreeMap;
 
 use arri_client::{
     chrono::{DateTime, FixedOffset},

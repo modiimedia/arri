@@ -1,25 +1,28 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
+
 import {
     type AppDefinition,
-    type Schema,
     defineClientGeneratorPlugin,
-    isSchemaFormType,
-    unflattenProcedures,
-    isSchemaFormProperties,
-    isSchemaFormEnum,
-    isSchemaFormElements,
-    isSchemaFormValues,
-    isSchemaFormRef,
-    isSchemaFormDiscriminator,
-    isServiceDefinition,
-    type ServiceDefinition,
-    type RpcDefinition,
     isRpcDefinition,
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormRef,
+    isSchemaFormType,
+    isSchemaFormValues,
+    isServiceDefinition,
     pascalCase,
+    type RpcDefinition,
+    type Schema,
+    type ServiceDefinition,
+    unflattenProcedures,
 } from "@arrirpc/codegen-utils";
 import path from "pathe";
-import { GeneratorContext } from "./_common";
+
+import { GeneratorContext, RustProperty } from "./_common";
+import rustAnyFromSchema from "./any";
 
 interface RustClientGeneratorOptions {
     clientName: string;
@@ -96,44 +99,25 @@ export function rustTypeFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     if (isSchemaFormType(schema)) {
-        switch (schema.type) {
-            case "boolean":
-                return rustBoolFromSchema(schema, context);
-            case "string":
-                return rustStringFromSchema(schema, context);
-            case "timestamp":
-                return rustDateTimeFromSchema(schema, context);
-            case "float32":
-            case "float64":
-                return rustFloatFromSchema(schema, context);
-            case "int8":
-            case "uint8":
-            case "int16":
-            case "uint16":
-            case "int32":
-            case "uint32":
-            case "int64":
-            case "uint64":
-                return rustIntFromSchema(schema, context);
-        }
+        // TODO
     }
     if (isSchemaFormProperties(schema)) {
-        return rustStructFromSchema(schema, context);
+        // TODO
     }
     if (isSchemaFormEnum(schema)) {
-        return rustEnumFromSchema(schema, context);
+        // TODO
     }
     if (isSchemaFormElements(schema)) {
-        return rustVecFromSchema(schema, context);
+        // TODO
     }
     if (isSchemaFormValues(schema)) {
-        return rustHashMapFromSchema(schema, context);
+        // TODO
     }
     if (isSchemaFormDiscriminator(schema)) {
-        return rustTaggedUnionFromSchema(schema, context);
+        // TODO
     }
     if (isSchemaFormRef(schema)) {
-        return rustRefFromSchema(schema, context);
+        // TODO
     }
     return rustAnyFromSchema(schema, context);
 }
@@ -143,22 +127,22 @@ export function rustServiceFromDef(
     schema: ServiceDefinition,
     context: GeneratorContext,
 ): string {
-    const serviceId = pascalCase(`${context.parentId ?? ""}_${key}`);
-    context.parentId = serviceId;
-    const rpcsParts: string[] = [];
-    const subServiceParts: string[] = [];
-    for (const key of Object.keys(schema)) {
-        const subSchema = schema[key];
-        if (isServiceDefinition(subSchema)) {
-            const subService = rustServiceFromDef(key, subSchema, context);
-            subServiceParts.push(subService);
-            continue;
-        }
-        if (isRpcDefinition(subSchema)) {
-            const rpc = rustProcedureFromDef(key, subSchema, context);
-            rpcsParts.push(rpc);
-        }
-    }
+    // const serviceId = pascalCase(`${context.parentId ?? ""}_${key}`);
+    // context.parentId = serviceId;
+    // const rpcsParts: string[] = [];
+    // const subServiceParts: string[] = [];
+    // for (const key of Object.keys(schema)) {
+    //     const subSchema = schema[key];
+    //     if (isServiceDefinition(subSchema)) {
+    //         const subService = rustServiceFromDef(key, subSchema, context);
+    //         subServiceParts.push(subService);
+    //         continue;
+    //     }
+    //     if (isRpcDefinition(subSchema)) {
+    //         const rpc = rustProcedureFromDef(key, subSchema, context);
+    //         rpcsParts.push(rpc);
+    //     }
+    // }
     return "";
 }
 
