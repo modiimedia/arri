@@ -13,7 +13,6 @@ import {
     isSchemaFormType,
     isSchemaFormValues,
     isServiceDefinition,
-    pascalCase,
     type RpcDefinition,
     type Schema,
     type ServiceDefinition,
@@ -23,6 +22,12 @@ import path from "pathe";
 
 import { GeneratorContext, RustProperty } from "./_common";
 import rustAnyFromSchema from "./any";
+import {
+    rustBooleanFromSchema,
+    rustF32FromSchema,
+    rustStringFromSchema,
+    rustTimestampFromSchema,
+} from "./primitives";
 
 interface RustClientGeneratorOptions {
     clientName: string;
@@ -99,6 +104,37 @@ export function rustTypeFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     if (isSchemaFormType(schema)) {
+        switch (schema.type) {
+            case "string":
+                return rustStringFromSchema(schema, context);
+            case "boolean":
+                return rustBooleanFromSchema(schema, context);
+            case "timestamp":
+                return rustTimestampFromSchema(schema, context);
+            case "float32":
+                return rustF32FromSchema(schema, context);
+            case "float64":
+                break;
+            case "int8":
+                break;
+            case "uint8":
+                break;
+            case "int16":
+                break;
+            case "uint16":
+                break;
+            case "int32":
+                break;
+            case "uint32":
+                break;
+            case "int64":
+                break;
+            case "uint64":
+                break;
+            default:
+                schema.type satisfies never;
+                throw new Error(`Unhandled schema type: "${schema.type}"`);
+        }
         // TODO
     }
     if (isSchemaFormProperties(schema)) {

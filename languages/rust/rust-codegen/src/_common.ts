@@ -1,6 +1,6 @@
 import path from "pathe";
 import { pascalCase, snakeCase } from "scule";
-import { removeDisallowedChars } from "tooling/codegen-utils/dist";
+import { removeDisallowedChars, Schema } from "tooling/codegen-utils/dist";
 
 export interface GeneratorContext {
     clientName: string;
@@ -10,14 +10,15 @@ export interface GeneratorContext {
     generatedTypes: string[];
     discriminatorKey?: string;
     discriminatorValue?: string;
-    isOptional?: string;
+    isOptional?: boolean;
 }
 
 export interface RustProperty {
     typeName: string;
     defaultValue: string;
+    isNullable: boolean;
     fromJsonTemplate: (input: string, key: string) => string;
-    toJsonTemplate: (input: string, key: string, target: string) => string;
+    toJsonTemplate: (input: string, target: string) => string;
     toQueryStringTemplate: (
         input: string,
         key: string,
@@ -113,3 +114,10 @@ export function validRustName(name: string): string {
 }
 
 export const tmpDir = path.resolve(__dirname, "../.temp");
+
+export function outputIsOptionType(
+    schema: Schema,
+    context: GeneratorContext,
+): boolean {
+    return schema.nullable === true || context.isOptional === true;
+}
