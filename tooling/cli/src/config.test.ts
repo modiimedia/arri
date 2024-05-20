@@ -1,8 +1,9 @@
 import { test } from "vitest";
+
 import {
     type ArriConfig,
-    isArriConfig,
     defineConfig,
+    isArriConfig,
     isResolvedArriConfig,
 } from "./config";
 test("isArriConfig()", () => {

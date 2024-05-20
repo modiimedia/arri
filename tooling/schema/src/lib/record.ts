@@ -3,8 +3,8 @@ import {
     type ASchema,
     type ASchemaOptions,
     type InferType,
-    SCHEMA_METADATA,
     isObject,
+    SCHEMA_METADATA,
     type ValidationData,
 } from "../schemas";
 import { sanitizeJson } from "./validation";

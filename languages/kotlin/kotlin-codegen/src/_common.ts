@@ -1,8 +1,8 @@
 import {
-    type Schema,
     camelCase,
     pascalCase,
     removeDisallowedChars,
+    type Schema,
 } from "@arrirpc/codegen-utils";
 import { stringStartsWithNumber } from "@arrirpc/codegen-utils";
 

@@ -1,7 +1,8 @@
 import { a } from "@arrirpc/schema";
+
 import {
-    type EventStreamConnection,
     defineEventStreamRpc,
+    type EventStreamConnection,
     isEventStreamRpc,
 } from "./eventStreamRpc";
 

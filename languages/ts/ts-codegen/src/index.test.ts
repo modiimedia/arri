@@ -1,13 +1,14 @@
-import { existsSync, mkdirSync } from "fs";
 import {
-    type ServiceDefinition,
     normalizeWhitespace,
     type Schema,
+    type ServiceDefinition,
 } from "@arrirpc/codegen-utils";
 import { TestAppDefinition } from "@arrirpc/codegen-utils/dist/testModels";
 import { a } from "@arrirpc/schema";
+import { existsSync, mkdirSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
+
 import {
     createTypescriptClient,
     tsServiceFromDefinition,

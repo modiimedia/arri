@@ -1,10 +1,9 @@
 import fs from "node:fs";
+
 import {
     type AppDefinition,
     defineClientGeneratorPlugin,
-    isServiceDefinition,
     isRpcDefinition,
-    unflattenProcedures,
     isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
@@ -12,8 +11,11 @@ import {
     isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
+    isServiceDefinition,
     type Schema,
+    unflattenProcedures,
 } from "@arrirpc/codegen-utils";
+
 import {
     type CodegenContext,
     kotlinClassName,
@@ -29,16 +31,16 @@ import {
     kotlinBooleanFromSchema,
     kotlinFloat32FromSchema,
     kotlinFloat64FromSchema,
+    kotlinInt8FromSchema,
     kotlinInt16FromSchema,
     kotlinInt32FromSchema,
     kotlinInt64FromSchema,
-    kotlinInt8FromSchema,
     kotlinStringFromSchema,
     kotlinTimestampFromSchema,
+    kotlinUint8FromSchema as kotlinUInt8FromSchema,
     kotlinUint16FromSchema as kotlinUInt16FromSchema,
     kotlinUint32FromSchema as kotlinUInt32FromSchema,
     kotlinUint64FromSchema as kotlinUInt64FromSchema,
-    kotlinUint8FromSchema as kotlinUInt8FromSchema,
 } from "./primitives";
 import {
     kotlinProcedureFromSchema,

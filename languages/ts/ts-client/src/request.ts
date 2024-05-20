@@ -1,5 +1,6 @@
 import { type HttpMethod } from "event-source-plus";
 import { FetchError, ofetch } from "ofetch";
+
 import { ArriErrorInstance, isArriError } from "./errors";
 
 export interface ArriRequestOpts<

@@ -1,8 +1,9 @@
 import { type Schema, type SchemaFormType } from "@arrirpc/codegen-utils";
+
 import {
+    type CodegenContext,
     isNullable,
     type KotlinProperty,
-    type CodegenContext,
 } from "./_common";
 
 function defaultToQueryString(

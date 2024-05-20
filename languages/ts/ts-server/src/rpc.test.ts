@@ -1,4 +1,5 @@
 import { a } from "@arrirpc/schema";
+
 import { defineEventStreamRpc } from "./eventStreamRpc";
 import { createHttpRpcDefinition, defineRpc } from "./rpc";
 describe("Type Inference", () => {
