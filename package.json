@@ -62,7 +62,7 @@
     "scule": "^1.3.0",
     "start-server-and-test": "^2.0.3",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^7.9.0",
+    "typescript-eslint": "^7.10.0",
     "unbuild": "^2.0.0",
     "vite": "5.2.11",
     "vite-tsconfig-paths": "4.3.2",
