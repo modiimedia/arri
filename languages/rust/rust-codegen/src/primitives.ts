@@ -4,7 +4,7 @@ import {
     GeneratorContext,
     outputIsOptionType,
     RustProperty,
-    validRustKey,
+    validRustIdentifier,
 } from "./_common";
 
 export function rustStringFromSchema(
@@ -19,7 +19,7 @@ export function rustStringFromSchema(
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::String(${innerKey})) => Some(${innerKey}.to_owned()),
@@ -35,7 +35,7 @@ export function rustStringFromSchema(
             return `${target}.push_str(serialize_string(${input}).as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
@@ -72,7 +72,7 @@ export function rustBooleanFromSchema(
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::Bool(${innerKey})) => Some(${innerKey}.to_owned()),
@@ -88,7 +88,7 @@ export function rustBooleanFromSchema(
             return `${target}.push_str(${input}.to_string().as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
@@ -127,7 +127,7 @@ export function rustTimestampFromSchema(
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::String(${innerKey})) => {
@@ -150,7 +150,7 @@ export function rustTimestampFromSchema(
             return `${target}.push_str(serialize_date_time(${input}, true).as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
@@ -187,7 +187,7 @@ export function rustF32FromSchema(
         defaultValue,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::Number(${innerKey})) => match ${innerKey}.as_f64() {
@@ -208,7 +208,7 @@ export function rustF32FromSchema(
             return `${target}.push_str(${input}.to_string().as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {

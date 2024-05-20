@@ -1,6 +1,6 @@
+import { removeDisallowedChars, Schema } from "@arrirpc/codegen-utils";
 import path from "pathe";
 import { pascalCase, snakeCase } from "scule";
-import { removeDisallowedChars, Schema } from "tooling/codegen-utils/dist";
 
 export interface GeneratorContext {
     clientName: string;
@@ -88,7 +88,7 @@ const reservedKeywords = [
 const illegalChars = ".!@#$%^&*()-+=\\][{}'\";?";
 const numberChars = "0123456789";
 
-export function validRustKey(key: string): string {
+export function validRustIdentifier(key: string): string {
     const output = removeDisallowedChars(snakeCase(key), illegalChars);
     if (numberChars.includes(output.charAt(0))) {
         return `r#_${output}`;

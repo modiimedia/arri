@@ -4,7 +4,7 @@ import {
     GeneratorContext,
     outputIsOptionType,
     RustProperty,
-    validRustKey,
+    validRustIdentifier,
 } from "./_common";
 
 export default function rustAnyFromSchema(
@@ -19,7 +19,7 @@ export default function rustAnyFromSchema(
         defaultValue: isOptionType ? `None` : `serde_json::Value::Null`,
         isNullable: schema.nullable ?? false,
         fromJsonTemplate(input, key) {
-            const innerKey = validRustKey(`${key}_val`);
+            const innerKey = validRustIdentifier(`${key}_val`);
             if (isOptionType) {
                 return `match ${input} {
                             Some(${innerKey}) => Some(${innerKey}.to_owned()),
