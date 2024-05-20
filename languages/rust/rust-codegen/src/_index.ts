@@ -19,23 +19,13 @@ import {
     pascalCase,
 } from "@arrirpc/codegen-utils";
 import path from "pathe";
-import { rustAnyFromSchema } from "./any";
-import { rustVecFromSchema } from "./array";
-import { rustBoolFromSchema } from "./boolean";
-import { type GeneratorContext, type RustProperty } from "./common";
-import { rustTaggedUnionFromSchema } from "./discriminator";
-import { rustEnumFromSchema } from "./enum";
-import { rustFloatFromSchema, rustIntFromSchema } from "./numbers";
-import { rustStructFromSchema } from "./object";
-import { rustHashMapFromSchema } from "./record";
-import { rustRefFromSchema } from "./ref";
-import { rustStringFromSchema } from "./string";
-import { rustDateTimeFromSchema } from "./timestamp";
+import { GeneratorContext } from "./_common";
 
 interface RustClientGeneratorOptions {
     clientName: string;
     outputFile: string;
     format?: boolean;
+    typePrefix?: string;
 }
 
 export const rustClientGenerator = defineClientGeneratorPlugin(
@@ -44,10 +34,10 @@ export const rustClientGenerator = defineClientGeneratorPlugin(
             generator(def) {
                 const context: GeneratorContext = {
                     clientName: options.clientName,
-                    generatedTypes: [],
+                    typeNamePrefix: options.typePrefix ?? "",
                     instancePath: "",
                     schemaPath: "",
-                    parentIds: [],
+                    generatedTypes: [],
                 };
                 const client = createRustClient(def, context);
                 const outputFile = path.resolve(options.outputFile);
@@ -98,25 +88,7 @@ export function createRustClient(
             modelParts.push(result.content);
         }
     }
-    const heading = `#![allow(dead_code)]
-use arri_client::{
-    async_trait::async_trait,
-    chrono::{DateTime, FixedOffset},
-    parsed_arri_request,
-    reqwest::Method,
-    serde_json::{self},
-    ArriClientConfig, ArriError, ArriModel, ArriParsedRequestOptions, ArriService,
-    EmptyArriModel,
-};
-use std::{collections::HashMap, str::FromStr};`;
-    if (Object.keys(def.procedures).length === 0) {
-        return `${heading}
-
-${modelParts.join("\n")}`;
-    }
-    return `${heading}
-
-${modelParts.join("\n\n")}`;
+    return "";
 }
 
 export function rustTypeFromSchema(

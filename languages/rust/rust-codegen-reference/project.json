@@ -1,5 +1,18 @@
 {
   "name": "rust-codegen-reference",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "options": {
+        "command": "cargo test",
+        "cwd": "languages/rust/rust-codegen-reference"
+      }
+    }
+  }
 }
