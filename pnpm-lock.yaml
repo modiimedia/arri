@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.2.0
-        version: 9.2.0
+        specifier: ^9.3.0
+        version: 9.3.0
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
@@ -1489,6 +1489,10 @@ packages:
 
   '@eslint/js@9.2.0':
     resolution: {integrity: sha512-ESiIudvhoYni+MdsI8oD7skpprZ89qKocwRM2KEvhhBJ9nl5MRh7BXU5GTod7Mdygq+AUl+QzId6iWJKR/wABA==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@eslint/js@9.3.0':
+    resolution: {integrity: sha512-niBqk8iwv96+yuTwjM6bWg8ovzAPF9qkICsGtcoa5/dmqcEMfdwNAX7+/OHcJHc7wj7XqPxH98oAHytFYlw6Sw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@faker-js/faker@8.4.1':
@@ -5454,6 +5458,8 @@ snapshots:
   '@eslint/js@8.57.0': {}
 
   '@eslint/js@9.2.0': {}
+
+  '@eslint/js@9.3.0': {}
 
   '@faker-js/faker@8.4.1': {}
 
