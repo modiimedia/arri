@@ -905,7 +905,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.boolean {
             Some(boolean_val) => {
                 if _has_keys_ {
@@ -916,7 +916,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.timestamp {
             Some(timestamp_val) => {
                 if _has_keys_ {
@@ -927,7 +927,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.float32 {
             Some(float32_val) => {
                 if _has_keys_ {
@@ -938,7 +938,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.float64 {
             Some(float64_val) => {
                 if _has_keys_ {
@@ -949,7 +949,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.int8 {
             Some(int8_val) => {
                 if _has_keys_ {
@@ -960,7 +960,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.uint8 {
             Some(uint8_val) => {
                 if _has_keys_ {
@@ -971,7 +971,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.int16 {
             Some(int16_val) => {
                 if _has_keys_ {
@@ -982,7 +982,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.uint16 {
             Some(uint16_val) => {
                 if _has_keys_ {
@@ -993,7 +993,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.int32 {
             Some(int32_val) => {
                 if _has_keys_ {
@@ -1004,7 +1004,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.uint32 {
             Some(uint32_val) => {
                 if _has_keys_ {
@@ -1015,7 +1015,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.int64 {
             Some(int64_val) => {
                 if _has_keys_ {
@@ -1026,7 +1026,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.uint64 {
             Some(uint64_val) => {
                 if _has_keys_ {
@@ -1037,7 +1037,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.r#enum {
             Some(enum_val) => {
                 if _has_keys_ {
@@ -1048,7 +1048,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.object {
             Some(object_val) => {
                 if _has_keys_ {
@@ -1059,7 +1059,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.array {
             Some(array_val) => {
                 if _has_keys_ {
@@ -1077,7 +1077,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.record {
             Some(record_val) => {
                 if _has_keys_ {
@@ -1096,7 +1096,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.discriminator {
             Some(discriminator_val) => {
                 if _has_keys_ {
@@ -1107,7 +1107,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         match &self.any {
             Some(any_val) => {
                 if _has_keys_ {
@@ -1122,7 +1122,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 _has_keys_ = true;
             }
             _ => {}
-        }
+        };
         _json_output_.push('}');
         _json_output_
     }
@@ -1134,13 +1134,13 @@ impl ArriModel for ObjectWithOptionalFields {
                 _query_parts_.push(format!("string={}", string_val));
             }
             _ => {}
-        }
+        };
         match &self.boolean {
             Some(boolean_val) => {
                 _query_parts_.push(format!("boolean={}", boolean_val));
             }
             _ => {}
-        }
+        };
         match &self.timestamp {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
@@ -1149,67 +1149,67 @@ impl ArriModel for ObjectWithOptionalFields {
                 ));
             }
             _ => {}
-        }
+        };
         match &self.float32 {
             Some(float32_val) => {
                 _query_parts_.push(format!("float32={}", float32_val));
             }
             _ => {}
-        }
+        };
         match &self.float64 {
             Some(float64_val) => {
                 _query_parts_.push(format!("float64={}", float64_val));
             }
             _ => {}
-        }
+        };
         match &self.int8 {
             Some(int8_val) => {
                 _query_parts_.push(format!("int8={}", int8_val));
             }
             _ => {}
-        }
+        };
         match &self.uint8 {
             Some(uint8_val) => {
                 _query_parts_.push(format!("uint8={}", uint8_val));
             }
             _ => {}
-        }
+        };
         match &self.int16 {
             Some(int16_val) => {
                 _query_parts_.push(format!("int16={}", int16_val));
             }
             _ => {}
-        }
+        };
         match &self.int32 {
             Some(int32_val) => {
                 _query_parts_.push(format!("int32={}", int32_val));
             }
             _ => {}
-        }
+        };
         match &self.uint32 {
             Some(uint32_val) => {
                 _query_parts_.push(format!("uint32={}", uint32_val));
             }
             _ => {}
-        }
+        };
         match &self.int64 {
             Some(int64_val) => {
                 _query_parts_.push(format!("int64={}", int64_val));
             }
             _ => {}
-        }
+        };
         match &self.uint64 {
             Some(uint64_val) => {
                 _query_parts_.push(format!("uint64={}", uint64_val));
             }
             _ => {}
-        }
+        };
         match &self.r#enum {
             Some(enum_val) => {
                 _query_parts_.push(format!("enum={}", enum_val.serial_value()));
             }
             _ => {}
-        }
+        };
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/object.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithOptionalFields/array");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/record");
@@ -1482,7 +1482,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"boolean\":");
         match &self.boolean {
             Some(boolean_val) => {
@@ -1491,7 +1491,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"timestamp\":");
         match &self.timestamp {
             Some(timestamp_val) => {
@@ -1500,7 +1500,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"float32\":");
         match &self.float32 {
             Some(float32_val) => {
@@ -1509,7 +1509,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"float64\":");
         match &self.float64 {
             Some(float64_val) => {
@@ -1518,7 +1518,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"int8\":");
         match &self.int8 {
             Some(int8_val) => {
@@ -1527,7 +1527,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"uint8\":");
         match &self.uint8 {
             Some(uint8_val) => {
@@ -1536,7 +1536,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"int16\":");
         match &self.int16 {
             Some(int16_val) => {
@@ -1545,7 +1545,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"uint16\":");
         match &self.uint16 {
             Some(uint16_val) => {
@@ -1554,7 +1554,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"int32\":");
         match &self.int32 {
             Some(int32_val) => {
@@ -1563,7 +1563,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"uint32\":");
         match &self.uint32 {
             Some(uint32_val) => {
@@ -1572,7 +1572,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"int64\":");
         match &self.int64 {
             Some(int64_val) => {
@@ -1581,7 +1581,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"uint64\":");
         match &self.uint64 {
             Some(uint64_val) => {
@@ -1590,7 +1590,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"enum\":");
         match &self.r#enum {
             Some(enum_val) => {
@@ -1599,7 +1599,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"object\":");
         match &self.object {
             Some(object_val) => {
@@ -1608,7 +1608,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"array\":");
         match &self.array {
             Some(array_val) => {
@@ -1624,7 +1624,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"record\":");
         match &self.record {
             Some(record_val) => {
@@ -1641,7 +1641,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"discriminator\":");
         match &self.discriminator {
             Some(discriminator_val) => {
@@ -1650,7 +1650,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push_str(",\"any\":");
         match &self.any {
             Some(any_val) => {
@@ -1663,7 +1663,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _json_output_.push_str("null");
             }
-        }
+        };
         _json_output_.push('}');
         _json_output_
     }
@@ -1677,7 +1677,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("string=null".to_string());
             }
-        }
+        };
         match &self.boolean {
             Some(boolean_val) => {
                 _query_parts_.push(format!("boolean={}", boolean_val));
@@ -1685,7 +1685,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("boolean=null".to_string());
             }
-        }
+        };
         match &self.timestamp {
             Some(timestamp_val) => {
                 _query_parts_.push(format!(
@@ -1696,7 +1696,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("timestamp=null".to_string());
             }
-        }
+        };
         match &self.float32 {
             Some(float32_val) => {
                 _query_parts_.push(format!("float32={}", float32_val));
@@ -1704,7 +1704,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("float32=null".to_string());
             }
-        }
+        };
         match &self.float64 {
             Some(float64_val) => {
                 _query_parts_.push(format!("float64={}", float64_val));
@@ -1712,7 +1712,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("float64=null".to_string());
             }
-        }
+        };
         match &self.int8 {
             Some(int8_val) => {
                 _query_parts_.push(format!("int8={}", int8_val));
@@ -1720,7 +1720,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("int8=null".to_string());
             }
-        }
+        };
         match &self.uint8 {
             Some(uint8_val) => {
                 _query_parts_.push(format!("uint8={}", uint8_val));
@@ -1728,7 +1728,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("uint8=null".to_string());
             }
-        }
+        };
         match &self.int16 {
             Some(int16_val) => {
                 _query_parts_.push(format!("int16={}", int16_val));
@@ -1736,7 +1736,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("int16=null".to_string());
             }
-        }
+        };
         match &self.uint16 {
             Some(uint16_val) => {
                 _query_parts_.push(format!("uint16={}", uint16_val));
@@ -1744,7 +1744,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("uint16=null".to_string());
             }
-        }
+        };
         match &self.int32 {
             Some(int32_val) => {
                 _query_parts_.push(format!("int32={}", int32_val));
@@ -1752,7 +1752,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("int32=null".to_string());
             }
-        }
+        };
         match &self.uint32 {
             Some(uint32_val) => {
                 _query_parts_.push(format!("uint32={}", uint32_val));
@@ -1760,7 +1760,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("uint32=null".to_string());
             }
-        }
+        };
         match &self.int64 {
             Some(int64_val) => {
                 _query_parts_.push(format!("int64={}", int64_val));
@@ -1768,7 +1768,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("int64=null".to_string());
             }
-        }
+        };
         match &self.uint64 {
             Some(uint64_val) => {
                 _query_parts_.push(format!("uint64={}", uint64_val));
@@ -1776,7 +1776,7 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("uint64=null".to_string());
             }
-        }
+        };
         match &self.r#enum {
             Some(enum_val) => {
                 _query_parts_.push(format!("enum={}", enum_val.serial_value()));
@@ -1784,12 +1784,91 @@ impl ArriModel for ObjectWithNullableFields {
             _ => {
                 _query_parts_.push("enum=null".to_string());
             }
-        }
+        };
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/object.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithNullableFields/array");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/record");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/discriminator");
         println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithNullableFields/any");
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct RecursiveObject {
+    pub left: Option<Box<RecursiveObject>>,
+    pub right: Option<Box<RecursiveObject>>,
+}
+
+impl ArriModel for RecursiveObject {
+    fn new() -> Self {
+        Self {
+            left: None,
+            right: None,
+        }
+    }
+
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let left = match _val_.get("left") {
+                    Some(left_val) => match left_val {
+                        serde_json::Value::Object(_) => {
+                            Some(Box::new(RecursiveObject::from_json(left_val.to_owned())))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let right: Option<Box<RecursiveObject>> = match _val_.get("right") {
+                    Some(right_val) => match right_val {
+                        serde_json::Value::Object(_) => {
+                            Some(Box::new(RecursiveObject::from_json(right_val.to_owned())))
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                Self { left, right }
+            }
+            _ => Self::new(),
+        }
+    }
+
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+        _json_output_.push_str("\"left\":");
+        match &self.left {
+            Some(left_val) => {
+                _json_output_.push_str(left_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push_str(",\"right\":");
+        match &self.right {
+            Some(right_val) => {
+                _json_output_.push_str(right_val.to_json_string().as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        _json_output_.push('}');
+        _json_output_
+    }
+
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/object.");
         _query_parts_.join("&")
     }
 }

@@ -6,7 +6,7 @@ fn main() {}
 mod parsing_and_serialization_tests {
     use crate::example_client::{
         Book, BookParams, Discriminator, Enumerator, NestedObject, ObjectWithEveryType,
-        ObjectWithNullableFields, ObjectWithOptionalFields,
+        ObjectWithNullableFields, ObjectWithOptionalFields, RecursiveObject,
     };
     use arri_client::{
         chrono::{DateTime, FixedOffset},
@@ -261,5 +261,33 @@ mod parsing_and_serialization_tests {
             reference.clone()
         );
         assert_eq!(reference.to_json_string(), file_content.clone());
+    }
+
+    #[test]
+    fn recursive_object_test() {
+        let file_path = "../../../tests/test-files/RecursiveObject.json";
+        let file_content = fs::read_to_string(file_path).unwrap();
+        let reference = RecursiveObject {
+            left: Some(Box::new(RecursiveObject {
+                left: Some(Box::new(RecursiveObject {
+                    left: None,
+                    right: Some(Box::new(RecursiveObject {
+                        left: None,
+                        right: None,
+                    })),
+                })),
+                right: None,
+            })),
+            right: Some(Box::new(RecursiveObject {
+                left: None,
+                right: None,
+            })),
+        };
+        assert_eq!(
+            RecursiveObject::from_json_string(file_content.clone()),
+            reference.clone()
+        );
+        assert_eq!(file_content.clone(), reference.to_json_string());
+        assert_eq!(reference.to_query_params_string(), "".to_string());
     }
 }
