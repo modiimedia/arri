@@ -13,22 +13,28 @@ import {
     isSchemaFormType,
     isSchemaFormValues,
     isServiceDefinition,
-    type RpcDefinition,
     type Schema,
-    type ServiceDefinition,
     unflattenProcedures,
 } from "@arrirpc/codegen-utils";
 import path from "pathe";
 
 import { GeneratorContext, RustProperty } from "./_common";
 import rustAnyFromSchema from "./any";
+import rustObjectFromSchema from "./object";
 import {
     rustBooleanFromSchema,
     rustF32FromSchema,
     rustF64FromSchema,
     rustI8FromSchema,
+    rustI16FromSchema,
+    rustI32FromSchema,
+    rustI64FromSchema,
     rustStringFromSchema,
     rustTimestampFromSchema,
+    rustU8FromSchema,
+    rustU16FromSchema,
+    rustU32FromSchema,
+    rustU64FromSchema,
 } from "./primitives";
 
 interface RustClientGeneratorOptions {
@@ -77,13 +83,13 @@ export function createRustClient(
     for (const key of Object.keys(services)) {
         const def = services[key];
         if (isServiceDefinition(def)) {
-            const service = rustServiceFromDef(key, def, context);
-            serviceParts.push(service);
+            //     const service = rustServiceFromDef(key, def, context);
+            //     if (service) serviceParts.push(service);
             continue;
         }
         if (isRpcDefinition(def)) {
-            const procedure = rustProcedureFromDef(key, def, context);
-            rpcsParts.push(procedure);
+            // const procedure = rustProcedureFromDef(key, def, context);
+            // if (procedure) rpcsParts.push(procedure);
             continue;
         }
     }
@@ -98,7 +104,20 @@ export function createRustClient(
             modelParts.push(result.content);
         }
     }
-    return "";
+    let result: string;
+    if (rpcsParts.length === 0 && serviceParts.length === 0) {
+        result = `use arri_client::{
+    chrono::{DateTime, FixedOffset},
+    serde_json::{self},
+    utils::{serialize_date_time, serialize_string},
+    ArriEnum, ArriModel,
+};
+use std::collections::BTreeMap;
+${modelParts.join("\n\n")}`;
+    } else {
+        throw new Error("Not yet implemented");
+    }
+    return result;
 }
 
 export function rustTypeFromSchema(
@@ -120,27 +139,26 @@ export function rustTypeFromSchema(
             case "int8":
                 return rustI8FromSchema(schema, context);
             case "uint8":
-                break;
+                return rustU8FromSchema(schema, context);
             case "int16":
-                break;
+                return rustI16FromSchema(schema, context);
             case "uint16":
-                break;
+                return rustU16FromSchema(schema, context);
             case "int32":
-                break;
+                return rustI32FromSchema(schema, context);
             case "uint32":
-                break;
+                return rustU32FromSchema(schema, context);
             case "int64":
-                break;
+                return rustI64FromSchema(schema, context);
             case "uint64":
-                break;
+                return rustU64FromSchema(schema, context);
             default:
                 schema.type satisfies never;
                 throw new Error(`Unhandled schema type: "${schema.type}"`);
         }
-        // TODO
     }
     if (isSchemaFormProperties(schema)) {
-        // TODO
+        return rustObjectFromSchema(schema, context);
     }
     if (isSchemaFormEnum(schema)) {
         // TODO
@@ -160,34 +178,34 @@ export function rustTypeFromSchema(
     return rustAnyFromSchema(schema, context);
 }
 
-export function rustServiceFromDef(
-    key: string,
-    schema: ServiceDefinition,
-    context: GeneratorContext,
-): string {
-    // const serviceId = pascalCase(`${context.parentId ?? ""}_${key}`);
-    // context.parentId = serviceId;
-    // const rpcsParts: string[] = [];
-    // const subServiceParts: string[] = [];
-    // for (const key of Object.keys(schema)) {
-    //     const subSchema = schema[key];
-    //     if (isServiceDefinition(subSchema)) {
-    //         const subService = rustServiceFromDef(key, subSchema, context);
-    //         subServiceParts.push(subService);
-    //         continue;
-    //     }
-    //     if (isRpcDefinition(subSchema)) {
-    //         const rpc = rustProcedureFromDef(key, subSchema, context);
-    //         rpcsParts.push(rpc);
-    //     }
-    // }
-    return "";
-}
+// export function rustServiceFromDef(
+//     key: string,
+//     schema: ServiceDefinition,
+//     context: GeneratorContext,
+// ): string {
+//     // const serviceId = pascalCase(`${context.parentId ?? ""}_${key}`);
+//     // context.parentId = serviceId;
+//     // const rpcsParts: string[] = [];
+//     // const subServiceParts: string[] = [];
+//     // for (const key of Object.keys(schema)) {
+//     //     const subSchema = schema[key];
+//     //     if (isServiceDefinition(subSchema)) {
+//     //         const subService = rustServiceFromDef(key, subSchema, context);
+//     //         subServiceParts.push(subService);
+//     //         continue;
+//     //     }
+//     //     if (isRpcDefinition(subSchema)) {
+//     //         const rpc = rustProcedureFromDef(key, subSchema, context);
+//     //         rpcsParts.push(rpc);
+//     //     }
+//     // }
+//     return "";
+// }
 
-export function rustProcedureFromDef(
-    key: string,
-    schema: RpcDefinition,
-    context: GeneratorContext,
-): string {
-    return "";
-}
+// export function rustProcedureFromDef(
+//     key: string,
+//     schema: RpcDefinition,
+//     context: GeneratorContext,
+// ): string {
+//     return "";
+// }

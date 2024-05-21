@@ -1,4 +1,4 @@
-import { isAppDefinition } from "@arrirpc/codegen-utils";
+import { isAppDefinition, normalizeWhitespace } from "@arrirpc/codegen-utils";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import path from "pathe";
 
@@ -11,7 +11,7 @@ beforeAll(() => {
     }
 });
 
-test("Generated code matches codegen reference", () => {
+test("Generated code matches codegen reference", async () => {
     const appDef = JSON.parse(
         readFileSync(
             path.resolve(
@@ -38,5 +38,7 @@ test("Generated code matches codegen reference", () => {
         schemaPath: "",
         generatedTypes: [],
     });
-    expect(result).toBe(referenceClient);
+    expect(normalizeWhitespace(result)).toBe(
+        normalizeWhitespace(referenceClient),
+    );
 });

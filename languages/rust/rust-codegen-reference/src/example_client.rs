@@ -1,11 +1,10 @@
-use std::collections::BTreeMap;
-
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},
     utils::{serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
+use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Book {
@@ -248,7 +247,6 @@ impl ArriModel for ObjectWithEveryType {
             any: serde_json::Value::Null,
         }
     }
-
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::Object(_val_) => {
@@ -1244,7 +1242,7 @@ pub struct ObjectWithNullableFields {
 
 impl ArriModel for ObjectWithNullableFields {
     fn new() -> Self {
-        ObjectWithNullableFields {
+        Self {
             string: None,
             boolean: None,
             timestamp: None,

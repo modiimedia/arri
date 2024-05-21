@@ -11,6 +11,7 @@ export interface GeneratorContext {
     discriminatorKey?: string;
     discriminatorValue?: string;
     isOptional?: boolean;
+    isBoxed?: boolean;
 }
 
 export interface RustProperty {
@@ -120,4 +121,18 @@ export function outputIsOptionType(
     context: GeneratorContext,
 ): boolean {
     return schema.nullable === true || context.isOptional === true;
+}
+
+export function getTypeName(schema: Schema, context: GeneratorContext): string {
+    if (schema.metadata?.id) {
+        return validRustName(schema.metadata.id);
+    }
+    if (context.discriminatorKey && context.discriminatorValue) {
+        const parts = context.instancePath.split("/");
+        const name = validRustName(
+            `${parts.join("_")}_${context.discriminatorValue}`,
+        );
+        return name;
+    }
+    return validRustName(context.instancePath.split("/").join("_"));
 }
