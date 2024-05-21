@@ -278,7 +278,7 @@ stream.end()
 stream.on(e: 'request:close' | 'close', callback: () => any)
 ```
 
-### Creating Websocket Procedures
+### Creating Websocket Procedures (Experimental)
 
 ```ts
 // Websocket procedures work really well with discriminated unions

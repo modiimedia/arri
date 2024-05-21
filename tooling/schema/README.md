@@ -22,6 +22,7 @@ To represent the data-models in a language agnostic way this library heavily rel
 
 -   [Installation](#installation)
 -   [Basic Example](#basic-example)
+-   [Usage With @arrirpc/server](#usage-with-@arrirpc/server)
 -   [Supported Types](#supported-types)
     -   [Primitives](#primitives)
     -   [Enums](#enums)
@@ -84,6 +85,30 @@ a.validate(User, { id: "1", name: null });
 
 // outputs valid json
 a.serialize(User, { id: "1", name: "John Doe" });
+```
+
+## Usage With @arrirpc/server
+
+See [here](/languages/ts/ts-server/README.md) for full details.
+
+```ts
+import { a } from "@arrirpc/schema";
+import { defineRpc } from "@arrirpc/server";
+
+export default defineRpc({
+    params: a.object({
+        name: a.string(),
+    }),
+    response: a.object({
+        message: a.string(),
+    }),
+    handler({ params }) {
+        // can now access params.name here
+        return {
+            message: `Hello ${params.name}`,
+        };
+    },
+});
 ```
 
 ## Supported Types
