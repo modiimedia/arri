@@ -232,3 +232,122 @@ export function rustF32FromSchema(
         content: "",
     };
 }
+
+export function rustF64FromSchema(
+    schema: SchemaFormType,
+    context: GeneratorContext,
+): RustProperty {
+    const isOptionType = outputIsOptionType(schema, context);
+    const typeName = isOptionType ? `Some<f64>` : "f64";
+    const defaultValue = isOptionType ? `None` : "0.0";
+    return {
+        typeName,
+        defaultValue,
+        isNullable: schema.nullable ?? false,
+        fromJsonTemplate(input, key) {
+            const innerKey = validRustIdentifier(`${key}_val`);
+            if (isOptionType) {
+                return `match ${input} {
+                    Some(serde_json::Value::Number(${innerKey})) => match ${innerKey}.as_f64() {
+                        Some(${innerKey}_result) => Some(${innerKey}_result),
+                        _ => None,
+                    },
+                    _ => None,
+                }`;
+            }
+            return `match ${input} {
+                Some(serde_json::Value::Number(${innerKey})) => {
+                    ${innerKey}.as_f64().unwrap_or(0.0)
+                }
+                _ => 0.0,
+            }`;
+        },
+        toJsonTemplate(input, target) {
+            return `${input}.push_str(${target}.to_string().as_str())`;
+        },
+        toQueryStringTemplate(input, key, target) {
+            const innerKey = validRustIdentifier(`${key}_val`);
+            if (context.isOptional) {
+                return `match ${input} {
+                    Some(${innerKey}) => {
+                        ${target}.push(format!("${key}={}", ${innerKey}));
+                    },
+                    _ => {}
+                }`;
+            }
+            if (schema.nullable) {
+                return `match ${input} {
+                    Some(${innerKey}) => {
+                        ${target}.push(format!("${key}={}", ${innerKey}));
+                    },
+                    _ => {
+                        ${target}.push("${key}=null".to_string());
+                    }
+                }`;
+            }
+            return `${target}.push(format!("${key}={}", ${input}))`;
+        },
+        content: "",
+    };
+}
+
+export function rustI8FromSchema(
+    schema: SchemaFormType,
+    context: GeneratorContext,
+): RustProperty {
+    const isOptionType = outputIsOptionType(schema, context);
+    const typeName = isOptionType ? `Option<i8>` : "i8";
+    const defaultValue = isOptionType ? `None` : "0";
+    return {
+        typeName,
+        defaultValue,
+        isNullable: schema.nullable ?? false,
+        fromJsonTemplate(input, key) {
+            const innerKey = validRustIdentifier(`${key}_val`);
+            if (isOptionType) {
+                return `match ${input} {
+                    Some(serde_json::Value::Number(${innerKey})) => match ${innerKey}.as_i64() {
+                        Some(${innerKey}_result) => match i8::try_from(${innerKey}_result) {
+                            Ok(${innerKey}_result_val) => Some(${innerKey}_result_val),
+                            Err(_) => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                }`;
+            }
+            return `match ${input} {
+                Some(serde_json::Value::Number(${innerKey})) {
+                    i8::try_from(${innerKey}.as_i64().unwrap_or(0)).unwrap_or(0)
+                }
+                _ => 0,
+            }`;
+        },
+        toJsonTemplate(input, target) {
+            return `${target}.push_str(${input}.to_string().as_str())`;
+        },
+        toQueryStringTemplate(input, key, target) {
+            const innerKey = validRustIdentifier(`${key}_val`);
+            if (context.isOptional) {
+                return `match ${input} {
+                    Some(${innerKey}) => {
+                        ${target}.push(format!("${key}={}", ${innerKey}));
+                    }
+                    _ => {}
+                }`;
+            }
+            if (schema.nullable) {
+                return `match ${input} {
+                    Some(${innerKey}) => {
+                        ${target}.push(format!("${key}={}", ${innerKey}));
+                    }
+                    _ => {
+                        ${target}.push("${key}=null".to_string());
+                    }
+                }`;
+            }
+            return `${target}.push(format!("${key}={}", ${input}))`;
+        },
+        content: "",
+    };
+}

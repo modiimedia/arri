@@ -25,6 +25,8 @@ import rustAnyFromSchema from "./any";
 import {
     rustBooleanFromSchema,
     rustF32FromSchema,
+    rustF64FromSchema,
+    rustI8FromSchema,
     rustStringFromSchema,
     rustTimestampFromSchema,
 } from "./primitives";
@@ -114,9 +116,9 @@ export function rustTypeFromSchema(
             case "float32":
                 return rustF32FromSchema(schema, context);
             case "float64":
-                break;
+                return rustF64FromSchema(schema, context);
             case "int8":
-                break;
+                return rustI8FromSchema(schema, context);
             case "uint8":
                 break;
             case "int16":
