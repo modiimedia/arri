@@ -1,4 +1,7 @@
-import { SchemaFormProperties } from "@arrirpc/codegen-utils";
+import {
+    isSchemaFormElements,
+    SchemaFormProperties,
+} from "@arrirpc/codegen-utils";
 
 import {
     GeneratorContext,
@@ -47,7 +50,7 @@ export default function rustObjectFromSchema(
             return `${target}.push_str(${input}.to_json_string().as_str())`;
         },
         toQueryStringTemplate() {
-            return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.");`;
+            return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };
@@ -60,6 +63,7 @@ export default function rustObjectFromSchema(
     const fromJsonParts: string[] = [];
     const toJsonParts: string[] = [];
     const toQueryParamParams: string[] = [];
+    const subContent: string[] = [];
     const requiredKeys = Object.keys(schema.properties);
     const optionalKeys = Object.keys(schema.optionalProperties ?? {});
     const isDiscriminatedUnion =
@@ -75,6 +79,9 @@ export default function rustObjectFromSchema(
             schemaPath: `${context.schemaPath}/properties/${key}`,
             generatedTypes: context.generatedTypes,
         });
+        if (innerType.content) {
+            subContent.push(innerType.content);
+        }
         const fieldName = validRustIdentifier(key);
         fieldNames.push(fieldName);
         fieldDeclarationParts.push(`\tpub ${fieldName}: ${innerType.typeName}`);
@@ -87,8 +94,9 @@ export default function rustObjectFromSchema(
         } else {
             toJsonParts.push(`\t\t_json_output_.push_str(",\\"${key}\\":");`);
         }
+        const leading = isSchemaFormElements(prop) ? "" : "&";
         toJsonParts.push(
-            `\t\t${innerType.toJsonTemplate(`&self.${fieldName}`, "_json_output_")};`,
+            `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, "_json_output_")};`,
         );
         toQueryParamParams.push(
             `\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, "_query_parts_")};`,
@@ -96,8 +104,7 @@ export default function rustObjectFromSchema(
     }
     for (let i = 0; i < optionalKeys.length; i++) {
         const key = optionalKeys[i]!;
-        const prop = schema.optionalProperties?.[i];
-        if (!prop) continue;
+        const prop = schema.optionalProperties![key]!;
         const innerType = rustTypeFromSchema(prop, {
             clientName: context.clientName,
             typeNamePrefix: context.typeNamePrefix,
@@ -106,12 +113,15 @@ export default function rustObjectFromSchema(
             generatedTypes: context.generatedTypes,
             isOptional: true,
         });
+        if (innerType.content) {
+            subContent.push(innerType.content);
+        }
         const fieldName = validRustIdentifier(key);
         fieldNames.push(fieldName);
-        fieldDeclarationParts.push(`\t${fieldName}: ${innerType.typeName}`);
+        fieldDeclarationParts.push(`\tpub ${fieldName}: ${innerType.typeName}`);
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(
-            `\t\t\t\tlet ${fieldName} = ${innerType.fromJsonTemplate(`_val_.get("${key}")`, key)}`,
+            `\t\t\t\tlet ${fieldName} = ${innerType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
         );
 
         // NOT CORRECT YET
@@ -140,13 +150,19 @@ export default function rustObjectFromSchema(
                     ${i !== optionalKeys.length - 1 ? "_has_keys_ = true;" : ""}
                 }
                 _ => {}
-            }`);
+            };`);
         }
         toQueryParamParams.push(
-            `\t\t\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, "_query_parts_")}`,
+            `\t\t\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, "_query_parts_")};`,
         );
     }
     context.generatedTypes.push(structName);
+    let selfDeclaration = `Self {
+        ${fieldNames.join(",\n\t\t\t\t")},
+    }`;
+    if (fieldNames.length < 4) {
+        selfDeclaration = `Self { ${fieldNames.join(", ")} }`;
+    }
     result.content = `#[derive(Clone, Debug, PartialEq)]
 pub struct ${structName} {
 ${fieldDeclarationParts.join(",\n")},
@@ -162,12 +178,10 @@ ${defaultParts.join(",\n")},
         match input {
             serde_json::Value::Object(_val_) => {
 ${fromJsonParts.join("\n")}
-                Self {
-                    ${fieldNames.join(",\n\t\t\t\t")},
-                }
+                ${selfDeclaration}
             }
-        },
-        _ => Self::new(),
+            _ => Self::new(),
+        }
     }
     fn from_json_string(input: String) -> Self {
         match serde_json::from_str(input.as_str()) {
@@ -187,6 +201,8 @@ ${toJsonParts.join("\n")}
 ${toQueryParamParams.join("\n")}
         _query_parts_.join("&")
     }
-}`;
+}
+
+${subContent.join("\n\n")}`;
     return result;
 }

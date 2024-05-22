@@ -20,6 +20,8 @@ import path from "pathe";
 
 import { GeneratorContext, RustProperty } from "./_common";
 import rustAnyFromSchema from "./any";
+import rustArrayFromSchema from "./array";
+import rustEnumFromSchema from "./enum";
 import rustObjectFromSchema from "./object";
 import {
     rustBooleanFromSchema,
@@ -161,10 +163,10 @@ export function rustTypeFromSchema(
         return rustObjectFromSchema(schema, context);
     }
     if (isSchemaFormEnum(schema)) {
-        // TODO
+        return rustEnumFromSchema(schema, context);
     }
     if (isSchemaFormElements(schema)) {
-        // TODO
+        return rustArrayFromSchema(schema, context);
     }
     if (isSchemaFormValues(schema)) {
         // TODO

@@ -34,7 +34,7 @@ export default function rustAnyFromSchema(
         toJsonTemplate(input, target) {
             return `${target}.push_str(
                         serde_json::to_string(${input}.to_owned())
-                            .uwrap_or("null".to_string())
+                            .unwrap_or("null".to_string())
                             .as_str(),
                     )`;
         },

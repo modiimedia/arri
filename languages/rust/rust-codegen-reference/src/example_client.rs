@@ -4,7 +4,7 @@ use arri_client::{
     utils::{serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt::format};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Book {
@@ -26,35 +26,35 @@ impl ArriModel for Book {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            serde_json::Value::Object(val) => {
-                let id = match val.get("id") {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
                     Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
                     _ => "".to_string(),
                 };
-                let name = match val.get("name") {
+                let name = match _val_.get("name") {
                     Some(serde_json::Value::String(name_val)) => name_val.to_owned(),
                     _ => "".to_string(),
                 };
-                let created_at = match val.get("createdAt") {
+                let created_at = match _val_.get("createdAt") {
                     Some(serde_json::Value::String(created_at_val)) => {
                         DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
                             .unwrap_or(DateTime::default())
                     }
                     _ => DateTime::default(),
                 };
-                let updated_at = match val.get("updatedAt") {
+                let updated_at = match _val_.get("updatedAt") {
                     Some(serde_json::Value::String(updated_at_val)) => {
                         DateTime::<FixedOffset>::parse_from_rfc3339(updated_at_val)
                             .unwrap_or(DateTime::default())
                     }
                     _ => DateTime::default(),
                 };
-                return Self {
+                Self {
                     id,
                     name,
                     created_at,
                     updated_at,
-                };
+                }
             }
             _ => Self::new(),
         }
@@ -74,7 +74,7 @@ impl ArriModel for Book {
         _json_output_.push_str(",\"name\":");
         _json_output_.push_str(serialize_string(&self.name).as_str());
         _json_output_.push_str(",\"createdAt\":");
-        _json_output_.push_str(serialize_date_time(&self.updated_at, true).as_str());
+        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
         _json_output_.push_str(",\"updatedAt\":");
         _json_output_.push_str(serialize_date_time(&self.updated_at, true).as_str());
         _json_output_.push('}');
@@ -111,8 +111,8 @@ impl ArriModel for BookParams {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            serde_json::Value::Object(val) => {
-                let book_id = match val.get("bookId") {
+            serde_json::Value::Object(_val_) => {
+                let book_id = match _val_.get("bookId") {
                     Some(serde_json::Value::String(book_id_val)) => book_id_val.to_owned(),
                     _ => "".to_string(),
                 };
@@ -134,7 +134,7 @@ impl ArriModel for BookParams {
         _json_output_.push_str("\"bookId\":");
         _json_output_.push_str(serialize_string(&self.book_id).as_str());
         _json_output_.push('}');
-        return _json_output_;
+        _json_output_
     }
 
     fn to_query_params_string(&self) -> String {
@@ -160,12 +160,12 @@ impl ArriModel for NestedObject {
 
     fn from_json(input: serde_json::Value) -> Self {
         match input {
-            serde_json::Value::Object(val) => {
-                let id = match val.get("id") {
+            serde_json::Value::Object(_val_) => {
+                let id = match _val_.get("id") {
                     Some(serde_json::Value::String(id_val)) => id_val.to_owned(),
                     _ => "".to_string(),
                 };
-                let content = match val.get("content") {
+                let content = match _val_.get("content") {
                     Some(serde_json::Value::String(content_val)) => content_val.to_owned(),
                     _ => "".to_string(),
                 };
@@ -225,14 +225,14 @@ pub struct ObjectWithEveryType {
 
 impl ArriModel for ObjectWithEveryType {
     fn new() -> Self {
-        ObjectWithEveryType {
+        Self {
             string: "".to_string(),
             boolean: false,
             timestamp: DateTime::default(),
             float32: 0.0,
             float64: 0.0,
             int8: 0,
-            uint8: 0u8,
+            uint8: 0,
             int16: 0,
             uint16: 0,
             int32: 0,
@@ -260,7 +260,8 @@ impl ArriModel for ObjectWithEveryType {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        DateTime::parse_from_rfc3339(timestamp_val).unwrap_or_default()
+                        DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val)
+                            .unwrap_or(DateTime::default())
                     }
                     _ => DateTime::default(),
                 };
@@ -325,8 +326,8 @@ impl ArriModel for ObjectWithEveryType {
                     _ => 0,
                 };
                 let r#enum = match _val_.get("enum") {
-                    Some(serde_json::Value::String(r#enum_val)) => {
-                        Enumerator::from_string(r#enum_val.to_owned())
+                    Some(serde_json::Value::String(enum_val)) => {
+                        Enumerator::from_string(enum_val.to_owned())
                     }
                     _ => Enumerator::default(),
                 };
@@ -337,10 +338,10 @@ impl ArriModel for ObjectWithEveryType {
                 let array = match _val_.get("array") {
                     Some(serde_json::Value::Array(array_val)) => {
                         let mut array_val_result: Vec<bool> = Vec::new();
-                        for array_val_result_item in array_val {
-                            array_val_result.push(match Some(array_val_result_item) {
-                                Some(serde_json::Value::Bool(array_val_result_item_val)) => {
-                                    array_val_result_item_val.to_owned()
+                        for array_val_element in array_val {
+                            array_val_result.push(match Some(array_val_element) {
+                                Some(serde_json::Value::Bool(array_val_element_val)) => {
+                                    array_val_element_val.to_owned()
                                 }
                                 _ => false,
                             });
@@ -416,25 +417,25 @@ impl ArriModel for ObjectWithEveryType {
         _json_output_.push_str("\"string\":");
         _json_output_.push_str(serialize_string(&self.string).as_str());
         _json_output_.push_str(",\"boolean\":");
-        _json_output_.push_str(&self.boolean.to_string());
+        _json_output_.push_str(&self.boolean.to_string().as_str());
         _json_output_.push_str(",\"timestamp\":");
         _json_output_.push_str(serialize_date_time(&self.timestamp, true).as_str());
         _json_output_.push_str(",\"float32\":");
-        _json_output_.push_str(&self.float32.to_string());
+        _json_output_.push_str(&self.float32.to_string().as_str());
         _json_output_.push_str(",\"float64\":");
-        _json_output_.push_str(&self.float64.to_string());
+        _json_output_.push_str(&self.float64.to_string().as_str());
         _json_output_.push_str(",\"int8\":");
-        _json_output_.push_str(&self.int8.to_string());
+        _json_output_.push_str(&self.int8.to_string().as_str());
         _json_output_.push_str(",\"uint8\":");
-        _json_output_.push_str(&self.uint8.to_string());
+        _json_output_.push_str(&self.uint8.to_string().as_str());
         _json_output_.push_str(",\"int16\":");
-        _json_output_.push_str(&self.int16.to_string());
+        _json_output_.push_str(&self.int16.to_string().as_str());
         _json_output_.push_str(",\"uint16\":");
-        _json_output_.push_str(&self.uint16.to_string());
+        _json_output_.push_str(&self.uint16.to_string().as_str());
         _json_output_.push_str(",\"int32\":");
-        _json_output_.push_str(&self.int32.to_string());
+        _json_output_.push_str(&self.int32.to_string().as_str());
         _json_output_.push_str(",\"uint32\":");
-        _json_output_.push_str(&self.uint32.to_string());
+        _json_output_.push_str(&self.uint32.to_string().as_str());
         _json_output_.push_str(",\"int64\":");
         _json_output_.push_str(format!("\"{}\"", &self.int64).as_str());
         _json_output_.push_str(",\"uint64\":");
@@ -442,14 +443,14 @@ impl ArriModel for ObjectWithEveryType {
         _json_output_.push_str(",\"enum\":");
         _json_output_.push_str(format!("\"{}\"", &self.r#enum.serial_value()).as_str());
         _json_output_.push_str(",\"object\":");
-        _json_output_.push_str(&self.object.to_json_string());
+        _json_output_.push_str(&self.object.to_json_string().as_str());
         _json_output_.push_str(",\"array\":");
         _json_output_.push('[');
-        for (i, element) in self.array.iter().enumerate() {
-            if i != 0 {
+        for (_index_, _element_) in self.array.iter().enumerate() {
+            if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(&element.to_string())
+            _json_output_.push_str(_element_.to_string().as_str());
         }
         _json_output_.push(']');
         _json_output_.push_str(",\"record\":");
@@ -475,7 +476,30 @@ impl ArriModel for ObjectWithEveryType {
     }
 
     fn to_query_params_string(&self) -> String {
-        todo!()
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("string={}", &self.string));
+        _query_parts_.push(format!("boolean={}", &self.boolean));
+        _query_parts_.push(format!(
+            "timestamp={}",
+            serialize_date_time(&self.timestamp, false)
+        ));
+        _query_parts_.push(format!("float32={}", &self.float32));
+        _query_parts_.push(format!("float64={}", &self.float64));
+        _query_parts_.push(format!("int8={}", &self.int8));
+        _query_parts_.push(format!("uint8={}", &self.uint8));
+        _query_parts_.push(format!("int16={}", &self.int16));
+        _query_parts_.push(format!("uint16={}", &self.uint16));
+        _query_parts_.push(format!("int32={}", &self.int32));
+        _query_parts_.push(format!("uint32={}", &self.uint32));
+        _query_parts_.push(format!("int64={}", &self.int64));
+        _query_parts_.push(format!("uint64={}", &self.uint64));
+        _query_parts_.push(format!("enum={}", &self.r#enum.serial_value()));
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/any");
+        _query_parts_.join("&")
     }
 }
 
@@ -567,7 +591,7 @@ impl ArriModel for Discriminator {
                         };
                         let date = match _val_.get("date") {
                             Some(serde_json::Value::String(date_val)) => {
-                                DateTime::parse_from_rfc3339(date_val)
+                                DateTime::<FixedOffset>::parse_from_rfc3339(date_val)
                                     .unwrap_or(DateTime::default())
                             }
                             _ => DateTime::default(),
@@ -665,7 +689,7 @@ pub struct ObjectWithOptionalFields {
 
 impl ArriModel for ObjectWithOptionalFields {
     fn new() -> Self {
-        ObjectWithOptionalFields {
+        Self {
             string: None,
             boolean: None,
             timestamp: None,
@@ -701,7 +725,7 @@ impl ArriModel for ObjectWithOptionalFields {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::parse_from_rfc3339(timestamp_val) {
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -816,10 +840,10 @@ impl ArriModel for ObjectWithOptionalFields {
                 let array = match _val_.get("array") {
                     Some(serde_json::Value::Array(array_val)) => {
                         let mut array_val_result: Vec<bool> = Vec::new();
-                        for element in array_val {
-                            array_val_result.push(match Some(element) {
-                                Some(serde_json::Value::Bool(element_val)) => {
-                                    element_val.to_owned()
+                        for array_val_element in array_val {
+                            array_val_result.push(match Some(array_val_element) {
+                                Some(serde_json::Value::Bool(array_val_element_val)) => {
+                                    array_val_element_val.to_owned()
                                 }
                                 _ => false,
                             });
@@ -1278,7 +1302,7 @@ impl ArriModel for ObjectWithNullableFields {
                 };
                 let timestamp = match _val_.get("timestamp") {
                     Some(serde_json::Value::String(timestamp_val)) => {
-                        match DateTime::parse_from_rfc3339(timestamp_val) {
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(timestamp_val) {
                             Ok(timestamp_val_result) => Some(timestamp_val_result),
                             Err(_) => None,
                         }
@@ -1393,10 +1417,10 @@ impl ArriModel for ObjectWithNullableFields {
                 let array = match _val_.get("array") {
                     Some(serde_json::Value::Array(array_val)) => {
                         let mut array_val_result: Vec<bool> = Vec::new();
-                        for element in array_val {
-                            array_val_result.push(match Some(element) {
-                                Some(serde_json::Value::Bool(element_val)) => {
-                                    element_val.to_owned()
+                        for array_val_element in array_val {
+                            array_val_result.push(match Some(array_val_element) {
+                                Some(serde_json::Value::Bool(array_val_element_val)) => {
+                                    array_val_element_val.to_owned()
                                 }
                                 _ => false,
                             });

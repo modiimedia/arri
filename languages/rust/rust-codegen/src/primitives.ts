@@ -54,7 +54,7 @@ export function rustStringFromSchema(
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${input}));`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };
@@ -80,8 +80,8 @@ export function rustBooleanFromSchema(
                 }`;
             }
             return `match ${input} {
-                Some(serde_json::Value::Bool(${innerKey})) => Some(${innerKey}.to_owned()),
-                _ => Some(false),
+                Some(serde_json::Value::Bool(${innerKey})) => ${innerKey}.to_owned(),
+                _ => false,
             }`;
         },
         toJsonTemplate(input, target) {
@@ -92,7 +92,7 @@ export function rustBooleanFromSchema(
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(${innerKey}.to_string());
+                        ${target}.push(format!("${key}={}", ${innerKey}.to_string()));
                     }
                     _ => {}
                 }`;
@@ -100,14 +100,14 @@ export function rustBooleanFromSchema(
             if (schema.nullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(${innerKey}.to_string());
+                        ${target}.push(format!("${key}={}", ${innerKey}.to_string()));
                     }
                     _ => {
-                        ${target}.push("null".to_string());
+                        ${target}.push("${key}=null".to_string());
                     }
                 }`;
             }
-            return `${target}.push(${input}.to_string())`;
+            return `${target}.push(format!("${key}={}", ${input}.to_string()))`;
         },
         content: "",
     };
@@ -131,7 +131,7 @@ export function rustTimestampFromSchema(
             if (isOptionType) {
                 return `match ${input} {
                     Some(serde_json::Value::String(${innerKey})) => {
-                        match DateTime::parse_from_rfc3339(${innerKey}) {
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(${innerKey}) {
                             Ok(${innerKey}_result) => Some(${innerKey}_result),
                             Err(_) => None,
                         }
@@ -141,7 +141,8 @@ export function rustTimestampFromSchema(
             }
             return `match ${input} {
                 Some(serde_json::Value::String(${innerKey})) => {
-                    DateTime::parse_from_rfc3339(${innerKey}).unwrap_or_default()
+                    DateTime::<FixedOffset>::parse_from_rfc3339(${innerKey})
+                        .unwrap_or(DateTime::default())
                 }
                 _ => DateTime::default(),
             }`;
@@ -154,7 +155,10 @@ export function rustTimestampFromSchema(
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", serialize_date_time(${innerKey}, false)));
+                        ${target}.push(format!(
+                            "${key}={}",
+                            serialize_date_time(${innerKey}, false)
+                        ));
                     }
                     _ => {}
                 }`;
@@ -162,14 +166,20 @@ export function rustTimestampFromSchema(
             if (schema.nullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", serialize_date_time(${innerKey}, false)));
+                        ${target}.push(format!(
+                            "${key}={}",
+                            serialize_date_time(${innerKey}, false)
+                        ));
                     },
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", serialize_date_time(${input}, false)))`;
+            return `${target}.push(format!(
+                "${key}={}",
+                serialize_date_time(${input}, false)
+            ))`;
         },
         content: "",
     };
@@ -238,7 +248,7 @@ export function rustF64FromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const typeName = isOptionType ? `Some<f64>` : "f64";
+    const typeName = isOptionType ? `Option<f64>` : "f64";
     const defaultValue = isOptionType ? `None` : "0.0";
     return {
         typeName,
@@ -263,7 +273,7 @@ export function rustF64FromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            return `${input}.push_str(${target}.to_string().as_str())`;
+            return `${target}.push_str(${input}.to_string().as_str())`;
         },
         toQueryStringTemplate(input, key, target) {
             const innerKey = validRustIdentifier(`${key}_val`);
@@ -317,7 +327,7 @@ export function rustI8FromSchema(
                 }`;
             }
             return `match ${input} {
-                Some(serde_json::Value::Number(${innerKey})) {
+                Some(serde_json::Value::Number(${innerKey})) => {
                     i8::try_from(${innerKey}.as_i64().unwrap_or(0)).unwrap_or(0)
                 }
                 _ => 0,
@@ -380,7 +390,7 @@ export function rustU8FromSchema(
             return `match ${input} {
                 Some(serde_json::Value::Number(${innerKey})) => {
                     u8::try_from(${innerKey}.as_u64().unwrap_or(0)).unwrap_or(0)
-                },
+                }
                 _ => 0,
             }`;
         },
@@ -440,7 +450,7 @@ export function rustI16FromSchema(
             }
             return `match ${input} {
                 Some(serde_json::Value::Number(${innerKey})) => {
-                    i16::try_from(${innerKey}.as_u64().unwrap_or(0)).unwrap_or(0)
+                    i16::try_from(${innerKey}.as_i64().unwrap_or(0)).unwrap_or(0)
                 }
                 _ => 0,
             }`;
@@ -529,7 +539,7 @@ export function rustU16FromSchema(
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${innerKey}));`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };
@@ -590,7 +600,7 @@ export function rustI32FromSchema(
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${innerKey}));`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };
@@ -651,7 +661,7 @@ export function rustU32FromSchema(
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${innerKey}));`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };
@@ -709,7 +719,7 @@ export function rustI64FromSchema(
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${innerKey}));`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };
@@ -767,7 +777,7 @@ export function rustU64FromSchema(
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${innerKey}));`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };

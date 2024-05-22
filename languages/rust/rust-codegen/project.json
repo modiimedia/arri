@@ -43,6 +43,12 @@
           "command": "vitest watch --passWithNoTests --globals"
         }
       }
+    },
+    "serve-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "serve languages/rust/rust-codegen/.temp/reports"
+      }
     }
   },
   "tags": []
