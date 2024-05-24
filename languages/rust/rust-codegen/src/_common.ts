@@ -8,10 +8,10 @@ export interface GeneratorContext {
     instancePath: string;
     schemaPath: string;
     generatedTypes: string[];
+    parentTypeNames: string[];
     discriminatorKey?: string;
     discriminatorValue?: string;
     isOptional?: boolean;
-    isBoxed?: boolean;
 }
 
 export interface RustProperty {

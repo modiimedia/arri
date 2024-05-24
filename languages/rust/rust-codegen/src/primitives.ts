@@ -92,7 +92,7 @@ export function rustBooleanFromSchema(
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", ${innerKey}.to_string()));
+                        ${target}.push(format!("${key}={}", ${innerKey}));
                     }
                     _ => {}
                 }`;
@@ -100,14 +100,14 @@ export function rustBooleanFromSchema(
             if (schema.nullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", ${innerKey}.to_string()));
+                        ${target}.push(format!("${key}={}", ${innerKey}));
                     }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${input}.to_string()))`;
+            return `${target}.push(format!("${key}={}", ${input}))`;
         },
         content: "",
     };

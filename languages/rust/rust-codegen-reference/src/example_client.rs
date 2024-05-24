@@ -4,7 +4,7 @@ use arri_client::{
     utils::{serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
-use std::{collections::BTreeMap, fmt::format};
+use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Book {
@@ -1432,10 +1432,10 @@ impl ArriModel for ObjectWithNullableFields {
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
                         let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
-                        for (key, value) in record_val {
+                        for (_key_, _value_) in record_val {
                             record_val_result.insert(
-                                key.to_owned(),
-                                match Some(value) {
+                                _key_.to_owned(),
+                                match Some(_value_) {
                                     Some(serde_json::Value::Bool(value_val)) => {
                                         value_val.to_owned()
                                     }
@@ -1842,7 +1842,7 @@ impl ArriModel for RecursiveObject {
                     },
                     _ => None,
                 };
-                let right: Option<Box<RecursiveObject>> = match _val_.get("right") {
+                let right = match _val_.get("right") {
                     Some(right_val) => match right_val {
                         serde_json::Value::Object(_) => {
                             Some(Box::new(RecursiveObject::from_json(right_val.to_owned())))

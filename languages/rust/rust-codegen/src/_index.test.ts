@@ -37,6 +37,7 @@ test("Generated code matches codegen reference", async () => {
         instancePath: "",
         schemaPath: "",
         generatedTypes: [],
+        parentTypeNames: [],
     });
     expect(normalizeWhitespace(result)).toBe(
         normalizeWhitespace(referenceClient),

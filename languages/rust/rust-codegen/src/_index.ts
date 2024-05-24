@@ -38,6 +38,8 @@ import {
     rustU32FromSchema,
     rustU64FromSchema,
 } from "./primitives";
+import rustRecordFromSchema from "./record";
+import rustRefFromSchema from "./ref";
 
 interface RustClientGeneratorOptions {
     clientName: string;
@@ -56,8 +58,12 @@ export const rustClientGenerator = defineClientGeneratorPlugin(
                     instancePath: "",
                     schemaPath: "",
                     generatedTypes: [],
+                    parentTypeNames: [],
                 };
-                const client = createRustClient(def, context);
+                const client = createRustClient(def, {
+                    ...context,
+                    parentTypeNames: [],
+                });
                 const outputFile = path.resolve(options.outputFile);
                 fs.writeFileSync(outputFile, client);
                 const shouldFormat = options.format ?? true;
@@ -169,13 +175,13 @@ export function rustTypeFromSchema(
         return rustArrayFromSchema(schema, context);
     }
     if (isSchemaFormValues(schema)) {
-        // TODO
+        return rustRecordFromSchema(schema, context);
     }
     if (isSchemaFormDiscriminator(schema)) {
         // TODO
     }
     if (isSchemaFormRef(schema)) {
-        // TODO
+        return rustRefFromSchema(schema, context);
     }
     return rustAnyFromSchema(schema, context);
 }

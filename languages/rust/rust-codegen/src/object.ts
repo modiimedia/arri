@@ -18,11 +18,10 @@ export default function rustObjectFromSchema(
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
     const structName = getTypeName(schema, context);
-
-    let typeName: string = context.isBoxed ? `Box<${structName}>` : structName;
-    if (isOptionType) {
-        typeName = `Option<${typeName}>`;
-    }
+    context.parentTypeNames.push(structName);
+    const typeName: string = isOptionType
+        ? `Option<${structName}>`
+        : structName;
     const defaultValue = isOptionType ? `None` : `${structName}::new()`;
     const result: RustProperty = {
         typeName,
@@ -78,6 +77,7 @@ export default function rustObjectFromSchema(
             instancePath: `/${structName}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             generatedTypes: context.generatedTypes,
+            parentTypeNames: context.parentTypeNames,
         });
         if (innerType.content) {
             subContent.push(innerType.content);
@@ -112,6 +112,7 @@ export default function rustObjectFromSchema(
             schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
             generatedTypes: context.generatedTypes,
             isOptional: true,
+            parentTypeNames: context.parentTypeNames,
         });
         if (innerType.content) {
             subContent.push(innerType.content);

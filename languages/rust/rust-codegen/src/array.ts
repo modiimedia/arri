@@ -18,6 +18,7 @@ export default function rustArrayFromSchema(
         clientName: context.clientName,
         typeNamePrefix: context.typeNamePrefix,
         generatedTypes: context.generatedTypes,
+        parentTypeNames: context.parentTypeNames,
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType
