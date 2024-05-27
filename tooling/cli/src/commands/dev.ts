@@ -9,6 +9,7 @@ import { loadConfig } from "c12";
 import { type FSWatcher } from "chokidar";
 import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
+import { App, eventHandler, toNodeListener } from "h3";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
@@ -92,6 +93,33 @@ export default app.h3App;`;
         target: config.esbuild.target ?? "node20",
         platform: config.esbuild.platform ?? "node",
     });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function createDevServer(config: ResolvedArriConfig) {
+    const h3 = await import("h3");
+    const app = h3.createApp();
+    let dynamicHandler = eventHandler(
+        () => "<div>initializing server...</div>",
+    );
+    app.use((event) => dynamicHandler(event));
+    let ws: App["websocket"] | undefined;
+    async function reload() {
+        const appEntry = (
+            (await import(
+                path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY)
+            )) as any
+        ).default as App;
+        dynamicHandler = appEntry.handler;
+        ws = appEntry.websocket;
+    }
+    await reload();
+    return {
+        h3App: app,
+        nodeListener: toNodeListener(app),
+        reload,
+        ws,
+    };
 }
 
 async function startDevServer(config: ResolvedArriConfig) {
