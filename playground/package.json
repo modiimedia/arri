@@ -4,8 +4,8 @@
   "type": "module",
   "description": "An RPC server created with Arri RPC",
   "scripts": {
-    "dev": "arri dev",
-    "build": "arri build"
+    "dev": "pnpm arri dev",
+    "build": "pnpm arri build"
   },
   "keywords": [],
   "dependencies": {

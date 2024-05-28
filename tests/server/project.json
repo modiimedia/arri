@@ -6,7 +6,7 @@
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "arri dev",
+        "command": "pnpm arri dev",
         "cwd": "tests/server"
       }
     },
@@ -15,7 +15,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/.arri", "{projectRoot}/.output"],
       "options": {
-        "command": "arri build",
+        "command": "pnpm arri build",
         "cwd": "tests/server"
       },
       "cache": false
