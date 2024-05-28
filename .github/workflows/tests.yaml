@@ -1,9 +1,10 @@
 name: Lint and Test
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review]
 jobs:
   lint:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,6 +35,7 @@ jobs:
       - run: pnpm run build
       - run: pnpm nx affected -t lint
   test:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,6 +66,7 @@ jobs:
       - run: pnpm run build
       - run: pnpm nx affected -t test
   integration-test:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
