@@ -1,6 +1,6 @@
 {
   "name": "arri",
-  "version": "0.45.5",
+  "version": "0.46.0",
   "type": "module",
   "license": "MIT",
   "author": {
@@ -37,9 +37,10 @@
     "consola": "^3.2.3",
     "degit": "^2.8.4",
     "enquirer": "^2.4.1",
-    "esbuild": "^0.21.3",
+    "esbuild": "^0.21.4",
     "esbuild-plugin-replace": "^1.4.0",
     "globby": "^14.0.1",
+    "h3": "^1.11.1",
     "ofetch": "^1.3.4",
     "pathe": "^1.1.2",
     "prettier": "^3.2.5",

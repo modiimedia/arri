@@ -20,7 +20,10 @@ const MyStringEnum = a.stringEnum(
         {
             code: `
 const MyEnum = a.enumerator("MyEnum", ["A", "B", "C"]);
-const MyStringEnum = a.stringEnum("MyStringEnum", ["A", "B", "C"])`,
+const MyStringEnum = a.stringEnum("MyStringEnum", ["A", "B", "C"])
+const ObjectWithEnum = a.object("ObjectWithEnum", {
+    enum: a.enumerator(["A", "B", "C"]),
+})`,
         },
     ],
     invalid: [
@@ -30,10 +33,10 @@ const MyEnum = a.enumerator(["A", "B", "C"]);
 const MyStringEnum = a.stringEnum(["A", "B", "C"]);`,
             errors: [
                 {
-                    message: "enum schemas must specify an id",
+                    message: "root enum schemas must specify an id",
                 },
                 {
-                    message: "enum schemas must specify an id",
+                    message: "root enum schemas must specify an id",
                 },
             ],
         },

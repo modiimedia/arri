@@ -129,7 +129,6 @@ export async function getFsRouteBatch(
                 .relative(path.resolve(config.rootDir, config.buildDir), file)
                 .split(".");
             importParts.pop();
-            importParts.push("js");
             routes.push({
                 name: meta.id,
                 importName: camelCase(meta.id.split(".").join("_")),
