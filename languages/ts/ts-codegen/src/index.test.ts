@@ -115,7 +115,7 @@ describe("Service Creation", () => {
             /**
              * Watch a user
              */
-            watchUser(params: GetUserParams, options: SseOptions<User>) {
+            watchUser(params: GetUserParams, options: SseOptions<User>): EventSourceController {
                 return arriSseRequest<User, GetUserParams>({
                     url: \`\${this.baseUrl}/watch-user\`,
                     method: "get",

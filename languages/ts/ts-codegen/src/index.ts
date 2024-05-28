@@ -120,6 +120,7 @@ export async function createTypescriptClient(
     if (rpcOptions.hasSseProcedures) {
         importParts.push("arriSseRequest");
         importParts.push("type SseOptions");
+        importParts.push("type EventSourceController");
     }
     if (rpcOptions.hasWsProcedures) {
         importParts.push("arriWsRequest");
@@ -217,7 +218,7 @@ export function tsHttpRpcFromDefinition(
         options.hasSseProcedures = true;
         return `${getJsDocComment({ isDeprecated: schema.isDeprecated, description: schema.description })}${key}(${
             paramsInput.length ? `${paramsInput}, ` : ""
-        }options: SseOptions<${schema.response ?? "undefined"}>) {
+        }options: SseOptions<${schema.response ?? "undefined"}>): EventSourceController {
             return arriSseRequest<${schema.response ?? "undefined"}, ${
                 schema.params ?? "undefined"
             }>({
