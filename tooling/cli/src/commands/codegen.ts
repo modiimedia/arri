@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-import { type AppDefinition,isAppDefinition } from "@arrirpc/codegen-utils";
+import { type AppDefinition, isAppDefinition } from "@arrirpc/codegen-utils";
 import { loadConfig } from "c12";
 import { defineCommand } from "citty";
 import { ofetch } from "ofetch";
