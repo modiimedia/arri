@@ -1,6 +1,10 @@
-import { removeDisallowedChars, Schema } from "@arrirpc/codegen-utils";
+import {
+    pascalCase,
+    removeDisallowedChars,
+    Schema,
+    snakeCase,
+} from "@arrirpc/codegen-utils";
 import path from "pathe";
-import { pascalCase, snakeCase } from "scule";
 
 export interface GeneratorContext {
     clientName: string;
