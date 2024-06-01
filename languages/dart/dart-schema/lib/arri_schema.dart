@@ -46,12 +46,8 @@ class ArriTypeSchema implements ArriSchema {
     final json = <String, dynamic>{
       "type": type.serialValue,
     };
-    if (nullable != null) {
-      json["nullable"] = nullable;
-    }
-    if (metadata != null) {
-      json["metadata"] = metadata!.toJson();
-    }
+    if (nullable != null) json["nullable"] = nullable;
+    if (metadata != null) json["metadata"] = metadata!.toJson();
     return json;
   }
 }
@@ -93,6 +89,8 @@ class ArriEnumSchema implements ArriSchema {
   @override
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{"enum": enumValues};
+    if (nullable != null) json["nullable"] = nullable;
+    if (metadata != null) json["metadata"] = metadata!.toJson();
     return json;
   }
 }
@@ -150,6 +148,8 @@ class ArriElementsSchema implements ArriSchema {
   @override
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{"elements": elements.toJson()};
+    if (nullable != null) json["nullable"] = nullable;
+    if (metadata != null) json["metadata"] = metadata!.toJson();
     return json;
   }
 }
