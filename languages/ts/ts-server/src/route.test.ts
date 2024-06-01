@@ -1,4 +1,5 @@
 import { a } from "@arrirpc/schema";
+
 import { defineRoute } from "./route";
 
 test("type inference", () => {

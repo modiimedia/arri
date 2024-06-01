@@ -3,9 +3,9 @@ import {
     type AObjectSchema,
     type ASchemaOptions,
     type InferType,
+    isObject,
     type ResolveObject,
     SCHEMA_METADATA,
-    isObject,
     type ValidationData,
 } from "../schemas";
 import { ValidationError } from "./validation";

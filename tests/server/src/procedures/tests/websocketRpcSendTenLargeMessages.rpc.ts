@@ -1,7 +1,8 @@
 import { defineWebsocketRpc } from "@arrirpc/server";
+
 import {
-    StreamLargeObjectsResponse,
     randomLargeObjectResponse,
+    StreamLargeObjectsResponse,
 } from "./streamLargeObjects.rpc";
 
 export default defineWebsocketRpc({

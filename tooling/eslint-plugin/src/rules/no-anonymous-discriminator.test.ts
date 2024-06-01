@@ -1,4 +1,5 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousDiscriminator from "./no-anonymous-discriminator";
 
 const tester = new RuleTester();

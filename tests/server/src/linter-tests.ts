@@ -49,3 +49,6 @@ a.recursive((self) =>
         }),
     }),
 );
+
+// eslint-disable-next-line arri/no-anonymous-enumerator
+a.enumerator(["A", "B", "C"]);

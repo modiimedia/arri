@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-ts",
-  "version": "0.45.5",
+  "version": "0.47.0",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
@@ -15,7 +15,6 @@
   "types": "./dist/index.d.ts",
   "files": ["dist"],
   "dependencies": {
-    "ajv": "^8.13.0",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "prettier": "^3.2.5"

@@ -1,8 +1,8 @@
 import {
     type AArraySchema,
     type ASchema,
-    type InferType,
     type ASchemaOptions,
+    type InferType,
     SCHEMA_METADATA,
     type ValidationData,
 } from "../schemas";

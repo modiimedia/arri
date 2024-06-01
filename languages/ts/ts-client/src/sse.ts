@@ -6,6 +6,7 @@ import {
     type OnResponseContext,
     type OnResponseErrorContext,
 } from "event-source-plus";
+
 import { ArriErrorInstance } from "./errors";
 import { type ArriRequestOpts } from "./request";
 

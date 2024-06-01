@@ -1,12 +1,13 @@
-import { type ValidationError, a, type AObjectSchema } from "@arrirpc/schema";
+import { a, type AObjectSchema,type ValidationError } from "@arrirpc/schema";
 import {
     type H3Error,
     type H3Event,
     isError,
-    setResponseStatus,
     send,
     setResponseHeader,
+    setResponseStatus,
 } from "h3";
+
 import { type ArriOptions } from "./app";
 
 export class ArriServerError extends Error {

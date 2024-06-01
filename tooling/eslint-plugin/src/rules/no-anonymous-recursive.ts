@@ -1,4 +1,5 @@
 import { type Rule } from "eslint";
+
 import { argHasIdKey } from "./_common";
 
 const noAnonymousRecursive: Rule.RuleModule = {

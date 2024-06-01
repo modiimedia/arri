@@ -1,4 +1,5 @@
 import NodeWebsocket from "ws";
+
 import { ArriErrorInstance } from "./errors";
 
 function isBrowser() {

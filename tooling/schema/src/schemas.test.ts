@@ -1,4 +1,4 @@
-import { type InferType, a, type InferSubType } from "./_index";
+import { a, type InferSubType,type InferType } from "./_index";
 
 describe("InferSubType", () => {
     test("Basic Discriminator", () => {

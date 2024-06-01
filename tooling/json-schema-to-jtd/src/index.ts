@@ -1,23 +1,24 @@
 import {
     type Schema,
-    type SchemaFormProperties,
+    type SchemaFormElements,
     type SchemaFormEmpty,
     type SchemaFormEnum,
-    type SchemaFormElements,
+    type SchemaFormProperties,
     type SchemaFormValues,
 } from "jtd-utils";
+
 import {
+    isJsonSchemaArray,
+    isJsonSchemaEnum,
+    isJsonSchemaObject,
+    isJsonSchemaRecord,
+    isJsonSchemaScalarType,
     type JsonSchemaArray,
     type JsonSchemaEnum,
     type JsonSchemaObject,
     type JsonSchemaRecord,
     type JsonSchemaScalarType,
     type JsonSchemaType,
-    isJsonSchemaArray,
-    isJsonSchemaEnum,
-    isJsonSchemaObject,
-    isJsonSchemaRecord,
-    isJsonSchemaScalarType,
 } from "./models";
 export * from "./models";
 

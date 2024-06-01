@@ -1,0 +1,99 @@
+name: tests
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+jobs:
+  lint:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - name: Install Dart
+        uses: dart-lang/setup-dart@v1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.1.3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+          cache: pnpm
+      - name: Install Node Dependencies
+        run: pnpm i -r --frozen-lockfile
+      - name: Set NX Shas
+        uses: nrwl/nx-set-shas@v3
+        with:
+          main-branch-name: master
+      - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
+      - run: pnpm run build
+      - run: pnpm nx affected -t lint
+  unit-tests:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - name: Install Dart
+        uses: dart-lang/setup-dart@v1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.1.3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+          cache: pnpm
+      - name: Install Node Dependencies
+        run: pnpm i -r --frozen-lockfile
+      - name: Set NX Shas
+        uses: nrwl/nx-set-shas@v3
+        with:
+          main-branch-name: master
+      - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
+      - run: pnpm run build
+      - run: pnpm nx affected -t test
+  integration-tests:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - name: Install Dart
+        uses: dart-lang/setup-dart@v1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.1.3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+          cache: pnpm
+      - name: Install Node Dependencies
+        run: pnpm i -r --frozen-lockfile
+      - name: Set NX Shas
+        uses: nrwl/nx-set-shas@v3
+        with:
+          main-branch-name: master
+      - name: Install dart dependencies
+        run: pnpm nx run-many -t pub -- get # install dart dependencies in all dart projects
+      - run: pnpm run build
+      - run: pnpm run integration-tests

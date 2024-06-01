@@ -1,11 +1,13 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
+
 import { removeDisallowedChars } from "@arrirpc/codegen-utils";
 import { createConsola } from "consola";
 import { type globby } from "globby";
 import path from "pathe";
 import prettier from "prettier";
 import { camelCase, kebabCase } from "scule";
+
 import { type ResolvedArriConfig } from "./config";
 
 export const logger = createConsola().withTag("arri");
@@ -127,7 +129,6 @@ export async function getFsRouteBatch(
                 .relative(path.resolve(config.rootDir, config.buildDir), file)
                 .split(".");
             importParts.pop();
-            importParts.push("js");
             routes.push({
                 name: meta.id,
                 importName: camelCase(meta.id.split(".").join("_")),

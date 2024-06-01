@@ -1,21 +1,21 @@
 import {
+    type AAdaptedObjectSchema,
+    type AAdaptedRecordSchema,
+    type AAdaptedSchema,
     SCHEMA_METADATA,
     ValidationError,
     type ValueError,
-    type AAdaptedSchema,
-    type AAdaptedRecordSchema,
-    type AAdaptedObjectSchema,
 } from "@arrirpc/schema";
 import {
-    type TSchema,
+    OptionalKind,
     type Static,
     type TObject,
     type TRecord,
-    OptionalKind,
+    type TSchema,
 } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
-import { type JsonSchemaType, jsonSchemaToJtdSchema } from "json-schema-to-jtd";
+import { jsonSchemaToJtdSchema,type JsonSchemaType } from "json-schema-to-jtd";
 
 export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,

@@ -39,8 +39,8 @@ export default tsEslint.config(
             "simple-import-sort": simpleImportSort,
         },
         rules: {
-            "simple-import-sort/imports": 0,
-            "simple-import-sort/exports": 0,
+            "simple-import-sort/imports": 2,
+            "simple-import-sort/exports": 2,
             "n/no-unpublished-import": 0,
             "n/no-missing-import": 0,
             "n/no-extraneous-import": 0,

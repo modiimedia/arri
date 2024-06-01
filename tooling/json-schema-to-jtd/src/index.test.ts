@@ -1,6 +1,7 @@
 import { type SchemaFormProperties, type SchemaFormType } from "jtd-utils";
-import { type JsonSchemaObject, type JsonSchemaScalarType } from "./models";
+
 import { jsonSchemaToJtdSchema } from "./index";
+import { type JsonSchemaObject, type JsonSchemaScalarType } from "./models";
 
 const emptyMetadata = {
     id: undefined,

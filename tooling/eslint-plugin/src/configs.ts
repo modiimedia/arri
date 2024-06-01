@@ -1,4 +1,5 @@
 import type { Linter } from "eslint";
+
 import plugin from "./plugin";
 import { prefixedRuleMap } from "./rules/_index";
 

@@ -1,35 +1,35 @@
-import { execSync } from "child_process";
-import { writeFileSync } from "fs";
 import {
-    type ServiceDefinition,
+    type AppDefinition,
+    camelCase,
+    defineClientGeneratorPlugin,
+    type HttpRpcDefinition,
     isRpcDefinition,
-    type RpcDefinition,
-    type SchemaFormProperties,
-    type SchemaFormType,
-    isSchemaFormType,
-    type Schema,
-    isSchemaFormProperties,
+    isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
+    isSchemaFormProperties,
+    isSchemaFormRef,
+    isSchemaFormType,
     isSchemaFormValues,
-    isSchemaFormDiscriminator,
-    type AppDefinition,
-    unflattenProcedures,
     isServiceDefinition,
+    pascalCase,
+    type RpcDefinition,
+    type Schema,
+    type SchemaFormDiscriminator,
     type SchemaFormElements,
     type SchemaFormEnum,
-    type SchemaFormValues,
-    type SchemaFormDiscriminator,
-    defineClientGeneratorPlugin,
-    pascalCase,
-    camelCase,
-    type SchemaMetadata,
-    isSchemaFormRef,
+    type SchemaFormProperties,
     type SchemaFormRef,
+    type SchemaFormType,
+    type SchemaFormValues,
+    type SchemaMetadata,
+    type ServiceDefinition,
+    unflattenProcedures,
     type WsRpcDefinition,
-    type HttpRpcDefinition,
 } from "@arrirpc/codegen-utils";
 import { a } from "@arrirpc/schema";
+import { execSync } from "child_process";
+import { writeFileSync } from "fs";
 
 function camelCaseWrapper(input: string) {
     if (input.toUpperCase() === input) {

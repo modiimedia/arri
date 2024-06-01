@@ -1,4 +1,5 @@
 import { type Rule } from "eslint";
+
 import { argHasIdKey, isNestedInSchema } from "./_common";
 
 const noAnonymousDiscriminator: Rule.RuleModule = {

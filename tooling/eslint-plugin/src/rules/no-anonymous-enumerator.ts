@@ -1,5 +1,6 @@
 import { type Rule } from "eslint";
-import { argHasIdKey } from "./_common";
+
+import { argHasIdKey, isNestedInSchema } from "./_common";
 
 const noAnonymousEnumerator: Rule.RuleModule = {
     meta: {
@@ -20,9 +21,18 @@ const noAnonymousEnumerator: Rule.RuleModule = {
                 if (propName !== "enumerator" && propName !== "stringEnum") {
                     return;
                 }
+                if (
+                    isNestedInSchema(
+                        node,
+                        ["object", "discriminator", "recursive"],
+                        context,
+                    )
+                ) {
+                    return;
+                }
                 if (node.arguments.length < 2) {
                     context.report({
-                        message: "enum schemas must specify an id",
+                        message: "root enum schemas must specify an id",
                         node,
                     });
                     return;
@@ -40,7 +50,7 @@ const noAnonymousEnumerator: Rule.RuleModule = {
                     return;
                 }
                 context.report({
-                    message: "enum schemas must specify an id",
+                    message: "root enum schemas must specify an id",
                     node,
                 });
             },

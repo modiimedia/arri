@@ -1,14 +1,15 @@
-import { execSync } from "child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { normalizeWhitespace } from "@arrirpc/codegen-utils";
 import { TestAppDefinition } from "@arrirpc/codegen-utils/dist/testModels";
 import { a } from "@arrirpc/schema";
+import { execSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "pathe";
 import { test } from "vitest";
+
 import {
-    dartServiceFromDefinition,
-    dartClassFromJtdSchema,
     createDartClient,
+    dartClassFromJtdSchema,
+    dartServiceFromDefinition,
     dartTypeFromJtdSchema,
 } from ".";
 

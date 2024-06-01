@@ -1,9 +1,11 @@
 import fs from "node:fs";
+
 import {
     type AppDefinition,
     normalizeWhitespace,
 } from "@arrirpc/codegen-utils";
 import path from "pathe";
+
 import { kotlinClientFromAppDefinition } from "./_index";
 
 test("output matches the reference client", () => {

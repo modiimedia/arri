@@ -1,5 +1,6 @@
 import { type AppDefinition } from "@arrirpc/codegen-utils";
 import { a } from "@arrirpc/schema";
+
 import { ArriApp } from "./app";
 
 it("creates valid app definition", () => {

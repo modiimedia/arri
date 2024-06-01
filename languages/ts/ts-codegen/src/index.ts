@@ -1,36 +1,36 @@
-import { writeFileSync } from "fs";
 import {
     type AppDefinition,
-    defineClientGeneratorPlugin,
-    pascalCase,
-    type Schema,
-    isSchemaFormType,
-    type SchemaFormType,
-    isSchemaFormProperties,
-    type SchemaFormProperties,
-    isSchemaFormEnum,
-    type SchemaFormEnum,
-    isSchemaFormElements,
-    type SchemaFormElements,
-    type SchemaFormDiscriminator,
     camelCase,
-    isSchemaFormDiscriminator,
-    isSchemaFormValues,
-    type SchemaFormValues,
-    type RpcDefinition,
-    unflattenProcedures,
-    isRpcDefinition,
-    isServiceDefinition,
-    type ServiceDefinition,
+    defineClientGeneratorPlugin,
     type HttpRpcDefinition,
-    type WsRpcDefinition,
+    isRpcDefinition,
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
     isSchemaFormRef,
+    isSchemaFormType,
+    isSchemaFormValues,
+    isServiceDefinition,
+    pascalCase,
+    type RpcDefinition,
+    type Schema,
+    type SchemaFormDiscriminator,
+    type SchemaFormElements,
+    type SchemaFormEnum,
+    type SchemaFormProperties,
     type SchemaFormRef,
+    type SchemaFormType,
+    type SchemaFormValues,
+    type ServiceDefinition,
+    unflattenProcedures,
+    type WsRpcDefinition,
 } from "@arrirpc/codegen-utils";
 import {
     getSchemaParsingCode,
     getSchemaSerializationCode,
 } from "@arrirpc/schema";
+import { writeFileSync } from "fs";
 import prettier from "prettier";
 
 interface GeneratorOptions {
@@ -120,6 +120,7 @@ export async function createTypescriptClient(
     if (rpcOptions.hasSseProcedures) {
         importParts.push("arriSseRequest");
         importParts.push("type SseOptions");
+        importParts.push("type EventSourceController");
     }
     if (rpcOptions.hasWsProcedures) {
         importParts.push("arriWsRequest");
@@ -217,7 +218,7 @@ export function tsHttpRpcFromDefinition(
         options.hasSseProcedures = true;
         return `${getJsDocComment({ isDeprecated: schema.isDeprecated, description: schema.description })}${key}(${
             paramsInput.length ? `${paramsInput}, ` : ""
-        }options: SseOptions<${schema.response ?? "undefined"}>) {
+        }options: SseOptions<${schema.response ?? "undefined"}>): EventSourceController {
             return arriSseRequest<${schema.response ?? "undefined"}, ${
                 schema.params ?? "undefined"
             }>({

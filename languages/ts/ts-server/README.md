@@ -13,7 +13,7 @@ Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](h
         -   [File-Based Routing](#file-based-routing)
         -   [Manual Routing](#manual-routing)
         -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
-        -   [Creating Websocket Procedures](#creating-websocket-procedures)
+        -   [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
     -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
     -   [Adding Middleware](#adding-middleware)
 -   [Key Concepts](#key-concepts)
@@ -278,7 +278,7 @@ stream.end()
 stream.on(e: 'request:close' | 'close', callback: () => any)
 ```
 
-### Creating Websocket Procedures
+### Creating Websocket Procedures (Experimental)
 
 ```ts
 // Websocket procedures work really well with discriminated unions
