@@ -1,0 +1,12 @@
+{
+  "name": "dart-schema",
+  "targets": {
+    "pub": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart pub",
+        "cwd": "languages/dart/dart-schema"
+      }
+    }
+  }
+}

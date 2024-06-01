@@ -9,7 +9,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   collection: ^1.0.0
-  macros: ^0.1.0-main.5
+  macros: ^0.1.0-main
   # path: ^1.8.0
 
 dev_dependencies:

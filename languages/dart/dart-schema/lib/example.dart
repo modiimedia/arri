@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:arri_schema/arri_macro.dart';
 import 'package:arri_schema/arri_schema.dart';
 
-@ArriCodable()
+@ArriModel()
 class User {
   final String id;
   final String name;
@@ -25,7 +27,7 @@ void main(List<String> args) {
     messages: [],
     settings: {},
   );
-  print(user.toTypeDefinition());
+  print(json.encode(user.toTypeDefinition().toJson()));
 }
 
 final userSchema = ArriPropertiesSchema(

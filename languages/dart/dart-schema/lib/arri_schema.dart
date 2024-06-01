@@ -31,7 +31,9 @@ sealed class ArriSchema {
 
 class ArriTypeSchema implements ArriSchema {
   final ArriType type;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriTypeSchema({
     required this.type,
@@ -44,6 +46,12 @@ class ArriTypeSchema implements ArriSchema {
     final json = <String, dynamic>{
       "type": type.serialValue,
     };
+    if (nullable != null) {
+      json["nullable"] = nullable;
+    }
+    if (metadata != null) {
+      json["metadata"] = metadata!.toJson();
+    }
     return json;
   }
 }
@@ -72,7 +80,9 @@ enum ArriType implements Comparable<ArriType> {
 
 class ArriEnumSchema implements ArriSchema {
   final List<String> enumValues;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriEnumSchema({
     required this.enumValues,
@@ -91,7 +101,9 @@ class ArriPropertiesSchema implements ArriSchema {
   final Map<String, ArriSchema> properties;
   final Map<String, ArriSchema>? optionalProperties;
   final bool additionalProperties;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriPropertiesSchema({
     required this.properties,
@@ -125,7 +137,9 @@ class ArriPropertiesSchema implements ArriSchema {
 
 class ArriElementsSchema implements ArriSchema {
   final ArriSchema elements;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriElementsSchema({
     required this.elements,
@@ -142,7 +156,9 @@ class ArriElementsSchema implements ArriSchema {
 
 class ArriValuesSchema implements ArriSchema {
   final ArriSchema values;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriValuesSchema({
     required this.values,
@@ -162,7 +178,9 @@ class ArriValuesSchema implements ArriSchema {
 class ArriDiscriminatorSchema implements ArriSchema {
   final String discriminator;
   final Map<String, ArriPropertiesSchema> mapping;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriDiscriminatorSchema({
     required this.discriminator,
@@ -187,7 +205,9 @@ class ArriDiscriminatorSchema implements ArriSchema {
 
 class ArriRefSchema implements ArriSchema {
   final String ref;
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriRefSchema({
     required this.ref,
@@ -205,7 +225,9 @@ class ArriRefSchema implements ArriSchema {
 }
 
 class ArriEmptySchema implements ArriSchema {
+  @override
   final bool? nullable;
+  @override
   final ArriSchemaMetadata? metadata;
   const ArriEmptySchema({
     this.nullable,

@@ -3,18 +3,25 @@ import 'dart:core';
 import 'package:macros/macros.dart';
 import 'package:collection/collection.dart';
 
-macro class ArriCodable implements ClassDeclarationsMacro, ClassDefinitionMacro {
-  const ArriCodable();
+
+final _arriSchema = Uri.parse("package:arri_schema/arri_schema.dart");
+final _dartCore = Uri.parse("dart:core");
+
+macro class ArriModel implements ClassDeclarationsMacro, ClassDefinitionMacro {
+  const ArriModel();
 
   @override
-  FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) {
+  FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
    builder.declareInType(
       DeclarationCode.fromString(
         "external void sayHello();"
       )
     );
-    builder.declareInLibrary(DeclarationCode.fromString("import 'package:arri_schema/arri_schema.dart';"));
-    builder.declareInType(DeclarationCode.fromString("external ArriSchema toTypeDefinition();"));
+    final schema = await builder.resolveIdentifier(_arriSchema, "ArriSchema");
+    final schemaType = NamedTypeAnnotationCode(name: schema);
+    final bool = await builder.resolveIdentifier(_dartCore, "bool");
+    final boolType = NamedTypeAnnotationCode(name: bool).asNullable;
+    builder.declareInType(DeclarationCode.fromParts([" external ", schemaType ," toTypeDefinition({", boolType ," nullable});"]));
   }
 
   @override
@@ -29,11 +36,9 @@ macro class ArriCodable implements ClassDeclarationsMacro, ClassDefinitionMacro 
     );
     if(sayHello == null) return;
     final sayHelloMethod = await builder.buildMethod(sayHello.identifier);
-    sayHelloMethod.augment(FunctionBodyCode.fromString("""{
-      print("hello world!");
-      print("I have the following fields: [${fields.join(", ")}]");
-    }"""));
-
+    final printCode = await builder.resolveIdentifier(_dartCore, "print");
+    final printRef = NamedTypeAnnotationCode(name: printCode);
+    sayHelloMethod.augment(FunctionBodyCode.fromParts(["{\n", printRef, "(\"hello world!\");\n", "}"]));
     final toTypeDefinition = methods.firstWhereOrNull((m) => m.identifier.name == 'toTypeDefinition');
     if(toTypeDefinition == null) return;
     final toTypeDefMethod = await builder.buildMethod(toTypeDefinition.identifier);
@@ -60,12 +65,25 @@ macro class ArriCodable implements ClassDeclarationsMacro, ClassDefinitionMacro 
           break;
       }
     }
+    final typeSchema = await builder.resolveIdentifier(_arriSchema, "ArriTypeSchema");
+    final type = await builder.resolveIdentifier(_arriSchema, "ArriType");
+    final metadata = await builder.resolveIdentifier(_arriSchema, "ArriSchemaMetadata");
 
-    toTypeDefMethod.augment(FunctionBodyCode.fromString("""{
-      // ${fieldParts.join(", ")}
-      // ${(toTypeDefinition.returnType.code.parts.first as Identifier).name}
-      return ArriTypeSchema(type: ArriType.string);
-    }"""));
+    final typeSchemaRef = NamedTypeAnnotationCode(name: typeSchema);
+    final typeRef = NamedTypeAnnotationCode(name: type);
+    final metadataRef = NamedTypeAnnotationCode(name: metadata);
+    toTypeDefMethod.augment(FunctionBodyCode.fromParts([
+      "{\n",
+      "    return ",
+      typeSchemaRef,
+      "(type: ",
+      typeRef,
+      ".string, nullable: nullable, metadata: ",
+      metadataRef,
+      "(id: \"${clazz.identifier.name}\"),"
+      ");\n",
+      "}"
+    ]));
   }
 }
 

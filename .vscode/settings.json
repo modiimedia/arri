@@ -1,8 +1,9 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "always"
   },
+  "dart.allowTestsOutsideTestFolder": true,
   "dart.analysisExcludedFolders": [
     "**/node_modules",
     "**/dist",
