@@ -146,12 +146,12 @@ import { ${importParts.join(", ")} } from '@arrirpc/client';
     
 interface ${clientName}Options {
     baseUrl?: string;
-    headers?: Record<string, string> | (() => Record<string, string>);
+    headers?: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
 }
 
 export class ${clientName} {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string> | (() => Record<string, string>)
+    private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>)
     private readonly clientVersion = '${rpcOptions.versionNumber}';
     ${serviceFieldParts.join("\n    ")}
 
@@ -317,7 +317,7 @@ export function tsServiceFromDefinition(
 
     return `export class ${name}Service {
         private readonly baseUrl: string;
-        private readonly headers: Record<string, string> | (() => Record<string, string>);
+        private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
         private readonly clientVersion = '${options.versionNumber}';
         ${serviceFieldParts.join("\n    ")}
 
