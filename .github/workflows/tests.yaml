@@ -89,11 +89,8 @@ jobs:
           cache: pnpm
       - name: Install Node Dependencies
         run: pnpm i -r --frozen-lockfile
-      - name: Set NX Shas
-        uses: nrwl/nx-set-shas@v3
-        with:
-          main-branch-name: master
       - name: Install dart dependencies
         run: pnpm nx run-many -t pub -- get # install dart dependencies in all dart projects
       - run: pnpm run build
+      - run: pnpm i -r
       - run: pnpm run integration-tests
