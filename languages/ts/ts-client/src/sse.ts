@@ -9,6 +9,7 @@ import {
 
 import { ArriErrorInstance } from "./errors";
 import { type ArriRequestOpts } from "./request";
+import { getHeaders } from "./utils";
 
 export interface SseEvent<TData = string> {
     id?: string;
@@ -69,13 +70,9 @@ export function arriSseRequest<
 
     const eventSource = new EventSourcePlus(url, {
         method: opts.method ?? "get",
-        headers: () => {
-            let headers: Record<string, string>;
-            if (typeof opts.headers === "function") {
-                headers = opts.headers();
-            } else {
-                headers = opts.headers ?? {};
-            }
+        headers: async () => {
+            const headers: Record<string, string> =
+                (await getHeaders(opts.headers)) ?? {};
             if (opts.clientVersion) {
                 headers["client-version"] = opts.clientVersion;
             }

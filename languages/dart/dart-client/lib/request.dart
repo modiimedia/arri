@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:arri_client/errors.dart';
@@ -25,7 +26,7 @@ Future<http.Response> arriRequest(
   http.Client? httpClient,
   HttpMethod method = HttpMethod.get,
   Map<String, dynamic>? params,
-  Map<String, String> Function()? headers,
+  FutureOr<Map<String, String>> Function()? headers,
 
   /// manually specify specific url query parameters
   Map<String, String>? query,
@@ -40,7 +41,8 @@ Future<http.Response> arriRequest(
     """{"statusCode": 400,"statusMessage":"$defaultErrorMsg"}""",
     400,
   );
-  final finalHeaders = {...headers?.call() ?? {}};
+
+  final finalHeaders = await headers?.call() ?? {};
   if (clientVersion != null && clientVersion.isNotEmpty) {
     finalHeaders["client-version"] = clientVersion;
   }
@@ -123,7 +125,7 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   http.Client? httpClient,
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
-  Map<String, String> Function()? headers,
+  FutureOr<Map<String, String>> Function()? headers,
   String? clientVersion,
   required T Function(String) parser,
 }) async {
@@ -148,7 +150,7 @@ Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
   http.Client? httpClient,
   HttpMethod httpMethod = HttpMethod.get,
   Map<String, dynamic>? params,
-  Map<String, String> Function()? headers,
+  FutureOr<Map<String, String>> Function()? headers,
   required T Function(String) parser,
   String? clientVersion,
 }) async {

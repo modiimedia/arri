@@ -14,13 +14,13 @@ typedef SseHookOnOpen<T> = void Function(
     http.StreamedResponse response, EventSource<T> connection);
 typedef SseHookOnClose<T> = void Function(EventSource<T> connection);
 
-EventSource<T> parsedArriSseRequest<T>(
+Future<EventSource<T>> parsedArriSseRequest<T>(
   String url, {
   http.Client? httpClient,
   required HttpMethod method,
   required T Function(String data) parser,
   Map<String, dynamic>? params,
-  Map<String, String> Function()? headers,
+  FutureOr<Map<String, String>> Function()? headers,
   Duration? retryDelay,
   int? maxRetryCount,
   SseHookOnData<T>? onData,
@@ -30,15 +30,15 @@ EventSource<T> parsedArriSseRequest<T>(
   SseHookOnClose<T>? onClose,
   String? lastEventId,
   String? clientVersion,
-}) {
+}) async {
   return EventSource(
     httpClient: httpClient,
     url: url,
     method: method,
     parser: parser,
     params: params,
-    headers: () {
-      final result = headers?.call() ?? {};
+    headers: () async {
+      final result = await headers?.call() ?? {};
       if (clientVersion != null && clientVersion.isNotEmpty) {
         result["client-version"] = clientVersion;
       }
@@ -60,7 +60,7 @@ class EventSource<T> {
   final String url;
   final HttpMethod method;
   final Map<String, dynamic>? _params;
-  final Map<String, String> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
   String? lastEventId;
   StreamController<T>? _streamController;
   final Duration _retryDelay;
@@ -83,7 +83,7 @@ class EventSource<T> {
     http.Client? httpClient,
     this.method = HttpMethod.get,
     Map<String, dynamic>? params,
-    Map<String, String> Function()? headers,
+    FutureOr<Map<String, String>> Function()? headers,
     Duration retryDelay = Duration.zero,
     int? maxRetryCount,
     // hooks
@@ -151,7 +151,7 @@ class EventSource<T> {
     if (body.isNotEmpty) {
       request.body = body;
     }
-    _headers?.call().forEach((key, value) {
+    (await _headers?.call())?.forEach((key, value) {
       request.headers[key] = value;
     });
     if (lastEventId != null) {

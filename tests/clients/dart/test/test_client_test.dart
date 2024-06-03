@@ -114,6 +114,19 @@ Future<void> main() async {
     expect(result.int64, equals(input.int64));
     expect(result.uint64, equals(input.uint64));
   });
+  test("supports async header functions", () async {
+    final asyncHeaderClient = TestClient(
+      baseUrl: baseUrl,
+      headers: () async {
+        await Future.delayed(Duration(milliseconds: 100));
+        return {"x-test-header": "async-test"};
+      },
+    );
+    final result = await asyncHeaderClient.tests.sendObject(input);
+    expect(result.array.length, equals(input.array.length));
+    expect(result.int64, equals(input.int64));
+    expect(result.uint64, equals(input.uint64));
+  });
   test("unauthenticated RPC requests return a 401 error", () async {
     try {
       await unauthenticatedClient.tests.sendObject(input);
@@ -274,7 +287,7 @@ Future<void> main() async {
 
   test("[SSE] supports server sent events", () async {
     int messageCount = 0;
-    final eventSource = client.tests.streamMessages(
+    final eventSource = await client.tests.streamMessages(
       ChatMessageParams(channelId: "12345"),
       onData: (data, _) {
         messageCount++;
@@ -302,8 +315,8 @@ Future<void> main() async {
   test("[SSE] supports converting server sent events to a Dart 'Stream'",
       () async {
     int messageCount = 0;
-    final eventSource =
-        client.tests.streamMessages(ChatMessageParams(channelId: "12345"));
+    final eventSource = await client.tests
+        .streamMessages(ChatMessageParams(channelId: "12345"));
     final listener = eventSource.toStream().listen((message) {
       messageCount++;
       switch (message) {
@@ -329,7 +342,7 @@ Future<void> main() async {
   test("[SSE] parses both 'message' and 'error' events", () async {
     int messageCount = 0;
     int errorCount = 0;
-    final eventSource = client.tests.streamTenEventsThenError(
+    final eventSource = await client.tests.streamTenEventsThenError(
       onData: (data, connection) {
         messageCount++;
         expect(data.messageType.isNotEmpty, equals(true));
@@ -347,7 +360,7 @@ Future<void> main() async {
   test("[SSE] closes connection when receiving 'done' event", () async {
     int messageCount = 0;
     int errorCount = 0;
-    final eventSource = client.tests.streamTenEventsThenEnd(
+    final eventSource = await client.tests.streamTenEventsThenEnd(
       onData: (data, connection) {
         messageCount++;
       },
@@ -364,7 +377,7 @@ Future<void> main() async {
     int connectionCount = 0;
     int messageCount = 0;
     int errorCount = 0;
-    final eventSource = client.tests.streamAutoReconnect(
+    final eventSource = await client.tests.streamAutoReconnect(
       AutoReconnectParams(messageCount: 10),
       onOpen: (_, __) {
         connectionCount++;
@@ -387,7 +400,7 @@ Future<void> main() async {
     var openCount = 0;
     var msgCount = 0;
     var errorCount = 0;
-    final eventSource = client.tests.streamLargeObjects(
+    final eventSource = await client.tests.streamLargeObjects(
       onOpen: (_, __) {
         openCount++;
       },
@@ -413,7 +426,7 @@ Future<void> main() async {
     final List<ArriError> errors = [];
     final statusCode = 555;
     final statusMessage = "test_message";
-    final eventSource = client.tests.streamConnectionErrorTest(
+    final eventSource = await client.tests.streamConnectionErrorTest(
       StreamConnectionErrorTestParams(
         statusCode: statusCode,
         statusMessage: statusMessage,
@@ -458,7 +471,7 @@ Future<void> main() async {
     );
     var msgCount = 0;
     var openCount = 0;
-    final eventSource = dynamicClient.tests.streamRetryWithNewCredentials(
+    final eventSource = await dynamicClient.tests.streamRetryWithNewCredentials(
         onData: (data, connection) {
       msgCount++;
     }, onOpen: (response, connection) {

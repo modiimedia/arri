@@ -77,7 +77,7 @@ describe("Service Creation", () => {
                 await prettier.format(
                     `export class UserService {
             private readonly baseUrl: string;
-            private readonly headers: Record<string, string> | (() => Record<string, string>);
+            private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
             private readonly clientVersion = '1';
             constructor(options: ClientOptions = {}) {
                 this.baseUrl = options.baseUrl ?? "";

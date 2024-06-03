@@ -1,6 +1,8 @@
+import { EventSourcePlusOptions } from "event-source-plus";
 import NodeWebsocket from "ws";
 
 import { ArriErrorInstance } from "./errors";
+import { getHeaders } from "./utils";
 
 function isBrowser() {
     return typeof window !== "undefined";
@@ -27,7 +29,7 @@ export interface WsOptions<TResponse> {
 
 interface ArriWsRequestOptions<TParams = any, TResponse = any> {
     url: string;
-    headers?: Record<string, string> | (() => Record<string, string>);
+    headers?: EventSourcePlusOptions["headers"];
     params?: TParams;
     parser: (input: unknown) => TResponse;
     serializer: (input: TParams) => string;
@@ -48,22 +50,17 @@ function connectWebsocket(url: string, protocol?: string) {
     });
 }
 
-export function arriWsRequest<
+export async function arriWsRequest<
     TParams extends Record<any, any> | undefined = undefined,
     TResponse = any,
 >(
     opts: ArriWsRequestOptions<TParams, TResponse>,
     retryCount = 0,
-): WsController<TParams, TResponse> {
+): Promise<WsController<TParams, TResponse>> {
     let url = opts.url
         .replace("http://", "ws://")
         .replace("https://", "wss://");
-    let headers: Record<string, string> | undefined;
-    if (typeof opts.headers === "function") {
-        headers = opts.headers();
-    } else {
-        headers = opts.headers;
-    }
+    const headers = await getHeaders(opts.headers);
     if (headers) {
         if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
         const queryParts: string[] = [];
