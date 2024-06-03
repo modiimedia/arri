@@ -104,6 +104,11 @@ async function initApp(dir: string, force: boolean) {
             initial: true,
         },
     ]);
+    if (eslint) {
+        logger.warn(
+            `The Arri eslint starter uses the Eslint flat config syntax. If you are using VSCode you will need to enable "eslint.experimental.useFlatConfig" in your workspace settings. Please follow https://github.com/microsoft/vscode-eslint/issues/1644 for details.`,
+        );
+    }
     const repo = eslint
         ? "modiimedia/arri-starters/app-starter-ts-with-eslint"
         : "modiimedia/arri-starters/app-starter-ts";
