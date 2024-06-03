@@ -14,7 +14,7 @@ typedef SseHookOnOpen<T> = void Function(
     http.StreamedResponse response, EventSource<T> connection);
 typedef SseHookOnClose<T> = void Function(EventSource<T> connection);
 
-Future<EventSource<T>> parsedArriSseRequest<T>(
+EventSource<T> parsedArriSseRequest<T>(
   String url, {
   http.Client? httpClient,
   required HttpMethod method,
@@ -30,7 +30,7 @@ Future<EventSource<T>> parsedArriSseRequest<T>(
   SseHookOnClose<T>? onClose,
   String? lastEventId,
   String? clientVersion,
-}) async {
+}) {
   return EventSource(
     httpClient: httpClient,
     url: url,

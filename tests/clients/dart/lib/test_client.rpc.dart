@@ -194,7 +194,7 @@ class TestClientTestsService {
     );
   }
 
-  Future<EventSource<AutoReconnectResponse>> streamAutoReconnect(
+  EventSource<AutoReconnectResponse> streamAutoReconnect(
     AutoReconnectParams params, {
     SseHookOnData<AutoReconnectResponse>? onData,
     SseHookOnError<AutoReconnectResponse>? onError,
@@ -223,8 +223,7 @@ class TestClientTestsService {
   }
 
   /// This route will always return an error. The client should automatically retry with exponential backoff.
-  Future<EventSource<StreamConnectionErrorTestResponse>>
-      streamConnectionErrorTest(
+  EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
     StreamConnectionErrorTestParams params, {
     SseHookOnData<StreamConnectionErrorTestResponse>? onData,
     SseHookOnError<StreamConnectionErrorTestResponse>? onError,
@@ -254,7 +253,7 @@ class TestClientTestsService {
   }
 
   /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
-  Future<EventSource<StreamLargeObjectsResponse>> streamLargeObjects({
+  EventSource<StreamLargeObjectsResponse> streamLargeObjects({
     SseHookOnData<StreamLargeObjectsResponse>? onData,
     SseHookOnError<StreamLargeObjectsResponse>? onError,
     SseHookOnConnectionError<StreamLargeObjectsResponse>? onConnectionError,
@@ -281,7 +280,7 @@ class TestClientTestsService {
     );
   }
 
-  Future<EventSource<ChatMessage>> streamMessages(
+  EventSource<ChatMessage> streamMessages(
     ChatMessageParams params, {
     SseHookOnData<ChatMessage>? onData,
     SseHookOnError<ChatMessage>? onError,
@@ -309,7 +308,7 @@ class TestClientTestsService {
     );
   }
 
-  Future<EventSource<TestsStreamRetryWithNewCredentialsResponse>>
+  EventSource<TestsStreamRetryWithNewCredentialsResponse>
       streamRetryWithNewCredentials({
     SseHookOnData<TestsStreamRetryWithNewCredentialsResponse>? onData,
     SseHookOnError<TestsStreamRetryWithNewCredentialsResponse>? onError,
@@ -339,7 +338,7 @@ class TestClientTestsService {
   }
 
   /// When the client receives the 'done' event, it should close the connection and NOT reconnect
-  Future<EventSource<ChatMessage>> streamTenEventsThenEnd({
+  EventSource<ChatMessage> streamTenEventsThenEnd({
     SseHookOnData<ChatMessage>? onData,
     SseHookOnError<ChatMessage>? onError,
     SseHookOnConnectionError<ChatMessage>? onConnectionError,
@@ -366,7 +365,7 @@ class TestClientTestsService {
     );
   }
 
-  Future<EventSource<ChatMessage>> streamTenEventsThenError({
+  EventSource<ChatMessage> streamTenEventsThenError({
     SseHookOnData<ChatMessage>? onData,
     SseHookOnError<ChatMessage>? onError,
     SseHookOnConnectionError<ChatMessage>? onConnectionError,
@@ -457,7 +456,7 @@ class TestClientUsersService {
         _baseUrl = baseUrl,
         _headers = headers;
 
-  Future<EventSource<UsersWatchUserResponse>> watchUser(
+  EventSource<UsersWatchUserResponse> watchUser(
     UsersWatchUserParams params, {
     SseHookOnData<UsersWatchUserResponse>? onData,
     SseHookOnError<UsersWatchUserResponse>? onError,

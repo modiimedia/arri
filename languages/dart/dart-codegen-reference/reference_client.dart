@@ -93,7 +93,7 @@ class TestClientUsersService {
   }
 
   /// Watch a user
-  Future<EventSource<User>> watchUser(
+  EventSource<User> watchUser(
     UserParams params, {
     SseHookOnData<User>? onData,
     SseHookOnError<User>? onError,

@@ -282,13 +282,13 @@ export function dartHttpRpcFromSchema(
         | "Future<number>"
         | "Future<void>"
         | `Future<${string}>`
-        | `Future<EventSource<${string}>>` = `Future<String>`;
+        | `EventSource<${string}>` = `Future<String>`;
     let returnTypeName = "String";
     if (def.response) {
         returnTypeName = pascalCase(def.response);
 
         if (def.isEventStream) {
-            returnType = `Future<EventSource<${returnTypeName}>>`;
+            returnType = `EventSource<${returnTypeName}>`;
         } else {
             returnType = `Future<${returnTypeName}>`;
         }
