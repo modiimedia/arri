@@ -16,10 +16,10 @@ importers:
         version: 8.4.1
       '@nx/eslint':
         specifier: 19.1.1
-        version: 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)
+        version: 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)
       '@nx/vite':
         specifier: 19.1.1
-        version: 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0))(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))
+        version: 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0))(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))
       '@nx/workspace':
         specifier: 19.1.1
         version: 19.1.1
@@ -30,11 +30,11 @@ importers:
         specifier: ^4.17.4
         version: 4.17.4
       '@types/node':
-        specifier: 20.13.0
-        version: 20.13.0
+        specifier: 20.14.0
+        version: 20.14.0
       '@vitest/coverage-v8':
         specifier: 1.6.0
-        version: 1.6.0(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))
+        version: 1.6.0(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))
       '@vitest/ui':
         specifier: 1.6.0
         version: 1.6.0(vitest@1.6.0)
@@ -42,8 +42,8 @@ importers:
         specifier: ^3.7.1
         version: 3.7.1
       bun-types:
-        specifier: ^1.1.10
-        version: 1.1.10
+        specifier: ^1.1.12
+        version: 1.1.12
       citty:
         specifier: ^0.1.6
         version: 0.1.6
@@ -81,8 +81,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
+        specifier: ^3.3.0
+        version: 3.3.0
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -100,13 +100,13 @@ importers:
         version: 2.0.0(typescript@5.4.5)
       vite:
         specifier: 5.2.12
-        version: 5.2.12(@types/node@20.13.0)
+        version: 5.2.12(@types/node@20.14.0)
       vite-tsconfig-paths:
         specifier: 4.3.2
-        version: 4.3.2(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0))
+        version: 4.3.2(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0))
       vitest:
         specifier: 1.6.0
-        version: 1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0)
+        version: 1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -160,8 +160,8 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/schema
       prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
+        specifier: ^3.3.0
+        version: 3.3.0
     devDependencies:
       '@arrirpc/client':
         specifier: workspace:*
@@ -210,8 +210,8 @@ importers:
         version: 0.1.3
     devDependencies:
       bun-types:
-        specifier: ^1.1.10
-        version: 1.1.10
+        specifier: ^1.1.12
+        version: 1.1.12
 
   playground:
     dependencies:
@@ -323,8 +323,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
+        specifier: ^3.3.0
+        version: 3.3.0
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -1959,11 +1959,11 @@ packages:
   '@types/minimatch@3.0.5':
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
 
-  '@types/node@20.12.13':
-    resolution: {integrity: sha512-gBGeanV41c1L171rR7wjbMiEpEI/l5XFQdLLfhr/REwpgDy/4U8y89+i8kRiLzDyZdOkXh+cRaTetUnCYutoXA==}
+  '@types/node@20.12.14':
+    resolution: {integrity: sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg==}
 
-  '@types/node@20.13.0':
-    resolution: {integrity: sha512-FM6AOb3khNkNIXPnHFDYaHerSv8uN22C91z098AnGccVu+Pcdhi+pNUFDi0iLmPIsVE0JBD0KVS7mzUYt4nRzQ==}
+  '@types/node@20.14.0':
+    resolution: {integrity: sha512-5cHBxFGJx6L4s56Bubp4fglrEpmyJypsqI6RgzMfBHWUJQGWAAi8cWcgetEbZXHYXo9C2Fa4EEds/uSyS4cxmA==}
 
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
@@ -2271,8 +2271,8 @@ packages:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
 
-  bun-types@1.1.10:
-    resolution: {integrity: sha512-oBsZ0Bf9HEKr1Ta5bUYgVO6sHkZtTlfHlEj9DGpghZphNdhKI/38eZ5dk+/et/HrStT1sfykHBUW4ughmoNKog==}
+  bun-types@1.1.12:
+    resolution: {integrity: sha512-DIM2C9qCECwhck9nLsCDeTv943VmGMCkwX3KljjprSRDXaK2CSiUDVGbUit80Er38ukgxuESJgYPAys4FsNCdg==}
 
   c12@1.10.0:
     resolution: {integrity: sha512-0SsG7UDhoRWcuSvKWHaXmu5uNjDCDN3nkQLRL4Q42IlFy+ze58FcCoI3uPwINXinkz7ZinbhEgyzYFw9u9ZV8g==}
@@ -3778,8 +3778,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier@3.2.5:
-    resolution: {integrity: sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==}
+  prettier@3.3.0:
+    resolution: {integrity: sha512-J9odKxERhCQ10OC2yb93583f6UnYutOeiV5i0zEDS7UGTdUt0u+y8erxl3lBKvwo/JHyyoEdXjwp4dke9oyZ/g==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -5565,9 +5565,9 @@ snapshots:
     transitivePeerDependencies:
       - nx
 
-  '@nrwl/js@19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)':
+  '@nrwl/js@19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)':
     dependencies:
-      '@nx/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)
+      '@nx/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -5589,9 +5589,9 @@ snapshots:
       - '@swc/core'
       - debug
 
-  '@nrwl/vite@19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0))(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))':
+  '@nrwl/vite@19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0))(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))':
     dependencies:
-      '@nx/vite': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0))(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))
+      '@nx/vite': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0))(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -5627,11 +5627,11 @@ snapshots:
       tslib: 2.6.2
       yargs-parser: 21.1.1
 
-  '@nx/eslint@19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)':
+  '@nx/eslint@19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)':
     dependencies:
       '@nx/devkit': 19.1.1(nx@19.1.1)
-      '@nx/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)
-      '@nx/linter': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)
+      '@nx/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)
+      '@nx/linter': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)
       eslint: 8.57.0
       semver: 7.6.2
       tslib: 2.6.2
@@ -5649,7 +5649,7 @@ snapshots:
       - supports-color
       - verdaccio
 
-  '@nx/js@19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)':
+  '@nx/js@19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)':
     dependencies:
       '@babel/core': 7.24.6
       '@babel/plugin-proposal-decorators': 7.24.6(@babel/core@7.24.6)
@@ -5658,7 +5658,7 @@ snapshots:
       '@babel/preset-env': 7.24.6(@babel/core@7.24.6)
       '@babel/preset-typescript': 7.24.6(@babel/core@7.24.6)
       '@babel/runtime': 7.24.6
-      '@nrwl/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)
+      '@nrwl/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)
       '@nx/devkit': 19.1.1(nx@19.1.1)
       '@nx/workspace': 19.1.1
       babel-plugin-const-enum: 1.2.0(@babel/core@7.24.6)
@@ -5677,7 +5677,7 @@ snapshots:
       ora: 5.3.0
       semver: 7.6.2
       source-map-support: 0.5.19
-      ts-node: 10.9.1(@types/node@20.13.0)(typescript@5.4.5)
+      ts-node: 10.9.1(@types/node@20.14.0)(typescript@5.4.5)
       tsconfig-paths: 4.2.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -5691,9 +5691,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@nx/linter@19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)':
+  '@nx/linter@19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)':
     dependencies:
-      '@nx/eslint': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)
+      '@nx/eslint': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.1.1)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -5737,17 +5737,17 @@ snapshots:
   '@nx/nx-win32-x64-msvc@19.1.1':
     optional: true
 
-  '@nx/vite@19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0))(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))':
+  '@nx/vite@19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0))(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))':
     dependencies:
-      '@nrwl/vite': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0))(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))
+      '@nrwl/vite': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0))(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))
       '@nx/devkit': 19.1.1(nx@19.1.1)
-      '@nx/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.13.0)(nx@19.1.1)(typescript@5.4.5)
+      '@nx/js': 19.1.1(@babel/traverse@7.24.6)(@types/node@20.14.0)(nx@19.1.1)(typescript@5.4.5)
       '@phenomnomnominal/tsquery': 5.0.1(typescript@5.4.5)
       '@swc/helpers': 0.5.11
       enquirer: 2.3.6
       tsconfig-paths: 4.2.0
-      vite: 5.2.12(@types/node@20.13.0)
-      vitest: 1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0)
+      vite: 5.2.12(@types/node@20.14.0)
+      vitest: 1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -5982,11 +5982,11 @@ snapshots:
 
   '@types/minimatch@3.0.5': {}
 
-  '@types/node@20.12.13':
+  '@types/node@20.12.14':
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@20.13.0':
+  '@types/node@20.14.0':
     dependencies:
       undici-types: 5.26.5
 
@@ -6000,7 +6000,7 @@ snapshots:
 
   '@types/ws@8.5.10':
     dependencies:
-      '@types/node': 20.12.13
+      '@types/node': 20.14.0
 
   '@typescript-eslint/eslint-plugin@7.11.0(@typescript-eslint/parser@7.11.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
@@ -6085,7 +6085,7 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0))':
+  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -6100,7 +6100,7 @@ snapshots:
       std-env: 3.7.0
       strip-literal: 2.1.0
       test-exclude: 6.0.0
-      vitest: 1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0)
+      vitest: 1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -6135,7 +6135,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.0.1
       sirv: 2.0.4
-      vitest: 1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0)
+      vitest: 1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0)
 
   '@vitest/utils@1.6.0':
     dependencies:
@@ -6384,9 +6384,9 @@ snapshots:
 
   builtin-modules@3.3.0: {}
 
-  bun-types@1.1.10:
+  bun-types@1.1.12:
     dependencies:
-      '@types/node': 20.12.13
+      '@types/node': 20.12.14
       '@types/ws': 8.5.10
 
   c12@1.10.0:
@@ -8068,7 +8068,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier@3.2.5: {}
+  prettier@3.3.0: {}
 
   pretty-bytes@6.1.1: {}
 
@@ -8402,14 +8402,14 @@ snapshots:
     dependencies:
       typescript: 5.4.5
 
-  ts-node@10.9.1(@types/node@20.13.0)(typescript@5.4.5):
+  ts-node@10.9.1(@types/node@20.14.0)(typescript@5.4.5):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.13.0
+      '@types/node': 20.14.0
       acorn: 8.11.3
       acorn-walk: 8.3.2
       arg: 4.1.3
@@ -8553,13 +8553,13 @@ snapshots:
 
   validate-npm-package-name@5.0.1: {}
 
-  vite-node@1.6.0(@types/node@20.13.0):
+  vite-node@1.6.0(@types/node@20.14.0):
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: 5.2.12(@types/node@20.13.0)
+      vite: 5.2.12(@types/node@20.14.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8570,27 +8570,27 @@ snapshots:
       - supports-color
       - terser
 
-  vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@5.2.12(@types/node@20.13.0)):
+  vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@5.2.12(@types/node@20.14.0)):
     dependencies:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 3.0.3(typescript@5.4.5)
     optionalDependencies:
-      vite: 5.2.12(@types/node@20.13.0)
+      vite: 5.2.12(@types/node@20.14.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@5.2.12(@types/node@20.13.0):
+  vite@5.2.12(@types/node@20.14.0):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.18.0
     optionalDependencies:
-      '@types/node': 20.13.0
+      '@types/node': 20.14.0
       fsevents: 2.3.3
 
-  vitest@1.6.0(@types/node@20.13.0)(@vitest/ui@1.6.0):
+  vitest@1.6.0(@types/node@20.14.0)(@vitest/ui@1.6.0):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
@@ -8609,11 +8609,11 @@ snapshots:
       strip-literal: 2.1.0
       tinybench: 2.8.0
       tinypool: 0.8.4
-      vite: 5.2.12(@types/node@20.13.0)
-      vite-node: 1.6.0(@types/node@20.13.0)
+      vite: 5.2.12(@types/node@20.14.0)
+      vite-node: 1.6.0(@types/node@20.14.0)
       why-is-node-running: 2.2.2
     optionalDependencies:
-      '@types/node': 20.13.0
+      '@types/node': 20.14.0
       '@vitest/ui': 1.6.0(vitest@1.6.0)
     transitivePeerDependencies:
       - less

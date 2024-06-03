@@ -22,6 +22,13 @@
         "command": "dart test --reporter=expanded",
         "cwd": "tests/clients/dart"
       }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart analyze",
+        "cwd": "tests/clients/dart"
+      }
     }
   }
 }
