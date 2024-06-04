@@ -48,7 +48,10 @@ export default defineCommand({
         for (const file of pkgJsonFiles) {
             jkgJsonFileTasks.push(
                 readFile(path.resolve(file), "utf8").then((content) => {
-                    fileMap[file] = updatePackageJson(content, version);
+                    const result = updatePackageJson(content, version);
+                    if (result.updated) {
+                        fileMap[file] = result.content;
+                    }
                 }),
             );
         }
@@ -77,7 +80,10 @@ export default defineCommand({
         for (const file of pubspecFiles) {
             pubspecFileTasks.push(
                 readFile(path.resolve(file), "utf8").then((content) => {
-                    fileMap[file] = updatePubspecYaml(content, version);
+                    const result = updatePubspecYaml(content, version);
+                    if (result.updated) {
+                        fileMap[file] = result.content;
+                    }
                 }),
             );
         }
@@ -101,16 +107,19 @@ export default defineCommand({
 export function updatePackageJson(
     fileContent: string,
     targetVersion: string,
-): string {
+): { updated: boolean; content: string } {
     const lines = fileContent.split("\n");
     const output: string[] = [];
+    let updated = false;
     for (const line of lines) {
         if (line.includes(`"arri"`)) {
             output.push(updateLine(line));
+            updated = true;
             continue;
         }
         if (line.includes(`"@arrirpc/`)) {
             output.push(updateLine(line));
+            updated = true;
             continue;
         }
         output.push(line);
@@ -125,7 +134,10 @@ export function updatePackageJson(
         parts[1] = targetParts.join('"');
         return parts.join('":');
     }
-    return output.join("\n");
+    return {
+        updated,
+        content: output.join("\n"),
+    };
 }
 
 const PubPackageResponse = a.object({
@@ -160,9 +172,13 @@ export async function getDartPackageMeta() {
 export function updatePubspecYaml(
     fileContent: string,
     version: string,
-): string {
+): {
+    updated: boolean;
+    content: string;
+} {
     const lines = fileContent.split("\n");
     const output: string[] = [];
+    let updated = false;
     for (const line of lines) {
         if (line.includes("arri_client: ")) {
             const parts = line.split(": ");
@@ -175,9 +191,13 @@ export function updatePubspecYaml(
             subParts[0] = `^${version}`;
             parts[1] = subParts.join(" ");
             output.push(parts.join(": "));
+            updated = true;
             continue;
         }
         output.push(line);
     }
-    return output.join("\n");
+    return {
+        updated,
+        content: output.join("\n"),
+    };
 }
