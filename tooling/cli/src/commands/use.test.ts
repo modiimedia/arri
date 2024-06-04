@@ -23,7 +23,8 @@ describe("updatePackageJson()", () => {
     }
 }`;
         const output = updatePackageJson(input, "2.0.0");
-        expect(output).toBe(expectedOutput);
+        expect(output.content).toBe(expectedOutput);
+        expect(output.updated).toBe(true);
     });
     it("updates relevant lines and preserves jsonc comments", () => {
         const input = `{
@@ -47,7 +48,8 @@ describe("updatePackageJson()", () => {
     },
 }`;
         const output = updatePackageJson(input, "2.0.0");
-        expect(output).toBe(expectedOutput);
+        expect(output.content).toBe(expectedOutput);
+        expect(output.updated).toBe(true);
     });
 });
 
@@ -62,6 +64,7 @@ describe("updatePubspecYaml()", () => {
     http: 1.0.1
     # this is another comment`;
         const output = updatePubspecYaml(input, "2.0.0");
-        expect(output).toBe(expectedOutput);
+        expect(output.content).toBe(expectedOutput);
+        expect(output.updated).toBe(true);
     });
 });
