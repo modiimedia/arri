@@ -283,6 +283,9 @@ importers:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../codegen-utils
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@joshmossas/listhen':
         specifier: ^1.10.1
         version: 1.10.1
@@ -325,9 +328,6 @@ importers:
       prettier:
         specifier: ^3.3.0
         version: 3.3.0
-      scule:
-        specifier: ^1.3.0
-        version: 1.3.0
     devDependencies:
       '@types/degit':
         specifier: ^2.8.6

@@ -5,6 +5,8 @@ import build from "./commands/build";
 import codegen from "./commands/codegen";
 import dev from "./commands/dev";
 import init from "./commands/init";
+import list from "./commands/list";
+import use from "./commands/use";
 import version from "./commands/version";
 
 const main = defineCommand({
@@ -13,6 +15,8 @@ const main = defineCommand({
         codegen,
         dev,
         init,
+        list,
+        use,
         version,
     },
 });

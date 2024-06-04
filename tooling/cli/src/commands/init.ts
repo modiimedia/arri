@@ -1,11 +1,11 @@
 import fs, { readFileSync, rmSync, writeFileSync } from "node:fs";
 
+import { kebabCase } from "@arrirpc/codegen-utils";
 import { defineCommand } from "citty";
 import Degit from "degit";
 import enquirer from "enquirer";
 import path from "pathe";
 import prettier from "prettier";
-import { kebabCase } from "scule";
 
 import { logger } from "../common";
 
