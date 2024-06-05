@@ -35,7 +35,7 @@ export default function rustRecordFromSchema(
                 return `match ${input} {
                     Some(serde_json::Value::Object(${innerKey})) => {
                         let mut ${innerKey}_result: BTreeMap<String, ${innerType.typeName}> = BTreeMap::new();
-                        for (_key_, _value_ in ${innerKey}) {
+                        for (_key_, _value_) in ${innerKey} {
                             ${innerKey}_result.insert(
                                 _key_.to_owned(),
                                 ${innerType.fromJsonTemplate(`Some(_value_)`, `value`)},
@@ -49,7 +49,7 @@ export default function rustRecordFromSchema(
             return `match ${input} {
                 Some(serde_json::Value::Object(${innerKey})) => {
                     let mut ${innerKey}_result: BTreeMap<String, ${innerType.typeName}> = BTreeMap::new();
-                    for (_key_, _value_ in ${innerKey}) {
+                    for (_key_, _value_) in ${innerKey} {
                         ${innerKey}_result.insert(
                             _key_.to_owned(),
                             ${innerType.fromJsonTemplate(`Some(_value_)`, `value`)},
@@ -62,7 +62,7 @@ export default function rustRecordFromSchema(
         },
         toJsonTemplate(input, target) {
             return `${target}.push('{');
-            for (_index_, (_key_, _value_)in ${input}.iter().enumerate()) {
+            for (_index_, (_key_, _value_)) in ${input}.iter().enumerate() {
                 if _index_ != 0 {
                     ${target}.push(',');
                 }
