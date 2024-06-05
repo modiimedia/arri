@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:arri_schema/arri_macro.dart';
-import 'package:arri_schema/arri_schema.dart';
+import './macros.dart';
 
 @ArriModel()
 class User {
@@ -30,30 +29,30 @@ void main(List<String> args) {
   print(json.encode(user.toTypeDefinition().toJson()));
 }
 
-final userSchema = ArriPropertiesSchema(
-  metadata: ArriSchemaMetadata(id: "User"),
+final userSchema = PropertiesSchema(
+  metadata: SchemaMetadata(id: "User"),
   properties: {
-    "id": ArriTypeSchema(type: ArriType.string),
-    "name": ArriTypeSchema(type: ArriType.string),
-    "email": ArriTypeSchema(type: ArriType.string),
-    "role": ArriEnumSchema(
+    "id": TypeSchema(type: TypeValues.string),
+    "name": TypeSchema(type: TypeValues.string),
+    "email": TypeSchema(type: TypeValues.string),
+    "role": EnumSchema(
       enumValues: ["STANDARD", "ADMIN", "MODERATOR"],
     ),
-    "createdAt": ArriTypeSchema(type: ArriType.timestamp),
-    "numFollowers": ArriTypeSchema(type: ArriType.int64),
-    "messages": ArriElementsSchema(
-      elements: ArriDiscriminatorSchema(
-        metadata: ArriSchemaMetadata(id: "UserMessage"),
+    "createdAt": TypeSchema(type: TypeValues.timestamp),
+    "numFollowers": TypeSchema(type: TypeValues.int64),
+    "messages": ElementsSchema(
+      elements: DiscriminatorSchema(
+        metadata: SchemaMetadata(id: "UserMessage"),
         discriminator: "type",
         mapping: {
-          "TEXT": ArriPropertiesSchema(properties: {
-            "id": ArriTypeSchema(type: ArriType.string),
-            "text": ArriTypeSchema(type: ArriType.string),
+          "TEXT": PropertiesSchema(properties: {
+            "id": TypeSchema(type: TypeValues.string),
+            "text": TypeSchema(type: TypeValues.string),
           }),
-          "IMAGE": ArriPropertiesSchema(
+          "IMAGE": PropertiesSchema(
             properties: {
-              "id": ArriTypeSchema(type: ArriType.string),
-              "imageUrl": ArriTypeSchema(type: ArriType.string),
+              "id": TypeSchema(type: TypeValues.string),
+              "imageUrl": TypeSchema(type: TypeValues.string),
             },
           )
         },
