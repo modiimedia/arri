@@ -1,9 +1,6 @@
 import fs from "node:fs";
 
-import {
-    type AppDefinition,
-    normalizeWhitespace,
-} from "@arrirpc/codegen-utils";
+import { normalizeWhitespace } from "@arrirpc/codegen-utils";
 import path from "pathe";
 
 import { kotlinClientFromAppDefinition } from "./_index";
@@ -34,37 +31,5 @@ test("output matches the reference client", () => {
     });
     expect(normalizeWhitespace(result)).toBe(
         normalizeWhitespace(referenceClient),
-    );
-});
-
-test("blah", () => {
-    const appDef: AppDefinition = {
-        arriSchemaVersion: "0.0.5",
-        procedures: {
-            sayHello: {
-                transport: "http",
-                method: "get",
-                path: "/say-hello",
-                params: "SayHelloParams",
-                response: "SayHelloResponse",
-            },
-            "animals.getAnimal": {
-                transport: "http",
-                method: "get",
-                path: "/get-animal",
-                params: "GetAnimalParams",
-                response: "GetAnimalResponse",
-            },
-        },
-        definitions: {},
-    };
-    const client = kotlinClientFromAppDefinition(appDef, {
-        clientName: "Client",
-        modelPrefix: undefined,
-        outputFile: "",
-    });
-    fs.writeFileSync(
-        path.resolve(__dirname, "../.temp/HelloClient.kt"),
-        client,
     );
 });

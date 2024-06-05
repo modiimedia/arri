@@ -1,6 +1,6 @@
 {
   "name": "arri",
-  "version": "0.47.0",
+  "version": "0.49.1",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
@@ -20,6 +20,7 @@
     "@arrirpc/codegen-kotlin": "workspace:*",
     "@arrirpc/codegen-ts": "workspace:*",
     "@arrirpc/codegen-utils": "workspace:*",
+    "@arrirpc/schema": "workspace:*",
     "@joshmossas/listhen": "^1.10.1",
     "c12": "^1.10.0",
     "chokidar": "^3.6.0",
@@ -33,8 +34,7 @@
     "h3": "^1.11.1",
     "ofetch": "^1.3.4",
     "pathe": "^1.1.2",
-    "prettier": "^3.2.5",
-    "scule": "^1.3.0"
+    "prettier": "^3.3.0"
   },
   "devDependencies": { "@types/degit": "^2.8.6" }
 }

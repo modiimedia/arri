@@ -10,6 +10,13 @@
         "command": "dart pub",
         "cwd": "languages/dart/dart-codegen-reference"
       }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dart analyze",
+        "cwd": "languages/dart/dart-codegen-reference"
+      }
     }
   }
 }

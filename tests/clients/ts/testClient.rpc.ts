@@ -12,14 +12,16 @@ import {
 
 interface TestClientOptions {
     baseUrl?: string;
-    headers?: Record<string, string> | (() => Record<string, string>);
+    headers?:
+        | Record<string, string>
+        | (() => Record<string, string> | Promise<Record<string, string>>);
 }
 
 export class TestClient {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
     tests: TestClientTestsService;
     adapters: TestClientAdaptersService;
@@ -38,7 +40,7 @@ export class TestClientTestsService {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -331,7 +333,7 @@ export class TestClientAdaptersService {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -355,7 +357,7 @@ export class TestClientUsersService {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {

@@ -7,7 +7,7 @@ import 'package:web_socket_channel/status.dart' as status;
 Future<ArriWebsocketController<TServerMessage, TClientMessage>>
     arriWebsocketRequest<TServerMessage, TClientMessage>(
   String url, {
-  Map<String, String> Function()? headers,
+  FutureOr<Map<String, String>> Function()? headers,
   required TServerMessage Function(String msg) parser,
   required String Function(TClientMessage msg) serializer,
   String? clientVersion,
@@ -18,7 +18,7 @@ Future<ArriWebsocketController<TServerMessage, TClientMessage>>
   if (headers != null || clientVersion?.isNotEmpty == true) {
     final queryParts = <String>[];
     for (final entry
-        in headers?.call().entries ?? <MapEntry<String, String>>[]) {
+        in (await headers?.call())?.entries ?? <MapEntry<String, String>>[]) {
       queryParts.add("${entry.key}=${entry.value}");
     }
     if (clientVersion != null) {

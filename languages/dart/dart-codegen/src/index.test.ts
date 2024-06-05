@@ -49,11 +49,11 @@ describe("Service Generation", () => {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "";
-  late final Map<String, String> Function()? _headers;
+  late final FutureOr<Map<String, String>> Function()? _headers;
   UserService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> Function()? headers,
+    FutureOr<Map<String, String>> Function()? headers,
   })  : _httpClient = httpClient,
       _baseUrl = baseUrl,
       _headers = headers;
@@ -95,11 +95,11 @@ class UserSettingsService {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "";
-  late final Map<String, String> Function()? _headers;
+  late final FutureOr<Map<String, String>> Function()? _headers;
   UserSettingsService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> Function()? headers,
+    FutureOr<Map<String, String>> Function()? headers,
   })  : _httpClient = httpClient,
       _baseUrl = baseUrl,
       _headers = headers;
@@ -140,11 +140,11 @@ class UserSettingsService {
         final http.Client? _httpClient;
         final String _baseUrl;
         final String _clientVersion = "";
-        late final Map<String, String> Function()? _headers;
+        late final FutureOr<Map<String, String>> Function()? _headers;
         PostsService({
           http.Client? httpClient,
           String baseUrl = "",
-          Map<String, String> Function()? headers,
+          FutureOr<Map<String, String>> Function()? headers,
         })  : _httpClient = httpClient,
             _baseUrl = baseUrl,
             _headers = headers;
