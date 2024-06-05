@@ -6,4 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-arri_client = { path = "../../../packages/arri-client-rust"}
+arri_client = { path = "../../../languages/rust/rust-client"}
