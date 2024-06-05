@@ -114,6 +114,19 @@ Future<void> main() async {
     expect(result.int64, equals(input.int64));
     expect(result.uint64, equals(input.uint64));
   });
+  test("supports async header functions", () async {
+    final asyncHeaderClient = TestClient(
+      baseUrl: baseUrl,
+      headers: () async {
+        await Future.delayed(Duration(milliseconds: 100));
+        return {"x-test-header": "async-test"};
+      },
+    );
+    final result = await asyncHeaderClient.tests.sendObject(input);
+    expect(result.array.length, equals(input.array.length));
+    expect(result.int64, equals(input.int64));
+    expect(result.uint64, equals(input.uint64));
+  });
   test("unauthenticated RPC requests return a 401 error", () async {
     try {
       await unauthenticatedClient.tests.sendObject(input);

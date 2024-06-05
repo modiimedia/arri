@@ -249,7 +249,7 @@ async function createEntryModule(config: ResolvedArriConfig) {
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
-    const virtualEntry = `import { toNodeListener } from 'h3';
+    const virtualEntry = `import { toNodeListener } from '@arrirpc/server';
 import app from './${GEN_APP_FILE}';
 
 export default app.h3App;`;

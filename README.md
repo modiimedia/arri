@@ -74,7 +74,7 @@ export default defineConfig({
 
 ### Typescript App Definition (Recommended)
 
-Arri comes with some useful helpers that reduces the boilerplate of manually creating a JSON definition file. Additionally the validators created with Arri Validate can be used throughout your app.
+Arri comes with some useful helpers that reduces the boilerplate of manually creating a JSON definition file. Additionally the validators created with Arri Schema can be used throughout your app.
 
 ```ts
 // AppDefinition.ts

@@ -1,16 +1,17 @@
-import { randomUUID } from "crypto";
 import { ArriErrorInstance } from "@arrirpc/client";
+import { randomUUID } from "crypto";
 import { ofetch } from "ofetch";
-import { test, expect, describe } from "vitest";
+import { describe, expect, test } from "vitest";
+
 import {
-    TestClient,
-    type ObjectWithEveryType,
-    type ObjectWithEveryOptionalType,
     type ObjectWithEveryNullableType,
-    type WsMessageResponse,
+    type ObjectWithEveryOptionalType,
+    type ObjectWithEveryType,
     type RecursiveObject,
     type RecursiveUnion,
+    TestClient,
     type TypeBoxObject,
+    type WsMessageResponse,
 } from "./testClient.rpc";
 
 function wait(ms: number) {
@@ -138,6 +139,21 @@ test("unauthenticated RPC request returns a 401 error", async () => {
             expect(err.code).toBe(401);
         }
     }
+});
+test("can use async functions for headers", async () => {
+    const _client = new TestClient({
+        baseUrl: baseUrl,
+        async headers() {
+            await new Promise((res) => {
+                setTimeout(() => {
+                    res(true);
+                }, 1000);
+            });
+            return headers;
+        },
+    });
+    const result = await _client.tests.emptyParamsGetRequest();
+    expect(typeof result.message).toBe("string");
 });
 test("can send/receive partial objects", async () => {
     const fullObjectResult = await client.tests.sendPartialObject(input);
@@ -386,13 +402,13 @@ test("[SSE] reconnect with new credentials", async () => {
         onMessage(_) {
             msgCount++;
         },
-        onRequestError(context) {
+        onRequestError(_) {
             errorCount++;
         },
-        onResponse(context) {
+        onResponse(_) {
             openCount++;
         },
-        onResponseError(context) {
+        onResponseError(_) {
             errorCount++;
         },
     });
@@ -408,7 +424,7 @@ test("[ws] support websockets", async () => {
     let messageCount = 0;
     const errorCount = 0;
     const msgMap: Record<string, WsMessageResponse> = {};
-    const controller = client.tests.websocketRpc({
+    const controller = await client.tests.websocketRpc({
         onMessage(msg) {
             messageCount++;
             msgMap[msg.entityId] = msg;
@@ -459,8 +475,8 @@ test("[ws] support websockets", async () => {
 
 test("[ws] receive large messages", async () => {
     let messageCount = 0;
-    const controller = client.tests.websocketRpcSendTenLargeMessages({
-        onMessage(msg) {
+    const controller = await client.tests.websocketRpcSendTenLargeMessages({
+        onMessage(_) {
             messageCount++;
         },
     });
@@ -474,7 +490,7 @@ test("[ws] connection errors", async () => {
     let connectionCount = 0;
     let messageCount = 0;
     let errorCount = 0;
-    const controller = new TestClient({
+    const controller = await new TestClient({
         baseUrl: "http://127.0.0.1:2021",
     }).tests.websocketRpc({
         onOpen() {

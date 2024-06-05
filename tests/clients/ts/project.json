@@ -10,6 +10,12 @@
         "passWithNoTests": true,
         "reportsDirectory": "../../../coverage/tests/clients/ts"
       }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["tests/clients/ts/**/*.ts"]
+      }
     }
   }
 }

@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "An RPC server created with Arri RPC",
-  "scripts": {
-    "dev": "./node_modules/.bin/arri dev",
-    "build": "./node_modules/.bin/arri build"
-  },
+  "scripts": {},
   "keywords": [],
   "dependencies": {
     "arri": "workspace:*",

@@ -22,7 +22,7 @@ To represent the data-models in a language agnostic way this library heavily rel
 
 -   [Installation](#installation)
 -   [Basic Example](#basic-example)
--   [Usage With @arrirpc/server](#usage-with-@arrirpc/server)
+-   [Usage With @arrirpc/server](#usage-with-arrirpcserver)
 -   [Supported Types](#supported-types)
     -   [Primitives](#primitives)
     -   [Enums](#enums)

@@ -1,7 +1,8 @@
-import { type HttpMethod } from "event-source-plus";
+import { EventSourcePlusOptions, type HttpMethod } from "event-source-plus";
 import { FetchError, ofetch } from "ofetch";
 
 import { ArriErrorInstance, isArriError } from "./errors";
+import { getHeaders } from "./utils";
 
 export interface ArriRequestOpts<
     TType,
@@ -9,7 +10,7 @@ export interface ArriRequestOpts<
 > {
     url: string;
     method: HttpMethod;
-    headers?: Record<string, string> | (() => Record<string, string>);
+    headers?: EventSourcePlusOptions["headers"];
     params?: TParams;
     parser: (input: unknown) => TType;
     serializer: (
@@ -45,12 +46,7 @@ export async function arriRequest<
             break;
     }
     try {
-        let headers: Record<string, string> = {};
-        if (typeof opts.headers === "function") {
-            headers = opts.headers();
-        } else {
-            headers = opts.headers ?? {};
-        }
+        const headers = (await getHeaders(opts.headers)) ?? {};
         if (contentType) headers["Content-Type"] = contentType;
         if (opts.clientVersion) headers["client-version"] = opts.clientVersion;
         const result = await ofetch(url, {

@@ -175,7 +175,7 @@ const require = topLevelCreateRequire(import.meta.url);`,
                 : "undefined"
         }},`;
     }
-    const virtualEntry = `import { toNodeListener } from 'arri';
+    const virtualEntry = `import { toNodeListener } from '@arrirpc/server';
 import { listen } from '@joshmossas/listhen';
 import app from './${OUT_APP_FILE}';
 

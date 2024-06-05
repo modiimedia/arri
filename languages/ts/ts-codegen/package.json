@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-ts",
-  "version": "0.46.0",
+  "version": "0.49.1",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
@@ -17,7 +17,7 @@
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "prettier": "^3.2.5"
+    "prettier": "^3.3.0"
   },
   "devDependencies": { "@arrirpc/client": "workspace:*" }
 }
