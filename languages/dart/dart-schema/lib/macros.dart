@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:macros/macros.dart';
 
 
-final _arriSchema = Uri.parse("package:arri_schema/arri_schema.dart");
+final _schemas = Uri.parse("package:arri_schema/schemas.dart");
 final _dartCore = Uri.parse("dart:core");
 
 macro class ArriModel implements ClassDeclarationsMacro, ClassDefinitionMacro {
@@ -22,7 +22,7 @@ macro class ArriModel implements ClassDeclarationsMacro, ClassDefinitionMacro {
         "external void sayHello();"
       )
     );
-    final schema = await builder.resolveIdentifier(_arriSchema, "Schema");
+    final schema = await builder.resolveIdentifier(_schemas, "Schema");
     final schemaType = NamedTypeAnnotationCode(name: schema);
     final bool = await builder.resolveIdentifier(_dartCore, "bool");
     final boolType = NamedTypeAnnotationCode(name: bool).asNullable;
@@ -78,7 +78,7 @@ macro class ArriModel implements ClassDeclarationsMacro, ClassDefinitionMacro {
           final type = fieldParts[i];
           fieldResults.add("$name ($type)");
         }
-    final references = await getReferences(builder);
+    final references = await _getReferences(builder);
     final parts = <Object>[
       "{\n",
       "    // ${fieldResults.join(', ')}\n",
@@ -117,45 +117,45 @@ macro class ArriModel implements ClassDeclarationsMacro, ClassDefinitionMacro {
   }
 }
 
-Future<SchemaReferences> getReferences(TypeDefinitionBuilder builder) async {
-  final typeValue = await builder.resolveIdentifier(_arriSchema, "TypeValues");
-  final metadata = await builder.resolveIdentifier(_arriSchema, "SchemaMetadata");
-  final type = await builder.resolveIdentifier(_arriSchema, "TypeSchema");
-  final enumerator = await builder.resolveIdentifier(_arriSchema, "EnumSchema");
-  final properties = await builder.resolveIdentifier(_arriSchema, "PropertiesSchema");
-  final elements = await builder.resolveIdentifier(_arriSchema, "ElementsSchema");
-  final record = await builder.resolveIdentifier(_arriSchema, "ValuesSchema");
-  final discriminator = await builder.resolveIdentifier(_arriSchema, "DiscriminatorSchema");
-  final ref = await builder.resolveIdentifier(_arriSchema, "RefSchema");
-  final any = await builder.resolveIdentifier(_arriSchema, "EmptySchema");
+Future<_SchemaReferences> _getReferences(TypeDefinitionBuilder builder) async {
+  final typeValue = await builder.resolveIdentifier(_schemas, "TypeValues");
+  final metadata = await builder.resolveIdentifier(_schemas, "SchemaMetadata");
+  final type = await builder.resolveIdentifier(_schemas, "TypeSchema");
+  final enumerator = await builder.resolveIdentifier(_schemas, "EnumSchema");
+  final properties = await builder.resolveIdentifier(_schemas, "PropertiesSchema");
+  final elements = await builder.resolveIdentifier(_schemas, "ElementsSchema");
+  final record = await builder.resolveIdentifier(_schemas, "ValuesSchema");
+  final discriminator = await builder.resolveIdentifier(_schemas, "DiscriminatorSchema");
+  final ref = await builder.resolveIdentifier(_schemas, "RefSchema");
+  final any = await builder.resolveIdentifier(_schemas, "EmptySchema");
 
-  return SchemaReferences(
-    typeValue: ImportRef.fromIdentifier(typeValue),
-    metadata: ImportRef.fromIdentifier(metadata),
-    type: ImportRef.fromIdentifier(type),
-    properties: ImportRef.fromIdentifier(properties),
-    elements: ImportRef.fromIdentifier(elements),
-    record: ImportRef.fromIdentifier(record),
-    enumerator: ImportRef.fromIdentifier(enumerator),
-    discriminator: ImportRef.fromIdentifier(discriminator),
-    ref: ImportRef.fromIdentifier(ref),
-    any: ImportRef.fromIdentifier(any),
+  return _SchemaReferences(
+    typeValue: _ImportRef.fromIdentifier(typeValue),
+    metadata: _ImportRef.fromIdentifier(metadata),
+    type: _ImportRef.fromIdentifier(type),
+    properties: _ImportRef.fromIdentifier(properties),
+    elements: _ImportRef.fromIdentifier(elements),
+    record: _ImportRef.fromIdentifier(record),
+    enumerator: _ImportRef.fromIdentifier(enumerator),
+    discriminator: _ImportRef.fromIdentifier(discriminator),
+    ref: _ImportRef.fromIdentifier(ref),
+    any: _ImportRef.fromIdentifier(any),
   );
 }
 
 
-class SchemaReferences {
-  final ImportRef typeValue;
-  final ImportRef metadata;
-  final ImportRef type;
-  final ImportRef properties;
-  final ImportRef elements;
-  final ImportRef record;
-  final ImportRef discriminator;
-  final ImportRef enumerator;
-  final ImportRef ref;
-  final ImportRef any;
-  const SchemaReferences({
+class _SchemaReferences {
+  final _ImportRef typeValue;
+  final _ImportRef metadata;
+  final _ImportRef type;
+  final _ImportRef properties;
+  final _ImportRef elements;
+  final _ImportRef record;
+  final _ImportRef discriminator;
+  final _ImportRef enumerator;
+  final _ImportRef ref;
+  final _ImportRef any;
+  const _SchemaReferences({
     required this.typeValue,
     required this.type,
     required this.metadata,
@@ -169,16 +169,16 @@ class SchemaReferences {
   });
 }
 
-class ImportRef {
+class _ImportRef {
   final Identifier identifier;
   final NamedTypeAnnotationCode code;
-  const ImportRef({
+  const _ImportRef({
     required this.identifier,
     required this.code,
   });
 
-  factory ImportRef.fromIdentifier(Identifier identifier) {
-    return ImportRef(
+  factory _ImportRef.fromIdentifier(Identifier identifier) {
+    return _ImportRef(
       identifier: identifier,
       code: NamedTypeAnnotationCode(name: identifier),
     );

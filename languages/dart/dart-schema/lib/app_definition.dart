@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import './schema.dart';
+import 'package:arri_schema/schemas.dart';
 
 class AppDefinition {
   final String arriSchemaVersion;

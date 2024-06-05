@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import './macros.dart';
+import 'package:arri_schema/app_definition.dart';
+import 'package:arri_schema/schemas.dart';
+import 'package:arri_schema/macros.dart';
 
 @ArriModel()
 class User {
@@ -27,6 +29,23 @@ void main(List<String> args) {
     settings: {},
   );
   print(json.encode(user.toTypeDefinition().toJson()));
+  final appDef = AppDefinition(
+    arriSchemaVersion: "0.0.4",
+    procedures: {
+      "getUser": {
+        "transport": "http",
+        "path": "/get-user",
+        "method": "get",
+        "params": "User",
+        "response": "User",
+      }
+    },
+    definitions: {
+      "User": user.toTypeDefinition(),
+    },
+  );
+  print("\n");
+  print(appDef.toJsonString());
 }
 
 final userSchema = PropertiesSchema(
