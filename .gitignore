@@ -49,6 +49,7 @@ build
 **/.tmp
 **/*.dart_tool
 .nx/cache
+.nx/workspace-data
 
 **/target
 **/.gradle
