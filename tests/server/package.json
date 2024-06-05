@@ -2,20 +2,21 @@
   "name": "test-server",
   "type": "module",
   "dependencies": {
+    "@arrirpc/schema": "workspace:*",
     "@faker-js/faker": "^8.4.1",
-    "arri": "workspace:*",
-    "@arrirpc/schema": "workspace:*"
+    "arri": "workspace:*"
   },
   "scripts": {
     "start-server": "nx serve test-server",
     "integration-tests": "nx run-many -t integration-test"
   },
   "devDependencies": {
-    "arri": "workspace:*",
-    "@arrirpc/typebox-adapter": "workspace:*",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/eslint-plugin": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "@arrirpc/server": "workspace:*"
+    "@arrirpc/server": "workspace:*",
+    "@arrirpc/typebox-adapter": "workspace:*",
+    "@types/eslint": "^8.56.10",
+    "arri": "workspace:*"
   }
 }

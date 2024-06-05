@@ -1,16 +1,17 @@
 import {
-    type WsRpcDefinition,
     type HttpRpcDefinition,
+    isRpcDefinition,
+    isServiceDefinition,
+    pascalCase,
     type RpcDefinition,
     type ServiceDefinition,
-    pascalCase,
-    isServiceDefinition,
-    isRpcDefinition,
+    type WsRpcDefinition,
 } from "@arrirpc/codegen-utils";
+
 import {
+    type CodegenContext,
     kotlinClassName,
     kotlinIdentifier,
-    type CodegenContext,
 } from "./_common";
 
 export function kotlinProcedureFromSchema(
@@ -104,8 +105,8 @@ export function kotlinHttpRpcFromSchema(
 }
 
 export function kotlinWsRpcFromSchema(
-    schema: WsRpcDefinition,
-    context: CodegenContext,
+    _schema: WsRpcDefinition,
+    _context: CodegenContext,
 ): string {
     return "";
 }

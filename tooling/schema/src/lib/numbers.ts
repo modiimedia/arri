@@ -1,27 +1,27 @@
 import {
     type AScalarSchema,
     type ASchemaOptions,
+    type NumberType,
     SCHEMA_METADATA,
     type ValidationData,
-    type NumberType,
 } from "../schemas";
 import {
+    int8Max,
+    int8Min,
     int16Max,
     int16Min,
     int32Max,
     int32Min,
     int64Max,
     int64Min,
-    int8Max,
-    int8Min,
+    uint8Max,
+    uint8Min,
     uint16Max,
     uint16Min,
     uint32Max,
     uint32Min,
     uint64Max,
     uint64Min,
-    uint8Max,
-    uint8Min,
 } from "./numberConstants";
 
 /**
@@ -54,14 +54,14 @@ function coerceNumber(input: unknown, options: ValidationData) {
 }
 
 export function float32(opts: ASchemaOptions = {}) {
-    return numberScalarType("float32", opts, (input) => {
+    return numberScalarType("float32", opts, () => {
         return {
             success: true,
         };
     });
 }
 export function float64(opts: ASchemaOptions = {}) {
-    return numberScalarType("float64", opts, (input) => {
+    return numberScalarType("float64", opts, () => {
         return {
             success: true,
         };
@@ -282,7 +282,7 @@ function validateNumber(input: unknown): input is number {
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number, data: ValidationData): string {
+function serializeNumber(input: number, _data: ValidationData): string {
     return input.toString();
 }
 function parseNumber(input: unknown, options: ValidationData) {

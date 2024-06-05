@@ -5,20 +5,23 @@ import {
     arriRequest,
     arriSseRequest,
     type SseOptions,
+    type EventSourceController,
     arriWsRequest,
     type WsOptions,
 } from "@arrirpc/client";
 
 interface TestClientOptions {
     baseUrl?: string;
-    headers?: Record<string, string> | (() => Record<string, string>);
+    headers?:
+        | Record<string, string>
+        | (() => Record<string, string> | Promise<Record<string, string>>);
 }
 
 export class TestClient {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
     tests: TestClientTestsService;
     adapters: TestClientAdaptersService;
@@ -37,7 +40,7 @@ export class TestClientTestsService {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -167,7 +170,7 @@ export class TestClientTestsService {
     streamAutoReconnect(
         params: AutoReconnectParams,
         options: SseOptions<AutoReconnectResponse>,
-    ) {
+    ): EventSourceController {
         return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
             {
                 url: `${this.baseUrl}/rpcs/tests/stream-auto-reconnect`,
@@ -187,7 +190,7 @@ export class TestClientTestsService {
     streamConnectionErrorTest(
         params: StreamConnectionErrorTestParams,
         options: SseOptions<StreamConnectionErrorTestResponse>,
-    ) {
+    ): EventSourceController {
         return arriSseRequest<
             StreamConnectionErrorTestResponse,
             StreamConnectionErrorTestParams
@@ -207,7 +210,9 @@ export class TestClientTestsService {
     /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
      */
-    streamLargeObjects(options: SseOptions<StreamLargeObjectsResponse>) {
+    streamLargeObjects(
+        options: SseOptions<StreamLargeObjectsResponse>,
+    ): EventSourceController {
         return arriSseRequest<StreamLargeObjectsResponse, undefined>(
             {
                 url: `${this.baseUrl}/rpcs/tests/stream-large-objects`,
@@ -224,7 +229,7 @@ export class TestClientTestsService {
     streamMessages(
         params: ChatMessageParams,
         options: SseOptions<ChatMessage>,
-    ) {
+    ): EventSourceController {
         return arriSseRequest<ChatMessage, ChatMessageParams>(
             {
                 url: `${this.baseUrl}/rpcs/tests/stream-messages`,
@@ -240,7 +245,7 @@ export class TestClientTestsService {
     }
     streamRetryWithNewCredentials(
         options: SseOptions<TestsStreamRetryWithNewCredentialsResponse>,
-    ) {
+    ): EventSourceController {
         return arriSseRequest<
             TestsStreamRetryWithNewCredentialsResponse,
             undefined
@@ -260,7 +265,9 @@ export class TestClientTestsService {
     /**
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
      */
-    streamTenEventsThenEnd(options: SseOptions<ChatMessage>) {
+    streamTenEventsThenEnd(
+        options: SseOptions<ChatMessage>,
+    ): EventSourceController {
         return arriSseRequest<ChatMessage, undefined>(
             {
                 url: `${this.baseUrl}/rpcs/tests/stream-ten-events-then-end`,
@@ -274,7 +281,9 @@ export class TestClientTestsService {
             options,
         );
     }
-    streamTenEventsThenError(options: SseOptions<ChatMessage>) {
+    streamTenEventsThenError(
+        options: SseOptions<ChatMessage>,
+    ): EventSourceController {
         return arriSseRequest<ChatMessage, undefined>(
             {
                 url: `${this.baseUrl}/rpcs/tests/stream-ten-events-then-error`,
@@ -324,7 +333,7 @@ export class TestClientAdaptersService {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -348,7 +357,7 @@ export class TestClientUsersService {
     private readonly baseUrl: string;
     private readonly headers:
         | Record<string, string>
-        | (() => Record<string, string>);
+        | (() => Record<string, string> | Promise<Record<string, string>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -358,7 +367,7 @@ export class TestClientUsersService {
     watchUser(
         params: UsersWatchUserParams,
         options: SseOptions<UsersWatchUserResponse>,
-    ) {
+    ): EventSourceController {
         return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
             {
                 url: `${this.baseUrl}/rpcs/users/watch-user`,

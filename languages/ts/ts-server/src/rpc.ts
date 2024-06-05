@@ -1,31 +1,32 @@
 import {
-    type RpcDefinition,
-    removeDisallowedChars,
-    isRpcHttpMethod,
-    type RpcHttpMethod,
     type HttpRpcDefinition,
+    isRpcHttpMethod,
+    removeDisallowedChars,
+    type RpcDefinition,
+    type RpcHttpMethod,
 } from "@arrirpc/codegen-utils";
 import {
-    type AObjectSchema,
-    type InferType,
-    isAObjectSchema,
     a,
     type ADiscriminatorSchema,
+    type AObjectSchema,
     type ASchema,
+    type InferType,
     isADiscriminatorSchema,
+    isAObjectSchema,
 } from "@arrirpc/schema";
 import {
     eventHandler,
-    type Router,
+    getValidatedQuery,
+    type H3Event,
     isPreflightRequest,
+    readRawBody,
+    type Router,
     send,
     setResponseHeader,
-    type H3Event,
-    getValidatedQuery,
-    readRawBody,
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
-import { type RpcPostEventContext, type RpcEventContext } from "./context";
+
+import { type RpcEventContext,type RpcPostEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
 import {
     type EventStreamRpc,

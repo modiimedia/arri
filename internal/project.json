@@ -1,0 +1,12 @@
+{
+  "name": "internal-scripts",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["internal/**/*.ts"]
+      }
+    }
+  }
+}

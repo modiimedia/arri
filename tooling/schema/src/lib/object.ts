@@ -1,14 +1,15 @@
 import { type SchemaFormProperties } from "jtd-utils";
+
 import {
+    type AObjectSchema,
+    type AObjectSchemaOptions,
     type ASchema,
     type InferObjectOutput,
     type InferType,
-    SCHEMA_METADATA,
-    type AObjectSchema,
-    type AObjectSchemaOptions,
-    type ResolveObject,
-    type ValidationData,
     isObject,
+    type ResolveObject,
+    SCHEMA_METADATA,
+    type ValidationData,
 } from "../schemas";
 import { optional } from "./modifiers";
 

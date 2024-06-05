@@ -1,7 +1,8 @@
 import { defineWebsocketRpc } from "@arrirpc/server";
+
 import {
-    StreamLargeObjectsResponse,
     randomLargeObjectResponse,
+    StreamLargeObjectsResponse,
 } from "./streamLargeObjects.rpc";
 
 export default defineWebsocketRpc({
@@ -14,9 +15,9 @@ export default defineWebsocketRpc({
                     peer.send(randomLargeObjectResponse());
                 }
             },
-            onMessage: (peer, message) => {},
-            onClose: (peer) => {},
-            onError: (peer) => {},
+            onMessage: (_, __) => {},
+            onClose: (_) => {},
+            onError: (_) => {},
         };
     },
 });

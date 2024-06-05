@@ -1,7 +1,8 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousDiscriminator from "./no-anonymous-discriminator";
 
-const tester = new RuleTester({ parserOptions: { ecmaVersion: 2022 } });
+const tester = new RuleTester();
 
 tester.run("no-anonymous-discriminator", noAnonymousDiscriminator, {
     valid: [

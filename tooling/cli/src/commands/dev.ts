@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
+
 import { isAppDefinition } from "@arrirpc/codegen-utils";
 import { listenAndWatch } from "@joshmossas/listhen";
 // import watcher from "@parcel/watcher";
@@ -8,8 +9,10 @@ import { loadConfig } from "c12";
 import { type FSWatcher } from "chokidar";
 import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
+import { App, eventHandler, toNodeListener } from "h3";
 import { ofetch } from "ofetch";
 import path from "pathe";
+
 import {
     createAppWithRoutesModule,
     GEN_APP_FILE,
@@ -92,6 +95,33 @@ export default app.h3App;`;
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function createDevServer(config: ResolvedArriConfig) {
+    const h3 = await import("h3");
+    const app = h3.createApp();
+    let dynamicHandler = eventHandler(
+        () => "<div>initializing server...</div>",
+    );
+    app.use((event) => dynamicHandler(event));
+    let ws: App["websocket"] | undefined;
+    async function reload() {
+        const appEntry = (
+            (await import(
+                path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY)
+            )) as any
+        ).default as App;
+        dynamicHandler = appEntry.handler;
+        ws = appEntry.websocket;
+    }
+    await reload();
+    return {
+        h3App: app,
+        nodeListener: toNodeListener(app),
+        reload,
+        ws,
+    };
+}
+
 async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     const watcher = await import("chokidar");
@@ -118,7 +148,7 @@ async function startDevServer(config: ResolvedArriConfig) {
     });
     process.on("SIGINT", cleanExit);
     process.on("SIGTERM", cleanExit);
-    async function load(isRestart: boolean, reason?: string) {
+    async function load(_isRestart: boolean, _reason?: string) {
         if (fileWatcher) {
             await fileWatcher.close();
         }
@@ -152,7 +182,7 @@ async function startDevServer(config: ResolvedArriConfig) {
                 "**/.git/**",
             ],
         });
-        fileWatcher.on("all", async (eventName, path) => {
+        fileWatcher.on("all", async (eventName, _path) => {
             if (eventName === "addDir" || eventName === "add") {
                 return;
             }
@@ -219,7 +249,7 @@ async function createEntryModule(config: ResolvedArriConfig) {
         .relative(path.resolve(config.rootDir, config.srcDir), appModule)
         .split(".");
     appImportParts.pop();
-    const virtualEntry = `import { toNodeListener } from 'h3';
+    const virtualEntry = `import { toNodeListener } from '@arrirpc/server';
 import app from './${GEN_APP_FILE}';
 
 export default app.h3App;`;

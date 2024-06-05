@@ -1,14 +1,15 @@
-import { execSync } from "child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { normalizeWhitespace } from "@arrirpc/codegen-utils";
 import { TestAppDefinition } from "@arrirpc/codegen-utils/dist/testModels";
 import { a } from "@arrirpc/schema";
+import { execSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "pathe";
 import { test } from "vitest";
+
 import {
-    dartServiceFromDefinition,
-    dartClassFromJtdSchema,
     createDartClient,
+    dartClassFromJtdSchema,
+    dartServiceFromDefinition,
     dartTypeFromJtdSchema,
 } from ".";
 
@@ -48,11 +49,11 @@ describe("Service Generation", () => {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "";
-  late final Map<String, String> Function()? _headers;
+  late final FutureOr<Map<String, String>> Function()? _headers;
   UserService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> Function()? headers,
+    FutureOr<Map<String, String>> Function()? headers,
   })  : _httpClient = httpClient,
       _baseUrl = baseUrl,
       _headers = headers;
@@ -94,11 +95,11 @@ class UserSettingsService {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "";
-  late final Map<String, String> Function()? _headers;
+  late final FutureOr<Map<String, String>> Function()? _headers;
   UserSettingsService({
     http.Client? httpClient,
     String baseUrl = "",
-    Map<String, String> Function()? headers,
+    FutureOr<Map<String, String>> Function()? headers,
   })  : _httpClient = httpClient,
       _baseUrl = baseUrl,
       _headers = headers;
@@ -139,11 +140,11 @@ class UserSettingsService {
         final http.Client? _httpClient;
         final String _baseUrl;
         final String _clientVersion = "";
-        late final Map<String, String> Function()? _headers;
+        late final FutureOr<Map<String, String>> Function()? _headers;
         PostsService({
           http.Client? httpClient,
           String baseUrl = "",
-          Map<String, String> Function()? headers,
+          FutureOr<Map<String, String>> Function()? headers,
         })  : _httpClient = httpClient,
             _baseUrl = baseUrl,
             _headers = headers;

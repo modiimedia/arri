@@ -1,13 +1,14 @@
-import { existsSync, mkdirSync } from "fs";
 import {
-    type ServiceDefinition,
     normalizeWhitespace,
     type Schema,
+    type ServiceDefinition,
 } from "@arrirpc/codegen-utils";
 import { TestAppDefinition } from "@arrirpc/codegen-utils/dist/testModels";
 import { a } from "@arrirpc/schema";
+import { existsSync, mkdirSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
+
 import {
     createTypescriptClient,
     tsServiceFromDefinition,
@@ -76,7 +77,7 @@ describe("Service Creation", () => {
                 await prettier.format(
                     `export class UserService {
             private readonly baseUrl: string;
-            private readonly headers: Record<string, string> | (() => Record<string, string>);
+            private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
             private readonly clientVersion = '1';
             constructor(options: ClientOptions = {}) {
                 this.baseUrl = options.baseUrl ?? "";
@@ -114,7 +115,7 @@ describe("Service Creation", () => {
             /**
              * Watch a user
              */
-            watchUser(params: GetUserParams, options: SseOptions<User>) {
+            watchUser(params: GetUserParams, options: SseOptions<User>): EventSourceController {
                 return arriSseRequest<User, GetUserParams>({
                     url: \`\${this.baseUrl}/watch-user\`,
                     method: "get",

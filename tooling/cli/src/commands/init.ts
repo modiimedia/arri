@@ -1,10 +1,12 @@
 import fs, { readFileSync, rmSync, writeFileSync } from "node:fs";
+
+import { kebabCase } from "@arrirpc/codegen-utils";
 import { defineCommand } from "citty";
 import Degit from "degit";
 import enquirer from "enquirer";
 import path from "pathe";
 import prettier from "prettier";
-import { kebabCase } from "scule";
+
 import { logger } from "../common";
 
 export default defineCommand({
@@ -102,6 +104,11 @@ async function initApp(dir: string, force: boolean) {
             initial: true,
         },
     ]);
+    if (eslint) {
+        logger.warn(
+            `The Arri eslint starter uses the Eslint flat config syntax. If you are using VSCode you will need to enable "eslint.experimental.useFlatConfig" in your workspace settings. Please follow https://github.com/microsoft/vscode-eslint/issues/1644 for details.`,
+        );
+    }
     const repo = eslint
         ? "modiimedia/arri-starters/app-starter-ts-with-eslint"
         : "modiimedia/arri-starters/app-starter-ts";

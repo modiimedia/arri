@@ -1,36 +1,36 @@
-import { writeFileSync } from "fs";
 import {
     type AppDefinition,
-    defineClientGeneratorPlugin,
-    pascalCase,
-    type Schema,
-    isSchemaFormType,
-    type SchemaFormType,
-    isSchemaFormProperties,
-    type SchemaFormProperties,
-    isSchemaFormEnum,
-    type SchemaFormEnum,
-    isSchemaFormElements,
-    type SchemaFormElements,
-    type SchemaFormDiscriminator,
     camelCase,
-    isSchemaFormDiscriminator,
-    isSchemaFormValues,
-    type SchemaFormValues,
-    type RpcDefinition,
-    unflattenProcedures,
-    isRpcDefinition,
-    isServiceDefinition,
-    type ServiceDefinition,
+    defineClientGeneratorPlugin,
     type HttpRpcDefinition,
-    type WsRpcDefinition,
+    isRpcDefinition,
+    isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
     isSchemaFormRef,
+    isSchemaFormType,
+    isSchemaFormValues,
+    isServiceDefinition,
+    pascalCase,
+    type RpcDefinition,
+    type Schema,
+    type SchemaFormDiscriminator,
+    type SchemaFormElements,
+    type SchemaFormEnum,
+    type SchemaFormProperties,
     type SchemaFormRef,
+    type SchemaFormType,
+    type SchemaFormValues,
+    type ServiceDefinition,
+    unflattenProcedures,
+    type WsRpcDefinition,
 } from "@arrirpc/codegen-utils";
 import {
     getSchemaParsingCode,
     getSchemaSerializationCode,
 } from "@arrirpc/schema";
+import { writeFileSync } from "fs";
 import prettier from "prettier";
 
 interface GeneratorOptions {
@@ -120,6 +120,7 @@ export async function createTypescriptClient(
     if (rpcOptions.hasSseProcedures) {
         importParts.push("arriSseRequest");
         importParts.push("type SseOptions");
+        importParts.push("type EventSourceController");
     }
     if (rpcOptions.hasWsProcedures) {
         importParts.push("arriWsRequest");
@@ -145,12 +146,12 @@ import { ${importParts.join(", ")} } from '@arrirpc/client';
     
 interface ${clientName}Options {
     baseUrl?: string;
-    headers?: Record<string, string> | (() => Record<string, string>);
+    headers?: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
 }
 
 export class ${clientName} {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string> | (() => Record<string, string>)
+    private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>)
     private readonly clientVersion = '${rpcOptions.versionNumber}';
     ${serviceFieldParts.join("\n    ")}
 
@@ -217,7 +218,7 @@ export function tsHttpRpcFromDefinition(
         options.hasSseProcedures = true;
         return `${getJsDocComment({ isDeprecated: schema.isDeprecated, description: schema.description })}${key}(${
             paramsInput.length ? `${paramsInput}, ` : ""
-        }options: SseOptions<${schema.response ?? "undefined"}>) {
+        }options: SseOptions<${schema.response ?? "undefined"}>): EventSourceController {
             return arriSseRequest<${schema.response ?? "undefined"}, ${
                 schema.params ?? "undefined"
             }>({
@@ -316,7 +317,7 @@ export function tsServiceFromDefinition(
 
     return `export class ${name}Service {
         private readonly baseUrl: string;
-        private readonly headers: Record<string, string> | (() => Record<string, string>);
+        private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
         private readonly clientVersion = '${options.versionNumber}';
         ${serviceFieldParts.join("\n    ")}
 

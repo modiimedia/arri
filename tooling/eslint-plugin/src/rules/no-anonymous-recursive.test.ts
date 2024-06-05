@@ -1,7 +1,8 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousRecursive from "./no-anonymous-recursive";
 
-const tester = new RuleTester({ parserOptions: { ecmaVersion: 2022 } });
+const tester = new RuleTester();
 
 tester.run("no-anonymous-recursive", noAnonymousRecursive, {
     valid: [

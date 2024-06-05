@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/eslint-plugin",
-  "version": "0.45.1",
+  "version": "0.49.1",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
   "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
@@ -9,8 +9,15 @@
     "url": "https://github.com/modiimedia/arri.git",
     "directory": "tooling/eslint-plugin"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "main": "./dist/plugin.cjs",
+  "module": "./dist/plugin.mjs",
+  "exports": {
+    ".": { "import": "./dist/plugin.mjs", "require": "./dist/plugin.cjs" },
+    "./configs": {
+      "import": "./dist/configs.mjs",
+      "require": "./dist/configs.cjs"
+    }
+  },
   "files": ["dist"],
   "dependencies": {},
   "devDependencies": { "@types/eslint": "^8.56.10" },

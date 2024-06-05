@@ -1,7 +1,8 @@
 import { RuleTester } from "eslint";
+
 import noAnonymousObject from "./no-anonymous-object";
 
-const tester = new RuleTester({ parserOptions: { ecmaVersion: 2022 } });
+const tester = new RuleTester();
 
 tester.run("no-anonymous-object", noAnonymousObject, {
     valid: [

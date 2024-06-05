@@ -1,10 +1,11 @@
 import { type SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
+
 import {
     type CodegenContext,
-    type KotlinProperty,
     getClassName,
     isNullable,
     kotlinIdentifier,
+    type KotlinProperty,
 } from "./_common";
 import { kotlinObjectFromSchema } from "./object";
 

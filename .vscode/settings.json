@@ -44,5 +44,6 @@
     "websockets"
   ],
   "eslint.validate": ["json"],
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "eslint.experimental.useFlatConfig": true
 }

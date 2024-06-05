@@ -1,4 +1,5 @@
 import { type Schema } from "jtd-utils";
+
 import { a } from "../_index";
 
 it("Produces valid JTD Schema", () => {

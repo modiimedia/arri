@@ -1,7 +1,7 @@
-import { existsSync, readFileSync } from "fs";
-import { mkdir, writeFile } from "fs/promises";
 import { defineCommand, runMain } from "citty";
 import enquirer from "enquirer";
+import { existsSync, readFileSync } from "fs";
+import { mkdir, writeFile } from "fs/promises";
 import path from "pathe";
 import { kebabCase } from "scule";
 
@@ -270,7 +270,7 @@ function eslintConfigTemplate(depth: number) {
 `;
 }
 
-function buildConfigTemplate(packageName: string) {
+function buildConfigTemplate(_packageName: string) {
     return `import { readFileSync } from "node:fs";
 import path from "node:path";
 import { defineBuildConfig } from "unbuild";

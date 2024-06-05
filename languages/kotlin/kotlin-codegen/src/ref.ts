@@ -1,8 +1,9 @@
 import { type SchemaFormRef } from "@arrirpc/codegen-utils";
+
 import {
+    type CodegenContext,
     isNullable,
     kotlinClassName,
-    type CodegenContext,
     type KotlinProperty,
 } from "./_common";
 

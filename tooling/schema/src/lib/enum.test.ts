@@ -48,4 +48,14 @@ test("ID shorthand matches standard function", () => {
     assertType<SchemaA>(input);
     assertType<SchemaB>(input);
     expect(a.serialize(SchemaA, input)).toBe(a.serialize(SchemaB, input));
+    const goodInputs = ["A", "B", "C"];
+    const badInputs = ["Hello world", "D", "a", "b"];
+    for (const val of goodInputs) {
+        expect(a.validate(SchemaA, val)).toBe(true);
+        expect(a.validate(SchemaB, val)).toBe(true);
+    }
+    for (const val of badInputs) {
+        expect(a.validate(SchemaA, val)).toBe(false);
+        expect(a.validate(SchemaB, val)).toBe(false);
+    }
 });

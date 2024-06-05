@@ -1,4 +1,5 @@
 import { type H3EventContext } from "h3";
+
 import { type ExtractParams } from "./middleware";
 
 export type ArriEventContext = Record<string, any>;

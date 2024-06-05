@@ -1,11 +1,18 @@
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
-import { removeDisallowedChars } from "@arrirpc/codegen-utils";
+
+import {
+    camelCase,
+    kebabCase,
+    removeDisallowedChars,
+} from "@arrirpc/codegen-utils";
+import { a, ValidationError } from "@arrirpc/schema";
 import { createConsola } from "consola";
 import { type globby } from "globby";
+import { ofetch } from "ofetch";
 import path from "pathe";
 import prettier from "prettier";
-import { camelCase, kebabCase } from "scule";
+
 import { type ResolvedArriConfig } from "./config";
 
 export const logger = createConsola().withTag("arri");
@@ -127,7 +134,6 @@ export async function getFsRouteBatch(
                 .relative(path.resolve(config.rootDir, config.buildDir), file)
                 .split(".");
             importParts.pop();
-            importParts.push("js");
             routes.push({
                 name: meta.id,
                 importName: camelCase(meta.id.split(".").join("_")),
@@ -186,3 +192,87 @@ export function isInsideDir(dir: string, parentDir: string) {
     }
     return false;
 }
+
+export async function getArriPackageMetadata() {
+    const npmPackageResponse = await ofetch("https://registry.npmjs.com/arri");
+    const arriInfo = a.safeParse(NpmRegistryPackage, npmPackageResponse);
+    if (!arriInfo.success) {
+        const errors = a.errors(NpmRegistryPackage, npmPackageResponse);
+        console.warn(errors);
+        throw new ValidationError({
+            message: "Arri parsing response from registry",
+            errors,
+        });
+    }
+    return arriInfo.value;
+}
+const NpmPackageVersion = a.partial(
+    a.object({
+        name: a.string(),
+        version: a.string(),
+        _id: a.string(),
+        maintainers: a.array(
+            a.object({
+                name: a.string(),
+                email: a.string(),
+            }),
+        ),
+        bin: a.record(a.string()),
+        dist: a.any(),
+        main: a.string(),
+        type: a.string(),
+        types: a.string(),
+        module: a.string(),
+        gitHead: a.string(),
+        _npmUser: a.object({
+            name: a.string(),
+            email: a.string(),
+        }),
+        description: a.string(),
+        directories: a.record(a.any()),
+        _nodeVersion: a.string(),
+        dependencies: a.record(a.string()),
+        _hasShrinkWrap: a.boolean(),
+        _npmOperationalInternal: a.any(),
+    }),
+);
+
+const NpmRegistryPackage = a.object({
+    _id: a.string(),
+    _rev: a.string(),
+    name: a.string(),
+    description: a.string(),
+    "dist-tags": a.record(a.string()),
+    versions: a.record(NpmPackageVersion),
+    time: a.record(a.string()),
+    maintainers: a.array(
+        a.object({
+            name: a.string(),
+            email: a.string(),
+        }),
+    ),
+    author: a.object({
+        name: a.string(),
+        url: a.string(),
+    }),
+    repository: a.optional(
+        a.partial(
+            a.object({
+                type: a.string(),
+                url: a.string(),
+                directory: a.string(),
+            }),
+        ),
+    ),
+    license: a.optional(a.string()),
+    homepage: a.optional(a.string()),
+    bugs: a.optional(
+        a.partial(
+            a.object({
+                url: a.string(),
+            }),
+        ),
+    ),
+    readme: a.optional(a.string()),
+    readmeFilename: a.optional(a.string()),
+});

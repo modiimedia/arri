@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
+
 import { type AppDefinition } from "../../tooling/codegen-utils/dist";
 import { a } from "../../tooling/schema/src/_index";
 

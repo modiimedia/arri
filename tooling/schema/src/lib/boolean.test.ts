@@ -1,4 +1,5 @@
 import { type SchemaFormType } from "jtd-utils";
+
 import * as a from "./_namespace";
 describe("parsing", () => {
     const parse = (input: unknown) => a.safeParse(a.boolean(), input).success;

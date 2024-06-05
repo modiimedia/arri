@@ -1,13 +1,14 @@
 import {
-    type Type as JtdType,
     isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
-    isSchemaFormValues,
-    TypeValues,
     isSchemaFormRef,
+    isSchemaFormValues,
+    type Type as JtdType,
+    TypeValues,
 } from "jtd-utils";
+
 import { type ValueError } from "./lib/validation";
 
 export const SCHEMA_METADATA = Symbol.for("arri.schema_metadata");

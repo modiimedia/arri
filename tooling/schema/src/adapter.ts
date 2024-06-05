@@ -1,12 +1,12 @@
 import {
-    isASchema,
-    type ASchema,
-    type SchemaValidator,
-    SCHEMA_METADATA,
-    type SchemaMetadata,
+    type ADiscriminatorSchema,
     type AObjectSchema,
     type ARecordSchema,
-    type ADiscriminatorSchema,
+    type ASchema,
+    isASchema,
+    SCHEMA_METADATA,
+    type SchemaMetadata,
+    type SchemaValidator,
 } from "./schemas";
 
 export interface AAdaptedSchemaValidator<T> extends SchemaValidator<T> {

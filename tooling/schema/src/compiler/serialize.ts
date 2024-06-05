@@ -1,22 +1,23 @@
 import {
-    isSchemaFormType,
-    type SchemaFormType,
-    isSchemaFormProperties,
-    type SchemaFormProperties,
-    type Schema,
-    isSchemaFormEnum,
-    type SchemaFormEnum,
-    isSchemaFormElements,
-    type SchemaFormElements,
-    isSchemaFormValues,
-    type SchemaFormValues,
     isSchemaFormDiscriminator,
-    type SchemaFormDiscriminator,
-    type SchemaFormEmpty,
-    type SchemaFormRef,
+    isSchemaFormElements,
+    isSchemaFormEnum,
+    isSchemaFormProperties,
     isSchemaFormRef,
+    isSchemaFormType,
+    isSchemaFormValues,
+    type Schema,
+    type SchemaFormDiscriminator,
+    type SchemaFormElements,
+    type SchemaFormEmpty,
+    type SchemaFormEnum,
+    type SchemaFormProperties,
+    type SchemaFormRef,
+    type SchemaFormType,
+    type SchemaFormValues,
 } from "jtd-utils";
 import { camelCase } from "scule";
+
 import { type TemplateInput } from "./common";
 
 interface SerializeTemplateInput<TSchema extends Schema = any>

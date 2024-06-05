@@ -1,13 +1,14 @@
 import {
-    isSchemaFormType,
     isSchemaFormDiscriminator,
+    isSchemaFormElements,
+    isSchemaFormEmpty,
+    isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormRef,
-    isSchemaFormEmpty,
+    isSchemaFormType,
     isSchemaFormValues,
-    isSchemaFormElements,
-    isSchemaFormEnum,
 } from "jtd-utils";
+
 import { a } from "./_index";
 
 test("isSchemaFormType", () => {

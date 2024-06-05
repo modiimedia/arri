@@ -1,7 +1,8 @@
 import { type SchemaFormEmpty } from "@arrirpc/codegen-utils";
+
 import {
-    isNullable,
     type CodegenContext,
+    isNullable,
     type KotlinProperty,
 } from "./_common";
 

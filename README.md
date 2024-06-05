@@ -1,6 +1,6 @@
 # Arri RPC Monorepo
 
-Arri is an RPC framework designed for effortless type-safety between multiple languages.
+Arri is an RPC framework designed for effortless end-to-end type safety across programming languages
 
 This is a work in progress. Things will break.
 
@@ -46,32 +46,48 @@ arri codegen https://myapi.com/rpcs/__definition # must accept a GET request
 
 Before running this command. Make sure you have an arri config created already.
 
+**Example Config:**
+
+```ts
+// arri.config.ts
+import {
+    defineConfig,
+    dartClientGenerator,
+    kotlinClientGenerator,
+    typescriptClientGenerator,
+} from "arri";
+
+export default defineConfig({
+    generators: [
+        dartClientGenerator({
+            // options
+        }),
+        kotlinClientGenerator({
+            // options
+        }),
+        typescriptClientGenerator({
+            // options
+        }),
+    ],
+});
+```
+
 ### Typescript App Definition (Recommended)
 
-Arri comes with some useful helpers that reduces the boilerplate of manually creating a JSON definition file. Additionally the validators created with Arri Validate can be used throughout your app.
+Arri comes with some useful helpers that reduces the boilerplate of manually creating a JSON definition file. Additionally the validators created with Arri Schema can be used throughout your app.
 
 ```ts
 // AppDefinition.ts
-import { createAppDefinition } from "arri/dist/codegen";
-import { a } from "arri-validate";
+import { createAppDefinition } from "arri";
+import { a } from "@arrirpc/schema";
 
-const HelloParams = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "HelloParams",
-    },
-);
+const HelloParams = a.object("HelloParams", {
+    message: a.string(),
+});
 
-const HelloResponse = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "HelloResponse",
-    },
-);
+const HelloResponse = a.object("HelloResponse", {
+    message: a.string(),
+});
 
 export default createAppDefinition({
     procedures: {
@@ -90,26 +106,16 @@ Additionally if you only need cross language types, you can skip defining proced
 
 ```ts
 // AppDefinition.ts
-import { createAppDefinition } from "arri/dist/codegen";
-import { a } from "arri-validate";
+import { createAppDefinition } from "arri";
+import { a } from "@arrirpc/schema";
 
-const HelloParams = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "HelloParams",
-    },
-);
+const HelloParams = a.object("HelloParams", {
+    message: a.string(),
+});
 
-const HelloResponse = a.object(
-    {
-        message: a.string(),
-    },
-    {
-        id: "HelloResponse",
-    },
-);
+const HelloResponse = a.object("HelloResponse", {
+    message: a.string(),
+});
 
 export default createAppDefinition({
     definitions: {

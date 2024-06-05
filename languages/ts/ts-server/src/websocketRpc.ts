@@ -1,12 +1,13 @@
 import { type WsRpcDefinition } from "@arrirpc/codegen-utils";
 import {
-    type CompiledValidator,
-    type ASchema,
     a,
+    type ASchema,
+    type CompiledValidator,
     type InferType,
 } from "@arrirpc/schema";
 import { type Peer, type WSError } from "crossws";
 import { defineWebSocketHandler, type Router } from "h3";
+
 import { type ArriServerErrorResponse } from "./errors";
 import {
     getRpcParamName,
@@ -171,7 +172,7 @@ export function registerWebsocketRpc(
         typeof rpc.handler === "function" ? rpc.handler() : rpc.handler;
 
     const handler = defineWebSocketHandler({
-        upgrade(req) {},
+        upgrade(_req) {},
         open(peer) {
             const urlParts = peer.url.split("?");
             const context: WsPeerContext = {
