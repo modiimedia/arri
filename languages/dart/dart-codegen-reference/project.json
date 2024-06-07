@@ -17,6 +17,14 @@
         "command": "dart analyze",
         "cwd": "languages/dart/dart-codegen-reference"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/lib/**/*"],
+      "options": {
+        "command": "dart test ./lib/reference_client_v2_test.dart --reporter=expanded",
+        "cwd": "languages/dart/dart-codegen-reference"
+      }
     }
   }
 }

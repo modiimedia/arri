@@ -171,6 +171,10 @@ class NestedObject implements ArriModel {
     );
   }
 
+  factory NestedObject.fromJsonString(String input) {
+    return NestedObject.fromJson(json.decode(input));
+  }
+
   @override
   NestedObject copyWith({
     String? id,
@@ -202,6 +206,11 @@ class NestedObject implements ArriModel {
     _queryParts_.add("id=$id");
     _queryParts_.add("content=$content");
     return _queryParts_.join("&");
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NestedObject && id == other.id && content == other.content;
   }
 }
 
