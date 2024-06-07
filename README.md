@@ -20,7 +20,7 @@ Below are the language client generators that are planned to have first party su
 | [Dart](languages/dart/dart-codegen/)       | ✅   | ✅  |
 | Rust                                       | 🚧   | 🚧  |
 | [Kotlin](languages/kotlin/kotlin-codegen/) | ✅   | ✅  |
-| Swift                                      |      |     |
+| Swift                                      | 🚧   | 🚧  |
 | Go                                         |      |     |
 | Python                                     |      |     |
 
