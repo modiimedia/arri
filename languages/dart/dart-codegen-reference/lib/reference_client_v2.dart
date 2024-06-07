@@ -82,13 +82,25 @@ class Book implements ArriModel {
   }
 
   @override
-  bool operator ==(Object other) {
-    return other is Book &&
-        id == other.id &&
-        name == other.name &&
-        createdAt == other.createdAt &&
-        updatedAt == other.updatedAt;
+  List<Object> get props {
+    return [
+      id,
+      name,
+      createdAt,
+      updatedAt,
+    ];
   }
+
+  @override
+  bool operator ==(Object _other_) {
+    return _other_ is Book && listsAreEqual(props, _other_.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() => "Book ${toJson()}";
 }
 
 class BookParams implements ArriModel {
@@ -142,9 +154,19 @@ class BookParams implements ArriModel {
   }
 
   @override
-  bool operator ==(Object _other_) {
-    return _other_ is BookParams && bookId == _other_.bookId;
+  List<Object> get props {
+    return [
+      bookId,
+    ];
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BookParams && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
 }
 
 class NestedObject implements ArriModel {
@@ -209,9 +231,20 @@ class NestedObject implements ArriModel {
   }
 
   @override
-  bool operator ==(Object other) {
-    return other is NestedObject && id == other.id && content == other.content;
+  List<Object> get props {
+    return [
+      id,
+      content,
+    ];
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NestedObject && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
 }
 
 class ObjectWithEveryType implements ArriModel {
@@ -290,8 +323,8 @@ class ObjectWithEveryType implements ArriModel {
     final uint16 = typeFromDynamic<int>(_input_["uint16"], 0);
     final int32 = typeFromDynamic<int>(_input_["int32"], 0);
     final uint32 = typeFromDynamic<int>(_input_["uint32"], 0);
-    final int64 = typeFromDynamic<BigInt>(_input_["int64"], BigInt.zero);
-    final uint64 = typeFromDynamic<BigInt>(_input_["uint64"], BigInt.zero);
+    final int64 = bigIntFromDynamic(_input_["int64"], BigInt.zero);
+    final uint64 = bigIntFromDynamic(_input_["uint64"], BigInt.zero);
     final k_enum =
         Enumerator.fromString(typeFromDynamic<String>(_input_["enum"], ""));
     final object = _input_["object"] is Map<String, dynamic>
@@ -337,49 +370,8 @@ class ObjectWithEveryType implements ArriModel {
     );
   }
 
-  @override
-  ObjectWithEveryType copyWith({
-    String? string,
-    bool? boolean,
-    DateTime? timestamp,
-    double? float32,
-    double? float64,
-    int? int8,
-    int? uint8,
-    int? int16,
-    int? uint16,
-    int? int32,
-    int? uint32,
-    BigInt? int64,
-    BigInt? uint64,
-    Enumerator? k_enum,
-    NestedObject? object,
-    List<bool>? array,
-    Map<String, bool>? record,
-    Discriminator? discriminator,
-    dynamic any,
-  }) {
-    return ObjectWithEveryType(
-      string: string ?? this.string,
-      boolean: boolean ?? this.boolean,
-      timestamp: timestamp ?? this.timestamp,
-      float32: float32 ?? this.float32,
-      float64: float64 ?? this.float64,
-      int8: int8 ?? this.int8,
-      uint8: uint8 ?? this.uint8,
-      int16: int16 ?? this.int16,
-      uint16: uint16 ?? this.uint16,
-      int32: int32 ?? this.int32,
-      uint32: uint32 ?? this.uint32,
-      int64: int64 ?? this.int64,
-      uint64: uint64 ?? this.uint64,
-      k_enum: k_enum ?? this.k_enum,
-      object: object ?? this.object,
-      array: array ?? this.array,
-      record: record ?? this.record,
-      discriminator: discriminator ?? this.discriminator,
-      any: any ?? this.any,
-    );
+  factory ObjectWithEveryType.fromJsonString(String _input_) {
+    return ObjectWithEveryType.fromJson(json.decode(_input_));
   }
 
   @override
@@ -439,27 +431,86 @@ class ObjectWithEveryType implements ArriModel {
   }
 
   @override
-  bool operator ==(Object _other_) {
-    return _other_ is ObjectWithEveryType &&
-        string == _other_.string &&
-        boolean == _other_.boolean &&
-        timestamp == _other_.timestamp &&
-        float32 == _other_.float32 &&
-        float64 == _other_.float64 &&
-        int8 == _other_.int8 &&
-        uint8 == _other_.uint8 &&
-        int16 == _other_.int16 &&
-        uint16 == _other_.uint16 &&
-        int32 == _other_.int32 &&
-        uint32 == _other_.uint32 &&
-        int64 == _other_.int64 &&
-        uint64 == _other_.uint64 &&
-        k_enum == _other_.k_enum &&
-        object == _other_.object &&
-        array == _other_.array &&
-        record == _other_.record &&
-        discriminator == _other_.discriminator &&
-        any == _other_.any;
+  ObjectWithEveryType copyWith({
+    String? string,
+    bool? boolean,
+    DateTime? timestamp,
+    double? float32,
+    double? float64,
+    int? int8,
+    int? uint8,
+    int? int16,
+    int? uint16,
+    int? int32,
+    int? uint32,
+    BigInt? int64,
+    BigInt? uint64,
+    Enumerator? k_enum,
+    NestedObject? object,
+    List<bool>? array,
+    Map<String, bool>? record,
+    Discriminator? discriminator,
+    dynamic any,
+  }) {
+    return ObjectWithEveryType(
+      string: string ?? this.string,
+      boolean: boolean ?? this.boolean,
+      timestamp: timestamp ?? this.timestamp,
+      float32: float32 ?? this.float32,
+      float64: float64 ?? this.float64,
+      int8: int8 ?? this.int8,
+      uint8: uint8 ?? this.uint8,
+      int16: int16 ?? this.int16,
+      uint16: uint16 ?? this.uint16,
+      int32: int32 ?? this.int32,
+      uint32: uint32 ?? this.uint32,
+      int64: int64 ?? this.int64,
+      uint64: uint64 ?? this.uint64,
+      k_enum: k_enum ?? this.k_enum,
+      object: object ?? this.object,
+      array: array ?? this.array,
+      record: record ?? this.record,
+      discriminator: discriminator ?? this.discriminator,
+      any: any ?? this.any,
+    );
+  }
+
+  @override
+  List<Object> get props {
+    return [
+      string,
+      boolean,
+      timestamp,
+      float32,
+      float64,
+      int8,
+      uint8,
+      int16,
+      uint16,
+      int32,
+      uint32,
+      int64,
+      uint64,
+      k_enum,
+      object,
+      array,
+      record,
+      discriminator,
+      if (any != null) any,
+    ];
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ObjectWithEveryType && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ObjectWithEveryType ${toJson()}";
   }
 }
 
@@ -496,9 +547,11 @@ sealed class Discriminator implements ArriModel {
     final typeName = typeFromDynamic<String>(_input_["typeName"], "");
     switch (typeName) {
       case "A":
-        return Discriminator.fromJson(_input_);
+        return DiscriminatorA.fromJson(_input_);
       case "B":
+        return DiscriminatorB.fromJson(_input_);
       case "C":
+        return DiscriminatorC.fromJson(_input_);
       default:
         return Discriminator.empty();
     }
@@ -515,6 +568,9 @@ class DiscriminatorA implements Discriminator {
     required this.id,
   });
 
+  @override
+  String get typeName => "A";
+
   factory DiscriminatorA.empty() {
     return DiscriminatorA(
       id: "",
@@ -528,18 +584,8 @@ class DiscriminatorA implements Discriminator {
     );
   }
 
-  @override
-  String get typeName {
-    return "A";
-  }
-
-  @override
-  DiscriminatorA copyWith({
-    String? id,
-  }) {
-    return DiscriminatorA(
-      id: id ?? this.id,
-    );
+  factory DiscriminatorA.fromJsonString(String _input_) {
+    return DiscriminatorA.fromJson(json.decode(_input_));
   }
 
   @override
@@ -563,4 +609,205 @@ class DiscriminatorA implements Discriminator {
     _queryParts_.add("id=$id");
     return _queryParts_.join("&");
   }
+
+  @override
+  DiscriminatorA copyWith({
+    String? id,
+  }) {
+    return DiscriminatorA(
+      id: id ?? this.id,
+    );
+  }
+
+  @override
+  List<Object> get props {
+    return [
+      typeName,
+      id,
+    ];
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiscriminatorA && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+}
+
+class DiscriminatorB implements Discriminator {
+  final String id;
+  final String name;
+  const DiscriminatorB({
+    required this.id,
+    required this.name,
+  });
+
+  @override
+  String get typeName => "B";
+
+  factory DiscriminatorB.empty() {
+    return DiscriminatorB(
+      id: "",
+      name: "",
+    );
+  }
+
+  factory DiscriminatorB.fromJson(Map<String, dynamic> _input_) {
+    final id = typeFromDynamic<String>(_input_["id"], "");
+    final name = typeFromDynamic<String>(_input_["name"], "");
+    return DiscriminatorB(
+      id: id,
+      name: name,
+    );
+  }
+
+  factory DiscriminatorB.fromJsonString(String _input_) {
+    return DiscriminatorB.fromJson(json.decode(_input_));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "typeName": typeName,
+      "id": id,
+      "name": name,
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParams_ = <String>[];
+    _queryParams_.add("typeName=B");
+    _queryParams_.add("id=$id");
+    _queryParams_.add("name=$name");
+    return _queryParams_.join("&");
+  }
+
+  @override
+  ArriModel copyWith({
+    String? id,
+    String? name,
+  }) {
+    return DiscriminatorB(
+      id: id ?? this.id,
+      name: name ?? this.name,
+    );
+  }
+
+  @override
+  List<Object> get props {
+    return [
+      id,
+      name,
+    ];
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiscriminatorB && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+}
+
+class DiscriminatorC implements Discriminator {
+  final String id;
+  final String name;
+  final DateTime date;
+  const DiscriminatorC({
+    required this.id,
+    required this.name,
+    required this.date,
+  });
+
+  @override
+  String get typeName => "C";
+
+  factory DiscriminatorC.empty() {
+    return DiscriminatorC(
+      id: "",
+      name: "",
+      date: DateTime.now(),
+    );
+  }
+
+  factory DiscriminatorC.fromJson(Map<String, dynamic> _input_) {
+    final String id = typeFromDynamic<String>(_input_["id"], "");
+    final String name = typeFromDynamic<String>(_input_["name"], "");
+    final DateTime date = dateTimeFromDynamic(_input_["date"], DateTime.now());
+    return DiscriminatorC(
+      id: id,
+      name: name,
+      date: date,
+    );
+  }
+
+  factory DiscriminatorC.fromJsonString(String _input_) {
+    return DiscriminatorC.fromJson(json.decode(_input_));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "typeName": typeName,
+      "id": id,
+      "name": name,
+      "date": date.toIso8601String(),
+    };
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("typeName=$typeName");
+    _queryParts_.add("id=$id");
+    _queryParts_.add("name=$name");
+    _queryParts_.add("date=${date.toIso8601String()}");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  DiscriminatorC copyWith({
+    String? id,
+    String? name,
+    DateTime? date,
+  }) {
+    return DiscriminatorC(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      date: date ?? this.date,
+    );
+  }
+
+  @override
+  List<Object> get props {
+    return [
+      id,
+      name,
+      date,
+    ];
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiscriminatorC && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
 }

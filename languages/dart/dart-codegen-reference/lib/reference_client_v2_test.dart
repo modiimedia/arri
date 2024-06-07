@@ -78,4 +78,59 @@ void main() {
       expect(NestedObject(id: "1", content: "hello world"), equals(input));
     });
   });
+
+  group("ObjectWithEveryType", () {
+    final input = ObjectWithEveryType(
+      string: "",
+      boolean: false,
+      timestamp: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      float32: 1.5,
+      float64: 1.5,
+      int8: 1,
+      uint8: 1,
+      int16: 10,
+      uint16: 10,
+      int32: 100,
+      uint32: 100,
+      int64: BigInt.from(1000),
+      uint64: BigInt.from(1000),
+      k_enum: Enumerator.Baz,
+      object: NestedObject(id: "1", content: "hello world"),
+      array: [true, false, false],
+      record: {"A": true, "B": false},
+      discriminator: DiscriminatorC(
+        id: "",
+        name: "",
+        date: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      ),
+      any: "hello world",
+    );
+    late final String reference;
+    final String emptyReference = "{}";
+    setUpAll(() async {
+      reference =
+          await File("../../../tests/test-files/ObjectWithEveryType.json")
+              .readAsString();
+    });
+    test("fromJsonString()", () {
+      final now = DateTime.now();
+      expect(ObjectWithEveryType.fromJsonString(reference), equals(input));
+      expect(
+        ObjectWithEveryType.fromJsonString(emptyReference).copyWith(
+          timestamp: now,
+          discriminator: DiscriminatorC.empty().copyWith(
+            date: now,
+          ),
+        ),
+        equals(
+          ObjectWithEveryType.empty().copyWith(
+            timestamp: now,
+            discriminator: DiscriminatorC.empty().copyWith(
+              date: now,
+            ),
+          ),
+        ),
+      );
+    });
+  });
 }
