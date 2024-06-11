@@ -22,8 +22,10 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint languages/dart/dart-codegen"
+      }
     },
     "test": {
       "executor": "@nx/vite:test",
