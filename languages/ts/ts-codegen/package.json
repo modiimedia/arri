@@ -24,7 +24,7 @@
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "prettier": "^3.3.1"
+    "prettier": "^3.3.2"
   },
   "devDependencies": {
     "@arrirpc/client": "workspace:*"
