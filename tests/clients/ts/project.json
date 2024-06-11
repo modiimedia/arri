@@ -12,9 +12,9 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["tests/clients/ts/**/*.ts"]
+        "command": "pnpm eslint tests/clients/ts"
       }
     }
   }
