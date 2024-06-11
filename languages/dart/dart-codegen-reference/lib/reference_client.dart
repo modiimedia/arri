@@ -82,7 +82,7 @@ class Book implements ArriModel {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       id,
       name,
@@ -154,7 +154,7 @@ class BookParams implements ArriModel {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       bookId,
     ];
@@ -231,7 +231,7 @@ class NestedObject implements ArriModel {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       id,
       content,
@@ -303,7 +303,7 @@ class ObjectWithEveryType implements ArriModel {
       uint32: 0,
       int64: BigInt.from(0),
       uint64: BigInt.from(0),
-      k_enum: Enumerator.Bar,
+      k_enum: Enumerator.Foo,
       object: NestedObject.empty(),
       array: [],
       record: {},
@@ -392,7 +392,7 @@ class ObjectWithEveryType implements ArriModel {
       "uint64": uint64.toString(),
       "enum": k_enum.serialValue,
       "object": object.toJson(),
-      "array": array.map((el) => el),
+      "array": array.map((el) => el).toList(),
       "record": record.map((key, val) => MapEntry(key, val)),
       "discriminator": discriminator.toJson(),
       "any": any,
@@ -476,7 +476,7 @@ class ObjectWithEveryType implements ArriModel {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       string,
       boolean,
@@ -620,7 +620,7 @@ class DiscriminatorA implements Discriminator {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       typeName,
       id,
@@ -692,7 +692,7 @@ class DiscriminatorB implements Discriminator {
   }
 
   @override
-  ArriModel copyWith({
+  DiscriminatorB copyWith({
     String? id,
     String? name,
   }) {
@@ -703,7 +703,7 @@ class DiscriminatorB implements Discriminator {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       id,
       name,
@@ -795,7 +795,7 @@ class DiscriminatorC implements Discriminator {
   }
 
   @override
-  List<Object> get props {
+  List<Object?> get props {
     return [
       id,
       name,
@@ -810,4 +810,257 @@ class DiscriminatorC implements Discriminator {
 
   @override
   int get hashCode => listToHashCode(props);
+}
+
+class ObjectWithOptionalFields implements ArriModel {
+  final String? string;
+  final bool? boolean;
+  final DateTime? timestamp;
+  final double? float32;
+  final double? float64;
+  final int? int8;
+  final int? uint8;
+  final int? int16;
+  final int? uint16;
+  final int? int32;
+  final int? uint32;
+  final BigInt? int64;
+  final BigInt? uint64;
+  final Enumerator? k_enum;
+  final NestedObject? object;
+  final List<bool>? array;
+  final Map<String, bool>? record;
+  final Discriminator? discriminator;
+  final dynamic any;
+  const ObjectWithOptionalFields({
+    this.string,
+    this.boolean,
+    this.timestamp,
+    this.float32,
+    this.float64,
+    this.int8,
+    this.uint8,
+    this.int16,
+    this.uint16,
+    this.int32,
+    this.uint32,
+    this.int64,
+    this.uint64,
+    this.k_enum,
+    this.object,
+    this.array,
+    this.record,
+    this.discriminator,
+    this.any,
+  });
+
+  factory ObjectWithOptionalFields.empty() {
+    return ObjectWithOptionalFields();
+  }
+
+  factory ObjectWithOptionalFields.fromJson(Map<String, dynamic> _input_) {
+    final string = nullableTypeFromDynamic<String>(_input_["string"]);
+    final boolean = nullableTypeFromDynamic<bool>(_input_["boolean"]);
+    final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
+    final float32 = nullableTypeFromDynamic<double>(_input_["float32"]);
+    final float64 = nullableTypeFromDynamic<double>(_input_["float64"]);
+    final int8 = nullableTypeFromDynamic<int>(_input_["int8"]);
+    final uint8 = nullableTypeFromDynamic<int>(_input_["uint8"]);
+    final int16 = nullableTypeFromDynamic<int>(_input_["int16"]);
+    final uint16 = nullableTypeFromDynamic<int>(_input_["uint16"]);
+    final int32 = nullableTypeFromDynamic<int>(_input_["int32"]);
+    final uint32 = nullableTypeFromDynamic<int>(_input_["uint32"]);
+    final int64 = nullableBigIntFromDynamic(_input_["int64"]);
+    final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
+    final k_enum = _input_["enum"] is String
+        ? Enumerator.fromString(_input_["enum"])
+        : null;
+    final object = _input_["object"] is Map
+        ? NestedObject.fromJson(_input_["object"])
+        : null;
+    final array = _input_["array"] is List
+        ? (_input_["array"] as List)
+            .map((_el_) => typeFromDynamic<bool>(_el_, false))
+            .toList()
+        : null;
+    final record = _input_["record"] is Map
+        ? (_input_["record"] as Map<String, dynamic>).map((_key_, _val_) =>
+            MapEntry(_key_, typeFromDynamic<bool>(_val_, false)))
+        : null;
+    final discriminator = _input_["discriminator"] is Map
+        ? Discriminator.fromJson(_input_["discriminator"])
+        : null;
+    final any = _input_["any"];
+    return ObjectWithOptionalFields(
+      string: string,
+      boolean: boolean,
+      timestamp: timestamp,
+      float32: float32,
+      float64: float64,
+      int8: int8,
+      uint8: uint8,
+      int16: int16,
+      uint16: uint16,
+      int32: int32,
+      uint32: uint32,
+      int64: int64,
+      uint64: uint64,
+      k_enum: k_enum,
+      object: object,
+      array: array,
+      record: record,
+      discriminator: discriminator,
+      any: any,
+    );
+  }
+  factory ObjectWithOptionalFields.fromJsonString(String input) {
+    return ObjectWithOptionalFields.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{};
+    if (string != null) _output_["string"] = string;
+    if (boolean != null) _output_["boolean"] = boolean;
+    if (timestamp != null) _output_["timestamp"] = timestamp!.toIso8601String();
+    if (float32 != null) _output_["float32"] = float32;
+    if (float64 != null) _output_["float64"] = float64;
+    if (int8 != null) _output_["int8"] = int8;
+    if (uint8 != null) _output_["uint8"] = uint8;
+    if (int16 != null) _output_["int16"] = int16;
+    if (uint16 != null) _output_["uint16"] = uint16;
+    if (int32 != null) _output_["int32"] = int32;
+    if (uint32 != null) _output_["uint32"] = uint32;
+    if (int64 != null) _output_["int64"] = int64!.toString();
+    if (uint64 != null) _output_["uint64"] = uint64!.toString();
+    if (k_enum != null) _output_["enum"] = k_enum!.serialValue;
+    if (object != null) _output_["object"] = object!.toJson();
+    if (array != null) _output_["array"] = array!.map((_el_) => _el_).toList();
+    if (record != null)
+      _output_["record"] =
+          record!.map((_key_, _val_) => MapEntry(_key_, _val_));
+    if (discriminator != null)
+      _output_["discriminator"] = discriminator!.toJson();
+    if (any != null) _output_["any"] = any;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    if (string != null) _queryParts_.add("string=$string");
+    if (boolean != null) _queryParts_.add("boolean=$boolean");
+    if (timestamp != null)
+      _queryParts_.add("timestamp=${timestamp!.toIso8601String()}");
+    if (float32 != null) _queryParts_.add("float32=$float32");
+    if (float64 != null) _queryParts_.add("float64=$float64");
+    if (int8 != null) _queryParts_.add("int8=$int8");
+    if (uint8 != null) _queryParts_.add("uint8=$uint8");
+    if (int16 != null) _queryParts_.add("int16=$int16");
+    if (uint16 != null) _queryParts_.add("uint16=$uint16");
+    if (int32 != null) _queryParts_.add("int32=$int32");
+    if (uint32 != null) _queryParts_.add("uint32$uint32");
+    if (int64 != null) _queryParts_.add("int64=$int64");
+    if (uint64 != null) _queryParts_.add("uint64=$uint64");
+    if (k_enum != null) _queryParts_.add("enum=${k_enum!.serialValue}");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.");
+    print(
+        "[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.");
+    print(
+        "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.");
+    print(
+        "[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  ObjectWithOptionalFields copyWith({
+    String? Function()? string,
+    bool? Function()? boolean,
+    DateTime? Function()? timestamp,
+    double? Function()? float32,
+    double? Function()? float64,
+    int? Function()? int8,
+    int? Function()? uint8,
+    int? Function()? int16,
+    int? Function()? uint16,
+    int? Function()? int32,
+    int? Function()? uint32,
+    BigInt? Function()? int64,
+    BigInt? Function()? uint64,
+    Enumerator? Function()? k_enum,
+    NestedObject? Function()? object,
+    List<bool>? Function()? array,
+    Map<String, bool>? Function()? record,
+    Discriminator? Function()? discriminator,
+    dynamic Function()? any,
+  }) {
+    return ObjectWithOptionalFields(
+      string: string != null ? string() : this.string,
+      boolean: boolean != null ? boolean() : this.boolean,
+      timestamp: timestamp != null ? timestamp() : this.timestamp,
+      float32: float32 != null ? float32() : this.float32,
+      float64: float64 != null ? float64() : this.float64,
+      int8: int8 != null ? int8() : this.int8,
+      uint8: uint8 != null ? uint8() : this.uint8,
+      int16: int16 != null ? int16() : this.int16,
+      uint16: uint16 != null ? uint16() : this.uint16,
+      int32: int32 != null ? int32() : this.int32,
+      uint32: uint32 != null ? uint32() : this.uint32,
+      int64: int64 != null ? int64() : this.int64,
+      uint64: uint64 != null ? uint64() : this.uint64,
+      k_enum: k_enum != null ? k_enum() : this.k_enum,
+      object: object != null ? object() : this.object,
+      array: array != null ? array() : this.array,
+      record: record != null ? record() : this.record,
+      discriminator:
+          discriminator != null ? discriminator() : this.discriminator,
+      any: any != null ? any() : this.any,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        string,
+        boolean,
+        timestamp,
+        float32,
+        float64,
+        int8,
+        uint8,
+        int16,
+        uint16,
+        int32,
+        uint32,
+        int64,
+        uint64,
+        k_enum,
+        object,
+        array,
+        record,
+        discriminator,
+        any
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ObjectWithOptionalFields &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ObjectWithOptionalFields ${toJsonString()}";
+  }
 }

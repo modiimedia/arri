@@ -4,7 +4,6 @@ export "errors.dart";
 export 'parsing.dart';
 export 'request.dart';
 export 'sse.dart';
-export 'utils.dart';
 export 'ws.dart';
 
 abstract class ArriModel {
@@ -12,10 +11,10 @@ abstract class ArriModel {
   String toJsonString();
   String toUrlQueryParams();
   ArriModel copyWith();
-  List<Object> get props;
+  List<Object?> get props;
 }
 
-bool listsAreEqual(List? list1, List? list2) {
+bool listsAreEqual(List? list1, List? list2, {bool log = false}) {
   if (list1 == null || list2 == null) {
     return list1 == null && list2 == null;
   }
@@ -24,13 +23,17 @@ bool listsAreEqual(List? list1, List? list2) {
   for (var i = 0; i < length; i++) {
     final item1 = list1[i];
     final item2 = list2[i];
+    if (log) {
+      print("1 $item1");
+      print("2 $item2");
+    }
     if (item1.runtimeType != item2.runtimeType) {
       return false;
     }
     if (item1 is Map) {
       if (!mapsAreEqual(item1, item2)) return false;
     } else if (item1 is List) {
-      if (!listsAreEqual(list1, list2)) return false;
+      if (!listsAreEqual(item1, item2)) return false;
     } else if (item1 is DateTime) {
       if (!item1.isAtSameMomentAs(item2)) return false;
     } else if (item1 != item2) {
@@ -81,7 +84,7 @@ int listToHashCode(List items) {
 int mapToHashCode(Map input) {
   int result = 0;
   for (final entry in input.entries) {
-    result += entry.hashCode;
+    result += entry.key.hashCode;
     final value = entry.value;
     if (value is List) {
       result += listToHashCode(value);

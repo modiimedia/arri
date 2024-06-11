@@ -22,7 +22,7 @@
       "executor": "nx:run-commands",
       "inputs": ["{projectRoot}/lib/**/*"],
       "options": {
-        "command": "dart test ./lib/reference_client_v2_test.dart --reporter=expanded",
+        "command": "dart test ./lib/reference_client_test.dart --reporter=expanded --chain-stack-traces",
         "cwd": "languages/dart/dart-codegen-reference"
       }
     }

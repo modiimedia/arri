@@ -1,4 +1,4 @@
-import 'package:arri_codegen_dart_reference/reference_client_v2.dart';
+import 'package:arri_codegen_dart_reference/reference_client.dart';
 
 main() {
   final now = DateTime.now();

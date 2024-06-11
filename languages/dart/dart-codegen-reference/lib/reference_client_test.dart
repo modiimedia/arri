@@ -1,6 +1,8 @@
+import "dart:convert";
+
 import "package:test/test.dart";
 import "dart:io";
-import "./reference_client_v2.dart";
+import "reference_client.dart";
 
 void main() {
   group("Book", () {
@@ -130,6 +132,119 @@ void main() {
             ),
           ),
         ),
+      );
+    });
+    test("toJsonString()", () {
+      expect(input.toJsonString(), equals(reference));
+    });
+  });
+  group("ObjectWithOptionalFields", () {
+    final noUndefinedInput = ObjectWithOptionalFields(
+      string: "",
+      boolean: false,
+      timestamp: DateTime.parse("2001-01-01T16:00:00.000Z"),
+      float32: 1.5,
+      float64: 1.5,
+      int8: 1,
+      uint8: 1,
+      int16: 10,
+      uint16: 10,
+      int32: 100,
+      uint32: 100,
+      int64: BigInt.from(1000),
+      uint64: BigInt.from(1000),
+      k_enum: Enumerator.Baz,
+      object: NestedObject(id: "1", content: "hello world"),
+      array: [true, false, false],
+      record: {
+        "A": true,
+        "B": false,
+      },
+      discriminator: DiscriminatorC(
+          id: "", name: "", date: DateTime.parse("2001-01-01T16:00:00.000Z")),
+      any: "hello world",
+    );
+    late String allUndefinedReference;
+    late String noUndefinedReference;
+    setUpAll(() async {
+      allUndefinedReference = await File(
+              "../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
+          .readAsString();
+      noUndefinedReference = await File(
+              "../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
+          .readAsString();
+    });
+    test("fromJsonString()", () {
+      expect(
+        ObjectWithOptionalFields.fromJsonString(allUndefinedReference),
+        equals(ObjectWithOptionalFields.empty()),
+      );
+      expect(
+        ObjectWithOptionalFields.fromJsonString(noUndefinedReference),
+        equals(noUndefinedInput),
+      );
+    });
+    test("toJson()", () {
+      expect(
+        json.encode(ObjectWithOptionalFields.empty().toJson()),
+        equals(allUndefinedReference),
+      );
+      expect(
+        json.encode(noUndefinedInput.toJson()),
+        equals(noUndefinedReference),
+      );
+    });
+    test("toJsonString()", () {
+      expect(
+        ObjectWithOptionalFields.empty().toJsonString(),
+        equals(allUndefinedReference),
+      );
+      expect(
+        noUndefinedInput.toJsonString(),
+        equals(noUndefinedReference),
+      );
+    });
+    test("== operator", () {
+      expect(
+        ObjectWithOptionalFields.empty(),
+        equals(ObjectWithOptionalFields.empty()),
+      );
+      final newInput = ObjectWithOptionalFields(
+        string: "",
+        boolean: false,
+        timestamp: DateTime.parse("2001-01-01T16:00:00.000Z"),
+        float32: 1.5,
+        float64: 1.5,
+        int8: 1,
+        uint8: 1,
+        int16: 10,
+        uint16: 10,
+        int32: 100,
+        uint32: 100,
+        int64: BigInt.from(1000),
+        uint64: BigInt.from(1000),
+        k_enum: Enumerator.Baz,
+        object: NestedObject(id: "1", content: "hello world"),
+        array: [true, false, false],
+        record: {
+          "A": true,
+          "B": false,
+        },
+        discriminator: DiscriminatorC(
+            id: "", name: "", date: DateTime.parse("2001-01-01T16:00:00.000Z")),
+        any: "hello world",
+      );
+      expect(
+        noUndefinedInput,
+        equals(newInput),
+      );
+      expect(
+        noUndefinedInput == newInput.copyWith(any: () => "hello world again"),
+        equals(false),
+      );
+      expect(
+        noUndefinedInput == newInput.copyWith(array: () => [true, true, true]),
+        equals(false),
       );
     });
   });
