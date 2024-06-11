@@ -100,7 +100,7 @@ class Book implements ArriModel {
   int get hashCode => listToHashCode(props);
 
   @override
-  String toString() => "Book ${toJson()}";
+  String toString() => "Book ${toJsonString()}";
 }
 
 class BookParams implements ArriModel {
@@ -303,7 +303,7 @@ class ObjectWithEveryType implements ArriModel {
       uint32: 0,
       int64: BigInt.from(0),
       uint64: BigInt.from(0),
-      k_enum: Enumerator.Foo,
+      k_enum: Enumerator.foo,
       object: NestedObject.empty(),
       array: [],
       record: {},
@@ -392,8 +392,8 @@ class ObjectWithEveryType implements ArriModel {
       "uint64": uint64.toString(),
       "enum": k_enum.serialValue,
       "object": object.toJson(),
-      "array": array.map((el) => el).toList(),
-      "record": record.map((key, val) => MapEntry(key, val)),
+      "array": array.map((_el_) => _el_).toList(),
+      "record": record.map((_key_, _val_) => MapEntry(_key_, _val_)),
       "discriminator": discriminator.toJson(),
       "any": any,
     };
@@ -476,29 +476,27 @@ class ObjectWithEveryType implements ArriModel {
   }
 
   @override
-  List<Object?> get props {
-    return [
-      string,
-      boolean,
-      timestamp,
-      float32,
-      float64,
-      int8,
-      uint8,
-      int16,
-      uint16,
-      int32,
-      uint32,
-      int64,
-      uint64,
-      k_enum,
-      object,
-      array,
-      record,
-      discriminator,
-      if (any != null) any,
-    ];
-  }
+  List<Object?> get props => [
+        string,
+        boolean,
+        timestamp,
+        float32,
+        float64,
+        int8,
+        uint8,
+        int16,
+        uint16,
+        int32,
+        uint32,
+        int64,
+        uint64,
+        k_enum,
+        object,
+        array,
+        record,
+        discriminator,
+        any,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -510,14 +508,14 @@ class ObjectWithEveryType implements ArriModel {
 
   @override
   String toString() {
-    return "ObjectWithEveryType ${toJson()}";
+    return "ObjectWithEveryType ${toJsonString()}";
   }
 }
 
 enum Enumerator implements Comparable<Enumerator> {
-  Foo("FOO"),
-  Bar("BAR"),
-  Baz("BAZ");
+  foo("FOO"),
+  bar("BAR"),
+  baz("BAZ");
 
   const Enumerator(this.serialValue);
   final String serialValue;
@@ -528,7 +526,7 @@ enum Enumerator implements Comparable<Enumerator> {
         return val;
       }
     }
-    return Foo;
+    return foo;
   }
 
   @override
@@ -964,7 +962,7 @@ class ObjectWithOptionalFields implements ArriModel {
     if (int16 != null) _queryParts_.add("int16=$int16");
     if (uint16 != null) _queryParts_.add("uint16=$uint16");
     if (int32 != null) _queryParts_.add("int32=$int32");
-    if (uint32 != null) _queryParts_.add("uint32$uint32");
+    if (uint32 != null) _queryParts_.add("uint32=$uint32");
     if (int64 != null) _queryParts_.add("int64=$int64");
     if (uint64 != null) _queryParts_.add("uint64=$uint64");
     if (k_enum != null) _queryParts_.add("enum=${k_enum!.serialValue}");
@@ -1047,7 +1045,7 @@ class ObjectWithOptionalFields implements ArriModel {
         array,
         record,
         discriminator,
-        any
+        any,
       ];
 
   @override

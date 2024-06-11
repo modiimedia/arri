@@ -8,20 +8,20 @@ export function dartAnyFromSchema(
 ): DartProperty {
     const typeName = `dynamic`;
     const isNullable = outputIsNullable(schema, context);
-    const defaultValue = isNullable ? `null` : `{}`;
+    const defaultValue = `null`;
     return {
-        typeName: `Map<String, dynamic>`,
-        isNullable: (schema.nullable || context.isOptional) ?? false,
+        typeName,
+        isNullable: isNullable,
         defaultValue,
-        fromJson(input, key) {
-            if (isNullable) {
-                return `${input} is dynamic ? ${input} : null`;
-            }
+        fromJson(input) {
             return `${input}`;
         },
         toJson(input) {
             return input;
         },
-        toQueryString(input, target, key) {},
+        toQueryString() {
+            return `print("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+        },
+        content: "",
     };
 }

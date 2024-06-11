@@ -96,7 +96,7 @@ void main() {
       uint32: 100,
       int64: BigInt.from(1000),
       uint64: BigInt.from(1000),
-      k_enum: Enumerator.Baz,
+      k_enum: Enumerator.baz,
       object: NestedObject(id: "1", content: "hello world"),
       array: [true, false, false],
       record: {"A": true, "B": false},
@@ -153,7 +153,7 @@ void main() {
       uint32: 100,
       int64: BigInt.from(1000),
       uint64: BigInt.from(1000),
-      k_enum: Enumerator.Baz,
+      k_enum: Enumerator.baz,
       object: NestedObject(id: "1", content: "hello world"),
       array: [true, false, false],
       record: {
@@ -223,7 +223,7 @@ void main() {
         uint32: 100,
         int64: BigInt.from(1000),
         uint64: BigInt.from(1000),
-        k_enum: Enumerator.Baz,
+        k_enum: Enumerator.baz,
         object: NestedObject(id: "1", content: "hello world"),
         array: [true, false, false],
         record: {
