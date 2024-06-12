@@ -12,12 +12,7 @@ import {
 } from "h3-sse";
 
 import { type RpcEventContext } from "./context";
-import {
-    type ArriServerError,
-    type ArriServerErrorResponse,
-    defineError,
-    handleH3Error,
-} from "./errors";
+import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 import {
@@ -167,34 +162,6 @@ export class EventStreamConnection<TData> {
             id: eventId,
             event: "error",
             data: JSON.stringify(errorResponse),
-        });
-    }
-
-    // /**
-    //  * Push a custom event. These events will need to be parsed manually using the `onEvent` hooks of any generated clients.
-    //  * Note events with the name "error" or "message" cannot be used for custom events.
-    //  */
-    // async pushCustomEvent(event: SseEvent): Promise<void> {
-    //     if (event.event === "message") {
-    //         throw new Error(
-    //             `Event type "message" is the default event type. Therefore it cannot be used when pushing custom events.`,
-    //         );
-    //     }
-    //     if (event.event === "error") {
-    //         throw new Error(
-    //             `Event type "error" is reserved for the pushError() method. Therefore it cannot be used when pushing custom events.`,
-    //         );
-    //     }
-    // }
-
-    /**
-     * Publish an error event. This will trigger the `onError` hooks of any connected clients.
-     */
-    async pushError(error: ArriServerErrorResponse, eventId?: string) {
-        await this.eventStream.push({
-            id: eventId,
-            event: "error",
-            data: JSON.stringify(error),
         });
     }
 

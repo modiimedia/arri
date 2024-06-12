@@ -19,7 +19,6 @@ export interface SseEvent<TData = string> {
 
 export interface SseOptions<TData> {
     onMessage?: (data: TData) => any;
-    onErrorMessage?: (error: ArriErrorInstance) => any;
     onRequest?: (context: OnRequestContext) => any;
     onRequestError?: (
         context: Omit<OnRequestErrorContext, "error"> & {
@@ -90,12 +89,6 @@ export function arriSseRequest<
                 message.event === ""
             ) {
                 options.onMessage?.(opts.parser(message.data));
-                return;
-            }
-            if (message.event === "error") {
-                options.onErrorMessage?.(
-                    ArriErrorInstance.fromJson(message.data),
-                );
                 return;
             }
             if (message.event === "done") {
