@@ -23,8 +23,7 @@
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
     "pathe": "^1.1.2",
-    "prettier": "^3.2.5",
-    "prettier-plugin-rust": "^0.1.9"
+    "prettier": "^3.2.5"
   },
   "devDependencies": {
     "@arrirpc/schema": "workspace:*"
