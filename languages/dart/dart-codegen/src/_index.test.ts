@@ -5,7 +5,7 @@ import fs from "node:fs/promises";
 import { normalizeWhitespace } from "@arrirpc/codegen-utils";
 import path from "pathe";
 
-import { createDartClient } from "./v2/_index";
+import { createDartClient } from "./_index";
 
 const tempDir = path.resolve(__dirname, "../.temp");
 beforeAll(async () => {

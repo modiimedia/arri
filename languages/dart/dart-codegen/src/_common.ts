@@ -11,6 +11,7 @@ export interface CodegenContext {
     generatedTypes: string[];
     instancePath: string;
     schemaPath: string;
+    clientVersion?: string;
     isOptional?: boolean;
     discriminatorParentId?: string;
     discriminatorValue?: string;

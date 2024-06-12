@@ -29,6 +29,12 @@ class ExampleClient {
       parser: (body) => NestedObject.fromJsonString(body),
     );
   }
+
+  ExampleClientBooksService get books => ExampleClientBooksService(
+        baseUrl: _baseUrl,
+        headers: _headers,
+        httpClient: _httpClient,
+      );
 }
 
 class ExampleClientBooksService {
