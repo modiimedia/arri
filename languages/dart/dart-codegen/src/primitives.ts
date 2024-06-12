@@ -91,12 +91,12 @@ export function dartDateTimeFromSchema(
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
-                return `if (${input} != null) ${target}.add("${key}=\${${input}!.toIso8601String()}")`;
+                return `if (${input} != null) ${target}.add("${key}=\${${input}!.toUtc().toIso8601String()}")`;
             }
             if (schema.nullable) {
-                return `${target}.add("${key}=\${${input}?.toIso8601String()}")`;
+                return `${target}.add("${key}=\${${input}?.toUtc().toIso8601String()}")`;
             }
-            return `${target}.add("${key}=\${${input}.toIso8601String()}")`;
+            return `${target}.add("${key}=\${${input}.toUtc().toIso8601String()}")`;
         },
         content: "",
     };
