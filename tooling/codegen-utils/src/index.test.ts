@@ -227,7 +227,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {},
             },
             CreateConnectionResponse: {
@@ -237,7 +236,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {},
             },
             SettingsParams: {
@@ -247,7 +245,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {
                     id: "SettingsParams",
                 },
@@ -259,7 +256,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {
                     id: "Settings",
                 },

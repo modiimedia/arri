@@ -94,7 +94,7 @@ it("parses arrays", () => {
     ]);
 });
 
-it("respects the additionalProperties option", () => {
+it("respects the strict option", () => {
     const LooseSchema = a.compile(
         a.object({
             id: a.string(),
@@ -107,7 +107,7 @@ it("respects the additionalProperties option", () => {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: false },
+            { strict: true },
         ),
     );
     const input = {

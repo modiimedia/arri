@@ -684,13 +684,13 @@ export const validationTestSuites: Record<
             { id: "1" },
         ],
     },
-    "object with additionalProperties false": {
+    "object with strict true": {
         schema: a.object(
             {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: false },
+            { strict: true },
         ),
         goodInputs: [
             {
@@ -714,13 +714,13 @@ export const validationTestSuites: Record<
             true,
         ],
     },
-    "object with additionalProperties true": {
+    "object with strict false": {
         schema: a.object(
             {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: true },
+            { strict: false },
         ),
         goodInputs: [
             {

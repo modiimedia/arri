@@ -30,14 +30,14 @@ export function object<
 >(
     input: TInput,
     opts?: AObjectSchemaOptions<TAdditionalProps>,
-): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
+): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
     TInput extends Record<any, ASchema> = any,
     TAdditionalProps extends boolean = false,
 >(
     id: string,
     input: TInput,
-): AObjectSchema<InferObjectOutput<TInput, TAdditionalProps>, TAdditionalProps>;
+): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
     // eslint-disable-next-line @typescript-eslint/ban-types
     TInput extends Record<any, ASchema> = {},
@@ -45,21 +45,15 @@ export function object<
 >(
     propA: TInput | string,
     propB?: TInput | AObjectSchemaOptions<TAdditionalProps>,
-): AObjectSchema<
-    InferObjectOutput<TInput, TAdditionalProps>,
-    TAdditionalProps
-> {
+): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps> {
     const isIdShorthand = typeof propA === "string";
     const input = isIdShorthand ? (propB as TInput) : propA;
-    const opts = isIdShorthand
+    const options = isIdShorthand
         ? { id: propA }
         : ((propB ?? {}) as AObjectSchemaOptions<TAdditionalProps>);
     const schema: SchemaFormProperties = {
         properties: {},
-        additionalProperties:
-            typeof opts.additionalProperties === "boolean"
-                ? opts.additionalProperties
-                : true,
+        strict: options.strict,
     };
     for (const key of Object.keys(input)) {
         const prop = input[key]!;
@@ -75,14 +69,11 @@ export function object<
     const result: AObjectSchema<any, TAdditionalProps> = {
         ...(schema as any),
         metadata: {
-            id: opts.id,
-            description: opts.description,
-            isDeprecated: opts.isDeprecated,
+            id: options.id,
+            description: options.description,
+            isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
-                output: {} as any satisfies InferObjectOutput<
-                    TInput,
-                    TAdditionalProps
-                >,
+                output: {} as any satisfies InferObjectOutput<TInput>,
                 parse(input, data) {
                     return parseObjectSchema(
                         schema as AObjectSchema,
@@ -148,7 +139,7 @@ export function parseObjectSchema<T>(
     const inputKeys = Object.keys(parsedInput);
     const requiredKeys = Object.keys(schema.properties);
     const optionalKeys = Object.keys(optionalProps);
-    if (!schema.additionalProperties) {
+    if (schema.strict) {
         for (const key of inputKeys) {
             if (
                 !requiredKeys.includes(key) &&
@@ -157,8 +148,8 @@ export function parseObjectSchema<T>(
             ) {
                 data.errors.push({
                     instancePath: `${data.instancePath}/${key}`,
-                    schemaPath: `${data.schemaPath}/additionalProperties`,
-                    message: `Error at ${data.instancePath}/${key}. Key '${key}' is not included in the schema. To allow additional input properties set additionalProperties to 'true'.`,
+                    schemaPath: `${data.schemaPath}/strict`,
+                    message: `Error at ${data.instancePath}/${key}. Key '${key}' is not included in the schema. To allow additional input properties set strict to 'false'.`,
                 });
             }
         }
@@ -225,7 +216,7 @@ export function validateObjectSchema(
     for (const key of Object.keys(input)) {
         const prop: ASchema<any> | undefined =
             schema.properties[key] ?? optionalProps[key];
-        if (!prop && !schema.additionalProperties) {
+        if (!prop && schema.strict) {
             return false;
         }
         if (prop) {
@@ -257,15 +248,12 @@ export function pick<
 >(
     inputSchema: TSchema,
     keys: TKeys[],
-    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+    options: AObjectSchemaOptions<TAdditionalProps> = {},
 ): AObjectSchema<Pick<InferType<TSchema>, TKeys>, TAdditionalProps> {
     const schema: SchemaFormProperties = {
         properties: {},
         nullable: inputSchema.nullable,
-        additionalProperties:
-            typeof opts.additionalProperties === "boolean"
-                ? opts.additionalProperties
-                : true,
+        strict: options.strict,
     };
 
     Object.keys(inputSchema.properties).forEach((key) => {
@@ -291,9 +279,9 @@ export function pick<
     return {
         ...(schema as any),
         metadata: {
-            id: opts.id,
-            description: opts.description,
-            isDeprecated: opts.isDeprecated,
+            id: options.id,
+            description: options.description,
+            isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
                 parse: (input, data) => {
@@ -332,17 +320,14 @@ export function omit<
 >(
     inputSchema: TSchema,
     keys: TKeys[],
-    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+    options: AObjectSchemaOptions<TAdditionalProps> = {},
 ): AObjectSchema<Omit<InferType<TSchema>, TKeys>, TAdditionalProps> {
     const schema: SchemaFormProperties = {
         properties: {
             ...inputSchema.properties,
         },
         nullable: inputSchema.nullable,
-        additionalProperties:
-            typeof opts.additionalProperties === "boolean"
-                ? opts.additionalProperties
-                : true,
+        strict: options.strict,
     };
     Object.keys(inputSchema.properties).forEach((key) => {
         if (keys.includes(key as any)) {
@@ -368,9 +353,9 @@ export function omit<
     return {
         ...(schema as any),
         metadata: {
-            id: opts.id,
-            description: opts.description,
-            isDeprecated: opts.isDeprecated,
+            id: options.id,
+            description: options.description,
+            isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any,
                 validate(input) {
@@ -439,7 +424,7 @@ export function extend<
 >(
     baseSchema: TBaseSchema,
     inputSchema: TSchema,
-    opts: AObjectSchemaOptions<TAdditionalProps> = {},
+    options: AObjectSchemaOptions<TAdditionalProps> = {},
 ): AObjectSchema<
     ResolveObject<InferType<TBaseSchema> & InferType<TSchema>>,
     TAdditionalProps
@@ -453,10 +438,7 @@ export function extend<
             ...baseSchema.optionalProperties,
             ...inputSchema.optionalProperties,
         },
-        additionalProperties:
-            typeof opts.additionalProperties === "boolean"
-                ? opts.additionalProperties
-                : true,
+        strict: options.strict,
     };
 
     const isType = (
@@ -464,8 +446,8 @@ export function extend<
     ): input is InferType<TBaseSchema> & InferType<TSchema> =>
         validateObjectSchema(schema as any, input);
     const meta: ASchema["metadata"] = {
-        id: opts.id,
-        description: opts.description,
+        id: options.id,
+        description: options.description,
         [SCHEMA_METADATA]: {
             output: {} as any as InferType<TBaseSchema> & InferType<TSchema>,
             parse(input: unknown, data) {
@@ -494,10 +476,7 @@ export function partial<
     const newSchema: SchemaFormProperties = {
         properties: {},
         optionalProperties: {},
-        additionalProperties:
-            typeof options.additionalProperties === "boolean"
-                ? options.additionalProperties
-                : true,
+        strict: options.strict,
         nullable: schema.nullable,
     };
     for (const key of Object.keys(schema.properties)) {
