@@ -44,7 +44,7 @@
     "@vitest/coverage-v8": "1.6.0",
     "@vitest/ui": "1.6.0",
     "benny": "^3.7.1",
-    "bun-types": "^1.1.12",
+    "bun-types": "^1.1.13",
     "citty": "^0.1.6",
     "depcheck": "^1.4.7",
     "esbuild": "0.21.5",
