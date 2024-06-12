@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 
 import {
     AppDefinition,
-    defineClientGeneratorPlugin,
+    defineGeneratorPlugin,
     isRpcDefinition,
     isSchemaFormDiscriminator,
     isSchemaFormElements,
@@ -52,7 +52,7 @@ export interface DartClientGeneratorOptions {
     format?: boolean;
 }
 
-export const dartClientGenerator = defineClientGeneratorPlugin(
+export const dartClientGenerator = defineGeneratorPlugin(
     (options: DartClientGeneratorOptions) => {
         return {
             async generator(def) {

@@ -81,21 +81,17 @@ Create an `arri.config.ts` in the project directory
 
 ```ts
 // arri.config.ts
-import {
-    defineConfig,
-    typescriptClientGenerator,
-    dartClientGenerator,
-} from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     entry: "app.ts",
     port: 3000,
     srcDir: "src",
     generators: [
-        typescriptClientGenerator({
+        generators.typescriptClient({
             // options
         }),
-        dartClientGenerator({
+        generators.dartClient({
             // options
         }),
     ],
@@ -434,14 +430,14 @@ Right now Arri RPC has client generators for the following languages:
 
 ```ts
 // arri.config.ts
-import { defineConfig, typescriptClientGenerator, dartClientGenerator, kotlinClientGenerator } from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     // rest of config
     clientGenerators: [
-        typescriptClientGenerator({...}),
-        dartClientGenerator({...}),
-        kotlinClientGenerator({...})
+        generators.typescriptClient({...}),
+        generators.dartClient({...}),
+        generators.kotlinClient({...})
     ]
 });
 ```

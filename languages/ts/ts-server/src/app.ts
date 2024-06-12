@@ -19,7 +19,7 @@ import {
 
 import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
-import { type Middleware,type MiddlewareEvent } from "./middleware";
+import { type Middleware, type MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
 import { ArriRouter, type ArriRouterBase } from "./router";
 import {
@@ -254,7 +254,7 @@ export class ArriApp implements ArriRouterBase {
 
     getAppDefinition(): AppDefinition {
         const appDef: AppDefinition = {
-            arriSchemaVersion: SCHEMA_VERSION,
+            schemaVersion: SCHEMA_VERSION,
             info: this.appInfo,
             procedures: {},
             definitions: this._definitions as any,

@@ -1,9 +1,16 @@
+import { dartClientGenerator } from "@arrirpc/codegen-dart";
+import { kotlinClientGenerator } from "@arrirpc/codegen-kotlin";
+import { typescriptClientGenerator } from "@arrirpc/codegen-ts";
+
 export { DEV_DEFINITION_ENDPOINT } from "./commands/dev";
 export * from "./config";
-export { dartClientGenerator } from "@arrirpc/codegen-dart";
-export { kotlinClientGenerator } from "@arrirpc/codegen-kotlin";
-export { typescriptClientGenerator } from "@arrirpc/codegen-ts";
 export {
     type AppDefinition,
     createAppDefinition,
 } from "@arrirpc/codegen-utils";
+
+export const generators = {
+    dartClient: dartClientGenerator,
+    kotlinClient: kotlinClientGenerator,
+    typescriptClient: typescriptClientGenerator,
+} as const;

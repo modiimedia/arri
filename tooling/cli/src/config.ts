@@ -1,4 +1,4 @@
-import { type ClientGenerator } from "@arrirpc/codegen-utils";
+import { type Generator } from "@arrirpc/codegen-utils";
 import { type BuildOptions } from "esbuild";
 
 /* eslint-disable spaced-comment */
@@ -13,7 +13,7 @@ export interface ArriConfig {
      * this defaults to ["***\/*\*.rpc.ts"]
      */
     procedureGlobPatterns?: string[];
-    generators?: Array<ClientGenerator<any>>;
+    generators?: Array<Generator<any>>;
     buildDir?: string;
     esbuild?: Omit<
         BuildOptions,

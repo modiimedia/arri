@@ -196,7 +196,7 @@ test("create app definition", () => {
         },
     });
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.5",
+        schemaVersion: "0.0.6",
         procedures: {
             sayHello: {
                 transport: "http",

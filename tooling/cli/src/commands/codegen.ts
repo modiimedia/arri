@@ -80,7 +80,7 @@ export default defineCommand({
             config.generators.map((gen) =>
                 gen.generator(
                     def ?? {
-                        arriSchemaVersion: "0.0.4",
+                        schemaVersion: "0.0.6",
                         procedures: {},
                         definitions: {},
                     },

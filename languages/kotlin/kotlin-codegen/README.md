@@ -6,11 +6,11 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, kotlinClientGenerator } from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     generators: [
-        kotlinClientGenerator({
+        generators.kotlinClient({
             clientName: "MyClient",
             outputFile: "./client/src/MyClient.g.kt",
         }),
