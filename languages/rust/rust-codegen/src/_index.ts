@@ -3,7 +3,7 @@ import fs from "node:fs";
 
 import {
     type AppDefinition,
-    defineClientGeneratorPlugin,
+    defineGeneratorPlugin,
     isRpcDefinition,
     isSchemaFormDiscriminator,
     isSchemaFormElements,
@@ -48,7 +48,7 @@ interface RustClientGeneratorOptions {
     typePrefix?: string;
 }
 
-export const rustClientGenerator = defineClientGeneratorPlugin(
+export const rustClientGenerator = defineGeneratorPlugin(
     (options: RustClientGeneratorOptions) => {
         return {
             generator(def) {
