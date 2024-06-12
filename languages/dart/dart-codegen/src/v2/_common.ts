@@ -168,38 +168,31 @@ export function validDartIdentifier(input: string): string {
     return finalIdentifier;
 }
 
+export function validDartClassName(input: string, modelPrefix: string): string {
+    const className = sanitizeIdentifier(
+        pascalCase(input, { normalize: true }),
+    );
+    if (canUseClassName(className) || modelPrefix.length) {
+        return className;
+    }
+    return `Class${className}`;
+}
+
 export function getDartClassName(
     schema: Schema,
     context: CodegenContext,
 ): string {
     if (schema.metadata?.id) {
-        const className = sanitizeIdentifier(
-            pascalCase(schema.metadata.id, { normalize: true }),
-        );
-        if (canUseClassName(className) || context.modelPrefix.length) {
-            return className;
-        }
-        return `Class${className}`;
+        return validDartClassName(schema.metadata.id, context.modelPrefix);
     }
     if (context.discriminatorParentId) {
-        const className = sanitizeIdentifier(
-            pascalCase(
-                `${context.discriminatorParentId}_${context.discriminatorValue}`,
-                { normalize: true },
-            ),
+        return validDartClassName(
+            `${context.discriminatorParentId}_${context.discriminatorValue}`,
+            context.modelPrefix,
         );
-        if (canUseClassName(className) || context.modelPrefix.length) {
-            return className;
-        }
-        return `Class${className}`;
     }
-    const className = sanitizeIdentifier(
-        pascalCase(context.instancePath.split("/").join("_"), {
-            normalize: true,
-        }),
+    return validDartClassName(
+        context.instancePath.split("/").join("_"),
+        context.modelPrefix,
     );
-    if (canUseClassName(className) || context.modelPrefix.length) {
-        return className;
-    }
-    return `Class${className}`;
 }

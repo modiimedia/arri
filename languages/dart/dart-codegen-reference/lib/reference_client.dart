@@ -77,6 +77,8 @@ class ExampleClientBooksService {
     void Function(ArriError error, EventSource<Book> connection)? onError,
     void Function(ArriError error, EventSource<Book> connection)?
         onConnectionError,
+    Duration? retryDelay,
+    int? maxRetryCount,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/books/watch-book",
@@ -84,6 +86,8 @@ class ExampleClientBooksService {
       httpClient: _httpClient,
       headers: _headers,
       clientVersion: _clientVersion,
+      retryDelay: retryDelay,
+      maxRetryCount: maxRetryCount,
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
       onData: onData,
