@@ -8,6 +8,7 @@ import {
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
+    isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
     Schema,
@@ -17,6 +18,7 @@ import path from "pathe";
 import { CodegenContext, DartProperty } from "./_common";
 import { dartAnyFromSchema } from "./any";
 import { dartListFromSchema } from "./array";
+import { dartSealedClassFromSchema } from "./discriminator";
 import { dartEnumFromSchema } from "./enum";
 import { dartClassFromSchema } from "./object";
 import {
@@ -28,6 +30,7 @@ import {
     dartStringFromSchema,
 } from "./primitives";
 import { dartMapFromSchema } from "./record";
+import { dartRefFromSchema } from "./ref";
 
 export interface DartClientGeneratorOptions {
     outputFile: string;
@@ -147,7 +150,11 @@ export function dartTypeFromSchema(
     }
 
     if (isSchemaFormDiscriminator(schema)) {
-        // TODO: discriminated unions
+        return dartSealedClassFromSchema(schema, context);
+    }
+
+    if (isSchemaFormRef(schema)) {
+        return dartRefFromSchema(schema, context);
     }
 
     return dartAnyFromSchema(schema, context);

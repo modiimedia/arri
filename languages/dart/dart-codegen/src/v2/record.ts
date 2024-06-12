@@ -30,7 +30,7 @@ export function dartMapFromSchema(
                         (_key_, _val_) => MapEntry(
                           _key_,
                           ${innerType.fromJson("_val_")},
-                        )
+                        ),
                       )
                     : null`;
             }
@@ -39,18 +39,18 @@ export function dartMapFromSchema(
                     (_key_, _val_) => MapEntry(
                       _key_,
                       ${innerType.fromJson("_val_")},
-                    )
+                    ),
                   )
                 : <String, ${innerType.typeName}>{}`;
         },
         toJson(input) {
             if (context.isOptional) {
-                return `${input}!.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")}))`;
+                return `${input}!.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")},),)`;
             }
             if (schema.nullable) {
-                return `${input}?.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")}))`;
+                return `${input}?.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")},),)`;
             }
-            return `${input}.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")}))`;
+            return `${input}.map((_key_, _val_) => MapEntry(_key_, ${innerType.toJson("_val_", "", "")},),)`;
         },
         toQueryString() {
             return `print(

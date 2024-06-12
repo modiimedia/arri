@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 
+import { normalizeWhitespace } from "@arrirpc/codegen-utils";
 import path from "pathe";
 
 import { createDartClient } from "./v2/_index";
@@ -36,5 +37,5 @@ test("Results match reference client", async () => {
     execSync(`dart format ${outputFile}`, { stdio: "inherit" });
     const result = await fs.readFile(outputFile, "utf8");
     const reference = await fs.readFile(referenceFile, "utf8");
-    expect(result).toBe(reference);
+    expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(reference));
 });

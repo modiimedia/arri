@@ -33,10 +33,16 @@
         "{projectRoot}/src",
         "{workspaceRoot}/languages/dart/dart-codegen-reference/reference_client.dart"
       ],
-      "outputs": ["{workspaceRoot}/coverage/languages/dart/dart-codegen"],
+      "outputs": ["{projectRoot}/.temp/test-results"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/languages/dart/dart-codegen"
+      }
+    },
+    "show-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm vite preview --outDir languages/dart/dart-codegen/.temp/test-results"
       }
     },
     "typecheck": {

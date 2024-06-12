@@ -24,12 +24,12 @@ export function dartClassFromSchema(
         defaultValue,
         fromJson(input) {
             if (isNullable) {
-                return `${input} is Map
+                return `${input} is Map<String, dynamic>
                 ? ${finalClassName}.fromJson(${input})
                 : null`;
             }
-            return `${input} is Map
-            ? ${finalClassName}.from(${input})
+            return `${input} is Map<String, dynamic>
+            ? ${finalClassName}.fromJson(${input})
             : ${finalClassName}.empty()`;
         },
         toJson(input) {
@@ -56,8 +56,18 @@ export function dartClassFromSchema(
     const defaultParts: string[] = [];
     const fromJsonParts: string[] = [];
     const toJsonRequiredParts: string[] = [];
+    if (context.discriminatorKey && context.discriminatorValue) {
+        toJsonRequiredParts.push(
+            `      "${context.discriminatorKey}": ${validDartIdentifier(context.discriminatorKey)},`,
+        );
+    }
     const toJsonOptionalParts: string[] = [];
     const toUrlQueryParts: string[] = [];
+    if (context.discriminatorKey && context.discriminatorValue) {
+        toUrlQueryParts.push(
+            `_queryParts_.add("${context.discriminatorKey}=$${validDartIdentifier(context.discriminatorKey)}");`,
+        );
+    }
     const copyWithParamParts: string[] = [];
     const copyWithReturnParts: string[] = [];
     const subContentParts: string[] = [];
@@ -79,7 +89,9 @@ export function dartClassFromSchema(
         fromJsonParts.push(
             `    final ${propName} = ${typeResult.fromJson(`_input_["${key}"]`, key)};`,
         );
-        toJsonRequiredParts.push(`      "${key}": ${propName},`);
+        toJsonRequiredParts.push(
+            `      "${key}": ${typeResult.toJson(propName, "", key)},`,
+        );
         toUrlQueryParts.push(
             `    ${typeResult.toQueryString(propName, "_queryParts_", key)};`,
         );
@@ -91,7 +103,9 @@ export function dartClassFromSchema(
                 `      ${propName}: ${propName} != null ? ${propName}() : this.${propName},`,
             );
         } else {
-            copyWithParamParts.push(`    ${typeResult.typeName}? ${propName},`);
+            copyWithParamParts.push(
+                `    ${typeResult.typeName}${typeResult.typeName !== "dynamic" ? "?" : ""} ${propName},`,
+            );
             copyWithReturnParts.push(
                 `      ${propName}: ${propName} ?? this.${propName},`,
             );
@@ -134,12 +148,20 @@ export function dartClassFromSchema(
             subContentParts.push(typeResult.content);
         }
     }
-    result.content = `class ${finalClassName} implements ArriModel {
+    let discriminatorPart = "";
+    if (context.discriminatorKey && context.discriminatorValue) {
+        discriminatorPart = `
+    @override
+    String get ${validDartIdentifier(context.discriminatorKey)} => "${context.discriminatorValue}";
+`;
+    }
+
+    result.content = `class ${finalClassName} implements ${context.discriminatorParentId ?? "ArriModel"} {
 ${fieldParts.join("\n")}
   const ${finalClassName}({
 ${constructorParts.join("\n")}
   });
-
+${discriminatorPart}
   factory ${finalClassName}.empty() {
     return ${finalClassName}(
     ${defaultParts.join("\n")}
@@ -164,6 +186,11 @@ ${toJsonRequiredParts.join("\n")}
     };
 ${toJsonOptionalParts.join("\n")}
     return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
   }
 
   @override

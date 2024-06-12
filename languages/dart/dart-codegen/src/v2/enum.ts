@@ -67,7 +67,7 @@ ${enumValues.map((val) => `  ${val.name}("${val.serialValue}")`).join(",\n")};
 
   factory ${context.modelPrefix}${enumName}.fromString(String input) {
     for (final val in values) {
-      if (val.serialValue = input) {
+      if (val.serialValue == input) {
         return val;
       }
     }
