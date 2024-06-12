@@ -41,7 +41,7 @@ import {
 import rustRecordFromSchema from "./record";
 import rustRefFromSchema from "./ref";
 
-interface RustClientGeneratorOptions {
+export interface RustClientGeneratorOptions {
     clientName: string;
     outputFile: string;
     format?: boolean;
