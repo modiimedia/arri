@@ -1,7 +1,7 @@
 import {
     type AppDefinition,
     camelCase,
-    defineClientGeneratorPlugin,
+    defineGeneratorPlugin,
     type HttpRpcDefinition,
     isRpcDefinition,
     isSchemaFormDiscriminator,
@@ -33,14 +33,14 @@ import {
 import { writeFileSync } from "fs";
 import prettier from "prettier";
 
-interface GeneratorOptions {
+export interface TypescriptGeneratorOptions {
     clientName: string;
     outputFile: string;
     prettierOptions?: Omit<prettier.Config, "parser">;
 }
 
-export const typescriptClientGenerator = defineClientGeneratorPlugin(
-    (options: GeneratorOptions) => ({
+export const typescriptClientGenerator = defineGeneratorPlugin(
+    (options: TypescriptGeneratorOptions) => ({
         generator: async (def) => {
             if (!options.clientName) {
                 throw new Error("Name is requires");
@@ -62,7 +62,7 @@ export const typescriptClientGenerator = defineClientGeneratorPlugin(
 
 export async function createTypescriptClient(
     def: AppDefinition,
-    options: GeneratorOptions,
+    options: TypescriptGeneratorOptions,
 ): Promise<string> {
     const clientName = pascalCase(options.clientName);
     const services = unflattenProcedures(def.procedures);
@@ -171,7 +171,7 @@ ${subContentParts.join("\n")}
     });
 }
 
-interface RpcOptions extends GeneratorOptions {
+interface RpcOptions extends TypescriptGeneratorOptions {
     versionNumber: string;
     typesNeedingParser: string[];
     hasSseProcedures: boolean;
@@ -404,7 +404,7 @@ export function maybeNullType(typeName: string, isNullable = false) {
 export function tsAnyFromJtdSchema(
     nodePath: string,
     def: Schema,
-    options: GeneratorOptions,
+    options: TypescriptGeneratorOptions,
     additionalOptions: AdditionalOptions,
 ): TsProperty {
     const key = nodePath.split(".").pop() ?? "";

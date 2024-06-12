@@ -17,7 +17,8 @@
     ],
     "shared-globals": [
       "{workspaceRoot}/pnpm-lock.yaml",
-      "{workspaceRoot}/package.json"
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/nx.json"
     ]
   },
   "targetDefaults": {
@@ -47,15 +48,11 @@
       "cache": true,
       "inputs": ["default", "^default", "shared-globals"]
     },
-    "@nx/eslint:lint": {
+    "lint": {
       "inputs": [
         "default",
         "shared-globals",
-        "{projectRoot}/.eslintrc.json",
-        "{projectRoot}/.eslintrc.js",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintrc.js",
-        "{workspaceRoot}/.eslintignore"
+        "{workspaceRoot}/eslint.config.js"
       ],
       "cache": true
     }

@@ -20,7 +20,7 @@ Below are the language client generators that are planned to have first party su
 | [Dart](languages/dart/dart-codegen/)       | ✅   | ✅  |
 | Rust                                       | 🚧   | 🚧  |
 | [Kotlin](languages/kotlin/kotlin-codegen/) | ✅   | ✅  |
-| Swift                                      |      |     |
+| Swift                                      | 🚧   | 🚧  |
 | Go                                         |      |     |
 | Python                                     |      |     |
 
@@ -50,22 +50,17 @@ Before running this command. Make sure you have an arri config created already.
 
 ```ts
 // arri.config.ts
-import {
-    defineConfig,
-    dartClientGenerator,
-    kotlinClientGenerator,
-    typescriptClientGenerator,
-} from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     generators: [
-        dartClientGenerator({
+        generators.dartClient({
             // options
         }),
-        kotlinClientGenerator({
+        generators.kotlinClient({
             // options
         }),
-        typescriptClientGenerator({
+        generators.typescriptClient({
             // options
         }),
     ],
@@ -133,7 +128,7 @@ JSON app definitions are something that would normally be automatically generate
 
 ```json
 {
-    "arriSchemaVersion": "<current-schema-version>",
+    "schemaVersion": "<current-schema-version>",
     "procedures": {
         "sayHello": {
             "transport": "http",

@@ -58,22 +58,17 @@ export default createAppDefinition({
 
 ```ts
 // arri.config.ts
-import {
-    defineConfig,
-    typescriptClientGenerator,
-    dartClientGenerator,
-    kotlinClientGenerator,
-} from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     generators: [
-        typescriptClientGenerator({
+        generators.typescriptClient({
             // options
         }),
-        dartClientGenerator({
+        generators.dartClient({
             // options
         }),
-        kotlinClientGenerator({
+        generators.kotlinClient({
             // options
         }),
     ],

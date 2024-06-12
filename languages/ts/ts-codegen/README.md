@@ -6,11 +6,11 @@
 
 ```ts
 // arri.config.ts
-import { defineConfig, typescriptClientGenerator } from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     generators: [
-        typescriptClientGenerator({
+        generators.typescriptClient({
             clientName: "MyClient",
             outputFile: "./client/src/myClient.g.ts",
         }),

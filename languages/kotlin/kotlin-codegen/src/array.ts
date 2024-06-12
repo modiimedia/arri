@@ -17,7 +17,7 @@ export function kotlinArrayFromSchema(
         modelPrefix: context.modelPrefix,
         clientName: context.clientName,
         clientVersion: context.clientVersion,
-        instancePath: `${context.instancePath}/[element]`,
+        instancePath: `${context.instancePath}/[Element]`,
         schemaPath: `${context.schemaPath}/elements`,
         existingTypeIds: context.existingTypeIds,
     });
