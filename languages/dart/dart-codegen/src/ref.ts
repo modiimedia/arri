@@ -30,7 +30,7 @@ export function dartRefFromSchema(
             }
             return `${input} is Map<String, dynamic>
                 ? ${finalClassName}.fromJson(${input})
-                : ${finalClassName}.new()`;
+                : ${finalClassName}.empty()`;
         },
         toJson(input) {
             if (context.isOptional) {

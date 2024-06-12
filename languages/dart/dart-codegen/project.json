@@ -31,7 +31,7 @@
       "executor": "@nx/vite:test",
       "inputs": [
         "{projectRoot}/src",
-        "{workspaceRoot}/languages/dart/dart-codegen-reference/reference_client.dart"
+        "{workspaceRoot}/languages/dart/dart-codegen-reference/lib/reference_client.dart"
       ],
       "outputs": ["{projectRoot}/.temp/test-results"],
       "options": {

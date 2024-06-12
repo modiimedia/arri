@@ -12,7 +12,7 @@ export function dartListFromSchema(
         clientName: context.clientName,
         modelPrefix: context.modelPrefix,
         generatedTypes: context.generatedTypes,
-        instancePath: `${context.instancePath}/[element]`,
+        instancePath: `${context.instancePath}/[Element]`,
         schemaPath: `${context.schemaPath}/elements`,
     });
     const typeName = isNullable

@@ -46,13 +46,13 @@ export function dartHttpRpcFromSchema(
     if (schema.isEventStream) {
         return `EventSource<${responseType}> ${functionName}(
             ${paramsType ? `${paramsType} params, ` : ""} {
-            void Function(${responseType} data, EventSource<${responseType}> connection)? onData,
+            void Function(${responseType} data, EventSource<${responseType}> connection)? onMessage,
             void Function(http.StreamedResponse response, EventSource<${responseType}> connection)? onOpen,
             void Function(EventSource<${responseType}> connection)? onClose,
             void Function(ArriError error, EventSource<${responseType}> connection)? onError,
-            void Function(ArriError error, EventSource<${responseType}> connection)? onConnectionError,
             Duration? retryDelay,
             int? maxRetryCount,
+            String? lastEventId,
         }) {
             return parsedArriSseRequest(
                 "$_baseUrl${schema.path}",
@@ -62,13 +62,13 @@ export function dartHttpRpcFromSchema(
                 clientVersion: _clientVersion,
                 retryDelay: retryDelay,
                 maxRetryCount: maxRetryCount,
+                lastEventId: lastEventId,
                 ${paramsType ? "params: params.toJson()," : ""}
-                parser: (body) => ${schema.response ? `${responseType}.fromJsonString(body)` : `{}`},
-                onData: onData,
+                parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : `{}`},
+                onMessage: onMessage,
                 onOpen: onOpen,
                 onClose: onClose,
                 onError: onError,
-                onConnectionError: onConnectionError,
             );
         }`;
     }
@@ -80,7 +80,7 @@ export function dartHttpRpcFromSchema(
             headers: _headers,
             clientVersion: _clientVersion,
             ${paramsType ? "params: params.toJson()," : ""}
-            parser: (body) => ${schema.response ? `${responseType}.fromJsonString(body)` : "{}"},
+            parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : "{}"},
         );
     }`;
 }
@@ -103,13 +103,13 @@ export function dartWsRpcFromSchema(
     if (schema.params) {
         paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
     }
-    return `Future<ArriWebsocketController<${paramsType ?? "void"}, ${responseType ?? "void"}>> ${functionName}() {
+    return `Future<ArriWebsocketController<${responseType ?? "void"}, ${paramsType ?? "void"}>> ${functionName}() {
         return arriWebsocketRequest(
             "$_baseUrl${schema.path}",
             headers: _headers,
             clientVersion: _clientVersion,
-            parser: (body) => ${responseType ? `${responseType}.fromJsonString(body)` : "{}"},
-            serializer: (msg) => ${paramsType ? "msg.toJsonString()" : "{}"},
+            parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : "{}"},
+            serializer: (msg) ${paramsType ? "=> msg.toJsonString()" : '=> ""'},
         );
     }`;
 }
@@ -172,7 +172,7 @@ export function dartServiceFromSchema(
   ${serviceName}({
     http.Client? httpClient,
     required String baseUrl,
-    FutureOr<Map<String, String>> Function()? _headers,
+    FutureOr<Map<String, String>> Function()? headers,
   }) : _httpClient = httpClient,
        _baseUrl = baseUrl,
        _headers = headers;

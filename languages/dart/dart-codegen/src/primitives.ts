@@ -82,12 +82,12 @@ export function dartDateTimeFromSchema(
         toJson(input, _target, _key) {
             if (context.isOptional) {
                 // the null check will happen at the object level
-                return `${input}!.toIso8601String()`;
+                return `${input}!.toUtc().toIso8601String()`;
             }
             if (schema.nullable) {
-                return `${input}?.toIso8601String()`;
+                return `${input}?.toUtc().toIso8601String()`;
             }
-            return `${input}.toIso8601String()`;
+            return `${input}.toUtc().toIso8601String()`;
         },
         toQueryString(input, target, key) {
             if (context.isOptional) {
@@ -115,9 +115,9 @@ export function dartDoubleFromSchema(
         defaultValue,
         fromJson(input, _key) {
             if (isNullable) {
-                return `nullableTypeFromDynamic<double>(${input})`;
+                return `nullableDoubleFromDynamic(${input})`;
             }
-            return `typeFromDynamic<double>(${input}, 0.0)`;
+            return `doubleFromDynamic(${input}, 0.0)`;
         },
         toJson(input, _, __) {
             return input;
@@ -145,9 +145,9 @@ export function dartIntFromSchema(
         defaultValue,
         fromJson(input, _key) {
             if (isNullable) {
-                return `nullableTypeFromDynamic<int>(${input})`;
+                return `nullableIntFromDynamic(${input})`;
             }
-            return `typeFromDynamic<int>(${input}, 0)`;
+            return `intFromDynamic(${input}, 0)`;
         },
         toJson(input) {
             return input;

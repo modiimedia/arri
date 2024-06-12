@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:arri_client/arri_client.dart';
-import "package:http/http.dart" as http;
+import 'package:http/http.dart' as http;
 
 class ExampleClient {
   final http.Client? _httpClient;
@@ -76,15 +76,14 @@ class ExampleClientBooksService {
 
   EventSource<Book> watchBook(
     BookParams params, {
-    void Function(Book data, EventSource<Book>)? onData,
+    void Function(Book data, EventSource<Book> connection)? onMessage,
     void Function(http.StreamedResponse response, EventSource<Book> connection)?
         onOpen,
     void Function(EventSource<Book> connection)? onClose,
     void Function(ArriError error, EventSource<Book> connection)? onError,
-    void Function(ArriError error, EventSource<Book> connection)?
-        onConnectionError,
     Duration? retryDelay,
     int? maxRetryCount,
+    String? lastEventId,
   }) {
     return parsedArriSseRequest(
       "$_baseUrl/books/watch-book",
@@ -94,22 +93,22 @@ class ExampleClientBooksService {
       clientVersion: _clientVersion,
       retryDelay: retryDelay,
       maxRetryCount: maxRetryCount,
+      lastEventId: lastEventId,
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
-      onData: onData,
+      onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
       onError: onError,
-      onConnectionError: onConnectionError,
     );
   }
 
-  Future<ArriWebsocketController<BookParams, Book>> createConnection() {
+  Future<ArriWebsocketController<Book, BookParams>> createConnection() {
     return arriWebsocketRequest(
       "$_baseUrl/books/create-connection",
       headers: _headers,
       clientVersion: _clientVersion,
-      parser: (body) => BookParams.fromJsonString(body),
+      parser: (msg) => Book.fromJsonString(msg),
       serializer: (msg) => msg.toJsonString(),
     );
   }
@@ -158,8 +157,8 @@ class Book implements ArriModel {
     final _output_ = <String, dynamic>{
       "id": id,
       "name": name,
-      "createdAt": createdAt.toIso8601String(),
-      "updatedAt": updatedAt.toIso8601String(),
+      "createdAt": createdAt.toUtc().toIso8601String(),
+      "updatedAt": updatedAt.toUtc().toIso8601String(),
     };
     return _output_;
   }
@@ -174,8 +173,8 @@ class Book implements ArriModel {
     final _queryParts_ = <String>[];
     _queryParts_.add("id=$id");
     _queryParts_.add("name=$name");
-    _queryParts_.add("createdAt=${createdAt.toIso8601String()}");
-    _queryParts_.add("updatedAt=${updatedAt.toIso8601String()}");
+    _queryParts_.add("createdAt=${createdAt.toUtc().toIso8601String()}");
+    _queryParts_.add("updatedAt=${updatedAt.toUtc().toIso8601String()}");
     return _queryParts_.join("&");
   }
 
@@ -436,14 +435,14 @@ class ObjectWithEveryType implements ArriModel {
     final string = typeFromDynamic<String>(_input_["string"], "");
     final boolean = typeFromDynamic<bool>(_input_["boolean"], false);
     final timestamp = dateTimeFromDynamic(_input_["timestamp"], DateTime.now());
-    final float32 = typeFromDynamic<double>(_input_["float32"], 0.0);
-    final float64 = typeFromDynamic<double>(_input_["float64"], 0.0);
-    final int8 = typeFromDynamic<int>(_input_["int8"], 0);
-    final uint8 = typeFromDynamic<int>(_input_["uint8"], 0);
-    final int16 = typeFromDynamic<int>(_input_["int16"], 0);
-    final uint16 = typeFromDynamic<int>(_input_["uint16"], 0);
-    final int32 = typeFromDynamic<int>(_input_["int32"], 0);
-    final uint32 = typeFromDynamic<int>(_input_["uint32"], 0);
+    final float32 = doubleFromDynamic(_input_["float32"], 0.0);
+    final float64 = doubleFromDynamic(_input_["float64"], 0.0);
+    final int8 = intFromDynamic(_input_["int8"], 0);
+    final uint8 = intFromDynamic(_input_["uint8"], 0);
+    final int16 = intFromDynamic(_input_["int16"], 0);
+    final uint16 = intFromDynamic(_input_["uint16"], 0);
+    final int32 = intFromDynamic(_input_["int32"], 0);
+    final uint32 = intFromDynamic(_input_["uint32"], 0);
     final int64 = bigIntFromDynamic(_input_["int64"], BigInt.zero);
     final uint64 = bigIntFromDynamic(_input_["uint64"], BigInt.zero);
     final k_enum =
@@ -500,7 +499,7 @@ class ObjectWithEveryType implements ArriModel {
     final _output_ = <String, dynamic>{
       "string": string,
       "boolean": boolean,
-      "timestamp": timestamp.toIso8601String(),
+      "timestamp": timestamp.toUtc().toIso8601String(),
       "float32": float32,
       "float64": float64,
       "int8": int8,
@@ -536,7 +535,7 @@ class ObjectWithEveryType implements ArriModel {
     final _queryParts_ = <String>[];
     _queryParts_.add("string=$string");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp.toIso8601String()}");
+    _queryParts_.add("timestamp=${timestamp.toUtc().toIso8601String()}");
     _queryParts_.add("float32=$float32");
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int8=$int8");
@@ -895,7 +894,7 @@ class DiscriminatorC implements Discriminator {
       "typeName": typeName,
       "id": id,
       "name": name,
-      "date": date.toIso8601String(),
+      "date": date.toUtc().toIso8601String(),
     };
     return _output_;
   }
@@ -911,7 +910,7 @@ class DiscriminatorC implements Discriminator {
     _queryParts_.add("typeName=$typeName");
     _queryParts_.add("id=$id");
     _queryParts_.add("name=$name");
-    _queryParts_.add("date=${date.toIso8601String()}");
+    _queryParts_.add("date=${date.toUtc().toIso8601String()}");
     return _queryParts_.join("&");
   }
 
@@ -999,14 +998,14 @@ class ObjectWithOptionalFields implements ArriModel {
     final string = nullableTypeFromDynamic<String>(_input_["string"]);
     final boolean = nullableTypeFromDynamic<bool>(_input_["boolean"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
-    final float32 = nullableTypeFromDynamic<double>(_input_["float32"]);
-    final float64 = nullableTypeFromDynamic<double>(_input_["float64"]);
-    final int8 = nullableTypeFromDynamic<int>(_input_["int8"]);
-    final uint8 = nullableTypeFromDynamic<int>(_input_["uint8"]);
-    final int16 = nullableTypeFromDynamic<int>(_input_["int16"]);
-    final uint16 = nullableTypeFromDynamic<int>(_input_["uint16"]);
-    final int32 = nullableTypeFromDynamic<int>(_input_["int32"]);
-    final uint32 = nullableTypeFromDynamic<int>(_input_["uint32"]);
+    final float32 = nullableDoubleFromDynamic(_input_["float32"]);
+    final float64 = nullableDoubleFromDynamic(_input_["float64"]);
+    final int8 = nullableIntFromDynamic(_input_["int8"]);
+    final uint8 = nullableIntFromDynamic(_input_["uint8"]);
+    final int16 = nullableIntFromDynamic(_input_["int16"]);
+    final uint16 = nullableIntFromDynamic(_input_["uint16"]);
+    final int32 = nullableIntFromDynamic(_input_["int32"]);
+    final uint32 = nullableIntFromDynamic(_input_["uint32"]);
     final int64 = nullableBigIntFromDynamic(_input_["int64"]);
     final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
     final k_enum = _input_["enum"] is String
@@ -1063,7 +1062,8 @@ class ObjectWithOptionalFields implements ArriModel {
     final _output_ = <String, dynamic>{};
     if (string != null) _output_["string"] = string;
     if (boolean != null) _output_["boolean"] = boolean;
-    if (timestamp != null) _output_["timestamp"] = timestamp!.toIso8601String();
+    if (timestamp != null)
+      _output_["timestamp"] = timestamp!.toUtc().toIso8601String();
     if (float32 != null) _output_["float32"] = float32;
     if (float64 != null) _output_["float64"] = float64;
     if (int8 != null) _output_["int8"] = int8;
@@ -1101,7 +1101,7 @@ class ObjectWithOptionalFields implements ArriModel {
     if (string != null) _queryParts_.add("string=$string");
     if (boolean != null) _queryParts_.add("boolean=$boolean");
     if (timestamp != null)
-      _queryParts_.add("timestamp=${timestamp!.toIso8601String()}");
+      _queryParts_.add("timestamp=${timestamp!.toUtc().toIso8601String()}");
     if (float32 != null) _queryParts_.add("float32=$float32");
     if (float64 != null) _queryParts_.add("float64=$float64");
     if (int8 != null) _queryParts_.add("int8=$int8");
@@ -1280,14 +1280,14 @@ class ObjectWithNullableFields implements ArriModel {
     final string = nullableTypeFromDynamic<String>(_input_["string"]);
     final boolean = nullableTypeFromDynamic<bool>(_input_["boolean"]);
     final timestamp = nullableDateTimeFromDynamic(_input_["timestamp"]);
-    final float32 = nullableTypeFromDynamic<double>(_input_["float32"]);
-    final float64 = nullableTypeFromDynamic<double>(_input_["float64"]);
-    final int8 = nullableTypeFromDynamic<int>(_input_["int8"]);
-    final uint8 = nullableTypeFromDynamic<int>(_input_["uint8"]);
-    final int16 = nullableTypeFromDynamic<int>(_input_["int16"]);
-    final uint16 = nullableTypeFromDynamic<int>(_input_["uint16"]);
-    final int32 = nullableTypeFromDynamic<int>(_input_["int32"]);
-    final uint32 = nullableTypeFromDynamic<int>(_input_["uint32"]);
+    final float32 = nullableDoubleFromDynamic(_input_["float32"]);
+    final float64 = nullableDoubleFromDynamic(_input_["float64"]);
+    final int8 = nullableIntFromDynamic(_input_["int8"]);
+    final uint8 = nullableIntFromDynamic(_input_["uint8"]);
+    final int16 = nullableIntFromDynamic(_input_["int16"]);
+    final uint16 = nullableIntFromDynamic(_input_["uint16"]);
+    final int32 = nullableIntFromDynamic(_input_["int32"]);
+    final uint32 = nullableIntFromDynamic(_input_["uint32"]);
     final int64 = nullableBigIntFromDynamic(_input_["int64"]);
     final uint64 = nullableBigIntFromDynamic(_input_["uint64"]);
     final k_enum = _input_["enum"] is String
@@ -1345,7 +1345,7 @@ class ObjectWithNullableFields implements ArriModel {
     final _output_ = <String, dynamic>{
       "string": string,
       "boolean": boolean,
-      "timestamp": timestamp?.toIso8601String(),
+      "timestamp": timestamp?.toUtc().toIso8601String(),
       "float32": float32,
       "float64": float64,
       "int8": int8,
@@ -1381,7 +1381,7 @@ class ObjectWithNullableFields implements ArriModel {
     final _queryParts_ = <String>[];
     _queryParts_.add("string=$string");
     _queryParts_.add("boolean=$boolean");
-    _queryParts_.add("timestamp=${timestamp?.toIso8601String()}");
+    _queryParts_.add("timestamp=${timestamp?.toUtc().toIso8601String()}");
     _queryParts_.add("float32=$float32");
     _queryParts_.add("float64=$float64");
     _queryParts_.add("int8=$int8");

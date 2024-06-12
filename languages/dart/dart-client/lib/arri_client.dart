@@ -27,23 +27,30 @@ bool listsAreEqual(List? list1, List? list2, {bool log = false}) {
       print("1 $item1");
       print("2 $item2");
     }
-    if (item1.runtimeType != item2.runtimeType) {
-      return false;
-    }
     if (item1 is Map) {
-      if (!mapsAreEqual(item1, item2)) return false;
+      if (!mapsAreEqual(item1, item2, log: log)) {
+        if (log) print("$item1 != $item2");
+        return false;
+      }
     } else if (item1 is List) {
-      if (!listsAreEqual(item1, item2)) return false;
+      if (!listsAreEqual(item1, item2, log: log)) return false;
+    } else if (item1.runtimeType != item2.runtimeType) {
+      if (log) print("$item1 != $item2");
+      return false;
     } else if (item1 is DateTime) {
-      if (!item1.isAtSameMomentAs(item2)) return false;
+      if (!item1.isAtSameMomentAs(item2)) {
+        if (log) print("$item1 != $item2");
+        return false;
+      }
     } else if (item1 != item2) {
+      if (log) print("$item1 != $item2");
       return false;
     }
   }
   return true;
 }
 
-bool mapsAreEqual(Map? map1, Map? map2) {
+bool mapsAreEqual(Map? map1, Map? map2, {bool log = false}) {
   if (map1 == null || map2 == null) {
     return map1 == null && map2 == null;
   }
@@ -53,14 +60,21 @@ bool mapsAreEqual(Map? map1, Map? map2) {
     if (!map2.containsKey(entry.key)) return false;
     final value1 = entry.value;
     final value2 = map2[entry.key];
-    if (value1.runtimeType != value2.runtimeType) return false;
+
     if (value1 is Map) {
-      if (!mapsAreEqual(value1, value2)) return false;
+      if (!mapsAreEqual(value1, value2, log: log)) return false;
     } else if (value1 is List) {
-      if (!listsAreEqual(value1, value2)) return false;
+      if (!listsAreEqual(value1, value2, log: log)) return false;
+    } else if (value1.runtimeType != value2.runtimeType) {
+      if (log) print("$value1 != $value2");
+      return false;
     } else if (value1 is DateTime) {
-      if (!value1.isAtSameMomentAs(value2)) return false;
+      if (!value1.isAtSameMomentAs(value2)) {
+        if (log) print("$value1 != $value2");
+        return false;
+      }
     } else if (value1 != value2) {
+      if (log) print("$value1 != $value2");
       return false;
     }
   }

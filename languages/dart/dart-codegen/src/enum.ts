@@ -75,7 +75,7 @@ ${enumValues.map((val) => `  ${val.name}("${val.serialValue}")`).join(",\n")};
   }
 
   @override
-  int compareTo(Enumerator other) => name.compareTo(other.name);
+  int compareTo(${enumName} other) => name.compareTo(other.name);
 }`;
     context.generatedTypes.push(enumName);
     return output;

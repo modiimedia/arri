@@ -475,42 +475,6 @@ class TestClientTestsService(
             }
             return job
         }
-
-    fun streamTenEventsThenError(
-            scope: CoroutineScope,
-            
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: ChatMessage) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-ten-events-then-error",
-                    method = HttpMethod.Post,
-                    params = null,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = ChatMessage.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
-        }
 }
 
 

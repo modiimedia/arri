@@ -116,6 +116,9 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../../../tooling/schema
+      pathe:
+        specifier: ^1.1.2
+        version: 1.1.2
 
   languages/kotlin/kotlin-codegen:
     dependencies:

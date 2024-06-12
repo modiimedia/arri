@@ -281,22 +281,6 @@ export class TestClientTestsService {
             options,
         );
     }
-    streamTenEventsThenError(
-        options: SseOptions<ChatMessage>,
-    ): EventSourceController {
-        return arriSseRequest<ChatMessage, undefined>(
-            {
-                url: `${this.baseUrl}/rpcs/tests/stream-ten-events-then-error`,
-                method: "post",
-                headers: this.headers,
-                params: undefined,
-                parser: $$ChatMessage.parse,
-                serializer: (_) => {},
-                clientVersion: this.clientVersion,
-            },
-            options,
-        );
-    }
     websocketRpc(options: WsOptions<WsMessageResponse> = {}) {
         return arriWsRequest<WsMessageParams, WsMessageResponse>({
             url: `${this.baseUrl}/rpcs/tests/websocket-rpc`,
