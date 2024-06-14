@@ -13,15 +13,19 @@ import {
 interface TestClientOptions {
     baseUrl?: string;
     headers?:
-        | Record<string, string>
-        | (() => Record<string, string> | Promise<Record<string, string>>);
+        | Record<string, string | undefined>
+        | (() =>
+              | Record<string, string | undefined>
+              | Promise<Record<string, string | undefined>>);
 }
 
 export class TestClient {
     private readonly baseUrl: string;
     private readonly headers:
-        | Record<string, string>
-        | (() => Record<string, string> | Promise<Record<string, string>>);
+        | Record<string, string | undefined>
+        | (() =>
+              | Record<string, string | undefined>
+              | Promise<Record<string, string | undefined>>);
     private readonly clientVersion = "10";
     tests: TestClientTestsService;
     adapters: TestClientAdaptersService;
@@ -39,8 +43,10 @@ export class TestClient {
 export class TestClientTestsService {
     private readonly baseUrl: string;
     private readonly headers:
-        | Record<string, string>
-        | (() => Record<string, string> | Promise<Record<string, string>>);
+        | Record<string, string | undefined>
+        | (() =>
+              | Record<string, string | undefined>
+              | Promise<Record<string, string | undefined>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -316,8 +322,10 @@ export class TestClientTestsService {
 export class TestClientAdaptersService {
     private readonly baseUrl: string;
     private readonly headers:
-        | Record<string, string>
-        | (() => Record<string, string> | Promise<Record<string, string>>);
+        | Record<string, string | undefined>
+        | (() =>
+              | Record<string, string | undefined>
+              | Promise<Record<string, string | undefined>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
@@ -340,8 +348,10 @@ export class TestClientAdaptersService {
 export class TestClientUsersService {
     private readonly baseUrl: string;
     private readonly headers:
-        | Record<string, string>
-        | (() => Record<string, string> | Promise<Record<string, string>>);
+        | Record<string, string | undefined>
+        | (() =>
+              | Record<string, string | undefined>
+              | Promise<Record<string, string | undefined>>);
     private readonly clientVersion = "10";
 
     constructor(options: TestClientOptions = {}) {
