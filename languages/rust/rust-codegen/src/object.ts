@@ -95,9 +95,22 @@ export default function rustObjectFromSchema(
             toJsonParts.push(`\t\t_json_output_.push_str(",\\"${key}\\":");`);
         }
         const leading = isSchemaFormElements(prop) ? "" : "&";
-        toJsonParts.push(
-            `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, "_json_output_")};`,
-        );
+        if (innerType.isNullable) {
+            const innerKey = validRustIdentifier(key);
+            toJsonParts.push(`\t\tmatch ${leading}self.${fieldName} {
+                Some(${innerKey}_val) => {
+                    ${innerType.toJsonTemplate(`${innerKey}_val`, "_json_output_")};
+                }
+                _ => {
+                    _json_output_.push_str("null");
+                }
+            };`);
+        } else {
+            toJsonParts.push(
+                `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, "_json_output_")};`,
+            );
+        }
+
         toQueryParamParams.push(
             `\t\t${innerType.toQueryStringTemplate(`&self.${fieldName}`, key, "_query_parts_")};`,
         );
@@ -137,7 +150,7 @@ export default function rustObjectFromSchema(
             };`);
         } else {
             const innerKey = validRustIdentifier(`${key}_val`);
-            toJsonParts.push(`match &self.${fieldName} {
+            toJsonParts.push(`\t\tmatch &self.${fieldName} {
                 Some(${innerKey}) => {
                     ${
                         i !== 0

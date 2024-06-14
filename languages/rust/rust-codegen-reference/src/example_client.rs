@@ -1890,7 +1890,8 @@ impl ArriModel for RecursiveObject {
 
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/object.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/left.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /RecursiveObject/right.");
         _query_parts_.join("&")
     }
 }
