@@ -48,9 +48,9 @@ export function rustStringFromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
-                        ${target}.push("null".to_string());
+                        ${target}.push("${key}=null".to_string());
                     }
                 }`;
             }
@@ -170,7 +170,7 @@ export function rustTimestampFromSchema(
                             "${key}={}",
                             serialize_date_time(${innerKey}, false)
                         ));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
@@ -281,7 +281,7 @@ export function rustF64FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {}
                 }`;
             }
@@ -289,7 +289,7 @@ export function rustF64FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
@@ -525,7 +525,7 @@ export function rustU16FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {}
                 }`;
             }
@@ -533,7 +533,7 @@ export function rustU16FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
@@ -586,7 +586,7 @@ export function rustI32FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {}
                 }`;
             }
@@ -594,7 +594,7 @@ export function rustI32FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
@@ -647,7 +647,7 @@ export function rustU32FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {}
                 }`;
             }
@@ -655,7 +655,7 @@ export function rustU32FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
@@ -705,7 +705,7 @@ export function rustI64FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {}
                 }`;
             }
@@ -713,7 +713,7 @@ export function rustI64FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
@@ -763,7 +763,7 @@ export function rustU64FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {}
                 }`;
             }
@@ -771,7 +771,7 @@ export function rustU64FromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }

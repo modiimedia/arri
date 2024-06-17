@@ -55,7 +55,7 @@ export default function rustEnumFromSchema(
                 return `match ${input} {
                     Some(${innerKey}) => {
                         ${target}.push(format!("${key}={}", ${innerKey}.serial_value()));
-                    },
+                    }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }

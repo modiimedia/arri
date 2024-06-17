@@ -69,7 +69,7 @@ export default function rustRecordFromSchema(
                 ${target}.push_str(format!("\\"{}\\":", _key_).as_str());
                 ${innerType.toJsonTemplate(`_value_`, target)};
             }
-            ${target}.push('}');`;
+            ${target}.push('}')`;
         },
         toQueryStringTemplate() {
             return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}")`;

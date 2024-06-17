@@ -923,7 +923,7 @@ impl ArriModel for ObjectWithOptionalFields {
         match &self.string {
             Some(string_val) => {
                 _json_output_.push_str("\"string\":");
-                _json_output_.push_str(serialize_string(&string_val).as_str());
+                _json_output_.push_str(serialize_string(string_val).as_str());
                 _has_keys_ = true;
             }
             _ => {}
@@ -934,7 +934,7 @@ impl ArriModel for ObjectWithOptionalFields {
                     _json_output_.push(',');
                 }
                 _json_output_.push_str("\"boolean\":");
-                _json_output_.push_str(&boolean_val.to_string());
+                _json_output_.push_str(boolean_val.to_string().as_str());
                 _has_keys_ = true;
             }
             _ => {}
@@ -945,7 +945,7 @@ impl ArriModel for ObjectWithOptionalFields {
                     _json_output_.push(',');
                 }
                 _json_output_.push_str("\"timestamp\":");
-                _json_output_.push_str(serialize_date_time(&timestamp_val, true).as_str());
+                _json_output_.push_str(serialize_date_time(timestamp_val, true).as_str());
                 _has_keys_ = true;
             }
             _ => {}
@@ -1141,7 +1141,6 @@ impl ArriModel for ObjectWithOptionalFields {
                         .unwrap_or("null".to_string())
                         .as_str(),
                 );
-                _has_keys_ = true;
             }
             _ => {}
         };
@@ -1199,6 +1198,12 @@ impl ArriModel for ObjectWithOptionalFields {
         match &self.int16 {
             Some(int16_val) => {
                 _query_parts_.push(format!("int16={}", int16_val));
+            }
+            _ => {}
+        };
+        match &self.uint16 {
+            Some(uint16_val) => {
+                _query_parts_.push(format!("uint16={}", uint16_val));
             }
             _ => {}
         };
@@ -1635,11 +1640,11 @@ impl ArriModel for ObjectWithNullableFields {
         match &self.array {
             Some(array_val) => {
                 _json_output_.push('[');
-                for (_index_, _item_) in array_val.iter().enumerate() {
+                for (_index_, _element_) in array_val.iter().enumerate() {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(_item_.to_string().as_str());
+                    _json_output_.push_str(_element_.to_string().as_str());
                 }
                 _json_output_.push(']');
             }

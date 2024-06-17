@@ -1,5 +1,6 @@
 import { isAppDefinition, normalizeWhitespace } from "@arrirpc/codegen-utils";
-import { existsSync, mkdirSync, readFileSync } from "fs";
+import { execSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "pathe";
 
 import { tmpDir } from "./_common";
@@ -39,7 +40,11 @@ test("Generated code matches codegen reference", async () => {
         generatedTypes: [],
         parentTypeNames: [],
     });
-    expect(normalizeWhitespace(result)).toBe(
+    const outputFile = path.resolve(tmpDir, "example_client.g.rs");
+    writeFileSync(outputFile, result);
+    execSync(`rustfmt ${outputFile}`, { stdio: "inherit" });
+    const finalResult = readFileSync(outputFile, "utf8");
+    expect(normalizeWhitespace(finalResult)).toBe(
         normalizeWhitespace(referenceClient),
     );
 });
