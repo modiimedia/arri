@@ -94,10 +94,9 @@ export default function rustObjectFromSchema(
         } else {
             toJsonParts.push(`\t\t_json_output_.push_str(",\\"${key}\\":");`);
         }
-        const leading = isSchemaFormElements(prop) ? "&" : "&";
         if (innerType.isNullable) {
             const innerKey = validRustIdentifier(`${key}_val`);
-            toJsonParts.push(`\t\tmatch ${leading}self.${fieldName} {
+            toJsonParts.push(`\t\tmatch &self.${fieldName} {
                 Some(${innerKey}) => {
                     ${innerType.toJsonTemplate(innerKey, "_json_output_")};
                 }
@@ -106,6 +105,7 @@ export default function rustObjectFromSchema(
                 }
             };`);
         } else {
+            const leading = isSchemaFormElements(prop) ? "" : "&";
             toJsonParts.push(
                 `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, "_json_output_")};`,
             );

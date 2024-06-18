@@ -21,6 +21,7 @@ import path from "pathe";
 import { GeneratorContext, RustProperty } from "./_common";
 import rustAnyFromSchema from "./any";
 import rustArrayFromSchema from "./array";
+import { rustTaggedUnionFromSchema } from "./discriminator";
 import rustEnumFromSchema from "./enum";
 import rustObjectFromSchema from "./object";
 import {
@@ -178,7 +179,7 @@ export function rustTypeFromSchema(
         return rustRecordFromSchema(schema, context);
     }
     if (isSchemaFormDiscriminator(schema)) {
-        // TODO
+        return rustTaggedUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return rustRefFromSchema(schema, context);

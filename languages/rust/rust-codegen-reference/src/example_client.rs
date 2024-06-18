@@ -353,10 +353,10 @@ impl ArriModel for ObjectWithEveryType {
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
                         let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
-                        for (record_val_entry_key, record_val_entry_val) in record_val.into_iter() {
+                        for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
-                                record_val_entry_key.to_owned(),
-                                match Some(record_val_entry_val.to_owned()) {
+                                _key_.to_owned(),
+                                match Some(_value_.to_owned()) {
                                     Some(serde_json::Value::Bool(record_val_entry_val_val)) => {
                                         record_val_entry_val_val.to_owned()
                                     }
@@ -369,9 +369,12 @@ impl ArriModel for ObjectWithEveryType {
                     _ => BTreeMap::new(),
                 };
                 let discriminator = match _val_.get("discriminator") {
-                    Some(discriminator_val) => {
-                        Discriminator::from_json(discriminator_val.to_owned())
-                    }
+                    Some(discriminator_val) => match discriminator_val {
+                        serde_json::Value::Object(_) => {
+                            Discriminator::from_json(discriminator_val.to_owned())
+                        }
+                        _ => Discriminator::new(),
+                    },
                     _ => Discriminator::new(),
                 };
                 let any = match _val_.get("any") {
@@ -495,10 +498,10 @@ impl ArriModel for ObjectWithEveryType {
         _query_parts_.push(format!("uint64={}", &self.uint64));
         _query_parts_.push(format!("enum={}", &self.r#enum.serial_value()));
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator");
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/any");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/discriminator.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/any.");
         _query_parts_.join("&")
     }
 }
@@ -855,10 +858,10 @@ impl ArriModel for ObjectWithOptionalFields {
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
                         let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
-                        for (key, value) in record_val {
+                        for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
-                                key.to_owned(),
-                                match Some(value) {
+                                _key_.to_owned(),
+                                match Some(_value_) {
                                     Some(serde_json::Value::Bool(value_val)) => {
                                         value_val.to_owned()
                                     }
@@ -1238,10 +1241,10 @@ impl ArriModel for ObjectWithOptionalFields {
             _ => {}
         };
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/object.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithOptionalFields/array");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/record");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/discriminator");
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithOptionalFields/any");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithOptionalFields/array.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/record.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/discriminator.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithOptionalFields/any.");
         _query_parts_.join("&")
     }
 }
@@ -1813,10 +1816,10 @@ impl ArriModel for ObjectWithNullableFields {
             }
         };
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/object.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithNullableFields/array");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/record");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/discriminator");
-        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithNullableFields/any");
+        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithNullableFields/array.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/record.");
+        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/discriminator.");
+        println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithNullableFields/any.");
         _query_parts_.join("&")
     }
 }

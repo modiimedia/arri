@@ -39,7 +39,7 @@ export default function rustAnyFromSchema(
                     )`;
         },
         toQueryStringTemplate() {
-            return `println!("[WARNING] cannot serialize any's to query params. Skipping field at ${context.instancePath}")`;
+            return `println!("[WARNING] cannot serialize any's to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };

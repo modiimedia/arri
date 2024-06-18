@@ -35,7 +35,7 @@ export default function rustRecordFromSchema(
                 return `match ${input} {
                     Some(serde_json::Value::Object(${innerKey})) => {
                         let mut ${innerKey}_result: BTreeMap<String, ${innerType.typeName}> = BTreeMap::new();
-                        for (_key_, _value_) in ${innerKey} {
+                        for (_key_, _value_) in ${innerKey}.into_iter() {
                             ${innerKey}_result.insert(
                                 _key_.to_owned(),
                                 ${innerType.fromJsonTemplate(`Some(_value_)`, `value`)},
@@ -49,7 +49,7 @@ export default function rustRecordFromSchema(
             return `match ${input} {
                 Some(serde_json::Value::Object(${innerKey})) => {
                     let mut ${innerKey}_result: BTreeMap<String, ${innerType.typeName}> = BTreeMap::new();
-                    for (_key_, _value_) in ${innerKey} {
+                    for (_key_, _value_) in ${innerKey}.into_iter() {
                         ${innerKey}_result.insert(
                             _key_.to_owned(),
                             ${innerType.fromJsonTemplate(`Some(_value_)`, `value`)},
@@ -72,7 +72,7 @@ export default function rustRecordFromSchema(
             ${target}.push('}')`;
         },
         toQueryStringTemplate() {
-            return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}")`;
+            return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: innerType.content,
     };

@@ -76,7 +76,7 @@ export default function rustArrayFromSchema(
             ${target}.push(']')`;
         },
         toQueryStringTemplate() {
-            return `println!("[WARNING] cannot serialize arrays to query params. Skipping field at ${context.instancePath}")`;
+            return `println!("[WARNING] cannot serialize arrays to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: innerType.content,
     };

@@ -44,7 +44,7 @@
         }
       }
     },
-    "serve-test-results": {
+    "show-test-results": {
       "executor": "nx:run-commands",
       "options": {
         "command": "vite preview --outDir .temp/reports",
