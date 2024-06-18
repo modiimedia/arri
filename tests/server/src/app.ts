@@ -35,13 +35,6 @@ app.use(
                 message: "Missing test auth header 'x-test-header'",
             });
         }
-        if (event.method !== "GET" && event.method !== "HEAD") {
-            console.log({
-                rpc: event.context.rpcName,
-                path: event.path,
-                body: await readBody(event),
-            });
-        }
     }),
 );
 

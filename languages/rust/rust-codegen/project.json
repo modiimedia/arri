@@ -21,10 +21,9 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["languages/rust/rust-codegen/**/*.ts"]
+        "command": "pnpm eslint languages/rust/rust-codegen"
       }
     },
     "test": {
