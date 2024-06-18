@@ -14,15 +14,15 @@ This is a work in progress. Things will break.
 
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress the implementations for these clients.
 
-| Language                                   | HTTP | SSE |
-| ------------------------------------------ | ---- | --- |
-| [Typescript](languages/ts/ts-codegen/)     | ✅   | ✅  |
-| [Dart](languages/dart/dart-codegen/)       | ✅   | ✅  |
-| Rust                                       | 🚧   | 🚧  |
-| [Kotlin](languages/kotlin/kotlin-codegen/) | ✅   | ✅  |
-| Swift                                      | 🚧   | 🚧  |
-| Go                                         |      |     |
-| Python                                     |      |     |
+| Language                                            | HTTP | SSE |
+| --------------------------------------------------- | ---- | --- |
+| [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅  |
+| [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅  |
+| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | 🚧  |
+| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅  |
+| Swift                                               | 🚧   | 🚧  |
+| Go                                                  |      |     |
+| Python                                              |      |     |
 
 ✅ completed
 

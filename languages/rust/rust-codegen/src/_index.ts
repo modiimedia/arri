@@ -49,7 +49,7 @@ import rustRecordFromSchema from "./record";
 import rustRefFromSchema from "./ref";
 
 export interface RustClientGeneratorOptions {
-    clientName: string;
+    clientName?: string;
     outputFile: string;
     format?: boolean;
     typePrefix?: string;
@@ -61,7 +61,7 @@ export const rustClientGenerator = defineGeneratorPlugin(
             generator(def) {
                 const context: GeneratorContext = {
                     clientVersion: def.info?.version ?? "",
-                    clientName: options.clientName,
+                    clientName: options.clientName ?? "Client",
                     typeNamePrefix: options.typePrefix ?? "",
                     instancePath: "",
                     schemaPath: "",
