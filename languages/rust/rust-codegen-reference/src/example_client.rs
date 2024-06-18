@@ -357,8 +357,8 @@ impl ArriModel for ObjectWithEveryType {
                             record_val_result.insert(
                                 _key_.to_owned(),
                                 match Some(_value_.to_owned()) {
-                                    Some(serde_json::Value::Bool(record_val_entry_val_val)) => {
-                                        record_val_entry_val_val.to_owned()
+                                    Some(serde_json::Value::Bool(value_val)) => {
+                                        value_val.to_owned()
                                     }
                                     _ => false,
                                 },
@@ -458,19 +458,19 @@ impl ArriModel for ObjectWithEveryType {
         _json_output_.push(']');
         _json_output_.push_str(",\"record\":");
         _json_output_.push('{');
-        for (i, (key, entry)) in self.record.iter().enumerate() {
-            if i != 0 {
+        for (_index_, (_key_, _value_)) in self.record.iter().enumerate() {
+            if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("\"{}\":", key).as_str());
-            _json_output_.push_str(&entry.to_string())
+            _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+            _json_output_.push_str(_value_.to_string().as_str());
         }
         _json_output_.push('}');
         _json_output_.push_str(",\"discriminator\":");
         _json_output_.push_str(&self.discriminator.to_json_string().as_str());
         _json_output_.push_str(",\"any\":");
         _json_output_.push_str(
-            serde_json::to_string(&self.any.to_owned())
+            serde_json::to_string(&self.any)
                 .unwrap_or("null".to_string())
                 .as_str(),
         );
@@ -618,19 +618,19 @@ impl ArriModel for Discriminator {
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
         match &self {
-            Discriminator::A { id } => {
+            Self::A { id } => {
                 _json_output_.push_str("\"typeName\":\"A\"");
                 _json_output_.push_str(",\"id\":");
                 _json_output_.push_str(serialize_string(id).as_str());
             }
-            Discriminator::B { id, name } => {
+            Self::B { id, name } => {
                 _json_output_.push_str("\"typeName\":\"B\"");
                 _json_output_.push_str(",\"id\":");
                 _json_output_.push_str(serialize_string(id).as_str());
                 _json_output_.push_str(",\"name\":");
                 _json_output_.push_str(serialize_string(name).as_str());
             }
-            Discriminator::C { id, name, date } => {
+            Self::C { id, name, date } => {
                 _json_output_.push_str("\"typeName\":\"C\"");
                 _json_output_.push_str(",\"id\":");
                 _json_output_.push_str(serialize_string(id).as_str());
@@ -1440,10 +1440,10 @@ impl ArriModel for ObjectWithNullableFields {
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
                         let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
-                        for (_key_, _value_) in record_val {
+                        for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
-                                match Some(_value_) {
+                                match Some(_value_.to_owned()) {
                                     Some(serde_json::Value::Bool(value_val)) => {
                                         value_val.to_owned()
                                     }

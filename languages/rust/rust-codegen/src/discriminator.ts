@@ -64,11 +64,12 @@ export function rustTaggedUnionFromSchema(
     type EnumSubType = {
         name: string;
         properties: { name: string; defaultValue: string; typeName: string }[];
+        toJsonParts: string[];
+        toQueryParts: string[];
     };
     const subTypes: EnumSubType[] = [];
     const discriminatorKeyProperty = validRustIdentifier(discriminatorKey);
     const fromJsonParts: string[] = [];
-    const toJsonParts: string[] = [];
     const toQueryParts: string[] = [];
     for (const discriminatorValue of discriminatorValues) {
         const subTypeName = validRustName(discriminatorValue);
@@ -76,9 +77,14 @@ export function rustTaggedUnionFromSchema(
         const subType: EnumSubType = {
             name: subTypeName,
             properties: [],
+            toJsonParts: [],
+            toQueryParts: [],
         };
         fromJsonParts.push(`"${discriminatorValue}" => {`);
         const keyNames: string[] = [];
+        subType.toJsonParts.push(
+            `\t\t_json_output_.push_str("\\"${discriminatorKey}\\":\\"${discriminatorValue}\\"");`,
+        );
         for (const key of Object.keys(subSchema.properties)) {
             const keySchema = subSchema.properties[key]!;
             const keyType = rustTypeFromSchema(keySchema, {
@@ -101,7 +107,51 @@ export function rustTaggedUnionFromSchema(
             fromJsonParts.push(
                 `let ${keyName} = ${keyType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
             );
+            subType.toJsonParts.push(
+                `\t\t_json_output_.push_str(",\\"${key}\\":");`,
+            );
+            if (keyType.isNullable) {
+                const innerKey = validRustIdentifier(`${key}_val`);
+                subType.toJsonParts.push(`match ${keyName} {
+                    Some(${innerKey}) => {
+                        ${keyType.toJsonTemplate(innerKey, "_json_output_")};
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };`);
+            } else {
+                subType.toJsonParts.push(
+                    `${keyType.toJsonTemplate(keyName, "_json_output_")};`,
+                );
+            }
         }
+        for (const key of Object.keys(subSchema.optionalProperties ?? {})) {
+            const keySchema = subSchema.optionalProperties![key]!;
+            const keyType = rustTypeFromSchema(keySchema, {
+                clientName: context.clientName,
+                typeNamePrefix: context.typeNamePrefix,
+                instancePath: `${context.instancePath}/key`,
+                schemaPath: `${context.schemaPath}/mapping/${key}`,
+                generatedTypes: context.generatedTypes,
+                parentTypeNames: context.parentTypeNames,
+                discriminatorKey: discriminatorKey,
+                discriminatorValue: discriminatorValue,
+            });
+            const keyName = validRustIdentifier(key);
+            subType.properties.push({
+                name: keyName,
+                defaultValue: keyType.defaultValue,
+                typeName: keyType.typeName,
+            });
+            keyNames.push(keyName);
+            fromJsonParts.push(
+                `let ${keyName} = ${keyType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
+            );
+        }
+        fromJsonParts.push(`Self::${subTypeName} {
+            ${subType.properties.map((prop) => `${prop.name},`).join("\n")}    
+        }`);
         fromJsonParts.push(`}`);
         subTypes.push(subType);
     }
@@ -149,7 +199,15 @@ impl ArriModel for ${enumName} {
 
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
-        ${toJsonParts.join("\n")}
+        match &self {
+            ${subTypes.map(
+                (
+                    type,
+                ) => `Self::${type.name} { ${type.properties.map((prop) => `${prop.name},`).join("\n")}} => {
+                ${type.toJsonParts.join("\n")}    
+            }`,
+            )}
+        }
         _json_output_.push('}');
         _json_output_
     }

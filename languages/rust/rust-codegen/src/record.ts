@@ -38,7 +38,7 @@ export default function rustRecordFromSchema(
                         for (_key_, _value_) in ${innerKey}.into_iter() {
                             ${innerKey}_result.insert(
                                 _key_.to_owned(),
-                                ${innerType.fromJsonTemplate(`Some(_value_)`, `value`)},
+                                ${innerType.fromJsonTemplate(`Some(_value_.to_owned())`, `value`)},
                             );
                         }
                         Some(${innerKey}_result)
@@ -52,7 +52,7 @@ export default function rustRecordFromSchema(
                     for (_key_, _value_) in ${innerKey}.into_iter() {
                         ${innerKey}_result.insert(
                             _key_.to_owned(),
-                            ${innerType.fromJsonTemplate(`Some(_value_)`, `value`)},
+                            ${innerType.fromJsonTemplate(`Some(_value_.to_owned())`, `value`)},
                         );
                     }
                     ${innerKey}_result

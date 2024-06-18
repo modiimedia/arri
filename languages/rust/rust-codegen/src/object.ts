@@ -1,5 +1,6 @@
 import {
     isSchemaFormElements,
+    isSchemaFormValues,
     SchemaFormProperties,
 } from "@arrirpc/codegen-utils";
 
@@ -105,7 +106,10 @@ export default function rustObjectFromSchema(
                 }
             };`);
         } else {
-            const leading = isSchemaFormElements(prop) ? "" : "&";
+            const leading =
+                isSchemaFormElements(prop) || isSchemaFormValues(prop)
+                    ? ""
+                    : "&";
             toJsonParts.push(
                 `\t\t${innerType.toJsonTemplate(`${leading}self.${fieldName}`, "_json_output_")};`,
             );
