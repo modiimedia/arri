@@ -7,24 +7,24 @@ pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
 
 pub struct ArriClientConfig {
-    pub client: reqwest::Client,
+    pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: reqwest::header::HeaderMap,
+    pub headers: fn() -> reqwest::header::HeaderMap,
 }
 
-pub trait ArriClientService {
-    fn create(config: &ArriClientConfig) -> Self;
+pub trait ArriClientService<'a> {
+    fn create(config: &'a ArriClientConfig) -> Self;
 }
 
 pub struct ArriRequestOptions<'a> {
-    pub client: &'a reqwest::Client,
+    pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
     pub headers: &'a reqwest::header::HeaderMap,
 }
 
 pub struct ArriParsedRequestOptions<'a> {
-    pub client: &'a reqwest::Client,
+    pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
     pub headers: &'a reqwest::header::HeaderMap,
@@ -175,11 +175,11 @@ pub async fn arri_request<'a>(
         reqwest::Method::GET => {
             let mut final_url = opts.url.clone();
             match params {
-                Some(val) => final_url = format!("{final_url}?${}", val.to_query_params_string()),
+                Some(val) => final_url = format!("{final_url}?{}", val.to_query_params_string()),
                 None => {}
             }
             response = opts
-                .client
+                .http_client
                 .get(final_url)
                 .headers(opts.headers.to_owned())
                 .send()
@@ -187,7 +187,7 @@ pub async fn arri_request<'a>(
         }
         reqwest::Method::POST => {
             let builder = opts
-                .client
+                .http_client
                 .post(opts.url.clone())
                 .headers(opts.headers.to_owned());
             match params {
@@ -201,7 +201,7 @@ pub async fn arri_request<'a>(
         }
         reqwest::Method::PUT => {
             let builder = opts
-                .client
+                .http_client
                 .put(opts.url.clone())
                 .headers(opts.headers.to_owned());
             match params {
@@ -215,7 +215,7 @@ pub async fn arri_request<'a>(
         }
         reqwest::Method::PATCH => {
             let builder = opts
-                .client
+                .http_client
                 .patch(opts.url.clone())
                 .headers(opts.headers.to_owned());
             match params {
@@ -229,7 +229,7 @@ pub async fn arri_request<'a>(
         }
         reqwest::Method::DELETE => {
             let builder = opts
-                .client
+                .http_client
                 .delete(opts.url.clone())
                 .headers(opts.headers.to_owned());
             match params {
@@ -305,7 +305,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
         ArriRequestOptions {
             method: opts.method,
             url: opts.url,
-            client: opts.client,
+            http_client: opts.http_client,
             headers: opts.headers,
         },
         params,

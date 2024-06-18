@@ -1,7 +1,7 @@
 import { ArriApp, handleCors } from "@arrirpc/server";
 
 const app = new ArriApp({
-    onRequest(event) {
+    async onRequest(event) {
         handleCors(event, {
             origin: "*",
         });

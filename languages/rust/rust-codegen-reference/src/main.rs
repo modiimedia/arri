@@ -1,6 +1,38 @@
+use std::result;
+
+use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
+use example_client::{Book, BookParams, ExampleClient};
+
 mod example_client;
 
-fn main() {}
+fn get_headers() -> reqwest::header::HeaderMap {
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        "Authorization",
+        reqwest::header::HeaderValue::from_str("Bearer 12345").unwrap(),
+    );
+    headers
+}
+
+#[tokio::main]
+async fn main() {
+    let config = ArriClientConfig {
+        http_client: reqwest::Client::new(),
+        base_url: "http://localhost:3000".to_string(),
+        headers: get_headers,
+    };
+    let client = ExampleClient::create(&config);
+    let result = client
+        .books
+        .create_book(Book {
+            id: "1".to_string(),
+            name: "Tom Sawyer".to_string(),
+            created_at: DateTime::default(),
+            updated_at: DateTime::default(),
+        })
+        .await;
+    println!("{:?}", result);
+}
 
 #[cfg(test)]
 mod parsing_and_serialization_tests {

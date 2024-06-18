@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
@@ -8,16 +9,14 @@ use arri_client::{
 use std::collections::BTreeMap;
 
 pub struct ExampleClient<'a> {
-    client: &'a reqwest::Client,
-    base_url: &'a String,
+    config: &'a ArriClientConfig,
     pub books: ExampleClientBooksService<'a>,
 }
 
-impl ArriClientService for ExampleClient<'_> {
-    fn create(config: &ArriClientConfig) -> Self {
+impl<'a> ArriClientService<'a> for ExampleClient<'a> {
+    fn create(config: &'a ArriClientConfig) -> Self {
         Self {
-            client: &config.client,
-            base_url: &config.base_url,
+            config: &config,
             books: ExampleClientBooksService::create(config),
         }
     }
@@ -30,8 +29,8 @@ impl ExampleClient<'_> {
     ) -> Result<NestedObject, ArriServerError> {
         return parsed_arri_request(
             ArriParsedRequestOptions {
-                client: &self.client,
-                url: format!("{}/send-object", &self.base_url),
+                http_client: &self.config.http_client,
+                url: format!("{}/send-object", &self.config.base_url.clone()),
                 method: reqwest::Method::POST,
                 headers: &reqwest::header::HeaderMap::new(),
             },
@@ -43,16 +42,12 @@ impl ExampleClient<'_> {
 }
 
 pub struct ExampleClientBooksService<'a> {
-    client: &'a reqwest::Client,
-    base_url: &'a String,
+    config: &'a ArriClientConfig,
 }
 
-impl<'a> ArriClientService for ExampleClientBooksService<'a> {
-    fn create(config: &ArriClientConfig) -> Self {
-        Self {
-            client: &config.client,
-            base_url: &config.base_url,
-        }
+impl<'a> ArriClientService<'a> for ExampleClientBooksService<'a> {
+    fn create(config: &'a ArriClientConfig) -> Self {
+        Self { config: &config }
     }
 }
 
@@ -60,8 +55,8 @@ impl ExampleClientBooksService<'_> {
     pub async fn get_book(self: &Self, params: BookParams) -> Result<Book, ArriServerError> {
         return parsed_arri_request(
             ArriParsedRequestOptions {
-                client: &self.client,
-                url: format!("{}/books/get-books", &self.base_url),
+                http_client: &self.config.http_client,
+                url: format!("{}/books/get-books", &self.config.base_url),
                 method: reqwest::Method::GET,
                 headers: &reqwest::header::HeaderMap::new(),
             },
@@ -73,8 +68,8 @@ impl ExampleClientBooksService<'_> {
     pub async fn create_book(self: &Self, params: Book) -> Result<Book, ArriServerError> {
         return parsed_arri_request(
             ArriParsedRequestOptions {
-                client: &self.client,
-                url: format!("{}/books/create-book", &self.base_url),
+                http_client: &self.config.http_client,
+                url: format!("{}/books/create-book", &self.config.base_url),
                 method: reqwest::Method::POST,
                 headers: &reqwest::header::HeaderMap::new(),
             },

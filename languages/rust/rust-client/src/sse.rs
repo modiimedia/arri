@@ -4,18 +4,10 @@ use std::marker::PhantomData;
 
 use crate::{ArriModel, ArriRequestErrorMethods, ArriServerError};
 
-pub struct ParsedArriSseRequestOptions<
-    'a,
-    TData,
-    OnData,
-    OnError,
-    OnConnectionError,
-    OnOpen,
-    OnClose,
-> where
-    OnData: Fn(TData),
+pub struct ParsedArriSseRequestOptions<'a, TMessage, OnMessage, OnError, OnOpen, OnClose>
+where
+    OnMessage: Fn(TMessage),
     OnError: Fn(ArriServerError),
-    OnConnectionError: Fn(ArriServerError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
@@ -23,59 +15,49 @@ pub struct ParsedArriSseRequestOptions<
     pub url: String,
     pub method: reqwest::Method,
     pub headers: &'a HeaderMap,
-    pub on_data: Option<OnData>,
+    pub on_message: Option<OnMessage>,
     pub on_error: Option<OnError>,
-    pub on_connection_error: Option<OnConnectionError>,
     pub on_open: Option<OnOpen>,
     pub on_close: Option<OnClose>,
-    _phantom_data_store: PhantomData<TData>,
+    _phantom_data_store: PhantomData<TMessage>,
 }
 
-pub fn handle_data<TData>(data: String, parser: fn(String) -> TData, on_data: fn(TData)) {
-    on_data(parser(data));
+pub fn handle_message<TMessage>(
+    message: String,
+    parser: fn(String) -> TMessage,
+    on_message: fn(TMessage),
+) {
+    on_message(parser(message));
 }
 
 pub async fn parsed_arri_sse_request<
     'a,
-    TData: ArriModel,
-    OnData,
+    TMessage: ArriModel,
+    OnMessage,
     OnError,
     OnConnectionError,
     OnOpen,
     OnClose,
 >(
-    options: ParsedArriSseRequestOptions<
-        'a,
-        TData,
-        OnData,
-        OnError,
-        OnConnectionError,
-        OnOpen,
-        OnClose,
-    >,
+    options: ParsedArriSseRequestOptions<'a, TMessage, OnMessage, OnError, OnOpen, OnClose>,
     params: Option<impl ArriModel>,
 ) where
-    OnData: Fn(TData),
+    OnMessage: Fn(TMessage),
     OnError: Fn(ArriServerError),
-    OnConnectionError: Fn(ArriServerError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
     arri_sse_request(
         ArriSseRequestOptions {
-            client: options.client,
+            http_client: options.client,
             url: options.url,
             method: options.method,
             headers: options.headers,
-            on_data: |input| match &options.on_data {
-                Some(func) => func(TData::from_json_string(input)),
+            on_message: |input| match &options.on_message {
+                Some(func) => func(TMessage::from_json_string(input)),
                 None => {}
             },
             on_error: |err| match &options.on_error {
-                Some(func) => func(err),
-                None => {}
-            },
-            on_connection_error: |err| match &options.on_connection_error {
                 Some(func) => func(err),
                 None => {}
             },
@@ -93,33 +75,30 @@ pub async fn parsed_arri_sse_request<
     .await
 }
 
-pub struct ArriSseRequestOptions<'a, OnData, OnError, OnConnectionError, OnOpen, OnClose>
+pub struct ArriSseRequestOptions<'a, OnMessage, OnError, OnOpen, OnClose>
 where
-    OnData: Fn(String),
+    OnMessage: Fn(String),
     OnError: Fn(ArriServerError),
-    OnConnectionError: Fn(ArriServerError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
-    client: &'a reqwest::Client,
+    http_client: &'a reqwest::Client,
     url: String,
     method: reqwest::Method,
     headers: &'a HeaderMap,
-    on_data: OnData,
+    on_message: OnMessage,
     on_error: OnError,
-    on_connection_error: OnConnectionError,
     on_open: OnOpen,
     on_close: OnClose,
 }
 
-pub async fn arri_sse_request<'a, OnData, OnError, OnConnectionError, OnOpen, OnClose>(
-    options: ArriSseRequestOptions<'a, OnData, OnError, OnConnectionError, OnOpen, OnClose>,
+pub async fn arri_sse_request<'a, OnMessage, OnError, OnOpen, OnClose>(
+    options: ArriSseRequestOptions<'a, OnMessage, OnError, OnOpen, OnClose>,
     params: Option<impl ArriModel>,
 ) -> ()
 where
-    OnData: Fn(String),
+    OnMessage: Fn(String),
     OnError: Fn(ArriServerError),
-    OnConnectionError: Fn(ArriServerError),
     OnOpen: Fn(&Response),
     OnClose: Fn(&Response),
 {
@@ -151,7 +130,7 @@ where
     let response = match json_body {
         Some(body) => {
             options
-                .client
+                .http_client
                 .request(options.method, url)
                 .headers(options.headers.to_owned())
                 .body(body)
@@ -160,7 +139,7 @@ where
         }
         None => {
             options
-                .client
+                .http_client
                 .request(options.method, url)
                 .headers(options.headers.to_owned())
                 .send()
@@ -169,7 +148,7 @@ where
     };
 
     if !response.is_ok() {
-        (options.on_connection_error)(ArriServerError::new());
+        (options.on_error)(ArriServerError::new());
         return;
     }
     let mut ok_response = response.unwrap();
@@ -177,7 +156,7 @@ where
     let status = ok_response.status().as_u16();
     if status < 200 || status >= 300 {
         let body = ok_response.text().await.unwrap_or_default();
-        (options.on_connection_error)(ArriServerError::from_response_data(status, body));
+        (options.on_error)(ArriServerError::from_response_data(status, body));
         return;
     }
     let mut pending_data: String = "".to_string();
@@ -196,15 +175,12 @@ where
                 for message in messages {
                     let event = message.event.unwrap_or("".to_string());
                     match event.as_str() {
-                        "error" => {
-                            (options.on_error)(ArriServerError::from_json_string(message.data));
-                        }
                         "done" => {
                             (options.on_close)(&ok_response);
                             break;
                         }
                         _ => {
-                            (options.on_data)(message.data);
+                            (options.on_message)(message.data);
                         }
                     }
                 }
@@ -283,10 +259,10 @@ impl SeeMessageMethods for SseMessage {
 }
 
 struct ParsedSseMessage<T: ArriModel> {
-    id: Option<String>,
-    event: Option<String>,
-    data: T,
-    retry: Option<i32>,
+    pub id: Option<String>,
+    pub event: Option<String>,
+    pub data: T,
+    pub retry: Option<i32>,
 }
 
 impl<T: ArriModel> SeeMessageMethods for ParsedSseMessage<T> {
