@@ -239,7 +239,7 @@ mod parsing_and_serialization_tests {
             array: None,
             record: None,
             discriminator: None,
-            any: Some(serde_json::Value::Null),
+            any: serde_json::Value::Null,
         };
         assert_eq!(
             ObjectWithNullableFields::from_json_string(file_content.clone()),
@@ -283,7 +283,7 @@ mod parsing_and_serialization_tests {
                 name: "".to_string(),
                 date: get_test_date(),
             }),
-            any: Some(json!({"message": "hello world"})),
+            any: json!({"message": "hello world"}),
         };
         assert_eq!(
             ObjectWithNullableFields::from_json_string(file_content.clone()),

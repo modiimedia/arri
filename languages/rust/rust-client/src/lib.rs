@@ -183,6 +183,9 @@ pub async fn arri_request<'a>(
     if !opts.client_version.is_empty() {
         headers.insert("client-version", opts.client_version.as_str());
     }
+    if opts.method != reqwest::Method::GET && opts.method != reqwest::Method::HEAD {
+        headers.insert("Content-Type", "application/json");
+    }
     let mut final_headers = reqwest::header::HeaderMap::new();
     for (key, value) in headers.into_iter() {
         match reqwest::header::HeaderValue::from_str(value) {

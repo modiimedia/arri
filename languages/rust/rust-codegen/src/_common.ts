@@ -140,3 +140,13 @@ export function getTypeName(schema: Schema, context: GeneratorContext): string {
     }
     return validRustName(context.instancePath.split("/").join("_"));
 }
+
+export function formatDescriptionComment(
+    description: string,
+    leading = "",
+): string {
+    return description
+        .split("\n")
+        .map((line) => `${leading}/// ${line}`)
+        .join("\n");
+}

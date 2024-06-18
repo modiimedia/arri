@@ -1,4 +1,10 @@
-#![allow(dead_code, unused_imports)]
+#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unconditional_recursion,
+    deprecated
+)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
@@ -1346,7 +1352,7 @@ pub struct ObjectWithNullableFields {
     pub array: Option<Vec<bool>>,
     pub record: Option<BTreeMap<String, bool>>,
     pub discriminator: Option<Discriminator>,
-    pub any: Option<serde_json::Value>,
+    pub any: serde_json::Value,
 }
 
 impl ArriModel for ObjectWithNullableFields {
@@ -1370,7 +1376,7 @@ impl ArriModel for ObjectWithNullableFields {
             array: None,
             record: None,
             discriminator: None,
-            any: None,
+            any: serde_json::Value::Null,
         }
     }
 
@@ -1542,8 +1548,8 @@ impl ArriModel for ObjectWithNullableFields {
                     _ => None,
                 };
                 let any = match _val_.get("any") {
-                    Some(any_val) => Some(any_val.to_owned()),
-                    _ => None,
+                    Some(any_val) => any_val.to_owned(),
+                    _ => serde_json::Value::Null,
                 };
 
                 Self {
@@ -1759,18 +1765,11 @@ impl ArriModel for ObjectWithNullableFields {
             }
         };
         _json_output_.push_str(",\"any\":");
-        match &self.any {
-            Some(any_val) => {
-                _json_output_.push_str(
-                    serde_json::to_string(any_val)
-                        .unwrap_or("null".to_string())
-                        .as_str(),
-                );
-            }
-            _ => {
-                _json_output_.push_str("null");
-            }
-        };
+        _json_output_.push_str(
+            serde_json::to_string(&self.any)
+                .unwrap_or("null".to_string())
+                .as_str(),
+        );
         _json_output_.push('}');
         _json_output_
     }

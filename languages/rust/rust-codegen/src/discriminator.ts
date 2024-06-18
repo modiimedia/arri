@@ -1,6 +1,7 @@
 import { SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
 
 import {
+    formatDescriptionComment,
     GeneratorContext,
     getTypeName,
     outputIsOptionType,
@@ -63,7 +64,15 @@ export function rustTaggedUnionFromSchema(
         );
     type EnumSubType = {
         name: string;
-        properties: { name: string; defaultValue: string; typeName: string }[];
+        properties: {
+            name: string;
+            defaultValue: string;
+            typeName: string;
+            isDeprecated: boolean;
+            description: string;
+        }[];
+        isDeprecated: boolean;
+        description: string;
         toJsonParts: string[];
         toQueryParts: string[];
     };
@@ -79,6 +88,8 @@ export function rustTaggedUnionFromSchema(
             properties: [],
             toJsonParts: [],
             toQueryParts: [],
+            isDeprecated: subSchema.metadata?.isDeprecated ?? false,
+            description: subSchema.metadata?.description ?? "",
         };
         fromJsonParts.push(`"${discriminatorValue}" => {`);
         const keyNames: string[] = [];
@@ -106,6 +117,8 @@ export function rustTaggedUnionFromSchema(
                 name: keyName,
                 defaultValue: keyType.defaultValue,
                 typeName: keyType.typeName,
+                isDeprecated: keySchema.metadata?.isDeprecated ?? false,
+                description: keySchema.metadata?.description ?? "",
             });
             keyNames.push(keyName);
             fromJsonParts.push(
@@ -151,6 +164,8 @@ export function rustTaggedUnionFromSchema(
                 name: keyName,
                 defaultValue: keyType.defaultValue,
                 typeName: keyType.typeName,
+                isDeprecated: keySchema.metadata?.isDeprecated ?? false,
+                description: keySchema.metadata?.description ?? "",
             });
             keyNames.push(keyName);
             fromJsonParts.push(
@@ -181,15 +196,42 @@ export function rustTaggedUnionFromSchema(
         fromJsonParts.push(`}`);
         subTypes.push(subType);
     }
-
-    result.content = `#[derive(Clone, Debug, PartialEq)]
+    let leading = "";
+    if (schema.metadata?.description) {
+        leading += formatDescriptionComment(schema.metadata.description);
+        leading += "\n";
+    }
+    if (schema.metadata?.isDeprecated) {
+        leading += "#[deprecated]\n";
+    }
+    result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub enum ${enumName} {
     ${subTypes
-        .map(
-            (type) => `${type.name} {
-        ${type.properties.map((prop) => `${prop.name}: ${prop.typeName},`).join("\n")}
-    },`,
-        )
+        .map((type) => {
+            let leading = "";
+            if (type.description) {
+                leading += formatDescriptionComment(type.description);
+                leading += "\n";
+            }
+            if (type.isDeprecated) {
+                leading += "#[deprecated]\n";
+            }
+            return `${leading}${type.name} {
+        ${type.properties
+            .map((prop) => {
+                let leading = "";
+                if (prop.description) {
+                    leading += formatDescriptionComment(prop.description);
+                    leading += "\n";
+                }
+                if (prop.isDeprecated) {
+                    leading += "#[deprecated]\n";
+                }
+                return `${leading}${prop.name}: ${prop.typeName},`;
+            })
+            .join("\n")}
+    },`;
+        })
         .join("\n")}
 }
 

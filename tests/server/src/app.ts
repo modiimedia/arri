@@ -5,6 +5,7 @@ import {
     defineMiddleware,
     getHeader,
     handleCors,
+    readBody,
 } from "@arrirpc/server";
 
 import manualRouter from "./routes/other";
@@ -22,7 +23,7 @@ const app = new ArriApp({
 });
 
 app.use(
-    defineMiddleware((event) => {
+    defineMiddleware(async (event) => {
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&
@@ -32,6 +33,13 @@ app.use(
         ) {
             throw defineError(401, {
                 message: "Missing test auth header 'x-test-header'",
+            });
+        }
+        if (event.method !== "GET" && event.method !== "HEAD") {
+            console.log({
+                rpc: event.context.rpcName,
+                path: event.path,
+                body: await readBody(event),
             });
         }
     }),

@@ -1,26 +1,20 @@
 import { SchemaFormEmpty } from "@arrirpc/codegen-utils";
 
-import {
-    GeneratorContext,
-    outputIsOptionType,
-    RustProperty,
-    validRustIdentifier,
-} from "./_common";
+import { GeneratorContext, RustProperty, validRustIdentifier } from "./_common";
 
 export default function rustAnyFromSchema(
     schema: SchemaFormEmpty,
     context: GeneratorContext,
 ): RustProperty {
-    const isOptionType = outputIsOptionType(schema, context);
     return {
-        typeName: isOptionType
+        typeName: context.isOptional
             ? `Option<serde_json::Value>`
             : "serde_json::Value",
-        defaultValue: isOptionType ? `None` : `serde_json::Value::Null`,
-        isNullable: schema.nullable ?? false,
+        defaultValue: context.isOptional ? `None` : `serde_json::Value::Null`,
+        isNullable: false,
         fromJsonTemplate(input, key) {
             const innerKey = validRustIdentifier(`${key}_val`);
-            if (isOptionType) {
+            if (context.isOptional) {
                 return `match ${input} {
                             Some(${innerKey}) => Some(${innerKey}.to_owned()),
                             _ => None,

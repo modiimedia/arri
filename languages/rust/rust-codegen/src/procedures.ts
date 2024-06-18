@@ -9,6 +9,7 @@ import {
 import assert from "assert";
 
 import {
+    formatDescriptionComment,
     GeneratorContext,
     validRustIdentifier,
     validRustName,
@@ -46,7 +47,15 @@ export function rustHttpRpcFromSchema(
     const response = schema.response
         ? validRustName(schema.response)
         : undefined;
-    return `pub async fn ${functionName} (
+    let leading = "";
+    if (schema.description) {
+        leading += formatDescriptionComment(schema.description);
+        leading += "\n";
+    }
+    if (schema.isDeprecated) {
+        leading += "#[deprecated]\n";
+    }
+    return `${leading}pub async fn ${functionName} (
         self: &Self,
         ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
     ) -> Result<${context.typeNamePrefix}${response ?? "()"}, ArriServerError> {

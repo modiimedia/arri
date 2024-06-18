@@ -108,6 +108,18 @@ class TestClientTestsService {
     );
   }
 
+  Future<void> sendError(SendErrorParams params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-error",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) {},
+    );
+  }
+
   Future<ObjectWithEveryType> sendObject(ObjectWithEveryType params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/send-object",
@@ -925,6 +937,88 @@ class DeprecatedRpcParams implements ArriModel {
   @override
   String toString() {
     return "DeprecatedRpcParams ${toJsonString()}";
+  }
+}
+
+class SendErrorParams implements ArriModel {
+  final int code;
+  final String message;
+  const SendErrorParams({
+    required this.code,
+    required this.message,
+  });
+
+  factory SendErrorParams.empty() {
+    return SendErrorParams(
+      code: 0,
+      message: "",
+    );
+  }
+
+  factory SendErrorParams.fromJson(Map<String, dynamic> _input_) {
+    final code = intFromDynamic(_input_["code"], 0);
+    final message = typeFromDynamic<String>(_input_["message"], "");
+    return SendErrorParams(
+      code: code,
+      message: message,
+    );
+  }
+
+  factory SendErrorParams.fromJsonString(String input) {
+    return SendErrorParams.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "code": code,
+      "message": message,
+    };
+
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("code=$code");
+    _queryParts_.add("message=$message");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  SendErrorParams copyWith({
+    int? code,
+    String? message,
+  }) {
+    return SendErrorParams(
+      code: code ?? this.code,
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        code,
+        message,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is SendErrorParams && listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "SendErrorParams ${toJsonString()}";
   }
 }
 

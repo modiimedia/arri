@@ -1,6 +1,7 @@
 import { SchemaFormEnum } from "@arrirpc/codegen-utils";
 
 import {
+    formatDescriptionComment,
     GeneratorContext,
     getTypeName,
     outputIsOptionType,
@@ -84,7 +85,14 @@ export default function rustEnumFromSchema(
             `\t\t\t${enumName}::${valName} => "${val}".to_string(),`,
         );
     }
-    result.content = `#[derive(Clone, Debug, PartialEq)]
+    let leading = "";
+    if (schema.metadata?.description) {
+        leading += `${formatDescriptionComment(schema.metadata.description)}\n`;
+    }
+    if (schema.metadata?.isDeprecated) {
+        leading += `#[deprecated]\n`;
+    }
+    result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub enum ${enumName} {
 ${initializationParts.join("\n")}
 }

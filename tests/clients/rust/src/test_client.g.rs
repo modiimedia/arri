@@ -1,4 +1,10 @@
-#![allow(dead_code, unused_imports, unused_variables, unconditional_recursion)]
+#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unconditional_recursion,
+    deprecated
+)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
@@ -113,6 +119,8 @@ impl TestClientTestsService<'_> {
         )
         .await
     }
+    /// If the target language supports it. Generated code should mark this procedure as deprecated.
+    #[deprecated]
     pub async fn deprecated_rpc(
         self: &Self,
         params: DeprecatedRpcParams,
@@ -121,6 +129,20 @@ impl TestClientTestsService<'_> {
             ArriParsedRequestOptions {
                 http_client: &self.config.http_client,
                 url: format!("{}/rpcs/tests/deprecated-rpc", &self.config.base_url),
+                method: reqwest::Method::POST,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| {},
+        )
+        .await
+    }
+    pub async fn send_error(self: &Self, params: SendErrorParams) -> Result<(), ArriServerError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self.config.http_client,
+                url: format!("{}/rpcs/tests/send-error", &self.config.base_url),
                 method: reqwest::Method::POST,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
@@ -574,8 +596,10 @@ impl ArriModel for TypeBoxObjectObject {
     }
 }
 
+#[deprecated]
 #[derive(Clone, Debug, PartialEq)]
 pub struct DeprecatedRpcParams {
+    #[deprecated]
     pub deprecated_field: String,
 }
 
@@ -616,6 +640,61 @@ impl ArriModel for DeprecatedRpcParams {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("deprecatedField={}", &self.deprecated_field));
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SendErrorParams {
+    pub code: u16,
+    pub message: String,
+}
+
+impl ArriModel for SendErrorParams {
+    fn new() -> Self {
+        Self {
+            code: 0,
+            message: "".to_string(),
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let code = match _val_.get("code") {
+                    Some(serde_json::Value::Number(code_val)) => {
+                        u16::try_from(code_val.as_u64().unwrap_or(0)).unwrap_or(0)
+                    }
+                    _ => 0,
+                };
+                let message = match _val_.get("message") {
+                    Some(serde_json::Value::String(message_val)) => message_val.to_owned(),
+                    _ => "".to_string(),
+                };
+                Self { code, message }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"code\":");
+        _json_output_.push_str(&self.code.to_string().as_str());
+        _json_output_.push_str(",\"message\":");
+        _json_output_.push_str(serialize_string(&self.message).as_str());
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!("code={}", &self.code));
+        _query_parts_.push(format!("message={}", &self.message));
         _query_parts_.join("&")
     }
 }
@@ -1441,7 +1520,7 @@ impl ArriModel for ObjectWithEveryTypeNestedArrayElementElement {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjectWithEveryNullableType {
-    pub any: Option<serde_json::Value>,
+    pub any: serde_json::Value,
     pub boolean: Option<bool>,
     pub string: Option<String>,
     pub timestamp: Option<DateTime<FixedOffset>>,
@@ -1468,7 +1547,7 @@ pub struct ObjectWithEveryNullableType {
 impl ArriModel for ObjectWithEveryNullableType {
     fn new() -> Self {
         Self {
-            any: None,
+            any: serde_json::Value::Null,
             boolean: None,
             string: None,
             timestamp: None,
@@ -1495,8 +1574,8 @@ impl ArriModel for ObjectWithEveryNullableType {
         match input {
             serde_json::Value::Object(_val_) => {
                 let any = match _val_.get("any") {
-                    Some(any_val) => Some(any_val.to_owned()),
-                    _ => None,
+                    Some(any_val) => any_val.to_owned(),
+                    _ => serde_json::Value::Null,
                 };
                 let boolean = match _val_.get("boolean") {
                     Some(serde_json::Value::Bool(boolean_val)) => Some(boolean_val.to_owned()),
@@ -1745,18 +1824,11 @@ impl ArriModel for ObjectWithEveryNullableType {
         let mut _json_output_ = "{".to_string();
 
         _json_output_.push_str("\"any\":");
-        match &self.any {
-            Some(any_val) => {
-                _json_output_.push_str(
-                    serde_json::to_string(any_val)
-                        .unwrap_or("null".to_string())
-                        .as_str(),
-                );
-            }
-            _ => {
-                _json_output_.push_str("null");
-            }
-        };
+        _json_output_.push_str(
+            serde_json::to_string(&self.any)
+                .unwrap_or("null".to_string())
+                .as_str(),
+        );
         _json_output_.push_str(",\"boolean\":");
         match &self.boolean {
             Some(boolean_val) => {
@@ -4027,9 +4099,13 @@ impl ArriModel for RecursiveObject {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RecursiveUnion {
+    /// Child node
     Child { data: Box<RecursiveUnion> },
+    /// List of children node
     Children { data: Vec<Box<RecursiveUnion>> },
+    /// Text node
     Text { data: String },
+    /// Shape node
     Shape { data: RecursiveUnionDataShape },
 }
 
@@ -4224,7 +4300,7 @@ impl ArriModel for RecursiveUnionDataShape {
     fn to_json_string(&self) -> String {
         let mut _json_output_ = "{".to_string();
 
-        _json_output_.push_str(",\"width\":");
+        _json_output_.push_str("\"width\":");
         _json_output_.push_str(&self.width.to_string().as_str());
         _json_output_.push_str(",\"height\":");
         _json_output_.push_str(&self.height.to_string().as_str());
@@ -5263,6 +5339,7 @@ impl ArriModel for UsersWatchUserParams {
 pub struct UsersWatchUserResponse {
     pub id: String,
     pub role: UsersWatchUserResponseRole,
+    /// A profile picture
     pub photo: Option<UserPhoto>,
     pub created_at: DateTime<FixedOffset>,
     pub num_followers: i32,
@@ -5559,12 +5636,14 @@ impl ArriEnum for UsersWatchUserResponseRole {
     }
 }
 
+/// A profile picture
 #[derive(Clone, Debug, PartialEq)]
 pub struct UserPhoto {
     pub url: String,
     pub width: f64,
     pub height: f64,
     pub bytes: i64,
+    /// When the photo was last updated in nanoseconds
     pub nanoseconds: u64,
 }
 

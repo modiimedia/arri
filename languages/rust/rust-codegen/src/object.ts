@@ -5,6 +5,7 @@ import {
 } from "@arrirpc/codegen-utils";
 
 import {
+    formatDescriptionComment,
     GeneratorContext,
     getTypeName,
     outputIsOptionType,
@@ -65,9 +66,8 @@ export default function rustObjectFromSchema(
     const subContent: string[] = [];
     const requiredKeys = Object.keys(schema.properties);
     const optionalKeys = Object.keys(schema.optionalProperties ?? {});
-    const isDiscriminatedUnion =
-        context.discriminatorKey && context.discriminatorValue;
-    const hasKeys = requiredKeys.length > 0 || isDiscriminatedUnion;
+
+    const hasKeys = requiredKeys.length > 0;
     for (let i = 0; i < requiredKeys.length; i++) {
         const key = requiredKeys[i]!;
         const prop = schema.properties[key]!;
@@ -84,12 +84,22 @@ export default function rustObjectFromSchema(
         }
         const fieldName = validRustIdentifier(key);
         fieldNames.push(fieldName);
-        fieldDeclarationParts.push(`\tpub ${fieldName}: ${innerType.typeName}`);
+        let leading = "";
+        if (prop.metadata?.description) {
+            leading += formatDescriptionComment(prop.metadata.description);
+            leading += "\n";
+        }
+        if (prop.metadata?.isDeprecated) {
+            leading += `\t#[deprecated]\n`;
+        }
+        fieldDeclarationParts.push(
+            `${leading}\tpub ${fieldName}: ${innerType.typeName}`,
+        );
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(
             `\t\t\t\tlet ${fieldName} = ${innerType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
         );
-        if (i === 0 && !isDiscriminatedUnion) {
+        if (i === 0) {
             toJsonParts.push(`\t\t_json_output_.push_str("\\"${key}\\":");`);
         } else {
             toJsonParts.push(`\t\t_json_output_.push_str(",\\"${key}\\":");`);
@@ -135,7 +145,18 @@ export default function rustObjectFromSchema(
         }
         const fieldName = validRustIdentifier(key);
         fieldNames.push(fieldName);
-        fieldDeclarationParts.push(`\tpub ${fieldName}: ${innerType.typeName}`);
+        let leading = prop.metadata?.description
+            ? `${prop.metadata.description
+                  .split("\n")
+                  .map((line) => `\t/// ${line}`)
+                  .join("\n")}\n`
+            : "";
+        if (prop.metadata?.isDeprecated) {
+            leading += `\t#[deprecated]\n`;
+        }
+        fieldDeclarationParts.push(
+            `${leading}\tpub ${fieldName}: ${innerType.typeName}`,
+        );
         defaultParts.push(`\t\t\t${fieldName}: ${innerType.defaultValue}`);
         fromJsonParts.push(
             `\t\t\t\tlet ${fieldName} = ${innerType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
@@ -180,7 +201,17 @@ export default function rustObjectFromSchema(
     if (fieldNames.length < 4) {
         selfDeclaration = `Self { ${fieldNames.join(", ")} }`;
     }
-    result.content = `#[derive(Clone, Debug, PartialEq)]
+    let leading = "";
+    if (schema.metadata?.description) {
+        leading += `${schema.metadata.description
+            .split("\n")
+            .map((line) => `/// ${line}`)
+            .join("\n")}\n`;
+    }
+    if (schema.metadata?.isDeprecated) {
+        leading += `#[deprecated]\n`;
+    }
+    result.content = `${leading}#[derive(Clone, Debug, PartialEq)]
 pub struct ${structName} {
 ${fieldDeclarationParts.join(",\n")},
 }
