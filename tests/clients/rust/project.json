@@ -1,7 +1,7 @@
 {
   "name": "test-client-rust",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "implicitDependencies": ["test-server"],
+  "implicitDependencies": ["test-server", "rust-client"],
   "targets": {
     "integration-test": {
       "executor": "nx:run-commands",

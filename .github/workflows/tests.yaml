@@ -47,6 +47,8 @@ jobs:
           fetch-depth: 0
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
@@ -78,6 +80,8 @@ jobs:
           fetch-depth: 0
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:

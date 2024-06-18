@@ -1,6 +1,7 @@
 {
   "name": "rust-codegen-reference",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["rust-client"],
   "targets": {
     "test": {
       "executor": "nx:run-commands",
@@ -9,6 +10,7 @@
         "{projectRoot}/Cargo.toml",
         "{projectRoot}/Cargo.lock"
       ],
+      "outputs": ["{projectRoot}/target"],
       "options": {
         "command": "cargo test",
         "cwd": "languages/rust/rust-codegen-reference"
