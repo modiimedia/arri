@@ -12,6 +12,10 @@ pub struct ArriClientConfig {
     pub headers: reqwest::header::HeaderMap,
 }
 
+pub trait ArriClientService {
+    fn create(config: &ArriClientConfig) -> Self;
+}
+
 pub struct ArriRequestOptions<'a> {
     pub client: &'a reqwest::Client,
     pub url: String,
