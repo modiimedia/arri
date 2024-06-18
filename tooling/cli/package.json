@@ -18,6 +18,7 @@
   "dependencies": {
     "@arrirpc/codegen-dart": "workspace:*",
     "@arrirpc/codegen-kotlin": "workspace:*",
+    "@arrirpc/codegen-rust": "workspace:*",
     "@arrirpc/codegen-ts": "workspace:*",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",

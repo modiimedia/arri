@@ -112,6 +112,17 @@ export class TestClientTestsService {
             clientVersion: this.clientVersion,
         });
     }
+    sendError(params: SendErrorParams) {
+        return arriRequest<undefined, SendErrorParams>({
+            url: `${this.baseUrl}/rpcs/tests/send-error`,
+            method: "post",
+            headers: this.headers,
+            params,
+            parser: (_) => {},
+            serializer: $$SendErrorParams.serialize,
+            clientVersion: this.clientVersion,
+        });
+    }
     sendObject(params: ObjectWithEveryType) {
         return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
             url: `${this.baseUrl}/rpcs/tests/send-object`,
@@ -1094,6 +1105,139 @@ export const $$DeprecatedRpcParams = {
             json += `"${input.deprecatedField}"`;
         } else {
             json += JSON.stringify(input.deprecatedField);
+        }
+        json += "}";
+        return json;
+    },
+};
+
+export interface SendErrorParams {
+    code: number;
+    message: string;
+}
+export const $$SendErrorParams = {
+    parse(input: Record<any, any>): SendErrorParams {
+        function $fallback(instancePath, schemaPath) {
+            throw new Error(
+                `Error parsing input. InstancePath: "${instancePath}". SchemaPath: "${schemaPath}"`,
+            );
+        }
+
+        if (typeof input === "string") {
+            const json = JSON.parse(input);
+            let result = {};
+            if (typeof json === "object" && json !== null) {
+                const __D1 = {};
+                if (
+                    typeof json.code === "number" &&
+                    Number.isInteger(json.code) &&
+                    json.code >= 0 &&
+                    json.code <= 65535
+                ) {
+                    __D1.code = json.code;
+                } else {
+                    $fallback(
+                        "/code",
+                        "/properties/code",
+                        "Expected valid integer between 0 and 65535",
+                    );
+                }
+                if (typeof json.message === "string") {
+                    __D1.message = json.message;
+                } else {
+                    $fallback(
+                        "/message",
+                        "/properties/message/type",
+                        "Expected string at /message",
+                    );
+                }
+                result = __D1;
+            } else {
+                $fallback("", "", "Expected object");
+            }
+            return result;
+        }
+        let result = {};
+        if (typeof input === "object" && input !== null) {
+            const __D1 = {};
+            if (
+                typeof input.code === "number" &&
+                Number.isInteger(input.code) &&
+                input.code >= 0 &&
+                input.code <= 65535
+            ) {
+                __D1.code = input.code;
+            } else {
+                $fallback(
+                    "/code",
+                    "/properties/code",
+                    "Expected valid integer between 0 and 65535",
+                );
+            }
+            if (typeof input.message === "string") {
+                __D1.message = input.message;
+            } else {
+                $fallback(
+                    "/message",
+                    "/properties/message/type",
+                    "Expected string at /message",
+                );
+            }
+            result = __D1;
+        } else {
+            $fallback("", "", "Expected object");
+        }
+        return result;
+    },
+    serialize(input: SendErrorParams): string {
+        let json = "";
+
+        const STR_ESCAPE =
+            /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+        json += "";
+        json += "{";
+
+        if (Number.isNaN(input.code)) {
+            throw new Error("Expected number at /code got NaN");
+        }
+        json += `"code":${input.code}`;
+        json += `,"message":`;
+        if (input.message.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < input.message.length; i++) {
+                __point__ = input.message.charCodeAt(i);
+                if (
+                    __point__ < 32 ||
+                    (__point__ >= 0xd800 && __point__ <= 0xdfff)
+                ) {
+                    json += JSON.stringify(input.message);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += input.message.slice(__last__, i) + "\\";
+                    __last__ = i;
+                }
+            }
+            if (!__finished__) {
+                if (__last__ === -1) {
+                    json += `"${input.message}"`;
+                } else {
+                    json += `"${__result__}${input.message.slice(__last__)}"`;
+                }
+            }
+        } else if (
+            input.message.length < 5000 &&
+            !STR_ESCAPE.test(input.message)
+        ) {
+            json += `"${input.message}"`;
+        } else {
+            json += JSON.stringify(input.message);
         }
         json += "}";
         return json;
@@ -8340,21 +8484,33 @@ export const $$RecursiveUnion = {
         return json;
     },
 };
+/**
+ * Child node
+ */
 export interface RecursiveUnionChild {
     type: "CHILD";
     data: RecursiveUnion;
 }
 
+/**
+ * List of children node
+ */
 export interface RecursiveUnionChildren {
     type: "CHILDREN";
     data: Array<RecursiveUnion>;
 }
 
+/**
+ * Text node
+ */
 export interface RecursiveUnionText {
     type: "TEXT";
     data: string;
 }
 
+/**
+ * Shape node
+ */
 export interface RecursiveUnionShape {
     type: "SHAPE";
     data: RecursiveUnionShapeData;

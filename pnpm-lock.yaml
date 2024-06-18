@@ -132,6 +132,19 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/json-schema-to-jtd
 
+  languages/rust/rust-codegen:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+      pathe:
+        specifier: ^1.1.2
+        version: 1.1.2
+    devDependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema
+
   languages/ts/ts-client:
     dependencies:
       '@arrirpc/schema':
@@ -277,6 +290,9 @@ importers:
       '@arrirpc/codegen-kotlin':
         specifier: workspace:*
         version: link:../../languages/kotlin/kotlin-codegen
+      '@arrirpc/codegen-rust':
+        specifier: workspace:*
+        version: link:../../languages/rust/rust-codegen
       '@arrirpc/codegen-ts':
         specifier: workspace:*
         version: link:../../languages/ts/ts-codegen
