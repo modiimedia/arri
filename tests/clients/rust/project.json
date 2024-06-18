@@ -9,6 +9,13 @@
         "command": "cargo test -- --nocapture",
         "cwd": "tests/clients/rust"
       }
+    },
+    "cargo": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo",
+        "cwd": "tests/clients/rust"
+      }
     }
   }
 }

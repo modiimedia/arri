@@ -3,6 +3,13 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "implicitDependencies": ["rust-client"],
   "targets": {
+    "cargo": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo",
+        "cwd": "languages/rust/rust-codegen-reference"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
