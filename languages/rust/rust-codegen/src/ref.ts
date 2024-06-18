@@ -14,8 +14,8 @@ export default function rustRefFromSchema(
 ): RustProperty {
     const innerTypeName = validRustName(schema.ref);
     const isOptionType = outputIsOptionType(schema, context);
-    const needsBoxing = context.parentTypeNames.includes(innerTypeName);
-    let typeName = needsBoxing ? `Box<${innerTypeName}>` : `${innerTypeName}`;
+    const needsBoxing = true;
+    let typeName = `Box<${innerTypeName}>`;
     if (isOptionType) {
         typeName = `Option<${typeName}>`;
     }

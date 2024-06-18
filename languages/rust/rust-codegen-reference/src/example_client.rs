@@ -27,10 +27,10 @@ impl ExampleClient<'_> {
         self: &Self,
         params: NestedObject,
     ) -> Result<NestedObject, ArriServerError> {
-        return parsed_arri_request(
+        parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self.config.http_client,
-                url: format!("{}/send-object", &self.config.base_url.clone()),
+                url: format!("{}/send-object", &self.config.base_url),
                 method: reqwest::Method::POST,
                 headers: self.config.headers,
                 client_version: "20".to_string(),
@@ -38,7 +38,7 @@ impl ExampleClient<'_> {
             Some(params),
             |body| return NestedObject::from_json_string(body),
         )
-        .await;
+        .await
     }
 }
 
@@ -54,10 +54,10 @@ impl<'a> ArriClientService<'a> for ExampleClientBooksService<'a> {
 
 impl ExampleClientBooksService<'_> {
     pub async fn get_book(self: &Self, params: BookParams) -> Result<Book, ArriServerError> {
-        return parsed_arri_request(
+        parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self.config.http_client,
-                url: format!("{}/books/get-books", &self.config.base_url),
+                url: format!("{}/books/get-book", &self.config.base_url),
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "20".to_string(),
@@ -65,10 +65,10 @@ impl ExampleClientBooksService<'_> {
             Some(params),
             |body| return Book::from_json_string(body),
         )
-        .await;
+        .await
     }
     pub async fn create_book(self: &Self, params: Book) -> Result<Book, ArriServerError> {
-        return parsed_arri_request(
+        parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self.config.http_client,
                 url: format!("{}/books/create-book", &self.config.base_url),
@@ -77,11 +77,9 @@ impl ExampleClientBooksService<'_> {
                 client_version: "20".to_string(),
             },
             Some(params),
-            |body| {
-                return Book::from_json_string(body);
-            },
+            |body| return Book::from_json_string(body),
         )
-        .await;
+        .await
     }
 }
 

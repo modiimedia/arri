@@ -14,7 +14,7 @@ export function rustTaggedUnionFromSchema(
     schema: SchemaFormDiscriminator,
     context: GeneratorContext,
 ): RustProperty {
-    const enumName = getTypeName(schema, context);
+    const enumName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
     const isOptionType = outputIsOptionType(schema, context);
     const defaultValue = isOptionType ? "None" : `${enumName}::new()`;
     const result: RustProperty = {
@@ -90,12 +90,12 @@ export function rustTaggedUnionFromSchema(
         for (const key of Object.keys(subSchema.properties)) {
             const keySchema = subSchema.properties[key]!;
             const keyType = rustTypeFromSchema(keySchema, {
+                clientVersion: context.clientVersion,
                 clientName: context.clientName,
                 typeNamePrefix: context.typeNamePrefix,
                 instancePath: `${context.instancePath}/${key}`,
                 schemaPath: `${context.schemaPath}/mapping/${key}`,
                 generatedTypes: context.generatedTypes,
-                parentTypeNames: context.parentTypeNames,
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
             });
@@ -134,12 +134,12 @@ export function rustTaggedUnionFromSchema(
         for (const key of Object.keys(subSchema.optionalProperties ?? {})) {
             const keySchema = subSchema.optionalProperties![key]!;
             const keyType = rustTypeFromSchema(keySchema, {
+                clientVersion: context.clientVersion,
                 clientName: context.clientName,
                 typeNamePrefix: context.typeNamePrefix,
                 instancePath: `${context.instancePath}/key`,
                 schemaPath: `${context.schemaPath}/mapping/${key}`,
                 generatedTypes: context.generatedTypes,
-                parentTypeNames: context.parentTypeNames,
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
             });

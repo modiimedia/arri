@@ -15,10 +15,10 @@ export default function rustArrayFromSchema(
     const innerType = rustTypeFromSchema(schema.elements, {
         instancePath: `${context.instancePath}/element`,
         schemaPath: `${context.schemaPath}/elements`,
+        clientVersion: context.clientVersion,
         clientName: context.clientName,
         typeNamePrefix: context.typeNamePrefix,
         generatedTypes: context.generatedTypes,
-        parentTypeNames: context.parentTypeNames,
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType

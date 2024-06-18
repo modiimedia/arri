@@ -13,7 +13,7 @@ export default function rustEnumFromSchema(
     schema: SchemaFormEnum,
     context: GeneratorContext,
 ): RustProperty {
-    const enumName = getTypeName(schema, context);
+    const enumName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType ? `Option<${enumName}>` : enumName;
     const defaultValue = isOptionType ? "None" : `${enumName}::default()`;

@@ -13,12 +13,12 @@ export default function rustRecordFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const innerType = rustTypeFromSchema(schema.values, {
+        clientVersion: context.clientVersion,
         clientName: context.clientName,
         typeNamePrefix: context.typeNamePrefix,
         instancePath: `${context.instancePath}/value`,
         schemaPath: `${context.schemaPath}/values`,
         generatedTypes: context.generatedTypes,
-        parentTypeNames: context.parentTypeNames,
     });
     const isOptionType = outputIsOptionType(schema, context);
     const typeName = isOptionType

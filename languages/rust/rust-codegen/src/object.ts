@@ -18,8 +18,7 @@ export default function rustObjectFromSchema(
     context: GeneratorContext,
 ): RustProperty {
     const isOptionType = outputIsOptionType(schema, context);
-    const structName = getTypeName(schema, context);
-    context.parentTypeNames.push(structName);
+    const structName = `${context.typeNamePrefix}${getTypeName(schema, context)}`;
     const typeName: string = isOptionType
         ? `Option<${structName}>`
         : structName;
@@ -73,12 +72,12 @@ export default function rustObjectFromSchema(
         const key = requiredKeys[i]!;
         const prop = schema.properties[key]!;
         const innerType = rustTypeFromSchema(prop, {
+            clientVersion: context.clientVersion,
             clientName: context.clientName,
             typeNamePrefix: context.typeNamePrefix,
             instancePath: `/${structName}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             generatedTypes: context.generatedTypes,
-            parentTypeNames: context.parentTypeNames,
         });
         if (innerType.content) {
             subContent.push(innerType.content);
@@ -123,13 +122,13 @@ export default function rustObjectFromSchema(
         const key = optionalKeys[i]!;
         const prop = schema.optionalProperties![key]!;
         const innerType = rustTypeFromSchema(prop, {
+            clientVersion: context.clientVersion,
             clientName: context.clientName,
             typeNamePrefix: context.typeNamePrefix,
             instancePath: `/${structName}/${key}`,
             schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
             generatedTypes: context.generatedTypes,
             isOptional: true,
-            parentTypeNames: context.parentTypeNames,
         });
         if (innerType.content) {
             subContent.push(innerType.content);

@@ -7,12 +7,12 @@ import {
 import path from "pathe";
 
 export interface GeneratorContext {
+    clientVersion: string;
     clientName: string;
     typeNamePrefix: string;
     instancePath: string;
     schemaPath: string;
     generatedTypes: string[];
-    parentTypeNames: string[];
     discriminatorKey?: string;
     discriminatorValue?: string;
     isOptional?: boolean;

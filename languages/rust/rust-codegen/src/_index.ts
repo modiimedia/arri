@@ -18,7 +18,12 @@ import {
 } from "@arrirpc/codegen-utils";
 import path from "pathe";
 
-import { GeneratorContext, RustProperty } from "./_common";
+import {
+    GeneratorContext,
+    RustProperty,
+    validRustIdentifier,
+    validRustName,
+} from "./_common";
 import rustAnyFromSchema from "./any";
 import rustArrayFromSchema from "./array";
 import { rustTaggedUnionFromSchema } from "./discriminator";
@@ -39,6 +44,7 @@ import {
     rustU32FromSchema,
     rustU64FromSchema,
 } from "./primitives";
+import { rustRpcFromSchema, rustServiceFromSchema } from "./procedures";
 import rustRecordFromSchema from "./record";
 import rustRefFromSchema from "./ref";
 
@@ -54,23 +60,24 @@ export const rustClientGenerator = defineGeneratorPlugin(
         return {
             generator(def) {
                 const context: GeneratorContext = {
+                    clientVersion: def.info?.version ?? "",
                     clientName: options.clientName,
                     typeNamePrefix: options.typePrefix ?? "",
                     instancePath: "",
                     schemaPath: "",
                     generatedTypes: [],
-                    parentTypeNames: [],
                 };
                 const client = createRustClient(def, {
                     ...context,
-                    parentTypeNames: [],
                 });
                 const outputFile = path.resolve(options.outputFile);
                 fs.writeFileSync(outputFile, client);
                 const shouldFormat = options.format ?? true;
                 if (shouldFormat) {
                     try {
-                        execSync(`rustfmt ${outputFile}`);
+                        execSync(`rustfmt ${outputFile} --edition 2021`, {
+                            stdio: "inherit",
+                        });
                     } catch (err) {
                         console.error(`Error formatting`, err);
                     }
@@ -83,22 +90,45 @@ export const rustClientGenerator = defineGeneratorPlugin(
 
 export function createRustClient(
     def: AppDefinition,
-    context: GeneratorContext,
+    context: Omit<GeneratorContext, "clientVersion">,
 ): string {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const services = unflattenProcedures(def.procedures);
-    const rpcsParts: string[] = [];
-    const serviceParts: string[] = [];
+    const rpcParts: string[] = [];
+    const subServices: { name: string; key: string }[] = [];
+    const subServiceContent: string[] = [];
     for (const key of Object.keys(services)) {
-        const def = services[key];
-        if (isServiceDefinition(def)) {
-            //     const service = rustServiceFromDef(key, def, context);
-            //     if (service) serviceParts.push(service);
+        const subDef = services[key];
+        if (isServiceDefinition(subDef)) {
+            const service = rustServiceFromSchema(subDef, {
+                clientVersion: def.info?.version ?? "",
+                clientName: context.clientName,
+                typeNamePrefix: context.typeNamePrefix,
+                instancePath: key,
+                schemaPath: key,
+                generatedTypes: context.generatedTypes,
+            });
+            if (service.content) {
+                subServices.push({
+                    key: validRustIdentifier(key),
+                    name: service.name,
+                });
+                subServiceContent.push(service.content);
+            }
             continue;
         }
-        if (isRpcDefinition(def)) {
-            // const procedure = rustProcedureFromDef(key, def, context);
-            // if (procedure) rpcsParts.push(procedure);
+        if (isRpcDefinition(subDef)) {
+            const rpc = rustRpcFromSchema(subDef, {
+                clientVersion: def.info?.version ?? "",
+                clientName: context.clientName,
+                typeNamePrefix: context.typeNamePrefix,
+                instancePath: key,
+                schemaPath: key,
+                generatedTypes: context.generatedTypes,
+            });
+            if (rpc) {
+                rpcParts.push(rpc);
+            }
             continue;
         }
     }
@@ -106,6 +136,7 @@ export function createRustClient(
     for (const key of Object.keys(def.definitions)) {
         const result = rustTypeFromSchema(def.definitions[key]!, {
             ...context,
+            clientVersion: def.info?.version ?? "",
             instancePath: key,
             schemaPath: "",
         });
@@ -113,9 +144,9 @@ export function createRustClient(
             modelParts.push(result.content);
         }
     }
-    let result: string;
-    if (rpcsParts.length === 0 && serviceParts.length === 0) {
-        result = `use arri_client::{
+    if (rpcParts.length === 0 && subServiceContent.length === 0) {
+        return `#![allow(dead_code)]
+use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},
     utils::{serialize_date_time, serialize_string},
@@ -123,10 +154,39 @@ export function createRustClient(
 };
 use std::collections::BTreeMap;
 ${modelParts.join("\n\n")}`;
-    } else {
-        throw new Error("Not yet implemented");
     }
-    return result;
+    const clientName = validRustName(context.clientName);
+    return `#![allow(dead_code)]
+use arri_client::{
+    chrono::{DateTime, FixedOffset},
+    parsed_arri_request, reqwest, serde_json,
+    utils::{serialize_date_time, serialize_string},
+    ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
+    ArriServerError,
+};
+use std::collections::BTreeMap;
+
+pub struct ${clientName}<'a> {
+    config: &'a ArriClientConfig,
+${subServices.map((service) => `    pub ${service.key}: ${service.name}<'a>,`).join("\n")}
+}
+
+impl<'a> ArriClientService<'a> for ${clientName}<'a> {
+    fn create(config: &'a ArriClientConfig) -> Self {
+        Self {
+            config: &config,
+${subServices.map((service) => `            ${service.key}: ${service.name}::create(config),`).join("\n")}
+        }
+    }
+}
+
+impl ${clientName}<'_> {
+${rpcParts.join("\n")}
+}
+
+${subServiceContent.join("\n\n")}
+
+${modelParts.join("\n\n")}`;
 }
 
 export function rustTypeFromSchema(

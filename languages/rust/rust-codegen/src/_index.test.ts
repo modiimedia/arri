@@ -38,11 +38,10 @@ test("Generated code matches codegen reference", async () => {
         instancePath: "",
         schemaPath: "",
         generatedTypes: [],
-        parentTypeNames: [],
     });
     const outputFile = path.resolve(tmpDir, "example_client.g.rs");
     writeFileSync(outputFile, result);
-    execSync(`rustfmt ${outputFile}`, { stdio: "inherit" });
+    execSync(`rustfmt ${outputFile} --edition 2021`, { stdio: "inherit" });
     const finalResult = readFileSync(outputFile, "utf8");
     expect(normalizeWhitespace(finalResult)).toBe(
         normalizeWhitespace(referenceClient),
