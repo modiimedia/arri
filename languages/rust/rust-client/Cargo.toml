@@ -7,7 +7,7 @@ license = "MIT"
 publish = true
 homepage = "https://github.com/modiimedia/arri"
 repository = "https://github.com/modiimedia/arri"
-keywords = ["arrirpc", "arri", "http", "rpc", "sse", "json"]
+keywords = ["arrirpc", "arri", "http", "rpc"]
 categories = ["parsing", "web-programming::http-client"]
 include = ["/src"]
 

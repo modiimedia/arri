@@ -4,14 +4,6 @@
   "sourceRoot": "languages/rust/rust-client/src",
   "projectType": "library",
   "targets": {
-    "publish": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm publish",
-        "cwd": "languages/rust/rust-client"
-      },
-      "dependsOn": ["build"]
-    },
     "cargo": {
       "executor": "nx:run-commands",
       "options": {
@@ -29,6 +21,13 @@
       "outputs": ["{projectRoot}/target"],
       "options": {
         "command": "cargo test",
+        "cwd": "languages/rust/rust-client"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo publish",
         "cwd": "languages/rust/rust-client"
       }
     }
