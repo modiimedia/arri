@@ -1,16 +1,13 @@
-use std::result;
+use std::collections::HashMap;
 
 use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
-use example_client::{Book, BookParams, ExampleClient};
+use example_client::{Book, ExampleClient};
 
 mod example_client;
 
-fn get_headers() -> reqwest::header::HeaderMap {
-    let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert(
-        "Authorization",
-        reqwest::header::HeaderValue::from_str("Bearer 12345").unwrap(),
-    );
+fn get_headers() -> HashMap<&'static str, &'static str> {
+    let mut headers = HashMap::new();
+    headers.insert("Authorization", "Bearer 12345");
     headers
 }
 
@@ -31,7 +28,7 @@ async fn main() {
             updated_at: DateTime::default(),
         })
         .await;
-    println!("{:?}", result);
+    println!("CREATE_BOOK_RESULT: {:?}", result);
 }
 
 #[cfg(test)]

@@ -1,15 +1,15 @@
 pub mod sse;
 pub mod utils;
-
 pub use async_trait::{self};
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
+use std::collections::HashMap;
 
 pub struct ArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: fn() -> reqwest::header::HeaderMap,
+    pub headers: fn() -> HashMap<&'static str, &'static str>,
 }
 
 pub trait ArriClientService<'a> {
@@ -20,14 +20,16 @@ pub struct ArriRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: &'a reqwest::header::HeaderMap,
+    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub client_version: String,
 }
 
 pub struct ArriParsedRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: &'a reqwest::header::HeaderMap,
+    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub client_version: String,
 }
 
 #[derive(Debug)]
@@ -68,14 +70,14 @@ impl ArriModel for ArriServerError {
     fn from_json(input: serde_json::Value) -> Self {
         match input {
             serde_json::Value::Object(val) => {
-                let status_code = match val.get("statusCode") {
+                let code = match val.get("code") {
                     Some(serde_json::Value::Number(status_code_val)) => {
                         u16::try_from(status_code_val.to_owned().as_u64().unwrap_or_default())
                             .unwrap_or(0)
                     }
                     _ => 0,
                 };
-                let status_message = match val.get("statusMessage") {
+                let message = match val.get("message") {
                     Some(serde_json::Value::String(status_message_val)) => {
                         status_message_val.to_owned()
                     }
@@ -91,8 +93,8 @@ impl ArriModel for ArriServerError {
                 };
 
                 Self {
-                    code: status_code,
-                    message: status_message,
+                    code,
+                    message,
                     stack,
                     data,
                 }
@@ -171,6 +173,30 @@ pub async fn arri_request<'a>(
     params: Option<impl ArriModel>,
 ) -> Result<reqwest::Response, ArriServerError> {
     let response: Result<reqwest::Response, reqwest::Error>;
+    let mut headers = (opts.headers)();
+    match headers.get("Accept") {
+        Some(_) => {}
+        None => {
+            headers.insert("Accept", "application/json");
+        }
+    }
+    if !opts.client_version.is_empty() {
+        headers.insert("client-version", opts.client_version.as_str());
+    }
+    let mut final_headers = reqwest::header::HeaderMap::new();
+    for (key, value) in headers.into_iter() {
+        match reqwest::header::HeaderValue::from_str(value) {
+            Ok(header_val) => {
+                final_headers.insert(key, header_val);
+            }
+            Err(_) => {
+                println!(
+                    "WARNING: Received invalid header value. key: \"{}\", value: \"{}\"",
+                    key, value,
+                );
+            }
+        }
+    }
     match opts.method {
         reqwest::Method::GET => {
             let mut final_url = opts.url.clone();
@@ -181,7 +207,7 @@ pub async fn arri_request<'a>(
             response = opts
                 .http_client
                 .get(final_url)
-                .headers(opts.headers.to_owned())
+                .headers(final_headers)
                 .send()
                 .await;
         }
@@ -189,7 +215,7 @@ pub async fn arri_request<'a>(
             let builder = opts
                 .http_client
                 .post(opts.url.clone())
-                .headers(opts.headers.to_owned());
+                .headers(final_headers);
             match params {
                 Some(val) => {
                     response = builder.body(val.to_json_string()).send().await;
@@ -203,7 +229,7 @@ pub async fn arri_request<'a>(
             let builder = opts
                 .http_client
                 .put(opts.url.clone())
-                .headers(opts.headers.to_owned());
+                .headers(final_headers);
             match params {
                 Some(val) => {
                     response = builder.body(val.to_json_string()).send().await;
@@ -217,7 +243,7 @@ pub async fn arri_request<'a>(
             let builder = opts
                 .http_client
                 .patch(opts.url.clone())
-                .headers(opts.headers.to_owned());
+                .headers(final_headers);
             match params {
                 Some(val) => {
                     response = builder.body(val.to_json_string()).send().await;
@@ -231,7 +257,7 @@ pub async fn arri_request<'a>(
             let builder = opts
                 .http_client
                 .delete(opts.url.clone())
-                .headers(opts.headers.to_owned());
+                .headers(final_headers);
             match params {
                 Some(val) => {
                     response = builder.body(val.to_json_string()).send().await;
@@ -307,6 +333,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
             url: opts.url,
             http_client: opts.http_client,
             headers: opts.headers,
+            client_version: opts.client_version,
         },
         params,
     )
