@@ -145,7 +145,7 @@ export function createRustClient(
         }
     }
     if (rpcParts.length === 0 && subServiceContent.length === 0) {
-        return `#![allow(dead_code)]
+        return `#![allow(dead_code, unused_imports, unused_variables, unconditional_recursion)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},
@@ -156,13 +156,13 @@ use std::collections::BTreeMap;
 ${modelParts.join("\n\n")}`;
     }
     const clientName = validRustName(context.clientName);
-    return `#![allow(dead_code)]
+    return `#![allow(dead_code, unused_imports, unused_variables, unconditional_recursion)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError,
+    ArriServerError, EmptyArriModel,
 };
 use std::collections::BTreeMap;
 

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use reqwest::{header::HeaderMap, Response};
 use serde_json::json;
 use std::marker::PhantomData;

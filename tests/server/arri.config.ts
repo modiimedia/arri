@@ -37,5 +37,12 @@ export default defineConfig({
                 "../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
             ),
         }),
+        generators.rustClient({
+            clientName: "TestClient",
+            outputFile: path.resolve(
+                __dirname,
+                "../clients/rust/src/test_client.g.rs",
+            ),
+        }),
     ],
 });

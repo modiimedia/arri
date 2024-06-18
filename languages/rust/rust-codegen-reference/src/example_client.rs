@@ -1,10 +1,10 @@
-#![allow(dead_code)]
+#![allow(dead_code, unused_imports)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError,
+    ArriServerError, EmptyArriModel,
 };
 use std::collections::BTreeMap;
 

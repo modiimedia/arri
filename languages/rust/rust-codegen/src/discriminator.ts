@@ -68,6 +68,7 @@ export function rustTaggedUnionFromSchema(
         toQueryParts: string[];
     };
     const subTypes: EnumSubType[] = [];
+    const subTypeContent: string[] = [];
     const discriminatorKeyProperty = validRustIdentifier(discriminatorKey);
     const fromJsonParts: string[] = [];
     for (const discriminatorValue of discriminatorValues) {
@@ -99,6 +100,7 @@ export function rustTaggedUnionFromSchema(
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
             });
+            if (keyType.content) subTypeContent.push(keyType.content);
             const keyName = validRustIdentifier(key);
             subType.properties.push({
                 name: keyName,
@@ -143,6 +145,7 @@ export function rustTaggedUnionFromSchema(
                 discriminatorKey: discriminatorKey,
                 discriminatorValue: discriminatorValue,
             });
+            if (keyType.content) subTypeContent.push(keyType.content);
             const keyName = validRustIdentifier(key);
             subType.properties.push({
                 name: keyName,
@@ -248,7 +251,9 @@ impl ArriModel for ${enumName} {
         }
         _query_parts_.join("&")
     }
-}`;
+}
+
+${subTypeContent.join("\n\n")}`;
     context.generatedTypes.push(enumName);
     return result;
 }

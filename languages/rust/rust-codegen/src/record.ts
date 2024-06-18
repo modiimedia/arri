@@ -61,6 +61,24 @@ export default function rustRecordFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
+            if (innerType.isNullable) {
+                return `${target}.push('{');
+            for (_index_, (_key_, _value_)) in ${input}.iter().enumerate() {
+                if _index_ != 0 {
+                    ${target}.push(',');
+                }
+                ${target}.push_str(format!("\\"{}\\":", _key_).as_str());
+                match _value_ {
+                    Some(value_val) => {
+                        ${innerType.toJsonTemplate("value_val", target)};
+                    },
+                    _ => {
+                        ${target}.push_str("null");
+                    }
+                }
+            }
+            ${target}.push('}')`;
+            }
             return `${target}.push('{');
             for (_index_, (_key_, _value_)) in ${input}.iter().enumerate() {
                 if _index_ != 0 {

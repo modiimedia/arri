@@ -58,7 +58,7 @@ export function rustHttpRpcFromSchema(
                 headers: self.config.headers,
                 client_version: "${context.clientVersion}".to_string(),
             },
-            ${params ? `Some(params)` : "None"},
+            ${params ? `Some(params)` : "None::<EmptyArriModel>"},
             |body| ${response ? `return ${context.typeNamePrefix}${response}::from_json_string(body)` : "{}"},
         )
         .await

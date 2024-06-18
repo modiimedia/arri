@@ -12,7 +12,7 @@ export default function rustRefFromSchema(
     schema: SchemaFormRef,
     context: GeneratorContext,
 ): RustProperty {
-    const innerTypeName = validRustName(schema.ref);
+    const innerTypeName = `${context.typeNamePrefix}${validRustName(schema.ref)}`;
     const isOptionType = outputIsOptionType(schema, context);
     const needsBoxing = true;
     let typeName = `Box<${innerTypeName}>`;
@@ -57,7 +57,7 @@ export default function rustRefFromSchema(
                     }
                     _ => ${valFromJson(innerKey)},
                 },
-                _ => ${valFromJson(innerKey)},
+                _ => Box::new(${innerTypeName}::new()),
             }`;
         },
         toJsonTemplate(input, target) {
