@@ -70,7 +70,6 @@ export function rustTaggedUnionFromSchema(
     const subTypes: EnumSubType[] = [];
     const discriminatorKeyProperty = validRustIdentifier(discriminatorKey);
     const fromJsonParts: string[] = [];
-    const toQueryParts: string[] = [];
     for (const discriminatorValue of discriminatorValues) {
         const subTypeName = validRustName(discriminatorValue);
         const subSchema = schema.mapping[discriminatorValue]!;
@@ -84,6 +83,9 @@ export function rustTaggedUnionFromSchema(
         const keyNames: string[] = [];
         subType.toJsonParts.push(
             `\t\t_json_output_.push_str("\\"${discriminatorKey}\\":\\"${discriminatorValue}\\"");`,
+        );
+        subType.toQueryParts.push(
+            `_query_parts_.push(format!("${discriminatorKey}=${discriminatorValue}"));`,
         );
         for (const key of Object.keys(subSchema.properties)) {
             const keySchema = subSchema.properties[key]!;
@@ -125,6 +127,9 @@ export function rustTaggedUnionFromSchema(
                     `${keyType.toJsonTemplate(keyName, "_json_output_")};`,
                 );
             }
+            subType.toQueryParts.push(
+                `${keyType.toQueryStringTemplate(keyName, key, "_query_parts_")};`,
+            );
         }
         for (const key of Object.keys(subSchema.optionalProperties ?? {})) {
             const keySchema = subSchema.optionalProperties![key]!;
@@ -148,6 +153,24 @@ export function rustTaggedUnionFromSchema(
             fromJsonParts.push(
                 `let ${keyName} = ${keyType.fromJsonTemplate(`_val_.get("${key}")`, key)};`,
             );
+            subType.toJsonParts.push(
+                `\t\t_json_output_.push_str(",\\"${key}\\":");`,
+            );
+            if (keyType.isNullable) {
+                const innerKey = validRustIdentifier(`${key}_val`);
+                subType.toJsonParts.push(`match ${keyName} {
+                    Some(${innerKey}) => {
+                        ${keyType.toJsonTemplate(innerKey, "_json_output_")};
+                    }
+                    _ => {
+                        _json_output_.push_str("null");
+                    }
+                };`);
+            } else {
+                subType.toJsonParts.push(
+                    `${keyType.toJsonTemplate(keyName, "_json_output_")};`,
+                );
+            }
         }
         fromJsonParts.push(`Self::${subTypeName} {
             ${subType.properties.map((prop) => `${prop.name},`).join("\n")}    
@@ -214,7 +237,15 @@ impl ArriModel for ${enumName} {
 
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        ${toQueryParts.join("\n")}
+        match &self {
+            ${subTypes.map(
+                (
+                    type,
+                ) => `Self::${type.name} { ${type.properties.map((prop) => `${prop.name},`).join("\n")}} => {
+                ${type.toQueryParts.join("\n")}
+            }`,
+            )}
+        }
         _query_parts_.join("&")
     }
 }`;

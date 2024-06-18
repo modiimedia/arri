@@ -647,16 +647,16 @@ impl ArriModel for Discriminator {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         match &self {
-            Discriminator::A { id } => {
+            Self::A { id } => {
                 _query_parts_.push(format!("typeName=A"));
                 _query_parts_.push(format!("id={}", id));
             }
-            Discriminator::B { id, name } => {
+            Self::B { id, name } => {
                 _query_parts_.push(format!("typeName=B"));
                 _query_parts_.push(format!("id={}", id));
                 _query_parts_.push(format!("name={}", name));
             }
-            Discriminator::C { id, name, date } => {
+            Self::C { id, name, date } => {
                 _query_parts_.push(format!("typeName=C"));
                 _query_parts_.push(format!("id={}", id));
                 _query_parts_.push(format!("name={}", name));
@@ -861,7 +861,7 @@ impl ArriModel for ObjectWithOptionalFields {
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
-                                match Some(_value_) {
+                                match Some(_value_.to_owned()) {
                                     Some(serde_json::Value::Bool(value_val)) => {
                                         value_val.to_owned()
                                     }
