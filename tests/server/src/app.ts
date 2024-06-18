@@ -5,7 +5,6 @@ import {
     defineMiddleware,
     getHeader,
     handleCors,
-    readBody,
 } from "@arrirpc/server";
 
 import manualRouter from "./routes/other";
