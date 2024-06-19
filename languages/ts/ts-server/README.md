@@ -136,7 +136,7 @@ Setup your npm scripts:
 
 ### Creating Procedures
 
-#### File Based Router
+#### File Based Routing
 
 Arri RPC comes with an optional file based router that will automatically register functions in the `./procedures` directory that end with the `.rpc.ts` file extension.
 
@@ -192,7 +192,7 @@ app.rpc('sayHello', {...})
 
 // using a sub-router
 const app = new ArriApp();
-const router = new ArriRoute();
+const router = new ArriRouter();
 router.rpc('sayHello', {...})
 app.use(router)
 ```
@@ -559,6 +559,19 @@ defineEventStreamRpc({
     getRequestIP(event);
   }
 )
+```
+
+#### Manually Starting an Arri Server
+
+Arri server is just an H3 app under the hood so you can start it the same way you would start an H3 app. Although you should note that currently the filed based router only works when using the Arri CLI.
+
+```ts
+import { createServer } from "node:http";
+import { ArriApp, toNodeListener } from "@arrirpc/server";
+
+const app = new ArriApp();
+
+createServer(toNodeListener(app.h3App)).listen(process.env.PORT || 3000);
 ```
 
 ## Arri CLI
