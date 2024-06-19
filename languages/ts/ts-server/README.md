@@ -14,6 +14,7 @@ Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](h
         -   [Manual Routing](#manual-routing)
         -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
         -   [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
+            -   [Adding to the RPC Context](#adding-to-the-rpc-context)
     -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
     -   [Adding Middleware](#adding-middleware)
 -   [Key Concepts](#key-concepts)
@@ -404,12 +405,12 @@ app.rpc("sayHello", {
 });
 ```
 
-To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arri/server`
+To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arrirpc/server`
 
 ```ts
-import "@arri/server";
+import "@arrirpc/server";
 
-declare module "@arri/server" {
+declare module "@arrirpc/server" {
     interface ArriEventContext {
         user?: {
             id: number;
@@ -422,25 +423,24 @@ declare module "@arri/server" {
 
 ### Adding Client Generators
 
-Right now Arri RPC has client generators for the following languages:
-
--   typescript
--   dart
--   kotlin
-
 ```ts
 // arri.config.ts
 import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     // rest of config
-    clientGenerators: [
+    generators: [
         generators.typescriptClient({...}),
         generators.dartClient({...}),
         generators.kotlinClient({...})
+        generators.someGenerator({...})
     ]
 });
 ```
+
+For info on what generators are available see [here](/README.md#client-generators)
+
+For info on how to create your own generator see []
 
 ## Key Concepts
 
