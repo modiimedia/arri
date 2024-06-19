@@ -545,20 +545,20 @@ You can access H3 events from inside procedures handlers.
 
 ```ts
 defineRpc({
-  params: undefined,
-  response: undefined,
-  handler(_, event) {
-    getRequestIP(event);
-  }
-)
+    params: undefined,
+    response: undefined,
+    handler(_, event) {
+        getRequestIP(event);
+    },
+});
 
 defineEventStreamRpc({
-  params: undefined,
-  response: undefined,
-  handler(_, event) {
-    getRequestIP(event);
-  }
-)
+    params: undefined,
+    response: undefined,
+    handler(_, event) {
+        getRequestIP(event);
+    },
+});
 ```
 
 #### Manually Starting an Arri Server
