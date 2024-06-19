@@ -22,7 +22,7 @@ const app = new ArriApp({
 });
 
 app.use(
-    defineMiddleware((event) => {
+    defineMiddleware(async (event) => {
         const authHeader = getHeader(event, "x-test-header");
         if (
             !authHeader?.length &&

@@ -19,7 +19,7 @@ const ignoreFiles = [
     "**/**/dist/*.d.ts",
     "**/*.dart",
     "**/*.kt",
-    "**/*.rust",
+    "**/*.rs",
     "**/*.zig",
     "**/*.swift",
     "**/*.go",

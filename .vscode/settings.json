@@ -21,6 +21,7 @@
     "Arri",
     "arrirpc",
     "autoroutes",
+    "chrono",
     "citty",
     "codegen",
     "Consola",
@@ -32,6 +33,7 @@
     "nitropack",
     "ofetch",
     "pathe",
+    "reqwest",
     "postversion",
     "pubspec",
     "scule",
@@ -43,6 +45,14 @@
     "vals",
     "websockets"
   ],
+  "rust-analyzer.linkedProjects": [
+    "languages/rust/rust-client/Cargo.toml",
+    "languages/rust/rust-codegen-reference/Cargo.toml",
+    "tests/clients/rust/Cargo.toml"
+  ],
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
   "eslint.validate": ["json"],
   "java.compile.nullAnalysis.mode": "automatic",
   "eslint.experimental.useFlatConfig": true

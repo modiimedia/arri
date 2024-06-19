@@ -80,29 +80,35 @@ export class ArriApp implements ArriRouterBase {
                   .split("//")
                   .join("/")
             : `/${this._rpcDefinitionPath}`;
-        this.h3Router.get(
-            this.definitionPath,
-            eventHandler(() => this.getAppDefinition()),
-        );
+        if (!opts.disableDefinitionRoute) {
+            this.h3Router.get(
+                this.definitionPath,
+                eventHandler(() => this.getAppDefinition()),
+            );
+        }
         if (!opts.disableDefaultRoute) {
             this.route({
                 method: ["get", "head"],
                 path: "/",
                 handler: (_) => {
+                    const response: Record<string, string> = {
+                        title: this.appInfo?.title ?? "Arri-RPC Server",
+                        description:
+                            this.appInfo?.description ??
+                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
+                        ...this.appInfo,
+                    };
+                    if (opts.disableDefinitionRoute) {
+                        return response;
+                    }
                     let schemaPath: string;
                     if (this._rpcRoutePrefix) {
                         schemaPath = `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`;
                     } else {
                         schemaPath = `/${this._rpcDefinitionPath}`;
                     }
-                    return {
-                        title: this.appInfo?.title ?? "Arri-RPC Server",
-                        description:
-                            this.appInfo?.description ??
-                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
-                        schemaPath,
-                        ...this.appInfo,
-                    };
+                    response.schemaPath = schemaPath;
+                    return response;
                 },
             });
         }
@@ -280,6 +286,7 @@ export interface ArriOptions {
      */
     rpcDefinitionPath?: string;
     disableDefaultRoute?: boolean;
+    disableDefinitionRoute?: boolean;
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
     onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
     onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;
