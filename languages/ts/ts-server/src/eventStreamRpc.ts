@@ -1,18 +1,17 @@
 import { a, type InferType, type ValueError } from "@arrirpc/schema";
 import {
+    createEventStream,
     eventHandler,
+    EventStream,
+    EventStreamMessage,
+    getHeader,
     type H3Event,
     isPreflightRequest,
     type Router,
 } from "h3";
-import {
-    createEventStream,
-    type EventStream,
-    type EventStreamMessage,
-} from "h3-sse";
 
 import { type RpcEventContext } from "./context";
-import { type ArriServerError, defineError, handleH3Error } from "./errors";
+import { handleH3Error } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 import {
@@ -89,12 +88,12 @@ export class EventStreamConnection<TData> {
 
     constructor(event: H3Event, opts: EventStreamConnectionOptions<TData>) {
         this.eventStream = createEventStream(event);
-        this.lastEventId = this.eventStream.lastEventId;
+        this.lastEventId = getHeader(event, "Last-Event-Id");
         this.pingIntervalMs = opts.pingInterval ?? 60000;
         this.serializer = opts.serializer;
         this.validator = opts.validator;
         this.validationErrors = opts.validationErrors;
-        this.eventStream.onClose(() => {
+        this.eventStream.onClosed(() => {
             this.cleanup();
         });
     }
@@ -115,10 +114,11 @@ export class EventStreamConnection<TData> {
     /**
      * Publish a new event. Events published with this hook will trigger the `onData()` hooks of any connected clients.
      */
-    async push(data: TData[], eventId?: string): Promise<void>;
-    async push(data: TData, eventId?: string): Promise<void>;
+    async push(data: TData[], eventId?: string): Promise<SsePushResult[]>;
+    async push(data: TData, eventId?: string): Promise<SsePushResult>;
     async push(data: TData | TData[], eventId?: string) {
         if (Array.isArray(data)) {
+            const results: SsePushResult[] = [];
             const events: EventStreamMessage[] = [];
             for (const item of data) {
                 if (this.validator(item)) {
@@ -127,22 +127,17 @@ export class EventStreamConnection<TData> {
                         event: "message",
                         data: this.serializer(item),
                     });
+                    results.push({ success: true });
                     continue;
                 }
                 const errors = this.validationErrors(item);
-                const errorResponse: ArriServerError = defineError(500, {
-                    message:
-                        "Failed to serialize response. Response does not match specified schema.",
-                    data: errors,
-                });
-                events.push({
-                    id: eventId,
-                    event: "error",
-                    data: JSON.stringify(errorResponse),
+                results.push({
+                    success: false,
+                    errors,
                 });
             }
             await this.eventStream.push(events);
-            return;
+            return results;
         }
         if (this.validator(data)) {
             await this.eventStream.push({
@@ -150,19 +145,14 @@ export class EventStreamConnection<TData> {
                 event: "message",
                 data: this.serializer(data),
             });
-            return;
+
+            return { success: true };
         }
         const errors = this.validationErrors(data);
-        const errorResponse = defineError(500, {
-            message:
-                "Failed to serialize response. Response does not match specified schema.",
-            data: errors,
-        });
-        await this.eventStream.push({
-            id: eventId,
-            event: "error",
-            data: JSON.stringify(errorResponse),
-        });
+        return {
+            success: false,
+            errors,
+        };
     }
 
     private cleanup() {
@@ -185,10 +175,16 @@ export class EventStreamConnection<TData> {
         await this.eventStream.close();
     }
 
-    onClose(cb: () => any): void {
-        this.eventStream.onClose(cb);
+    onClosed(cb: () => any): void {
+        this.eventStream.onClosed(cb);
     }
 }
+
+export type SsePushResult =
+    | {
+          success: true;
+      }
+    | { success: false; errors: ValueError[] };
 
 export function registerEventStreamRpc(
     router: Router,
@@ -252,7 +248,7 @@ export function registerEventStreamRpc(
                 event.context as EventStreamRpcHandlerContext,
                 event as RpcEvent<any>,
             );
-            if (!event.handled && !stream.eventStream._handled) {
+            if (!event.handled) {
                 stream.send();
             }
         } catch (err) {

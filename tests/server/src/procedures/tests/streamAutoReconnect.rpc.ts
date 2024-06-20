@@ -26,7 +26,7 @@ export default defineEventStreamRpc({
                 throw new Error("Interval was not properly cleaned up");
             }
         });
-        stream.onClose(() => {
+        stream.onClosed(() => {
             clearInterval(interval);
         });
     },
