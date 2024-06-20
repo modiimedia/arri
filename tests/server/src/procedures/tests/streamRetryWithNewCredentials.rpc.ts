@@ -29,7 +29,7 @@ export default defineEventStreamRpc({
                 event.node.res.end();
             }
         });
-        stream.onClose(() => {
+        stream.onClosed(() => {
             clearInterval(interval);
         });
     },
