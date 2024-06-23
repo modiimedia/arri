@@ -56,7 +56,7 @@ async function main() {
 
     // RUST client
     const cargoTomlParts = readFileSync(
-        "languages/rust/rust-client/cargo.toml",
+        "languages/rust/rust-client/Cargo.toml",
         { encoding: "utf-8" },
     ).split("\n");
     for (let i = 0; i < cargoTomlParts.length; i++) {
@@ -66,7 +66,7 @@ async function main() {
         }
     }
     writeFileSync(
-        "languages/rust/rust-client/cargo.toml",
+        "languages/rust/rust-client/Cargo.toml",
         cargoTomlParts.join("\n"),
     );
     execSync(`nx run-many -t cargo -- check`, {

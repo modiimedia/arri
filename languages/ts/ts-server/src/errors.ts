@@ -1,4 +1,4 @@
-import { a, type AObjectSchema,type ValidationError } from "@arrirpc/schema";
+import { a, type AObjectSchema, type ValidationError } from "@arrirpc/schema";
 import {
     type H3Error,
     type H3Event,
@@ -6,6 +6,7 @@ import {
     send,
     setResponseHeader,
     setResponseStatus,
+    StatusCode,
 } from "h3";
 
 import { type ArriOptions } from "./app";
@@ -77,48 +78,8 @@ export function errorResponseFromValidationErrors(
     });
 }
 
-export type StatusCode =
-    | number
-    | 400
-    | 401
-    | 402
-    | 403
-    | 404
-    | 405
-    | 406
-    | 407
-    | 408
-    | 409
-    | 410
-    | 411
-    | 412
-    | 413
-    | 414
-    | 415
-    | 416
-    | 417
-    | 418
-    | 419
-    | 420
-    | 421
-    | 422
-    | 423
-    | 424
-    | 428
-    | 429
-    | 431
-    | 451
-    | 500
-    | 501
-    | 502
-    | 503
-    | 504
-    | 505
-    | 507
-    | 511;
-
 const errorResponseDefaults: Record<
-    StatusCode,
+    StatusCode | number,
     { name: string; message: string }
 > = {
     400: {

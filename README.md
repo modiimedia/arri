@@ -6,13 +6,15 @@ This is a work in progress. Things will break.
 
 ## Schema Builder
 
--   [Arri Schema Builder](tooling/schema/README.md)
--   [Arri Schema Typebox Adapter](tooling/schema-typebox-adapter/README.md)
--   [Eslint Plugin](tooling/eslint-plugin/README.md)
+[@arrirpc/schema](tooling/schema/README.md) is used to define types that can be generated in any language. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
+
+## Server Implementations
+
+-   [Typescript](languages/ts/ts-server/README.md) - Official ts server implementation. It uses [@arrirpc/schema](tooling/schma/README.md) to define language agnostic types and safely parse/serialize inputs and outputs.
 
 ## Client Generators
 
-Below are the language client generators that are planned to have first party support. This chart tracks the current progress the implementations for these clients.
+Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients.
 
 | Language                                            | HTTP | SSE |
 | --------------------------------------------------- | ---- | --- |
@@ -28,9 +30,10 @@ Below are the language client generators that are planned to have first party su
 
 🚧 in progress
 
-## Server Implementations
-
--   [Typescript](languages/ts/ts-server/)
+## Other Tooling
+-   [arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
+-   [@arrirpc/typebox-adapter](tooling/schema-typebox-adapter/README.md) - convert Typebox Schemas to Arri Type Definitions
+-   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
 
 ## Creating Schemas For Custom Server Implementations
 

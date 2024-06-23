@@ -2,7 +2,26 @@
 
 Command line interface for ARRI-RPC
 
+## Table of Contents
+
+-   [Commands](#commands)
+-   [Usage with @arrirpc/server](#usage-with-arrirpcserver)
+
+## Commands
+
+Run `arri --help` to get a full list of commands
+
+| Cmd                  | Description                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| codegen [input-file] | Run generate clients specified in the `arri.config.ts`. See [here](/README.md#creating-schemas-for-custom-server-implementations) for details. |
+| init [dir]           | Scaffold an arri app/library                                                                                                                   |
+| list                 | List available arri versions                                                                                                                   |
+| use [version]        | Update arri dependencies to a specific version (checks recursively for package.json, pubspec.yaml, cargo.toml, etc)                            |
+| version              | Print current CLI version                                                                                                                      |
+
 ## Usage with @arrirpc/server
+
+@arrirpc/server will automatically rerun code generators on hot-reload during development, and when building for production.
 
 For full details visit the [server docs](https://github.com/modiimedia/arri/blob/master/packages/arri/README.md)
 
@@ -26,84 +45,4 @@ export default defineConfig({
 ```bash
 arri dev
 arri build
-```
-
-## Generate Clients Without an Arri Server
-
-#### 1) Create an App Definition
-
-```ts
-// app-definition.ts
-import { createAppDefinition } from "arri";
-import { a } from "@arrirpc/schema";
-
-export default createAppDefinition({
-    procedures: {
-        sayHello: {
-            transport: "http",
-            method: "post",
-            path: "/say-hello",
-            params: a.object({
-                name: a.string(),
-            }),
-            response: a.object({
-                message: a.string(),
-            }),
-        },
-    },
-});
-```
-
-#### 2) Create an `arri.config.ts`
-
-```ts
-// arri.config.ts
-import { defineConfig, generators } from "arri";
-
-export default defineConfig({
-    generators: [
-        generators.typescriptClient({
-            // options
-        }),
-        generators.dartClient({
-            // options
-        }),
-        generators.kotlinClient({
-            // options
-        }),
-    ],
-});
-```
-
-#### 3) Run codegen command
-
-```bash
-arri codegen ./app-definition.ts
-```
-
-#### Now you can use the generated clients in your application code
-
-```ts
-// typescript
-await client.sayHello({
-    name: "John Doe",
-});
-```
-
-```dart
-// dart
-await client.sayHello(
-    SayHelloParams(
-        name: "John Doe",
-    ),
-);
-```
-
-```kt
-// kotlin
-client.sayHello(
-    SayHelloParams(
-        name = "John Doe"
-    )
-)
 ```

@@ -14,6 +14,7 @@ Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](h
         -   [Manual Routing](#manual-routing)
         -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
         -   [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
+            -   [Adding to the RPC Context](#adding-to-the-rpc-context)
     -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
     -   [Adding Middleware](#adding-middleware)
 -   [Key Concepts](#key-concepts)
@@ -136,7 +137,7 @@ Setup your npm scripts:
 
 ### Creating Procedures
 
-#### File Based Router
+#### File Based Routing
 
 Arri RPC comes with an optional file based router that will automatically register functions in the `./procedures` directory that end with the `.rpc.ts` file extension.
 
@@ -192,7 +193,7 @@ app.rpc('sayHello', {...})
 
 // using a sub-router
 const app = new ArriApp();
-const router = new ArriRoute();
+const router = new ArriRouter();
 router.rpc('sayHello', {...})
 app.use(router)
 ```
@@ -404,12 +405,12 @@ app.rpc("sayHello", {
 });
 ```
 
-To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arri/server`
+To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arrirpc/server`
 
 ```ts
-import "@arri/server";
+import "@arrirpc/server";
 
-declare module "@arri/server" {
+declare module "@arrirpc/server" {
     interface ArriEventContext {
         user?: {
             id: number;
@@ -422,25 +423,24 @@ declare module "@arri/server" {
 
 ### Adding Client Generators
 
-Right now Arri RPC has client generators for the following languages:
-
--   typescript
--   dart
--   kotlin
-
 ```ts
 // arri.config.ts
 import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     // rest of config
-    clientGenerators: [
+    generators: [
         generators.typescriptClient({...}),
         generators.dartClient({...}),
         generators.kotlinClient({...})
+        generators.someGenerator({...})
     ]
 });
 ```
+
+For info on what generators are available see [here](/README.md#client-generators)
+
+For info on how to create your own generator see []
 
 ## Key Concepts
 
@@ -545,20 +545,33 @@ You can access H3 events from inside procedures handlers.
 
 ```ts
 defineRpc({
-  params: undefined,
-  response: undefined,
-  handler(_, event) {
-    getRequestIP(event);
-  }
-)
+    params: undefined,
+    response: undefined,
+    handler(_, event) {
+        getRequestIP(event);
+    },
+});
 
 defineEventStreamRpc({
-  params: undefined,
-  response: undefined,
-  handler(_, event) {
-    getRequestIP(event);
-  }
-)
+    params: undefined,
+    response: undefined,
+    handler(_, event) {
+        getRequestIP(event);
+    },
+});
+```
+
+#### Manually Starting an Arri Server
+
+Arri server is just an H3 app under the hood so you can start it the same way you would start an H3 app. Although you should note that currently the filed based router only works when using the Arri CLI.
+
+```ts
+import { createServer } from "node:http";
+import { ArriApp, toNodeListener } from "@arrirpc/server";
+
+const app = new ArriApp();
+
+createServer(toNodeListener(app.h3App)).listen(process.env.PORT || 3000);
 ```
 
 ## Arri CLI

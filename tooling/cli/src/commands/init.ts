@@ -12,7 +12,7 @@ import { logger } from "../common";
 export default defineCommand({
     meta: {
         name: "Init",
-        description: "Scaffold an Arri app",
+        description: "Scaffold an arri app",
     },
     args: {
         dir: {
