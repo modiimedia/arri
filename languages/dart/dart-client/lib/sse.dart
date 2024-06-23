@@ -5,10 +5,8 @@ import 'package:arri_client/errors.dart';
 import 'package:arri_client/request.dart';
 import 'package:http/http.dart' as http;
 
-typedef SseHookOnData<T> = void Function(T data, EventSource<T> connection);
+typedef SseHookOnMessage<T> = void Function(T data, EventSource<T> connection);
 typedef SseHookOnError<T> = void Function(
-    ArriError error, EventSource<T> connection);
-typedef SseHookOnConnectionError<T> = void Function(
     ArriError error, EventSource<T> connection);
 typedef SseHookOnOpen<T> = void Function(
     http.StreamedResponse response, EventSource<T> connection);
@@ -23,11 +21,10 @@ EventSource<T> parsedArriSseRequest<T>(
   FutureOr<Map<String, String>> Function()? headers,
   Duration? retryDelay,
   int? maxRetryCount,
-  SseHookOnData<T>? onData,
-  SseHookOnError<T>? onError,
-  SseHookOnConnectionError<T>? onConnectionError,
+  SseHookOnMessage<T>? onMessage,
   SseHookOnOpen<T>? onOpen,
   SseHookOnClose<T>? onClose,
+  SseHookOnError<T>? onError,
   String? lastEventId,
   String? clientVersion,
 }) {
@@ -46,12 +43,11 @@ EventSource<T> parsedArriSseRequest<T>(
     },
     retryDelay: retryDelay ?? Duration.zero,
     maxRetryCount: maxRetryCount,
-    onData: onData,
-    onError: onError,
-    onConnectionError: onConnectionError,
-    onClose: onClose,
-    onOpen: onOpen,
     lastEventId: lastEventId,
+    onMessage: onMessage,
+    onOpen: onOpen,
+    onClose: onClose,
+    onError: onError,
   );
 }
 
@@ -71,9 +67,8 @@ class EventSource<T> {
   bool _closedByClient = false;
 
   // hooks
-  late final void Function(T data) _onData;
+  late final void Function(T data) _onMessage;
   late final void Function(ArriError error) _onError;
-  late final void Function(ArriError error) _onConnectionError;
   late final void Function(http.StreamedResponse response) _onOpen;
   late final void Function() _onClose;
 
@@ -87,11 +82,10 @@ class EventSource<T> {
     Duration retryDelay = Duration.zero,
     int? maxRetryCount,
     // hooks
-    SseHookOnData<T>? onData,
-    SseHookOnError<T>? onError,
-    SseHookOnConnectionError<T>? onConnectionError,
-    SseHookOnClose<T>? onClose,
+    SseHookOnMessage<T>? onMessage,
     SseHookOnOpen<T>? onOpen,
+    SseHookOnClose<T>? onClose,
+    SseHookOnError<T>? onError,
     this.lastEventId,
   })  : _headers = headers,
         _params = params,
@@ -100,16 +94,12 @@ class EventSource<T> {
     this._httpClient = httpClient ?? http.Client();
 
     // set hooks
-    _onData = (data) {
-      onData?.call(data, this);
+    _onMessage = (data) {
+      onMessage?.call(data, this);
       _streamController?.add(data);
     };
     _onError = (err) {
       onError?.call(err, this);
-      _streamController?.addError(err);
-    };
-    _onConnectionError = (err) {
-      onConnectionError?.call(err, this);
       _streamController?.addError(err);
     };
     _onOpen = (response) {
@@ -198,10 +188,7 @@ class EventSource<T> {
               case SseRawEvent<T>():
                 break;
               case SseMessageEvent<T>():
-                _onData(event.data);
-                break;
-              case SseErrorEvent<T>():
-                _onError(event.data);
+                _onMessage(event.data);
                 break;
               case SseDoneEvent<T>():
                 close();
@@ -229,9 +216,9 @@ class EventSource<T> {
       return;
     }
     if (err is ArriError) {
-      _onConnectionError.call(err);
+      _onError.call(err);
     } else if (err is http.ClientException) {
-      _onConnectionError(
+      _onError(
         ArriError(
           code: 0,
           message: err.message,
@@ -239,7 +226,7 @@ class EventSource<T> {
         ),
       );
     } else {
-      _onConnectionError.call(
+      _onError.call(
         ArriError(
           code: 0,
           message: "Unknown error connecting to $url",
@@ -339,8 +326,6 @@ sealed class SseEvent<TData> {
       switch (sse.event) {
         case "message":
           return SseMessageEvent.fromRawSseEvent(sse, parser);
-        case "error":
-          return SseErrorEvent.fromRawSseEvent(sse);
         case "done":
           return SseDoneEvent.fromRawSseEvent(sse);
         default:
@@ -389,19 +374,6 @@ class SseMessageEvent<TData> extends SseEvent<TData> {
       id: event.id,
       event: "message",
       data: parser(event.data),
-    );
-  }
-}
-
-class SseErrorEvent<TData> extends SseEvent<TData> {
-  final ArriError data;
-  const SseErrorEvent({super.id, super.event, required this.data});
-
-  factory SseErrorEvent.fromRawSseEvent(SseRawEvent event) {
-    return SseErrorEvent(
-      id: event.id,
-      event: event.event,
-      data: ArriError.fromString(event.data),
     );
   }
 }

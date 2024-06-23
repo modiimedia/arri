@@ -251,7 +251,6 @@ fun main() {
 
     testSseSupport(sseScope, client)
     testAutoRetriesOnServerError(sseScope, client)
-    testSseParsesMessageAndErrorEvents(sseScope, client)
     testSseClosesOnDone(sseScope, client)
     testSseAutoReconnectsWhenClosedByServer(sseScope, client)
     testSseStreamLargeObjects(sseScope, client)
@@ -328,44 +327,6 @@ fun testAutoRetriesOnServerError(
     expect("$tag > opens more than once", openCount > 0, true)
     expect("$tag > messages are zero", messageCount, 0)
     expect("$tag > errors more than once", errorCount > 0, true)
-}
-
-fun testSseParsesMessageAndErrorEvents(
-    scope: CoroutineScope,
-    client: TestClient,
-) {
-    val tag = "SSE parses both 'message' and 'error' events"
-    var openCount = 0
-    var messageCount = 0
-    var errorReceived: TestClientError? = null
-    var otherErrorCount = 0
-    var closeCount = 0
-    val job = client.tests.streamTenEventsThenError(
-        scope = scope,
-        onOpen = {
-            openCount++
-        },
-        onData = { data ->
-            messageCount++
-        },
-        onError = { err ->
-            errorReceived = err
-            throw CancellationException()
-        },
-        onConnectionError = {
-            otherErrorCount++
-        },
-        onClose = {
-            closeCount++
-        }
-    )
-    Thread.sleep(1000)
-    job.cancel()
-    expect(tag, openCount, 1)
-    expect(tag, closeCount, 1)
-    expect(tag, messageCount, 10)
-    expect(tag, errorReceived is TestClientError, true)
-    expect(tag, otherErrorCount, 0)
 }
 
 fun testSseClosesOnDone(

@@ -29,10 +29,10 @@ export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== "head";
 };
 
-export const SCHEMA_VERSION = "0.0.5";
+export const SCHEMA_VERSION = "0.0.6";
 
 export interface AppDefinition {
-    arriSchemaVersion: typeof SCHEMA_VERSION;
+    schemaVersion: typeof SCHEMA_VERSION;
     info?: {
         title?: string;
         description?: string;
@@ -52,7 +52,7 @@ export function isAppDefinition(input: unknown): input is AppDefinition {
         return false;
     }
     const inputObj = input as Record<any, any>;
-    if (typeof inputObj.arriSchemaVersion !== "string") {
+    if (typeof inputObj.schemaVersion !== "string") {
         return false;
     }
     if (typeof inputObj.procedures !== "object") {
@@ -231,20 +231,17 @@ export function normalizeWhitespace(input: string) {
     return result;
 }
 
-export interface ClientGenerator<
-    TOptions extends Record<string, any> | undefined,
-> {
+export interface Generator<TOptions extends Record<string, any> | undefined> {
     generator: (def: AppDefinition, isDevServer?: boolean) => any;
     options: TOptions;
 }
 
-export type ClientGeneratorPlugin<
-    TOptions extends Record<string, any> | undefined,
-> = (options: TOptions) => ClientGenerator<TOptions>;
+export type GeneratorPlugin<TOptions extends Record<string, any> | undefined> =
+    (options: TOptions) => Generator<TOptions>;
 
-export function defineClientGeneratorPlugin<
+export function defineGeneratorPlugin<
     TOptions extends Record<string, any> | undefined,
->(plugin: ClientGeneratorPlugin<TOptions>) {
+>(plugin: GeneratorPlugin<TOptions>) {
     return plugin;
 }
 
@@ -254,7 +251,7 @@ type RpcDefinitionHelper = RpcDefinition<
 
 type AppDefinitionHelper = Omit<
     AppDefinition,
-    "procedures" | "definitions" | "arriSchemaVersion"
+    "procedures" | "definitions" | "schemaVersion"
 > & {
     procedures: Record<string, RpcDefinitionHelper>;
     definitions?: AppDefinition["definitions"];
@@ -288,7 +285,7 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
         };
     }
     const result: AppDefinition = {
-        arriSchemaVersion: "0.0.5",
+        schemaVersion: "0.0.6",
         ...input,
         procedures,
         definitions,

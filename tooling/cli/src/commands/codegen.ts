@@ -10,6 +10,11 @@ import { logger } from "../common";
 import { isArriConfig } from "../config";
 
 export default defineCommand({
+    meta: {
+        name: "Codegen",
+        description:
+            "Run code-generators. (Uses options from your arri config file)",
+    },
     args: {
         schema: {
             type: "positional",
@@ -80,7 +85,7 @@ export default defineCommand({
             config.generators.map((gen) =>
                 gen.generator(
                     def ?? {
-                        arriSchemaVersion: "0.0.4",
+                        schemaVersion: "0.0.6",
                         procedures: {},
                         definitions: {},
                     },

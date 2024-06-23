@@ -1,9 +1,4 @@
-import {
-    dartClientGenerator,
-    defineConfig,
-    kotlinClientGenerator,
-    typescriptClientGenerator,
-} from "arri";
+import { defineConfig, generators } from "arri";
 import { readFileSync } from "fs";
 import path from "path";
 
@@ -20,7 +15,7 @@ export default defineConfig({
     serverEntry: "server.ts",
     http2: true,
     generators: [
-        typescriptClientGenerator({
+        generators.typescriptClient({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
@@ -28,18 +23,25 @@ export default defineConfig({
             ),
             prettierOptions: prettierConfig,
         }),
-        dartClientGenerator({
+        generators.dartClient({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
                 "../clients/dart/lib/test_client.rpc.dart",
             ),
         }),
-        kotlinClientGenerator({
+        generators.kotlinClient({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
                 "../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
+            ),
+        }),
+        generators.rustClient({
+            clientName: "TestClient",
+            outputFile: path.resolve(
+                __dirname,
+                "../clients/rust/src/test_client.g.rs",
             ),
         }),
     ],

@@ -133,7 +133,7 @@ const BookParams = a.object(
 type BookParams = a.infer<typeof BookParams>;
 
 const def: AppDefinition = {
-    arriSchemaVersion: "0.0.5",
+    schemaVersion: "0.0.6",
     info: {
         version: "20",
     },

@@ -302,37 +302,6 @@ test("[SSE] supports server sent events", async () => {
     expect(wasConnected).toBe(true);
 }, 2000);
 
-test("[SSE] parses both 'message' and 'error' events", async () => {
-    let timesConnected = 0;
-    let messageCount = 0;
-    let errorReceived: ArriErrorInstance | undefined;
-    let otherErrorCount = 0;
-    const controller = client.tests.streamTenEventsThenError({
-        onMessage(_) {
-            messageCount++;
-        },
-        onErrorMessage(error) {
-            errorReceived = error;
-            controller.abort();
-        },
-        onRequestError() {
-            otherErrorCount++;
-        },
-        onResponseError() {
-            otherErrorCount++;
-        },
-        onRequest() {
-            timesConnected++;
-        },
-    });
-    await wait(500);
-    expect(errorReceived?.code).toBe(400);
-    expect(otherErrorCount).toBe(0);
-    expect(controller.signal.aborted).toBe(true);
-    expect(timesConnected).toBe(1);
-    expect(messageCount).toBe(10);
-}, 2000);
-
 test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;

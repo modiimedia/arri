@@ -1,6 +1,7 @@
 {
   "name": "test-client-ts",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["test-server", "ts-client"],
   "targets": {
     "integration-test": {
       "executor": "@nx/vite:test",
@@ -12,9 +13,9 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["tests/clients/ts/**/*.ts"]
+        "command": "pnpm eslint tests/clients/ts"
       }
     }
   }

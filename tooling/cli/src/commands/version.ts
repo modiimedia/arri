@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 const version = defineCommand({
     meta: {
         name: "Version",
-        description: "Get the current Arri CLI version",
+        description: "Get the current arri CLI version",
     },
     run() {
         const packageJson = JSON.parse(

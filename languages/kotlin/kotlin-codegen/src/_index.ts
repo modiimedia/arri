@@ -2,7 +2,7 @@ import fs from "node:fs";
 
 import {
     type AppDefinition,
-    defineClientGeneratorPlugin,
+    defineGeneratorPlugin,
     isRpcDefinition,
     isSchemaFormDiscriminator,
     isSchemaFormElements,
@@ -60,7 +60,7 @@ export interface KotlinClientOptions {
     outputFile: string;
 }
 
-export const kotlinClientGenerator = defineClientGeneratorPlugin(
+export const kotlinClientGenerator = defineGeneratorPlugin(
     (options: KotlinClientOptions) => {
         return {
             generator(def) {

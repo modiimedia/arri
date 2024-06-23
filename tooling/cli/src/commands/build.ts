@@ -22,6 +22,9 @@ import {
 import { defaultConfig, type ResolvedArriConfig } from "../config";
 
 export default defineCommand({
+    meta: {
+        description: "Build the arri TS server",
+    },
     args: {
         config: {
             type: "string",

@@ -8,6 +8,7 @@ dist
 tmp
 /out-tsc
 **/.output
+**/target
 
 # dependencies
 node_modules
@@ -49,6 +50,7 @@ build
 **/.tmp
 **/*.dart_tool
 .nx/cache
+.nx/workspace-data
 
 **/target
 **/.gradle

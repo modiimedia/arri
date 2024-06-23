@@ -6,31 +6,34 @@ This is a work in progress. Things will break.
 
 ## Schema Builder
 
--   [Arri Schema Builder](tooling/schema/README.md)
--   [Arri Schema Typebox Adapter](tooling/schema-typebox-adapter/README.md)
--   [Eslint Plugin](tooling/eslint-plugin/README.md)
+[@arrirpc/schema](tooling/schema/README.md) is used to define types that can be generated in any language. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
+
+## Server Implementations
+
+-   [Typescript](languages/ts/ts-server/README.md) - Official ts server implementation. It uses [@arrirpc/schema](tooling/schma/README.md) to define language agnostic types and safely parse/serialize inputs and outputs.
 
 ## Client Generators
 
-Below are the language client generators that are planned to have first party support. This chart tracks the current progress the implementations for these clients.
+Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients.
 
-| Language                                   | HTTP | SSE |
-| ------------------------------------------ | ---- | --- |
-| [Typescript](languages/ts/ts-codegen/)     | ✅   | ✅  |
-| [Dart](languages/dart/dart-codegen/)       | ✅   | ✅  |
-| Rust                                       | 🚧   | 🚧  |
-| [Kotlin](languages/kotlin/kotlin-codegen/) | ✅   | ✅  |
-| Swift                                      |      |     |
-| Go                                         |      |     |
-| Python                                     |      |     |
+| Language                                            | HTTP | SSE |
+| --------------------------------------------------- | ---- | --- |
+| [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅  |
+| [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅  |
+| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | 🚧  |
+| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅  |
+| Swift                                               | 🚧   | 🚧  |
+| Go                                                  |      |     |
+| Python                                              |      |     |
 
 ✅ completed
 
 🚧 in progress
 
-## Server Implementations
-
--   [Typescript](languages/ts/ts-server/)
+## Other Tooling
+-   [arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
+-   [@arrirpc/typebox-adapter](tooling/schema-typebox-adapter/README.md) - convert Typebox Schemas to Arri Type Definitions
+-   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
 
 ## Creating Schemas For Custom Server Implementations
 
@@ -50,22 +53,17 @@ Before running this command. Make sure you have an arri config created already.
 
 ```ts
 // arri.config.ts
-import {
-    defineConfig,
-    dartClientGenerator,
-    kotlinClientGenerator,
-    typescriptClientGenerator,
-} from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     generators: [
-        dartClientGenerator({
+        generators.dartClient({
             // options
         }),
-        kotlinClientGenerator({
+        generators.kotlinClient({
             // options
         }),
-        typescriptClientGenerator({
+        generators.typescriptClient({
             // options
         }),
     ],
@@ -133,7 +131,7 @@ JSON app definitions are something that would normally be automatically generate
 
 ```json
 {
-    "arriSchemaVersion": "<current-schema-version>",
+    "schemaVersion": "<current-schema-version>",
     "procedures": {
         "sayHello": {
             "transport": "http",

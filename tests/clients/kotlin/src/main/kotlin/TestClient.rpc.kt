@@ -150,6 +150,21 @@ class TestClientTestsService(
         throw TestClientError.fromJson(response.bodyAsText())
     }
 
+    suspend fun sendError(params: SendErrorParams): Unit {
+        val response = __prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/send-error",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers?.invoke(),
+        ).execute()
+        
+        if (response.status.value in 200..299) {
+            return 
+        }
+        throw TestClientError.fromJson(response.bodyAsText())
+    }
+
     suspend fun sendObject(params: ObjectWithEveryType): ObjectWithEveryType {
         val response = __prepareRequest(
             client = httpClient,
@@ -457,42 +472,6 @@ class TestClientTestsService(
                     httpClient = httpClient,
                     url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
                     method = HttpMethod.Get,
-                    params = null,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = ChatMessage.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
-        }
-
-    fun streamTenEventsThenError(
-            scope: CoroutineScope,
-            
-            lastEventId: String? = null,
-            bufferCapacity: Int = 1024,
-            onOpen: ((response: HttpResponse) -> Unit) = {},
-            onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
-            onData: ((data: ChatMessage) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-ten-events-then-error",
-                    method = HttpMethod.Post,
                     params = null,
                     headers = headers,
                     backoffTime = 0,
@@ -1076,6 +1055,65 @@ val deprecatedField: String = when (__input.jsonObject["deprecatedField"]) {
             }
             return DeprecatedRpcParams(
                 deprecatedField,
+            )
+        }
+    }
+}
+
+
+
+data class SendErrorParams(
+    val code: UShort,
+    val message: String,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"code\":"
+output += code
+output += ",\"message\":"
+output += buildString { printQuoted(message) }
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add("code=$code")
+queryParts.add("message=$message")
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<SendErrorParams> {
+        @JvmStatic
+        override fun new(): SendErrorParams {
+            return SendErrorParams(
+                code = 0u,
+                message = "",
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): SendErrorParams {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): SendErrorParams {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] SendErrorParams.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty SendErrorParams.")
+                return new()
+            }
+val code: UShort = when (__input.jsonObject["code"]) {
+                is JsonPrimitive -> __input.jsonObject["code"]!!.jsonPrimitive.contentOrNull?.toUShortOrNull() ?: 0u
+                else -> 0u
+            }
+val message: String = when (__input.jsonObject["message"]) {
+                is JsonPrimitive -> __input.jsonObject["message"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+            return SendErrorParams(
+                code,
+                message,
             )
         }
     }

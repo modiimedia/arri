@@ -36,7 +36,7 @@ it("creates valid app definition", () => {
             const timeout = setInterval(async () => {
                 await stream.push({ message: `Hello ${params.name}` });
             }, 100);
-            stream.onClose(() => {
+            stream.onClosed(() => {
                 clearInterval(timeout);
             });
         },
@@ -44,7 +44,7 @@ it("creates valid app definition", () => {
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.5",
+        schemaVersion: "0.0.6",
         procedures: {
             sayHello: {
                 transport: "http",

@@ -83,7 +83,7 @@ export default defineEventStreamRpc({
             await stream.push(randomItem());
         });
 
-        stream.onClose(async () => {
+        stream.onClosed(async () => {
             clearInterval(interval);
         });
         stream.send();

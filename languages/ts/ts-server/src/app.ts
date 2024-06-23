@@ -19,7 +19,7 @@ import {
 
 import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
-import { type Middleware,type MiddlewareEvent } from "./middleware";
+import { type Middleware, type MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
 import { ArriRouter, type ArriRouterBase } from "./router";
 import {
@@ -80,29 +80,35 @@ export class ArriApp implements ArriRouterBase {
                   .split("//")
                   .join("/")
             : `/${this._rpcDefinitionPath}`;
-        this.h3Router.get(
-            this.definitionPath,
-            eventHandler(() => this.getAppDefinition()),
-        );
+        if (!opts.disableDefinitionRoute) {
+            this.h3Router.get(
+                this.definitionPath,
+                eventHandler(() => this.getAppDefinition()),
+            );
+        }
         if (!opts.disableDefaultRoute) {
             this.route({
                 method: ["get", "head"],
                 path: "/",
                 handler: (_) => {
+                    const response: Record<string, string> = {
+                        title: this.appInfo?.title ?? "Arri-RPC Server",
+                        description:
+                            this.appInfo?.description ??
+                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
+                        ...this.appInfo,
+                    };
+                    if (opts.disableDefinitionRoute) {
+                        return response;
+                    }
                     let schemaPath: string;
                     if (this._rpcRoutePrefix) {
                         schemaPath = `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`;
                     } else {
                         schemaPath = `/${this._rpcDefinitionPath}`;
                     }
-                    return {
-                        title: this.appInfo?.title ?? "Arri-RPC Server",
-                        description:
-                            this.appInfo?.description ??
-                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
-                        schemaPath,
-                        ...this.appInfo,
-                    };
+                    response.schemaPath = schemaPath;
+                    return response;
                 },
             });
         }
@@ -254,7 +260,7 @@ export class ArriApp implements ArriRouterBase {
 
     getAppDefinition(): AppDefinition {
         const appDef: AppDefinition = {
-            arriSchemaVersion: SCHEMA_VERSION,
+            schemaVersion: SCHEMA_VERSION,
             info: this.appInfo,
             procedures: {},
             definitions: this._definitions as any,
@@ -280,6 +286,7 @@ export interface ArriOptions {
      */
     rpcDefinitionPath?: string;
     disableDefaultRoute?: boolean;
+    disableDefinitionRoute?: boolean;
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
     onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
     onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;

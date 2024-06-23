@@ -27,7 +27,8 @@ export default defineConfig({
                 singleThread: true,
             },
         },
-        reporters: ["default"],
+        reporters: ["default", "html"],
+        outputFile: ".temp/test-results/index.html",
         cache: {
             dir: "../../../node_modules/.vitest",
         },

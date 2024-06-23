@@ -1,7 +1,7 @@
 import {
     type AppDefinition,
     camelCase,
-    defineClientGeneratorPlugin,
+    defineGeneratorPlugin,
     type HttpRpcDefinition,
     isRpcDefinition,
     isSchemaFormDiscriminator,
@@ -33,14 +33,14 @@ import {
 import { writeFileSync } from "fs";
 import prettier from "prettier";
 
-interface GeneratorOptions {
+export interface TypescriptGeneratorOptions {
     clientName: string;
     outputFile: string;
     prettierOptions?: Omit<prettier.Config, "parser">;
 }
 
-export const typescriptClientGenerator = defineClientGeneratorPlugin(
-    (options: GeneratorOptions) => ({
+export const typescriptClientGenerator = defineGeneratorPlugin(
+    (options: TypescriptGeneratorOptions) => ({
         generator: async (def) => {
             if (!options.clientName) {
                 throw new Error("Name is requires");
@@ -62,7 +62,7 @@ export const typescriptClientGenerator = defineClientGeneratorPlugin(
 
 export async function createTypescriptClient(
     def: AppDefinition,
-    options: GeneratorOptions,
+    options: TypescriptGeneratorOptions,
 ): Promise<string> {
     const clientName = pascalCase(options.clientName);
     const services = unflattenProcedures(def.procedures);
@@ -146,12 +146,12 @@ import { ${importParts.join(", ")} } from '@arrirpc/client';
     
 interface ${clientName}Options {
     baseUrl?: string;
-    headers?: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
+    headers?: Record<string, string | undefined> | (() => Record<string, string | undefined> | Promise<Record<string, string | undefined>>);
 }
 
 export class ${clientName} {
     private readonly baseUrl: string;
-    private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>)
+    private readonly headers: Record<string, string | undefined> | (() => Record<string, string | undefined> | Promise<Record<string, string | undefined>>)
     private readonly clientVersion = '${rpcOptions.versionNumber}';
     ${serviceFieldParts.join("\n    ")}
 
@@ -171,7 +171,7 @@ ${subContentParts.join("\n")}
     });
 }
 
-interface RpcOptions extends GeneratorOptions {
+interface RpcOptions extends TypescriptGeneratorOptions {
     versionNumber: string;
     typesNeedingParser: string[];
     hasSseProcedures: boolean;
@@ -317,7 +317,7 @@ export function tsServiceFromDefinition(
 
     return `export class ${name}Service {
         private readonly baseUrl: string;
-        private readonly headers: Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
+        private readonly headers: Record<string, string | undefined> | (() => Record<string, string | undefined> | Promise<Record<string, string | undefined>>);
         private readonly clientVersion = '${options.versionNumber}';
         ${serviceFieldParts.join("\n    ")}
 
@@ -404,7 +404,7 @@ export function maybeNullType(typeName: string, isNullable = false) {
 export function tsAnyFromJtdSchema(
     nodePath: string,
     def: Schema,
-    options: GeneratorOptions,
+    options: TypescriptGeneratorOptions,
     additionalOptions: AdditionalOptions,
 ): TsProperty {
     const key = nodePath.split(".").pop() ?? "";
