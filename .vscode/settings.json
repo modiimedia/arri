@@ -48,6 +48,9 @@
   "rust-analyzer.linkedProjects": [
     "languages/rust/rust-client/Cargo.toml",
     "languages/rust/rust-codegen-reference/Cargo.toml",
+    "languages/rust/rust-schema/Cargo.toml",
+    "languages/rust/rust-schema-macros/Cargo.toml",
+    "languages/rust/rust-schema-tests/Cargo.toml",
     "tests/clients/rust/Cargo.toml"
   ],
   "[rust]": {

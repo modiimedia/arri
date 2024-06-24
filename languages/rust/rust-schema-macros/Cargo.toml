@@ -1,0 +1,15 @@
+[package]
+name = "arri_schema_macros"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "arri_schema_macros"
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+arri_schema = {path = "../rust-schema"}
+quote = "*"
+syn = {version  = "*", features = ["extra-traits"]}
+proc-macro2 = "*"

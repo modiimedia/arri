@@ -1,0 +1,39 @@
+{
+  "name": "rust-schema-tests",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "cargo": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo",
+        "cwd": "languages/rust/rust-schema-tests"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "cargo test",
+        "cwd": "languages/rust/rust-schema-tests"
+      }
+    },
+    "expand": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "cargo expand > .temp/expand_output.rs",
+        "cwd": "languages/rust/rust-schema-tests"
+      },
+      "configurations": {
+        "watch": {
+          "command": "nodemon --watch ../rust-codegen-reference/src -e rs --exec pnpm nx expand rust-schema-tests"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[package]
+name = "arri_schema_tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+
+[dependencies]
+arri_schema = {path = "../rust-schema"}
+arri_schema_macros = {path = "../rust-schema-macros"}

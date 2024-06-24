@@ -1,0 +1,11 @@
+[package]
+name = "arri_schema"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "arri_schema"
+path = "src/lib.rs"
+proc-macro = false
+
+[dependencies]
