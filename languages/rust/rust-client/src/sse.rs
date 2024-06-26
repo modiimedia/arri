@@ -171,8 +171,8 @@ where
                     continue;
                 }
                 let msg_text = format!("{}{}", pending_data, text);
-                pending_data = String::from("");
-                let messages = sse_messages_from_string(msg_text);
+                let (messages, left_over) = sse_messages_from_string(msg_text);
+                pending_data = left_over;
                 for message in messages {
                     let event = message.event.unwrap_or("".to_string());
                     match event.as_str() {
@@ -192,7 +192,7 @@ where
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SseMessage {
     id: Option<String>,
     event: Option<String>,
@@ -223,22 +223,22 @@ impl SeeMessageMethods for SseMessage {
         for part in parts {
             let trimmed = part.trim();
             if trimmed.starts_with("id:") {
-                let sub_str = &trimmed[3..trimmed.len()];
+                let sub_str = &trimmed[4..trimmed.len()];
                 id = Some(sub_str.trim().to_string());
                 continue;
             }
             if trimmed.starts_with("event:") {
-                let sub_str = &trimmed[5..trimmed.len()];
+                let sub_str = &trimmed[6..trimmed.len()];
                 event = Some(sub_str.trim().to_string());
                 continue;
             }
             if trimmed.starts_with("data:") {
-                let sub_str = &trimmed[4..trimmed.len()];
+                let sub_str = &trimmed[5..trimmed.len()];
                 data = sub_str.trim().to_string();
                 continue;
             }
             if trimmed.starts_with("retry:") {
-                let sub_str = &trimmed[5..trimmed.len()];
+                let sub_str = &trimmed[6..trimmed.len()];
                 let result = json!(sub_str.trim());
                 match result {
                     serde_json::Value::Number(val) => {
@@ -246,6 +246,12 @@ impl SeeMessageMethods for SseMessage {
                             i32::try_from(val.as_i64().unwrap_or_default()).unwrap_or_default(),
                         );
                     }
+                    serde_json::Value::String(val) => match val.parse::<i32>() {
+                        Ok(int_val) => {
+                            retry = Some(int_val);
+                        }
+                        Err(_) => {}
+                    },
                     _ => retry = None,
                 }
             }
@@ -286,12 +292,67 @@ impl<T: ArriModel> SeeMessageMethods for ParsedSseMessage<T> {
     }
 }
 
-fn sse_messages_from_string(input: String) -> Vec<SseMessage> {
-    let parts = input.split("\n\n");
+fn sse_messages_from_string(input: String) -> (Vec<SseMessage>, String) {
+    let mut parts = input.split("\n\n").peekable();
+    let mut left_over = "";
     let mut messages: Vec<SseMessage> = Vec::new();
-    for part in parts {
+    while let Some(part) = parts.next() {
+        if parts.peek().is_none() {
+            left_over = part;
+            continue;
+        }
         let msg = SseMessage::from_string(part.to_string());
         messages.push(msg);
     }
-    messages
+    (messages, left_over.to_string())
+}
+#[cfg(test)]
+mod parsing_and_serialization_tests {
+    use crate::sse::SseMessage;
+
+    use super::sse_messages_from_string;
+
+    #[test]
+    fn sse_messages_from_string_test() {
+        let input = "
+data: hello world
+
+event: message
+data: {\"message\": \"hello world\"}
+
+id: 1
+event: message
+data: hello world again
+retry: 200
+
+data: hello world
+"
+        .to_string();
+        let (messages, left_over) = sse_messages_from_string(input);
+        assert_eq!(messages.len().clone(), 3);
+        assert_eq!(left_over, "data: hello world\n".to_string());
+        assert_eq!(
+            messages.clone(),
+            vec![
+                SseMessage {
+                    id: None,
+                    event: None,
+                    data: "hello world".to_string(),
+                    retry: None,
+                },
+                SseMessage {
+                    id: None,
+                    event: Some("message".to_string()),
+                    data: "{\"message\": \"hello world\"}".to_string(),
+                    retry: None,
+                },
+                SseMessage {
+                    id: Some("1".to_string()),
+                    event: Some("message".to_string()),
+                    data: "hello world again".to_string(),
+                    retry: Some(200)
+                },
+            ]
+        );
+    }
 }
