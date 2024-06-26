@@ -88,8 +88,13 @@ impl ExampleClientBooksService {
         )
         .await
     }
-    pub async fn watch_book<OnEvent>(self: &Self, params: BookParams, on_event: OnEvent)
-    where
+    pub async fn watch_book<OnEvent>(
+        self: &Self,
+        params: BookParams,
+        on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
         OnEvent: Fn(SseEvent<Book>) -> (),
     {
         parsed_arri_sse_request(
@@ -99,6 +104,8 @@ impl ExampleClientBooksService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "20".to_string(),
+                max_retry_count: max_retry_count,
+                max_retry_interval: max_retry_interval,
             },
             Some(params),
             on_event,

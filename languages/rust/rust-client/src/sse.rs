@@ -1,61 +1,57 @@
 #![allow(dead_code)]
-use reqwest::Response;
 use serde_json::json;
-use std::{collections::HashMap, marker::PhantomData};
+use std::{collections::HashMap, thread::sleep, time::Duration};
 
 use crate::{ArriModel, ArriRequestErrorMethods, ArriServerError};
 
+#[derive(Clone)]
 pub struct ArriParsedSseRequestOptions<'a> {
     pub client: &'a reqwest::Client,
     pub client_version: String,
     pub url: String,
     pub method: reqwest::Method,
     pub headers: fn() -> HashMap<&'static str, &'static str>,
+    // Defaults to None
+    pub max_retry_count: Option<u64>,
+    // Max delay time in ms. defaults to Some(30000).
+    pub max_retry_interval: Option<u64>,
 }
 
 pub enum SseEvent<T> {
-    Message {
-        id: Option<String>,
-        data: T,
-        retry: Option<i32>,
-    },
-    Error {
-        error: ArriServerError,
-    },
+    Message(T),
+    Error(ArriServerError),
     Open,
     Close,
 }
 
 pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
     options: ArriParsedSseRequestOptions<'a>,
-    params: Option<impl ArriModel>,
+    params: Option<impl ArriModel + Clone>,
     on_event: OnEvent,
 ) where
     OnEvent: Fn(SseEvent<T>),
 {
-    arri_sse_request(
-        ArriSseRequestOptions {
-            http_client: options.client,
-            client_version: options.client_version,
-            url: options.url,
-            method: options.method,
-            headers: options.headers,
-        },
-        params,
-        |evt| {
-            let parsed_event = match evt {
-                SseEvent::Message { id, data, retry } => SseEvent::Message {
-                    id: id,
-                    data: T::from_json_string(data),
-                    retry: retry,
-                },
-                SseEvent::Error { error } => SseEvent::Error { error: error },
-                SseEvent::Open => SseEvent::Open,
-                SseEvent::Close => SseEvent::Close,
-            };
-            on_event(parsed_event);
-        },
-    )
+    let mut options = ArriSseRequestOptions {
+        http_client: options.client,
+        client_version: options.client_version,
+        url: options.url,
+        method: options.method,
+        headers: options.headers,
+        retry_count: 0,
+        retry_interval: 0,
+        max_retry_count: options.max_retry_count,
+        max_retry_interval: options.max_retry_interval.unwrap_or(30000),
+    };
+    arri_sse_request(&mut options, params, |evt| {
+        let parsed_event = match evt {
+            SseEvent::Message(data) => SseEvent::Message(T::from_json_string(data)),
+            SseEvent::Error(error) => SseEvent::Error(error),
+            SseEvent::Open => SseEvent::Open,
+            SseEvent::Close => SseEvent::Close,
+        };
+        #[allow(unused_must_use)]
+        on_event(parsed_event);
+    })
     .await;
 }
 
@@ -65,21 +61,25 @@ pub struct ArriSseRequestOptions<'a> {
     method: reqwest::Method,
     client_version: String,
     headers: fn() -> HashMap<&'static str, &'static str>,
+    retry_count: u64,
+    retry_interval: u64,
+    max_retry_interval: u64,
+    max_retry_count: Option<u64>,
 }
 
-pub struct ArriSseHooks<T: ArriModel, OnMessage, OnError, OnOpen, OnClose>
-where
-    OnMessage: Fn(T),
-    OnError: Fn(ArriServerError),
-    OnOpen: Fn(&Response),
-    OnClose: Fn(&Response),
-{
-    pub on_message: OnMessage,
-    pub on_error: Option<OnError>,
-    pub on_open: Option<OnOpen>,
-    pub on_close: Option<OnClose>,
-    _phantom: PhantomData<T>,
-}
+// pub struct ArriSseHooks<T: ArriModel, OnMessage, OnError, OnOpen, OnClose>
+// where
+//     OnMessage: Fn(T),
+//     OnError: Fn(ArriServerError),
+//     OnOpen: Fn(&Response),
+//     OnClose: Fn(&Response),
+// {
+//     pub on_message: OnMessage,
+//     pub on_error: Option<OnError>,
+//     pub on_open: Option<OnOpen>,
+//     pub on_close: Option<OnClose>,
+//     _phantom: PhantomData<T>,
+// }
 
 fn hashmap_to_header_map<'a>(input: HashMap<&'static str, String>) -> reqwest::header::HeaderMap {
     let mut headers = reqwest::header::HeaderMap::new();
@@ -95,11 +95,10 @@ fn hashmap_to_header_map<'a>(input: HashMap<&'static str, String>) -> reqwest::h
 }
 
 pub async fn arri_sse_request<'a, OnEvent>(
-    options: ArriSseRequestOptions<'a>,
-    params: Option<impl ArriModel>,
+    options: &mut ArriSseRequestOptions<'a>,
+    params: Option<impl ArriModel + Clone>,
     on_event: OnEvent,
-) -> ()
-where
+) where
     OnEvent: Fn(SseEvent<String>),
 {
     let query_string: Option<String>;
@@ -122,7 +121,7 @@ where
             reqwest::header::HeaderValue::from_str(&options.client_version).unwrap(),
         );
     }
-    match params {
+    match params.clone() {
         Some(val) => match options.method {
             reqwest::Method::GET => {
                 query_string = Some(val.to_query_params_string());
@@ -140,15 +139,15 @@ where
     }
 
     let url = match query_string {
-        Some(val) => format!("{}?{}", options.url, val),
-        None => options.url,
+        Some(val) => format!("{}?{}", options.url.clone(), val),
+        None => options.url.clone(),
     };
 
     let response = match json_body {
         Some(body) => {
             options
                 .http_client
-                .request(options.method, url)
+                .request(options.method.clone(), url.clone())
                 .headers(headers)
                 .body(body)
                 .send()
@@ -157,7 +156,7 @@ where
         None => {
             options
                 .http_client
-                .request(options.method, url)
+                .request(options.method.clone(), url.clone())
                 .headers(headers)
                 .send()
                 .await
@@ -165,19 +164,20 @@ where
     };
 
     if !response.is_ok() {
-        on_event(SseEvent::Error {
-            error: ArriServerError::new(),
-        });
-        return;
+        on_event(SseEvent::Error(ArriServerError::new()));
+        options.retry_count += 1;
+        sleep(Duration::from_millis(options.retry_interval.clone()));
+        return arri_sse_request(options, params, on_event).await;
     }
     let mut ok_response = response.unwrap();
+    options.retry_count = 0;
     on_event(SseEvent::Open);
     let status = ok_response.status().as_u16();
     if status < 200 || status >= 300 {
         let body = ok_response.text().await.unwrap_or_default();
-        on_event(SseEvent::Error {
-            error: ArriServerError::from_response_data(status, body),
-        });
+        on_event(SseEvent::Error(ArriServerError::from_response_data(
+            status, body,
+        )));
         return;
     }
     let mut pending_data: String = "".to_string();
@@ -201,11 +201,7 @@ where
                             break;
                         }
                         "message" => {
-                            on_event(SseEvent::Message {
-                                id: message.id,
-                                data: message.data,
-                                retry: message.retry,
-                            });
+                            on_event(SseEvent::Message(message.data));
                         }
                         _ => {}
                     }

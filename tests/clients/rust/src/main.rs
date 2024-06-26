@@ -12,9 +12,7 @@ mod tests {
     };
     use std::{
         collections::{BTreeMap, HashMap},
-        future::IntoFuture,
         sync::{Arc, Mutex},
-        thread::sleep,
         time::Duration,
     };
 
@@ -467,10 +465,10 @@ mod tests {
                         channel_id: "12345".to_string(),
                     },
                     |event| match event {
-                        SseEvent::Message { data, .. } => {
+                        SseEvent::Message(msg) => {
                             let mut msg_count = msg_count_ref.lock().unwrap();
                             *msg_count += 1;
-                            match data {
+                            match msg {
                                 crate::test_client::ChatMessage::Text { channel_id, .. } => {
                                     assert_eq!(channel_id, "12345".to_string());
                                 }
