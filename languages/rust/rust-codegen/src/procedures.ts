@@ -36,17 +36,7 @@ export function rustHttpRpcFromSchema(
     schema: HttpRpcDefinition,
     context: GeneratorContext,
 ): string {
-    if (schema.isEventStream) {
-        console.warn(
-            `[rust-codegen] SSE is not supported at this time. Skipping ${context.instancePath}.`,
-        );
-        return "";
-    }
     const functionName = getFunctionName(context.instancePath);
-    const params = schema.params ? validRustName(schema.params) : undefined;
-    const response = schema.response
-        ? validRustName(schema.response)
-        : undefined;
     let leading = "";
     if (schema.description) {
         leading += formatDescriptionComment(schema.description);
@@ -55,7 +45,32 @@ export function rustHttpRpcFromSchema(
     if (schema.isDeprecated) {
         leading += "#[deprecated]\n";
     }
-    return `${leading}pub async fn ${functionName} (
+    const params = schema.params ? validRustName(schema.params) : undefined;
+    const response = schema.response
+        ? validRustName(schema.response)
+        : undefined;
+    if (schema.isEventStream) {
+        return `${leading}pub async fn ${functionName}<OnEvent>(
+            self: &Self,
+            ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
+            on_event: OnEvent,
+        ) where
+            OnEvent: Fn(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>) -> (), {
+            parsed_arri_sse_request(
+                ArriParsedSseRequestOptions {
+                    client: &self.config.http_client,
+                    url: format!("{}${schema.path}", &self.config.base_url),
+                    method: reqwest::Method::${schema.method.toUpperCase()},
+                    headers: self.config.headers,
+                    client_version: "${context.clientVersion}".to_string(),
+                },
+                ${params ? `Some(params)` : "None"},
+                on_event,
+            )
+            .await;
+        }`;
+    }
+    return `${leading}pub async fn ${functionName}(
         self: &Self,
         ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
     ) -> Result<${context.typeNamePrefix}${response ?? "()"}, ArriServerError> {
@@ -146,21 +161,21 @@ export function rustServiceFromSchema(
     }
     return {
         name: serviceName,
-        content: `pub struct ${serviceName}<'a> {
-    config: &'a ArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name}<'a>,`).join("\n")}
+        content: `pub struct ${serviceName} {
+    config: ArriClientConfig,
+${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
 }
 
-impl<'a> ArriClientService<'a> for ${serviceName}<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for ${serviceName} {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-${subServices.map((service) => `            ${service.key}: ${service.name}::create(config),`).join("\n")}
+            config: config${subServices.length ? ".clone()" : ""},
+${subServices.map((service) => `            ${service.key}: ${service.name}::create(config.clone()),`).join("\n")}
         }
     }
 }
 
-impl ${serviceName}<'_> {
+impl ${serviceName} {
 ${rpcParts.join("\n")}
 }
 

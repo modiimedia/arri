@@ -1,7 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
-use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
-use example_client::{Book, ExampleClient};
+use arri_client::{
+    chrono::DateTime, reqwest, sse::ArriSseHooks, ArriClientConfig, ArriClientService,
+};
+use example_client::{Book, BookParams, ExampleClient};
 
 mod example_client;
 
@@ -18,7 +20,7 @@ async fn main() {
         base_url: "http://localhost:3000".to_string(),
         headers: get_headers,
     };
-    let client = ExampleClient::create(&config);
+    let client = Arc::new(ExampleClient::create(config));
     let result = client
         .books
         .create_book(Book {
@@ -28,6 +30,23 @@ async fn main() {
             updated_at: DateTime::default(),
         })
         .await;
+
+    tokio::spawn(async move {
+        client
+            .books
+            .watch_book(
+                BookParams {
+                    book_id: "12345".to_string(),
+                },
+                |event| match event {
+                    arri_client::sse::SseEvent::Message { id, data, retry } => {}
+                    arri_client::sse::SseEvent::Error { error } => {}
+                    arri_client::sse::SseEvent::Open => {}
+                    arri_client::sse::SseEvent::Close => {}
+                },
+            )
+            .await;
+    });
     println!("CREATE_BOOK_RESULT: {:?}", result);
 }
 

@@ -160,27 +160,28 @@ ${modelParts.join("\n\n")}`;
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,
 };
 use std::collections::BTreeMap;
 
-pub struct ${clientName}<'a> {
-    config: &'a ArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name}<'a>,`).join("\n")}
+pub struct ${clientName} {
+    config: ArriClientConfig,
+${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
 }
 
-impl<'a> ArriClientService<'a> for ${clientName}<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for ${clientName} {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-${subServices.map((service) => `            ${service.key}: ${service.name}::create(config),`).join("\n")}
+            config: config${subServices.length ? ".clone()" : ""},
+${subServices.map((service) => `            ${service.key}: ${service.name}::create(config.clone()),`).join("\n")}
         }
     }
 }
 
-impl ${clientName}<'_> {
+impl ${clientName} {
 ${rpcParts.join("\n")}
 }
 

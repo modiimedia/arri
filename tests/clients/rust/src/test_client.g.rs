@@ -8,43 +8,44 @@
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,
 };
 use std::collections::BTreeMap;
 
-pub struct TestClient<'a> {
-    config: &'a ArriClientConfig,
-    pub tests: TestClientTestsService<'a>,
-    pub adapters: TestClientAdaptersService<'a>,
-    pub users: TestClientUsersService<'a>,
+pub struct TestClient {
+    config: ArriClientConfig,
+    pub tests: TestClientTestsService,
+    pub adapters: TestClientAdaptersService,
+    pub users: TestClientUsersService,
 }
 
-impl<'a> ArriClientService<'a> for TestClient<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for TestClient {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-            tests: TestClientTestsService::create(config),
-            adapters: TestClientAdaptersService::create(config),
-            users: TestClientUsersService::create(config),
+            config: config.clone(),
+            tests: TestClientTestsService::create(config.clone()),
+            adapters: TestClientAdaptersService::create(config.clone()),
+            users: TestClientUsersService::create(config.clone()),
         }
     }
 }
 
-impl TestClient<'_> {}
+impl TestClient {}
 
-pub struct TestClientTestsService<'a> {
-    config: &'a ArriClientConfig,
+pub struct TestClientTestsService {
+    config: ArriClientConfig,
 }
 
-impl<'a> ArriClientService<'a> for TestClientTestsService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
+impl ArriClientService for TestClientTestsService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self { config: config }
     }
 }
 
-impl TestClientTestsService<'_> {
+impl TestClientTestsService {
     pub async fn empty_params_get_request(self: &Self) -> Result<DefaultPayload, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -240,19 +241,139 @@ impl TestClientTestsService<'_> {
         )
         .await
     }
-}
-
-pub struct TestClientAdaptersService<'a> {
-    config: &'a ArriClientConfig,
-}
-
-impl<'a> ArriClientService<'a> for TestClientAdaptersService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
+    pub async fn stream_auto_reconnect<OnEvent>(
+        self: &Self,
+        params: AutoReconnectParams,
+        on_event: OnEvent,
+    ) where
+        OnEvent: Fn(SseEvent<AutoReconnectResponse>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!("{}/rpcs/tests/stream-auto-reconnect", &self.config.base_url),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+    /// This route will always return an error. The client should automatically retry with exponential backoff.
+    pub async fn stream_connection_error_test<OnEvent>(
+        self: &Self,
+        params: StreamConnectionErrorTestParams,
+        on_event: OnEvent,
+    ) where
+        OnEvent: Fn(SseEvent<StreamConnectionErrorTestResponse>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-connection-error-test",
+                    &self.config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+    /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+    pub async fn stream_large_objects<OnEvent>(self: &Self, on_event: OnEvent)
+    where
+        OnEvent: Fn(SseEvent<StreamLargeObjectsResponse>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!("{}/rpcs/tests/stream-large-objects", &self.config.base_url),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            None,
+            on_event,
+        )
+        .await;
+    }
+    pub async fn stream_messages<OnEvent>(self: &Self, params: ChatMessageParams, on_event: OnEvent)
+    where
+        OnEvent: Fn(SseEvent<ChatMessage>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!("{}/rpcs/tests/stream-messages", &self.config.base_url),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+    pub async fn stream_retry_with_new_credentials<OnEvent>(self: &Self, on_event: OnEvent)
+    where
+        OnEvent: Fn(SseEvent<TestsStreamRetryWithNewCredentialsResponse>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-retry-with-new-credentials",
+                    &self.config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            None,
+            on_event,
+        )
+        .await;
+    }
+    /// When the client receives the 'done' event, it should close the connection and NOT reconnect
+    pub async fn stream_ten_events_then_end<OnEvent>(self: &Self, on_event: OnEvent)
+    where
+        OnEvent: Fn(SseEvent<ChatMessage>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-ten-events-then-end",
+                    &self.config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            None,
+            on_event,
+        )
+        .await;
     }
 }
 
-impl TestClientAdaptersService<'_> {
+pub struct TestClientAdaptersService {
+    config: ArriClientConfig,
+}
+
+impl ArriClientService for TestClientAdaptersService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self { config: config }
+    }
+}
+
+impl TestClientAdaptersService {
     pub async fn typebox(
         self: &Self,
         params: TypeBoxObject,
@@ -272,17 +393,35 @@ impl TestClientAdaptersService<'_> {
     }
 }
 
-pub struct TestClientUsersService<'a> {
-    config: &'a ArriClientConfig,
+pub struct TestClientUsersService {
+    config: ArriClientConfig,
 }
 
-impl<'a> ArriClientService<'a> for TestClientUsersService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
+impl ArriClientService for TestClientUsersService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self { config: config }
     }
 }
 
-impl TestClientUsersService<'_> {}
+impl TestClientUsersService {
+    pub async fn watch_user<OnEvent>(self: &Self, params: UsersWatchUserParams, on_event: OnEvent)
+    where
+        OnEvent: Fn(SseEvent<UsersWatchUserResponse>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!("{}/rpcs/users/watch-user", &self.config.base_url),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ManuallyAddedModel {

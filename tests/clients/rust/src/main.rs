@@ -6,10 +6,23 @@ fn main() {}
 mod tests {
     use arri_client::{
         chrono::{DateTime, Utc},
-        reqwest, serde_json, ArriClientConfig, ArriClientService,
+        reqwest, serde_json,
+        sse::ArriSseHooks,
+        ArriClientConfig, ArriClientService, ArriServerError,
     };
-    use std::collections::{BTreeMap, HashMap};
+    use std::{
+        collections::{BTreeMap, HashMap},
+        sync::{Arc, Mutex},
+        thread::sleep,
+        time::Duration,
+    };
+    use tokio::{
+        select,
+        sync::mpsc::{self, Receiver, Sender},
+    };
+    use tokio_util::sync::CancellationToken;
 
+    use crate::test_client::ChatMessageParams;
     #[allow(deprecated)]
     use crate::test_client::{
         DefaultPayload, DeprecatedRpcParams, ObjectWithEveryNullableType,
@@ -43,7 +56,7 @@ mod tests {
     #[tokio::test]
     async fn can_send_and_receive_objects() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
         let mut record = BTreeMap::<String, bool>::new();
         record.insert("A".to_string(), true);
@@ -110,7 +123,7 @@ mod tests {
     #[tokio::test]
     async fn unauthenticated_client_returns_error() {
         let config = get_config(|| return HashMap::new());
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let result = client
             .tests
             .send_partial_object(ObjectWithEveryOptionalType {
@@ -145,7 +158,7 @@ mod tests {
     async fn can_send_and_receive_object_with_nullable_fields() {
         let config = get_config(headers);
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let all_null_input = ObjectWithEveryNullableType {
             any: serde_json::Value::Null,
             boolean: None,
@@ -260,7 +273,7 @@ mod tests {
     #[tokio::test]
     async fn can_send_and_receive_recursive_objects() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let input = RecursiveObject {
             left: Some(Box::new(RecursiveObject {
                 left: Some(Box::new(RecursiveObject {
@@ -293,7 +306,7 @@ mod tests {
     #[tokio::test]
     async fn can_send_and_receive_recursive_discriminators() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let input = RecursiveUnion::Children {
             data: vec![
                 Box::new(RecursiveUnion::Child {
@@ -328,7 +341,7 @@ mod tests {
     #[tokio::test]
     async fn can_send_requests_with_no_params() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let get_request_result = client.tests.empty_params_get_request().await;
         let post_request_result = client.tests.empty_params_post_request().await;
         assert!(!get_request_result.unwrap().message.is_empty());
@@ -338,7 +351,7 @@ mod tests {
     #[tokio::test]
     async fn can_send_requests_with_no_response() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let get_request_result = client
             .tests
             .empty_response_get_request(DefaultPayload {
@@ -358,7 +371,7 @@ mod tests {
     #[tokio::test]
     async fn can_properly_parse_error_responses() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let result = client
             .tests
             .send_error(SendErrorParams {
@@ -374,7 +387,7 @@ mod tests {
     #[tokio::test]
     async fn can_send_and_receive_partial_objects() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
         let mut record = BTreeMap::<String, bool>::new();
         record.insert("A".to_string(), false);
@@ -429,7 +442,7 @@ mod tests {
     #[tokio::test]
     async fn deprecated_types_and_procedures_are_properly_marked() {
         let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         #[allow(deprecated)]
         let _ = client
             .tests
@@ -438,5 +451,44 @@ mod tests {
             })
             .await;
         assert!(true);
+    }
+
+    #[test]
+    fn can_receive_sse_messages() {
+        let config = get_config(headers);
+        let client = Arc::new(TestClient::create(config));
+        let mut error_count = Arc::new(Mutex::new(0));
+        let mut msg_count = Arc::new(Mutex::new(0));
+        let mut open_count = Arc::new(Mutex::new(0));
+        let (tx, rx): (Sender<bool>, Receiver<bool>) = mpsc::channel(100);
+        let thread = tokio::spawn(async move {
+            fn on_error(err: ArriServerError) {}
+            client
+                .tests
+                .stream_messages(
+                    ChatMessageParams {
+                        channel_id: "12345".to_string(),
+                    },
+                    ArriSseHooks {
+                        on_message: |msg| {
+                            let msg_count = msg_count.lock().unwrap();
+                            *msg_count += 1;
+                        },
+                        on_error: Some(|err| {
+                            let error_count = error_count.lock().unwrap();
+                            *error_count += 1;
+                        }),
+                        on_open: Some(|res| {
+                            let open_count = open_count.lock().unwrap();
+                            *open_count += 1;
+                        }),
+                        on_close: None,
+                        _phantom: std::marker::PhantomData<ChatMessageParams>,
+                    },
+                )
+                .await
+        });
+        sleep(Duration::from_millis(3000));
+        thread.abort();
     }
 }

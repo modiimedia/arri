@@ -6,14 +6,15 @@ pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 pub struct ArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
     pub headers: fn() -> HashMap<&'static str, &'static str>,
 }
 
-pub trait ArriClientService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self;
+pub trait ArriClientService {
+    fn create(config: ArriClientConfig) -> Self;
 }
 
 pub struct ArriRequestOptions<'a> {
@@ -187,7 +188,7 @@ pub async fn arri_request<'a>(
         headers.insert("Content-Type", "application/json");
     }
     let mut final_headers = reqwest::header::HeaderMap::new();
-    for (key, value) in headers.into_iter() {
+    for (key, value) in headers {
         match reqwest::header::HeaderValue::from_str(value) {
             Ok(header_val) => {
                 final_headers.insert(key, header_val);

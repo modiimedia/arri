@@ -8,27 +8,28 @@
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,
 };
 use std::collections::BTreeMap;
 
-pub struct ExampleClient<'a> {
-    config: &'a ArriClientConfig,
-    pub books: ExampleClientBooksService<'a>,
+pub struct ExampleClient {
+    config: ArriClientConfig,
+    pub books: ExampleClientBooksService,
 }
 
-impl<'a> ArriClientService<'a> for ExampleClient<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for ExampleClient {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-            books: ExampleClientBooksService::create(config),
+            config: config.clone(),
+            books: ExampleClientBooksService::create(config.clone()),
         }
     }
 }
 
-impl ExampleClient<'_> {
+impl ExampleClient {
     pub async fn send_object(
         self: &Self,
         params: NestedObject,
@@ -48,17 +49,17 @@ impl ExampleClient<'_> {
     }
 }
 
-pub struct ExampleClientBooksService<'a> {
-    config: &'a ArriClientConfig,
+pub struct ExampleClientBooksService {
+    config: ArriClientConfig,
 }
 
-impl<'a> ArriClientService<'a> for ExampleClientBooksService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
+impl ArriClientService for ExampleClientBooksService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self { config: config }
     }
 }
 
-impl ExampleClientBooksService<'_> {
+impl ExampleClientBooksService {
     pub async fn get_book(self: &Self, params: BookParams) -> Result<Book, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -86,6 +87,23 @@ impl ExampleClientBooksService<'_> {
             |body| return Book::from_json_string(body),
         )
         .await
+    }
+    pub async fn watch_book<OnEvent>(self: &Self, params: BookParams, on_event: OnEvent)
+    where
+        OnEvent: Fn(SseEvent<Book>) -> (),
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self.config.http_client,
+                url: format!("{}/books/watch-book", &self.config.base_url),
+                method: reqwest::Method::GET,
+                headers: self.config.headers,
+                client_version: "20".to_string(),
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
     }
 }
 
