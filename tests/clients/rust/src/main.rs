@@ -7,20 +7,16 @@ mod tests {
     use arri_client::{
         chrono::{DateTime, Utc},
         reqwest, serde_json,
-        sse::ArriSseHooks,
-        ArriClientConfig, ArriClientService, ArriServerError,
+        sse::SseEvent,
+        ArriClientConfig, ArriClientService,
     };
     use std::{
         collections::{BTreeMap, HashMap},
+        future::IntoFuture,
         sync::{Arc, Mutex},
         thread::sleep,
         time::Duration,
     };
-    use tokio::{
-        select,
-        sync::mpsc::{self, Receiver, Sender},
-    };
-    use tokio_util::sync::CancellationToken;
 
     use crate::test_client::ChatMessageParams;
     #[allow(deprecated)]
@@ -453,42 +449,56 @@ mod tests {
         assert!(true);
     }
 
-    #[test]
-    fn can_receive_sse_messages() {
+    #[tokio::test]
+    async fn can_receive_sse_messages() {
         let config = get_config(headers);
         let client = Arc::new(TestClient::create(config));
-        let mut error_count = Arc::new(Mutex::new(0));
-        let mut msg_count = Arc::new(Mutex::new(0));
-        let mut open_count = Arc::new(Mutex::new(0));
-        let (tx, rx): (Sender<bool>, Receiver<bool>) = mpsc::channel(100);
+        let error_count = Arc::new(Mutex::new(0));
+        let error_count_ref = Arc::clone(&error_count);
+        let msg_count = Arc::new(Mutex::new(0));
+        let msg_count_ref = Arc::clone(&msg_count);
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
         let thread = tokio::spawn(async move {
-            fn on_error(err: ArriServerError) {}
             client
                 .tests
                 .stream_messages(
                     ChatMessageParams {
                         channel_id: "12345".to_string(),
                     },
-                    ArriSseHooks {
-                        on_message: |msg| {
-                            let msg_count = msg_count.lock().unwrap();
+                    |event| match event {
+                        SseEvent::Message { data, .. } => {
+                            let mut msg_count = msg_count_ref.lock().unwrap();
                             *msg_count += 1;
-                        },
-                        on_error: Some(|err| {
-                            let error_count = error_count.lock().unwrap();
+                            match data {
+                                crate::test_client::ChatMessage::Text { channel_id, .. } => {
+                                    assert_eq!(channel_id, "12345".to_string());
+                                }
+                                crate::test_client::ChatMessage::Image { channel_id, .. } => {
+                                    assert_eq!(channel_id, "12345".to_string());
+                                }
+                                crate::test_client::ChatMessage::Url { channel_id, .. } => {
+                                    assert_eq!(channel_id, "12345".to_string());
+                                }
+                            }
+                        }
+                        SseEvent::Error { .. } => {
+                            let mut error_count = error_count_ref.lock().unwrap();
                             *error_count += 1;
-                        }),
-                        on_open: Some(|res| {
-                            let open_count = open_count.lock().unwrap();
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
                             *open_count += 1;
-                        }),
-                        on_close: None,
-                        _phantom: std::marker::PhantomData<ChatMessageParams>,
+                        }
+                        SseEvent::Close => {}
                     },
                 )
                 .await
         });
-        sleep(Duration::from_millis(3000));
+        tokio::time::sleep(Duration::from_millis(1000)).await;
         thread.abort();
+        assert_eq!(*open_count.lock().unwrap(), 1);
+        assert!(*msg_count.lock().unwrap() > 0,);
+        assert_eq!(*error_count.lock().unwrap(), 0);
     }
 }

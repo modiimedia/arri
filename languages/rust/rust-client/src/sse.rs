@@ -213,7 +213,6 @@ where
             }
             _ => {}
         }
-        println!("Chunk: {:?}", chunk);
     }
 }
 

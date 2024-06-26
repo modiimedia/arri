@@ -298,7 +298,7 @@ impl TestClientTestsService {
                 headers: self.config.headers,
                 client_version: "10".to_string(),
             },
-            None,
+            None::<EmptyArriModel>,
             on_event,
         )
         .await;
@@ -335,7 +335,7 @@ impl TestClientTestsService {
                 headers: self.config.headers,
                 client_version: "10".to_string(),
             },
-            None,
+            None::<EmptyArriModel>,
             on_event,
         )
         .await;
@@ -356,7 +356,7 @@ impl TestClientTestsService {
                 headers: self.config.headers,
                 client_version: "10".to_string(),
             },
-            None,
+            None::<EmptyArriModel>,
             on_event,
         )
         .await;
