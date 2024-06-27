@@ -160,7 +160,7 @@ ${modelParts.join("\n\n")}`;
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
-    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseEvent},
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,

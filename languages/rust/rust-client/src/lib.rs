@@ -1,5 +1,6 @@
 pub mod sse;
 pub mod utils;
+pub use async_recursion::{self};
 pub use async_trait::{self};
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
@@ -300,6 +301,7 @@ pub trait ArriEnum {
     fn serial_value(&self) -> String;
 }
 
+#[derive(Debug, Clone)]
 pub struct EmptyArriModel {}
 impl ArriModel for EmptyArriModel {
     fn new() -> Self {

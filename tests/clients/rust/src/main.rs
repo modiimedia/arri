@@ -464,7 +464,7 @@ mod tests {
                     ChatMessageParams {
                         channel_id: "12345".to_string(),
                     },
-                    |event| match event {
+                    |event, _| match event {
                         SseEvent::Message(msg) => {
                             let mut msg_count = msg_count_ref.lock().unwrap();
                             *msg_count += 1;
@@ -490,6 +490,8 @@ mod tests {
                         }
                         SseEvent::Close => {}
                     },
+                    None,
+                    None,
                 )
                 .await
         });

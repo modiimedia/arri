@@ -8,7 +8,7 @@
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
-    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseEvent},
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,
@@ -245,8 +245,12 @@ impl TestClientTestsService {
         self: &Self,
         params: AutoReconnectParams,
         on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<AutoReconnectResponse>) -> (),
+        OnEvent: Fn(SseEvent<AutoReconnectResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -255,6 +259,8 @@ impl TestClientTestsService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             Some(params),
             on_event,
@@ -266,8 +272,12 @@ impl TestClientTestsService {
         self: &Self,
         params: StreamConnectionErrorTestParams,
         on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<StreamConnectionErrorTestResponse>) -> (),
+        OnEvent: Fn(SseEvent<StreamConnectionErrorTestResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -279,6 +289,8 @@ impl TestClientTestsService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             Some(params),
             on_event,
@@ -286,9 +298,16 @@ impl TestClientTestsService {
         .await;
     }
     /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
-    pub async fn stream_large_objects<OnEvent>(self: &Self, on_event: OnEvent)
-    where
-        OnEvent: Fn(SseEvent<StreamLargeObjectsResponse>) -> (),
+    pub async fn stream_large_objects<OnEvent>(
+        self: &Self,
+
+        on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: Fn(SseEvent<StreamLargeObjectsResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -297,15 +316,23 @@ impl TestClientTestsService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             None::<EmptyArriModel>,
             on_event,
         )
         .await;
     }
-    pub async fn stream_messages<OnEvent>(self: &Self, params: ChatMessageParams, on_event: OnEvent)
-    where
-        OnEvent: Fn(SseEvent<ChatMessage>) -> (),
+    pub async fn stream_messages<OnEvent>(
+        self: &Self,
+        params: ChatMessageParams,
+        on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent:
+            Fn(SseEvent<ChatMessage>, &mut SseController) + std::marker::Send + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -314,15 +341,24 @@ impl TestClientTestsService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             Some(params),
             on_event,
         )
         .await;
     }
-    pub async fn stream_retry_with_new_credentials<OnEvent>(self: &Self, on_event: OnEvent)
-    where
-        OnEvent: Fn(SseEvent<TestsStreamRetryWithNewCredentialsResponse>) -> (),
+    pub async fn stream_retry_with_new_credentials<OnEvent>(
+        self: &Self,
+
+        on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: Fn(SseEvent<TestsStreamRetryWithNewCredentialsResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -334,6 +370,8 @@ impl TestClientTestsService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             None::<EmptyArriModel>,
             on_event,
@@ -341,9 +379,15 @@ impl TestClientTestsService {
         .await;
     }
     /// When the client receives the 'done' event, it should close the connection and NOT reconnect
-    pub async fn stream_ten_events_then_end<OnEvent>(self: &Self, on_event: OnEvent)
-    where
-        OnEvent: Fn(SseEvent<ChatMessage>) -> (),
+    pub async fn stream_ten_events_then_end<OnEvent>(
+        self: &Self,
+
+        on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent:
+            Fn(SseEvent<ChatMessage>, &mut SseController) + std::marker::Send + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -355,6 +399,8 @@ impl TestClientTestsService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             None::<EmptyArriModel>,
             on_event,
@@ -404,9 +450,16 @@ impl ArriClientService for TestClientUsersService {
 }
 
 impl TestClientUsersService {
-    pub async fn watch_user<OnEvent>(self: &Self, params: UsersWatchUserParams, on_event: OnEvent)
-    where
-        OnEvent: Fn(SseEvent<UsersWatchUserResponse>) -> (),
+    pub async fn watch_user<OnEvent>(
+        self: &Self,
+        params: UsersWatchUserParams,
+        on_event: OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: Fn(SseEvent<UsersWatchUserResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -415,6 +468,8 @@ impl TestClientUsersService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             Some(params),
             on_event,

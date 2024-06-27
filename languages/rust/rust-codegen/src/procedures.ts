@@ -54,8 +54,11 @@ export function rustHttpRpcFromSchema(
             self: &Self,
             ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
             on_event: OnEvent,
+            max_retry_count: Option<u64>,
+            max_retry_interval: Option<u64>,
         ) where
-            OnEvent: Fn(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>) -> (), {
+            OnEvent: Fn(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>, &mut SseController) + std::marker::Send + std::marker::Sync,
+        {
             parsed_arri_sse_request(
                 ArriParsedSseRequestOptions {
                     client: &self.config.http_client,
@@ -63,6 +66,8 @@ export function rustHttpRpcFromSchema(
                     method: reqwest::Method::${schema.method.toUpperCase()},
                     headers: self.config.headers,
                     client_version: "${context.clientVersion}".to_string(),
+                    max_retry_count,
+                    max_retry_interval,
                 },
                 ${params ? `Some(params)` : "None::<EmptyArriModel>"},
                 on_event,

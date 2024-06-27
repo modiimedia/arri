@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use async_recursion::async_recursion;
 use serde_json::json;
 use std::{collections::HashMap, thread::sleep, time::Duration};
 
@@ -24,12 +25,27 @@ pub enum SseEvent<T> {
     Close,
 }
 
-pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
+#[derive(Clone)]
+pub struct SseController {
+    is_aborted: bool,
+}
+
+impl SseController {
+    pub fn new() -> Self {
+        Self { is_aborted: false }
+    }
+    pub fn abort(&mut self) {
+        self.is_aborted = true;
+    }
+}
+
+#[async_recursion]
+pub async fn parsed_arri_sse_request<'a: 'async_recursion, T: ArriModel, OnEvent>(
     options: ArriParsedSseRequestOptions<'a>,
-    params: Option<impl ArriModel + Clone>,
+    params: Option<impl ArriModel + Clone + std::marker::Send + 'async_recursion>,
     on_event: OnEvent,
 ) where
-    OnEvent: Fn(SseEvent<T>),
+    OnEvent: Fn(SseEvent<T>, &mut SseController) + std::marker::Send + std::marker::Sync,
 {
     let mut options = ArriSseRequestOptions {
         http_client: options.client,
@@ -42,15 +58,14 @@ pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
         max_retry_count: options.max_retry_count,
         max_retry_interval: options.max_retry_interval.unwrap_or(30000),
     };
-    arri_sse_request(&mut options, params, |evt| {
+    arri_sse_request(&mut options, params, |evt, controller| {
         let parsed_event = match evt {
             SseEvent::Message(data) => SseEvent::Message(T::from_json_string(data)),
             SseEvent::Error(error) => SseEvent::Error(error),
             SseEvent::Open => SseEvent::Open,
             SseEvent::Close => SseEvent::Close,
         };
-        #[allow(unused_must_use)]
-        on_event(parsed_event);
+        on_event(parsed_event, controller);
     })
     .await;
 }
@@ -94,13 +109,15 @@ fn hashmap_to_header_map<'a>(input: HashMap<&'static str, String>) -> reqwest::h
     headers
 }
 
+#[async_recursion]
 pub async fn arri_sse_request<'a, OnEvent>(
     options: &mut ArriSseRequestOptions<'a>,
-    params: Option<impl ArriModel + Clone>,
+    params: Option<impl ArriModel + Clone + std::marker::Send + 'async_recursion>,
     on_event: OnEvent,
 ) where
-    OnEvent: Fn(SseEvent<String>),
+    OnEvent: Fn(SseEvent<String>, &mut SseController) + std::marker::Send,
 {
+    let mut controller = SseController::new();
     let query_string: Option<String>;
     let json_body: Option<String>;
     let mut headers = reqwest::header::HeaderMap::new();
@@ -162,26 +179,42 @@ pub async fn arri_sse_request<'a, OnEvent>(
                 .await
         }
     };
+    if controller.is_aborted {
+        return;
+    }
 
     if !response.is_ok() {
-        on_event(SseEvent::Error(ArriServerError::new()));
+        on_event(SseEvent::Error(ArriServerError::new()), &mut controller);
+        if controller.is_aborted {
+            return;
+        }
         options.retry_count += 1;
         sleep(Duration::from_millis(options.retry_interval.clone()));
         return arri_sse_request(options, params, on_event).await;
     }
     let mut ok_response = response.unwrap();
     options.retry_count = 0;
-    on_event(SseEvent::Open);
+    on_event(SseEvent::Open, &mut controller);
+    if controller.is_aborted {
+        return;
+    }
     let status = ok_response.status().as_u16();
     if status < 200 || status >= 300 {
         let body = ok_response.text().await.unwrap_or_default();
-        on_event(SseEvent::Error(ArriServerError::from_response_data(
-            status, body,
-        )));
+        on_event(
+            SseEvent::Error(ArriServerError::from_response_data(status, body)),
+            &mut controller,
+        );
+        if controller.is_aborted {
+            return;
+        }
         return;
     }
     let mut pending_data: String = "".to_string();
     while let Some(chunk) = ok_response.chunk().await.unwrap_or_default() {
+        if controller.is_aborted {
+            return;
+        }
         let chunk_vec = chunk.to_vec();
         let data = std::str::from_utf8(chunk_vec.as_slice());
         match data {
@@ -197,11 +230,17 @@ pub async fn arri_sse_request<'a, OnEvent>(
                     let event = message.event.unwrap_or("".to_string());
                     match event.as_str() {
                         "done" => {
-                            on_event(SseEvent::Close);
+                            on_event(SseEvent::Close, &mut controller);
+                            if controller.is_aborted {
+                                return;
+                            }
                             break;
                         }
                         "message" => {
-                            on_event(SseEvent::Message(message.data));
+                            on_event(SseEvent::Message(message.data), &mut controller);
+                            if controller.is_aborted {
+                                return;
+                            }
                         }
                         _ => {}
                     }
@@ -210,6 +249,10 @@ pub async fn arri_sse_request<'a, OnEvent>(
             _ => {}
         }
     }
+    if controller.is_aborted {
+        return;
+    }
+    return arri_sse_request(options, params, on_event).await;
 }
 
 #[derive(Debug, Clone, PartialEq)]

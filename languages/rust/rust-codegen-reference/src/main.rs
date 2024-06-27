@@ -1,6 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
 
-use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
+use arri_client::{
+    chrono::DateTime, reqwest, sse::SseController, ArriClientConfig, ArriClientService,
+};
 use example_client::{Book, BookParams, ExampleClient};
 
 mod example_client;
@@ -36,8 +38,10 @@ async fn main() {
                 BookParams {
                     book_id: "12345".to_string(),
                 },
-                |event| match event {
-                    arri_client::sse::SseEvent::Message(_) => {}
+                |event, controller| match event {
+                    arri_client::sse::SseEvent::Message(_) => {
+                        controller.abort();
+                    }
                     arri_client::sse::SseEvent::Error(_) => {}
                     arri_client::sse::SseEvent::Open => {}
                     arri_client::sse::SseEvent::Close => {}

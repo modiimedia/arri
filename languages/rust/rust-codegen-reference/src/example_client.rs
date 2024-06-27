@@ -8,7 +8,7 @@
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     parsed_arri_request, reqwest, serde_json,
-    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseEvent},
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,
@@ -95,7 +95,7 @@ impl ExampleClientBooksService {
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<Book>) -> (),
+        OnEvent: Fn(SseEvent<Book>, &mut SseController) + std::marker::Send + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -104,8 +104,8 @@ impl ExampleClientBooksService {
                 method: reqwest::Method::GET,
                 headers: self.config.headers,
                 client_version: "20".to_string(),
-                max_retry_count: max_retry_count,
-                max_retry_interval: max_retry_interval,
+                max_retry_count,
+                max_retry_interval,
             },
             Some(params),
             on_event,
