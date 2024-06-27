@@ -12,11 +12,15 @@ mod tests {
     };
     use std::{
         collections::{BTreeMap, HashMap},
+        future::IntoFuture,
+        os::unix::thread,
         sync::{Arc, Mutex},
         time::Duration,
     };
 
-    use crate::test_client::ChatMessageParams;
+    use crate::test_client::{
+        AutoReconnectParams, ChatMessageParams, StreamConnectionErrorTestParams,
+    };
     #[allow(deprecated)]
     use crate::test_client::{
         DefaultPayload, DeprecatedRpcParams, ObjectWithEveryNullableType,
@@ -500,5 +504,88 @@ mod tests {
         assert_eq!(*open_count.lock().unwrap(), 1);
         assert!(*msg_count.lock().unwrap() > 0,);
         assert_eq!(*error_count.lock().unwrap(), 0);
+    }
+
+    #[tokio::test]
+    async fn stream_auto_reconnect_test() {
+        let config = get_config(headers);
+        let client = Arc::new(TestClient::create(config));
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let msg_count = Arc::new(Mutex::new(0));
+        let msg_count_ref = Arc::clone(&msg_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_auto_reconnect(
+                    AutoReconnectParams { message_count: 10 },
+                    |event, _| match event {
+                        SseEvent::Message(_) => {
+                            let mut msg_count = msg_count_ref.lock().unwrap();
+                            *msg_count += 1;
+                        }
+                        SseEvent::Error(_) => {}
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await;
+        });
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        thread.abort();
+        assert!(*open_count.lock().unwrap() > 1);
+        assert!(*msg_count.lock().unwrap() > 10);
+    }
+
+    #[tokio::test]
+    async fn stream_connection_error_test_test() {
+        let config = get_config(headers);
+        let client = Arc::new(TestClient::create(config));
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let error_count = Arc::new(Mutex::new(0));
+        let error_count_ref = Arc::clone(&error_count);
+        let msg_count = Arc::new(Mutex::new(0));
+        let msg_count_ref = Arc::clone(&msg_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_connection_error_test(
+                    StreamConnectionErrorTestParams {
+                        status_code: 411,
+                        status_message: "Invalid request".to_string(),
+                    },
+                    |event, _| match event {
+                        SseEvent::Message(_) => {
+                            let mut msg_count = msg_count_ref.lock().unwrap();
+                            *msg_count += 1;
+                        }
+                        SseEvent::Error(err) => {
+                            assert_eq!(err.code, 411);
+                            assert_eq!(err.message, "Invalid request".to_string());
+                            let mut err_count = error_count_ref.lock().unwrap();
+                            *err_count += 1;
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await
+        });
+        tokio::time::sleep(Duration::from_millis(3000)).await;
+        thread.abort();
+        assert!(*error_count.lock().unwrap() > 1);
+        assert!(*open_count.lock().unwrap() > 1);
+        assert!(*msg_count.lock().unwrap() == 0);
     }
 }

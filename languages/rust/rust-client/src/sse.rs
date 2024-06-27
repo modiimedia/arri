@@ -1,7 +1,9 @@
 #![allow(dead_code)]
-use async_recursion::async_recursion;
 use serde_json::json;
-use std::{collections::HashMap, thread::sleep, time::Duration};
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 
 use crate::{ArriModel, ArriRequestErrorMethods, ArriServerError};
 
@@ -39,37 +41,28 @@ impl SseController {
     }
 }
 
-#[async_recursion]
-pub async fn parsed_arri_sse_request<'a: 'async_recursion, T: ArriModel, OnEvent>(
+pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
     options: ArriParsedSseRequestOptions<'a>,
-    params: Option<impl ArriModel + Clone + std::marker::Send + 'async_recursion>,
+    params: Option<impl ArriModel + Clone + std::marker::Send>,
     on_event: OnEvent,
 ) where
     OnEvent: Fn(SseEvent<T>, &mut SseController) + std::marker::Send + std::marker::Sync,
 {
-    let mut options = ArriSseRequestOptions {
-        http_client: options.client,
-        client_version: options.client_version,
+    let mut es = EventSource {
+        http_client: &options.client,
         url: options.url,
         method: options.method,
+        client_version: options.client_version,
         headers: options.headers,
         retry_count: 0,
         retry_interval: 0,
-        max_retry_count: options.max_retry_count,
         max_retry_interval: options.max_retry_interval.unwrap_or(30000),
+        max_retry_count: options.max_retry_count,
     };
-    arri_sse_request(&mut options, params, |evt, controller| {
-        let parsed_event = match evt {
-            SseEvent::Message(data) => SseEvent::Message(T::from_json_string(data)),
-            SseEvent::Error(error) => SseEvent::Error(error),
-            SseEvent::Open => SseEvent::Open,
-            SseEvent::Close => SseEvent::Close,
-        };
-        on_event(parsed_event, controller);
-    })
-    .await;
+    es.listen(params, on_event).await
 }
 
+#[derive(Debug, Clone)]
 pub struct ArriSseRequestOptions<'a> {
     http_client: &'a reqwest::Client,
     url: String,
@@ -81,20 +74,6 @@ pub struct ArriSseRequestOptions<'a> {
     max_retry_interval: u64,
     max_retry_count: Option<u64>,
 }
-
-// pub struct ArriSseHooks<T: ArriModel, OnMessage, OnError, OnOpen, OnClose>
-// where
-//     OnMessage: Fn(T),
-//     OnError: Fn(ArriServerError),
-//     OnOpen: Fn(&Response),
-//     OnClose: Fn(&Response),
-// {
-//     pub on_message: OnMessage,
-//     pub on_error: Option<OnError>,
-//     pub on_open: Option<OnOpen>,
-//     pub on_close: Option<OnClose>,
-//     _phantom: PhantomData<T>,
-// }
 
 fn hashmap_to_header_map<'a>(input: HashMap<&'static str, String>) -> reqwest::header::HeaderMap {
     let mut headers = reqwest::header::HeaderMap::new();
@@ -109,150 +88,217 @@ fn hashmap_to_header_map<'a>(input: HashMap<&'static str, String>) -> reqwest::h
     headers
 }
 
-#[async_recursion]
-pub async fn arri_sse_request<'a, OnEvent>(
-    options: &mut ArriSseRequestOptions<'a>,
-    params: Option<impl ArriModel + Clone + std::marker::Send + 'async_recursion>,
-    on_event: OnEvent,
-) where
-    OnEvent: Fn(SseEvent<String>, &mut SseController) + std::marker::Send,
-{
-    let mut controller = SseController::new();
-    let query_string: Option<String>;
-    let json_body: Option<String>;
-    let mut headers = reqwest::header::HeaderMap::new();
-    let header_input = (options.headers)();
-    for (key, value) in header_input {
-        match reqwest::header::HeaderValue::from_str(value) {
-            Ok(header_val) => {
-                headers.insert(key, header_val);
-            }
-            Err(error) => {
-                println!("Invalid header value: {:?}", error);
-            }
-        }
+fn wait(duration: Duration) {
+    let start = Instant::now();
+    while start.elapsed().as_millis() < duration.as_millis() {
+        // keep waiting
     }
-    if !options.client_version.is_empty() {
-        headers.insert(
-            "client-version",
-            reqwest::header::HeaderValue::from_str(&options.client_version).unwrap(),
-        );
-    }
-    match params.clone() {
-        Some(val) => match options.method {
-            reqwest::Method::GET => {
-                query_string = Some(val.to_query_params_string());
-                json_body = None;
-            }
-            _ => {
-                query_string = None;
-                json_body = Some(val.to_json_string());
-            }
-        },
-        None => {
-            query_string = None;
-            json_body = None;
-        }
-    }
+}
 
-    let url = match query_string {
-        Some(val) => format!("{}?{}", options.url.clone(), val),
-        None => options.url.clone(),
-    };
+#[derive(Debug, Clone)]
+pub struct EventSource<'a> {
+    pub http_client: &'a reqwest::Client,
+    pub url: String,
+    pub method: reqwest::Method,
+    pub client_version: String,
+    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub retry_count: u64,
+    pub retry_interval: u64,
+    pub max_retry_interval: u64,
+    pub max_retry_count: Option<u64>,
+}
 
-    let response = match json_body {
-        Some(body) => {
-            options
-                .http_client
-                .request(options.method.clone(), url.clone())
-                .headers(headers)
-                .body(body)
-                .send()
-                .await
-        }
-        None => {
-            options
-                .http_client
-                .request(options.method.clone(), url.clone())
-                .headers(headers)
-                .send()
-                .await
-        }
-    };
-    if controller.is_aborted {
-        return;
-    }
+enum SseAction {
+    Retry,
+    Abort,
+}
 
-    if !response.is_ok() {
-        on_event(SseEvent::Error(ArriServerError::new()), &mut controller);
-        if controller.is_aborted {
-            return;
-        }
-        options.retry_count += 1;
-        sleep(Duration::from_millis(options.retry_interval.clone()));
-        return arri_sse_request(options, params, on_event).await;
-    }
-    let mut ok_response = response.unwrap();
-    options.retry_count = 0;
-    on_event(SseEvent::Open, &mut controller);
-    if controller.is_aborted {
-        return;
-    }
-    let status = ok_response.status().as_u16();
-    if status < 200 || status >= 300 {
-        let body = ok_response.text().await.unwrap_or_default();
-        on_event(
-            SseEvent::Error(ArriServerError::from_response_data(status, body)),
-            &mut controller,
-        );
-        if controller.is_aborted {
-            return;
-        }
-        return;
-    }
-    let mut pending_data: String = "".to_string();
-    while let Some(chunk) = ok_response.chunk().await.unwrap_or_default() {
-        if controller.is_aborted {
-            return;
-        }
-        let chunk_vec = chunk.to_vec();
-        let data = std::str::from_utf8(chunk_vec.as_slice());
-        match data {
-            Ok(text) => {
-                if !text.ends_with("\n\n") {
-                    pending_data.push_str(text);
-                    continue;
-                }
-                let msg_text = format!("{}{}", pending_data, text);
-                let (messages, left_over) = sse_messages_from_string(msg_text);
-                pending_data = left_over;
-                for message in messages {
-                    let event = message.event.unwrap_or("".to_string());
-                    match event.as_str() {
-                        "done" => {
-                            on_event(SseEvent::Close, &mut controller);
-                            if controller.is_aborted {
-                                return;
-                            }
-                            break;
-                        }
-                        "message" => {
-                            on_event(SseEvent::Message(message.data), &mut controller);
-                            if controller.is_aborted {
-                                return;
-                            }
-                        }
-                        _ => {}
+impl<'a> EventSource<'a> {
+    async fn listen<T: ArriModel, OnEvent>(
+        &mut self,
+        params: Option<impl ArriModel + Clone>,
+        on_event: OnEvent,
+    ) where
+        OnEvent: Fn(SseEvent<T>, &mut SseController),
+    {
+        loop {
+            match &self.max_retry_count {
+                Some(max_retry_count) => {
+                    if &self.retry_count > max_retry_count {
+                        return;
                     }
                 }
+                None => {}
             }
-            _ => {}
+            if self.retry_count > 5 {
+                if self.retry_interval == 0 {
+                    self.retry_interval = 2;
+                } else {
+                    self.retry_interval = if self.retry_interval * 2 > self.max_retry_interval {
+                        self.max_retry_interval
+                    } else {
+                        self.retry_interval * 2
+                    };
+                }
+            }
+            if self.retry_interval > 0 {
+                wait(Duration::from_millis(self.retry_interval.clone()));
+            }
+            let result = self.send_request(params.clone(), &on_event).await;
+            match result {
+                SseAction::Retry => {
+                    self.retry_count += 1;
+                }
+                SseAction::Abort => {
+                    return;
+                }
+            }
         }
     }
-    if controller.is_aborted {
-        return;
+    async fn send_request<T: ArriModel, OnEvent>(
+        &mut self,
+        params: Option<impl ArriModel + Clone>,
+        on_event: &OnEvent,
+    ) -> SseAction
+    where
+        OnEvent: Fn(SseEvent<T>, &mut SseController),
+    {
+        let mut controller = SseController::new();
+        let query_string: Option<String>;
+        let json_body: Option<String>;
+        let mut headers = reqwest::header::HeaderMap::new();
+        let header_input = (self.headers)();
+        for (key, value) in header_input {
+            match reqwest::header::HeaderValue::from_str(value) {
+                Ok(header_val) => {
+                    headers.insert(key, header_val);
+                }
+                Err(error) => {
+                    println!("Invalid header value: {:?}", error);
+                }
+            }
+        }
+        if !self.client_version.is_empty() {
+            headers.insert(
+                "client-version",
+                reqwest::header::HeaderValue::from_str(&self.client_version).unwrap(),
+            );
+        }
+        match params.clone() {
+            Some(val) => match self.method {
+                reqwest::Method::GET => {
+                    query_string = Some(val.to_query_params_string());
+                    json_body = None;
+                }
+                _ => {
+                    query_string = None;
+                    json_body = Some(val.to_json_string());
+                }
+            },
+            None => {
+                query_string = None;
+                json_body = None;
+            }
+        }
+
+        let url = match query_string {
+            Some(val) => format!("{}?{}", self.url.clone(), val),
+            None => self.url.clone(),
+        };
+
+        let response = match json_body {
+            Some(body) => {
+                self.http_client
+                    .request(self.method.clone(), url.clone())
+                    .headers(headers)
+                    .body(body)
+                    .send()
+                    .await
+            }
+            None => {
+                self.http_client
+                    .request(self.method.clone(), url.clone())
+                    .headers(headers)
+                    .send()
+                    .await
+            }
+        };
+        if controller.is_aborted {
+            return SseAction::Abort;
+        }
+
+        if !response.is_ok() {
+            on_event(SseEvent::Error(ArriServerError::new()), &mut controller);
+            if controller.is_aborted {
+                return SseAction::Abort;
+            }
+            return SseAction::Retry;
+        }
+        let mut ok_response = response.unwrap();
+        on_event(SseEvent::Open, &mut controller);
+        if controller.is_aborted {
+            return SseAction::Abort;
+        }
+        let status = ok_response.status().as_u16();
+        if status < 200 || status >= 300 {
+            let body = ok_response.text().await.unwrap_or_default();
+            on_event(
+                SseEvent::Error(ArriServerError::from_response_data(status, body)),
+                &mut controller,
+            );
+            if controller.is_aborted {
+                return SseAction::Abort;
+            }
+            return SseAction::Retry;
+        }
+        self.retry_count = 0;
+        let mut pending_data: String = "".to_string();
+        while let Some(chunk) = ok_response.chunk().await.unwrap_or_default() {
+            if controller.is_aborted {
+                return SseAction::Abort;
+            }
+            let chunk_vec = chunk.to_vec();
+            let data = std::str::from_utf8(chunk_vec.as_slice());
+            match data {
+                Ok(text) => {
+                    if !text.ends_with("\n\n") {
+                        pending_data.push_str(text);
+                        continue;
+                    }
+                    let msg_text = format!("{}{}", pending_data, text);
+                    let (messages, left_over) = sse_messages_from_string(msg_text);
+                    pending_data = left_over;
+                    for message in messages {
+                        let event = message.event.unwrap_or("".to_string());
+                        match event.as_str() {
+                            "done" => {
+                                on_event(SseEvent::Close, &mut controller);
+                                if controller.is_aborted {
+                                    return SseAction::Abort;
+                                }
+                                break;
+                            }
+                            "message" => {
+                                on_event(
+                                    SseEvent::Message(T::from_json_string(message.data)),
+                                    &mut controller,
+                                );
+                                if controller.is_aborted {
+                                    return SseAction::Abort;
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        if controller.is_aborted {
+            return SseAction::Abort;
+        }
+        return SseAction::Retry;
     }
-    return arri_sse_request(options, params, on_event).await;
 }
 
 #[derive(Debug, Clone, PartialEq)]
