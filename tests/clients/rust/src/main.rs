@@ -12,8 +12,6 @@ mod tests {
     };
     use std::{
         collections::{BTreeMap, HashMap},
-        future::IntoFuture,
-        os::unix::thread,
         sync::{Arc, Mutex},
         time::Duration,
     };
