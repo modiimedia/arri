@@ -16,7 +16,7 @@ fn get_headers() -> HashMap<&'static str, String> {
 
 #[tokio::main]
 async fn main() {
-    let mut client = ExampleClient::create(ArriClientConfig {
+    let client = ExampleClient::create(ArriClientConfig {
         http_client: reqwest::Client::new(),
         base_url: "http://localhost:2020".to_string(),
         headers: get_headers(),
