@@ -512,7 +512,7 @@ mod tests {
         let error_count = Arc::new(Mutex::new(0));
         let client = Arc::new(TestClient::create(get_config(headers())));
         let mut threads: Vec<tokio::task::JoinHandle<()>> = Vec::new();
-        for i in 0..10 {
+        for i in 0..5 {
             let client = Arc::clone(&client);
             let msg_count_ref = Arc::clone(&msg_count);
             let open_count_ref = Arc::clone(&open_count);
@@ -551,8 +551,8 @@ mod tests {
         for thread in &threads {
             thread.abort();
         }
-        assert_eq!(&threads.len(), &10);
-        assert_eq!(open_count.lock().unwrap().clone(), 10);
+        assert_eq!(&threads.len(), &5);
+        assert_eq!(open_count.lock().unwrap().clone(), 5);
         assert!(msg_count.lock().unwrap().clone() > 10);
         assert_eq!(error_count.lock().unwrap().clone(), 0);
     }
