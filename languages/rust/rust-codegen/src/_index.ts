@@ -152,10 +152,11 @@ use arri_client::{
     utils::{serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 ${modelParts.join("\n\n")}`;
     }
     const clientName = validRustName(context.clientName);
+    const paramSuffix = subServices.length > 0 ? ".clone()" : "";
     return `#![allow(dead_code, unused_imports, unused_variables, unconditional_recursion, deprecated)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
@@ -165,19 +166,27 @@ use arri_client::{
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel,
 };
-use std::collections::BTreeMap;
+use std::{
+    collections::{BTreeMap, HashMap},
+    sync::{Arc, Mutex},
+};
 
+#[derive(Clone)]
 pub struct ${clientName} {
-    config: ArriClientConfig,
+    _config: ArriClientConfig,
 ${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
 }
 
 impl ArriClientService for ${clientName} {
     fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: config${subServices.length ? ".clone()" : ""},
+            _config: config${paramSuffix},
 ${subServices.map((service) => `            ${service.key}: ${service.name}::create(config.clone()),`).join("\n")}
         }
+    }
+    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
+        self._config.headers = headers${paramSuffix};
+${subServices.map((service) => `        self.${service.key}.update_headers(headers.clone());`).join("\n")}
     }
 }
 

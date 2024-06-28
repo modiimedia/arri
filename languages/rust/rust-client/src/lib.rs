@@ -5,22 +5,23 @@ pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub headers: HashMap<&'static str, String>,
 }
 
 pub trait ArriClientService {
     fn create(config: ArriClientConfig) -> Self;
+    fn update_headers(&mut self, headers: HashMap<&'static str, String>);
 }
 
 pub struct ArriRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub headers: HashMap<&'static str, String>,
     pub client_version: String,
 }
 
@@ -28,7 +29,7 @@ pub struct ArriParsedRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub headers: HashMap<&'static str, String>,
     pub client_version: String,
 }
 
@@ -173,22 +174,22 @@ pub async fn arri_request<'a>(
     params: Option<impl ArriModel>,
 ) -> Result<reqwest::Response, ArriServerError> {
     let response: Result<reqwest::Response, reqwest::Error>;
-    let mut headers = (opts.headers)();
+    let mut headers: HashMap<&str, String> = opts.headers;
     match headers.get("Accept") {
         Some(_) => {}
         None => {
-            headers.insert("Accept", "application/json");
+            headers.insert("Accept", "application/json".to_string());
         }
     }
     if !opts.client_version.is_empty() {
-        headers.insert("client-version", opts.client_version.as_str());
+        headers.insert("client-version", opts.client_version);
     }
     if opts.method != reqwest::Method::GET && opts.method != reqwest::Method::HEAD {
-        headers.insert("Content-Type", "application/json");
+        headers.insert("Content-Type", "application/json".to_string());
     }
     let mut final_headers = reqwest::header::HeaderMap::new();
     for (key, value) in headers {
-        match reqwest::header::HeaderValue::from_str(value) {
+        match reqwest::header::HeaderValue::from_str(value.as_str()) {
             Ok(header_val) => {
                 final_headers.insert(key, header_val);
             }

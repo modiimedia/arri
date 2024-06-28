@@ -2,18 +2,18 @@
 use serde_json::json;
 use std::{
     collections::HashMap,
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 
 use crate::{ArriModel, ArriRequestErrorMethods, ArriServerError};
 
-#[derive(Clone)]
 pub struct ArriParsedSseRequestOptions<'a> {
     pub client: &'a reqwest::Client,
     pub client_version: String,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub headers: HashMap<&'static str, String>,
     // Defaults to None
     pub max_retry_count: Option<u64>,
     // Max delay time in ms. defaults to Some(30000).
@@ -46,6 +46,7 @@ pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
     params: Option<impl ArriModel + Clone + std::marker::Send>,
     on_event: OnEvent,
 ) where
+    T: ArriModel + std::marker::Send + std::marker::Sync,
     OnEvent: Fn(SseEvent<T>, &mut SseController) + std::marker::Send + std::marker::Sync,
 {
     let mut es = EventSource {
@@ -62,32 +63,6 @@ pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
     es.listen(params, on_event).await
 }
 
-#[derive(Debug, Clone)]
-pub struct ArriSseRequestOptions<'a> {
-    http_client: &'a reqwest::Client,
-    url: String,
-    method: reqwest::Method,
-    client_version: String,
-    headers: fn() -> HashMap<&'static str, &'static str>,
-    retry_count: u64,
-    retry_interval: u64,
-    max_retry_interval: u64,
-    max_retry_count: Option<u64>,
-}
-
-fn hashmap_to_header_map<'a>(input: HashMap<&'static str, String>) -> reqwest::header::HeaderMap {
-    let mut headers = reqwest::header::HeaderMap::new();
-    for (key, value) in input {
-        match reqwest::header::HeaderValue::from_str(value.as_str()) {
-            Ok(header_val) => {
-                headers.insert(key, header_val);
-            }
-            Err(_) => todo!(),
-        }
-    }
-    headers
-}
-
 fn wait(duration: Duration) {
     let start = Instant::now();
     while start.elapsed().as_millis() < duration.as_millis() {
@@ -95,13 +70,13 @@ fn wait(duration: Duration) {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct EventSource<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
     pub client_version: String,
-    pub headers: fn() -> HashMap<&'static str, &'static str>,
+    pub headers: HashMap<&'static str, String>,
     pub retry_count: u64,
     pub retry_interval: u64,
     pub max_retry_interval: u64,
@@ -167,11 +142,10 @@ impl<'a> EventSource<'a> {
         let query_string: Option<String>;
         let json_body: Option<String>;
         let mut headers = reqwest::header::HeaderMap::new();
-        let header_input = (self.headers)();
-        for (key, value) in header_input {
+        for (key, value) in &self.headers {
             match reqwest::header::HeaderValue::from_str(value) {
                 Ok(header_val) => {
-                    headers.insert(key, header_val);
+                    headers.insert(key.to_owned(), header_val);
                 }
                 Err(error) => {
                     println!("Invalid header value: {:?}", error);

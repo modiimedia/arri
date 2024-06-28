@@ -9,4 +9,5 @@ edition = "2021"
 arri_client = { path = "../../../languages/rust/rust-client"}
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7.11"
+rand = "0.8.5"
 

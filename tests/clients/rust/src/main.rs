@@ -10,6 +10,7 @@ mod tests {
         sse::SseEvent,
         ArriClientConfig, ArriClientService,
     };
+    use rand::{self, Rng};
     use std::{
         collections::{BTreeMap, HashMap},
         sync::{Arc, Mutex},
@@ -18,6 +19,7 @@ mod tests {
 
     use crate::test_client::{
         AutoReconnectParams, ChatMessageParams, StreamConnectionErrorTestParams,
+        StreamLargeObjectsResponse,
     };
     #[allow(deprecated)]
     use crate::test_client::{
@@ -36,12 +38,12 @@ mod tests {
 
     const TARGET_MS: i64 = 978328800000;
 
-    fn headers() -> HashMap<&'static str, &'static str> {
-        let mut result: HashMap<&'static str, &'static str> = HashMap::new();
-        result.insert("x-test-header", "rust-12345");
+    fn headers() -> HashMap<&'static str, String> {
+        let mut result: HashMap<&'static str, String> = HashMap::new();
+        result.insert("x-test-header", "rust-test-header".to_string());
         result
     }
-    fn get_config(headers: fn() -> HashMap<&'static str, &'static str>) -> ArriClientConfig {
+    fn get_config(headers: HashMap<&'static str, String>) -> ArriClientConfig {
         ArriClientConfig {
             http_client: reqwest::Client::new(),
             base_url: "http://127.0.0.1:2020".to_string(),
@@ -51,8 +53,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_objects() {
-        let config = get_config(headers);
-        let client = TestClient::create(config);
+        let client = TestClient::create(get_config(headers()));
         let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
         let mut record = BTreeMap::<String, bool>::new();
         record.insert("A".to_string(), true);
@@ -118,7 +119,7 @@ mod tests {
 
     #[tokio::test]
     async fn unauthenticated_client_returns_error() {
-        let config = get_config(|| return HashMap::new());
+        let config = get_config(HashMap::new());
         let client = TestClient::create(config);
         let result = client
             .tests
@@ -152,7 +153,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_object_with_nullable_fields() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
         let client = TestClient::create(config);
         let all_null_input = ObjectWithEveryNullableType {
@@ -268,7 +269,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_recursive_objects() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         let input = RecursiveObject {
             left: Some(Box::new(RecursiveObject {
@@ -301,7 +302,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_recursive_discriminators() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         let input = RecursiveUnion::Children {
             data: vec![
@@ -336,7 +337,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_requests_with_no_params() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         let get_request_result = client.tests.empty_params_get_request().await;
         let post_request_result = client.tests.empty_params_post_request().await;
@@ -346,7 +347,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_requests_with_no_response() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         let get_request_result = client
             .tests
@@ -366,7 +367,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_properly_parse_error_responses() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         let result = client
             .tests
@@ -382,7 +383,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_partial_objects() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
         let mut record = BTreeMap::<String, bool>::new();
@@ -437,7 +438,7 @@ mod tests {
 
     #[tokio::test]
     async fn deprecated_types_and_procedures_are_properly_marked() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = TestClient::create(config);
         #[allow(deprecated)]
         let _ = client
@@ -450,8 +451,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn can_receive_sse_messages() {
-        let config = get_config(headers);
+    async fn stream_messages_test() {
+        let config = get_config(headers());
         let client = Arc::new(TestClient::create(config));
         let error_count = Arc::new(Mutex::new(0));
         let error_count_ref = Arc::clone(&error_count);
@@ -506,7 +507,7 @@ mod tests {
 
     #[tokio::test]
     async fn stream_auto_reconnect_test() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = Arc::new(TestClient::create(config));
         let open_count = Arc::new(Mutex::new(0));
         let open_count_ref = Arc::clone(&open_count);
@@ -542,7 +543,7 @@ mod tests {
 
     #[tokio::test]
     async fn stream_connection_error_test_test() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let client = Arc::new(TestClient::create(config));
         let open_count = Arc::new(Mutex::new(0));
         let open_count_ref = Arc::clone(&open_count);
@@ -585,5 +586,101 @@ mod tests {
         assert!(*error_count.lock().unwrap() > 1);
         assert!(*open_count.lock().unwrap() > 1);
         assert!(*msg_count.lock().unwrap() == 0);
+    }
+
+    #[tokio::test]
+    async fn stream_large_objects_test() {
+        let client = Arc::new(TestClient::create(get_config(headers())));
+        let messages = Arc::new(Mutex::new(Vec::<StreamLargeObjectsResponse>::new()));
+        let messages_ref = Arc::clone(&messages);
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_large_objects(
+                    |event, _| match event {
+                        SseEvent::Message(msg) => {
+                            let mut messages = messages_ref.lock().unwrap();
+                            messages.push(msg);
+                        }
+                        SseEvent::Error(_) => {
+                            assert!(false)
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => todo!(),
+                    },
+                    None,
+                    None,
+                )
+                .await;
+        });
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        thread.abort();
+        assert_eq!(*open_count.lock().unwrap(), 1);
+        let final_messages = messages.lock().unwrap().clone();
+        assert!(final_messages.clone().len() > 1);
+    }
+
+    #[tokio::test]
+    async fn stream_retry_with_new_credentials_test() {
+        let mut headers: HashMap<&'static str, String> =
+            [("x-test-header", "test-rust-header-1".to_string())]
+                .iter()
+                .cloned()
+                .collect();
+        let config = ArriClientConfig {
+            http_client: reqwest::Client::new(),
+            base_url: "http://127.0.0.1:2020".to_string(),
+            headers: headers.clone(),
+        };
+        let mut client = TestClient::create(config);
+        let mut loop_count = 0;
+        let open_count = Arc::new(Mutex::new(0));
+        let error_count = Arc::new(Mutex::new(0));
+        let msg_count = Arc::new(Mutex::new(0));
+        loop {
+            if loop_count > 10 {
+                break;
+            }
+            loop_count += 1;
+            let mut rng = rand::thread_rng();
+            headers.insert(
+                "x-test-header",
+                format!("test-rust-header-{}", rng.gen::<i64>()),
+            );
+            client.update_headers(headers.clone());
+            client
+                .tests
+                .stream_retry_with_new_credentials(
+                    |event, controller| match event {
+                        SseEvent::Message(_) => {
+                            let mut msg_count = msg_count.lock().unwrap();
+                            *msg_count += 1;
+                        }
+                        SseEvent::Error(err) => {
+                            let mut error_count = error_count.lock().unwrap();
+                            *error_count += 1;
+                            if err.code == 403 {
+                                controller.abort();
+                            }
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await;
+        }
+        assert_eq!(error_count.lock().unwrap().clone(), 11);
+        assert!(open_count.lock().unwrap().clone() > error_count.lock().unwrap().clone());
+        assert!(msg_count.lock().unwrap().clone() > 0);
     }
 }
