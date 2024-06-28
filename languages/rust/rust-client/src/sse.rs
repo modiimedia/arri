@@ -247,10 +247,7 @@ impl<'a> EventSource<'a> {
                         match event.as_str() {
                             "done" => {
                                 on_event(SseEvent::Close, &mut controller);
-                                if controller.is_aborted {
-                                    return SseAction::Abort;
-                                }
-                                break;
+                                return SseAction::Abort;
                             }
                             "message" => {
                                 on_event(

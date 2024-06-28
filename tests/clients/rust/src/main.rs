@@ -506,6 +506,58 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn stream_messages_multiple_threads_test() {
+        let msg_count = Arc::new(Mutex::new(0));
+        let open_count = Arc::new(Mutex::new(0));
+        let error_count = Arc::new(Mutex::new(0));
+        let client = Arc::new(TestClient::create(get_config(headers())));
+        let mut threads: Vec<tokio::task::JoinHandle<()>> = Vec::new();
+        for i in 0..10 {
+            let client = Arc::clone(&client);
+            let msg_count_ref = Arc::clone(&msg_count);
+            let open_count_ref = Arc::clone(&open_count);
+            let error_count_ref = Arc::clone(&error_count);
+            let thread = tokio::spawn(async move {
+                client
+                    .tests
+                    .stream_messages(
+                        ChatMessageParams {
+                            channel_id: i.to_string(),
+                        },
+                        |event, _| match event {
+                            SseEvent::Message(_) => {
+                                let mut msg_count = msg_count_ref.lock().unwrap();
+                                *msg_count += 1;
+                            }
+                            SseEvent::Error(err) => {
+                                println!("ERROR: {:?}", err);
+                                let mut error_count = error_count_ref.lock().unwrap();
+                                *error_count += 1;
+                            }
+                            SseEvent::Open => {
+                                let mut open_count = open_count_ref.lock().unwrap();
+                                *open_count += 1;
+                            }
+                            SseEvent::Close => {}
+                        },
+                        None,
+                        None,
+                    )
+                    .await;
+            });
+            threads.push(thread);
+        }
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        for thread in &threads {
+            thread.abort();
+        }
+        assert_eq!(&threads.len(), &10);
+        assert_eq!(open_count.lock().unwrap().clone(), 10);
+        assert!(msg_count.lock().unwrap().clone() > 10);
+        assert_eq!(error_count.lock().unwrap().clone(), 0);
+    }
+
+    #[tokio::test]
     async fn stream_auto_reconnect_test() {
         let config = get_config(headers());
         let client = Arc::new(TestClient::create(config));
@@ -682,5 +734,33 @@ mod tests {
         assert_eq!(error_count.lock().unwrap().clone(), 11);
         assert!(open_count.lock().unwrap().clone() > error_count.lock().unwrap().clone());
         assert!(msg_count.lock().unwrap().clone() > 0);
+    }
+
+    #[tokio::test]
+    async fn stream_ten_events_then_end_test() {
+        let client = TestClient::create(get_config(headers()));
+        let msg_count = Arc::new(Mutex::new(0));
+        let open_count = Arc::new(Mutex::new(0));
+        client
+            .tests
+            .stream_ten_events_then_end(
+                |event, _| match event {
+                    SseEvent::Message(_) => {
+                        let mut msg_count = msg_count.lock().unwrap();
+                        *msg_count += 1;
+                    }
+                    SseEvent::Error(_) => {}
+                    SseEvent::Open => {
+                        let mut open_count = open_count.lock().unwrap();
+                        *open_count += 1;
+                    }
+                    SseEvent::Close => {}
+                },
+                None,
+                None,
+            )
+            .await;
+        assert_eq!(msg_count.lock().unwrap().clone(), 10);
+        assert_eq!(open_count.lock().unwrap().clone(), 1);
     }
 }
