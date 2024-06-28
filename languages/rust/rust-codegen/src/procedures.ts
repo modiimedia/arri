@@ -36,17 +36,7 @@ export function rustHttpRpcFromSchema(
     schema: HttpRpcDefinition,
     context: GeneratorContext,
 ): string {
-    if (schema.isEventStream) {
-        console.warn(
-            `[rust-codegen] SSE is not supported at this time. Skipping ${context.instancePath}.`,
-        );
-        return "";
-    }
     const functionName = getFunctionName(context.instancePath);
-    const params = schema.params ? validRustName(schema.params) : undefined;
-    const response = schema.response
-        ? validRustName(schema.response)
-        : undefined;
     let leading = "";
     if (schema.description) {
         leading += formatDescriptionComment(schema.description);
@@ -55,16 +45,46 @@ export function rustHttpRpcFromSchema(
     if (schema.isDeprecated) {
         leading += "#[deprecated]\n";
     }
-    return `${leading}pub async fn ${functionName} (
-        self: &Self,
+    const params = schema.params ? validRustName(schema.params) : undefined;
+    const response = schema.response
+        ? validRustName(schema.response)
+        : undefined;
+    if (schema.isEventStream) {
+        return `${leading}pub async fn ${functionName}<OnEvent>(
+            &self,
+            ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
+            on_event: OnEvent,
+            max_retry_count: Option<u64>,
+            max_retry_interval: Option<u64>,
+        ) where
+            OnEvent: Fn(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>, &mut SseController) + std::marker::Send + std::marker::Sync,
+        {
+            parsed_arri_sse_request(
+                ArriParsedSseRequestOptions {
+                    client: &self._config.http_client,
+                    url: format!("{}${schema.path}", &self._config.base_url),
+                    method: reqwest::Method::${schema.method.toUpperCase()},
+                    headers: self._config.headers.clone(),
+                    client_version: "${context.clientVersion}".to_string(),
+                    max_retry_count,
+                    max_retry_interval,
+                },
+                ${params ? `Some(params)` : "None::<EmptyArriModel>"},
+                on_event,
+            )
+            .await;
+        }`;
+    }
+    return `${leading}pub async fn ${functionName}(
+        &self,
         ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
     ) -> Result<${context.typeNamePrefix}${response ?? "()"}, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}${schema.path}", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!("{}${schema.path}", &self._config.base_url),
                 method: reqwest::Method::${schema.method.toUpperCase()},
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "${context.clientVersion}".to_string(),
             },
             ${params ? `Some(params)` : "None::<EmptyArriModel>"},
@@ -144,23 +164,29 @@ export function rustServiceFromSchema(
             `[rust-codegen] Invalid schema at /procedures/${context.instancePath}.`,
         );
     }
+    const paramSuffix = subServices.length > 0 ? ".clone()" : "";
     return {
         name: serviceName,
-        content: `pub struct ${serviceName}<'a> {
-    config: &'a ArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name}<'a>,`).join("\n")}
+        content: `#[derive(Clone)]
+pub struct ${serviceName} {
+    _config: ArriClientConfig,
+${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
 }
 
-impl<'a> ArriClientService<'a> for ${serviceName}<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for ${serviceName} {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-${subServices.map((service) => `            ${service.key}: ${service.name}::create(config),`).join("\n")}
+            _config: config${paramSuffix},
+${subServices.map((service) => `            ${service.key}: ${service.name}::create(config.clone()),`).join("\n")}
         }
+    }
+    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
+        self._config.headers = headers${paramSuffix};
+${subServices.map((service) => `        self.${service.key}.update_headers(headers.clone());`).join("\n")}
     }
 }
 
-impl ${serviceName}<'_> {
+impl ${serviceName} {
 ${rpcParts.join("\n")}
 }
 

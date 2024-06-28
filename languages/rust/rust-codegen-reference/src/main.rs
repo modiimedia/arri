@@ -1,24 +1,26 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
-use example_client::{Book, ExampleClient};
+use example_client::{Book, BookParams, ExampleClient};
 
 mod example_client;
 
-fn get_headers() -> HashMap<&'static str, &'static str> {
+fn get_headers() -> HashMap<&'static str, String> {
     let mut headers = HashMap::new();
-    headers.insert("Authorization", "Bearer 12345");
+    headers.insert("Authorization", "Bearer 12345".to_string());
     headers
 }
 
 #[tokio::main]
 async fn main() {
-    let config = ArriClientConfig {
+    let client = ExampleClient::create(ArriClientConfig {
         http_client: reqwest::Client::new(),
-        base_url: "http://localhost:3000".to_string(),
-        headers: get_headers,
-    };
-    let client = ExampleClient::create(&config);
+        base_url: "http://localhost:2020".to_string(),
+        headers: get_headers(),
+    });
     let result = client
         .books
         .create_book(Book {
@@ -28,6 +30,27 @@ async fn main() {
             updated_at: DateTime::default(),
         })
         .await;
+
+    tokio::spawn(async move {
+        client
+            .books
+            .watch_book(
+                BookParams {
+                    book_id: "12345".to_string(),
+                },
+                |event, controller| match event {
+                    arri_client::sse::SseEvent::Message(_) => {
+                        controller.abort();
+                    }
+                    arri_client::sse::SseEvent::Error(_) => {}
+                    arri_client::sse::SseEvent::Open => {}
+                    arri_client::sse::SseEvent::Close => {}
+                },
+                None,
+                None,
+            )
+            .await;
+    });
     println!("CREATE_BOOK_RESULT: {:?}", result);
 }
 

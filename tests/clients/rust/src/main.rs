@@ -6,10 +6,21 @@ fn main() {}
 mod tests {
     use arri_client::{
         chrono::{DateTime, Utc},
-        reqwest, serde_json, ArriClientConfig, ArriClientService,
+        reqwest, serde_json,
+        sse::SseEvent,
+        ArriClientConfig, ArriClientService,
     };
-    use std::collections::{BTreeMap, HashMap};
+    use rand::{self, Rng};
+    use std::{
+        collections::{BTreeMap, HashMap},
+        sync::{Arc, Mutex},
+        time::Duration,
+    };
 
+    use crate::test_client::{
+        AutoReconnectParams, ChatMessageParams, StreamConnectionErrorTestParams,
+        StreamLargeObjectsResponse,
+    };
     #[allow(deprecated)]
     use crate::test_client::{
         DefaultPayload, DeprecatedRpcParams, ObjectWithEveryNullableType,
@@ -27,12 +38,12 @@ mod tests {
 
     const TARGET_MS: i64 = 978328800000;
 
-    fn headers() -> HashMap<&'static str, &'static str> {
-        let mut result: HashMap<&'static str, &'static str> = HashMap::new();
-        result.insert("x-test-header", "rust-12345");
+    fn headers() -> HashMap<&'static str, String> {
+        let mut result: HashMap<&'static str, String> = HashMap::new();
+        result.insert("x-test-header", "rust-test-header".to_string());
         result
     }
-    fn get_config(headers: fn() -> HashMap<&'static str, &'static str>) -> ArriClientConfig {
+    fn get_config(headers: HashMap<&'static str, String>) -> ArriClientConfig {
         ArriClientConfig {
             http_client: reqwest::Client::new(),
             base_url: "http://127.0.0.1:2020".to_string(),
@@ -42,8 +53,7 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_objects() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let client = TestClient::create(get_config(headers()));
         let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
         let mut record = BTreeMap::<String, bool>::new();
         record.insert("A".to_string(), true);
@@ -109,8 +119,8 @@ mod tests {
 
     #[tokio::test]
     async fn unauthenticated_client_returns_error() {
-        let config = get_config(|| return HashMap::new());
-        let client = TestClient::create(&config);
+        let config = get_config(HashMap::new());
+        let client = TestClient::create(config);
         let result = client
             .tests
             .send_partial_object(ObjectWithEveryOptionalType {
@@ -143,9 +153,9 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_object_with_nullable_fields() {
-        let config = get_config(headers);
+        let config = get_config(headers());
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
-        let client = TestClient::create(&config);
+        let client = TestClient::create(config);
         let all_null_input = ObjectWithEveryNullableType {
             any: serde_json::Value::Null,
             boolean: None,
@@ -259,8 +269,8 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_recursive_objects() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         let input = RecursiveObject {
             left: Some(Box::new(RecursiveObject {
                 left: Some(Box::new(RecursiveObject {
@@ -292,8 +302,8 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_recursive_discriminators() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         let input = RecursiveUnion::Children {
             data: vec![
                 Box::new(RecursiveUnion::Child {
@@ -327,8 +337,8 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_requests_with_no_params() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         let get_request_result = client.tests.empty_params_get_request().await;
         let post_request_result = client.tests.empty_params_post_request().await;
         assert!(!get_request_result.unwrap().message.is_empty());
@@ -337,8 +347,8 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_requests_with_no_response() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         let get_request_result = client
             .tests
             .empty_response_get_request(DefaultPayload {
@@ -357,8 +367,8 @@ mod tests {
 
     #[tokio::test]
     async fn can_properly_parse_error_responses() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         let result = client
             .tests
             .send_error(SendErrorParams {
@@ -373,8 +383,8 @@ mod tests {
 
     #[tokio::test]
     async fn can_send_and_receive_partial_objects() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
         let mut record = BTreeMap::<String, bool>::new();
         record.insert("A".to_string(), false);
@@ -428,8 +438,8 @@ mod tests {
 
     #[tokio::test]
     async fn deprecated_types_and_procedures_are_properly_marked() {
-        let config = get_config(headers);
-        let client = TestClient::create(&config);
+        let config = get_config(headers());
+        let client = TestClient::create(config);
         #[allow(deprecated)]
         let _ = client
             .tests
@@ -438,5 +448,319 @@ mod tests {
             })
             .await;
         assert!(true);
+    }
+
+    #[tokio::test]
+    async fn stream_messages_test() {
+        let config = get_config(headers());
+        let client = Arc::new(TestClient::create(config));
+        let error_count = Arc::new(Mutex::new(0));
+        let error_count_ref = Arc::clone(&error_count);
+        let msg_count = Arc::new(Mutex::new(0));
+        let msg_count_ref = Arc::clone(&msg_count);
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_messages(
+                    ChatMessageParams {
+                        channel_id: "12345".to_string(),
+                    },
+                    |event, _| match event {
+                        SseEvent::Message(msg) => {
+                            let mut msg_count = msg_count_ref.lock().unwrap();
+                            *msg_count += 1;
+                            match msg {
+                                crate::test_client::ChatMessage::Text { channel_id, .. } => {
+                                    assert_eq!(channel_id, "12345".to_string());
+                                }
+                                crate::test_client::ChatMessage::Image { channel_id, .. } => {
+                                    assert_eq!(channel_id, "12345".to_string());
+                                }
+                                crate::test_client::ChatMessage::Url { channel_id, .. } => {
+                                    assert_eq!(channel_id, "12345".to_string());
+                                }
+                            }
+                        }
+                        SseEvent::Error { .. } => {
+                            let mut error_count = error_count_ref.lock().unwrap();
+                            *error_count += 1;
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await
+        });
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        thread.abort();
+        assert_eq!(*open_count.lock().unwrap(), 1);
+        assert!(*msg_count.lock().unwrap() > 0,);
+        assert_eq!(*error_count.lock().unwrap(), 0);
+    }
+
+    #[tokio::test]
+    async fn stream_messages_multiple_threads_test() {
+        let msg_count = Arc::new(Mutex::new(0));
+        let open_count = Arc::new(Mutex::new(0));
+        let error_count = Arc::new(Mutex::new(0));
+        let client = Arc::new(TestClient::create(get_config(headers())));
+        let mut threads: Vec<tokio::task::JoinHandle<()>> = Vec::new();
+        for i in 0..5 {
+            let client = Arc::clone(&client);
+            let msg_count_ref = Arc::clone(&msg_count);
+            let open_count_ref = Arc::clone(&open_count);
+            let error_count_ref = Arc::clone(&error_count);
+            let thread = tokio::spawn(async move {
+                client
+                    .tests
+                    .stream_messages(
+                        ChatMessageParams {
+                            channel_id: i.to_string(),
+                        },
+                        |event, _| match event {
+                            SseEvent::Message(_) => {
+                                let mut msg_count = msg_count_ref.lock().unwrap();
+                                *msg_count += 1;
+                            }
+                            SseEvent::Error(err) => {
+                                println!("ERROR: {:?}", err);
+                                let mut error_count = error_count_ref.lock().unwrap();
+                                *error_count += 1;
+                            }
+                            SseEvent::Open => {
+                                let mut open_count = open_count_ref.lock().unwrap();
+                                *open_count += 1;
+                            }
+                            SseEvent::Close => {}
+                        },
+                        None,
+                        None,
+                    )
+                    .await;
+            });
+            threads.push(thread);
+        }
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        for thread in &threads {
+            thread.abort();
+        }
+        assert_eq!(&threads.len(), &5);
+        assert_eq!(open_count.lock().unwrap().clone(), 5);
+        assert!(msg_count.lock().unwrap().clone() > 10);
+        assert_eq!(error_count.lock().unwrap().clone(), 0);
+    }
+
+    #[tokio::test]
+    async fn stream_auto_reconnect_test() {
+        let config = get_config(headers());
+        let client = Arc::new(TestClient::create(config));
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let msg_count = Arc::new(Mutex::new(0));
+        let msg_count_ref = Arc::clone(&msg_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_auto_reconnect(
+                    AutoReconnectParams { message_count: 10 },
+                    |event, _| match event {
+                        SseEvent::Message(_) => {
+                            let mut msg_count = msg_count_ref.lock().unwrap();
+                            *msg_count += 1;
+                        }
+                        SseEvent::Error(_) => {}
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await;
+        });
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        thread.abort();
+        assert!(*open_count.lock().unwrap() > 1);
+        assert!(*msg_count.lock().unwrap() > 10);
+    }
+
+    #[tokio::test]
+    async fn stream_connection_error_test_test() {
+        let config = get_config(headers());
+        let client = Arc::new(TestClient::create(config));
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let error_count = Arc::new(Mutex::new(0));
+        let error_count_ref = Arc::clone(&error_count);
+        let msg_count = Arc::new(Mutex::new(0));
+        let msg_count_ref = Arc::clone(&msg_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_connection_error_test(
+                    StreamConnectionErrorTestParams {
+                        status_code: 411,
+                        status_message: "Invalid request".to_string(),
+                    },
+                    |event, _| match event {
+                        SseEvent::Message(_) => {
+                            let mut msg_count = msg_count_ref.lock().unwrap();
+                            *msg_count += 1;
+                        }
+                        SseEvent::Error(err) => {
+                            assert_eq!(err.code, 411);
+                            assert_eq!(err.message, "Invalid request".to_string());
+                            let mut err_count = error_count_ref.lock().unwrap();
+                            *err_count += 1;
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await
+        });
+        tokio::time::sleep(Duration::from_millis(3000)).await;
+        thread.abort();
+        assert!(*error_count.lock().unwrap() > 1);
+        assert!(*open_count.lock().unwrap() > 1);
+        assert!(*msg_count.lock().unwrap() == 0);
+    }
+
+    #[tokio::test]
+    async fn stream_large_objects_test() {
+        let client = Arc::new(TestClient::create(get_config(headers())));
+        let messages = Arc::new(Mutex::new(Vec::<StreamLargeObjectsResponse>::new()));
+        let messages_ref = Arc::clone(&messages);
+        let open_count = Arc::new(Mutex::new(0));
+        let open_count_ref = Arc::clone(&open_count);
+        let thread = tokio::spawn(async move {
+            client
+                .tests
+                .stream_large_objects(
+                    |event, _| match event {
+                        SseEvent::Message(msg) => {
+                            let mut messages = messages_ref.lock().unwrap();
+                            messages.push(msg);
+                        }
+                        SseEvent::Error(_) => {
+                            assert!(false)
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count_ref.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => todo!(),
+                    },
+                    None,
+                    None,
+                )
+                .await;
+        });
+        tokio::time::sleep(Duration::from_millis(1000)).await;
+        thread.abort();
+        assert_eq!(*open_count.lock().unwrap(), 1);
+        let final_messages = messages.lock().unwrap().clone();
+        assert!(final_messages.clone().len() > 1);
+    }
+
+    #[tokio::test]
+    async fn stream_retry_with_new_credentials_test() {
+        let mut headers: HashMap<&'static str, String> =
+            [("x-test-header", "test-rust-header-1".to_string())]
+                .iter()
+                .cloned()
+                .collect();
+        let config = ArriClientConfig {
+            http_client: reqwest::Client::new(),
+            base_url: "http://127.0.0.1:2020".to_string(),
+            headers: headers.clone(),
+        };
+        let mut client = TestClient::create(config);
+        let mut loop_count = 0;
+        let open_count = Arc::new(Mutex::new(0));
+        let error_count = Arc::new(Mutex::new(0));
+        let msg_count = Arc::new(Mutex::new(0));
+        loop {
+            if loop_count > 10 {
+                break;
+            }
+            loop_count += 1;
+            let mut rng = rand::thread_rng();
+            headers.insert(
+                "x-test-header",
+                format!("test-rust-header-{}", rng.gen::<i64>()),
+            );
+            client.update_headers(headers.clone());
+            client
+                .tests
+                .stream_retry_with_new_credentials(
+                    |event, controller| match event {
+                        SseEvent::Message(_) => {
+                            let mut msg_count = msg_count.lock().unwrap();
+                            *msg_count += 1;
+                        }
+                        SseEvent::Error(err) => {
+                            let mut error_count = error_count.lock().unwrap();
+                            *error_count += 1;
+                            if err.code == 403 {
+                                controller.abort();
+                            }
+                        }
+                        SseEvent::Open => {
+                            let mut open_count = open_count.lock().unwrap();
+                            *open_count += 1;
+                        }
+                        SseEvent::Close => {}
+                    },
+                    None,
+                    None,
+                )
+                .await;
+        }
+        assert_eq!(error_count.lock().unwrap().clone(), 11);
+        assert!(open_count.lock().unwrap().clone() > error_count.lock().unwrap().clone());
+        assert!(msg_count.lock().unwrap().clone() > 0);
+    }
+
+    #[tokio::test]
+    async fn stream_ten_events_then_end_test() {
+        let client = TestClient::create(get_config(headers()));
+        let msg_count = Arc::new(Mutex::new(0));
+        let open_count = Arc::new(Mutex::new(0));
+        client
+            .tests
+            .stream_ten_events_then_end(
+                |event, _| match event {
+                    SseEvent::Message(_) => {
+                        let mut msg_count = msg_count.lock().unwrap();
+                        *msg_count += 1;
+                    }
+                    SseEvent::Error(_) => {}
+                    SseEvent::Open => {
+                        let mut open_count = open_count.lock().unwrap();
+                        *open_count += 1;
+                    }
+                    SseEvent::Close => {}
+                },
+                None,
+                None,
+            )
+            .await;
+        assert_eq!(msg_count.lock().unwrap().clone(), 10);
+        assert_eq!(open_count.lock().unwrap().clone(), 1);
     }
 }
