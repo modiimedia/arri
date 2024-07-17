@@ -41,6 +41,7 @@ async fn main() {
                 |event, controller| match event {
                     arri_client::sse::SseEvent::Message(_) => {
                         controller.abort();
+                        client.update_headers(HashMap::new());
                     }
                     arri_client::sse::SseEvent::Error(_) => {}
                     arri_client::sse::SseEvent::Open => {}

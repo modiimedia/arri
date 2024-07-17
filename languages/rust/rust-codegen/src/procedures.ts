@@ -169,20 +169,21 @@ export function rustServiceFromSchema(
         name: serviceName,
         content: `#[derive(Clone)]
 pub struct ${serviceName} {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
 ${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
 }
 
 impl ArriClientService for ${serviceName} {
     fn create(config: ArriClientConfig) -> Self {
         Self {
-            _config: config${paramSuffix},
-${subServices.map((service) => `            ${service.key}: ${service.name}::create(config.clone()),`).join("\n")}
+            _config: InternalArriClientConfig::from(config${paramSuffix}),
+${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? "" : ".clone()"}),`).join("\n")}
         }
     }
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers${paramSuffix};
-${subServices.map((service) => `        self.${service.key}.update_headers(headers.clone());`).join("\n")}
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
+${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? "" : ".clone()"});`).join("\n")}
     }
 }
 

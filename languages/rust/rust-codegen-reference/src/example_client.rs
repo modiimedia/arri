@@ -15,10 +15,7 @@ use arri_client::{
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriServerError, EmptyArriModel, InternalArriClientConfig,
 };
-use std::{
-    collections::{BTreeMap, HashMap},
-    sync::{Arc, Mutex},
-};
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone)]
 pub struct ExampleClient {
@@ -30,13 +27,13 @@ impl ArriClientService for ExampleClient {
     fn create(config: ArriClientConfig) -> Self {
         Self {
             _config: InternalArriClientConfig::from(config.clone()),
-            books: ExampleClientBooksService::create(config.clone()),
+            books: ExampleClientBooksService::create(config),
         }
     }
 
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut val = self._config.headers.lock().unwrap();
-        *val = headers.clone();
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
         self.books.update_headers(headers);
     }
 }
@@ -66,13 +63,13 @@ pub struct ExampleClientBooksService {
 impl ArriClientService for ExampleClientBooksService {
     fn create(config: ArriClientConfig) -> Self {
         Self {
-            _config: InternalArriClientConfig::from(config.clone()),
+            _config: InternalArriClientConfig::from(config),
         }
     }
 
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut val = self._config.headers.lock().unwrap();
-        *val = headers.clone()
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
     }
 }
 
