@@ -13,7 +13,7 @@ pub struct ArriParsedSseRequestOptions<'a> {
     pub client_version: String,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: HashMap<&'static str, String>,
+    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
     // Defaults to None
     pub max_retry_count: Option<u64>,
     // Max delay time in ms. defaults to Some(30000).
@@ -76,7 +76,7 @@ pub struct EventSource<'a> {
     pub url: String,
     pub method: reqwest::Method,
     pub client_version: String,
-    pub headers: HashMap<&'static str, String>,
+    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
     pub retry_count: u64,
     pub retry_interval: u64,
     pub max_retry_interval: u64,
@@ -142,13 +142,16 @@ impl<'a> EventSource<'a> {
         let query_string: Option<String>;
         let json_body: Option<String>;
         let mut headers = reqwest::header::HeaderMap::new();
-        for (key, value) in &self.headers {
-            match reqwest::header::HeaderValue::from_str(value) {
-                Ok(header_val) => {
-                    headers.insert(key.to_owned(), header_val);
-                }
-                Err(error) => {
-                    println!("Invalid header value: {:?}", error);
+        {
+            let unlocked = self.headers.lock().unwrap();
+            for (key, value) in unlocked.iter() {
+                match reqwest::header::HeaderValue::from_str(value) {
+                    Ok(header_val) => {
+                        headers.insert(key.to_owned(), header_val);
+                    }
+                    Err(error) => {
+                        println!("Invalid header value: {:?}", error);
+                    }
                 }
             }
         }

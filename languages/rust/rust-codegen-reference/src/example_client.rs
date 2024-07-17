@@ -7,11 +7,13 @@
 )]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
-    parsed_arri_request, reqwest, serde_json,
+    parsed_arri_request,
+    reqwest::{self, Request},
+    serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel,
+    ArriServerError, EmptyArriModel, InternalArriClientConfig,
 };
 use std::{
     collections::{BTreeMap, HashMap},
@@ -20,21 +22,22 @@ use std::{
 
 #[derive(Clone)]
 pub struct ExampleClient {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
     pub books: ExampleClientBooksService,
 }
 
 impl ArriClientService for ExampleClient {
     fn create(config: ArriClientConfig) -> Self {
         Self {
-            _config: config.clone(),
+            _config: InternalArriClientConfig::from(config.clone()),
             books: ExampleClientBooksService::create(config.clone()),
         }
     }
 
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers.clone();
-        self.books.update_headers(headers.clone());
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut val = self._config.headers.lock().unwrap();
+        *val = headers.clone();
+        self.books.update_headers(headers);
     }
 }
 
@@ -57,16 +60,19 @@ impl ExampleClient {
 
 #[derive(Clone)]
 pub struct ExampleClientBooksService {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
 }
 
 impl ArriClientService for ExampleClientBooksService {
     fn create(config: ArriClientConfig) -> Self {
-        Self { _config: config }
+        Self {
+            _config: InternalArriClientConfig::from(config.clone()),
+        }
     }
 
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers;
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut val = self._config.headers.lock().unwrap();
+        *val = headers.clone()
     }
 }
 

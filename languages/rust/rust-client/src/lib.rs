@@ -3,7 +3,10 @@ pub mod utils;
 pub use chrono::{self};
 pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 #[derive(Clone)]
 pub struct ArriClientConfig {
@@ -12,16 +15,33 @@ pub struct ArriClientConfig {
     pub headers: HashMap<&'static str, String>,
 }
 
+#[derive(Clone)]
+pub struct InternalArriClientConfig {
+    pub http_client: reqwest::Client,
+    pub base_url: String,
+    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
+}
+
 pub trait ArriClientService {
     fn create(config: ArriClientConfig) -> Self;
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>);
+    fn update_headers(&self, headers: HashMap<&'static str, String>);
+}
+
+impl InternalArriClientConfig {
+    pub fn from(config: ArriClientConfig) -> Self {
+        Self {
+            http_client: config.http_client,
+            base_url: config.base_url,
+            headers: Arc::new(Mutex::new(config.headers)),
+        }
+    }
 }
 
 pub struct ArriRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: HashMap<&'static str, String>,
+    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
     pub client_version: String,
 }
 
@@ -29,7 +49,7 @@ pub struct ArriParsedRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: HashMap<&'static str, String>,
+    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
     pub client_version: String,
 }
 
@@ -174,7 +194,13 @@ pub async fn arri_request<'a>(
     params: Option<impl ArriModel>,
 ) -> Result<reqwest::Response, ArriServerError> {
     let response: Result<reqwest::Response, reqwest::Error>;
-    let mut headers: HashMap<&str, String> = opts.headers;
+    let mut headers: HashMap<&str, String> = HashMap::new();
+    {
+        let unlocked = opts.headers.lock().unwrap();
+        for (key, val) in unlocked.iter() {
+            headers.insert(*key, val.clone().to_owned());
+        }
+    }
     match headers.get("Accept") {
         Some(_) => {}
         None => {
