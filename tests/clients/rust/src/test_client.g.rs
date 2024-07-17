@@ -7,20 +7,19 @@
 )]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
-    parsed_arri_request, reqwest, serde_json,
+    parsed_arri_request,
+    reqwest::{self, Request},
+    serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel,
+    ArriServerError, EmptyArriModel, InternalArriClientConfig,
 };
-use std::{
-    collections::{BTreeMap, HashMap},
-    sync::{Arc, Mutex},
-};
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone)]
 pub struct TestClient {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
     pub tests: TestClientTestsService,
     pub adapters: TestClientAdaptersService,
     pub users: TestClientUsersService,
@@ -29,17 +28,18 @@ pub struct TestClient {
 impl ArriClientService for TestClient {
     fn create(config: ArriClientConfig) -> Self {
         Self {
-            _config: config.clone(),
+            _config: InternalArriClientConfig::from(config.clone()),
             tests: TestClientTestsService::create(config.clone()),
             adapters: TestClientAdaptersService::create(config.clone()),
-            users: TestClientUsersService::create(config.clone()),
+            users: TestClientUsersService::create(config),
         }
     }
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers.clone();
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
         self.tests.update_headers(headers.clone());
         self.adapters.update_headers(headers.clone());
-        self.users.update_headers(headers.clone());
+        self.users.update_headers(headers);
     }
 }
 
@@ -47,15 +47,18 @@ impl TestClient {}
 
 #[derive(Clone)]
 pub struct TestClientTestsService {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
 }
 
 impl ArriClientService for TestClientTestsService {
     fn create(config: ArriClientConfig) -> Self {
-        Self { _config: config }
+        Self {
+            _config: InternalArriClientConfig::from(config),
+        }
     }
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers;
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
     }
 }
 
@@ -258,11 +261,11 @@ impl TestClientTestsService {
     pub async fn stream_auto_reconnect<OnEvent>(
         &self,
         params: AutoReconnectParams,
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<AutoReconnectResponse>, &mut SseController)
+        OnEvent: FnMut(SseEvent<AutoReconnectResponse>, &mut SseController)
             + std::marker::Send
             + std::marker::Sync,
     {
@@ -288,11 +291,11 @@ impl TestClientTestsService {
     pub async fn stream_connection_error_test<OnEvent>(
         &self,
         params: StreamConnectionErrorTestParams,
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<StreamConnectionErrorTestResponse>, &mut SseController)
+        OnEvent: FnMut(SseEvent<StreamConnectionErrorTestResponse>, &mut SseController)
             + std::marker::Send
             + std::marker::Sync,
     {
@@ -318,11 +321,11 @@ impl TestClientTestsService {
     pub async fn stream_large_objects<OnEvent>(
         &self,
 
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<StreamLargeObjectsResponse>, &mut SseController)
+        OnEvent: FnMut(SseEvent<StreamLargeObjectsResponse>, &mut SseController)
             + std::marker::Send
             + std::marker::Sync,
     {
@@ -344,12 +347,13 @@ impl TestClientTestsService {
     pub async fn stream_messages<OnEvent>(
         &self,
         params: ChatMessageParams,
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent:
-            Fn(SseEvent<ChatMessage>, &mut SseController) + std::marker::Send + std::marker::Sync,
+        OnEvent: FnMut(SseEvent<ChatMessage>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -369,11 +373,11 @@ impl TestClientTestsService {
     pub async fn stream_retry_with_new_credentials<OnEvent>(
         &self,
 
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<TestsStreamRetryWithNewCredentialsResponse>, &mut SseController)
+        OnEvent: FnMut(SseEvent<TestsStreamRetryWithNewCredentialsResponse>, &mut SseController)
             + std::marker::Send
             + std::marker::Sync,
     {
@@ -399,12 +403,13 @@ impl TestClientTestsService {
     pub async fn stream_ten_events_then_end<OnEvent>(
         &self,
 
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent:
-            Fn(SseEvent<ChatMessage>, &mut SseController) + std::marker::Send + std::marker::Sync,
+        OnEvent: FnMut(SseEvent<ChatMessage>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
@@ -428,15 +433,18 @@ impl TestClientTestsService {
 
 #[derive(Clone)]
 pub struct TestClientAdaptersService {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
 }
 
 impl ArriClientService for TestClientAdaptersService {
     fn create(config: ArriClientConfig) -> Self {
-        Self { _config: config }
+        Self {
+            _config: InternalArriClientConfig::from(config),
+        }
     }
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers;
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
     }
 }
 
@@ -459,15 +467,18 @@ impl TestClientAdaptersService {
 
 #[derive(Clone)]
 pub struct TestClientUsersService {
-    _config: ArriClientConfig,
+    _config: InternalArriClientConfig,
 }
 
 impl ArriClientService for TestClientUsersService {
     fn create(config: ArriClientConfig) -> Self {
-        Self { _config: config }
+        Self {
+            _config: InternalArriClientConfig::from(config),
+        }
     }
-    fn update_headers(&mut self, headers: HashMap<&'static str, String>) {
-        self._config.headers = headers;
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        *unwrapped_headers = headers.clone();
     }
 }
 
@@ -475,11 +486,11 @@ impl TestClientUsersService {
     pub async fn watch_user<OnEvent>(
         &self,
         params: UsersWatchUserParams,
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<UsersWatchUserResponse>, &mut SseController)
+        OnEvent: FnMut(SseEvent<UsersWatchUserResponse>, &mut SseController)
             + std::marker::Send
             + std::marker::Sync,
     {

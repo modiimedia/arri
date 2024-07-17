@@ -38,7 +38,7 @@ async fn main() {
                 BookParams {
                     book_id: "12345".to_string(),
                 },
-                |event, controller| match event {
+                &mut |event, controller| match event {
                     arri_client::sse::SseEvent::Message(_) => {
                         controller.abort();
                         client.update_headers(HashMap::new());

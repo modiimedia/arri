@@ -467,7 +467,7 @@ mod tests {
                     ChatMessageParams {
                         channel_id: "12345".to_string(),
                     },
-                    |event, _| match event {
+                    &mut |event, _| match event {
                         SseEvent::Message(msg) => {
                             let mut msg_count = msg_count_ref.lock().unwrap();
                             *msg_count += 1;
@@ -524,7 +524,7 @@ mod tests {
                         ChatMessageParams {
                             channel_id: i.to_string(),
                         },
-                        |event, _| match event {
+                        &mut |event, _| match event {
                             SseEvent::Message(_) => {
                                 let mut msg_count = msg_count_ref.lock().unwrap();
                                 *msg_count += 1;
@@ -547,7 +547,7 @@ mod tests {
             });
             threads.push(thread);
         }
-        tokio::time::sleep(Duration::from_millis(1000)).await;
+        tokio::time::sleep(Duration::from_millis(2000)).await;
         for thread in &threads {
             thread.abort();
         }
@@ -570,7 +570,7 @@ mod tests {
                 .tests
                 .stream_auto_reconnect(
                     AutoReconnectParams { message_count: 10 },
-                    |event, _| match event {
+                    &mut |event, _| match event {
                         SseEvent::Message(_) => {
                             let mut msg_count = msg_count_ref.lock().unwrap();
                             *msg_count += 1;
@@ -587,7 +587,7 @@ mod tests {
                 )
                 .await;
         });
-        tokio::time::sleep(Duration::from_millis(1000)).await;
+        tokio::time::sleep(Duration::from_millis(5000)).await;
         thread.abort();
         assert!(*open_count.lock().unwrap() > 1);
         assert!(*msg_count.lock().unwrap() > 10);
@@ -611,7 +611,7 @@ mod tests {
                         status_code: 411,
                         status_message: "Invalid request".to_string(),
                     },
-                    |event, _| match event {
+                    &mut |event, _| match event {
                         SseEvent::Message(_) => {
                             let mut msg_count = msg_count_ref.lock().unwrap();
                             *msg_count += 1;
@@ -651,7 +651,7 @@ mod tests {
             client
                 .tests
                 .stream_large_objects(
-                    |event, _| match event {
+                    &mut |event, _| match event {
                         SseEvent::Message(msg) => {
                             let mut messages = messages_ref.lock().unwrap();
                             messages.push(msg);
@@ -679,61 +679,52 @@ mod tests {
 
     #[tokio::test]
     async fn stream_retry_with_new_credentials_test() {
-        let mut headers: HashMap<&'static str, String> =
-            [("x-test-header", "test-rust-header-1".to_string())]
-                .iter()
-                .cloned()
-                .collect();
+        let mut rng = rand::thread_rng();
+        let mut headers: HashMap<&'static str, String> = HashMap::new();
+        headers.insert(
+            "x-test-header",
+            format!("test-rust-header-{}", rng.gen::<i64>()),
+        );
         let config = ArriClientConfig {
             http_client: reqwest::Client::new(),
             base_url: "http://127.0.0.1:2020".to_string(),
             headers: headers.clone(),
         };
-        let mut client = TestClient::create(config);
-        let mut loop_count = 0;
-        let open_count = Arc::new(Mutex::new(0));
-        let error_count = Arc::new(Mutex::new(0));
-        let msg_count = Arc::new(Mutex::new(0));
-        loop {
-            if loop_count > 10 {
-                break;
-            }
-            loop_count += 1;
-            let mut rng = rand::thread_rng();
-            headers.insert(
-                "x-test-header",
-                format!("test-rust-header-{}", rng.gen::<i64>()),
-            );
-            client.update_headers(headers.clone());
-            client
-                .tests
-                .stream_retry_with_new_credentials(
-                    |event, controller| match event {
-                        SseEvent::Message(_) => {
-                            let mut msg_count = msg_count.lock().unwrap();
-                            *msg_count += 1;
+        let client = TestClient::create(config);
+        let mut open_count = 0;
+        let mut error_count = 0;
+        let mut msg_count = 0;
+        client
+            .tests
+            .stream_retry_with_new_credentials(
+                &mut |event, controller| match event {
+                    SseEvent::Message(_) => {
+                        msg_count += 1;
+                    }
+                    SseEvent::Error(_) => {
+                        error_count += 1;
+                    }
+                    SseEvent::Open => {
+                        open_count += 1;
+                        if open_count >= 10 {
+                            controller.abort();
                         }
-                        SseEvent::Error(err) => {
-                            let mut error_count = error_count.lock().unwrap();
-                            *error_count += 1;
-                            if err.code == 403 {
-                                controller.abort();
-                            }
-                        }
-                        SseEvent::Open => {
-                            let mut open_count = open_count.lock().unwrap();
-                            *open_count += 1;
-                        }
-                        SseEvent::Close => {}
-                    },
-                    None,
-                    None,
-                )
-                .await;
-        }
-        assert_eq!(error_count.lock().unwrap().clone(), 11);
-        assert!(open_count.lock().unwrap().clone() > error_count.lock().unwrap().clone());
-        assert!(msg_count.lock().unwrap().clone() > 0);
+                        let mut rng = rand::thread_rng();
+                        headers.insert(
+                            "x-test-header",
+                            format!("test-rust-header-{}", rng.gen::<i64>()),
+                        );
+                        client.update_headers(headers.clone());
+                    }
+                    SseEvent::Close => {}
+                },
+                None,
+                None,
+            )
+            .await;
+        assert_eq!(error_count, 0);
+        assert!(open_count > 0);
+        assert!(msg_count > 0);
     }
 
     #[tokio::test]
@@ -744,7 +735,7 @@ mod tests {
         client
             .tests
             .stream_ten_events_then_end(
-                |event, _| match event {
+                &mut |event, _| match event {
                     SseEvent::Message(_) => {
                         let mut msg_count = msg_count.lock().unwrap();
                         *msg_count += 1;

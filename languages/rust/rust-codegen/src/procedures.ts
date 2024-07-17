@@ -53,11 +53,11 @@ export function rustHttpRpcFromSchema(
         return `${leading}pub async fn ${functionName}<OnEvent>(
             &self,
             ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
-            on_event: OnEvent,
+            on_event: &mut OnEvent,
             max_retry_count: Option<u64>,
             max_retry_interval: Option<u64>,
         ) where
-            OnEvent: Fn(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>, &mut SseController) + std::marker::Send + std::marker::Sync,
+            OnEvent: FnMut(SseEvent<${response ? `${context.typeNamePrefix}${response}` : "EmptyArriModel"}>, &mut SseController) + std::marker::Send + std::marker::Sync,
         {
             parsed_arri_sse_request(
                 ArriParsedSseRequestOptions {

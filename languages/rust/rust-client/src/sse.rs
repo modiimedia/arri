@@ -44,10 +44,10 @@ impl SseController {
 pub async fn parsed_arri_sse_request<'a, T: ArriModel, OnEvent>(
     options: ArriParsedSseRequestOptions<'a>,
     params: Option<impl ArriModel + Clone + std::marker::Send>,
-    on_event: OnEvent,
+    on_event: &mut OnEvent,
 ) where
     T: ArriModel + std::marker::Send + std::marker::Sync,
-    OnEvent: Fn(SseEvent<T>, &mut SseController) + std::marker::Send + std::marker::Sync,
+    OnEvent: FnMut(SseEvent<T>, &mut SseController) + std::marker::Send + std::marker::Sync,
 {
     let mut es = EventSource {
         http_client: &options.client,
@@ -92,9 +92,9 @@ impl<'a> EventSource<'a> {
     async fn listen<T: ArriModel, OnEvent>(
         &mut self,
         params: Option<impl ArriModel + Clone>,
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
     ) where
-        OnEvent: Fn(SseEvent<T>, &mut SseController),
+        OnEvent: FnMut(SseEvent<T>, &mut SseController),
     {
         loop {
             match &self.max_retry_count {
@@ -119,7 +119,7 @@ impl<'a> EventSource<'a> {
             if self.retry_interval > 0 {
                 wait(Duration::from_millis(self.retry_interval.clone()));
             }
-            let result = self.send_request(params.clone(), &on_event).await;
+            let result = self.send_request(params.clone(), on_event).await;
             match result {
                 SseAction::Retry => {
                     self.retry_count += 1;
@@ -133,10 +133,10 @@ impl<'a> EventSource<'a> {
     async fn send_request<T: ArriModel, OnEvent>(
         &mut self,
         params: Option<impl ArriModel + Clone>,
-        on_event: &OnEvent,
+        on_event: &mut OnEvent,
     ) -> SseAction
     where
-        OnEvent: Fn(SseEvent<T>, &mut SseController),
+        OnEvent: FnMut(SseEvent<T>, &mut SseController),
     {
         let mut controller = SseController::new();
         let query_string: Option<String>;

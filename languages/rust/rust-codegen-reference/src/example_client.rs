@@ -105,11 +105,11 @@ impl ExampleClientBooksService {
     pub async fn watch_book<OnEvent>(
         &self,
         params: BookParams,
-        on_event: OnEvent,
+        on_event: &mut OnEvent,
         max_retry_count: Option<u64>,
         max_retry_interval: Option<u64>,
     ) where
-        OnEvent: Fn(SseEvent<Book>, &mut SseController) + std::marker::Send + std::marker::Sync,
+        OnEvent: FnMut(SseEvent<Book>, &mut SseController) + std::marker::Send + std::marker::Sync,
     {
         parsed_arri_sse_request(
             ArriParsedSseRequestOptions {
