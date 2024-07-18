@@ -31,7 +31,7 @@ packages:
       path: "../../../languages/dart/dart-client"
       relative: true
     source: path
-    version: "0.54.0"
+    version: "0.55.0"
   async:
     dependency: transitive
     description:
