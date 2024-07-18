@@ -617,8 +617,8 @@ mod tests {
                 None,
             )
             .await;
-        assert!(error_count > 5);
-        assert!(open_count > 5);
+        assert_eq!(error_count, 5);
+        assert_eq!(open_count, 5);
         assert!(msg_count == 0);
     }
 
