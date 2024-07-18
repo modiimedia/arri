@@ -20,7 +20,7 @@ Below are the language client generators that are planned to have first party su
 | --------------------------------------------------- | ---- | --- |
 | [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅  |
 | [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅  |
-| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | 🚧  |
+| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅  |
 | [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅  |
 | Swift                                               | 🚧   | 🚧  |
 | Go                                                  |      |     |
@@ -31,6 +31,7 @@ Below are the language client generators that are planned to have first party su
 🚧 in progress
 
 ## Other Tooling
+
 -   [arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
 -   [@arrirpc/typebox-adapter](tooling/schema-typebox-adapter/README.md) - convert Typebox Schemas to Arri Type Definitions
 -   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
