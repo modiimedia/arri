@@ -2,7 +2,7 @@
 use serde_json::json;
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
     time::{Duration, Instant},
 };
 
@@ -13,7 +13,7 @@ pub struct ArriParsedSseRequestOptions<'a> {
     pub client_version: String,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
+    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
     // Defaults to None
     pub max_retry_count: Option<u64>,
     // Max delay time in ms. defaults to Some(30000).
@@ -76,7 +76,7 @@ pub struct EventSource<'a> {
     pub url: String,
     pub method: reqwest::Method,
     pub client_version: String,
-    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
+    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
     pub retry_count: u64,
     pub retry_interval: u64,
     pub max_retry_interval: u64,
@@ -143,7 +143,7 @@ impl<'a> EventSource<'a> {
         let json_body: Option<String>;
         let mut headers = reqwest::header::HeaderMap::new();
         {
-            let unlocked = self.headers.lock().unwrap();
+            let unlocked = self.headers.read().unwrap();
             for (key, value) in unlocked.iter() {
                 match reqwest::header::HeaderValue::from_str(value) {
                     Ok(header_val) => {

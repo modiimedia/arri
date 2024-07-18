@@ -35,7 +35,7 @@ impl ArriClientService for TestClient {
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
         self.tests.update_headers(headers.clone());
         self.adapters.update_headers(headers.clone());
@@ -57,7 +57,7 @@ impl ArriClientService for TestClientTestsService {
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }
@@ -443,7 +443,7 @@ impl ArriClientService for TestClientAdaptersService {
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }
@@ -477,7 +477,7 @@ impl ArriClientService for TestClientUsersService {
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }

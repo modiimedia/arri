@@ -190,7 +190,7 @@ ${subServices.map((service, index) => `            ${service.key}: ${service.nam
         }
     }
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-       let mut unwrapped_headers = self._config.headers.lock().unwrap();
+       let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
 ${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? "" : ".clone()"});`).join("\n")}
     }

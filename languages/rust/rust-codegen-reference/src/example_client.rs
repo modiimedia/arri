@@ -32,7 +32,7 @@ impl ArriClientService for ExampleClient {
     }
 
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
         self.books.update_headers(headers);
     }
@@ -68,7 +68,7 @@ impl ArriClientService for ExampleClientBooksService {
     }
 
     fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.lock().unwrap();
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
     }
 }

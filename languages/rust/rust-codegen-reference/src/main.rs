@@ -1,10 +1,6 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
-
 use arri_client::{chrono::DateTime, reqwest, ArriClientConfig, ArriClientService};
 use example_client::{Book, BookParams, ExampleClient};
+use std::collections::HashMap;
 
 mod example_client;
 

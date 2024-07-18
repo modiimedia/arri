@@ -5,7 +5,7 @@ pub use reqwest::{self, StatusCode};
 pub use serde_json::{self};
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
 };
 
 #[derive(Clone)]
@@ -19,7 +19,7 @@ pub struct ArriClientConfig {
 pub struct InternalArriClientConfig {
     pub http_client: reqwest::Client,
     pub base_url: String,
-    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
+    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
 }
 
 pub trait ArriClientService {
@@ -32,7 +32,7 @@ impl InternalArriClientConfig {
         Self {
             http_client: config.http_client,
             base_url: config.base_url,
-            headers: Arc::new(Mutex::new(config.headers)),
+            headers: Arc::new(RwLock::new(config.headers)),
         }
     }
 }
@@ -41,7 +41,7 @@ pub struct ArriRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
+    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
     pub client_version: String,
 }
 
@@ -49,7 +49,7 @@ pub struct ArriParsedRequestOptions<'a> {
     pub http_client: &'a reqwest::Client,
     pub url: String,
     pub method: reqwest::Method,
-    pub headers: Arc<Mutex<HashMap<&'static str, String>>>,
+    pub headers: Arc<RwLock<HashMap<&'static str, String>>>,
     pub client_version: String,
 }
 
@@ -196,7 +196,7 @@ pub async fn arri_request<'a>(
     let response: Result<reqwest::Response, reqwest::Error>;
     let mut headers: HashMap<&str, String> = HashMap::new();
     {
-        let unlocked = opts.headers.lock().unwrap();
+        let unlocked = opts.headers.read().unwrap();
         for (key, val) in unlocked.iter() {
             headers.insert(*key, val.clone().to_owned());
         }
