@@ -624,39 +624,33 @@ mod tests {
 
     #[tokio::test]
     async fn stream_large_objects_test() {
-        let client = Arc::new(TestClient::create(get_config(headers())));
-        let messages = Arc::new(Mutex::new(Vec::<StreamLargeObjectsResponse>::new()));
-        let messages_ref = Arc::clone(&messages);
-        let open_count = Arc::new(Mutex::new(0));
-        let open_count_ref = Arc::clone(&open_count);
-        let thread = tokio::spawn(async move {
-            client
-                .tests
-                .stream_large_objects(
-                    &mut |event, _| match event {
-                        SseEvent::Message(msg) => {
-                            let mut messages = messages_ref.lock().unwrap();
-                            messages.push(msg);
+        let client = TestClient::create(get_config(headers()));
+        let mut messages = Vec::<StreamLargeObjectsResponse>::new();
+        let mut open_count = 0;
+        client
+            .tests
+            .stream_large_objects(
+                &mut |event, controller| match event {
+                    SseEvent::Message(msg) => {
+                        messages.push(msg);
+                        if messages.len() >= 5 {
+                            controller.abort()
                         }
-                        SseEvent::Error(_) => {
-                            assert!(false)
-                        }
-                        SseEvent::Open => {
-                            let mut open_count = open_count_ref.lock().unwrap();
-                            *open_count += 1;
-                        }
-                        SseEvent::Close => todo!(),
-                    },
-                    None,
-                    None,
-                )
-                .await;
-        });
-        tokio::time::sleep(Duration::from_millis(1000)).await;
-        thread.abort();
-        assert_eq!(*open_count.lock().unwrap(), 1);
-        let final_messages = messages.lock().unwrap().clone();
-        assert!(final_messages.clone().len() > 1);
+                    }
+                    SseEvent::Error(_) => {
+                        assert!(false)
+                    }
+                    SseEvent::Open => {
+                        open_count += 1;
+                    }
+                    SseEvent::Close => {}
+                },
+                None,
+                None,
+            )
+            .await;
+        assert_eq!(open_count, 1);
+        assert_eq!(messages.len(), 5);
     }
 
     #[tokio::test]
@@ -712,20 +706,18 @@ mod tests {
     #[tokio::test]
     async fn stream_ten_events_then_end_test() {
         let client = TestClient::create(get_config(headers()));
-        let msg_count = Arc::new(Mutex::new(0));
-        let open_count = Arc::new(Mutex::new(0));
+        let mut msg_count = 0;
+        let mut open_count = 0;
         client
             .tests
             .stream_ten_events_then_end(
                 &mut |event, _| match event {
                     SseEvent::Message(_) => {
-                        let mut msg_count = msg_count.lock().unwrap();
-                        *msg_count += 1;
+                        msg_count += 1;
                     }
                     SseEvent::Error(_) => {}
                     SseEvent::Open => {
-                        let mut open_count = open_count.lock().unwrap();
-                        *open_count += 1;
+                        open_count += 1;
                     }
                     SseEvent::Close => {}
                 },
@@ -733,7 +725,7 @@ mod tests {
                 None,
             )
             .await;
-        assert_eq!(msg_count.lock().unwrap().clone(), 10);
-        assert_eq!(open_count.lock().unwrap().clone(), 1);
+        assert_eq!(msg_count, 10);
+        assert_eq!(open_count, 1);
     }
 }
