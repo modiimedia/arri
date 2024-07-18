@@ -15,19 +15,19 @@ import {
 } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
-import { jsonSchemaToJtdSchema,type JsonSchemaType } from "json-schema-to-jtd";
+import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-jtd";
 
 export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,
 ): TInput extends TObject
     ? AAdaptedObjectSchema<Static<TInput>>
     : TInput extends TRecord
-      ? AAdaptedRecordSchema<
-            Static<TInput> extends Record<string, any>
-                ? Static<TInput>[string]
-                : any
-        >
-      : AAdaptedSchema<Static<TInput>> {
+      ? AAdaptedRecordSchema<any>
+      : // Doesn't work in ts 5.5 for some reason
+        // AAdaptedRecordSchema<Static<TInput> extends Record<string, any>
+        //     ? Static<TInput>[string]
+        //     : any>
+        AAdaptedSchema<Static<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as unknown as JsonSchemaType);
     const compiled = TypeCompiler.Compile<any>(input);
     return {
