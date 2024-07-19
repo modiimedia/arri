@@ -77,30 +77,10 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
                     `import ${route.importName} from '${route.importPath}';`,
             )
             .join("\n")}
-        const routes: {id: string; route: any}[] = [${routes
-            .map(
-                (route) =>
-                    `{ id: '${route.name}', route: ${route.importName} }`,
-            )
-            .join(",\n")}
-        ];
-        for(const route of routes) {
-            if(route.route.transport === 'http') {
-                app.rpc({
-                    name: route.id,
-                    ...route.route,
-                });
-                continue;
-            }
-            if (route.route.transport === 'ws') {
-                app.wsRpc({
-                    name: route.id,
-                    ...route.route,
-                });
-                continue;
-            }
-        }
-        export default app`,
+
+        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`).join("\n")}
+
+        export default app;`,
         { parser: "typescript", tabWidth: 4 },
     );
     await fs.writeFile(

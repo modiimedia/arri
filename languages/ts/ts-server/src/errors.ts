@@ -267,7 +267,7 @@ export async function handleH3Error(
     }
     setResponseStatus(event, arriErr.code);
     if (onError) {
-        await onError(arriErr, event);
+        await onError(arriErr, event as any);
     }
     if (event.handled) {
         return;

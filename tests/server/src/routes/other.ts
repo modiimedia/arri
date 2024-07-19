@@ -1,13 +1,12 @@
 import { a } from "@arrirpc/schema";
-import { ArriRouter } from "@arrirpc/server";
+import { ArriRouter, defineRpc, defineService } from "@arrirpc/server";
 
-const router = new ArriRouter();
-
+export const manualRouter = new ArriRouter();
 const DefaultPayload = a.object("DefaultPayload", {
     message: a.string(),
 });
 
-router.route({
+manualRouter.route({
     path: "/routes/hello-world",
     method: ["get", "post"],
     handler(_) {
@@ -15,42 +14,35 @@ router.route({
     },
 });
 
-router.rpc({
-    method: "get",
-    name: "tests.emptyParamsGetRequest",
-    params: undefined,
-    response: DefaultPayload,
-    handler() {
-        return {
-            message: "ok",
-        };
-    },
+export const manualService = defineService("tests", {
+    emptyParamsGetRequest: defineRpc({
+        method: "get",
+        params: undefined,
+        response: DefaultPayload,
+        handler() {
+            return {
+                message: "ok",
+            };
+        },
+    }),
+    emptyParamsPostRequest: defineRpc({
+        params: undefined,
+        response: DefaultPayload,
+        handler() {
+            return {
+                message: "ok",
+            };
+        },
+    }),
+    emptyResponseGetRequest: defineRpc({
+        method: "get",
+        params: DefaultPayload,
+        response: undefined,
+        handler() {},
+    }),
+    emptyResponsePostRequest: defineRpc({
+        params: DefaultPayload,
+        response: undefined,
+        handler() {},
+    }),
 });
-
-router.rpc({
-    name: "tests.emptyParamsPostRequest",
-    params: undefined,
-    response: DefaultPayload,
-    handler() {
-        return {
-            message: "ok",
-        };
-    },
-});
-
-router.rpc({
-    method: "get",
-    name: "tests.emptyResponseGetRequest",
-    params: DefaultPayload,
-    response: undefined,
-    handler() {},
-});
-
-router.rpc({
-    name: "tests.emptyResponsePostRequest",
-    params: DefaultPayload,
-    response: undefined,
-    handler() {},
-});
-
-export default router;

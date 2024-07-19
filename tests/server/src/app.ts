@@ -7,7 +7,7 @@ import {
     handleCors,
 } from "@arrirpc/server";
 
-import manualRouter from "./routes/other";
+import { manualRouter, manualService } from "./routes/other";
 
 const app = new ArriApp({
     rpcRoutePrefix: "rpcs",
@@ -15,6 +15,7 @@ const app = new ArriApp({
         version: "10",
     },
     onRequest(event) {
+        event.context;
         handleCors(event, {
             origin: "*",
         });
@@ -52,5 +53,6 @@ app.registerDefinitions({
 });
 
 app.use(manualRouter);
+app.use(manualService);
 
 export default app;
