@@ -13,14 +13,16 @@ import {
     createApp,
     createRouter,
     eventHandler,
+    H3Event,
     type Router,
     setResponseHeader,
     setResponseStatus,
 } from "h3";
 
+import { RequestHookContext } from "./context";
 import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
-import { type Middleware, type MiddlewareEvent } from "./middleware";
+import { type Middleware, MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
 import { ArriRouter } from "./router";
 import {
@@ -99,7 +101,7 @@ export class ArriApp {
             this.route({
                 method: ["get", "head"],
                 path: "/",
-                handler: (_) => {
+                handler: async (_) => {
                     const response: Record<string, string> = {
                         title: this.appInfo?.title ?? "Arri-RPC Server",
                         description:
@@ -277,10 +279,14 @@ export interface ArriOptions {
     disableDefaultRoute?: boolean;
     disableDefinitionRoute?: boolean;
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
-    onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
-    onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;
+    onAfterResponse?: (event: RequestHookEvent) => void | Promise<void>;
+    onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onError?: (
         error: ArriServerError,
-        event: MiddlewareEvent,
+        event: RequestHookContext,
     ) => void | Promise<void>;
+}
+
+export interface RequestHookEvent extends Omit<H3Event, "context"> {
+    context: RequestHookContext;
 }

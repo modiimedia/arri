@@ -189,13 +189,17 @@ For those that want to opt out of the file-based routing system you can manually
 ```ts
 // using the app instance
 const app = new ArriApp()
-app.rpc('sayHello', {...})
+app.rpc('sayHello',
+    defineRpc({...})
+);
 
-// using a sub-router
+// defining a service
 const app = new ArriApp();
-const router = new ArriRouter();
-router.rpc('sayHello', {...})
-app.use(router)
+const usersService = defineService("users", {
+    getUser: defineRpc({..}),
+    createUser: defineRpc({..}),
+});
+app.use(usersService);
 ```
 
 #### Creating Event Stream Procedures
@@ -268,11 +272,14 @@ export default defineEventStreamRpc({
 #### EventStreamConnection methods
 
 ```ts
-stream.push(data: Data, eventId?: string)
-stream.pushError(error: ArriRequestError, eventId?: string)
+// send the stream to the client. Must be called before pushing any messages
 stream.send()
-stream.end()
-stream.on(e: 'request:close' | 'close', callback: () => any)
+// push a new message to the client
+stream.push(data: Data, eventId?: string)
+// close the stream and tell the client that there will be no more messages
+stream.close()
+// register a callback that will fire after the stream has been close by the server or the connection has been dropped
+stream.onClosed(cb: () => any)
 ```
 
 ### Creating Websocket Procedures (Experimental)
@@ -363,6 +370,16 @@ router.route({
     }
 })
 app.use(router)
+
+// sup-routers can also specify a route prefix
+const router = new ArriRouter("/v1")
+router.route({
+    method: "get",
+    path: "/hello-world", // this will become /v1/hello-world
+    handler(event) {
+        return "hello world"
+    }
+});
 ```
 
 ### Adding Middleware
@@ -440,7 +457,7 @@ export default defineConfig({
 
 For info on what generators are available see [here](/README.md#client-generators)
 
-For info on how to create your own generator see []
+For info on how to create your own generator see [@arrirpc/codegen-utils](/tooling/codegen-utils/README.md)
 
 ## Key Concepts
 

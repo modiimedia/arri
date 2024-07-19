@@ -15,6 +15,7 @@ const app = new ArriApp({
         version: "10",
     },
     onRequest(event) {
+        event.context;
         handleCors(event, {
             origin: "*",
         });
