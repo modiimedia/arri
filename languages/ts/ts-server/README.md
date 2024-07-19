@@ -209,7 +209,6 @@ Event stream procedures make use of [Server Sent Events](https://developer.mozil
 Arri Event streams sent the following event types:
 
 -   `message` - A standard message with the response data serialized as JSON
--   `error` - An error message with an `ArriRequestError` sent as JSON
 -   `done` - A message to tell clients that there will be no more events
 -   `ping` - A message periodically sent by the server to keep the connection alive.
 
@@ -218,11 +217,6 @@ Arri Event streams sent the following event types:
 id: string | undefined;
 event: "message";
 data: Response; // whatever you have specified as the response serialized to json
-
-/// error event ///
-id: string | undefined;
-event: "error";
-data: ArriRequestError; // serialized to json
 
 /// done event ///
 event: "done";
