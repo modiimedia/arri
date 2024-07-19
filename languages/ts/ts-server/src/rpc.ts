@@ -26,7 +26,7 @@ import {
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 
-import { type RpcEventContext,type RpcPostEventContext } from "./context";
+import { type RpcEventContext, type RpcPostEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
 import {
     type EventStreamRpc,
@@ -44,15 +44,23 @@ export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
     return isAObjectSchema(input) || isADiscriminatorSchema(input);
 }
 
-export interface NamedRpc<
+export interface NamedHttpRpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> extends Rpc<TIsEventStream, TParams, TResponse> {
+> extends HttpRpc<TIsEventStream, TParams, TResponse> {
     name: string;
 }
 
-export interface Rpc<
+export type Rpc<
+    TIsEventStream extends boolean = false,
+    TParams extends RpcParamSchema | undefined = undefined,
+    TResponse extends RpcParamSchema | undefined = undefined,
+> =
+    | HttpRpc<TIsEventStream, TParams, TResponse>
+    | WebsocketRpc<TParams, TResponse>;
+
+export interface HttpRpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
@@ -87,10 +95,6 @@ export interface Rpc<
                   : undefined
           >;
 }
-export type HttpRpc<
-    TParams extends RpcParamSchema | undefined,
-    TResponse extends RpcParamSchema | undefined,
-> = Omit<Rpc<false, TParams, TResponse>, "isEventStream">;
 
 export interface RpcEvent<TParams = undefined>
     extends Omit<H3Event, "context"> {
@@ -112,7 +116,7 @@ export type RpcPostHandler<TParams, TResponse> = (
     event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
-export function isRpc(input: unknown): input is Rpc<any, any> {
+export function isRpc(input: unknown): input is HttpRpc<any, any> {
     return (
         typeof input === "object" &&
         input !== null &&
@@ -127,8 +131,11 @@ export function defineRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined | never = undefined,
 >(
-    config: Omit<HttpRpc<TParams, TResponse>, "transport">,
-): Rpc<false, TParams, TResponse> {
+    config: Omit<
+        HttpRpc<false, TParams, TResponse>,
+        "transport" | "isEventStream"
+    >,
+): HttpRpc<false, TParams, TResponse> {
     (config as any).transport = "http";
     return config as any;
 }
@@ -136,7 +143,7 @@ export function defineRpc<
 export function createHttpRpcDefinition(
     rpcName: string,
     httpPath: string,
-    procedure: Rpc<any, any, any>,
+    procedure: HttpRpc<any, any, any>,
 ): HttpRpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
@@ -172,7 +179,7 @@ export function getRpcPath(rpcName: string, prefix = ""): string {
 
 export function getRpcParamName(
     rpcName: string,
-    procedure: Rpc<any, any, any> | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any, any> | WebsocketRpc<any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.params)) {
         return undefined;
@@ -190,7 +197,7 @@ export function getRpcParamName(
 
 export function getRpcResponseName(
     rpcName: string,
-    procedure: Rpc<any, any, any> | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any, any> | WebsocketRpc<any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -209,7 +216,7 @@ export function getRpcResponseName(
 function getRpcResponseDefinition(
     rpcName: string,
     procedure:
-        | Rpc<any, any>
+        | HttpRpc<any, any>
         | EventStreamRpc<any, any>
         | WebsocketRpc<any, any>,
 ): RpcDefinition["response"] {
@@ -226,7 +233,7 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    procedure: NamedRpc<any, any, any>,
+    procedure: NamedHttpRpc<any, any, any>,
     opts: RouteOptions,
 ) {
     let responseValidator: undefined | ReturnType<typeof a.compile>;

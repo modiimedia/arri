@@ -14,6 +14,7 @@ import {
     createRouter,
     eventHandler,
     type Router,
+    setResponseHeader,
     setResponseStatus,
 } from "h3";
 
@@ -21,22 +22,22 @@ import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
 import { type Middleware, type MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
-import { ArriRouter, ArriService } from "./router";
+import { ArriRouter } from "./router";
 import {
     createHttpRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
     isRpcParamSchema,
-    type NamedRpc,
+    type NamedHttpRpc,
     registerRpc,
     Rpc,
 } from "./rpc";
+import { ArriService } from "./service";
 import {
     createWsRpcDefinition,
     type NamedWebsocketRpc,
     registerWebsocketRpc,
-    WebsocketRpc,
 } from "./websocketRpc";
 
 export type DefinitionMap = Record<
@@ -84,7 +85,14 @@ export class ArriApp {
         if (!opts.disableDefinitionRoute) {
             this.h3Router.get(
                 this.definitionPath,
-                eventHandler(() => this.getAppDefinition()),
+                eventHandler((event) => {
+                    setResponseHeader(
+                        event,
+                        "Content-Type",
+                        "application/json",
+                    );
+                    return this.getAppDefinition();
+                }),
             );
         }
         if (!opts.disableDefaultRoute) {
@@ -117,7 +125,14 @@ export class ArriApp {
         if (process.env.ARRI_DEV_MODE === "true") {
             this.h3Router.get(
                 DEV_DEFINITION_ENDPOINT,
-                eventHandler(() => this.getAppDefinition()),
+                eventHandler((event) => {
+                    setResponseHeader(
+                        event,
+                        "Content-Type",
+                        "application/json",
+                    );
+                    return this.getAppDefinition();
+                }),
             );
         }
         // default fallback route
@@ -159,9 +174,9 @@ export class ArriApp {
         this._middlewares.push(input);
     }
 
-    rpc(name: string, procedure: Rpc<any, any, any> | WebsocketRpc<any, any>) {
+    rpc(name: string, procedure: Rpc<any, any, any>) {
         (procedure as any).name = name;
-        const p = procedure as NamedRpc | NamedWebsocketRpc;
+        const p = procedure as NamedHttpRpc | NamedWebsocketRpc;
         const path = p.path ?? getRpcPath(p.name, this._rpcRoutePrefix);
         if (p.transport === "http") {
             this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
