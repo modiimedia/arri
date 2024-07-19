@@ -38,11 +38,14 @@ export class ArriService {
 
 export function defineService(
     name: string,
-    procedures: Record<string, HttpRpc<any, any, any> | WebsocketRpc<any, any>>,
+    procedures?: Record<
+        string,
+        HttpRpc<any, any, any> | WebsocketRpc<any, any>
+    >,
 ): ArriService {
     const service = new ArriService(name);
-    for (const key of Object.keys(procedures)) {
-        service.rpc(key, procedures[key]!);
+    for (const key of Object.keys(procedures ?? {})) {
+        service.rpc(key, procedures![key]!);
     }
     return service;
 }

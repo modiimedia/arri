@@ -78,7 +78,7 @@ export async function createAppWithRoutesModule(config: ResolvedArriConfig) {
             )
             .join("\n")}
 
-        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`)}
+        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`).join("\n")}
 
         export default app;`,
         { parser: "typescript", tabWidth: 4 },

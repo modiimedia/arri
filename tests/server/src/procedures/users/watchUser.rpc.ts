@@ -58,8 +58,8 @@ export default defineEventStreamRpc({
         userId: a.string(),
     }),
     response: TestUser,
-    async handler({ params, connection }) {
-        connection.start();
+    async handler({ params, stream }) {
+        stream.send();
         const user: TestUser = {
             id: params.userId,
             role: "standard",
@@ -76,17 +76,17 @@ export default defineEventStreamRpc({
             metadata: {},
             randomList: [],
         };
-        await connection.push(user, randomUUID());
+        await stream.push(user, randomUUID());
         let count = 1;
 
         const interval = setInterval(async () => {
-            await connection.push(user, randomUUID());
+            await stream.push(user, randomUUID());
             count++;
             if (count >= 10) {
-                await connection.end();
+                await stream.close();
             }
         }, 500);
-        connection.on("disconnect", () => {
+        stream.onClosed(() => {
             clearInterval(interval);
         });
     },
