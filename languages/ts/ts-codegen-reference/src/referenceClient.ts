@@ -683,3 +683,140 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
         return queryParts.join("&");
     },
 };
+
+export interface ObjectWithOptionalFields {
+    string?: string;
+    boolean?: boolean;
+    timestamp?: Date;
+    float32?: number;
+    float64?: number;
+    int8?: number;
+    uint8?: number;
+    int16?: number;
+    uint16?: number;
+    int32?: number;
+    uint32?: number;
+    enum?: Enumerator;
+    object?: NestedObject;
+    array?: boolean[];
+    record?: Record<string, boolean>;
+    discriminator?: Discriminator;
+    any?: any;
+}
+export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFields> =
+    {
+        new(): ObjectWithOptionalFields {
+            return {};
+        },
+    };
+
+export interface ObjectWithNullableFields {
+    string: string | null;
+    boolean: boolean | null;
+    timestamp: Date | null;
+    float32: number | null;
+    float64: number | null;
+    int8: number | null;
+    uint8: number | null;
+    int16: number | null;
+    uint16: number | null;
+    int32: number | null;
+    uint32: number | null;
+    int64: bigint | null;
+    uint64: bigint | null;
+    enum: Enumerator | null;
+    object: NestedObject | null;
+    array: boolean[] | null;
+    record: Record<string, boolean> | null;
+    discriminator: Discriminator | null;
+    any: any;
+}
+export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFields> =
+    {
+        new(): ObjectWithNullableFields {
+            return {
+                string: null,
+                boolean: null,
+                timestamp: null,
+                float32: null,
+                float64: null,
+                int8: null,
+                uint8: null,
+                int16: null,
+                uint16: null,
+                int32: null,
+                uint32: null,
+                int64: null,
+                uint64: null,
+                enum: null,
+                object: null,
+                array: null,
+                record: null,
+                discriminator: null,
+                any: null,
+            };
+        },
+    };
+
+export interface RecursiveObject {
+    left: RecursiveObject | null;
+    right: RecursiveObject | null;
+}
+export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
+    new(): RecursiveObject {
+        return {
+            left: null,
+            right: null,
+        };
+    },
+    validate(input): input is RecursiveObject {
+        return (
+            isObject(input) &&
+            (input.left === null || $$RecursiveObject.validate(input.left)) &&
+            (input.right === null || $$RecursiveObject.validate(input.right))
+        );
+    },
+    fromJson(input): RecursiveObject {
+        let left: RecursiveObject | null;
+        if (isObject(input.left)) {
+            left = $$RecursiveObject.fromJson(input.left);
+        } else {
+            left = null;
+        }
+        let right: RecursiveObject | null;
+        if (isObject(input.right)) {
+            right = $$RecursiveObject.fromJson(input.right);
+        } else {
+            right = null;
+        }
+        return {
+            left,
+            right,
+        };
+    },
+    fromJsonString(input): RecursiveObject {
+        return $$RecursiveObject.fromJson(JSON.parse(input));
+    },
+    toJsonString(input): string {
+        let json = "{";
+        json += '"left":';
+        if (input.left) {
+            json += $$RecursiveObject.toJsonString(input.left);
+        } else {
+            json += "null";
+        }
+        json += ',"right":';
+        if (input.right) {
+            json += $$RecursiveObject.toJsonString(input.right);
+        } else {
+            json += "null";
+        }
+        json += "}";
+        return json;
+    },
+    toUrlQueryString(input): string {
+        const queryParts: string[] = [];
+        // TODO:
+        return queryParts.join("&");
+    },
+};
