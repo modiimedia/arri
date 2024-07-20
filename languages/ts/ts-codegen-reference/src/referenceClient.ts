@@ -5,6 +5,7 @@ import {
     INT8_MIN,
     INT16_MAX,
     INT16_MIN,
+    INT32_MAX,
     INT32_MIN,
     isObject,
     serializeString,
@@ -357,13 +358,73 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _uint8 = 0;
         }
         let _int16: number;
+        if (
+            typeof input.int16 === "number" &&
+            Number.isInteger(input.int16) &&
+            input.int16 >= INT16_MIN &&
+            input.int16 <= INT16_MAX
+        ) {
+            _int16 = input.int16;
+        } else {
+            _int16 = 0;
+        }
         let _uint16: number;
+        if (
+            typeof input.uint16 === "number" &&
+            Number.isInteger(input.uint16) &&
+            input.uint16 >= 0 &&
+            input.uint16 <= UINT16_MAX
+        ) {
+            _uint16 = input.uint16;
+        } else {
+            _uint16 = 0;
+        }
         let _int32: number;
+        if (
+            typeof input.int32 === "number" &&
+            Number.isInteger(input.int32) &&
+            input.int32 >= INT32_MIN &&
+            input.int32 <= INT32_MAX
+        ) {
+            _int32 = input.int32;
+        } else {
+            _int32 = 0;
+        }
         let _uint32: number;
+        if (
+            typeof input.uint32 === "number" &&
+            Number.isInteger(input.uint32) &&
+            input.uint32 >= 0 &&
+            input.uint32 <= UINT32_MAX
+        ) {
+            _uint32 = input.uint32;
+        } else {
+            _uint32 = 0;
+        }
         let _int64: bigint;
+        if (typeof input.int64 === "string") {
+            _int64 = BigInt(input.int64);
+        } else {
+            _int64 = BigInt(0);
+        }
         let _uint64: bigint;
+        if (typeof input.uint64 === "string") {
+            _uint64 = BigInt(input.uint64);
+        } else {
+            _uint64 = BigInt(0);
+        }
         let _enum: Enumerator;
+        if ($$Enumerator.validate(input.enum)) {
+            _enum = input.enum;
+        } else {
+            _enum = "FOO";
+        }
         let _object: NestedObject;
+        if (isObject(input.object)) {
+            _object = $$NestedObject.fromJson(input.object);
+        } else {
+            _object = $$NestedObject.new();
+        }
         let _array: boolean[];
         let _record: Record<string, boolean>;
         let _discriminator: Discriminator;
