@@ -11,13 +11,13 @@ export interface ArriRequestOpts<
 > {
     url: string;
     method: HttpMethod;
-    headers?: EventSourcePlusOptions["headers"];
+    headers: EventSourcePlusOptions["headers"];
     params?: TParams;
-    parser: (input: unknown) => TType;
+    parser: (input: string) => TType;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
-    clientVersion?: string;
+    clientVersion: string;
 }
 
 export async function arriRequest<
@@ -31,12 +31,7 @@ export async function arriRequest<
         case "get":
         case "head":
             if (opts.params && typeof opts.params === "object") {
-                const urlParts: string[] = [];
-                Object.keys(opts.params).forEach((key) => {
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    urlParts.push(`${key}=${(opts.params as any)[key]}`);
-                });
-                url = `${opts.url}?${urlParts.join("&")}`;
+                url = `${opts.url}?${opts.serializer(opts.params)}`;
             }
             break;
         default:

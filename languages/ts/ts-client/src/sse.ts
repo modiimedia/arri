@@ -53,11 +53,7 @@ export function arriSseRequest<
                 typeof opts.params === "object" &&
                 opts.params !== null
             ) {
-                const urlParts: string[] = [];
-                Object.keys(opts.params).forEach((key) => {
-                    urlParts.push(`${key}=${(opts.params as any)[key]}`);
-                });
-                url = `${opts.url}?${urlParts.join("&")}`;
+                url = `${opts.url}?${opts.serializer(opts.params)}`;
             }
             break;
         default:

@@ -11,7 +11,7 @@ function isBrowser() {
 interface WsControllerOptions<TParams, TResponse> {
     url: string;
     serializer: (input: TParams) => string;
-    parser: (input: unknown) => TResponse;
+    parser: (input: string) => TResponse;
     onMessage?: WsMessageHook<TResponse>;
     onErrorMessage?: WsErrorHook;
     onConnectionError?: WsErrorHook;
@@ -31,7 +31,7 @@ interface ArriWsRequestOptions<TParams = any, TResponse = any> {
     url: string;
     headers?: EventSourcePlusOptions["headers"];
     params?: TParams;
-    parser: (input: unknown) => TResponse;
+    parser: (input: string) => TResponse;
     serializer: (input: TParams) => string;
     onMessage?: WsMessageHook<TResponse>;
     onError?: WsErrorHook;
@@ -98,7 +98,7 @@ class WsController<TParams, TResponse> {
     url: string;
     private _ws?: NodeWebsocket | WebSocket;
     private readonly _serializer: (input: TParams) => string;
-    private readonly _parser: (input: unknown) => TResponse;
+    private readonly _parser: (input: string) => TResponse;
     onMessage?: WsMessageHook<TResponse>;
     onErrorMessage?: WsErrorHook;
     onConnectionError?: WsErrorHook;

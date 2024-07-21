@@ -1,6 +1,9 @@
 import {
     ArriEnumValidator,
     ArriModelValidator,
+    arriRequest,
+    arriSseRequest,
+    arriWsRequest,
     INT8_MAX,
     INT8_MIN,
     INT16_MAX,
@@ -9,9 +12,11 @@ import {
     INT32_MIN,
     isObject,
     serializeString,
+    SseOptions,
     UINT8_MAX,
     UINT16_MAX,
     UINT32_MAX,
+    WsOptions,
 } from "@arrirpc/client";
 
 type HeaderMap = Record<string, string | undefined>;
@@ -27,6 +32,82 @@ export class ExampleClient {
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+    }
+
+    async sendObject(params: NestedObject) {
+        return arriRequest<NestedObject, NestedObject>({
+            url: `${this._baseUrl}/send-object`,
+            method: "post",
+            headers: this._headers,
+            params: params,
+            parser: $$NestedObject.fromJsonString,
+            serializer: $$NestedObject.toJsonString,
+            clientVersion: "20",
+        });
+    }
+}
+
+export class ExampleClientBooksService {
+    private readonly _baseUrl: string;
+    private readonly _headers: HeaderMap | (() => HeaderMap);
+    constructor(
+        options: {
+            baseUrl?: string;
+            headers?: HeaderMap | (() => HeaderMap);
+        } = {},
+    ) {
+        this._baseUrl = options.baseUrl ?? "";
+        this._headers = options.headers ?? {};
+    }
+    async getBook(params: BookParams) {
+        return arriRequest<Book, BookParams>({
+            url: `${this._baseUrl}/books/get-book`,
+            method: "get",
+            headers: this._headers,
+            params: params,
+            parser: $$Book.fromJsonString,
+            serializer: $$BookParams.toUrlQueryString,
+            clientVersion: "20",
+        });
+    }
+    async createBook(params: Book) {
+        return arriRequest<Book, Book>({
+            url: `${this._baseUrl}/books/create-book`,
+            method: "post",
+            headers: this._headers,
+            params: params,
+            parser: $$Book.fromJsonString,
+            serializer: $$Book.toJsonString,
+            clientVersion: "20",
+        });
+    }
+    async watchBook(params: BookParams, options: SseOptions<Book> = {}) {
+        return arriSseRequest<Book, BookParams>(
+            {
+                url: `${this._baseUrl}/books/watch-book`,
+                method: "get",
+                headers: this._headers,
+                params: params,
+                parser: $$Book.fromJsonString,
+                serializer: $$BookParams.toUrlQueryString,
+                clientVersion: "20",
+            },
+            options,
+        );
+    }
+    async createConnection(options: WsOptions<Book> = {}) {
+        return arriWsRequest({
+            url: `${this._baseUrl}/books/create-connection`,
+            headers: this._headers,
+            parser: $$Book.fromJsonString,
+            serializer: $$BookParams.toJsonString,
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: "20",
+        });
     }
 }
 
@@ -336,14 +417,6 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _float64 = 0;
         }
         let _int8: number;
-        console.log(
-            "INT, ",
-            input.int8,
-            typeof input.int8 === "number",
-            Number.isInteger(input.int8),
-            input.int8 >= INT8_MIN,
-            input.int8 <= INT8_MAX,
-        );
         if (
             typeof input.int8 === "number" &&
             Number.isInteger(input.int8) &&
