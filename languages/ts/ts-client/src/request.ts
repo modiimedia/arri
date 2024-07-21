@@ -148,7 +148,7 @@ export function serializeString(input: string): string {
     return JSON.stringify(input);
 }
 
-export const INT8_MIN = 128;
+export const INT8_MIN = -128;
 export const INT8_MAX = 127;
 export const UINT8_MAX = 255;
 export const INT16_MIN = -32768;

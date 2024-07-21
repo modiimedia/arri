@@ -254,7 +254,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             array: [],
             record: {},
             discriminator: $$Discriminator.new(),
-            any: null,
+            any: undefined,
         };
     },
     validate(input): input is ObjectWithEveryType {
@@ -336,6 +336,14 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _float64 = 0;
         }
         let _int8: number;
+        console.log(
+            "INT, ",
+            input.int8,
+            typeof input.int8 === "number",
+            Number.isInteger(input.int8),
+            input.int8 >= INT8_MIN,
+            input.int8 <= INT8_MAX,
+        );
         if (
             typeof input.int8 === "number" &&
             Number.isInteger(input.int8) &&
@@ -426,9 +434,39 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             _object = $$NestedObject.new();
         }
         let _array: boolean[];
+        if (Array.isArray(input.array)) {
+            _array = [];
+            for (const _element of input.array) {
+                if (typeof _element === "boolean") {
+                    _array.push(_element);
+                } else {
+                    _array.push(false);
+                }
+            }
+        } else {
+            _array = [];
+        }
         let _record: Record<string, boolean>;
+        if (isObject(input.record)) {
+            _record = {};
+            for (const key of Object.keys(input.record)) {
+                if (typeof input.record[key] === "boolean") {
+                    _record[key] = input.record[key];
+                } else {
+                    _record[key] = false;
+                }
+            }
+        } else {
+            _record = {};
+        }
         let _discriminator: Discriminator;
+        if (isObject(input.discriminator)) {
+            _discriminator = $$Discriminator.fromJson(input.discriminator);
+        } else {
+            _discriminator = $$Discriminator.new();
+        }
         let _any: any;
+        _any = input.any;
         return {
             string: _string,
             boolean: _boolean,
@@ -456,11 +494,91 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
     },
     toJsonString(input): string {
         let json = "{";
+        json += '"string":';
+        json += serializeString(input.string);
+        json += ',"boolean":';
+        json += input.boolean.toString();
+        json += ',"timestamp":';
+        json += `"${input.timestamp.toISOString()}"`;
+        json += ',"float32":';
+        json += input.float32.toString();
+        json += ',"float64":';
+        json += input.float64.toString();
+        json += ',"int8":';
+        json += input.int8.toString();
+        json += ',"uint8":';
+        json += input.uint8.toString();
+        json += ',"int16":';
+        json += input.int16.toString();
+        json += ',"uint16":';
+        json += input.uint16.toString();
+        json += ',"int32":';
+        json += input.int32.toString();
+        json += ',"uint32":';
+        json += input.uint32.toString();
+        json += ',"int64":';
+        json += `"${input.int64.toString()}"`;
+        json += ',"uint64":';
+        json += `"${input.uint64.toString()}"`;
+        json += ',"enum":';
+        json += `"${input.enum}"`;
+        json += ',"object":';
+        json += $$NestedObject.toJsonString(input.object);
+        json += ',"array":';
+        json += "[";
+        for (let i = 0; i < input.array.length; i++) {
+            const _element = input.array[i]!;
+            if (i !== 0) json += ",";
+            json += _element.toString();
+        }
+        json += "]";
+        json += ',"record":';
+        json += "{";
+        let _recordPropertyCount = 0;
+        for (const [_key, _value] of Object.entries(input.record)) {
+            if (_recordPropertyCount !== 0) {
+                json += ",";
+            }
+            json += `"${_key}":`;
+            json += _value.toString();
+            _recordPropertyCount++;
+        }
+        json += "}";
+        json += ',"discriminator":';
+        json += $$Discriminator.toJsonString(input.discriminator);
+        json += ',"any":';
+        json += JSON.stringify(input.any);
         json += "}";
         return json;
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
+        queryParts.push(`string=${input.string}`);
+        queryParts.push(`boolean=${input.boolean}`);
+        queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
+        queryParts.push(`float32=${input.float32}`);
+        queryParts.push(`float64=${input.float64}`);
+        queryParts.push(`int8=${input.int8}`);
+        queryParts.push(`uint8=${input.uint8}`);
+        queryParts.push(`int16=${input.int16}`);
+        queryParts.push(`uint16=${input.uint16}`);
+        queryParts.push(`int32=${input.int32}`);
+        queryParts.push(`uint32=${input.uint32}`);
+        queryParts.push(`int64=${input.int64}`);
+        queryParts.push(`uint64=${input.uint64}`);
+        queryParts.push(`enum=${input.enum}`);
+        console.warn(
+            `[WARNING] Cannot serialize nested objects to query params. Ignoring property at /ObjectWithEveryType/object.`,
+        );
+        console.warn(
+            `[WARNING] Cannot serialize arrays to query params. Ignoring property at /ObjectWithEveryType/array.`,
+        );
+        console.warn(
+            `[WARNING] Cannot serialize nested objects to query params. Ignoring property at /ObjectWithEveryType/record.`,
+        );
+        console.warn(
+            `[WARNING] Cannot serialize any's to query params. Ignoring property at /ObjectWithEveryType/any.`,
+        );
         return queryParts.join("&");
     },
 };
