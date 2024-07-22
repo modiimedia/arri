@@ -143,12 +143,19 @@ export function tsObjectFromSchema(
         fromJsonParts.push(`if (typeof input.${key} !== 'undefined') {
             ${prop.fromJsonTemplate(`input.${key}`, tempKey)}
         }`);
-        toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+        if (hasKey) {
+            toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+                json += \`,"${key}":\`;
+                ${prop.toJsonTemplate(`input.${key}`, "json")}
+            }`);
+        } else {
+            toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
             if (_hasKey) json += ',';
             json += \`"${key}":\`;
             ${prop.toJsonTemplate(`input.${key}`, "json")}
             _hasKey = true;
         }`);
+        }
         toQueryParts.push(`if (typeof input.${fieldName} !== 'undefined') {
             ${prop.toQueryStringTemplate(`input.${fieldName}`, "queryParts", key)}    
         }`);
