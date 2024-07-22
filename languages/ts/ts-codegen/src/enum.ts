@@ -71,10 +71,10 @@ export const $$${name}: ArriEnumValidator<${name}> = {
         if (${valuesName}.includes(input as any)) {
             return input as ${name};
         }
-        if (${valuesName}.includes(input.toLowerCase() as any) {
+        if (${valuesName}.includes(input.toLowerCase() as any)) {
             return input.toLowerCase() as ${name};
         }
-        if (${valuesName}.includes(input.toUpperCase() as any) {
+        if (${valuesName}.includes(input.toUpperCase() as any)) {
             return input.toUpperCase() as ${name};
         }
         return "${schema.enum[0]}";

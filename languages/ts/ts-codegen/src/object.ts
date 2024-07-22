@@ -109,7 +109,7 @@ export function tsObjectFromSchema(
         }
         toJsonParts.push(prop.toJsonTemplate(`input.${fieldName}`, "json"));
         toQueryParts.push(
-            prop.toQueryStringTemplate(`queryParts`, `input.${fieldName}`, key),
+            prop.toQueryStringTemplate(`input.${fieldName}`, "queryParts", key),
         );
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
         if (validationPart) validationParts.push(validationPart);
@@ -148,7 +148,7 @@ ${toJsonParts.map((part) => `        ${part}`).join("\n")}
         return json;
     },
     toUrlQueryString(input): string {
-        let queryParts: string[] = [];
+        const queryParts: string[] = [];
 ${toQueryParts.map((part) => `        ${part}`).join("\n")}
         return queryParts.join("&");
     }

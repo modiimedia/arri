@@ -88,7 +88,29 @@ export async function createTypescriptClient(
         }
     }
 
-    const result = `${types.join("\n")}`;
+    const result = `
+import {
+    ArriEnumValidator,
+    ArriModelValidator,
+    arriRequest,
+    arriSseRequest,
+    arriWsRequest,
+    INT8_MAX,
+    INT8_MIN,
+    INT16_MAX,
+    INT16_MIN,
+    INT32_MAX,
+    INT32_MIN,
+    isObject,
+    serializeString,
+    SseOptions,
+    UINT8_MAX,
+    UINT16_MAX,
+    UINT32_MAX,
+    WsOptions,
+} from "@arrirpc/client";
+
+${types.join("\n")}`;
     return await prettier.format(result, {
         ...options.prettierOptions,
         parser: "typescript",
