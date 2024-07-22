@@ -10,7 +10,7 @@ export interface TsProperty {
     defaultValue: string;
     validationTemplate: (input: string) => string;
     fromJsonTemplate: (input: string, target: string) => string;
-    toJsonTemplate: (input: string, target: string) => string;
+    toJsonTemplate: (input: string, target: string, key: string) => string;
     toQueryStringTemplate: (
         input: string,
         target: string,

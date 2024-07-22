@@ -509,12 +509,14 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         let _array: boolean[];
         if (Array.isArray(input.array)) {
             _array = [];
-            for (const _element of input.array) {
-                if (typeof _element === "boolean") {
-                    _array.push(_element);
+            for (const _arrayEl of input.array) {
+                let _arrayElValue: boolean;
+                if (typeof _arrayEl === "boolean") {
+                    _arrayElValue = _arrayEl;
                 } else {
-                    _array.push(false);
+                    _arrayElValue = false;
                 }
+                _array.push(_arrayElValue);
             }
         } else {
             _array = [];
@@ -522,12 +524,14 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         let _record: Record<string, boolean>;
         if (isObject(input.record)) {
             _record = {};
-            for (const key of Object.keys(input.record)) {
-                if (typeof input.record[key] === "boolean") {
-                    _record[key] = input.record[key];
+            for (const [_key, _value] of Object.entries(input.record)) {
+                let _recordValue: boolean;
+                if (typeof _value === "boolean") {
+                    _recordValue = _value;
                 } else {
-                    _record[key] = false;
+                    _recordValue = false;
                 }
+                _record[_key] = _recordValue;
             }
         } else {
             _record = {};
@@ -743,7 +747,7 @@ export const $$Discriminator: ArriModelValidator<Discriminator> = {
             case "C":
                 return $$DiscriminatorC.toUrlQueryString(input);
             default:
-                throw new Error(`Unhandled case`);
+                throw new Error("Unhandled case");
         }
     },
 };

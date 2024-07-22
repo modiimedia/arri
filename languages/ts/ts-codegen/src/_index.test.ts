@@ -4,7 +4,7 @@ import { AppDefinition, normalizeWhitespace } from "@arrirpc/codegen-utils";
 import fs from "fs";
 import path from "path";
 
-import { createTypescriptClient } from "./index";
+import { createTypescriptClient } from "./_index";
 
 const testDir = path.resolve(__dirname, "../../../../tests/test-files");
 const appDef = JSON.parse(
@@ -22,7 +22,6 @@ test("Output matches reference file", async () => {
         clientName: "ExampleClient",
         outputFile: "",
     });
-    fs.writeFileSync("blah.ts", result);
     expect(normalizeWhitespace(result)).toEqual(
         normalizeWhitespace(referenceFile),
     );

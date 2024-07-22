@@ -1,15 +1,18 @@
 import {
     type AppDefinition,
     defineGeneratorPlugin,
+    isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormType,
+    isSchemaFormValues,
     type Schema,
 } from "@arrirpc/codegen-utils";
 import { writeFileSync } from "fs";
 import prettier from "prettier";
 
 import { tsAnyFromSchema } from "./any";
+import { tsArrayFromSchema } from "./array";
 import { CodegenContext, TsProperty } from "./common";
 import { tsEnumFromSchema } from "./enum";
 import { tsObjectFromSchema } from "./object";
@@ -21,6 +24,7 @@ import {
     tsIntFromSchema,
     tsStringFromSchema,
 } from "./primitives";
+import { tsRecordFromSchema } from "./record";
 
 export interface TypescriptGeneratorOptions {
     clientName: string;
@@ -155,6 +159,12 @@ export function tsTypeFromSchema(
     }
     if (isSchemaFormProperties(schema)) {
         return tsObjectFromSchema(schema, context);
+    }
+    if (isSchemaFormElements(schema)) {
+        return tsArrayFromSchema(schema, context);
+    }
+    if (isSchemaFormValues(schema)) {
+        return tsRecordFromSchema(schema, context);
     }
     return tsAnyFromSchema(schema, context);
 }

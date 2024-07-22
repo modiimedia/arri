@@ -1,6 +1,6 @@
 import { camelCase, SchemaFormProperties } from "@arrirpc/codegen-utils";
 
-import { tsTypeFromSchema } from ".";
+import { tsTypeFromSchema } from "./_index";
 import {
     CodegenContext,
     getJsDocComment,
@@ -66,7 +66,9 @@ export function tsObjectFromSchema(
         context.discriminatorKey
     ) {
         hasKey = true;
-        const key = validVarName(camelCase(context.discriminatorKey));
+        const key = validVarName(
+            camelCase(context.discriminatorKey, { normalize: true }),
+        );
         fieldParts.push(`${key}: "${context.discriminatorValue}",`);
         fromJsonParts.push(`let _${key} = "${context.discriminatorValue}"`);
         toJsonParts.push(
@@ -108,7 +110,9 @@ export function tsObjectFromSchema(
         } else {
             toJsonParts.push(`json += '"${key}":';`);
         }
-        toJsonParts.push(prop.toJsonTemplate(`input.${fieldName}`, "json"));
+        toJsonParts.push(
+            prop.toJsonTemplate(`input.${fieldName}`, "json", key),
+        );
         toQueryParts.push(
             prop.toQueryStringTemplate(`input.${fieldName}`, "queryParts", key),
         );
@@ -146,13 +150,13 @@ export function tsObjectFromSchema(
         if (hasKey) {
             toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
                 json += \`,"${key}":\`;
-                ${prop.toJsonTemplate(`input.${key}`, "json")}
+                ${prop.toJsonTemplate(`input.${key}`, "json", key)}
             }`);
         } else {
             toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
             if (_hasKey) json += ',';
             json += \`"${key}":\`;
-            ${prop.toJsonTemplate(`input.${key}`, "json")}
+            ${prop.toJsonTemplate(`input.${key}`, "json", key)}
             _hasKey = true;
         }`);
         }
