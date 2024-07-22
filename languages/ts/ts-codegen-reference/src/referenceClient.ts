@@ -964,6 +964,68 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
         new(): ObjectWithOptionalFields {
             return {};
         },
+        validate(input): input is ObjectWithOptionalFields {
+            return (
+                isObject(input) &&
+                (typeof input.string === "string" ||
+                    typeof input.string === "undefined") &&
+                (typeof input.boolean === "boolean" ||
+                    typeof input.boolean === "undefined") &&
+                (input.timestamp instanceof Date ||
+                    typeof input.timestamp === "undefined") &&
+                (typeof input.float32 === "number" ||
+                    typeof input.float64 === "undefined") &&
+                (typeof input.float64 === "number" ||
+                    typeof input.float64 === "undefined") &&
+                ((typeof input.int8 === "number" &&
+                    Number.isInteger(input.int8) &&
+                    input.int8 >= INT8_MIN &&
+                    input.int8 <= INT8_MAX) ||
+                    typeof input.int8 === "undefined") &&
+                ((typeof input.uint8 === "number" &&
+                    Number.isInteger(input.uint8) &&
+                    input.uint8 >= 0 &&
+                    input.uint8 <= UINT8_MAX) ||
+                    typeof input.uint8 === "undefined") &&
+                ((typeof input.int16 === "number" &&
+                    Number.isInteger(input.int16) &&
+                    input.int16 >= INT16_MIN &&
+                    input.int16 <= INT16_MAX) ||
+                    typeof input.int16 === "undefined") &&
+                ((typeof input.uint16 === "number" &&
+                    Number.isInteger(input.uint16) &&
+                    input.uint16 >= 0 &&
+                    input.uint16 <= UINT16_MAX) ||
+                    typeof input.uint16 === "undefined") &&
+                ((typeof input.int32 === "number" &&
+                    Number.isInteger(input.int32) &&
+                    input.int32 >= INT32_MIN &&
+                    input.int32 <= INT32_MAX) ||
+                    typeof input.int32 === "undefined") &&
+                ((typeof input.uint32 === "number" &&
+                    Number.isInteger(input.uint32) &&
+                    input.uint32 >= 0 &&
+                    input.uint32 <= UINT32_MAX) ||
+                    typeof input.uint32 === "undefined") &&
+                ($$Enumerator.validate(input.enum) ||
+                    typeof input.enum === "string") &&
+                ($$NestedObject.validate(input.object) ||
+                    typeof input.object === "undefined") &&
+                ((Array.isArray(input.array) &&
+                    input.array.every(
+                        (_element) => typeof _element === "boolean",
+                    )) ||
+                    typeof input.array === "undefined") &&
+                ((isObject(input.record) &&
+                    Object.values(input.record).every(
+                        (_value) => typeof _value === "boolean",
+                    )) ||
+                    typeof input.record === "undefined") &&
+                ($$Discriminator.validate(input.discriminator) ||
+                    typeof input.discriminator === "undefined") &&
+                true
+            );
+        },
     };
 
 export interface ObjectWithNullableFields {
@@ -1028,26 +1090,26 @@ export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
     validate(input): input is RecursiveObject {
         return (
             isObject(input) &&
-            (input.left === null || $$RecursiveObject.validate(input.left)) &&
-            (input.right === null || $$RecursiveObject.validate(input.right))
+            ($$RecursiveObject.validate(input.left) || input.left === null) &&
+            ($$RecursiveObject.validate(input.right) || input.right === null)
         );
     },
     fromJson(input): RecursiveObject {
-        let left: RecursiveObject | null;
+        let _left: RecursiveObject | null;
         if (isObject(input.left)) {
-            left = $$RecursiveObject.fromJson(input.left);
+            _left = $$RecursiveObject.fromJson(input.left);
         } else {
-            left = null;
+            _left = null;
         }
-        let right: RecursiveObject | null;
+        let _right: RecursiveObject | null;
         if (isObject(input.right)) {
-            right = $$RecursiveObject.fromJson(input.right);
+            _right = $$RecursiveObject.fromJson(input.right);
         } else {
-            right = null;
+            _right = null;
         }
         return {
-            left,
-            right,
+            left: _left,
+            right: _right,
         };
     },
     fromJsonString(input): RecursiveObject {
@@ -1056,13 +1118,13 @@ export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
     toJsonString(input): string {
         let json = "{";
         json += '"left":';
-        if (input.left) {
+        if (input.left !== null) {
             json += $$RecursiveObject.toJsonString(input.left);
         } else {
             json += "null";
         }
         json += ',"right":';
-        if (input.right) {
+        if (input.right !== null) {
             json += $$RecursiveObject.toJsonString(input.right);
         } else {
             json += "null";
@@ -1072,7 +1134,12 @@ export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
-        // TODO:
+        console.warn(
+            "[WARNING] Nested objects cannot be serialized to query params. Ignoring property at /RecursiveObject/left.",
+        );
+        console.warn(
+            "[WARNING] Nested objects cannot be serialized to query params. Ignoring property at /RecursiveObject/right.",
+        );
         return queryParts.join("&");
     },
 };

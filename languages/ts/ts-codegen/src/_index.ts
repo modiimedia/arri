@@ -4,6 +4,7 @@ import {
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
+    isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
     type Schema,
@@ -25,6 +26,7 @@ import {
     tsStringFromSchema,
 } from "./primitives";
 import { tsRecordFromSchema } from "./record";
+import { tsRefFromSchema } from "./ref";
 
 export interface TypescriptGeneratorOptions {
     clientName: string;
@@ -165,6 +167,9 @@ export function tsTypeFromSchema(
     }
     if (isSchemaFormValues(schema)) {
         return tsRecordFromSchema(schema, context);
+    }
+    if (isSchemaFormRef(schema)) {
+        return tsRefFromSchema(schema, context);
     }
     return tsAnyFromSchema(schema, context);
 }

@@ -117,7 +117,7 @@ export function tsObjectFromSchema(
             prop.toQueryStringTemplate(`input.${fieldName}`, "queryParts", key),
         );
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
-        if (validationPart) validationParts.push(validationPart);
+        validationParts.push(validationPart);
         constructionParts.push(`${fieldName}: ${tempKey},`);
         hasKey = true;
     }
@@ -164,11 +164,9 @@ export function tsObjectFromSchema(
             ${prop.toQueryStringTemplate(`input.${fieldName}`, "queryParts", key)}    
         }`);
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
-        if (validationPart) {
-            validationParts.push(
-                `(typeof input.${fieldName} === 'undefined' || ${validationPart})`,
-            );
-        }
+        validationParts.push(
+            `(typeof input.${fieldName} === 'undefined' || ${validationPart})`,
+        );
         constructionParts.push(`${fieldName}: ${tempKey},`);
     }
     const prefixedTypeName = `${context.typePrefix}${typeName}`;

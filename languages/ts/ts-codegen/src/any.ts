@@ -12,7 +12,7 @@ export function tsAnyFromSchema(
         typeName,
         defaultValue,
         validationTemplate(_) {
-            return "";
+            return "true";
         },
         fromJsonTemplate(input, target) {
             return `${input} = ${target}`;
