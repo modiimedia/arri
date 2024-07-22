@@ -65,6 +65,7 @@ export function tsObjectFromSchema(
         context.discriminatorValue &&
         context.discriminatorKey
     ) {
+        hasKey = true;
         const key = validVarName(camelCase(context.discriminatorKey));
         fieldParts.push(`${key}: "${context.discriminatorValue}",`);
         fromJsonParts.push(`let _${key} = "${context.discriminatorValue}"`);
@@ -86,8 +87,8 @@ export function tsObjectFromSchema(
             clientName: context.clientName,
             typePrefix: context.typePrefix,
             generatedTypes: context.generatedTypes,
-            instancePath: `${context.instancePath}/${key}`,
-            schemaPath: `${context.schemaPath}/properties/${key}`,
+            instancePath: `/${typeName}/${key}`,
+            schemaPath: `/${typeName}/properties/${key}`,
             discriminatorParent: "",
             discriminatorKey: "",
             discriminatorValue: "",
@@ -115,6 +116,49 @@ export function tsObjectFromSchema(
         if (validationPart) validationParts.push(validationPart);
         constructionParts.push(`${fieldName}: ${tempKey},`);
         hasKey = true;
+    }
+    if (!hasKey) {
+        toJsonParts.push(`let _hasKey = false;`);
+    }
+    for (const key of Object.keys(schema.optionalProperties ?? {})) {
+        const subSchema = schema.optionalProperties![key]!;
+        const prop = tsTypeFromSchema(subSchema, {
+            clientName: context.clientName,
+            typePrefix: context.typePrefix,
+            generatedTypes: context.generatedTypes,
+            instancePath: `/${typeName}/${key}`,
+            schemaPath: `/${typeName}/optionalProperties/${key}`,
+            discriminatorParent: "",
+            discriminatorKey: "",
+            discriminatorValue: "",
+            versionNumber: context.versionNumber,
+            hasSseProcedure: context.hasSseProcedure,
+            hasWsProcedure: context.hasWsProcedure,
+        });
+        if (prop.content) subContentParts.push(prop.content);
+        const fieldName = validVarName(camelCase(key));
+        fieldParts.push(`${fieldName}?: ${prop.typeName},`);
+        const tempKey = `_${validVarName(key)}`;
+        fromJsonParts.push(`let ${tempKey}: ${prop.typeName} | undefined;`);
+        fromJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+            ${prop.fromJsonTemplate(`input.${key}`, tempKey)}
+        }`);
+        toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+            if (_hasKey) json += ',';
+            json += \`"${key}":\`;
+            ${prop.toJsonTemplate(`input.${key}`, "json")}
+            _hasKey = true;
+        }`);
+        toQueryParts.push(`if (typeof input.${fieldName} !== 'undefined') {
+            ${prop.toQueryStringTemplate(`input.${fieldName}`, "queryParts", key)}    
+        }`);
+        const validationPart = prop.validationTemplate(`input.${fieldName}`);
+        if (validationPart) {
+            validationParts.push(
+                `(typeof input.${fieldName} === 'undefined' || ${validationPart})`,
+            );
+        }
+        constructionParts.push(`${fieldName}: ${tempKey},`);
     }
     const prefixedTypeName = `${context.typePrefix}${typeName}`;
 
