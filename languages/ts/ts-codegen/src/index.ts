@@ -2,6 +2,7 @@ import {
     type AppDefinition,
     defineGeneratorPlugin,
     isSchemaFormEnum,
+    isSchemaFormProperties,
     isSchemaFormType,
     type Schema,
 } from "@arrirpc/codegen-utils";
@@ -11,6 +12,7 @@ import prettier from "prettier";
 import { tsAnyFromSchema } from "./any";
 import { CodegenContext, TsProperty } from "./common";
 import { tsEnumFromSchema } from "./enum";
+import { tsObjectFromSchema } from "./object";
 import {
     tsBigIntFromSchema,
     tsBooleanFromSchema,
@@ -51,7 +53,47 @@ export const typescriptClientGenerator = defineGeneratorPlugin(
 export async function createTypescriptClient(
     def: AppDefinition,
     options: TypescriptGeneratorOptions,
-): Promise<string> {}
+): Promise<string> {
+    const types: string[] = [];
+    const context: CodegenContext = {
+        clientName: options.clientName,
+        typePrefix: options.typePrefix ?? "",
+        generatedTypes: [],
+        instancePath: "",
+        schemaPath: "",
+        discriminatorParent: "",
+        discriminatorKey: "",
+        discriminatorValue: "",
+        versionNumber: def.info?.version ?? "",
+        hasSseProcedure: false,
+        hasWsProcedure: false,
+    };
+    for (const key of Object.keys(def.definitions)) {
+        const typeDef = def.definitions[key]!;
+        const result = tsTypeFromSchema(typeDef, {
+            clientName: context.clientName,
+            typePrefix: context.typePrefix,
+            generatedTypes: context.generatedTypes,
+            instancePath: `/${key}`,
+            schemaPath: `/${key}`,
+            discriminatorParent: "",
+            discriminatorKey: "",
+            discriminatorValue: "",
+            versionNumber: context.versionNumber,
+            hasSseProcedure: context.hasSseProcedure,
+            hasWsProcedure: context.hasWsProcedure,
+        });
+        if (result.content) {
+            types.push(result.content);
+        }
+    }
+
+    const result = `${types.join("\n")}`;
+    return await prettier.format(result, {
+        ...options.prettierOptions,
+        parser: "typescript",
+    });
+}
 
 export function tsTypeFromSchema(
     schema: Schema,
@@ -89,6 +131,8 @@ export function tsTypeFromSchema(
     if (isSchemaFormEnum(schema)) {
         return tsEnumFromSchema(schema, context);
     }
-
+    if (isSchemaFormProperties(schema)) {
+        return tsObjectFromSchema(schema, context);
+    }
     return tsAnyFromSchema(schema, context);
 }

@@ -11,6 +11,12 @@ export function tsStringFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            if (schema.nullable) {
+                return `(typeof ${input} === 'string' || ${input} === null)`;
+            }
+            return `typeof ${input} === 'string'`;
+        },
         fromJsonTemplate(input, target) {
             return `if (typeof ${input} === 'string') {
                 ${target} = ${input};
@@ -44,6 +50,12 @@ export function tsBooleanFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            if (schema.nullable) {
+                return `(typeof ${input} === 'boolean' || ${input} === null)`;
+            }
+            return `typeof ${input} === 'boolean'`;
+        },
         fromJsonTemplate(input, target) {
             return `if (typeof ${input} === 'boolean') {
                 ${target} = ${input};
@@ -77,6 +89,12 @@ export function tsDateFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            if (schema.nullable) {
+                return `(${input} instanceof Date || ${input} === null)`;
+            }
+            return `${input} instanceof Date`;
+        },
         fromJsonTemplate(input, target) {
             return `if (typeof ${input} === 'string') {
                 ${target} = new Date(${input});
@@ -115,6 +133,12 @@ export function tsFloatFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            if (schema.nullable) {
+                return `(typeof ${input} === 'number' || ${input} === null)`;
+            }
+            return `typeof ${input} === 'number'`;
+        },
         fromJsonTemplate(input, target) {
             return `if (typeof ${input} === 'number') {
                 ${target} = ${input};
@@ -180,6 +204,13 @@ export function tsIntFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            const mainPart = `typeof ${input} === 'number' && Number.isInteger(${input}) && ${input} >= ${min} && ${input} <= ${max}`;
+            if (schema.nullable) {
+                return `((${mainPart}) || ${input} === null)`;
+            }
+            return mainPart;
+        },
         fromJsonTemplate(input, target) {
             return `if (
                 typeof ${input} === 'number' &&
@@ -212,6 +243,16 @@ export function tsBigIntFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            const mainPart = isUnsigned
+                ? `typeof ${input} === 'bigint' && ${input} >= BigInt(0)`
+                : `typeof ${input} === 'bigint'`;
+            if (schema.nullable) {
+                return `((${mainPart}) || ${input} === null)`;
+            }
+            return mainPart;
+        },
+
         fromJsonTemplate(input, target) {
             if (isUnsigned) {
                 return `if (typeof ${input} === 'string' && BigInt(${input}) >= BigInt(0)) {

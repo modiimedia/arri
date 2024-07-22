@@ -8,6 +8,7 @@ import {
 export interface TsProperty {
     typeName: string;
     defaultValue: string;
+    validationTemplate: (input: string) => string;
     fromJsonTemplate: (input: string, target: string) => string;
     toJsonTemplate: (input: string, target: string) => string;
     toQueryStringTemplate: (

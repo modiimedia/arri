@@ -3,7 +3,7 @@ import { Schema } from "@arrirpc/codegen-utils";
 import { CodegenContext, TsProperty } from "./common";
 
 export function tsAnyFromSchema(
-    schema: Schema,
+    _schema: Schema,
     context: CodegenContext,
 ): TsProperty {
     const typeName = "any";
@@ -11,6 +11,9 @@ export function tsAnyFromSchema(
     return {
         typeName,
         defaultValue,
+        validationTemplate(_) {
+            return "";
+        },
         fromJsonTemplate(input, target) {
             return `${input} = ${target}`;
         },

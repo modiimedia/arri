@@ -17,10 +17,16 @@ export function tsEnumFromSchema(
         );
     const enumName = getTsTypeName(schema, context);
     const typeName = schema.nullable ? `${enumName} | null` : enumName;
-    const defaultValue = schema.nullable ? "null" : schema.enum[0]!;
+    const defaultValue = schema.nullable ? "null" : `"${schema.enum[0]!}"`;
     const result: TsProperty = {
         typeName,
         defaultValue,
+        validationTemplate(input) {
+            if (schema.nullable) {
+                return `($$${enumName}Values.includes(${input} as any) || ${input} === null)`;
+            }
+            return `$$${enumName}Values.includes(${input} as any)`;
+        },
         fromJsonTemplate(input, target) {
             return `if ($$${enumName}.validate(${input})) {
                 ${target} = ${input};
