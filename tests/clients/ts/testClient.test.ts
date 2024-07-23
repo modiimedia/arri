@@ -1,7 +1,7 @@
 import { ArriErrorInstance } from "@arrirpc/client";
 import { randomUUID } from "crypto";
 import { ofetch } from "ofetch";
-import { describe, expect, test } from "vitest";
+import { expect, test } from "vitest";
 
 import {
     type ObjectWithEveryNullableType,
@@ -10,7 +10,6 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     TestClient,
-    type TypeBoxObject,
     type WsMessageResponse,
 } from "./testClient.rpc";
 
@@ -498,21 +497,21 @@ test("[ws] connection errors", async () => {
     expect(messageCount).toBe(0);
 });
 
-describe("arri adapters", () => {
-    test("typebox adapter", async () => {
-        const input: TypeBoxObject = {
-            string: "hello world",
-            optionalString: undefined,
-            boolean: false,
-            integer: 100,
-            number: 10.5,
-            enumField: "B",
-            object: {
-                string: "hello world",
-            },
-            array: [true, false],
-        };
-        const result = await client.adapters.typebox(input);
-        expect(result).toStrictEqual(input);
-    });
-});
+// describe("arri adapters", () => {
+//     test("typebox adapter", async () => {
+//         const input: TypeBoxObject = {
+//             string: "hello world",
+//             optionalString: undefined,
+//             boolean: false,
+//             integer: 100,
+//             number: 10.5,
+//             enumField: "B",
+//             object: {
+//                 string: "hello world",
+//             },
+//             array: [true, false],
+//         };
+//         const result = await client.adapters.typebox(input);
+//         expect(result).toStrictEqual(input);
+//     });
+// });

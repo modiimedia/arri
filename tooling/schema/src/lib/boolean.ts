@@ -2,7 +2,7 @@ import {
     type AScalarSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 
 /**
@@ -25,7 +25,7 @@ export function boolean(
                 parse,
                 validate,
                 serialize,
-                coerce(input, data) {
+                coerce(input, context) {
                     if (validate(input)) {
                         return input;
                     }
@@ -43,11 +43,11 @@ export function boolean(
                         default:
                             break;
                     }
-                    data.errors.push({
-                        instancePath: data.instancePath,
-                        schemaPath: data.schemaPath,
+                    context.errors.push({
+                        instancePath: context.instancePath,
+                        schemaPath: context.schemaPath,
                         message: `Error at ${
-                            data.instancePath
+                            context.instancePath
                         }. Unable to coerce ${input as any} to boolean.`,
                     });
                     return undefined;
@@ -60,7 +60,7 @@ export function boolean(
 function validate(input: unknown): input is boolean {
     return typeof input === "boolean";
 }
-function parse(input: unknown, data: ValidationData): boolean | undefined {
+function parse(input: unknown, data: ValidationContext): boolean | undefined {
     if (validate(input)) {
         return input;
     }

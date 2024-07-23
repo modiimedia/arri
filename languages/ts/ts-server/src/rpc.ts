@@ -11,8 +11,10 @@ import {
     type AObjectSchema,
     type ASchema,
     type InferType,
+    isAdaptedSchema,
     isADiscriminatorSchema,
     isAObjectSchema,
+    validatorFromAdaptedSchema,
 } from "@arrirpc/schema";
 import {
     eventHandler,
@@ -236,14 +238,12 @@ export function registerRpc(
     procedure: NamedHttpRpc<any, any, any>,
     opts: RouteOptions,
 ) {
-    let responseValidator: undefined | ReturnType<typeof a.compile>;
-    try {
-        responseValidator = procedure.response
-            ? a.compile(procedure.response)
-            : undefined;
-    } catch (err) {
-        console.error("ERROR COMPILING VALIDATOR", err);
-    }
+    const paramValidator = procedure.params
+        ? getSchemaValidator(procedure.name, "params", procedure.params)
+        : undefined;
+    const responseValidator = procedure.response
+        ? getSchemaValidator(procedure.name, "response", procedure.response)
+        : undefined;
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
@@ -264,6 +264,7 @@ export function registerRpc(
                     event,
                     httpMethod,
                     procedure.params,
+                    paramValidator!,
                 );
             }
 
@@ -335,6 +336,7 @@ export async function validateRpcRequestInput(
     event: H3Event,
     httpMethod: RpcHttpMethod,
     schema: ASchema,
+    validator: ReturnType<typeof a.compile>,
 ) {
     switch (httpMethod) {
         case "get": {
@@ -373,8 +375,8 @@ export async function validateRpcRequestInput(
                     message: `Invalid request body. Expected object. Got undefined.`,
                 });
             }
-            const parsedParams = a.safeParse(schema, body);
-            if (!parsedParams.success) {
+            const parsedParams = validator.safeParse(body);
+            if (!parsedParams?.success) {
                 const errorParts: string[] = [];
                 for (const err of parsedParams.error.errors) {
                     const errPath = err.instancePath.split("/");
@@ -395,5 +397,21 @@ export async function validateRpcRequestInput(
         }
         default:
             break;
+    }
+}
+
+export function getSchemaValidator(
+    rpcName: string,
+    type: "params" | "response",
+    schema: ASchema<any>,
+): ReturnType<typeof a.compile> | undefined {
+    try {
+        if (isAdaptedSchema(schema)) {
+            return validatorFromAdaptedSchema(schema);
+        }
+        return a.compile(schema);
+    } catch (err) {
+        console.error(`Error compiling ${type} validator for ${rpcName}`);
+        return undefined;
     }
 }
