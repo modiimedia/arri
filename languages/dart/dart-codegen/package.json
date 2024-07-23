@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-dart",
-  "version": "0.56.0",
+  "version": "0.57.0",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
