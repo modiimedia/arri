@@ -275,6 +275,138 @@ impl<'a> EventSource<'a> {
     }
 }
 
+fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
+    let mut messages: Vec<SseMessage> = Vec::new();
+    let mut id: Option<String> = None;
+    let mut event: Option<String> = None;
+    let mut data: Option<String> = None;
+    let mut retry: Option<i32> = None;
+    let mut line = "".to_string();
+    let mut pending_index = 0;
+    let mut previous_char: Option<char> = None;
+    let mut ignore_next_newline = false;
+    for (index, char) in input.chars().enumerate() {
+        match char {
+            '\r' => {
+                let is_end = previous_char == Some('\n') || previous_char == Some('\n');
+                ignore_next_newline = true;
+                let p_index = if input.chars().next() == Some('\n') {
+                    index + 2
+                } else {
+                    index + 1
+                };
+                let parsed_result = parse_sse_line(line.as_str());
+                match parsed_result {
+                    ParseSseLineResult::Id(id_val) => {
+                        id = Some(id_val);
+                    }
+                    ParseSseLineResult::Event(event_val) => {
+                        event = Some(event_val);
+                    }
+                    ParseSseLineResult::Data(data_val) => {
+                        data = Some(data_val);
+                    }
+                    ParseSseLineResult::Retry(retry_val) => {
+                        retry = Some(retry_val);
+                    }
+                    ParseSseLineResult::Nothing => {}
+                }
+                if is_end {
+                    if data.is_some() {
+                        messages.push(SseMessage {
+                            id: id.clone(),
+                            data: data.unwrap().clone(),
+                            event: event.clone(),
+                            retry: retry.clone(),
+                        })
+                    }
+                    id = None;
+                    data = None;
+                    event = None;
+                    retry = None;
+                    pending_index = p_index;
+                }
+                line = "".to_string();
+            }
+            '\n' => {
+                if ignore_next_newline {
+                    ignore_next_newline = false;
+                    break;
+                }
+                let is_end = previous_char == Some('\n');
+                let parsed_result = parse_sse_line(line.as_str());
+                match parsed_result {
+                    ParseSseLineResult::Id(id_val) => {
+                        id = Some(id_val);
+                    }
+                    ParseSseLineResult::Event(event_val) => {
+                        event = Some(event_val);
+                    }
+                    ParseSseLineResult::Data(data_val) => {
+                        data = Some(data_val);
+                    }
+                    ParseSseLineResult::Retry(retry_val) => {
+                        retry = Some(retry_val);
+                    }
+                    ParseSseLineResult::Nothing => {}
+                }
+                if is_end {
+                    if data.is_some() {
+                        messages.push(SseMessage {
+                            id: id.clone(),
+                            data: data.unwrap().clone(),
+                            event: event.clone(),
+                            retry: retry.clone(),
+                        })
+                    }
+                    id = None;
+                    data = None;
+                    event = None;
+                    retry = None;
+                    pending_index = index + 1;
+                }
+                line = "".to_string();
+            }
+            _ => {
+                line.push(char);
+            }
+        }
+        previous_char = Some(char);
+    }
+
+    return (messages, input[pending_index..].to_string());
+}
+
+fn parse_sse_line(input: &str) -> ParseSseLineResult {
+    if input.starts_with("data:") {
+        return ParseSseLineResult::Data(input[5..].trim().to_string());
+    };
+    if input.starts_with("id:") {
+        return ParseSseLineResult::Id(input[3..].trim().to_string());
+    };
+    if input.starts_with("event:") {
+        return ParseSseLineResult::Event(input[6..].trim().to_string());
+    };
+    if input.starts_with("retry:") {
+        let val = input[6..].trim().parse::<i32>();
+        match val {
+            Ok(val) => {
+                return ParseSseLineResult::Retry(val);
+            }
+            _ => {}
+        };
+    };
+    ParseSseLineResult::Nothing
+}
+
+enum ParseSseLineResult {
+    Id(String),
+    Event(String),
+    Data(String),
+    Retry(i32),
+    Nothing,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct SseMessage {
     id: Option<String>,
