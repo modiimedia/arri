@@ -101,14 +101,14 @@ export class ExampleClientBooksService {
         );
     }
     async createConnection(options: WsOptions<Book> = {}) {
-        return arriWsRequest({
+        return arriWsRequest<BookParams, Book>({
             url: `${this._baseUrl}/books/create-connection`,
             headers: this._headers,
             parser: $$Book.fromJsonString,
             serializer: $$BookParams.toJsonString,
-            onOpen: () => options.onOpen(),
-            onClose: () => options.onClose(),
-            onError: (err) => options.onError(err),
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
             onConnectionError: options.onConnectionError,
             onMessage: options.onMessage,
             clientVersion: "20",
