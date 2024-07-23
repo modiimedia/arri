@@ -56,6 +56,5 @@
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
   "eslint.validate": ["json"],
-  "java.compile.nullAnalysis.mode": "automatic",
-  "eslint.experimental.useFlatConfig": true
+  "eslint.useFlatConfig": true
 }
