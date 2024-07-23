@@ -71,7 +71,7 @@ export function tsRecordFromSchema(
             }
             return `${target} += '{'
             let ${countVal} = 0;
-            for (const [_key, _value] of Object.entries(${target})) {
+            for (const [_key, _value] of Object.entries(${input})) {
                 if (${countVal} !== 0) {
                     ${target} += ',';
                 }

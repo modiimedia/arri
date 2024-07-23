@@ -131,55 +131,55 @@ export const $$Book: ArriModelValidator<Book> = {
             updatedAt: new Date(),
         };
     },
-    validate(input: unknown): input is Book {
+    validate(input): input is Book {
         return (
             isObject(input) &&
-            input.id === "string" &&
-            input.name === "string" &&
+            typeof input.id === "string" &&
+            typeof input.name === "string" &&
             input.createdAt instanceof Date &&
             input.updatedAt instanceof Date
         );
     },
-    fromJson(input: Record<string, unknown>): Book {
-        let id: string;
+    fromJson(input): Book {
+        let _id: string;
         if (typeof input.id === "string") {
-            id = input.id;
+            _id = input.id;
         } else {
-            id = "";
+            _id = "";
         }
-        let name: string;
+        let _name: string;
         if (typeof input.name === "string") {
-            name = input.name;
+            _name = input.name;
         } else {
-            name = "";
+            _name = "";
         }
-        let createdAt: Date;
+        let _createdAt: Date;
         if (typeof input.createdAt === "string") {
-            createdAt = new Date(input.createdAt);
+            _createdAt = new Date(input.createdAt);
         } else if (input.createdAt instanceof Date) {
-            createdAt = input.createdAt;
+            _createdAt = input.createdAt;
         } else {
-            createdAt = new Date();
+            _createdAt = new Date();
         }
-        let updatedAt: Date;
+        let _updatedAt: Date;
         if (typeof input.updatedAt === "string") {
-            updatedAt = new Date(input.updatedAt);
+            _updatedAt = new Date(input.updatedAt);
         } else if (input.updatedAt instanceof Date) {
-            updatedAt = input.updatedAt;
+            _updatedAt = input.updatedAt;
         } else {
-            updatedAt = new Date();
+            _updatedAt = new Date();
         }
         return {
-            id,
-            name,
-            createdAt,
-            updatedAt,
+            id: _id,
+            name: _name,
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
         };
     },
-    fromJsonString(input: string): Book {
+    fromJsonString(input): Book {
         return $$Book.fromJson(JSON.parse(input));
     },
-    toJsonString(input: Book): string {
+    toJsonString(input): string {
         let json = "{";
         json += '"id":';
         json += serializeString(input.id);
@@ -187,7 +187,7 @@ export const $$Book: ArriModelValidator<Book> = {
         json += serializeString(input.name);
         json += ',"createdAt":';
         json += `"${input.createdAt.toISOString()}"`;
-        json += `,"updatedAt":`;
+        json += ',"updatedAt":';
         json += `"${input.updatedAt.toISOString()}"`;
         json += "}";
         return json;
@@ -211,26 +211,26 @@ export const $$BookParams: ArriModelValidator<BookParams> = {
             bookId: "",
         };
     },
-    validate(input: unknown): input is BookParams {
+    validate(input): input is BookParams {
         return isObject(input) && typeof input.bookId === "string";
     },
-    fromJson(input: Record<string, unknown>): BookParams {
-        let bookId: string;
+    fromJson(input): BookParams {
+        let _bookId: string;
         if (typeof input.bookId === "string") {
-            bookId = input.bookId;
+            _bookId = input.bookId;
         } else {
-            bookId = "";
+            _bookId = "";
         }
         return {
-            bookId,
+            bookId: _bookId,
         };
     },
-    fromJsonString(input: string): BookParams {
+    fromJsonString(input): BookParams {
         return $$BookParams.fromJson(JSON.parse(input));
     },
-    toJsonString(input: BookParams): string {
+    toJsonString(input): string {
         let json = "{";
-        json += `"bookId":`;
+        json += '"bookId":';
         json += serializeString(input.bookId);
         json += "}";
         return json;
@@ -253,35 +253,35 @@ export const $$NestedObject: ArriModelValidator<NestedObject> = {
             content: "",
         };
     },
-    validate(input: unknown): input is NestedObject {
+    validate(input): input is NestedObject {
         return (
             isObject(input) &&
             typeof input.id === "string" &&
             typeof input.content === "string"
         );
     },
-    fromJson(input: Record<string, unknown>): NestedObject {
-        let id: string;
+    fromJson(input): NestedObject {
+        let _id: string;
         if (typeof input.id === "string") {
-            id = input.id;
+            _id = input.id;
         } else {
-            id = "";
+            _id = "";
         }
-        let content: string;
+        let _content: string;
         if (typeof input.content === "string") {
-            content = input.content;
+            _content = input.content;
         } else {
-            content = "";
+            _content = "";
         }
         return {
-            id,
-            content,
+            id: _id,
+            content: _content,
         };
     },
-    fromJsonString(input: string): NestedObject {
+    fromJsonString(input): NestedObject {
         return $$NestedObject.fromJson(JSON.parse(input));
     },
-    toJsonString(input: NestedObject): string {
+    toJsonString(input): string {
         let json = "{";
         json += '"id":';
         json += serializeString(input.id);
@@ -335,7 +335,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             uint32: 0,
             int64: BigInt(0),
             uint64: BigInt(0),
-            enum: "FOO",
+            enum: $$Enumerator.new(),
             object: $$NestedObject.new(),
             array: [],
             record: {},
@@ -353,43 +353,44 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             typeof input.float64 === "number" &&
             typeof input.int8 === "number" &&
             Number.isInteger(input.int8) &&
-            (input.int8 as number) >= INT8_MIN &&
-            (input.int8 as number) <= INT8_MAX &&
+            input.int8 >= INT8_MIN &&
+            input.int8 <= INT8_MAX &&
             typeof input.uint8 === "number" &&
-            (input.uint8 as number) >= 0 &&
-            (input.uint8 as number) <= UINT8_MAX &&
+            Number.isInteger(input.uint8) &&
+            input.uint8 >= 0 &&
+            input.uint8 <= UINT8_MAX &&
             typeof input.int16 === "number" &&
             Number.isInteger(input.int16) &&
-            (input.int16 as number) >= INT16_MIN &&
-            (input.int16 as number) <= INT16_MAX &&
+            input.int16 >= INT16_MIN &&
+            input.int16 <= INT16_MAX &&
             typeof input.uint16 === "number" &&
             Number.isInteger(input.uint16) &&
-            (input.uint16 as number) >= 0 &&
-            (input.uint16 as number) <= UINT16_MAX &&
+            input.uint16 >= 0 &&
+            input.uint16 <= UINT16_MAX &&
             typeof input.int32 === "number" &&
             Number.isInteger(input.int32) &&
-            (input.int32 as number) >= INT32_MIN &&
-            (input.int32 as number) <= UINT32_MAX &&
+            input.int32 >= INT32_MIN &&
+            input.int32 <= INT32_MAX &&
             typeof input.uint32 === "number" &&
             Number.isInteger(input.uint32) &&
-            (input.uint32 as number) >= 0 &&
-            (input.uint32 as number) <= UINT32_MAX &&
+            input.uint32 >= 0 &&
+            input.uint32 <= UINT32_MAX &&
             typeof input.int64 === "bigint" &&
             input.int64 >= INT64_MIN &&
             input.int64 <= INT64_MAX &&
             typeof input.uint64 === "bigint" &&
             input.uint64 >= BigInt(0) &&
             input.uint64 <= UINT64_MAX &&
-            (input.uint64 as bigint) >= BigInt(0) &&
             $$Enumerator.validate(input.enum) &&
             $$NestedObject.validate(input.object) &&
             Array.isArray(input.array) &&
-            input.array.every((value) => typeof value === "boolean") &&
+            input.array.every((_element) => typeof _element === "boolean") &&
             isObject(input.record) &&
-            Object.entries(input.record).every(
-                ([_, value]) => typeof value === "boolean",
+            Object.values(input.record).every(
+                (_value) => typeof _value === "boolean",
             ) &&
-            $$Discriminator.validate(input.discriminator)
+            $$Discriminator.validate(input.discriminator) &&
+            true
         );
     },
     fromJson(input): ObjectWithEveryType {
@@ -408,8 +409,8 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         let _timestamp: Date;
         if (typeof input.timestamp === "string") {
             _timestamp = new Date(input.timestamp);
-        } else if (input instanceof Date) {
-            _timestamp = input;
+        } else if (input.timestamp instanceof Date) {
+            _timestamp = input.timestamp;
         } else {
             _timestamp = new Date();
         }
@@ -494,20 +495,30 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         let _int64: bigint;
         if (typeof input.int64 === "string") {
             _int64 = BigInt(input.int64);
+        } else if (typeof input.int64 === "bigint") {
+            _int64 = input.int64;
         } else {
             _int64 = BigInt(0);
         }
         let _uint64: bigint;
-        if (typeof input.uint64 === "string") {
+        if (
+            typeof input.uint64 === "string" &&
+            BigInt(input.uint64) >= BigInt(0)
+        ) {
             _uint64 = BigInt(input.uint64);
+        } else if (
+            typeof input.uint64 === "bigint" &&
+            input.uint64 >= BigInt(0)
+        ) {
+            _uint64 = input.uint64;
         } else {
             _uint64 = BigInt(0);
         }
         let _enum: Enumerator;
-        if ($$Enumerator.validate(input.enum)) {
-            _enum = input.enum;
+        if (typeof input.enum === "string") {
+            _enum = $$Enumerator.fromSerialValue(input.enum);
         } else {
-            _enum = "FOO";
+            _enum = $$Enumerator.new();
         }
         let _object: NestedObject;
         if (isObject(input.object)) {
@@ -613,9 +624,9 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         json += ',"array":';
         json += "[";
         for (let i = 0; i < input.array.length; i++) {
-            const _element = input.array[i]!;
             if (i !== 0) json += ",";
-            json += _element.toString();
+            const _element = input.array[i];
+            json += `${_element}`;
         }
         json += "]";
         json += ',"record":';
@@ -654,16 +665,19 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         queryParts.push(`uint64=${input.uint64}`);
         queryParts.push(`enum=${input.enum}`);
         console.warn(
-            `[WARNING] Cannot serialize nested objects to query params. Ignoring property at /ObjectWithEveryType/object.`,
+            "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.",
         );
         console.warn(
-            `[WARNING] Cannot serialize arrays to query params. Ignoring property at /ObjectWithEveryType/array.`,
+            "[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.",
         );
         console.warn(
-            `[WARNING] Cannot serialize nested objects to query params. Ignoring property at /ObjectWithEveryType/record.`,
+            "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.",
         );
         console.warn(
-            `[WARNING] Cannot serialize any's to query params. Ignoring property at /ObjectWithEveryType/any.`,
+            "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.",
+        );
+        console.warn(
+            "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
         );
         return queryParts.join("&");
     },
@@ -743,7 +757,6 @@ export const $$Discriminator: ArriModelValidator<Discriminator> = {
             case "C":
                 return $$DiscriminatorC.toJsonString(input);
             default:
-                input satisfies never;
                 throw new Error(`Unhandled case "${(input as any).typeName}"`);
         }
     },
@@ -779,16 +792,16 @@ const $$DiscriminatorA: ArriModelValidator<DiscriminatorA> = {
         );
     },
     fromJson(input): DiscriminatorA {
-        const typeName = "A";
-        let id: string;
+        const _typeName = "A";
+        let _id: string;
         if (typeof input.id === "string") {
-            id = input.id;
+            _id = input.id;
         } else {
-            id = "";
+            _id = "";
         }
         return {
-            typeName,
-            id,
+            typeName: _typeName,
+            id: _id,
         };
     },
     fromJsonString(input): DiscriminatorA {
@@ -804,7 +817,7 @@ const $$DiscriminatorA: ArriModelValidator<DiscriminatorA> = {
     },
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
-        queryParts.push(`typeName=A`);
+        queryParts.push("typeName=A");
         queryParts.push(`id=${input.id}`);
         return queryParts.join("&");
     },
@@ -831,23 +844,23 @@ const $$DiscriminatorB: ArriModelValidator<DiscriminatorB> = {
         );
     },
     fromJson(input): DiscriminatorB {
-        const typeName = "B";
-        let id: string;
+        const _typeName = "B";
+        let _id: string;
         if (typeof input.id === "string") {
-            id = input.id;
+            _id = input.id;
         } else {
-            id = "";
+            _id = "";
         }
-        let name: string;
+        let _name: string;
         if (typeof input.name === "string") {
-            name = input.name;
+            _name = input.name;
         } else {
-            name = "";
+            _name = "";
         }
         return {
-            typeName,
-            id,
-            name,
+            typeName: _typeName,
+            id: _id,
+            name: _name,
         };
     },
     fromJsonString(input): DiscriminatorB {
@@ -896,32 +909,32 @@ const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
         );
     },
     fromJson(input): DiscriminatorC {
-        const typeName = "C";
-        let id: string;
+        const _typeName = "C";
+        let _id: string;
         if (typeof input.id === "string") {
-            id = input.id;
+            _id = input.id;
         } else {
-            id = "";
+            _id = "";
         }
-        let name: string;
+        let _name: string;
         if (typeof input.name === "string") {
-            name = input.name;
+            _name = input.name;
         } else {
-            name = "";
+            _name = "";
         }
-        let date: Date;
+        let _date: Date;
         if (typeof input.date === "string") {
-            date = new Date(input.date);
+            _date = new Date(input.date);
         } else if (input.date instanceof Date) {
-            date = input.date;
+            _date = input.date;
         } else {
-            date = new Date();
+            _date = new Date();
         }
         return {
-            typeName,
-            id,
-            name,
-            date,
+            typeName: _typeName,
+            id: _id,
+            name: _name,
+            date: _date,
         };
     },
     fromJsonString(input): DiscriminatorC {
@@ -985,7 +998,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 (input.timestamp instanceof Date ||
                     typeof input.timestamp === "undefined") &&
                 (typeof input.float32 === "number" ||
-                    typeof input.float64 === "undefined") &&
+                    typeof input.float32 === "undefined") &&
                 (typeof input.float64 === "number" ||
                     typeof input.float64 === "undefined") &&
                 ((typeof input.int8 === "number" &&
@@ -1379,9 +1392,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 json += '"array":';
                 json += "[";
                 for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) {
-                        json += ",";
-                    }
+                    if (i !== 0) json += ",";
                     const _element = input.array[i];
                     json += `${_element}`;
                 }
@@ -1393,7 +1404,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                 json += '"record":';
                 json += "{";
                 let _recordPropertyCount = 0;
-                for (const [_key, _value] of Object.entries(json)) {
+                for (const [_key, _value] of Object.entries(input.record)) {
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
@@ -1859,9 +1870,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             if (input.array !== null) {
                 json += "[";
                 for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) {
-                        json += ",";
-                    }
+                    if (i !== 0) json += ",";
                     const _element = input.array[i];
                     json += `${_element}`;
                 }
@@ -1990,10 +1999,10 @@ export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
     toUrlQueryString(input): string {
         const queryParts: string[] = [];
         console.warn(
-            "[WARNING] Nested objects cannot be serialized to query params. Ignoring property at /RecursiveObject/left.",
+            "[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.",
         );
         console.warn(
-            "[WARNING] Nested objects cannot be serialized to query params. Ignoring property at /RecursiveObject/right.",
+            "[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.",
         );
         return queryParts.join("&");
     },

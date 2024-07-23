@@ -14,21 +14,24 @@ export function tsObjectFromSchema(
     context: CodegenContext,
 ): TsProperty {
     const typeName = getTsTypeName(schema, context);
-    const defaultValue = schema.nullable ? "null" : `$$${typeName}.new()`;
+    const prefixedTypeName = `${context.typePrefix}${typeName}`;
+    const defaultValue = schema.nullable
+        ? "null"
+        : `$$${prefixedTypeName}.new()`;
     const result: TsProperty = {
         typeName: schema.nullable
-            ? `${context.typePrefix}${typeName} | null`
-            : `${context.typePrefix}${typeName}`,
+            ? `${prefixedTypeName} | null`
+            : prefixedTypeName,
         defaultValue,
         validationTemplate(input) {
             if (schema.nullable) {
-                return `($$${typeName}.validate(${input}) || ${input} === null)`;
+                return `($$${prefixedTypeName}.validate(${input}) || ${input} === null)`;
             }
-            return `$$${typeName}.validate(${input})`;
+            return `$$${prefixedTypeName}.validate(${input})`;
         },
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
-                ${target} = $$${context.typePrefix}${typeName}.fromJson(${input});
+                ${target} = $$${prefixedTypeName}.fromJson(${input});
             } else {
                 ${target} = ${defaultValue}; 
             }`;
@@ -36,12 +39,12 @@ export function tsObjectFromSchema(
         toJsonTemplate(input, target) {
             if (schema.nullable) {
                 return `if (${input} !== null) {
-                    ${target} += $$${context.typePrefix}${typeName}.toJsonString(${input}); 
+                    ${target} += $$${prefixedTypeName}.toJsonString(${input}); 
                 } else {
                     ${target} += 'null';
                 }`;
             }
-            return `${target} += $$${context.typePrefix}${typeName}.toJsonString(${input});`;
+            return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
         },
         toQueryStringTemplate(_input, _target) {
             return `console.warn("[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.")`;
@@ -70,7 +73,7 @@ export function tsObjectFromSchema(
             camelCase(context.discriminatorKey, { normalize: true }),
         );
         fieldParts.push(`${key}: "${context.discriminatorValue}",`);
-        fromJsonParts.push(`let _${key} = "${context.discriminatorValue}"`);
+        fromJsonParts.push(`const _${key} = "${context.discriminatorValue}"`);
         toJsonParts.push(`json += '"${key}":"${context.discriminatorValue}"'`);
         toQueryParts.push(
             `queryParts.push('${context.discriminatorKey}=${context.discriminatorValue}');`,
@@ -167,12 +170,11 @@ export function tsObjectFromSchema(
         );
         constructionParts.push(`${fieldName}: ${tempKey},`);
     }
-    const prefixedTypeName = `${context.typePrefix}${typeName}`;
 
     result.content = `${getJsDocComment(schema.metadata)}export interface ${prefixedTypeName} {
 ${fieldParts.map((part) => `    ${part}`).join("\n")}
 }
-export const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
+${context.discriminatorParent && context.discriminatorValue ? "" : "export "}const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
     new(): ${prefixedTypeName} {
         return {
 ${newParts.map((part) => `            ${part}`).join("\n")}        

@@ -47,7 +47,7 @@ export function tsTaggedUnionFromSchema(
         },
         content: "",
     };
-    if (!context.generatedTypes.includes(typeName)) return result;
+    if (context.generatedTypes.includes(typeName)) return result;
     const subTypes: { value: string; data: TsProperty }[] = [];
     const discriminatorKey = schema.discriminator;
     for (const key of Object.keys(schema.mapping)) {
@@ -68,7 +68,7 @@ export function tsTaggedUnionFromSchema(
         subTypes.push({ value: key, data: subType });
     }
     result.content = `export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(" |")};
-export const $$${prefixedTypeName}: ArriModelValidator<${subTypes[0]!.data.typeName}> = {
+export const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
     new(): ${prefixedTypeName} {
         return $$${subTypes[0]!.data.typeName}.new();
     },
@@ -80,46 +80,57 @@ export const $$${prefixedTypeName}: ArriModelValidator<${subTypes[0]!.data.typeN
             return false;
         }
         switch (input.${discriminatorKey}) {
-${subTypes.map(
-    (type) => `            case "${type.value}":
+${subTypes
+    .map(
+        (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.validate(input);`,
-)}
+    )
+    .join("\n")}
             default:
                 return false;
         }
     },
     fromJson(input): ${prefixedTypeName} {
         switch (input.${discriminatorKey}) {
-${subTypes.map(
-    (type) => `            case "${type.value}":
+${subTypes
+    .map(
+        (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.fromJson(input);`,
-)}
+    )
+    .join("\n")}
             default:
                 return $$${subTypes[0]!.data.typeName}.new();
         }
     },
+    fromJsonString(input): ${prefixedTypeName} {
+        return $$${prefixedTypeName}.fromJson(JSON.parse(input));
+    },
     toJsonString(input): string {
         switch (input.${discriminatorKey}) {
-${subTypes.map(
-    (type) => `            case "${type.value}":
-                return $$${type.data.typeName}.toJsonString(input);
+${subTypes
+    .map(
+        (type) => `            case "${type.value}":
+                return $$${type.data.typeName}.toJsonString(input);`,
+    )
+    .join("\n")}
             default:
-                input satisfied never;
-                throw new Error(\`Unhandled case "\${(input as any).${discriminatorKey}}"\`);`,
-)}
+                throw new Error(\`Unhandled case "\${(input as any).${discriminatorKey}}"\`);
         }
     },
     toUrlQueryString(input): string {
         switch (input.${discriminatorKey}) {
-${subTypes.map(
-    (type) => `            case "${type.value}":
+${subTypes
+    .map(
+        (type) => `            case "${type.value}":
                 return $$${type.data.typeName}.toUrlQueryString(input);`,
-)}
+    )
+    .join("\n")}
             default:
                 throw new Error('Unhandled case');
         }
     }
-}    
+}
+${subTypes.map((type) => type.data.content).join("\n")}
 `;
     context.generatedTypes.push(typeName);
     return result;

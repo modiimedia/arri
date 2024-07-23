@@ -94,7 +94,7 @@ export async function arriWsRequest<
 type WsErrorHook = (err: ArriErrorInstance) => void;
 type WsMessageHook<TResponse> = (msg: TResponse) => any;
 
-class WsController<TParams, TResponse> {
+export class WsController<TParams, TResponse> {
     url: string;
     private _ws?: NodeWebsocket | WebSocket;
     private readonly _serializer: (input: TParams) => string;

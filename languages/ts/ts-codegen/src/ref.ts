@@ -38,7 +38,7 @@ export function tsRefFromSchema(
             return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
         },
         toQueryStringTemplate(_, __, ___) {
-            return `console.warn("[WARNING] Nested objects cannot be serialized to query params. Ignoring property at ${context.instancePath}.");`;
+            return `console.warn("[WARNING] Nested objects cannot be serialized to query string. Ignoring property at ${context.instancePath}.");`;
         },
         content: "",
     };
