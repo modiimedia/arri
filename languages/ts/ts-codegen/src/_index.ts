@@ -1,6 +1,7 @@
 import {
     type AppDefinition,
     defineGeneratorPlugin,
+    isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
@@ -15,6 +16,7 @@ import prettier from "prettier";
 import { tsAnyFromSchema } from "./any";
 import { tsArrayFromSchema } from "./array";
 import { CodegenContext, TsProperty } from "./common";
+import { tsTaggedUnionFromSchema } from "./discriminator";
 import { tsEnumFromSchema } from "./enum";
 import { tsObjectFromSchema } from "./object";
 import {
@@ -167,6 +169,9 @@ export function tsTypeFromSchema(
     }
     if (isSchemaFormValues(schema)) {
         return tsRecordFromSchema(schema, context);
+    }
+    if (isSchemaFormDiscriminator(schema)) {
+        return tsTaggedUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return tsRefFromSchema(schema, context);

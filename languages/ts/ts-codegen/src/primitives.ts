@@ -64,17 +64,10 @@ export function tsBooleanFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
-                return `if (typeof ${input} === 'boolean') {
-                    ${target} += ${input}.toString();
-                } else {
-                    ${target} += 'null'; 
-                }`;
-            }
-            return `${target} += ${input}.toString()`;
+            return `${target} += \`\${${input}}\`;`;
         },
         toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+            return `${target}.push(\`${key}=\${${input}}\`);`;
         },
         content: "",
     };
@@ -147,14 +140,7 @@ export function tsFloatFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
-            if (schema.nullable) {
-                return `if (typeof ${input} === 'number') {
-                    ${target} += ${input}.toString();
-                } else {
-                    ${target} += 'null'; 
-                }`;
-            }
-            return `${target} += ${input}.toString()`;
+            return `${target} += \`\${${input}}\``;
         },
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`)`;
@@ -282,10 +268,7 @@ export function tsBigIntFromSchema(
             return `${target} += \`"\${${input}.toString()}"\``;
         },
         toQueryStringTemplate(input, target, key) {
-            if (schema.nullable) {
-                return `${target}.push(\`${key}=\${${input}?.toString()}\`)`;
-            }
-            return `${target}.push(\`${key}=\${${input}.toString()}\`)`;
+            return `${target}.push(\`${key}=\${${input}}\`)`;
         },
         content: "",
     };

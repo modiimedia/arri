@@ -21,6 +21,10 @@ test("Output matches reference file", async () => {
     const result = await createTypescriptClient(appDef, {
         clientName: "ExampleClient",
         outputFile: "",
+        prettierOptions: {
+            tabWidth: 4,
+            endOfLine: "lf",
+        },
     });
     expect(normalizeWhitespace(result)).toEqual(
         normalizeWhitespace(referenceFile),

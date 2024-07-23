@@ -26,8 +26,8 @@ export function tsRecordFromSchema(
         typeName: schema.nullable ? `${typeName} | null` : typeName,
         defaultValue,
         validationTemplate(input) {
-            const mainPart = `isObject(${input}) && Object.entries(${input}).every(
-                ([_, value]) => ${innerType.validationTemplate("value")},
+            const mainPart = `isObject(${input}) && Object.values(${input}).every(
+                (_value) => ${innerType.validationTemplate("_value")},
             )`;
             if (schema.nullable) {
                 return `((${mainPart}) || ${input} === null)`;
@@ -37,8 +37,8 @@ export function tsRecordFromSchema(
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
                 ${target} = {};
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    ${target}Value: ${innerType.typeName};
+                for (const [_key, _value] of Object.entries(${input})) {
+                    let ${target}Value: ${innerType.typeName};
                     if (typeof _value === 'boolean') {
                         ${target}Value = _value;
                     } else {
@@ -53,10 +53,10 @@ export function tsRecordFromSchema(
         toJsonTemplate(input, target, key) {
             const countVal = `_${validVarName(key)}PropertyCount`;
             if (schema.nullable) {
-                return `if (isObject(${input})) {
+                return `if (${input} !== null) {
                     ${target} += '{';
                     let ${countVal} = 0;
-                    for (const [_key, _value] of Object.entries(${target})) {
+                    for (const [_key, _value] of Object.entries(${input})) {
                         if (${countVal} !== 0) {
                             ${target} += ',';
                         }
@@ -83,7 +83,7 @@ export function tsRecordFromSchema(
             `;
         },
         toQueryStringTemplate(_, __, ___) {
-            return `console.warn('[WARNING] Cannot serialize nested objects to query params. Skipping property at ${context.instancePath}.')`;
+            return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: innerType.content,
     };

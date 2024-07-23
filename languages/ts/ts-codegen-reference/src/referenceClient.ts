@@ -617,7 +617,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
                 json += ",";
             }
             json += `"${_key}":`;
-            json += _value.toString();
+            json += `${_value}`;
             _recordPropertyCount++;
         }
         json += "}";
@@ -1073,6 +1073,393 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                 discriminator: null,
                 any: null,
             };
+        },
+        validate(input): input is ObjectWithNullableFields {
+            return (
+                isObject(input) &&
+                (typeof input.string === "string" || input.string === null) &&
+                (typeof input.boolean === "boolean" ||
+                    input.boolean === null) &&
+                (input.timestamp instanceof Date || input.timestamp === null) &&
+                (typeof input.float32 === "number" || input.float32 === null) &&
+                (typeof input.float64 === "number" || input.float64 === null) &&
+                ((typeof input.int8 === "number" &&
+                    Number.isInteger(input.int8) &&
+                    input.int8 >= INT8_MIN &&
+                    input.int8 <= INT8_MAX) ||
+                    input.int8 === null) &&
+                ((typeof input.uint8 === "number" &&
+                    Number.isInteger(input.uint8) &&
+                    input.uint8 >= 0 &&
+                    input.uint8 <= UINT8_MAX) ||
+                    input.uint8 === null) &&
+                ((typeof input.int16 === "number" &&
+                    Number.isInteger(input.int16) &&
+                    input.int16 >= INT16_MIN &&
+                    input.int16 <= INT16_MAX) ||
+                    input.int16 === null) &&
+                ((typeof input.uint16 === "number" &&
+                    Number.isInteger(input.uint16) &&
+                    input.uint16 >= 0 &&
+                    input.uint16 <= UINT16_MAX) ||
+                    input.uint16 === null) &&
+                ((typeof input.int32 === "number" &&
+                    Number.isInteger(input.int32) &&
+                    input.int32 >= INT32_MIN &&
+                    input.int32 <= INT32_MAX) ||
+                    input.int32 === null) &&
+                ((typeof input.uint32 === "number" &&
+                    Number.isInteger(input.uint32) &&
+                    input.uint32 >= 0 &&
+                    input.uint32 <= UINT32_MAX) ||
+                    input.uint32 === null) &&
+                (typeof input.int64 === "bigint" || input.int64 === null) &&
+                ((typeof input.uint64 === "bigint" &&
+                    input.uint64 >= BigInt(0)) ||
+                    input.uint64 === null) &&
+                ($$Enumerator.validate(input.enum) || input.enum === null) &&
+                ($$NestedObject.validate(input.object) ||
+                    input.object === null) &&
+                ((Array.isArray(input.array) &&
+                    input.array.every(
+                        (_element) => typeof _element === "boolean",
+                    )) ||
+                    input.array === null) &&
+                ((isObject(input.record) &&
+                    Object.values(input.record).every(
+                        (_value) => typeof _value === "boolean",
+                    )) ||
+                    input.record === null) &&
+                ($$Discriminator.validate(input.discriminator) ||
+                    input.discriminator === null) &&
+                true
+            );
+        },
+        fromJson(input): ObjectWithNullableFields {
+            let _string: string | null;
+            if (typeof input.string === "string") {
+                _string = input.string;
+            } else {
+                _string = null;
+            }
+            let _boolean: boolean | null;
+            if (typeof input.boolean === "boolean") {
+                _boolean = input.boolean;
+            } else {
+                _boolean = null;
+            }
+            let _timestamp: Date | null;
+            if (typeof input.timestamp === "string") {
+                _timestamp = new Date(input.timestamp);
+            } else if (input.timestamp instanceof Date) {
+                _timestamp = input.timestamp;
+            } else {
+                _timestamp = null;
+            }
+            let _float32: number | null;
+            if (typeof input.float32 === "number") {
+                _float32 = input.float32;
+            } else {
+                _float32 = null;
+            }
+            let _float64: number | null;
+            if (typeof input.float64 === "number") {
+                _float64 = input.float64;
+            } else {
+                _float64 = null;
+            }
+            let _int8: number | null;
+            if (
+                typeof input.int8 === "number" &&
+                Number.isInteger(input.int8) &&
+                input.int8 >= INT8_MIN &&
+                input.int8 <= INT8_MAX
+            ) {
+                _int8 = input.int8;
+            } else {
+                _int8 = null;
+            }
+            let _uint8: number | null;
+            if (
+                typeof input.uint8 === "number" &&
+                Number.isInteger(input.uint8) &&
+                input.uint8 >= 0 &&
+                input.uint8 <= UINT8_MAX
+            ) {
+                _uint8 = input.uint8;
+            } else {
+                _uint8 = null;
+            }
+            let _int16: number | null;
+            if (
+                typeof input.int16 === "number" &&
+                Number.isInteger(input.int16) &&
+                input.int16 >= INT16_MIN &&
+                input.int16 <= INT16_MAX
+            ) {
+                _int16 = input.int16;
+            } else {
+                _int16 = null;
+            }
+            let _uint16: number | null;
+            if (
+                typeof input.uint16 === "number" &&
+                Number.isInteger(input.uint16) &&
+                input.uint16 >= 0 &&
+                input.uint16 <= UINT16_MAX
+            ) {
+                _uint16 = input.uint16;
+            } else {
+                _uint16 = null;
+            }
+            let _int32: number | null;
+            if (
+                typeof input.int32 === "number" &&
+                Number.isInteger(input.int32) &&
+                input.int32 >= INT32_MIN &&
+                input.int32 <= INT32_MAX
+            ) {
+                _int32 = input.int32;
+            } else {
+                _int32 = null;
+            }
+            let _uint32: number | null;
+            if (
+                typeof input.uint32 === "number" &&
+                Number.isInteger(input.uint32) &&
+                input.uint32 >= 0 &&
+                input.uint32 <= UINT32_MAX
+            ) {
+                _uint32 = input.uint32;
+            } else {
+                _uint32 = null;
+            }
+            let _int64: bigint | null;
+            if (typeof input.int64 === "string") {
+                _int64 = BigInt(input.int64);
+            } else if (typeof input.int64 === "bigint") {
+                _int64 = input.int64;
+            } else {
+                _int64 = null;
+            }
+            let _uint64: bigint | null;
+            if (
+                typeof input.uint64 === "string" &&
+                BigInt(input.uint64) >= BigInt(0)
+            ) {
+                _uint64 = BigInt(input.uint64);
+            } else if (
+                typeof input.uint64 === "bigint" &&
+                input.uint64 >= BigInt(0)
+            ) {
+                _uint64 = input.uint64;
+            } else {
+                _uint64 = null;
+            }
+            let _enum: Enumerator | null;
+            if (typeof input.enum === "string") {
+                _enum = $$Enumerator.fromSerialValue(input.enum);
+            } else {
+                _enum = null;
+            }
+            let _object: NestedObject | null;
+            if (isObject(input.object)) {
+                _object = $$NestedObject.fromJson(input.object);
+            } else {
+                _object = null;
+            }
+            let _array: boolean[] | null;
+            if (Array.isArray(input.array)) {
+                _array = [];
+                for (const _arrayEl of input.array) {
+                    let _arrayElValue: boolean;
+                    if (typeof _arrayEl === "boolean") {
+                        _arrayElValue = _arrayEl;
+                    } else {
+                        _arrayElValue = false;
+                    }
+                    _array.push(_arrayElValue);
+                }
+            } else {
+                _array = null;
+            }
+            let _record: Record<string, boolean> | null;
+            if (isObject(input.record)) {
+                _record = {};
+                for (const [_key, _value] of Object.entries(input.record)) {
+                    let _recordValue: boolean;
+                    if (typeof _value === "boolean") {
+                        _recordValue = _value;
+                    } else {
+                        _recordValue = false;
+                    }
+                    _record[_key] = _recordValue;
+                }
+            } else {
+                _record = null;
+            }
+            let _discriminator: Discriminator | null;
+            if (isObject(input.discriminator)) {
+                _discriminator = $$Discriminator.fromJson(input.discriminator);
+            } else {
+                _discriminator = null;
+            }
+            let _any: any;
+            _any = input.any;
+            return {
+                string: _string,
+                boolean: _boolean,
+                timestamp: _timestamp,
+                float32: _float32,
+                float64: _float64,
+                int8: _int8,
+                uint8: _uint8,
+                int16: _int16,
+                uint16: _uint16,
+                int32: _int32,
+                uint32: _uint32,
+                int64: _int64,
+                uint64: _uint64,
+                enum: _enum,
+                object: _object,
+                array: _array,
+                record: _record,
+                discriminator: _discriminator,
+                any: _any,
+            };
+        },
+        fromJsonString(input): ObjectWithNullableFields {
+            return $$ObjectWithNullableFields.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = "{";
+            json += '"string":';
+            if (typeof input.string === "string") {
+                json += serializeString(input.string);
+            } else {
+                json += "null";
+            }
+            json += ',"boolean":';
+            json += `${input.boolean}`;
+            json += ',"timestamp":';
+            if (input.timestamp instanceof Date) {
+                json += `"${input.timestamp.toISOString()}"`;
+            } else {
+                json += "null";
+            }
+            json += ',"float32":';
+            json += `${input.float32}`;
+            json += ',"float64":';
+            json += `${input.float64}`;
+            json += ',"int8":';
+            json += `${input.int8}`;
+            json += ',"uint8":';
+            json += `${input.uint8}`;
+            json += ',"int16":';
+            json += `${input.int16}`;
+            json += ',"uint16":';
+            json += `${input.uint16}`;
+            json += ',"int32":';
+            json += `${input.int32}`;
+            json += ',"uint32":';
+            json += `${input.uint32}`;
+            json += ',"int64":';
+            if (typeof input.int64 === "bigint") {
+                json += `"${input.int64.toString()}"`;
+            } else {
+                json += "null";
+            }
+            json += ',"uint64":';
+            if (typeof input.uint64 === "bigint") {
+                json += `"${input.uint64.toString()}"`;
+            } else {
+                json += "null";
+            }
+            json += ',"enum":';
+            if (typeof input.enum === "string") {
+                json += `"${input.enum}"`;
+            } else {
+                json += "null";
+            }
+            json += ',"object":';
+            if (input.object !== null) {
+                json += $$NestedObject.toJsonString(input.object);
+            } else {
+                json += "null";
+            }
+            json += ',"array":';
+            if (input.array !== null) {
+                json += "[";
+                for (let i = 0; i < input.array.length; i++) {
+                    if (i !== 0) {
+                        json += ",";
+                    }
+                    const _element = input.array[i];
+                    json += `${_element}`;
+                }
+                json += "]";
+            } else {
+                json += "null";
+            }
+            json += ',"record":';
+            if (input.record !== null) {
+                json += "{";
+                let _recordPropertyCount = 0;
+                for (const [_key, _value] of Object.entries(input.record)) {
+                    if (_recordPropertyCount !== 0) {
+                        json += ",";
+                    }
+                    json += `"${_key}":`;
+                    json += `${_value}`;
+                    _recordPropertyCount++;
+                }
+                json += "}";
+            } else {
+                json += "null";
+            }
+            json += ',"discriminator":';
+            if (input.discriminator != null) {
+                json += $$Discriminator.toJsonString(input.discriminator);
+            } else {
+                json += "null";
+            }
+            json += ',"any":';
+            json += JSON.stringify(input.any);
+            json += "}";
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`string=${input.string}`);
+            queryParts.push(`boolean=${input.boolean}`);
+            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
+            queryParts.push(`float32=${input.float32}`);
+            queryParts.push(`float64=${input.float64}`);
+            queryParts.push(`int8=${input.int8}`);
+            queryParts.push(`uint8=${input.uint8}`);
+            queryParts.push(`int16=${input.int16}`);
+            queryParts.push(`uint16=${input.uint16}`);
+            queryParts.push(`int32=${input.int32}`);
+            queryParts.push(`uint32=${input.uint32}`);
+            queryParts.push(`int64=${input.int64}`);
+            queryParts.push(`uint64=${input.uint64}`);
+            queryParts.push(`enum=${input.enum}`);
+            console.warn(
+                "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/object.",
+            );
+            console.warn(
+                "[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithNullableFields/array.",
+            );
+            console.warn(
+                "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.",
+            );
+            console.warn(
+                "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/discriminator.",
+            );
+            console.warn(
+                "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",
+            );
+            return queryParts.join("&");
         },
     };
 

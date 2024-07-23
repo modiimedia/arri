@@ -35,16 +35,16 @@ export function tsObjectFromSchema(
         },
         toJsonTemplate(input, target) {
             if (schema.nullable) {
-                return `if (${input} == null) {
-                    ${target} += 'null';
-                } else {
+                return `if (${input} !== null) {
                     ${target} += $$${context.typePrefix}${typeName}.toJsonString(${input}); 
+                } else {
+                    ${target} += 'null';
                 }`;
             }
             return `${target} += $$${context.typePrefix}${typeName}.toJsonString(${input});`;
         },
         toQueryStringTemplate(_input, _target) {
-            return `console.warn("[WARNING] Nested objects cannot be serialized to query string. Skipping property at ${context.instancePath}.")`;
+            return `console.warn("[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.")`;
         },
         content: "",
     };

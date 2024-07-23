@@ -3,11 +3,11 @@ import { Schema } from "@arrirpc/codegen-utils";
 import { CodegenContext, TsProperty } from "./common";
 
 export function tsAnyFromSchema(
-    _schema: Schema,
+    schema: Schema,
     context: CodegenContext,
 ): TsProperty {
     const typeName = "any";
-    const defaultValue = "undefined";
+    const defaultValue = schema.nullable ? "null" : "undefined";
     return {
         typeName,
         defaultValue,
@@ -15,7 +15,7 @@ export function tsAnyFromSchema(
             return "true";
         },
         fromJsonTemplate(input, target) {
-            return `${input} = ${target}`;
+            return `${target} = ${input}`;
         },
         toJsonTemplate(input, target) {
             return `${target} += JSON.stringify(${input})`;

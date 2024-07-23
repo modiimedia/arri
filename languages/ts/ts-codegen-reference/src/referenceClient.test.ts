@@ -4,9 +4,11 @@ import path from "node:path";
 import {
     $$Book,
     $$ObjectWithEveryType,
+    $$ObjectWithNullableFields,
     $$RecursiveObject,
     Book,
     ObjectWithEveryType,
+    ObjectWithNullableFields,
     RecursiveObject,
 } from "./referenceClient";
 
@@ -36,6 +38,8 @@ describe("Book", () => {
         );
     });
 });
+
+describe("NestedObject", () => {});
 
 describe("ObjectWithEveryType", () => {
     const targetValue: ObjectWithEveryType = {
@@ -86,6 +90,76 @@ describe("ObjectWithEveryType", () => {
         expect($$ObjectWithEveryType.toJsonString(targetValue)).toEqual(
             jsonReference,
         );
+    });
+});
+
+describe("ObjectWithNullableFields", () => {
+    const allNullTargetValue: ObjectWithNullableFields = {
+        string: null,
+        boolean: null,
+        timestamp: null,
+        float32: null,
+        float64: null,
+        int8: null,
+        uint8: null,
+        int16: null,
+        uint16: null,
+        int32: null,
+        uint32: null,
+        int64: null,
+        uint64: null,
+        enum: null,
+        object: null,
+        array: null,
+        record: null,
+        discriminator: null,
+        any: null,
+    };
+    const noNullTargetValue: ObjectWithNullableFields = {
+        string: "",
+        boolean: true,
+        timestamp: testDate,
+        float32: 1.5,
+        float64: 1.5,
+        int8: 1,
+        uint8: 1,
+        int16: 10,
+        uint16: 10,
+        int32: 100,
+        uint32: 100,
+        int64: 1000n,
+        uint64: 1000n,
+        enum: "BAZ",
+        object: {
+            id: "",
+            content: "",
+        },
+        array: [true, false, false],
+        record: {
+            A: true,
+            B: false,
+        },
+        discriminator: {
+            typeName: "C",
+            id: "",
+            name: "",
+            date: testDate,
+        },
+        any: { message: "hello world" },
+    };
+    const allNullJsonReference = testFile(
+        "ObjectWithNullableFields_AllNull.json",
+    );
+    const noNullJsonReference = testFile(
+        "ObjectWithNullableFields_NoNull.json",
+    );
+    test("JSON parsing", () => {
+        const allNullResult =
+            $$ObjectWithNullableFields.fromJsonString(allNullJsonReference);
+        const noNullResult =
+            $$ObjectWithNullableFields.fromJsonString(noNullJsonReference);
+        expect(allNullResult).toStrictEqual(allNullTargetValue);
+        expect(noNullResult).toStrictEqual(noNullTargetValue);
     });
 });
 

@@ -26,9 +26,13 @@ export function tsArrayFromSchema(
         typeName: schema.nullable ? `${typeName} | null` : typeName,
         defaultValue,
         validationTemplate(input) {
-            const mainPart = `Array.isArray(${input}) && ${input}.every((_element) => ${innerType.validationTemplate("_element")})`;
+            const mainPart = `Array.isArray(${input}) 
+                && ${input}.every(
+                    (_element) => ${innerType.validationTemplate("_element")}
+            )`;
             if (schema.nullable) {
-                return `((${mainPart}) || ${input} === null)`;
+                return `((${mainPart}) || 
+                ${input} === null)`;
             }
             return mainPart;
         },
@@ -46,10 +50,13 @@ export function tsArrayFromSchema(
         },
         toJsonTemplate(input, target) {
             if (schema.nullable) {
-                return `if (Array.isArray(${input})) {
+                return `if (${input} !== null) {
                     ${target} += '[';
                     for (let i = 0; i < ${input}.length; i++) {
-                        let _element = input[i];
+                        if (i !== 0) {
+                            ${target} += ',';
+                        }
+                        const _element = ${input}[i];
                         ${innerType.toJsonTemplate(`_element`, target, "_elementKey")}
                     }
                     ${target} += ']';
@@ -59,13 +66,16 @@ export function tsArrayFromSchema(
             }
             return `${target} += '[';
             for (let i = 0; i < ${input}.length; i++) {
-                let _element = input[i];
+                if (i !== 0) {
+                    ${target} += ',';
+                }
+                const _element = ${input}[i];
                 ${innerType.toJsonTemplate("_element", target, `_elementKey`)}
             }
             ${target} += ']';`;
         },
         toQueryStringTemplate(_input, _target, _key) {
-            return `console.warn('[WARNING] Cannot serialize arrays to query string. Ignoring property at ${context.instancePath}.')`;
+            return `console.warn('[WARNING] Cannot serialize arrays to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: innerType.content,
     };

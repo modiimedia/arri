@@ -16,6 +16,7 @@ export function tsEnumFromSchema(
             `Error at ${context.schemaPath}. Enum schemas must have at least one enum value.`,
         );
     const enumName = getTsTypeName(schema, context);
+    const prefixedEnumName = `${context.typePrefix}${enumName}`;
     const typeName = schema.nullable ? `${enumName} | null` : enumName;
     const defaultValue = schema.nullable ? "null" : `"${schema.enum[0]!}"`;
     const result: TsProperty = {
@@ -23,13 +24,13 @@ export function tsEnumFromSchema(
         defaultValue,
         validationTemplate(input) {
             if (schema.nullable) {
-                return `($$${enumName}Values.includes(${input} as any) || ${input} === null)`;
+                return `($$${prefixedEnumName}.validate(${input}) || ${input} === null)`;
             }
-            return `$$${enumName}Values.includes(${input} as any)`;
+            return `$$${prefixedEnumName}.validate(${input})`;
         },
         fromJsonTemplate(input, target) {
-            return `if ($$${enumName}.validate(${input})) {
-                ${target} = ${input};
+            return `if (typeof ${input} === 'string') {
+                ${target} = $$${prefixedEnumName}.fromSerialValue(${input});
             } else {
                 ${target} = ${defaultValue}; 
             }`;
