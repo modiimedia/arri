@@ -36,7 +36,6 @@ Below are the language client generators that are planned to have first party su
 
 -   [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
 -   [@arrirpc/schema](tooling/schema/README.md) - Arri type builder used to define types that can be generated in multiple languages. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
--   [@arrirpc/typebox-adapter](tooling/schema-typebox-adapter/README.md) - convert Typebox Schemas to Arri Type Definitions
 -   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
 
 ## Creating Schemas For Custom Server Implementations
