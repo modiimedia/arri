@@ -7,11 +7,10 @@
   "keywords": [],
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@arrirpc/server": "workspace:*",
-    "arri": "workspace:*"
+    "@arrirpc/server": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.5.3"
+    "arri": "workspace:*"
   },
   "private": true
 }

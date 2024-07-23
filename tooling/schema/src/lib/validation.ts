@@ -1,4 +1,8 @@
-import { type ASchema, SCHEMA_METADATA, type ValidationData } from "../schemas";
+import {
+    type ASchema,
+    SCHEMA_METADATA,
+    type ValidationContext,
+} from "../schemas";
 
 export function sanitizeJson(json: string) {
     return json
@@ -125,12 +129,12 @@ export function safeCoerce<T = any>(
  * Serialize a value into a JSON string
  */
 export function serialize<T = any>(schema: ASchema<T>, input: T) {
-    const data: ValidationData = {
+    const context: ValidationContext = {
         instancePath: "",
         schemaPath: "",
         errors: [],
     };
-    return schema.metadata[SCHEMA_METADATA].serialize(input, data);
+    return schema.metadata[SCHEMA_METADATA].serialize(input, context);
 }
 
 export function errors(schema: ASchema, input: unknown): ValueError[] {

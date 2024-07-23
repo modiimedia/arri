@@ -21,7 +21,6 @@ use std::collections::{BTreeMap, HashMap};
 pub struct TestClient {
     _config: InternalArriClientConfig,
     pub tests: TestClientTestsService,
-    pub adapters: TestClientAdaptersService,
     pub users: TestClientUsersService,
 }
 
@@ -30,7 +29,6 @@ impl ArriClientService for TestClient {
         Self {
             _config: InternalArriClientConfig::from(config.clone()),
             tests: TestClientTestsService::create(config.clone()),
-            adapters: TestClientAdaptersService::create(config.clone()),
             users: TestClientUsersService::create(config),
         }
     }
@@ -38,7 +36,6 @@ impl ArriClientService for TestClient {
         let mut unwrapped_headers = self._config.headers.write().unwrap();
         *unwrapped_headers = headers.clone();
         self.tests.update_headers(headers.clone());
-        self.adapters.update_headers(headers.clone());
         self.users.update_headers(headers);
     }
 }
@@ -432,40 +429,6 @@ impl TestClientTestsService {
 }
 
 #[derive(Clone)]
-pub struct TestClientAdaptersService {
-    _config: InternalArriClientConfig,
-}
-
-impl ArriClientService for TestClientAdaptersService {
-    fn create(config: ArriClientConfig) -> Self {
-        Self {
-            _config: InternalArriClientConfig::from(config),
-        }
-    }
-    fn update_headers(&self, headers: HashMap<&'static str, String>) {
-        let mut unwrapped_headers = self._config.headers.write().unwrap();
-        *unwrapped_headers = headers.clone();
-    }
-}
-
-impl TestClientAdaptersService {
-    pub async fn typebox(&self, params: TypeBoxObject) -> Result<TypeBoxObject, ArriServerError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self._config.http_client,
-                url: format!("{}/rpcs/adapters/typebox", &self._config.base_url),
-                method: reqwest::Method::POST,
-                headers: self._config.headers.clone(),
-                client_version: "10".to_string(),
-            },
-            Some(params),
-            |body| return TypeBoxObject::from_json_string(body),
-        )
-        .await
-    }
-}
-
-#[derive(Clone)]
 pub struct TestClientUsersService {
     _config: InternalArriClientConfig,
 }
@@ -595,230 +558,6 @@ impl ArriModel for DefaultPayload {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("message={}", &self.message));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TypeBoxObject {
-    pub string: String,
-    pub boolean: bool,
-    pub integer: i32,
-    pub number: f64,
-    pub enum_field: TypeBoxObjectEnumField,
-    pub object: TypeBoxObjectObject,
-    pub array: Vec<bool>,
-    pub optional_string: Option<String>,
-}
-
-impl ArriModel for TypeBoxObject {
-    fn new() -> Self {
-        Self {
-            string: "".to_string(),
-            boolean: false,
-            integer: 0,
-            number: 0.0,
-            enum_field: TypeBoxObjectEnumField::default(),
-            object: TypeBoxObjectObject::new(),
-            array: Vec::new(),
-            optional_string: None,
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let string = match _val_.get("string") {
-                    Some(serde_json::Value::String(string_val)) => string_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                let boolean = match _val_.get("boolean") {
-                    Some(serde_json::Value::Bool(boolean_val)) => boolean_val.to_owned(),
-                    _ => false,
-                };
-                let integer = match _val_.get("integer") {
-                    Some(serde_json::Value::Number(integer_val)) => {
-                        i32::try_from(integer_val.as_i64().unwrap_or(0)).unwrap_or(0)
-                    }
-                    _ => 0,
-                };
-                let number = match _val_.get("number") {
-                    Some(serde_json::Value::Number(number_val)) => {
-                        number_val.as_f64().unwrap_or(0.0)
-                    }
-                    _ => 0.0,
-                };
-                let enum_field = match _val_.get("enumField") {
-                    Some(serde_json::Value::String(enum_field_val)) => {
-                        TypeBoxObjectEnumField::from_string(enum_field_val.to_owned())
-                    }
-                    _ => TypeBoxObjectEnumField::default(),
-                };
-                let object = match _val_.get("object") {
-                    Some(object_val) => TypeBoxObjectObject::from_json(object_val.to_owned()),
-                    _ => TypeBoxObjectObject::new(),
-                };
-                let array = match _val_.get("array") {
-                    Some(serde_json::Value::Array(array_val)) => {
-                        let mut array_val_result: Vec<bool> = Vec::new();
-                        for array_val_element in array_val {
-                            array_val_result.push(match Some(array_val_element) {
-                                Some(serde_json::Value::Bool(array_val_element_val)) => {
-                                    array_val_element_val.to_owned()
-                                }
-                                _ => false,
-                            });
-                        }
-                        array_val_result
-                    }
-                    _ => Vec::new(),
-                };
-                let optional_string = match _val_.get("optionalString") {
-                    Some(serde_json::Value::String(optional_string_val)) => {
-                        Some(optional_string_val.to_owned())
-                    }
-                    _ => None,
-                };
-                Self {
-                    string,
-                    boolean,
-                    integer,
-                    number,
-                    enum_field,
-                    object,
-                    array,
-                    optional_string,
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
-        _json_output_.push_str(",\"boolean\":");
-        _json_output_.push_str(&self.boolean.to_string().as_str());
-        _json_output_.push_str(",\"integer\":");
-        _json_output_.push_str(&self.integer.to_string().as_str());
-        _json_output_.push_str(",\"number\":");
-        _json_output_.push_str(&self.number.to_string().as_str());
-        _json_output_.push_str(",\"enumField\":");
-        _json_output_.push_str(format!("\"{}\"", &self.enum_field.serial_value()).as_str());
-        _json_output_.push_str(",\"object\":");
-        _json_output_.push_str(&self.object.to_json_string().as_str());
-        _json_output_.push_str(",\"array\":");
-        _json_output_.push('[');
-        for (_index_, _element_) in self.array.iter().enumerate() {
-            if _index_ != 0 {
-                _json_output_.push(',');
-            }
-            _json_output_.push_str(_element_.to_string().as_str());
-        }
-        _json_output_.push(']');
-        match &self.optional_string {
-            Some(optional_string_val) => {
-                _json_output_.push_str(",\"optionalString\":");
-                _json_output_.push_str(serialize_string(optional_string_val).as_str())
-            }
-            _ => {}
-        };
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("string={}", &self.string));
-        _query_parts_.push(format!("boolean={}", &self.boolean));
-        _query_parts_.push(format!("integer={}", &self.integer));
-        _query_parts_.push(format!("number={}", &self.number));
-        _query_parts_.push(format!("enumField={}", &self.enum_field.serial_value()));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /TypeBoxObject/object.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /TypeBoxObject/array.");
-        match &self.optional_string {
-            Some(optional_string_val) => {
-                _query_parts_.push(format!("optionalString={}", optional_string_val));
-            }
-            _ => {}
-        };
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum TypeBoxObjectEnumField {
-    A,
-    B,
-    C,
-}
-
-impl ArriEnum for TypeBoxObjectEnumField {
-    fn default() -> Self {
-        TypeBoxObjectEnumField::A
-    }
-    fn from_string(input: String) -> Self {
-        match input.as_str() {
-            "A" => Self::A,
-            "B" => Self::B,
-            "C" => Self::C,
-            _ => Self::default(),
-        }
-    }
-    fn serial_value(&self) -> String {
-        match &self {
-            TypeBoxObjectEnumField::A => "A".to_string(),
-            TypeBoxObjectEnumField::B => "B".to_string(),
-            TypeBoxObjectEnumField::C => "C".to_string(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TypeBoxObjectObject {
-    pub string: String,
-}
-
-impl ArriModel for TypeBoxObjectObject {
-    fn new() -> Self {
-        Self {
-            string: "".to_string(),
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let string = match _val_.get("string") {
-                    Some(serde_json::Value::String(string_val)) => string_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                Self { string }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("string={}", &self.string));
         _query_parts_.join("&")
     }
 }

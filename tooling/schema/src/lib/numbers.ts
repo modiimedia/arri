@@ -3,7 +3,7 @@ import {
     type ASchemaOptions,
     type NumberType,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 import {
     int8Max,
@@ -35,7 +35,7 @@ export function number(opts: ASchemaOptions = {}) {
     return float64(opts);
 }
 
-function coerceNumber(input: unknown, options: ValidationData) {
+function coerceNumber(input: unknown, options: ValidationContext) {
     if (typeof input === "string") {
         const parsedInput = Number(input);
         if (Number.isNaN(parsedInput)) {
@@ -158,7 +158,10 @@ export function int64(
             typeof input === "bigint" && input >= int64Min && input <= int64Max
         );
     }
-    function parse(input: unknown, data: ValidationData): bigint | undefined {
+    function parse(
+        input: unknown,
+        data: ValidationContext,
+    ): bigint | undefined {
         if (typeof input === "string" || typeof input === "number") {
             try {
                 const val = BigInt(input);
@@ -201,8 +204,8 @@ export function int64(
                 validate: isType,
                 parse,
                 coerce: parse,
-                serialize(input, data) {
-                    if (data.instancePath.length === 0) {
+                serialize(input, context) {
+                    if (context.instancePath.length === 0) {
                         return input.toString();
                     }
                     return `"${input.toString()}"`;
@@ -222,7 +225,10 @@ export function uint64(
             input <= uint64Max
         );
     }
-    function parse(input: unknown, data: ValidationData): bigint | undefined {
+    function parse(
+        input: unknown,
+        data: ValidationContext,
+    ): bigint | undefined {
         if (typeof input === "string" || typeof input === "number") {
             try {
                 const val = BigInt(input);
@@ -265,8 +271,8 @@ export function uint64(
                 validate: isType,
                 parse,
                 coerce: parse,
-                serialize(input, data) {
-                    if (data.instancePath.length === 0) {
+                serialize(input, context) {
+                    if (context.instancePath.length === 0) {
                         return input.toString();
                     }
                     return `"${input.toString()}"`;
@@ -282,10 +288,10 @@ function validateNumber(input: unknown): input is number {
 function validateInt(input: number, minVal: number, maxValue: number) {
     return Number.isInteger(input) && input >= minVal && input <= maxValue;
 }
-function serializeNumber(input: number, _data: ValidationData): string {
+function serializeNumber(input: number, _data: ValidationContext): string {
     return input.toString();
 }
-function parseNumber(input: unknown, options: ValidationData) {
+function parseNumber(input: unknown, options: ValidationContext) {
     if (options.instancePath.length === 0 && typeof input === "string") {
         const result = Number(input);
         if (Number.isNaN(result)) {

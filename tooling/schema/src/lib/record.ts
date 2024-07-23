@@ -5,7 +5,7 @@ import {
     type InferType,
     isObject,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 import { sanitizeJson } from "./validation";
 
@@ -52,13 +52,13 @@ export function record<TInnerSchema extends ASchema<any>>(
                     }
                     return true;
                 },
-                parse(input, data) {
-                    return parse(schema, input, data, false);
+                parse(input, context) {
+                    return parse(schema, input, context, false);
                 },
                 coerce(input: unknown, data) {
                     return parse(schema, input, data, true);
                 },
-                serialize(input, data) {
+                serialize(input, context) {
                     const strParts: string[] = [];
                     for (const key of Object.keys(input)) {
                         const val = input[key];
@@ -66,14 +66,14 @@ export function record<TInnerSchema extends ASchema<any>>(
                             `"${key}":${schema.metadata[
                                 SCHEMA_METADATA
                             ].serialize(val, {
-                                instancePath: `${data.instancePath}/${key}`,
-                                schemaPath: `${data.schemaPath}/values`,
-                                errors: data.errors,
+                                instancePath: `${context.instancePath}/${key}`,
+                                schemaPath: `${context.schemaPath}/values`,
+                                errors: context.errors,
                             })}`,
                         );
                     }
                     const result = `{${strParts.join(",")}}`;
-                    if (data.instancePath.length === 0) {
+                    if (context.instancePath.length === 0) {
                         return sanitizeJson(result);
                     }
                     return result;
@@ -86,7 +86,7 @@ export function record<TInnerSchema extends ASchema<any>>(
 function parse<T>(
     schema: ASchema<T>,
     input: unknown,
-    data: ValidationData,
+    data: ValidationContext,
     coerce = false,
 ): Record<string, T> | undefined {
     let parsedInput: any = input;
