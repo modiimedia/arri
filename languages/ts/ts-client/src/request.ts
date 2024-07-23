@@ -152,6 +152,9 @@ export const UINT16_MAX = 65535;
 export const INT32_MIN = -2147483648;
 export const INT32_MAX = 2147483647;
 export const UINT32_MAX = 4294967295;
+export const INT64_MIN = BigInt("9223372036854775808");
+export const INT64_MAX = BigInt("9223372036854775807");
+export const UINT64_MAX = BigInt("18446744073709551615");
 
 export function isObject(input: unknown): input is Record<string, unknown> {
     return typeof input === "object" && input !== null;

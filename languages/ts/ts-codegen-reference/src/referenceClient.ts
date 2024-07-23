@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import {
     ArriEnumValidator,
     ArriModelValidator,
@@ -10,12 +12,15 @@ import {
     INT16_MIN,
     INT32_MAX,
     INT32_MIN,
+    INT64_MAX,
+    INT64_MIN,
     isObject,
     serializeString,
     SseOptions,
     UINT8_MAX,
     UINT16_MAX,
     UINT32_MAX,
+    UINT64_MAX,
     WsOptions,
 } from "@arrirpc/client";
 
@@ -101,9 +106,9 @@ export class ExampleClientBooksService {
             headers: this._headers,
             parser: $$Book.fromJsonString,
             serializer: $$BookParams.toJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
+            onOpen: () => options.onOpen(),
+            onClose: () => options.onClose(),
+            onError: (err) => options.onError(err),
             onConnectionError: options.onConnectionError,
             onMessage: options.onMessage,
             clientVersion: "20",
@@ -370,7 +375,11 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             (input.uint32 as number) >= 0 &&
             (input.uint32 as number) <= UINT32_MAX &&
             typeof input.int64 === "bigint" &&
+            input.int64 >= INT64_MIN &&
+            input.int64 <= INT64_MAX &&
             typeof input.uint64 === "bigint" &&
+            input.uint64 >= BigInt(0) &&
+            input.uint64 <= UINT64_MAX &&
             (input.uint64 as bigint) >= BigInt(0) &&
             $$Enumerator.validate(input.enum) &&
             $$NestedObject.validate(input.object) &&
@@ -574,29 +583,29 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         json += '"string":';
         json += serializeString(input.string);
         json += ',"boolean":';
-        json += input.boolean.toString();
+        json += `${input.boolean}`;
         json += ',"timestamp":';
         json += `"${input.timestamp.toISOString()}"`;
         json += ',"float32":';
-        json += input.float32.toString();
+        json += `${input.float32}`;
         json += ',"float64":';
-        json += input.float64.toString();
+        json += `${input.float64}`;
         json += ',"int8":';
-        json += input.int8.toString();
+        json += `${input.int8}`;
         json += ',"uint8":';
-        json += input.uint8.toString();
+        json += `${input.uint8}`;
         json += ',"int16":';
-        json += input.int16.toString();
+        json += `${input.int16}`;
         json += ',"uint16":';
-        json += input.uint16.toString();
+        json += `${input.uint16}`;
         json += ',"int32":';
-        json += input.int32.toString();
+        json += `${input.int32}`;
         json += ',"uint32":';
-        json += input.uint32.toString();
+        json += `${input.uint32}`;
         json += ',"int64":';
-        json += `"${input.int64.toString()}"`;
+        json += `"${input.int64}"`;
         json += ',"uint64":';
-        json += `"${input.uint64.toString()}"`;
+        json += `"${input.uint64}"`;
         json += ',"enum":';
         json += `"${input.enum}"`;
         json += ',"object":';
@@ -952,6 +961,8 @@ export interface ObjectWithOptionalFields {
     uint16?: number;
     int32?: number;
     uint32?: number;
+    int64?: bigint;
+    uint64?: bigint;
     enum?: Enumerator;
     object?: NestedObject;
     array?: boolean[];
@@ -1007,8 +1018,16 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                     input.uint32 >= 0 &&
                     input.uint32 <= UINT32_MAX) ||
                     typeof input.uint32 === "undefined") &&
+                ((typeof input.int64 === "bigint" &&
+                    input.int64 >= INT64_MIN &&
+                    input.int64 <= INT64_MAX) ||
+                    typeof input.int64 === "undefined") &&
+                ((typeof input.uint64 === "bigint" &&
+                    input.uint64 >= BigInt(0) &&
+                    input.uint64 <= UINT64_MAX) ||
+                    typeof input.uint64 === "undefined") &&
                 ($$Enumerator.validate(input.enum) ||
-                    typeof input.enum === "string") &&
+                    typeof input.enum === "undefined") &&
                 ($$NestedObject.validate(input.object) ||
                     typeof input.object === "undefined") &&
                 ((Array.isArray(input.array) &&
@@ -1023,8 +1042,453 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                     typeof input.record === "undefined") &&
                 ($$Discriminator.validate(input.discriminator) ||
                     typeof input.discriminator === "undefined") &&
-                true
+                (true || typeof input.any === "undefined")
             );
+        },
+        fromJson(input): ObjectWithOptionalFields {
+            let _string: string | undefined;
+            if (typeof input.string !== "undefined") {
+                if (typeof input.string === "string") {
+                    _string = input.string;
+                } else {
+                    _string = "";
+                }
+            }
+            let _boolean: boolean | undefined;
+            if (typeof input.boolean !== "undefined") {
+                if (typeof input.boolean === "boolean") {
+                    _boolean = input.boolean;
+                } else {
+                    _boolean = false;
+                }
+            }
+            let _timestamp: Date | undefined;
+            if (typeof input.timestamp !== "undefined") {
+                if (typeof input.timestamp === "string") {
+                    _timestamp = new Date(input.timestamp);
+                } else if (input.timestamp instanceof Date) {
+                    _timestamp = input.timestamp;
+                } else {
+                    _timestamp = new Date();
+                }
+            }
+            let _float32: number | undefined;
+            if (typeof input.float32 !== "undefined") {
+                if (typeof input.float32 === "number") {
+                    _float32 = input.float32;
+                } else {
+                    _float32 = 0;
+                }
+            }
+            let _float64: number | undefined;
+            if (typeof input.float64 !== "undefined") {
+                if (typeof input.float64 === "number") {
+                    _float64 = input.float64;
+                } else {
+                    _float64 = 0;
+                }
+            }
+            let _int8: number | undefined;
+            if (typeof input.int8 !== "undefined") {
+                if (
+                    typeof input.int8 === "number" &&
+                    Number.isInteger(input.int8) &&
+                    input.int8 >= INT8_MIN &&
+                    input.int8 <= INT8_MAX
+                ) {
+                    _int8 = input.int8;
+                } else {
+                    _int8 = 0;
+                }
+            }
+            let _uint8: number | undefined;
+            if (typeof input.uint8 !== "undefined") {
+                if (
+                    typeof input.uint8 === "number" &&
+                    Number.isInteger(input.uint8) &&
+                    input.uint8 >= 0 &&
+                    input.uint8 <= UINT8_MAX
+                ) {
+                    _uint8 = input.uint8;
+                } else {
+                    _uint8 = 0;
+                }
+            }
+            let _int16: number | undefined;
+            if (typeof input.int16 !== "undefined") {
+                if (
+                    typeof input.int16 === "number" &&
+                    Number.isInteger(input.int16) &&
+                    input.int16 >= INT16_MIN &&
+                    input.int16 <= INT16_MAX
+                ) {
+                    _int16 = input.int16;
+                } else {
+                    _int16 = 0;
+                }
+            }
+            let _uint16: number | undefined;
+            if (typeof input.uint16 !== "undefined") {
+                if (
+                    typeof input.uint16 === "number" &&
+                    Number.isInteger(input.uint16) &&
+                    input.uint16 >= 0 &&
+                    input.uint16 <= UINT16_MAX
+                ) {
+                    _uint16 = input.uint16;
+                } else {
+                    _uint16 = 0;
+                }
+            }
+            let _int32: number | undefined;
+            if (typeof input.int32 !== "undefined") {
+                if (
+                    typeof input.int32 === "number" &&
+                    Number.isInteger(input.int32) &&
+                    input.int32 >= INT32_MIN &&
+                    input.int32 <= INT32_MAX
+                ) {
+                    _int32 = input.int32;
+                } else {
+                    _int32 = 0;
+                }
+            }
+            let _uint32: number | undefined;
+            if (typeof input.uint32 !== "undefined") {
+                if (
+                    typeof input.uint32 === "number" &&
+                    Number.isInteger(input.uint32) &&
+                    input.uint32 >= 0 &&
+                    input.uint32 <= UINT32_MAX
+                ) {
+                    _uint32 = input.uint32;
+                } else {
+                    _uint32 = 0;
+                }
+            }
+            let _int64: bigint | undefined;
+            if (typeof input.int64 !== "undefined") {
+                if (typeof input.int64 === "string") {
+                    _int64 = BigInt(input.int64);
+                } else if (typeof input.int64 === "bigint") {
+                    _int64 = input.int64;
+                } else {
+                    _int64 = BigInt(0);
+                }
+            }
+            let _uint64: bigint | undefined;
+            if (typeof input.uint64 !== "undefined") {
+                if (
+                    typeof input.uint64 === "string" &&
+                    BigInt(input.uint64) >= BigInt(0)
+                ) {
+                    _uint64 = BigInt(input.uint64);
+                } else if (
+                    typeof input.uint64 === "bigint" &&
+                    input.uint64 >= BigInt(0)
+                ) {
+                    _uint64 = input.uint64;
+                } else {
+                    _uint64 = BigInt(0);
+                }
+            }
+            let _enum: Enumerator | undefined;
+            if (typeof input.enum !== "undefined") {
+                if (typeof input.enum === "string") {
+                    _enum = $$Enumerator.fromSerialValue(input.enum);
+                } else {
+                    _enum = $$Enumerator.new();
+                }
+            }
+            let _object: NestedObject | undefined;
+            if (typeof input.object !== "undefined") {
+                if (isObject(input.object)) {
+                    _object = $$NestedObject.fromJson(input.object);
+                } else {
+                    _object = $$NestedObject.new();
+                }
+            }
+            let _array: boolean[] | undefined;
+            if (typeof input.array !== "undefined") {
+                if (Array.isArray(input.array)) {
+                    _array = [];
+                    for (const _arrayEl of input.array) {
+                        let _arrayElValue: boolean;
+                        if (typeof _arrayEl === "boolean") {
+                            _arrayElValue = _arrayEl;
+                        } else {
+                            _arrayElValue = false;
+                        }
+                        _array.push(_arrayElValue);
+                    }
+                } else {
+                    _array = [];
+                }
+            }
+            let _record: Record<string, boolean> | undefined;
+            if (typeof input.record !== "undefined") {
+                if (isObject(input.record)) {
+                    _record = {};
+                    for (const [_key, _value] of Object.entries(input.record)) {
+                        let _recordValue: boolean;
+                        if (typeof _value === "boolean") {
+                            _recordValue = _value;
+                        } else {
+                            _recordValue = false;
+                        }
+                        _record[_key] = _recordValue;
+                    }
+                } else {
+                    _record = {};
+                }
+            }
+            let _discriminator: Discriminator | undefined;
+            if (typeof input.discriminator !== "undefined") {
+                if (isObject(input.discriminator)) {
+                    _discriminator = $$Discriminator.fromJson(
+                        input.discriminator,
+                    );
+                } else {
+                    _discriminator = $$Discriminator.new();
+                }
+            }
+            let _any: any | undefined;
+            if (typeof input.any !== "undefined") {
+                _any = input.any;
+            }
+            return {
+                string: _string,
+                boolean: _boolean,
+                timestamp: _timestamp,
+                float32: _float32,
+                float64: _float64,
+                int8: _int8,
+                uint8: _uint8,
+                int16: _int16,
+                uint16: _uint16,
+                int32: _int32,
+                uint32: _uint32,
+                int64: _int64,
+                uint64: _uint64,
+                enum: _enum,
+                object: _object,
+                array: _array,
+                record: _record,
+                discriminator: _discriminator,
+                any: _any,
+            };
+        },
+        fromJsonString(input): ObjectWithOptionalFields {
+            return $$ObjectWithOptionalFields.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = "{";
+            let _hasKey = false;
+            if (typeof input.string !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"string":';
+                json += serializeString(input.string);
+                _hasKey = true;
+            }
+            if (typeof input.boolean !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"boolean":';
+                json += `${input.boolean}`;
+                _hasKey = true;
+            }
+            if (typeof input.timestamp !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"timestamp":';
+                json += `"${input.timestamp.toISOString()}"`;
+                _hasKey = true;
+            }
+            if (typeof input.float32 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"float32":';
+                json += `${input.float32}`;
+                _hasKey = true;
+            }
+            if (typeof input.float64 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"float64":';
+                json += `${input.float64}`;
+                _hasKey = true;
+            }
+            if (typeof input.int8 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"int8":';
+                json += `${input.int8}`;
+                _hasKey = true;
+            }
+            if (typeof input.uint8 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"uint8":';
+                json += `${input.uint8}`;
+                _hasKey = true;
+            }
+            if (typeof input.int16 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"int16":';
+                json += `${input.int16}`;
+                _hasKey = true;
+            }
+            if (typeof input.uint16 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"uint16":';
+                json += `${input.uint16}`;
+                _hasKey = true;
+            }
+            if (typeof input.int32 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"int32":';
+                json += `${input.int32}`;
+                _hasKey = true;
+            }
+            if (typeof input.uint32 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"uint32":';
+                json += `${input.uint32}`;
+                _hasKey = true;
+            }
+            if (typeof input.int64 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"int64":';
+                json += `"${input.int64}"`;
+                _hasKey = true;
+            }
+            if (typeof input.uint64 !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"uint64":';
+                json += `"${input.uint64}"`;
+                _hasKey = true;
+            }
+            if (typeof input.enum !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"enum":';
+                json += `"${input.enum}"`;
+                _hasKey = true;
+            }
+            if (typeof input.object !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"object":';
+                json += $$NestedObject.toJsonString(input.object);
+                _hasKey = true;
+            }
+            if (typeof input.array !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"array":';
+                json += "[";
+                for (let i = 0; i < input.array.length; i++) {
+                    if (i !== 0) {
+                        json += ",";
+                    }
+                    const _element = input.array[i];
+                    json += `${_element}`;
+                }
+                json += "]";
+                _hasKey = true;
+            }
+            if (typeof input.record !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"record":';
+                json += "{";
+                let _recordPropertyCount = 0;
+                for (const [_key, _value] of Object.entries(json)) {
+                    if (_recordPropertyCount !== 0) {
+                        json += ",";
+                    }
+                    json += `"${_key}":`;
+                    json += `${_value}`;
+                    _recordPropertyCount++;
+                }
+                json += "}";
+                _hasKey = true;
+            }
+            if (typeof input.discriminator !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"discriminator":';
+                json += $$Discriminator.toJsonString(input.discriminator);
+                _hasKey = true;
+            }
+            if (typeof input.any !== "undefined") {
+                if (_hasKey) json += ",";
+                json += '"any":';
+                json += JSON.stringify(input.any);
+                _hasKey = true;
+            }
+            json += "}";
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            if (typeof input.string !== "undefined") {
+                queryParts.push(`string=${input.string}`);
+            }
+            if (typeof input.boolean !== "undefined") {
+                queryParts.push(`boolean=${input.boolean}`);
+            }
+            if (typeof input.timestamp !== "undefined") {
+                queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
+            }
+            if (typeof input.float32 !== "undefined") {
+                queryParts.push(`float32=${input.float32}`);
+            }
+            if (typeof input.float64 !== "undefined") {
+                queryParts.push(`float64=${input.float64}`);
+            }
+            if (typeof input.int8 !== "undefined") {
+                queryParts.push(`int8=${input.int8}`);
+            }
+            if (typeof input.uint8 !== "undefined") {
+                queryParts.push(`uint8=${input.uint8}`);
+            }
+            if (typeof input.int16 !== "undefined") {
+                queryParts.push(`int16=${input.int16}`);
+            }
+            if (typeof input.uint16 !== "undefined") {
+                queryParts.push(`uint16=${input.uint16}`);
+            }
+            if (typeof input.int32 !== "undefined") {
+                queryParts.push(`int32=${input.int32}`);
+            }
+            if (typeof input.uint32 !== "undefined") {
+                queryParts.push(`uint32=${input.uint32}`);
+            }
+            if (typeof input.int64 !== "undefined") {
+                queryParts.push(`int64=${input.int64}`);
+            }
+            if (typeof input.uint64 !== "undefined") {
+                queryParts.push(`uint64=${input.uint64}`);
+            }
+            if (typeof input.enum !== "undefined") {
+                queryParts.push(`enum=${input.enum}`);
+            }
+            if (typeof input.object !== "undefined") {
+                console.warn(
+                    "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/object.",
+                );
+            }
+            if (typeof input.array !== "undefined") {
+                console.warn(
+                    "[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithOptionalFields/array.",
+                );
+            }
+            if (typeof input.record !== "undefined") {
+                console.warn(
+                    "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.",
+                );
+            }
+            if (typeof input.discriminator !== "undefined") {
+                console.warn(
+                    "[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/discriminator.",
+                );
+            }
+            if (typeof input.any !== "undefined") {
+                console.warn(
+                    "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithOptionalFields/any.",
+                );
+            }
+            return queryParts.join("&");
         },
     };
 
@@ -1113,9 +1577,13 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                     input.uint32 >= 0 &&
                     input.uint32 <= UINT32_MAX) ||
                     input.uint32 === null) &&
-                (typeof input.int64 === "bigint" || input.int64 === null) &&
+                ((typeof input.int64 === "bigint" &&
+                    input.int64 >= INT64_MIN &&
+                    input.int64 <= INT64_MAX) ||
+                    input.int64 === null) &&
                 ((typeof input.uint64 === "bigint" &&
-                    input.uint64 >= BigInt(0)) ||
+                    input.uint64 >= BigInt(0) &&
+                    input.uint64 <= UINT64_MAX) ||
                     input.uint64 === null) &&
                 ($$Enumerator.validate(input.enum) || input.enum === null) &&
                 ($$NestedObject.validate(input.object) ||
@@ -1365,13 +1833,13 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
             json += `${input.uint32}`;
             json += ',"int64":';
             if (typeof input.int64 === "bigint") {
-                json += `"${input.int64.toString()}"`;
+                json += `"${input.int64}"`;
             } else {
                 json += "null";
             }
             json += ',"uint64":';
             if (typeof input.uint64 === "bigint") {
-                json += `"${input.uint64.toString()}"`;
+                json += `"${input.uint64}"`;
             } else {
                 json += "null";
             }

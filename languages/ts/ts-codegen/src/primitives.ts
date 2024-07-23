@@ -231,8 +231,8 @@ export function tsBigIntFromSchema(
         defaultValue,
         validationTemplate(input) {
             const mainPart = isUnsigned
-                ? `typeof ${input} === 'bigint' && ${input} >= BigInt(0)`
-                : `typeof ${input} === 'bigint'`;
+                ? `typeof ${input} === 'bigint' && ${input} >= BigInt(0) && ${input} <= UINT64_MAX`
+                : `typeof ${input} === 'bigint' && ${input} >= INT64_MIN && ${input} <= INT64_MAX`;
             if (schema.nullable) {
                 return `((${mainPart}) || ${input} === null)`;
             }
@@ -260,12 +260,12 @@ export function tsBigIntFromSchema(
         toJsonTemplate(input, target) {
             if (schema.nullable) {
                 return `if (typeof ${input} === 'bigint') {
-                    ${target} += \`"\${${input}.toString()}"\`
+                    ${target} += \`"\${${input}}"\`
                 } else {
                     ${target} += 'null'; 
                 }`;
             }
-            return `${target} += \`"\${${input}.toString()}"\``;
+            return `${target} += \`"\${${input}}"\``;
         },
         toQueryStringTemplate(input, target, key) {
             return `${target}.push(\`${key}=\${${input}}\`)`;

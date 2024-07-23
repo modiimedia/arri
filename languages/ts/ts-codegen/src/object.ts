@@ -71,11 +71,9 @@ export function tsObjectFromSchema(
         );
         fieldParts.push(`${key}: "${context.discriminatorValue}",`);
         fromJsonParts.push(`let _${key} = "${context.discriminatorValue}"`);
-        toJsonParts.push(
-            `json += \`"${key}":"${context.discriminatorValue}"\``,
-        );
+        toJsonParts.push(`json += '"${key}":"${context.discriminatorValue}"'`);
         toQueryParts.push(
-            `queryParts.push(\`${context.discriminatorKey}=${context.discriminatorValue}\`);`,
+            `queryParts.push('${context.discriminatorKey}=${context.discriminatorValue}');`,
         );
         validationParts.push(
             `input.${key} === '${context.discriminatorValue}'`,
@@ -155,7 +153,7 @@ export function tsObjectFromSchema(
         } else {
             toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
             if (_hasKey) json += ',';
-            json += \`"${key}":\`;
+            json += '"${key}":';
             ${prop.toJsonTemplate(`input.${key}`, "json", key)}
             _hasKey = true;
         }`);
@@ -165,7 +163,7 @@ export function tsObjectFromSchema(
         }`);
         const validationPart = prop.validationTemplate(`input.${fieldName}`);
         validationParts.push(
-            `(typeof input.${fieldName} === 'undefined' || ${validationPart})`,
+            `((${validationPart}) || typeof input.${fieldName} === 'undefined')`,
         );
         constructionParts.push(`${fieldName}: ${tempKey},`);
     }

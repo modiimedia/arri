@@ -17,8 +17,12 @@ export function tsEnumFromSchema(
         );
     const enumName = getTsTypeName(schema, context);
     const prefixedEnumName = `${context.typePrefix}${enumName}`;
-    const typeName = schema.nullable ? `${enumName} | null` : enumName;
-    const defaultValue = schema.nullable ? "null" : `"${schema.enum[0]!}"`;
+    const typeName = schema.nullable
+        ? `${prefixedEnumName} | null`
+        : prefixedEnumName;
+    const defaultValue = schema.nullable
+        ? "null"
+        : `$$${prefixedEnumName}.new()`;
     const result: TsProperty = {
         typeName,
         defaultValue,
