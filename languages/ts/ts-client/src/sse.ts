@@ -84,7 +84,7 @@ export function arriSseRequest<
                 message.event === undefined ||
                 message.event === ""
             ) {
-                options.onMessage?.(opts.parser(message.data));
+                options.onMessage?.(opts.responseFromString(message.data));
                 return;
             }
             if (message.event === "done") {

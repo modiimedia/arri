@@ -96,8 +96,7 @@ export function tsObjectFromSchema(
             discriminatorKey: "",
             discriminatorValue: "",
             versionNumber: context.versionNumber,
-            hasSseProcedure: context.hasSseProcedure,
-            hasWsProcedure: context.hasWsProcedure,
+            usedFeatures: context.usedFeatures,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key));
@@ -137,8 +136,7 @@ export function tsObjectFromSchema(
             discriminatorKey: "",
             discriminatorValue: "",
             versionNumber: context.versionNumber,
-            hasSseProcedure: context.hasSseProcedure,
-            hasWsProcedure: context.hasWsProcedure,
+            usedFeatures: context.usedFeatures,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key));

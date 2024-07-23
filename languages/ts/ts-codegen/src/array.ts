@@ -1,7 +1,7 @@
-import { SchemaFormElements } from "@arrirpc/codegen-utils";
+import { camelCase, SchemaFormElements } from "@arrirpc/codegen-utils";
 
 import { tsTypeFromSchema } from "./_index";
-import { CodegenContext, TsProperty } from "./common";
+import { CodegenContext, TsProperty, validVarName } from "./common";
 
 export function tsArrayFromSchema(
     schema: SchemaFormElements,
@@ -17,8 +17,7 @@ export function tsArrayFromSchema(
         discriminatorKey: "",
         discriminatorValue: "",
         versionNumber: context.versionNumber,
-        hasSseProcedure: context.hasSseProcedure,
-        hasWsProcedure: context.hasWsProcedure,
+        usedFeatures: context.usedFeatures,
     });
     const typeName = `(${innerType.typeName})[]`;
     const defaultValue = schema.nullable ? "null" : "[]";
@@ -49,13 +48,15 @@ export function tsArrayFromSchema(
             }`;
         },
         toJsonTemplate(input, target) {
+            const elVar = `_${camelCase(validVarName(input.split(".").join("_")), { normalize: true })}El`;
+            const elKeyVar = `${elVar}Key`;
             if (schema.nullable) {
                 return `if (${input} !== null) {
                     ${target} += '[';
                     for (let i = 0; i < ${input}.length; i++) {
                         if (i !== 0) ${target} += ',';
-                        const _element = ${input}[i];
-                        ${innerType.toJsonTemplate(`_element`, target, "_elementKey")}
+                        const ${elVar} = ${input}[i];
+                        ${innerType.toJsonTemplate(elVar, target, elKeyVar)}
                     }
                     ${target} += ']';
                 } else {
@@ -65,8 +66,8 @@ export function tsArrayFromSchema(
             return `${target} += '[';
             for (let i = 0; i < ${input}.length; i++) {
                 if (i !== 0) ${target} += ',';
-                const _element = ${input}[i];
-                ${innerType.toJsonTemplate("_element", target, `_elementKey`)}
+                const ${elVar} = ${input}[i];
+                ${innerType.toJsonTemplate(elVar, target, elKeyVar)}
             }
             ${target} += ']';`;
         },

@@ -62,8 +62,7 @@ export function tsTaggedUnionFromSchema(
             discriminatorKey: discriminatorKey,
             discriminatorValue: key,
             versionNumber: context.versionNumber,
-            hasSseProcedure: context.hasSseProcedure,
-            hasWsProcedure: context.hasWsProcedure,
+            usedFeatures: context.usedFeatures,
         });
         subTypes.push({ value: key, data: subType });
     }

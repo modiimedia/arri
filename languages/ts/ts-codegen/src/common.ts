@@ -29,8 +29,10 @@ export interface CodegenContext {
     discriminatorKey: string;
     discriminatorValue: string;
     versionNumber: string;
-    hasSseProcedure: boolean;
-    hasWsProcedure: boolean;
+    usedFeatures: {
+        sse: boolean;
+        ws: boolean;
+    };
 }
 
 export function getJsDocComment(metadata: Schema["metadata"]) {

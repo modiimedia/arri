@@ -17,8 +17,7 @@ export function tsRecordFromSchema(
         discriminatorKey: "",
         discriminatorValue: "",
         versionNumber: context.versionNumber,
-        hasSseProcedure: context.hasSseProcedure,
-        hasWsProcedure: context.hasWsProcedure,
+        usedFeatures: context.usedFeatures,
     });
     const typeName = `Record<string, ${innerType.typeName}>`;
     const defaultValue = schema.nullable ? "null" : "{}";

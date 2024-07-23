@@ -5,10 +5,12 @@ import {
     $$Book,
     $$ObjectWithEveryType,
     $$ObjectWithNullableFields,
+    $$ObjectWithOptionalFields,
     $$RecursiveObject,
     Book,
     ObjectWithEveryType,
     ObjectWithNullableFields,
+    ObjectWithOptionalFields,
     RecursiveObject,
 } from "./referenceClient";
 
@@ -93,6 +95,84 @@ describe("ObjectWithEveryType", () => {
     });
 });
 
+describe("ObjectWithOptionalFields", () => {
+    const allUndefinedTargetValue: ObjectWithOptionalFields = {
+        string: undefined,
+        boolean: undefined,
+        timestamp: undefined,
+        float32: undefined,
+        float64: undefined,
+        int8: undefined,
+        uint8: undefined,
+        int16: undefined,
+        uint16: undefined,
+        int32: undefined,
+        uint32: undefined,
+        int64: undefined,
+        uint64: undefined,
+        enum: undefined,
+        object: undefined,
+        array: undefined,
+        record: undefined,
+        discriminator: undefined,
+        any: undefined,
+    };
+    const noUndefinedTargetValue: ObjectWithOptionalFields = {
+        string: "",
+        boolean: false,
+        timestamp: testDate,
+        float32: 1.5,
+        float64: 1.5,
+        int8: 1,
+        uint8: 1,
+        int16: 10,
+        uint16: 10,
+        int32: 100,
+        uint32: 100,
+        int64: 1000n,
+        uint64: 1000n,
+        enum: "BAZ",
+        object: {
+            id: "1",
+            content: "hello world",
+        },
+        array: [true, false, false],
+        record: {
+            A: true,
+            B: false,
+        },
+        discriminator: {
+            typeName: "C",
+            id: "",
+            name: "",
+            date: testDate,
+        },
+        any: "hello world",
+    };
+    const allUndefinedJson = testFile(
+        "ObjectWithOptionalFields_AllUndefined.json",
+    );
+    const noUndefinedJson = testFile(
+        "ObjectWithOptionalFields_NoUndefined.json",
+    );
+    test("JSON parsing", () => {
+        expect(
+            $$ObjectWithOptionalFields.fromJsonString(allUndefinedJson),
+        ).toStrictEqual(allUndefinedTargetValue);
+        expect(
+            $$ObjectWithOptionalFields.fromJsonString(noUndefinedJson),
+        ).toStrictEqual(noUndefinedTargetValue);
+    });
+    test("JSON output", () => {
+        expect(
+            $$ObjectWithOptionalFields.toJsonString(allUndefinedTargetValue),
+        ).toEqual(allUndefinedJson);
+        expect(
+            $$ObjectWithOptionalFields.toJsonString(noUndefinedTargetValue),
+        ).toEqual(noUndefinedJson);
+    });
+});
+
 describe("ObjectWithNullableFields", () => {
     const allNullTargetValue: ObjectWithNullableFields = {
         string: null,
@@ -160,6 +240,14 @@ describe("ObjectWithNullableFields", () => {
             $$ObjectWithNullableFields.fromJsonString(noNullJsonReference);
         expect(allNullResult).toStrictEqual(allNullTargetValue);
         expect(noNullResult).toStrictEqual(noNullTargetValue);
+    });
+    test("JSON output", () => {
+        expect(
+            $$ObjectWithNullableFields.toJsonString(allNullTargetValue),
+        ).toEqual(allNullJsonReference);
+        expect(
+            $$ObjectWithNullableFields.toJsonString(noNullTargetValue),
+        ).toEqual(noNullJsonReference);
     });
 });
 

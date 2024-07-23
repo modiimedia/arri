@@ -11,7 +11,8 @@ function isBrowser() {
 interface WsControllerOptions<TParams, TResponse> {
     url: string;
     serializer: (input: TParams) => string;
-    parser: (input: string) => TResponse;
+    responseFromJson: (input: Record<string, unknown>) => TResponse;
+    responseFromString: (input: string) => TResponse;
     onMessage?: WsMessageHook<TResponse>;
     onErrorMessage?: WsErrorHook;
     onConnectionError?: WsErrorHook;
@@ -31,7 +32,8 @@ interface ArriWsRequestOptions<TParams = any, TResponse = any> {
     url: string;
     headers?: EventSourcePlusOptions["headers"];
     params?: TParams;
-    parser: (input: string) => TResponse;
+    responseFromJson: (input: Record<string, unknown>) => TResponse;
+    responseFromString: (input: string) => TResponse;
     serializer: (input: TParams) => string;
     onMessage?: WsMessageHook<TResponse>;
     onError?: WsErrorHook;
@@ -72,7 +74,8 @@ export async function arriWsRequest<
     try {
         const controller = new WsController<TParams, TResponse>({
             url,
-            parser: opts.parser,
+            responseFromJson: opts.responseFromJson,
+            responseFromString: opts.responseFromString,
             serializer: opts.serializer ?? ((_) => ""),
             onOpen: opts.onOpen,
             onClose: opts.onClose,
@@ -107,7 +110,7 @@ export class WsController<TParams, TResponse> {
     constructor(opts: WsControllerOptions<TParams, TResponse>) {
         this.url = opts.url;
         this._serializer = opts.serializer;
-        this._parser = opts.parser;
+        this._parser = opts.responseFromString;
         this.onOpen = opts.onOpen;
         this.onClose = opts.onClose;
         this.onErrorMessage = opts.onErrorMessage;

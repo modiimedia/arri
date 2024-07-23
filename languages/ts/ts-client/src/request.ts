@@ -13,7 +13,8 @@ export interface ArriRequestOpts<
     method: HttpMethod;
     headers: EventSourcePlusOptions["headers"];
     params?: TParams;
-    parser: (input: string) => TType;
+    responseFromJson: (input: Record<string, unknown>) => TType;
+    responseFromString: (input: string) => TType;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
@@ -50,7 +51,7 @@ export async function arriRequest<
             body,
             headers,
         });
-        return opts.parser(result);
+        return opts.responseFromJson(result);
     } catch (err) {
         const error = err as any as FetchError;
         if (isArriError(error.data)) {
