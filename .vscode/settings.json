@@ -48,9 +48,9 @@
     "websockets"
   ],
   "rust-analyzer.linkedProjects": [
-    "languages/rust/rust-client/Cargo.toml",
-    "languages/rust/rust-codegen-reference/Cargo.toml",
-    "tests/clients/rust/Cargo.toml"
+    "${workspaceFolder}/languages/rust/rust-client/Cargo.toml",
+    "${workspaceFolder}/languages/rust/rust-codegen-reference/Cargo.toml",
+    "${workspaceFolder}/tests/clients/rust/Cargo.toml"
   ],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"

@@ -840,16 +840,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust"
-version = "0.1.0"
-dependencies = [
- "arri_client",
- "rand",
- "tokio",
- "tokio-util",
-]
-
-[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1089,6 +1079,16 @@ dependencies = [
  "fastrand",
  "rustix",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "test_client_rust"
+version = "0.1.0"
+dependencies = [
+ "arri_client",
+ "rand",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
