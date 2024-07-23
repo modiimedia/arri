@@ -160,8 +160,26 @@ test("can send/receive partial objects", async () => {
     expect(fullObjectResult).toStrictEqual(input);
     const partialInput: ObjectWithEveryOptionalType = {
         string: "",
+        boolean: undefined,
+        timestamp: undefined,
+        float32: undefined,
+        float64: undefined,
+        int8: undefined,
+        uint8: undefined,
         int16: 0,
+        uint16: undefined,
+        int32: undefined,
+        uint32: undefined,
         int64: 0n,
+        uint64: undefined,
+        enumerator: undefined,
+        array: undefined,
+        object: undefined,
+        record: undefined,
+        discriminator: undefined,
+        nestedObject: undefined,
+        nestedArray: undefined,
+        any: undefined,
     };
     const partialObjectResult =
         await client.tests.sendPartialObject(partialInput);
@@ -270,7 +288,7 @@ test("can send/receive recursive unions", async () => {
 test("[SSE] supports server sent events", async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;
-    const controller = client.tests.streamMessages(
+    const controller = await client.tests.streamMessages(
         { channelId: "1" },
         {
             onMessage(msg) {
@@ -306,7 +324,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriErrorInstance | undefined;
-    const controller = client.tests.streamTenEventsThenEnd({
+    const controller = await client.tests.streamTenEventsThenEnd({
         onMessage(_) {
             messageCount++;
         },
@@ -484,6 +502,7 @@ describe("arri adapters", () => {
     test("typebox adapter", async () => {
         const input: TypeBoxObject = {
             string: "hello world",
+            optionalString: undefined,
             boolean: false,
             integer: 100,
             number: 10.5,

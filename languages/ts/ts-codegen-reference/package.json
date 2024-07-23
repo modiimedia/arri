@@ -1,5 +1,5 @@
 {
-  "name": "@arrirpc/codegen-ts",
+  "name": "ts-codegen-reference",
   "version": "0.56.0",
   "type": "module",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
-    "directory": "languages/ts/ts-codegen"
+    "directory": "tooling/ts-codegen-reference"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -22,11 +22,7 @@
     "dist"
   ],
   "dependencies": {
-    "@arrirpc/codegen-utils": "workspace:*",
-    "@arrirpc/schema": "workspace:*",
-    "prettier": "^3.3.3"
-  },
-  "devDependencies": {
     "@arrirpc/client": "workspace:*"
-  }
+  },
+  "devDependencies": {}
 }

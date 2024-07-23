@@ -180,6 +180,12 @@ importers:
         specifier: workspace:*
         version: link:../ts-client
 
+  languages/ts/ts-codegen-reference:
+    dependencies:
+      '@arrirpc/client':
+        specifier: workspace:*
+        version: link:../ts-client
+
   languages/ts/ts-server:
     dependencies:
       '@arrirpc/codegen-dart':
