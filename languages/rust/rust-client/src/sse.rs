@@ -288,7 +288,8 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
     for (index, char) in input.chars().enumerate() {
         match char {
             '\r' => {
-                let is_end = previous_char == Some('\n') || previous_char == Some('\n');
+                let is_end = previous_char == Some('\n') || previous_char == Some('\r');
+                println!("IS_END_OF_MSG: {}", is_end.clone());
                 ignore_next_newline = true;
                 let p_index = if input.chars().next() == Some('\n') {
                     index + 2
@@ -399,6 +400,7 @@ fn parse_sse_line(input: &str) -> ParseSseLineResult {
     ParseSseLineResult::Nothing
 }
 
+#[derive(Debug, Clone, PartialEq)]
 enum ParseSseLineResult {
     Id(String),
     Event(String),
@@ -523,7 +525,7 @@ fn sse_messages_from_string(input: String) -> (Vec<SseMessage>, String) {
 }
 #[cfg(test)]
 mod parsing_and_serialization_tests {
-    use crate::sse::SseMessage;
+    use crate::sse::{sse_message_list_from_string, SseMessage};
 
     use super::sse_messages_from_string;
 
@@ -569,5 +571,52 @@ data: hello world
                 },
             ]
         );
+    }
+
+    fn get_test_data() -> (Vec<String>, Vec<SseMessage>, String) {
+        (
+            vec![
+                "id: 1".to_string(),
+                "data: hello world".to_string(),
+                "".to_string(),
+                "data: hello world".to_string(),
+                "retry: 100".to_string(),
+                "".to_string(),
+                "id: 4".to_string(),
+            ],
+            vec![
+                SseMessage {
+                    id: Some("1".to_string()),
+                    data: "hello world".to_string(),
+                    event: None,
+                    retry: None,
+                },
+                SseMessage {
+                    id: None,
+                    data: "hello world".to_string(),
+                    event: None,
+                    retry: Some(100),
+                },
+            ],
+            "id: 4".to_string(),
+        )
+    }
+
+    #[test]
+    fn sse_message_list_from_string_lf_test() {
+        let (lines, expected_msgs, expected_leftover) = get_test_data();
+        let input = lines.join("\n");
+        let (messages, leftover) = sse_message_list_from_string(input);
+        assert_eq!(messages, expected_msgs);
+        assert_eq!(leftover, expected_leftover);
+    }
+    #[test]
+    fn sse_message_list_from_string_crlf_test() {
+        let (lines, expected_msgs, expected_leftover) = get_test_data();
+        let input = lines.join("\r\n");
+        println!("INPUT: {}", input.clone());
+        let (messages, leftover) = sse_message_list_from_string(input);
+        assert_eq!(messages, expected_msgs);
+        assert_eq!(leftover, expected_leftover);
     }
 }
