@@ -325,6 +325,7 @@ fn sse_message_list_from_string(input: String, debug: bool) -> (Vec<SseMessage>,
                     pending_index = match next_char {
                         Some((next_char_index, next_char_value)) => match next_char_value {
                             '\n' => next_char_index + 1,
+                            '\r' => next_char_index + 1,
                             _ => {
                                 line.push(next_char_value);
                                 next_char_index
@@ -525,5 +526,53 @@ mod parsing_and_serialization_tests {
         let (messages, leftover) = sse_message_list_from_string(input, false);
         assert_eq!(messages, expected_msgs);
         assert_eq!(leftover, expected_leftover);
+    }
+
+    fn get_invalid_msg_data() -> (Vec<String>, Vec<SseMessage>, String) {
+        (
+            vec![
+                "".to_string(),
+                ":".to_string(),
+                "hello world".to_string(),
+                "hi".to_string(),
+                "hi".to_string(),
+                "".to_string(),
+                "data: hello world".to_string(),
+                "".to_string(),
+                ":".to_string(),
+                ":".to_string(),
+                "".to_string(),
+                "data: hello world".to_string(),
+                "".to_string(),
+                "".to_string(),
+                "event: data".to_string(),
+            ],
+            vec![
+                SseMessage {
+                    id: None,
+                    event: None,
+                    data: "hello world".to_string(),
+                    retry: None,
+                },
+                SseMessage {
+                    id: None,
+                    event: None,
+                    data: "hello world".to_string(),
+                    retry: None,
+                },
+            ],
+            "event: data".to_string(),
+        )
+    }
+
+    #[test]
+    fn skip_invalid_lines_test() {
+        let (lines, expected_messages, expected_leftover) = get_invalid_msg_data();
+        let delimiters = vec!["\n", "\r\n", "\r"];
+        for delimiter in delimiters {
+            let (messages, leftover) = sse_message_list_from_string(lines.join(delimiter), false);
+            assert_eq!(messages, expected_messages);
+            assert_eq!(leftover, expected_leftover);
+        }
     }
 }
