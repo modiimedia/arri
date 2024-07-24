@@ -285,11 +285,11 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
     let mut pending_index = 0;
     let mut previous_char: Option<char> = None;
     let mut ignore_next_newline = false;
-    for (index, char) in input.chars().enumerate() {
+    let enumeration = input.chars().enumerate();
+    for (index, char) in enumeration {
         match char {
             '\r' => {
                 let is_end = previous_char == Some('\n') || previous_char == Some('\r');
-                println!("IS_END_OF_MSG: {}", is_end.clone());
                 ignore_next_newline = true;
                 let p_index = if input.chars().next() == Some('\n') {
                     index + 2
@@ -329,10 +329,10 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
                 }
                 line = "".to_string();
             }
-            '\n' => {
+            '\n' => 'newline: {
                 if ignore_next_newline {
                     ignore_next_newline = false;
-                    break;
+                    break 'newline;
                 }
                 let is_end = previous_char == Some('\n');
                 let parsed_result = parse_sse_line(line.as_str());
