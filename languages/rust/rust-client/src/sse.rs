@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-use serde_json::json;
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
@@ -243,7 +242,7 @@ impl<'a> EventSource<'a> {
                         continue;
                     }
                     let msg_text = format!("{}{}", pending_data, text);
-                    let (messages, left_over) = sse_messages_from_string(msg_text);
+                    let (messages, left_over) = sse_message_list_from_string(msg_text, false);
                     pending_data = left_over;
                     for message in messages {
                         let event = message.event.unwrap_or("".to_string());
@@ -275,7 +274,7 @@ impl<'a> EventSource<'a> {
     }
 }
 
-fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
+fn sse_message_list_from_string(input: String, debug: bool) -> (Vec<SseMessage>, String) {
     let mut messages: Vec<SseMessage> = Vec::new();
     let mut id: Option<String> = None;
     let mut event: Option<String> = None;
@@ -285,18 +284,14 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
     let mut pending_index = 0;
     let mut previous_char: Option<char> = None;
     let mut ignore_next_newline = false;
-    let enumeration = input.chars().enumerate();
-    for (index, char) in enumeration {
+    let chars = input.chars();
+    let mut peekable = chars.peekable().enumerate();
+    while let Some((index, char)) = peekable.next() {
         match char {
             '\r' => {
-                let is_end = previous_char == Some('\n') || previous_char == Some('\r');
+                let is_message_end = previous_char == Some('\n') || previous_char == Some('\r');
                 ignore_next_newline = true;
-                let p_index = if input.chars().next() == Some('\n') {
-                    index + 2
-                } else {
-                    index + 1
-                };
-                let parsed_result = parse_sse_line(line.as_str());
+                let parsed_result = parse_sse_line(line.as_str(), debug.clone());
                 match parsed_result {
                     ParseSseLineResult::Id(id_val) => {
                         id = Some(id_val);
@@ -312,22 +307,32 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
                     }
                     ParseSseLineResult::Nothing => {}
                 }
-                if is_end {
+                line = "".to_string();
+                if is_message_end {
                     if data.is_some() {
                         messages.push(SseMessage {
                             id: id.clone(),
                             data: data.unwrap().clone(),
                             event: event.clone(),
                             retry: retry.clone(),
-                        })
-                    }
+                        });
+                    };
                     id = None;
                     data = None;
                     event = None;
                     retry = None;
-                    pending_index = p_index;
+                    let next_char = peekable.next();
+                    pending_index = match next_char {
+                        Some((next_char_index, next_char_value)) => match next_char_value {
+                            '\n' => next_char_index + 1,
+                            _ => {
+                                line.push(next_char_value);
+                                next_char_index
+                            }
+                        },
+                        _ => index,
+                    };
                 }
-                line = "".to_string();
             }
             '\n' => 'newline: {
                 if ignore_next_newline {
@@ -335,7 +340,7 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
                     break 'newline;
                 }
                 let is_end = previous_char == Some('\n');
-                let parsed_result = parse_sse_line(line.as_str());
+                let parsed_result = parse_sse_line(line.as_str(), debug.clone());
                 match parsed_result {
                     ParseSseLineResult::Id(id_val) => {
                         id = Some(id_val);
@@ -350,7 +355,8 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
                         retry = Some(retry_val);
                     }
                     ParseSseLineResult::Nothing => {}
-                }
+                };
+                line = "".to_string();
                 if is_end {
                     if data.is_some() {
                         messages.push(SseMessage {
@@ -358,17 +364,17 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
                             data: data.unwrap().clone(),
                             event: event.clone(),
                             retry: retry.clone(),
-                        })
-                    }
+                        });
+                    };
                     id = None;
                     data = None;
                     event = None;
                     retry = None;
                     pending_index = index + 1;
                 }
-                line = "".to_string();
             }
             _ => {
+                ignore_next_newline = false;
                 line.push(char);
             }
         }
@@ -378,7 +384,10 @@ fn sse_message_list_from_string(input: String) -> (Vec<SseMessage>, String) {
     return (messages, input[pending_index..].to_string());
 }
 
-fn parse_sse_line(input: &str) -> ParseSseLineResult {
+fn parse_sse_line(input: &str, debug: bool) -> ParseSseLineResult {
+    if debug {
+        println!("PARSING_LINE: {:?}", input);
+    }
     if input.starts_with("data:") {
         return ParseSseLineResult::Data(input[5..].trim().to_string());
     };
@@ -419,7 +428,6 @@ pub struct SseMessage {
 
 pub trait SeeMessageMethods {
     fn new() -> Self;
-    fn from_string(input: String) -> Self;
 }
 
 impl SeeMessageMethods for SseMessage {
@@ -429,55 +437,6 @@ impl SeeMessageMethods for SseMessage {
             event: None,
             data: String::from(""),
             retry: None,
-        }
-    }
-    fn from_string(input: String) -> Self {
-        let parts = input.split("\n");
-        let mut id: Option<String> = None;
-        let mut event: Option<String> = None;
-        let mut data = String::from("");
-        let mut retry: Option<i32> = None;
-        for part in parts {
-            let trimmed = part.trim();
-            if trimmed.starts_with("id:") {
-                let sub_str = &trimmed[4..trimmed.len()];
-                id = Some(sub_str.trim().to_string());
-                continue;
-            }
-            if trimmed.starts_with("event:") {
-                let sub_str = &trimmed[6..trimmed.len()];
-                event = Some(sub_str.trim().to_string());
-                continue;
-            }
-            if trimmed.starts_with("data:") {
-                let sub_str = &trimmed[5..trimmed.len()];
-                data = sub_str.trim().to_string();
-                continue;
-            }
-            if trimmed.starts_with("retry:") {
-                let sub_str = &trimmed[6..trimmed.len()];
-                let result = json!(sub_str.trim());
-                match result {
-                    serde_json::Value::Number(val) => {
-                        retry = Some(
-                            i32::try_from(val.as_i64().unwrap_or_default()).unwrap_or_default(),
-                        );
-                    }
-                    serde_json::Value::String(val) => match val.parse::<i32>() {
-                        Ok(int_val) => {
-                            retry = Some(int_val);
-                        }
-                        Err(_) => {}
-                    },
-                    _ => retry = None,
-                }
-            }
-        }
-        Self {
-            id,
-            event,
-            data,
-            retry,
         }
     }
 }
@@ -498,8 +457,10 @@ impl<T: ArriModel> SeeMessageMethods for ParsedSseMessage<T> {
             retry: None,
         }
     }
-    fn from_string(input: String) -> Self {
-        let message = SseMessage::from_string(input);
+}
+
+impl<T: ArriModel> ParsedSseMessage<T> {
+    fn from_sse_message(message: SseMessage) -> Self {
         Self {
             id: message.id,
             event: message.event,
@@ -509,70 +470,9 @@ impl<T: ArriModel> SeeMessageMethods for ParsedSseMessage<T> {
     }
 }
 
-fn sse_messages_from_string(input: String) -> (Vec<SseMessage>, String) {
-    let mut parts = input.split("\n\n").peekable();
-    let mut left_over = "";
-    let mut messages: Vec<SseMessage> = Vec::new();
-    while let Some(part) = parts.next() {
-        if parts.peek().is_none() {
-            left_over = part;
-            continue;
-        }
-        let msg = SseMessage::from_string(part.to_string());
-        messages.push(msg);
-    }
-    (messages, left_over.to_string())
-}
 #[cfg(test)]
 mod parsing_and_serialization_tests {
     use crate::sse::{sse_message_list_from_string, SseMessage};
-
-    use super::sse_messages_from_string;
-
-    #[test]
-    fn sse_messages_from_string_test() {
-        let input = "
-data: hello world
-
-event: message
-data: {\"message\": \"hello world\"}
-
-id: 1
-event: message
-data: hello world again
-retry: 200
-
-data: hello world
-"
-        .to_string();
-        let (messages, left_over) = sse_messages_from_string(input);
-        assert_eq!(messages.len().clone(), 3);
-        assert_eq!(left_over, "data: hello world\n".to_string());
-        assert_eq!(
-            messages.clone(),
-            vec![
-                SseMessage {
-                    id: None,
-                    event: None,
-                    data: "hello world".to_string(),
-                    retry: None,
-                },
-                SseMessage {
-                    id: None,
-                    event: Some("message".to_string()),
-                    data: "{\"message\": \"hello world\"}".to_string(),
-                    retry: None,
-                },
-                SseMessage {
-                    id: Some("1".to_string()),
-                    event: Some("message".to_string()),
-                    data: "hello world again".to_string(),
-                    retry: Some(200)
-                },
-            ]
-        );
-    }
-
     fn get_test_data() -> (Vec<String>, Vec<SseMessage>, String) {
         (
             vec![
@@ -606,7 +506,7 @@ data: hello world
     fn sse_message_list_from_string_lf_test() {
         let (lines, expected_msgs, expected_leftover) = get_test_data();
         let input = lines.join("\n");
-        let (messages, leftover) = sse_message_list_from_string(input);
+        let (messages, leftover) = sse_message_list_from_string(input, false);
         assert_eq!(messages, expected_msgs);
         assert_eq!(leftover, expected_leftover);
     }
@@ -614,8 +514,15 @@ data: hello world
     fn sse_message_list_from_string_crlf_test() {
         let (lines, expected_msgs, expected_leftover) = get_test_data();
         let input = lines.join("\r\n");
-        println!("INPUT: {}", input.clone());
-        let (messages, leftover) = sse_message_list_from_string(input);
+        let (messages, leftover) = sse_message_list_from_string(input, false);
+        assert_eq!(messages, expected_msgs);
+        assert_eq!(leftover, expected_leftover);
+    }
+    #[test]
+    fn sse_message_list_from_string_cr_test() {
+        let (lines, expected_msgs, expected_leftover) = get_test_data();
+        let input = lines.join("\r");
+        let (messages, leftover) = sse_message_list_from_string(input, false);
         assert_eq!(messages, expected_msgs);
         assert_eq!(leftover, expected_leftover);
     }
