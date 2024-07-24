@@ -39,7 +39,7 @@
     "@nx/vite": "19.5.2",
     "@sinclair/typebox": "^0.32.35",
     "@types/lodash": "^4.17.7",
-    "@types/node": "20.14.11",
+    "@types/node": "20.14.12",
     "@vitest/coverage-v8": "1.6.0",
     "@vitest/ui": "1.6.0",
     "benny": "^3.7.1",
@@ -70,5 +70,5 @@
   "nx": {
     "includedScripts": []
   },
-  "packageManager": "pnpm@9.4.0"
+  "packageManager": "pnpm@9.6.0"
 }
