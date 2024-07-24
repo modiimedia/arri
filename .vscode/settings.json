@@ -34,6 +34,7 @@
     "nocheck",
     "ofetch",
     "pathe",
+    "peekable",
     "postversion",
     "pubspec",
     "reqwest",
