@@ -1,10 +1,17 @@
-# Arri RPC Monorepo
+_**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
-Arri is an RPC framework designed for effortless end-to-end type safety across programming languages
+# Arri RPC
 
-This is a work in progress. Things will break.
+Arri is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
-## Official Server Implementations
+## Table of Contents
+
+-   [Server Implementations](#server-implementations)
+-   [Client Generators](#client-generators)
+-   [Other Tooling](#other-tooling)
+-   [Manually Creating An App Definition](#manually-creating-an-app-definition)
+
+## Server Implementations
 
 -   [Typescript](/languages/ts/ts-server/README.md)
 
@@ -38,9 +45,9 @@ Below are the language client generators that are planned to have first party su
 -   [@arrirpc/schema](tooling/schema/README.md) - Arri type builder used to define types that can be generated in multiple languages. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
 -   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
 
-## Creating Schemas For Custom Server Implementations
+## Manually Creating an App Definition
 
-Arri allows you to generate clients for custom server implementations. All you need to do is point the cli to an AppDefinition file. The app definition can be a typescript file, JSON file, or a JSON http endpoint.
+Even though Arri focuses primarily on a code-first approach it allow you to manually create app definitions in the event that you have a server implementation that isn't supported. Once your app definition is created you simply need to point the CLI to the app definition file. This file can be can be a typescript file, JSON file, or a JSON http endpoint.
 
 ```bash
 arri codegen ./AppDefinition.ts

@@ -37,6 +37,7 @@
     "peekable",
     "postversion",
     "pubspec",
+    "Quickstart",
     "reqwest",
     "scule",
     "serde",

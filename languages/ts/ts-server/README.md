@@ -1,4 +1,4 @@
-# Arri RPC
+# Arri RPC - Typescript Server
 
 Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
 
