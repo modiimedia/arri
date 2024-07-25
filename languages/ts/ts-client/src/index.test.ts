@@ -4,10 +4,13 @@ test("error messages", async () => {
     const request = await arriSafeRequest({
         url: "http://thisurldoesntexist.blah",
         method: "get",
-        parser() {},
+        responseFromJson() {},
+        responseFromString() {},
         serializer() {
             return undefined;
         },
+        headers: undefined,
+        clientVersion: "",
     });
     expect(!request.success);
     if (!request.success) {

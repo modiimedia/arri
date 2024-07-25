@@ -1,0 +1,29 @@
+{
+  "name": "ts-codegen-reference",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/ts-codegen-reference/src",
+  "projectType": "application",
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint languages/ts/ts-codegen-reference"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-codegen-reference"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/languages/ts/ts-codegen-reference",
+        "watch": false
+      },
+      "configurations": {
+        "watch": {
+          "command": "vitest watch --passWithNoTests --globals"
+        }
+      }
+    }
+  },
+  "tags": []
+}

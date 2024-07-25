@@ -19,7 +19,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9.4.0
+          version: 9.6.0
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -34,6 +34,7 @@ jobs:
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
       - run: pnpm run build
       - run: pnpm nx affected -t lint
+      - run: pnpm nx affected -t typecheck
   unit-tests:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -54,7 +55,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9.4.0
+          version: 9.6.0
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -89,7 +90,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9.4.0
+          version: 9.6.0
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:

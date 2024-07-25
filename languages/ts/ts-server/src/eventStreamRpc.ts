@@ -15,9 +15,10 @@ import { handleH3Error } from "./errors";
 import { type MiddlewareEvent } from "./middleware";
 import { type RouteOptions } from "./route";
 import {
+    getSchemaValidator,
+    type HttpRpc,
     isRpc,
     isRpcParamSchema,
-    type Rpc,
     type RpcEvent,
     type RpcParamSchema,
     validateRpcRequestInput,
@@ -51,7 +52,7 @@ export function isEventStreamRpc(
 export interface EventStreamRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> extends Omit<Rpc<true, TParams, TResponse>, "handler" | "postHandler"> {
+> extends Omit<HttpRpc<true, TParams, TResponse>, "handler" | "postHandler"> {
     isEventStream: true;
     handler: EventStreamRpcHandler<
         TParams extends RpcParamSchema ? InferType<TParams> : undefined,
@@ -192,14 +193,12 @@ export function registerEventStreamRpc(
     procedure: EventStreamRpc<any, any> & { name: string },
     opts: RouteOptions,
 ) {
-    let responseValidator: undefined | ReturnType<typeof a.compile>;
-    try {
-        responseValidator = procedure.response
-            ? a.compile(procedure.response)
-            : undefined;
-    } catch (err) {
-        console.error("ERROR COMPILING VALIDATOR", err);
-    }
+    const paramValidator = procedure.params
+        ? getSchemaValidator(procedure.name, "params", procedure.params)
+        : undefined;
+    const responseValidator = procedure.response
+        ? getSchemaValidator(procedure.name, "response", procedure.response)
+        : undefined;
     const httpMethod = procedure.method ?? "get";
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
@@ -220,6 +219,7 @@ export function registerEventStreamRpc(
                     event,
                     httpMethod,
                     procedure.params,
+                    paramValidator!,
                 );
             }
             const stream = new EventStreamConnection(event, {

@@ -1,7 +1,6 @@
 import {
-    type AAdaptedObjectSchema,
-    type AAdaptedRecordSchema,
-    type AAdaptedSchema,
+    AObjectSchema,
+    ASchema,
     SCHEMA_METADATA,
     ValidationError,
     type ValueError,
@@ -10,24 +9,17 @@ import {
     OptionalKind,
     type Static,
     type TObject,
-    type TRecord,
-    type TSchema,
+    TSchema,
 } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
-import { jsonSchemaToJtdSchema,type JsonSchemaType } from "json-schema-to-jtd";
+import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-jtd";
 
 export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,
 ): TInput extends TObject
-    ? AAdaptedObjectSchema<Static<TInput>>
-    : TInput extends TRecord
-      ? AAdaptedRecordSchema<
-            Static<TInput> extends Record<string, any>
-                ? Static<TInput>[string]
-                : any
-        >
-      : AAdaptedSchema<Static<TInput>> {
+    ? AObjectSchema<Static<TInput>>
+    : ASchema<Static<TInput>> {
     const schema = jsonSchemaToJtdSchema(input as unknown as JsonSchemaType);
     const compiled = TypeCompiler.Compile<any>(input);
     return {
@@ -36,7 +28,7 @@ export function typeboxAdapter<TInput extends TSchema>(
             id: input.$id ?? input.title,
             description: input.description,
             [SCHEMA_METADATA]: {
-                _isAdaptedSchema: true,
+                _isAdapted: true,
                 output: {} as any as Static<TInput>,
                 optional: input[OptionalKind] === "Optional",
                 parse(val: unknown) {
@@ -65,7 +57,7 @@ export function typeboxAdapter<TInput extends TSchema>(
                 },
             },
         },
-    } satisfies AAdaptedSchema<Static<TInput>> as any;
+    } satisfies ASchema<Static<TInput>> as any;
 }
 
 function typeboxErrorsToArriError(errs: ValueErrorIterator): ValidationError {

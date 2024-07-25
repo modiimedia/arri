@@ -7,54 +7,69 @@
 )]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
-    parsed_arri_request, reqwest, serde_json,
+    parsed_arri_request,
+    reqwest::{self, Request},
+    serde_json::{self, Map},
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel,
+    ArriServerError, EmptyArriModel, InternalArriClientConfig,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
-pub struct TestClient<'a> {
-    config: &'a ArriClientConfig,
-    pub tests: TestClientTestsService<'a>,
-    pub adapters: TestClientAdaptersService<'a>,
-    pub users: TestClientUsersService<'a>,
+#[derive(Clone)]
+pub struct TestClient {
+    _config: InternalArriClientConfig,
+    pub tests: TestClientTestsService,
+    pub users: TestClientUsersService,
 }
 
-impl<'a> ArriClientService<'a> for TestClient<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for TestClient {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-            tests: TestClientTestsService::create(config),
-            adapters: TestClientAdaptersService::create(config),
+            _config: InternalArriClientConfig::from(config.clone()),
+            tests: TestClientTestsService::create(config.clone()),
             users: TestClientUsersService::create(config),
         }
     }
-}
-
-impl TestClient<'_> {}
-
-pub struct TestClientTestsService<'a> {
-    config: &'a ArriClientConfig,
-}
-
-impl<'a> ArriClientService<'a> for TestClientTestsService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
+        *unwrapped_headers = headers.clone();
+        self.tests.update_headers(headers.clone());
+        self.users.update_headers(headers);
     }
 }
 
-impl TestClientTestsService<'_> {
-    pub async fn empty_params_get_request(self: &Self) -> Result<DefaultPayload, ArriServerError> {
+impl TestClient {}
+
+#[derive(Clone)]
+pub struct TestClientTestsService {
+    _config: InternalArriClientConfig,
+}
+
+impl ArriClientService for TestClientTestsService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self {
+            _config: InternalArriClientConfig::from(config),
+        }
+    }
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
+        *unwrapped_headers = headers.clone();
+    }
+}
+
+impl TestClientTestsService {
+    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
+                http_client: &self._config.http_client,
                 url: format!(
                     "{}/rpcs/tests/empty-params-get-request",
-                    &self.config.base_url
+                    &self._config.base_url
                 ),
                 method: reqwest::Method::GET,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             None::<EmptyArriModel>,
@@ -62,16 +77,16 @@ impl TestClientTestsService<'_> {
         )
         .await
     }
-    pub async fn empty_params_post_request(self: &Self) -> Result<DefaultPayload, ArriServerError> {
+    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
+                http_client: &self._config.http_client,
                 url: format!(
                     "{}/rpcs/tests/empty-params-post-request",
-                    &self.config.base_url
+                    &self._config.base_url
                 ),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             None::<EmptyArriModel>,
@@ -80,18 +95,18 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn empty_response_get_request(
-        self: &Self,
+        &self,
         params: DefaultPayload,
     ) -> Result<(), ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
+                http_client: &self._config.http_client,
                 url: format!(
                     "{}/rpcs/tests/empty-response-get-request",
-                    &self.config.base_url
+                    &self._config.base_url
                 ),
                 method: reqwest::Method::GET,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -100,18 +115,18 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn empty_response_post_request(
-        self: &Self,
+        &self,
         params: DefaultPayload,
     ) -> Result<(), ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
+                http_client: &self._config.http_client,
                 url: format!(
                     "{}/rpcs/tests/empty-response-post-request",
-                    &self.config.base_url
+                    &self._config.base_url
                 ),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -121,16 +136,13 @@ impl TestClientTestsService<'_> {
     }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     #[deprecated]
-    pub async fn deprecated_rpc(
-        self: &Self,
-        params: DeprecatedRpcParams,
-    ) -> Result<(), ArriServerError> {
+    pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/tests/deprecated-rpc", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/deprecated-rpc", &self._config.base_url),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -138,13 +150,13 @@ impl TestClientTestsService<'_> {
         )
         .await
     }
-    pub async fn send_error(self: &Self, params: SendErrorParams) -> Result<(), ArriServerError> {
+    pub async fn send_error(&self, params: SendErrorParams) -> Result<(), ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/tests/send-error", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/send-error", &self._config.base_url),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -153,15 +165,15 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn send_object(
-        self: &Self,
+        &self,
         params: ObjectWithEveryType,
     ) -> Result<ObjectWithEveryType, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/tests/send-object", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/send-object", &self._config.base_url),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -170,18 +182,18 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn send_object_with_nullable_fields(
-        self: &Self,
+        &self,
         params: ObjectWithEveryNullableType,
     ) -> Result<ObjectWithEveryNullableType, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
+                http_client: &self._config.http_client,
                 url: format!(
                     "{}/rpcs/tests/send-object-with-nullable-fields",
-                    &self.config.base_url
+                    &self._config.base_url
                 ),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -190,15 +202,15 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn send_partial_object(
-        self: &Self,
+        &self,
         params: ObjectWithEveryOptionalType,
     ) -> Result<ObjectWithEveryOptionalType, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/tests/send-partial-object", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/send-partial-object", &self._config.base_url),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -207,15 +219,18 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn send_recursive_object(
-        self: &Self,
+        &self,
         params: RecursiveObject,
     ) -> Result<RecursiveObject, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/tests/send-recursive-object", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-recursive-object",
+                    &self._config.base_url
+                ),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -224,15 +239,15 @@ impl TestClientTestsService<'_> {
         .await
     }
     pub async fn send_recursive_union(
-        self: &Self,
+        &self,
         params: RecursiveUnion,
     ) -> Result<RecursiveUnion, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/tests/send-recursive-union", &self.config.base_url),
+                http_client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/send-recursive-union", &self._config.base_url),
                 method: reqwest::Method::POST,
-                headers: self.config.headers,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
             },
             Some(params),
@@ -240,49 +255,224 @@ impl TestClientTestsService<'_> {
         )
         .await
     }
-}
-
-pub struct TestClientAdaptersService<'a> {
-    config: &'a ArriClientConfig,
-}
-
-impl<'a> ArriClientService<'a> for TestClientAdaptersService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
-    }
-}
-
-impl TestClientAdaptersService<'_> {
-    pub async fn typebox(
-        self: &Self,
-        params: TypeBoxObject,
-    ) -> Result<TypeBoxObject, ArriServerError> {
-        parsed_arri_request(
-            ArriParsedRequestOptions {
-                http_client: &self.config.http_client,
-                url: format!("{}/rpcs/adapters/typebox", &self.config.base_url),
-                method: reqwest::Method::POST,
-                headers: self.config.headers,
+    pub async fn stream_auto_reconnect<OnEvent>(
+        &self,
+        params: AutoReconnectParams,
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<AutoReconnectResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-auto-reconnect",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
                 client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
             },
             Some(params),
-            |body| return TypeBoxObject::from_json_string(body),
+            on_event,
         )
-        .await
+        .await;
+    }
+    /// This route will always return an error. The client should automatically retry with exponential backoff.
+    pub async fn stream_connection_error_test<OnEvent>(
+        &self,
+        params: StreamConnectionErrorTestParams,
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<StreamConnectionErrorTestResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-connection-error-test",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+    /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+    pub async fn stream_large_objects<OnEvent>(
+        &self,
+
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<StreamLargeObjectsResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/stream-large-objects", &self._config.base_url),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            None::<EmptyArriModel>,
+            on_event,
+        )
+        .await;
+    }
+    pub async fn stream_messages<OnEvent>(
+        &self,
+        params: ChatMessageParams,
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<ChatMessage>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!("{}/rpcs/tests/stream-messages", &self._config.base_url),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+    pub async fn stream_retry_with_new_credentials<OnEvent>(
+        &self,
+
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<TestsStreamRetryWithNewCredentialsResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-retry-with-new-credentials",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            None::<EmptyArriModel>,
+            on_event,
+        )
+        .await;
+    }
+    /// When the client receives the 'done' event, it should close the connection and NOT reconnect
+    pub async fn stream_ten_events_then_end<OnEvent>(
+        &self,
+
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<ChatMessage>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/stream-ten-events-then-end",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            None::<EmptyArriModel>,
+            on_event,
+        )
+        .await;
     }
 }
 
-pub struct TestClientUsersService<'a> {
-    config: &'a ArriClientConfig,
+#[derive(Clone)]
+pub struct TestClientUsersService {
+    _config: InternalArriClientConfig,
 }
 
-impl<'a> ArriClientService<'a> for TestClientUsersService<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
-        Self { config: &config }
+impl ArriClientService for TestClientUsersService {
+    fn create(config: ArriClientConfig) -> Self {
+        Self {
+            _config: InternalArriClientConfig::from(config),
+        }
+    }
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+        let mut unwrapped_headers = self._config.headers.write().unwrap();
+        *unwrapped_headers = headers.clone();
     }
 }
 
-impl TestClientUsersService<'_> {}
+impl TestClientUsersService {
+    pub async fn watch_user<OnEvent>(
+        &self,
+        params: UsersWatchUserParams,
+        on_event: &mut OnEvent,
+        max_retry_count: Option<u64>,
+        max_retry_interval: Option<u64>,
+    ) where
+        OnEvent: FnMut(SseEvent<UsersWatchUserResponse>, &mut SseController)
+            + std::marker::Send
+            + std::marker::Sync,
+    {
+        parsed_arri_sse_request(
+            ArriParsedSseRequestOptions {
+                client: &self._config.http_client,
+                url: format!("{}/rpcs/users/watch-user", &self._config.base_url),
+                method: reqwest::Method::GET,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+                max_retry_count,
+                max_retry_interval,
+            },
+            Some(params),
+            on_event,
+        )
+        .await;
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ManuallyAddedModel {
@@ -368,230 +558,6 @@ impl ArriModel for DefaultPayload {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("message={}", &self.message));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TypeBoxObject {
-    pub string: String,
-    pub boolean: bool,
-    pub integer: i32,
-    pub number: f64,
-    pub enum_field: TypeBoxObjectEnumField,
-    pub object: TypeBoxObjectObject,
-    pub array: Vec<bool>,
-    pub optional_string: Option<String>,
-}
-
-impl ArriModel for TypeBoxObject {
-    fn new() -> Self {
-        Self {
-            string: "".to_string(),
-            boolean: false,
-            integer: 0,
-            number: 0.0,
-            enum_field: TypeBoxObjectEnumField::default(),
-            object: TypeBoxObjectObject::new(),
-            array: Vec::new(),
-            optional_string: None,
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let string = match _val_.get("string") {
-                    Some(serde_json::Value::String(string_val)) => string_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                let boolean = match _val_.get("boolean") {
-                    Some(serde_json::Value::Bool(boolean_val)) => boolean_val.to_owned(),
-                    _ => false,
-                };
-                let integer = match _val_.get("integer") {
-                    Some(serde_json::Value::Number(integer_val)) => {
-                        i32::try_from(integer_val.as_i64().unwrap_or(0)).unwrap_or(0)
-                    }
-                    _ => 0,
-                };
-                let number = match _val_.get("number") {
-                    Some(serde_json::Value::Number(number_val)) => {
-                        number_val.as_f64().unwrap_or(0.0)
-                    }
-                    _ => 0.0,
-                };
-                let enum_field = match _val_.get("enumField") {
-                    Some(serde_json::Value::String(enum_field_val)) => {
-                        TypeBoxObjectEnumField::from_string(enum_field_val.to_owned())
-                    }
-                    _ => TypeBoxObjectEnumField::default(),
-                };
-                let object = match _val_.get("object") {
-                    Some(object_val) => TypeBoxObjectObject::from_json(object_val.to_owned()),
-                    _ => TypeBoxObjectObject::new(),
-                };
-                let array = match _val_.get("array") {
-                    Some(serde_json::Value::Array(array_val)) => {
-                        let mut array_val_result: Vec<bool> = Vec::new();
-                        for array_val_element in array_val {
-                            array_val_result.push(match Some(array_val_element) {
-                                Some(serde_json::Value::Bool(array_val_element_val)) => {
-                                    array_val_element_val.to_owned()
-                                }
-                                _ => false,
-                            });
-                        }
-                        array_val_result
-                    }
-                    _ => Vec::new(),
-                };
-                let optional_string = match _val_.get("optionalString") {
-                    Some(serde_json::Value::String(optional_string_val)) => {
-                        Some(optional_string_val.to_owned())
-                    }
-                    _ => None,
-                };
-                Self {
-                    string,
-                    boolean,
-                    integer,
-                    number,
-                    enum_field,
-                    object,
-                    array,
-                    optional_string,
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
-        _json_output_.push_str(",\"boolean\":");
-        _json_output_.push_str(&self.boolean.to_string().as_str());
-        _json_output_.push_str(",\"integer\":");
-        _json_output_.push_str(&self.integer.to_string().as_str());
-        _json_output_.push_str(",\"number\":");
-        _json_output_.push_str(&self.number.to_string().as_str());
-        _json_output_.push_str(",\"enumField\":");
-        _json_output_.push_str(format!("\"{}\"", &self.enum_field.serial_value()).as_str());
-        _json_output_.push_str(",\"object\":");
-        _json_output_.push_str(&self.object.to_json_string().as_str());
-        _json_output_.push_str(",\"array\":");
-        _json_output_.push('[');
-        for (_index_, _element_) in self.array.iter().enumerate() {
-            if _index_ != 0 {
-                _json_output_.push(',');
-            }
-            _json_output_.push_str(_element_.to_string().as_str());
-        }
-        _json_output_.push(']');
-        match &self.optional_string {
-            Some(optional_string_val) => {
-                _json_output_.push_str(",\"optionalString\":");
-                _json_output_.push_str(serialize_string(optional_string_val).as_str())
-            }
-            _ => {}
-        };
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("string={}", &self.string));
-        _query_parts_.push(format!("boolean={}", &self.boolean));
-        _query_parts_.push(format!("integer={}", &self.integer));
-        _query_parts_.push(format!("number={}", &self.number));
-        _query_parts_.push(format!("enumField={}", &self.enum_field.serial_value()));
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /TypeBoxObject/object.");
-        println!("[WARNING] cannot serialize arrays to query params. Skipping field at /TypeBoxObject/array.");
-        match &self.optional_string {
-            Some(optional_string_val) => {
-                _query_parts_.push(format!("optionalString={}", optional_string_val));
-            }
-            _ => {}
-        };
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum TypeBoxObjectEnumField {
-    A,
-    B,
-    C,
-}
-
-impl ArriEnum for TypeBoxObjectEnumField {
-    fn default() -> Self {
-        TypeBoxObjectEnumField::A
-    }
-    fn from_string(input: String) -> Self {
-        match input.as_str() {
-            "A" => Self::A,
-            "B" => Self::B,
-            "C" => Self::C,
-            _ => Self::default(),
-        }
-    }
-    fn serial_value(&self) -> String {
-        match &self {
-            TypeBoxObjectEnumField::A => "A".to_string(),
-            TypeBoxObjectEnumField::B => "B".to_string(),
-            TypeBoxObjectEnumField::C => "C".to_string(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TypeBoxObjectObject {
-    pub string: String,
-}
-
-impl ArriModel for TypeBoxObjectObject {
-    fn new() -> Self {
-        Self {
-            string: "".to_string(),
-        }
-    }
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let string = match _val_.get("string") {
-                    Some(serde_json::Value::String(string_val)) => string_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                Self { string }
-            }
-            _ => Self::new(),
-        }
-    }
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-
-        _json_output_.push_str("\"string\":");
-        _json_output_.push_str(serialize_string(&self.string).as_str());
-        _json_output_.push('}');
-        _json_output_
-    }
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        _query_parts_.push(format!("string={}", &self.string));
         _query_parts_.join("&")
     }
 }
