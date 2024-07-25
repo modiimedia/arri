@@ -1,43 +1,44 @@
-import { type H3EventContext } from "h3";
-
 import { type ExtractParams } from "./middleware";
 
-export type ArriEventContext = Record<string, any>;
+export interface ArriEventContext extends Record<string, unknown> {}
 
-export interface RpcEventContext<TParams = undefined>
-    extends ArriEventContext,
-        Omit<H3EventContext, "params"> {
+export type RpcEventContext<TParams = undefined> = ArriEventContext & {
     rpcName: string;
     params: TParams;
-}
+};
 
-export interface RpcPostEventContext<TParams = undefined, TResponse = undefined>
-    extends RpcEventContext<TParams> {
+export type RpcPostEventContext<
+    TParams = undefined,
+    TResponse = undefined,
+> = RpcEventContext<TParams> & {
     response: TResponse;
-}
+};
 
-export interface RouteEventContext<
+export type RouteEventContext<
     TPath extends string,
     TQuery extends Record<any, any> = any,
     TBody = any,
-> extends ArriEventContext,
-        H3EventContext {
+> = ArriEventContext & {
     params: ExtractParams<TPath>;
     query: TQuery;
     body: TBody;
-}
+};
 
-export interface RoutePostEventContext<
+export type RoutePostEventContext<
     TPath extends string,
     TQuery extends Record<any, any> = any,
     TBody = any,
     TResponse = any,
-> extends RouteEventContext<TPath, TQuery, TBody> {
+> = RouteEventContext<TPath, TQuery, TBody> & {
     response: TResponse;
-}
+};
 
-export interface MiddlewareEventContext
-    extends ArriEventContext,
-        H3EventContext {
+export type MiddlewareEventContext = ArriEventContext & {
     rpcName?: string;
-}
+};
+
+export type RequestHookContext = ArriEventContext & {
+    rpcName?: string;
+    params?: Record<string, unknown>;
+    response?: unknown;
+};

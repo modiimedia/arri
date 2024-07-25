@@ -9,7 +9,7 @@ import {
     isObject,
     type ResolveObject,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 import { optional } from "./modifiers";
 
@@ -74,30 +74,30 @@ export function object<
             isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies InferObjectOutput<TInput>,
-                parse(input, data) {
+                parse(input, context) {
                     return parseObjectSchema(
                         schema as AObjectSchema,
                         input,
-                        data,
+                        context,
                         false,
                     );
                 },
-                coerce(input: unknown, data) {
+                coerce(input: unknown, context) {
                     return parseObjectSchema(
                         schema as AObjectSchema,
                         input,
-                        data,
+                        context,
                         true,
                     );
                 },
                 validate(input) {
                     return validateObjectSchema(schema as AObjectSchema, input);
                 },
-                serialize(input, data) {
+                serialize(input, context) {
                     return serializeObject(
                         schema as AObjectSchema,
                         input,
-                        data,
+                        context,
                     );
                 },
             },
@@ -109,7 +109,7 @@ export function object<
 export function parseObjectSchema<T>(
     schema: AObjectSchema<T>,
     input: unknown,
-    data: ValidationData,
+    data: ValidationContext,
     coerce = false,
 ): T | undefined {
     let parsedInput: any = input;
@@ -284,17 +284,27 @@ export function pick<
             isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: {} as any satisfies Pick<InferType<TSchema>, TKeys>,
-                parse: (input, data) => {
-                    return parseObjectSchema(schema as any, input, data, true);
+                parse: (input, context) => {
+                    return parseObjectSchema(
+                        schema as any,
+                        input,
+                        context,
+                        true,
+                    );
                 },
-                coerce(input, data) {
-                    return parseObjectSchema(schema as any, input, data, false);
+                coerce(input, context) {
+                    return parseObjectSchema(
+                        schema as any,
+                        input,
+                        context,
+                        false,
+                    );
                 },
                 validate(input) {
                     return validateObjectSchema(schema as any, input);
                 },
-                serialize(input, data) {
-                    return serializeObject(schema as any, input, data);
+                serialize(input, context) {
+                    return serializeObject(schema as any, input, context);
                 },
             },
         },
@@ -364,11 +374,16 @@ export function omit<
                 parse(input: unknown, data) {
                     return parseObjectSchema(schema as any, input, data, false);
                 },
-                serialize(input, data) {
-                    return serializeObject(schema as any, input, data);
+                serialize(input, context) {
+                    return serializeObject(schema as any, input, context);
                 },
-                coerce(input, data) {
-                    return parseObjectSchema(schema as any, input, data, true);
+                coerce(input, context) {
+                    return parseObjectSchema(
+                        schema as any,
+                        input,
+                        context,
+                        true,
+                    );
                 },
             },
         },
@@ -378,7 +393,7 @@ export function omit<
 export function serializeObject(
     schema: AObjectSchema,
     input: any,
-    data: ValidationData,
+    data: ValidationContext,
 ) {
     const strParts: string[] = [];
     if (data.discriminatorKey && data.discriminatorValue) {
@@ -450,15 +465,15 @@ export function extend<
         description: options.description,
         [SCHEMA_METADATA]: {
             output: {} as any as InferType<TBaseSchema> & InferType<TSchema>,
-            parse(input: unknown, data) {
-                return parseObjectSchema(schema as any, input, data, false);
+            parse(input: unknown, context) {
+                return parseObjectSchema(schema as any, input, context, false);
             },
-            coerce(input: unknown, data) {
-                return parseObjectSchema(schema as any, input, data, true);
+            coerce(input: unknown, context) {
+                return parseObjectSchema(schema as any, input, context, true);
             },
             validate: isType,
-            serialize(input, data) {
-                return serializeObject(schema as any, input, data);
+            serialize(input, context) {
+                return serializeObject(schema as any, input, context);
             },
         },
     };
@@ -502,14 +517,24 @@ export function partial<
             validate(input): input is Partial<InferType<TSchema>> {
                 return validateObjectSchema(newSchema as any, input);
             },
-            parse(input, data) {
-                return parseObjectSchema(newSchema as any, input, data, false);
+            parse(input, context) {
+                return parseObjectSchema(
+                    newSchema as any,
+                    input,
+                    context,
+                    false,
+                );
             },
-            coerce(input, data) {
-                return parseObjectSchema(newSchema as any, input, data, true);
+            coerce(input, context) {
+                return parseObjectSchema(
+                    newSchema as any,
+                    input,
+                    context,
+                    true,
+                );
             },
-            serialize(input, data) {
-                return serializeObject(schema, input, data);
+            serialize(input, context) {
+                return serializeObject(schema, input, context);
             },
         },
     };

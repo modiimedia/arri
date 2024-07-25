@@ -34,23 +34,11 @@ dependencies = [
 
 [[package]]
 name = "arri_client"
-version = "0.54.0"
+version = "0.57.1"
 dependencies = [
- "async-trait",
  "chrono",
  "reqwest",
  "serde_json",
-]
-
-[[package]]
-name = "async-trait"
-version = "0.1.77"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c980ee35e870bd1a4d2c8294d4c04d0499e67bca1e4b5cefcc693c2fa00caea9"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

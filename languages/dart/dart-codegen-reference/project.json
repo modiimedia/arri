@@ -20,7 +20,7 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "inputs": ["{projectRoot}/lib/**/*"],
+      "inputs": ["{projectRoot}/lib/**/*.dart"],
       "options": {
         "command": "dart test ./lib/reference_client_test.dart --reporter=expanded --chain-stack-traces",
         "cwd": "languages/dart/dart-codegen-reference"

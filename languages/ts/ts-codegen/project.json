@@ -34,6 +34,13 @@
         "reportsDirectory": "../../coverage/languages/ts/ts-codegen"
       }
     },
+    "show-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vite preview --outDir .temp/test-results",
+        "cwd": "languages/ts/ts-codegen"
+      }
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

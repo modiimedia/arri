@@ -152,35 +152,51 @@ use arri_client::{
     utils::{serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 ${modelParts.join("\n\n")}`;
     }
     const clientName = validRustName(context.clientName);
-    return `#![allow(dead_code, unused_imports, unused_variables, unconditional_recursion, deprecated)]
+    const paramSuffix = subServices.length > 0 ? ".clone()" : "";
+    return `#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unconditional_recursion,
+    deprecated
+)]
 use arri_client::{
     chrono::{DateTime, FixedOffset},
-    parsed_arri_request, reqwest, serde_json,
+    parsed_arri_request,
+    reqwest::{self, Request},
+    serde_json::{self, Map},
+    sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel,
+    ArriServerError, EmptyArriModel, InternalArriClientConfig,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
-pub struct ${clientName}<'a> {
-    config: &'a ArriClientConfig,
-${subServices.map((service) => `    pub ${service.key}: ${service.name}<'a>,`).join("\n")}
+#[derive(Clone)]
+pub struct ${clientName} {
+    _config: InternalArriClientConfig,
+${subServices.map((service) => `    pub ${service.key}: ${service.name},`).join("\n")}
 }
 
-impl<'a> ArriClientService<'a> for ${clientName}<'a> {
-    fn create(config: &'a ArriClientConfig) -> Self {
+impl ArriClientService for ${clientName} {
+    fn create(config: ArriClientConfig) -> Self {
         Self {
-            config: &config,
-${subServices.map((service) => `            ${service.key}: ${service.name}::create(config),`).join("\n")}
+            _config: InternalArriClientConfig::from(config${paramSuffix}),
+${subServices.map((service, index) => `            ${service.key}: ${service.name}::create(config${index === subServices.length - 1 ? "" : ".clone()"}),`).join("\n")}
         }
+    }
+    fn update_headers(&self, headers: HashMap<&'static str, String>) {
+       let mut unwrapped_headers = self._config.headers.write().unwrap();
+        *unwrapped_headers = headers.clone();
+${subServices.map((service, index) => `        self.${service.key}.update_headers(headers${index === subServices.length - 1 ? "" : ".clone()"});`).join("\n")}
     }
 }
 
-impl ${clientName}<'_> {
+impl ${clientName} {
 ${rpcParts.join("\n")}
 }
 

@@ -4,6 +4,7 @@
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
     "@faker-js/faker": "^8.4.1",
+    "@sinclair/typebox": "^0.32.35",
     "arri": "workspace:*"
   },
   "scripts": {
@@ -16,7 +17,6 @@
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
-    "@types/eslint": "^8.56.10",
     "arri": "workspace:*"
   }
 }

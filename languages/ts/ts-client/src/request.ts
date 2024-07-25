@@ -1,3 +1,4 @@
+import { serializeSmallString } from "@arrirpc/schema";
 import { EventSourcePlusOptions, type HttpMethod } from "event-source-plus";
 import { FetchError, ofetch } from "ofetch";
 
@@ -10,13 +11,14 @@ export interface ArriRequestOpts<
 > {
     url: string;
     method: HttpMethod;
-    headers?: EventSourcePlusOptions["headers"];
+    headers: EventSourcePlusOptions["headers"];
     params?: TParams;
-    parser: (input: unknown) => TType;
+    responseFromJson: (input: Record<string, unknown>) => TType;
+    responseFromString: (input: string) => TType;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
-    clientVersion?: string;
+    clientVersion: string;
 }
 
 export async function arriRequest<
@@ -30,12 +32,7 @@ export async function arriRequest<
         case "get":
         case "head":
             if (opts.params && typeof opts.params === "object") {
-                const urlParts: string[] = [];
-                Object.keys(opts.params).forEach((key) => {
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    urlParts.push(`${key}=${(opts.params as any)[key]}`);
-                });
-                url = `${opts.url}?${urlParts.join("&")}`;
+                url = `${opts.url}?${opts.serializer(opts.params)}`;
             }
             break;
         default:
@@ -54,7 +51,7 @@ export async function arriRequest<
             body,
             headers,
         });
-        return opts.parser(result);
+        return opts.responseFromJson(result);
     } catch (err) {
         const error = err as any as FetchError;
         if (isArriError(error.data)) {
@@ -118,3 +115,48 @@ export type SafeResponse<T> =
           value: T;
       }
     | { success: false; error: ArriErrorInstance };
+
+export interface ArriModelValidator<T> {
+    new: () => T;
+    validate: (input: unknown) => input is T;
+    fromJson: (input: Record<string, unknown>) => T;
+    fromJsonString: (input: string) => T;
+    toJsonString: (input: T) => string;
+    toUrlQueryString: (input: T) => string;
+}
+export interface ArriEnumValidator<T> {
+    new: () => T;
+    values: readonly T[];
+    validate: (input: unknown) => input is T;
+    fromSerialValue: (input: string) => T;
+}
+const STR_ESCAPE =
+    // eslint-disable-next-line no-control-regex
+    /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+
+export function serializeString(input: string): string {
+    if (input.length < 42) {
+        return serializeSmallString(input);
+    }
+    if (input.length < 5000 && !STR_ESCAPE.test(input)) {
+        return `"${input}"`;
+    }
+    return JSON.stringify(input);
+}
+
+export const INT8_MIN = -128;
+export const INT8_MAX = 127;
+export const UINT8_MAX = 255;
+export const INT16_MIN = -32768;
+export const INT16_MAX = 32767;
+export const UINT16_MAX = 65535;
+export const INT32_MIN = -2147483648;
+export const INT32_MAX = 2147483647;
+export const UINT32_MAX = 4294967295;
+export const INT64_MIN = BigInt("9223372036854775808");
+export const INT64_MAX = BigInt("9223372036854775807");
+export const UINT64_MAX = BigInt("18446744073709551615");
+
+export function isObject(input: unknown): input is Record<string, unknown> {
+    return typeof input === "object" && input !== null;
+}

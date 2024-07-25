@@ -11,8 +11,10 @@ import {
     type AObjectSchema,
     type ASchema,
     type InferType,
+    isAdaptedSchema,
     isADiscriminatorSchema,
     isAObjectSchema,
+    validatorFromAdaptedSchema,
 } from "@arrirpc/schema";
 import {
     eventHandler,
@@ -26,7 +28,7 @@ import {
 } from "h3";
 import { kebabCase, pascalCase } from "scule";
 
-import { type RpcEventContext,type RpcPostEventContext } from "./context";
+import { type RpcEventContext, type RpcPostEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
 import {
     type EventStreamRpc,
@@ -44,15 +46,23 @@ export function isRpcParamSchema(input: unknown): input is RpcParamSchema {
     return isAObjectSchema(input) || isADiscriminatorSchema(input);
 }
 
-export interface NamedRpc<
+export interface NamedHttpRpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
-> extends Rpc<TIsEventStream, TParams, TResponse> {
+> extends HttpRpc<TIsEventStream, TParams, TResponse> {
     name: string;
 }
 
-export interface Rpc<
+export type Rpc<
+    TIsEventStream extends boolean = false,
+    TParams extends RpcParamSchema | undefined = undefined,
+    TResponse extends RpcParamSchema | undefined = undefined,
+> =
+    | HttpRpc<TIsEventStream, TParams, TResponse>
+    | WebsocketRpc<TParams, TResponse>;
+
+export interface HttpRpc<
     TIsEventStream extends boolean = false,
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined = undefined,
@@ -87,10 +97,6 @@ export interface Rpc<
                   : undefined
           >;
 }
-export type HttpRpc<
-    TParams extends RpcParamSchema | undefined,
-    TResponse extends RpcParamSchema | undefined,
-> = Omit<Rpc<false, TParams, TResponse>, "isEventStream">;
 
 export interface RpcEvent<TParams = undefined>
     extends Omit<H3Event, "context"> {
@@ -112,7 +118,7 @@ export type RpcPostHandler<TParams, TResponse> = (
     event: RpcPostEvent<TParams, TResponse>,
 ) => any;
 
-export function isRpc(input: unknown): input is Rpc<any, any> {
+export function isRpc(input: unknown): input is HttpRpc<any, any> {
     return (
         typeof input === "object" &&
         input !== null &&
@@ -127,8 +133,11 @@ export function defineRpc<
     TParams extends RpcParamSchema | undefined = undefined,
     TResponse extends RpcParamSchema | undefined | never = undefined,
 >(
-    config: Omit<HttpRpc<TParams, TResponse>, "transport">,
-): Rpc<false, TParams, TResponse> {
+    config: Omit<
+        HttpRpc<false, TParams, TResponse>,
+        "transport" | "isEventStream"
+    >,
+): HttpRpc<false, TParams, TResponse> {
     (config as any).transport = "http";
     return config as any;
 }
@@ -136,7 +145,7 @@ export function defineRpc<
 export function createHttpRpcDefinition(
     rpcName: string,
     httpPath: string,
-    procedure: Rpc<any, any, any>,
+    procedure: HttpRpc<any, any, any>,
 ): HttpRpcDefinition {
     let method: RpcHttpMethod;
     if (procedure.isEventStream === true) {
@@ -172,7 +181,7 @@ export function getRpcPath(rpcName: string, prefix = ""): string {
 
 export function getRpcParamName(
     rpcName: string,
-    procedure: Rpc<any, any, any> | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any, any> | WebsocketRpc<any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.params)) {
         return undefined;
@@ -190,7 +199,7 @@ export function getRpcParamName(
 
 export function getRpcResponseName(
     rpcName: string,
-    procedure: Rpc<any, any, any> | WebsocketRpc<any, any>,
+    procedure: HttpRpc<any, any, any> | WebsocketRpc<any, any>,
 ): string | undefined {
     if (!isRpcParamSchema(procedure.response)) {
         return undefined;
@@ -209,7 +218,7 @@ export function getRpcResponseName(
 function getRpcResponseDefinition(
     rpcName: string,
     procedure:
-        | Rpc<any, any>
+        | HttpRpc<any, any>
         | EventStreamRpc<any, any>
         | WebsocketRpc<any, any>,
 ): RpcDefinition["response"] {
@@ -226,17 +235,15 @@ function getRpcResponseDefinition(
 export function registerRpc(
     router: Router,
     path: string,
-    procedure: NamedRpc<any, any, any>,
+    procedure: NamedHttpRpc<any, any, any>,
     opts: RouteOptions,
 ) {
-    let responseValidator: undefined | ReturnType<typeof a.compile>;
-    try {
-        responseValidator = procedure.response
-            ? a.compile(procedure.response)
-            : undefined;
-    } catch (err) {
-        console.error("ERROR COMPILING VALIDATOR", err);
-    }
+    const paramValidator = procedure.params
+        ? getSchemaValidator(procedure.name, "params", procedure.params)
+        : undefined;
+    const responseValidator = procedure.response
+        ? getSchemaValidator(procedure.name, "response", procedure.response)
+        : undefined;
     const httpMethod = procedure.method ?? "post";
     const handler = eventHandler(async (event: MiddlewareEvent) => {
         event.context.rpcName = procedure.name;
@@ -257,6 +264,7 @@ export function registerRpc(
                     event,
                     httpMethod,
                     procedure.params,
+                    paramValidator!,
                 );
             }
 
@@ -328,6 +336,7 @@ export async function validateRpcRequestInput(
     event: H3Event,
     httpMethod: RpcHttpMethod,
     schema: ASchema,
+    validator: ReturnType<typeof a.compile>,
 ) {
     switch (httpMethod) {
         case "get": {
@@ -366,8 +375,8 @@ export async function validateRpcRequestInput(
                     message: `Invalid request body. Expected object. Got undefined.`,
                 });
             }
-            const parsedParams = a.safeParse(schema, body);
-            if (!parsedParams.success) {
+            const parsedParams = validator.safeParse(body);
+            if (!parsedParams?.success) {
                 const errorParts: string[] = [];
                 for (const err of parsedParams.error.errors) {
                     const errPath = err.instancePath.split("/");
@@ -388,5 +397,21 @@ export async function validateRpcRequestInput(
         }
         default:
             break;
+    }
+}
+
+export function getSchemaValidator(
+    rpcName: string,
+    type: "params" | "response",
+    schema: ASchema<any>,
+): ReturnType<typeof a.compile> | undefined {
+    try {
+        if (isAdaptedSchema(schema)) {
+            return validatorFromAdaptedSchema(schema);
+        }
+        return a.compile(schema);
+    } catch (err) {
+        console.error(`Error compiling ${type} validator for ${rpcName}`);
+        return undefined;
     }
 }
