@@ -430,7 +430,7 @@ fun testSseReconnectsWithNewCredentials(scope: CoroutineScope, httpClient: HttpC
             openCount++
         },
     )
-    Thread.sleep(2000)
+    Thread.sleep(3000)
     job.cancel()
     expect(tag, msgCount > 1, true)
     expect(tag, openCount > 1, true)

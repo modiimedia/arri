@@ -1,16 +1,25 @@
-# Arri RPC Monorepo
+_**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
-Arri is an RPC framework designed for effortless end-to-end type safety across programming languages
+# Arri RPC
 
-This is a work in progress. Things will break.
+Arri is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
-## Schema Builder
+## Table of Contents
 
-[@arrirpc/schema](tooling/schema/README.md) is used to define types that can be generated in any language. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
+-   [Server Implementations](#server-implementations)
+-   [Client Generators](#client-generators)
+-   [Other Tooling](#other-tooling)
+-   [Manually Creating An App Definition](#manually-creating-an-app-definition)
 
 ## Server Implementations
 
--   [Typescript](languages/ts/ts-server/README.md) - Official ts server implementation. It uses [@arrirpc/schema](tooling/schma/README.md) to define language agnostic types and safely parse/serialize inputs and outputs.
+-   [Typescript](/languages/ts/ts-server/README.md)
+
+When I have time I would like to add more languages to this list. Currently I have the following lanaguages on my shortlist for potential server implementations:
+
+-   go
+-   rust
+-   dart
 
 ## Client Generators
 
@@ -20,7 +29,7 @@ Below are the language client generators that are planned to have first party su
 | --------------------------------------------------- | ---- | --- |
 | [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅  |
 | [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅  |
-| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | 🚧  |
+| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅  |
 | [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅  |
 | Swift                                               | 🚧   | 🚧  |
 | Go                                                  |      |     |
@@ -31,13 +40,14 @@ Below are the language client generators that are planned to have first party su
 🚧 in progress
 
 ## Other Tooling
--   [arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
--   [@arrirpc/typebox-adapter](tooling/schema-typebox-adapter/README.md) - convert Typebox Schemas to Arri Type Definitions
+
+-   [Arri CLI](/tooling/cli/README.md) - CLI tool for run code generators and managing dependencies
+-   [@arrirpc/schema](tooling/schema/README.md) - Arri type builder used to define types that can be generated in multiple languages. It also doubles as a parsing and serialization library that can be used on a NodeJS backend.
 -   [@arrirpc/eslint-plugin](tooling/eslint-plugin/README.md) - Useful eslint rules when making Arri Type Definitions
 
-## Creating Schemas For Custom Server Implementations
+## Manually Creating an App Definition
 
-Arri allows you to generate clients for custom server implementations. All you need to do is point the cli to an AppDefinition file. The app definition can be a typescript file, JSON file, or a JSON http endpoint.
+Even though Arri focuses primarily on a code-first approach it allow you to manually create app definitions in the event that you have a server implementation that isn't supported. Once your app definition is created you simply need to point the CLI to the app definition file. This file can be can be a typescript file, JSON file, or a JSON http endpoint.
 
 ```bash
 arri codegen ./AppDefinition.ts

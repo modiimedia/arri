@@ -1,5 +1,5 @@
 [package]
-name = "rust"
+name = "test_client_rust"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,4 +8,6 @@ edition = "2021"
 [dependencies]
 arri_client = { path = "../../../languages/rust/rust-client"}
 tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7.11"
+rand = "0.8.5"
 

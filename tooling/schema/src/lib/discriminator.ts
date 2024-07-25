@@ -6,7 +6,7 @@ import {
     isObject,
     type ResolveObject,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 import { ValidationError } from "./validation";
 
@@ -90,7 +90,7 @@ export function discriminator<
     const discriminator = isIdShorthand ? propB : propA;
     const mapping = (isIdShorthand ? propC : propB) as TMapping;
     const opts = (
-        isIdShorthand ? { id: propA } : propC ?? {}
+        isIdShorthand ? { id: propA } : (propC ?? {})
     ) as ASchemaOptions;
     if (isIdShorthand) {
         opts.id = propA;
@@ -117,24 +117,27 @@ export function discriminator<
                 > {
                     return validate(discriminator, mapping, input);
                 },
-                parse(input, data) {
-                    return parse(discriminator, mapping, input, data, false);
+                parse(input, context) {
+                    return parse(discriminator, mapping, input, context, false);
                 },
-                coerce: (input, data) => {
-                    return parse(discriminator, mapping, input, data, true);
+                coerce: (input, context) => {
+                    return parse(discriminator, mapping, input, context, true);
                 },
-                serialize(input, data) {
+                serialize(input, context) {
                     const discriminatorVal = input[discriminator] ?? "";
                     const targetSchema = mapping[discriminatorVal];
                     if (!targetSchema) {
-                        throw discriminatorMappingError(discriminatorVal, data);
+                        throw discriminatorMappingError(
+                            discriminatorVal,
+                            context,
+                        );
                     }
                     const result = targetSchema.metadata[
                         SCHEMA_METADATA
                     ].serialize(input, {
-                        instancePath: data.instancePath,
-                        schemaPath: `${data.schemaPath}/mapping/${discriminatorVal}`,
-                        errors: data.errors,
+                        instancePath: context.instancePath,
+                        schemaPath: `${context.schemaPath}/mapping/${discriminatorVal}`,
+                        errors: context.errors,
                         discriminatorKey: discriminator,
                         discriminatorValue: discriminatorVal,
                     });
@@ -184,7 +187,7 @@ function parse(
     discriminator: string,
     mapping: Record<string, AObjectSchema<any>>,
     input: unknown,
-    data: ValidationData,
+    data: ValidationContext,
     coerce = false,
 ) {
     let parsedInput = input;
@@ -256,7 +259,7 @@ function parse(
 
 function discriminatorMappingError(
     discriminatorVal: string,
-    data: ValidationData,
+    data: ValidationContext,
 ) {
     return new ValidationError({
         message: `Error fetching discriminator schema for "${discriminatorVal}"`,

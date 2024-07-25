@@ -66,30 +66,30 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
             isDeprecated: meta?.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: paramA[0] ?? ("" as any),
-                parse(input, data) {
+                parse(input, context) {
                     if (isType(input)) {
                         return input;
                     }
-                    data.errors.push({
-                        instancePath: data.instancePath,
-                        schemaPath: `${data.schemaPath}/enum`,
+                    context.errors.push({
+                        instancePath: context.instancePath,
+                        schemaPath: `${context.schemaPath}/enum`,
                         message: `Error at ${
-                            data.instancePath
+                            context.instancePath
                         }. Invalid enum value. Expected one of the following values: [${enumVal.join(
                             ", ",
                         )}]`,
                     });
                     return undefined;
                 },
-                coerce: (input, data) => {
+                coerce: (input, context) => {
                     if (isType(input)) {
                         return input;
                     }
-                    data.errors.push({
-                        instancePath: data.instancePath,
-                        schemaPath: `${data.schemaPath}/enum`,
+                    context.errors.push({
+                        instancePath: context.instancePath,
+                        schemaPath: `${context.schemaPath}/enum`,
                         message: `Error at ${
-                            data.instancePath
+                            context.instancePath
                         }. Invalid enum value. Expected one of the following values: [${enumVal.join(
                             ", ",
                         )}]`,
@@ -97,8 +97,8 @@ export function enumerator<TKeys extends string, TValues extends TKeys[]>(
                     return undefined;
                 },
                 validate: isType,
-                serialize(input, data) {
-                    if (data.instancePath.length === 0) {
+                serialize(input, context) {
+                    if (context.instancePath.length === 0) {
                         return input;
                     }
                     return `"${input}"`;

@@ -19,9 +19,9 @@ import {
 } from "h3";
 
 import { type ArriOptions } from "./app";
-import { type RouteEventContext,type RoutePostEventContext } from "./context";
+import { type RouteEventContext, type RoutePostEventContext } from "./context";
 import { defineError, handleH3Error } from "./errors";
-import { type Middleware,type MiddlewareEvent } from "./middleware";
+import { type Middleware, type MiddlewareEvent } from "./middleware";
 
 export interface RouteEvent<
     TPath extends string,

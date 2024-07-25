@@ -218,10 +218,9 @@ function projectJsonTemplate(
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["${packageLocation}/**/*.ts"]
+        "command": "pnpm eslint ${packageLocation}"
       }
     },
     "test": {

@@ -2,7 +2,7 @@ import {
     type AScalarSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
-    type ValidationData as ValidationContext,
+    type ValidationContext as ValidationContext,
 } from "../schemas";
 
 /**
@@ -25,8 +25,8 @@ export function string(
                 parse,
                 coerce,
                 validate,
-                serialize(input, data) {
-                    if (data.instancePath.length === 0) {
+                serialize(input, context) {
+                    if (context.instancePath.length === 0) {
                         return input;
                     }
                     if (input.length < 42) {
