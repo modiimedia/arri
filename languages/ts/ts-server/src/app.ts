@@ -283,7 +283,7 @@ export interface ArriOptions {
     onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onError?: (
         error: ArriServerError,
-        event: RequestHookContext,
+        event: RequestHookEvent,
     ) => void | Promise<void>;
 }
 
