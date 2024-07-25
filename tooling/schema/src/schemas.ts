@@ -18,7 +18,7 @@ export type MaybeNullable<
     TIsNullable extends boolean = false,
 > = TIsNullable extends true ? T | null : T;
 
-export interface ValidationData {
+export interface ValidationContext {
     instancePath: string;
     schemaPath: string;
     errors: ValueError[];
@@ -29,10 +29,11 @@ export interface ValidationData {
 export interface SchemaValidator<T> {
     output: T;
     optional?: boolean;
-    parse: (input: unknown, data: ValidationData) => T | undefined;
-    coerce: (input: unknown, data: ValidationData) => T | undefined;
-    serialize: (input: T, data: ValidationData) => string;
+    parse: (input: unknown, context: ValidationContext) => T | undefined;
+    coerce: (input: unknown, context: ValidationContext) => T | undefined;
+    serialize: (input: T, context: ValidationContext) => string;
     validate: (input: unknown) => input is T;
+    _isAdapted?: boolean;
 }
 
 export interface SchemaMetadata<T> {

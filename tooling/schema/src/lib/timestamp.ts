@@ -2,7 +2,7 @@ import {
     type AScalarSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 
 /**
@@ -35,7 +35,7 @@ export function timestamp(
 function validate(input: unknown): input is Date {
     return typeof input === "object" && input instanceof Date;
 }
-function parse(input: unknown, data: ValidationData): Date | undefined {
+function parse(input: unknown, data: ValidationContext): Date | undefined {
     if (validate(input)) {
         return input;
     }
@@ -59,13 +59,13 @@ function parse(input: unknown, data: ValidationData): Date | undefined {
     });
     return undefined;
 }
-function coerce(input: unknown, options: ValidationData): Date | undefined {
+function coerce(input: unknown, options: ValidationContext): Date | undefined {
     if (typeof input === "number") {
         return new Date(input);
     }
     return parse(input, options);
 }
-function serialize(input: Date, data: ValidationData): string {
+function serialize(input: Date, data: ValidationContext): string {
     if (data.instancePath.length === 0) {
         return input.toISOString();
     }

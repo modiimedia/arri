@@ -1,0 +1,36 @@
+{
+  "name": "rust-client",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/rust/rust-client/src",
+  "projectType": "library",
+  "targets": {
+    "cargo": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo",
+        "cwd": "languages/rust/rust-client"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.lock",
+        "{projectRoot}/Cargo.toml"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "cargo test -- --nocapture",
+        "cwd": "languages/rust/rust-client"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo publish",
+        "cwd": "languages/rust/rust-client"
+      }
+    }
+  },
+  "tags": []
+}

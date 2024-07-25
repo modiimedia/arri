@@ -21,6 +21,7 @@
     "Arri",
     "arrirpc",
     "autoroutes",
+    "chrono",
     "citty",
     "codegen",
     "Consola",
@@ -30,11 +31,16 @@
     "middlewares",
     "modii",
     "nitropack",
+    "nocheck",
     "ofetch",
     "pathe",
+    "peekable",
     "postversion",
     "pubspec",
+    "Quickstart",
+    "reqwest",
     "scule",
+    "serde",
     "struct",
     "typebox",
     "typeof",
@@ -43,7 +49,14 @@
     "vals",
     "websockets"
   ],
+  "rust-analyzer.linkedProjects": [
+    "${workspaceFolder}/languages/rust/rust-client/Cargo.toml",
+    "${workspaceFolder}/languages/rust/rust-codegen-reference/Cargo.toml",
+    "${workspaceFolder}/tests/clients/rust/Cargo.toml"
+  ],
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
   "eslint.validate": ["json"],
-  "java.compile.nullAnalysis.mode": "automatic",
-  "eslint.experimental.useFlatConfig": true
+  "eslint.useFlatConfig": true
 }

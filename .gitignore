@@ -8,6 +8,7 @@ dist
 tmp
 /out-tsc
 **/.output
+**/target
 
 # dependencies
 node_modules
@@ -32,6 +33,7 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+**/coverage
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
@@ -49,6 +51,7 @@ build
 **/.tmp
 **/*.dart_tool
 .nx/cache
+.nx/workspace-data
 
 **/target
 **/.gradle

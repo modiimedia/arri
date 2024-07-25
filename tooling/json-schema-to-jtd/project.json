@@ -21,8 +21,10 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint tooling/json-schema-to-jtd"
+      }
     },
     "test": {
       "executor": "@nx/vite:test",

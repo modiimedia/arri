@@ -45,11 +45,12 @@ Future<void> main() async {
     }
   });
 
+  final targetDate = DateTime.parse("2001-01-01T16:36:00.000Z");
   final input = ObjectWithEveryType(
       any: {"hello": "world", "goodbye": "world"},
       boolean: true,
       string: "",
-      timestamp: DateTime.now(),
+      timestamp: targetDate,
       float32: 1,
       float64: 1,
       int8: 1,
@@ -63,7 +64,10 @@ Future<void> main() async {
       enumerator: ObjectWithEveryTypeEnumerator.a,
       array: [true, false],
       object: ObjectWithEveryTypeObject(
-          boolean: true, string: "", timestamp: DateTime.now()),
+        boolean: true,
+        string: "",
+        timestamp: targetDate,
+      ),
       record: {
         "A": true,
         "B": false,
@@ -71,42 +75,30 @@ Future<void> main() async {
       discriminator: ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
       nestedObject: ObjectWithEveryTypeNestedObject(
         id: "",
-        timestamp: DateTime.now(),
+        timestamp: targetDate,
         data: ObjectWithEveryTypeNestedObjectData(
             id: "",
-            timestamp: DateTime.now(),
+            timestamp: targetDate,
             data: ObjectWithEveryTypeNestedObjectDataData(
               id: "",
-              timestamp: DateTime.now(),
+              timestamp: targetDate,
             )),
       ),
       nestedArray: [
         [
-          ObjectWithEveryTypeNestedArrayItemItem(
-              id: "", timestamp: DateTime.now())
+          ObjectWithEveryTypeNestedArrayElementElement(
+            id: "",
+            timestamp: targetDate,
+          )
         ]
       ]);
   test("can send/receive objects with every field type", () async {
     final result = await client.tests.sendObject(input);
-    expect(result.any["hello"], equals(input.any["hello"]));
-    expect(result.array.length, equals(input.array.length));
-    expect(result.array[0], equals(input.array[0]));
-    expect(result.boolean, equals(input.boolean));
-    expect(result.discriminator.type, equals(input.discriminator.type));
-    expect(result.enumerator.value, equals(input.enumerator.value));
-    expect(result.float32, equals(input.float32));
-    expect(result.float64, equals(input.float64));
-    expect(result.int16, equals(input.int16));
-    expect(result.int64, equals(input.int64));
-    expect(result.object.boolean, equals(input.object.boolean));
-    expect(result.record["A"], equals(input.record["A"]));
-    expect(
-      result.nestedObject.data.data.timestamp.microsecond,
-      equals(result.nestedObject.data.data.timestamp.microsecond),
-    );
+    expect(result, equals(input));
     final input2 = input.copyWith(int16: 999);
     final result2 = await client.tests.sendObject(input2);
-    expect(result2.int16, equals(999));
+    expect(result2, equals(input2));
+    expect(input == input2, equals(false));
   });
   test("supports injecting custom http clients", () async {
     final result = await clientWCustomHttpClient.tests.sendObject(input);
@@ -145,7 +137,7 @@ Future<void> main() async {
       int64: BigInt.zero,
       nestedArray: [
         [
-          ObjectWithEveryOptionalTypeNestedArrayItemItem(
+          ObjectWithEveryOptionalTypeNestedArrayElementElement(
               id: "", timestamp: DateTime.now())
         ]
       ],
@@ -221,7 +213,7 @@ Future<void> main() async {
       ),
       nestedArray: [
         [
-          ObjectWithEveryNullableTypeNestedArrayItemItem(
+          ObjectWithEveryNullableTypeNestedArrayElementElement(
             id: "",
             timestamp: DateTime.now(),
           )
@@ -289,7 +281,7 @@ Future<void> main() async {
     int messageCount = 0;
     final eventSource = client.tests.streamMessages(
       ChatMessageParams(channelId: "12345"),
-      onData: (data, _) {
+      onMessage: (data, _) {
         messageCount++;
         switch (data) {
           case ChatMessageText():
@@ -339,29 +331,11 @@ Future<void> main() async {
     expect(messageCount >= 1, equals(true));
     expect(eventSource.isClosed, equals(true));
   });
-  test("[SSE] parses both 'message' and 'error' events", () async {
-    int messageCount = 0;
-    int errorCount = 0;
-    final eventSource = client.tests.streamTenEventsThenError(
-      onData: (data, connection) {
-        messageCount++;
-        expect(data.messageType.isNotEmpty, equals(true));
-      },
-      onError: (error, connection) {
-        errorCount++;
-        connection.close();
-      },
-    );
-    await Future.delayed(Duration(milliseconds: 500));
-    expect(messageCount, equals(10));
-    expect(errorCount, equals(1));
-    expect(eventSource.isClosed, equals(true));
-  });
   test("[SSE] closes connection when receiving 'done' event", () async {
     int messageCount = 0;
     int errorCount = 0;
     final eventSource = client.tests.streamTenEventsThenEnd(
-      onData: (data, connection) {
+      onMessage: (data, connection) {
         messageCount++;
       },
       onError: (_, __) {
@@ -382,7 +356,7 @@ Future<void> main() async {
       onOpen: (_, __) {
         connectionCount++;
       },
-      onData: (data, _) {
+      onMessage: (data, _) {
         messageCount++;
         expect(data.count > 0, equals(true));
       },
@@ -404,7 +378,7 @@ Future<void> main() async {
       onOpen: (_, __) {
         openCount++;
       },
-      onData: (data, _) {
+      onMessage: (data, _) {
         msgCount++;
       },
       onError: (_, __) {
@@ -421,7 +395,6 @@ Future<void> main() async {
   test("[SSE] auto-retry when initial connection fails", () async {
     var openCount = 0;
     var errorCount = 0;
-    var connectionErrorCount = 0;
     var msgCount = 0;
     final List<ArriError> errors = [];
     final statusCode = 555;
@@ -434,23 +407,19 @@ Future<void> main() async {
       onOpen: (_, __) {
         openCount++;
       },
-      onData: (data, _) {
+      onMessage: (data, _) {
         msgCount++;
       },
       onError: (err, _) {
         errorCount++;
-      },
-      onConnectionError: (err, _) {
-        connectionErrorCount++;
         errors.add(err);
       },
     );
     await Future.delayed(Duration(milliseconds: 500));
     eventSource.close();
     expect(openCount > 0, equals(true));
-    expect(errorCount, equals(0));
     expect(msgCount, equals(0));
-    expect(connectionErrorCount > 0, equals(true));
+    expect(errorCount > 0, equals(true));
     expect(
       errors.every(
         (element) =>
@@ -472,11 +441,11 @@ Future<void> main() async {
     var msgCount = 0;
     var openCount = 0;
     final eventSource = dynamicClient.tests.streamRetryWithNewCredentials(
-        onData: (data, connection) {
+        onMessage: (data, connection) {
       msgCount++;
     }, onOpen: (response, connection) {
       openCount++;
-    }, onConnectionError: (err, connection) {
+    }, onError: (err, connection) {
       print(err.toString());
     });
     await Future.delayed(Duration(milliseconds: 2000));

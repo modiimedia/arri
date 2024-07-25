@@ -1,4 +1,4 @@
-# Arri RPC
+# Arri RPC - Typescript Server
 
 Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
 
@@ -14,6 +14,7 @@ Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](h
         -   [Manual Routing](#manual-routing)
         -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
         -   [Creating Websocket Procedures](#creating-websocket-procedures-experimental)
+            -   [Adding to the RPC Context](#adding-to-the-rpc-context)
     -   [Adding Non-RPC Routes](#adding-non-rpc-routes)
     -   [Adding Middleware](#adding-middleware)
 -   [Key Concepts](#key-concepts)
@@ -81,21 +82,17 @@ Create an `arri.config.ts` in the project directory
 
 ```ts
 // arri.config.ts
-import {
-    defineConfig,
-    typescriptClientGenerator,
-    dartClientGenerator,
-} from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     entry: "app.ts",
     port: 3000,
     srcDir: "src",
     generators: [
-        typescriptClientGenerator({
+        generators.typescriptClient({
             // options
         }),
-        dartClientGenerator({
+        generators.dartClient({
             // options
         }),
     ],
@@ -140,7 +137,7 @@ Setup your npm scripts:
 
 ### Creating Procedures
 
-#### File Based Router
+#### File Based Routing
 
 Arri RPC comes with an optional file based router that will automatically register functions in the `./procedures` directory that end with the `.rpc.ts` file extension.
 
@@ -192,13 +189,17 @@ For those that want to opt out of the file-based routing system you can manually
 ```ts
 // using the app instance
 const app = new ArriApp()
-app.rpc('sayHello', {...})
+app.rpc('sayHello',
+    defineRpc({...})
+);
 
-// using a sub-router
+// defining a service
 const app = new ArriApp();
-const router = new ArriRoute();
-router.rpc('sayHello', {...})
-app.use(router)
+const usersService = defineService("users", {
+    getUser: defineRpc({..}),
+    createUser: defineRpc({..}),
+});
+app.use(usersService);
 ```
 
 #### Creating Event Stream Procedures
@@ -208,7 +209,6 @@ Event stream procedures make use of [Server Sent Events](https://developer.mozil
 Arri Event streams sent the following event types:
 
 -   `message` - A standard message with the response data serialized as JSON
--   `error` - An error message with an `ArriRequestError` sent as JSON
 -   `done` - A message to tell clients that there will be no more events
 -   `ping` - A message periodically sent by the server to keep the connection alive.
 
@@ -217,11 +217,6 @@ Arri Event streams sent the following event types:
 id: string | undefined;
 event: "message";
 data: Response; // whatever you have specified as the response serialized to json
-
-/// error event ///
-id: string | undefined;
-event: "error";
-data: ArriRequestError; // serialized to json
 
 /// done event ///
 event: "done";
@@ -271,11 +266,14 @@ export default defineEventStreamRpc({
 #### EventStreamConnection methods
 
 ```ts
-stream.push(data: Data, eventId?: string)
-stream.pushError(error: ArriRequestError, eventId?: string)
+// send the stream to the client. Must be called before pushing any messages
 stream.send()
-stream.end()
-stream.on(e: 'request:close' | 'close', callback: () => any)
+// push a new message to the client
+stream.push(data: Data, eventId?: string)
+// close the stream and tell the client that there will be no more messages
+stream.close()
+// register a callback that will fire after the stream has been close by the server or the connection has been dropped
+stream.onClosed(cb: () => any)
 ```
 
 ### Creating Websocket Procedures (Experimental)
@@ -366,6 +364,16 @@ router.route({
     }
 })
 app.use(router)
+
+// sup-routers can also specify a route prefix
+const router = new ArriRouter("/v1")
+router.route({
+    method: "get",
+    path: "/hello-world", // this will become /v1/hello-world
+    handler(event) {
+        return "hello world"
+    }
+});
 ```
 
 ### Adding Middleware
@@ -408,12 +416,12 @@ app.rpc("sayHello", {
 });
 ```
 
-To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arri/server`
+To get type safety for these new properties create a `.d.ts` file and augment the `ArriEventContext` provided by `@arrirpc/server`
 
 ```ts
-import "@arri/server";
+import "@arrirpc/server";
 
-declare module "@arri/server" {
+declare module "@arrirpc/server" {
     interface ArriEventContext {
         user?: {
             id: number;
@@ -426,25 +434,24 @@ declare module "@arri/server" {
 
 ### Adding Client Generators
 
-Right now Arri RPC has client generators for the following languages:
-
--   typescript
--   dart
--   kotlin
-
 ```ts
 // arri.config.ts
-import { defineConfig, typescriptClientGenerator, dartClientGenerator, kotlinClientGenerator } from "arri";
+import { defineConfig, generators } from "arri";
 
 export default defineConfig({
     // rest of config
-    clientGenerators: [
-        typescriptClientGenerator({...}),
-        dartClientGenerator({...}),
-        kotlinClientGenerator({...})
+    generators: [
+        generators.typescriptClient({...}),
+        generators.dartClient({...}),
+        generators.kotlinClient({...})
+        generators.someGenerator({...})
     ]
 });
 ```
+
+For info on what generators are available see [here](/README.md#client-generators)
+
+For info on how to create your own generator see [@arrirpc/codegen-utils](/tooling/codegen-utils/README.md)
 
 ## Key Concepts
 
@@ -549,20 +556,33 @@ You can access H3 events from inside procedures handlers.
 
 ```ts
 defineRpc({
-  params: undefined,
-  response: undefined,
-  handler(_, event) {
-    getRequestIP(event);
-  }
-)
+    params: undefined,
+    response: undefined,
+    handler(_, event) {
+        getRequestIP(event);
+    },
+});
 
 defineEventStreamRpc({
-  params: undefined,
-  response: undefined,
-  handler(_, event) {
-    getRequestIP(event);
-  }
-)
+    params: undefined,
+    response: undefined,
+    handler(_, event) {
+        getRequestIP(event);
+    },
+});
+```
+
+#### Manually Starting an Arri Server
+
+Arri server is just an H3 app under the hood so you can start it the same way you would start an H3 app. Although you should note that currently the filed based router only works when using the Arri CLI.
+
+```ts
+import { createServer } from "node:http";
+import { ArriApp, toNodeListener } from "@arrirpc/server";
+
+const app = new ArriApp();
+
+createServer(toNodeListener(app.h3App)).listen(process.env.PORT || 3000);
 ```
 
 ## Arri CLI

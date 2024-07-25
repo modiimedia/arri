@@ -2,6 +2,8 @@ import { type AppDefinition } from "@arrirpc/codegen-utils";
 import { a } from "@arrirpc/schema";
 
 import { ArriApp } from "./app";
+import { defineEventStreamRpc } from "./eventStreamRpc";
+import { defineRpc } from "./rpc";
 
 it("creates valid app definition", () => {
     const app = new ArriApp();
@@ -17,34 +19,37 @@ it("creates valid app definition", () => {
         },
         { id: "SayHelloResponse" },
     );
-    app.rpc({
-        name: "sayHello",
-        params: SayHelloParams,
-        response: SayHelloResponse,
-        handler({ params }) {
-            return {
-                message: `Hello ${params.name}`,
-            };
-        },
-    });
-    app.rpc({
-        name: "sayHelloStream",
-        params: SayHelloParams,
-        response: SayHelloResponse,
-        isEventStream: true,
-        handler({ params, stream }) {
-            const timeout = setInterval(async () => {
-                await stream.push({ message: `Hello ${params.name}` });
-            }, 100);
-            stream.onClose(() => {
-                clearInterval(timeout);
-            });
-        },
-    });
+    app.rpc(
+        "sayHello",
+        defineRpc({
+            params: SayHelloParams,
+            response: SayHelloResponse,
+            handler({ params }) {
+                return {
+                    message: `Hello ${params.name}`,
+                };
+            },
+        }),
+    );
+    app.rpc(
+        "sayHelloStream",
+        defineEventStreamRpc({
+            params: SayHelloParams,
+            response: SayHelloResponse,
+            handler({ params, stream }) {
+                const timeout = setInterval(async () => {
+                    await stream.push({ message: `Hello ${params.name}` });
+                }, 100);
+                stream.onClosed(() => {
+                    clearInterval(timeout);
+                });
+            },
+        }),
+    );
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        arriSchemaVersion: "0.0.5",
+        schemaVersion: "0.0.6",
         procedures: {
             sayHello: {
                 transport: "http",

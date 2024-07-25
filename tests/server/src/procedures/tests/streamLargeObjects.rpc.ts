@@ -33,7 +33,7 @@ export default defineEventStreamRpc({
         const interval = setInterval(async () => {
             await stream.push(randomLargeObjectResponse());
         });
-        stream.onClose(() => {
+        stream.onClosed(() => {
             clearInterval(interval);
         });
     },

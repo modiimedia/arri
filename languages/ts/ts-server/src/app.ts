@@ -13,25 +13,29 @@ import {
     createApp,
     createRouter,
     eventHandler,
+    H3Event,
     type Router,
+    setResponseHeader,
     setResponseStatus,
 } from "h3";
 
+import { RequestHookContext } from "./context";
 import { type ArriServerError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
-import { type Middleware,type MiddlewareEvent } from "./middleware";
+import { type Middleware, MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
-import { ArriRouter, type ArriRouterBase } from "./router";
+import { ArriRouter } from "./router";
 import {
     createHttpRpcDefinition,
     getRpcParamName,
     getRpcPath,
     getRpcResponseName,
     isRpcParamSchema,
-    type NamedRpc,
+    type NamedHttpRpc,
     registerRpc,
-    type RpcParamSchema,
+    Rpc,
 } from "./rpc";
+import { ArriService } from "./service";
 import {
     createWsRpcDefinition,
     type NamedWebsocketRpc,
@@ -45,7 +49,7 @@ export type DefinitionMap = Record<
 
 export const createAppDefinition = (def: AppDefinition) => def;
 
-export class ArriApp implements ArriRouterBase {
+export class ArriApp {
     __isArri__ = true;
     readonly h3App: App;
     readonly h3Router: Router = createRouter();
@@ -80,29 +84,42 @@ export class ArriApp implements ArriRouterBase {
                   .split("//")
                   .join("/")
             : `/${this._rpcDefinitionPath}`;
-        this.h3Router.get(
-            this.definitionPath,
-            eventHandler(() => this.getAppDefinition()),
-        );
+        if (!opts.disableDefinitionRoute) {
+            this.h3Router.get(
+                this.definitionPath,
+                eventHandler((event) => {
+                    setResponseHeader(
+                        event,
+                        "Content-Type",
+                        "application/json",
+                    );
+                    return this.getAppDefinition();
+                }),
+            );
+        }
         if (!opts.disableDefaultRoute) {
             this.route({
                 method: ["get", "head"],
                 path: "/",
-                handler: (_) => {
+                handler: async (_) => {
+                    const response: Record<string, string> = {
+                        title: this.appInfo?.title ?? "Arri-RPC Server",
+                        description:
+                            this.appInfo?.description ??
+                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
+                        ...this.appInfo,
+                    };
+                    if (opts.disableDefinitionRoute) {
+                        return response;
+                    }
                     let schemaPath: string;
                     if (this._rpcRoutePrefix) {
                         schemaPath = `/${this._rpcRoutePrefix}/${this._rpcDefinitionPath}`;
                     } else {
                         schemaPath = `/${this._rpcDefinitionPath}`;
                     }
-                    return {
-                        title: this.appInfo?.title ?? "Arri-RPC Server",
-                        description:
-                            this.appInfo?.description ??
-                            "This server utilizes Arri-RPC. Visit the schema path to see all of the available procedures.",
-                        schemaPath,
-                        ...this.appInfo,
-                    };
+                    response.schemaPath = schemaPath;
+                    return response;
                 },
             });
         }
@@ -110,7 +127,14 @@ export class ArriApp implements ArriRouterBase {
         if (process.env.ARRI_DEV_MODE === "true") {
             this.h3Router.get(
                 DEV_DEFINITION_ENDPOINT,
-                eventHandler(() => this.getAppDefinition()),
+                eventHandler((event) => {
+                    setResponseHeader(
+                        event,
+                        "Content-Type",
+                        "application/json",
+                    );
+                    return this.getAppDefinition();
+                }),
             );
         }
         // default fallback route
@@ -134,17 +158,17 @@ export class ArriApp implements ArriRouterBase {
         );
     }
 
-    use(input: Middleware | ArriRouter): void {
+    use(input: Middleware | ArriRouter | ArriService): void {
         if (typeof input === "object" && input instanceof ArriRouter) {
             for (const route of input.getRoutes()) {
                 this.route(route);
             }
+            this.registerDefinitions(input.getDefinitions());
+            return;
+        }
+        if (typeof input === "object" && input instanceof ArriService) {
             for (const rpc of input.getProcedures()) {
-                if (rpc.transport === "http") {
-                    this.rpc(rpc);
-                } else {
-                    this.wsRpc(rpc);
-                }
+                this.rpc(rpc.name, rpc);
             }
             this.registerDefinitions(input.getDefinitions());
             return;
@@ -152,20 +176,15 @@ export class ArriApp implements ArriRouterBase {
         this._middlewares.push(input);
     }
 
-    rpc<
-        TIsEventStream extends boolean = false,
-        TParams extends AObjectSchema<any, any> | undefined = undefined,
-        TResponse extends AObjectSchema<any, any> | undefined = undefined,
-    >(
-        procedure: Omit<
-            NamedRpc<TIsEventStream, TParams, TResponse>,
-            "transport"
-        >,
-    ) {
-        (procedure as any).transport = "http";
-        const p = procedure as NamedRpc<TIsEventStream, TParams, TResponse>;
+    rpc(name: string, procedure: Rpc<any, any, any>) {
+        (procedure as any).name = name;
+        const p = procedure as NamedHttpRpc | NamedWebsocketRpc;
         const path = p.path ?? getRpcPath(p.name, this._rpcRoutePrefix);
-        this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
+        if (p.transport === "http") {
+            this._procedures[p.name] = createHttpRpcDefinition(p.name, path, p);
+        } else if (p.transport === "ws") {
+            this._procedures[p.name] = createWsRpcDefinition(p.name, path, p);
+        }
 
         if (isRpcParamSchema(p.params)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -181,8 +200,19 @@ export class ArriApp implements ArriRouterBase {
                 this._definitions[responseName] = p.response;
             }
         }
-        if (isEventStreamRpc(p)) {
-            registerEventStreamRpc(this.h3Router, path, p, {
+        if (p.transport === "http") {
+            if (isEventStreamRpc(p)) {
+                registerEventStreamRpc(this.h3Router, path, p, {
+                    middleware: this._middlewares,
+                    onRequest: this._onRequest,
+                    onError: this._onError,
+                    onAfterResponse: this._onAfterResponse,
+                    onBeforeResponse: this._onBeforeResponse,
+                    debug: this._debug,
+                });
+                return;
+            }
+            registerRpc(this.h3Router, path, p, {
                 middleware: this._middlewares,
                 onRequest: this._onRequest,
                 onError: this._onError,
@@ -192,42 +222,9 @@ export class ArriApp implements ArriRouterBase {
             });
             return;
         }
-        registerRpc(this.h3Router, path, p, {
-            middleware: this._middlewares,
-            onRequest: this._onRequest,
-            onError: this._onError,
-            onAfterResponse: this._onAfterResponse,
-            onBeforeResponse: this._onBeforeResponse,
-            debug: this._debug,
-        });
-    }
-
-    wsRpc<
-        TParams extends RpcParamSchema | undefined,
-        TResponse extends RpcParamSchema | undefined,
-    >(procedure: Omit<NamedWebsocketRpc<TParams, TResponse>, "transport">) {
-        (procedure as any).transport = "ws";
-        const p = procedure as NamedWebsocketRpc<TParams, TResponse>;
-        const path =
-            procedure.path ?? getRpcPath(procedure.name, this._rpcRoutePrefix);
-        this._procedures[procedure.name] = createWsRpcDefinition(
-            procedure.name,
-            path,
-            p,
-        );
-        if (isRpcParamSchema(procedure.params)) {
-            const paramName = getRpcParamName(procedure.name, p);
-            if (paramName) {
-                this._definitions[paramName] = procedure.params;
-            }
+        if (p.transport === "ws") {
+            registerWebsocketRpc(this.h3Router, path, p);
         }
-        if (isRpcParamSchema(procedure.response)) {
-            const responseName = getRpcResponseName(procedure.name, p);
-            if (responseName) {
-                this._definitions[responseName] = procedure.response;
-            }
-        }
-        registerWebsocketRpc(this.h3Router, path, p);
     }
 
     route<
@@ -254,7 +251,7 @@ export class ArriApp implements ArriRouterBase {
 
     getAppDefinition(): AppDefinition {
         const appDef: AppDefinition = {
-            arriSchemaVersion: SCHEMA_VERSION,
+            schemaVersion: SCHEMA_VERSION,
             info: this.appInfo,
             procedures: {},
             definitions: this._definitions as any,
@@ -280,11 +277,16 @@ export interface ArriOptions {
      */
     rpcDefinitionPath?: string;
     disableDefaultRoute?: boolean;
+    disableDefinitionRoute?: boolean;
     onRequest?: (event: MiddlewareEvent) => void | Promise<void>;
-    onAfterResponse?: (event: MiddlewareEvent) => void | Promise<void>;
-    onBeforeResponse?: (event: MiddlewareEvent) => void | Promise<void>;
+    onAfterResponse?: (event: RequestHookEvent) => void | Promise<void>;
+    onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onError?: (
         error: ArriServerError,
-        event: MiddlewareEvent,
+        event: RequestHookContext,
     ) => void | Promise<void>;
+}
+
+export interface RequestHookEvent extends Omit<H3Event, "context"> {
+    context: RequestHookContext;
 }

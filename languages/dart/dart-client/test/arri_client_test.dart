@@ -20,7 +20,7 @@ main() {
     parsedArriSseRequest(nonExistentUrl,
         method: HttpMethod.get,
         parser: (input) => input,
-        onConnectionError: (err, event) {
+        onError: (err, event) {
           errCount++;
           if (errCount == 5) {
             event.close();
@@ -78,9 +78,6 @@ data: {"hello":"wo""";
 event: message
 data: {"hello": "world"}
 
-event: error
-data: {"code": 500, "message": "Unknown Error"}
-
 event: ping
 data:
 
@@ -92,7 +89,7 @@ data: {"hello":""";
         }
         throw Exception("Unable to parse data");
       });
-      expect(result.events.length, equals(4));
+      expect(result.events.length, equals(3));
       expect(result.leftoverData, equals("data: {\"hello\":"));
       final msg1 = result.events[0];
       switch (msg1) {
@@ -113,19 +110,9 @@ data: {"hello":""";
       }
       final msg3 = result.events[2];
       switch (msg3) {
-        case SseErrorEvent<Map<String, dynamic>>():
-          expect(msg3.data.code, equals(500));
-          expect(msg3.data.message, equals("Unknown Error"));
-          expect(msg3.data.data, equals(null));
-          expect(msg3.data.stack, equals(null));
-        default:
-          throw Exception("Expected SseErrorEvent");
-      }
-      final msg4 = result.events[3];
-      switch (msg4) {
         case SseRawEvent<Map<String, dynamic>>():
-          expect(msg4.data, equals(""));
-          expect(msg4.event, equals("ping"));
+          expect(msg3.data, equals(""));
+          expect(msg3.event, equals("ping"));
           break;
         default:
           throw Exception("Expected SseRawEvent");

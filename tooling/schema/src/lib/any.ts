@@ -1,4 +1,4 @@
-import { type ASchema, type ASchemaOptions,SCHEMA_METADATA } from "../schemas";
+import { type ASchema, type ASchemaOptions, SCHEMA_METADATA } from "../schemas";
 
 /**
  * Create a schema that accepts anything
@@ -11,9 +11,9 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
             isDeprecated: options.isDeprecated,
             [SCHEMA_METADATA]: {
                 output: undefined as any,
-                parse: (input, data) => {
+                parse: (input, context) => {
                     if (
-                        data.instancePath.length === 0 &&
+                        context.instancePath.length === 0 &&
                         typeof input === "string"
                     ) {
                         try {
@@ -24,9 +24,9 @@ export function any(options: ASchemaOptions = {}): ASchema<any> {
                     }
                     return input;
                 },
-                coerce: (input, data) => {
+                coerce: (input, context) => {
                     if (
-                        data.instancePath.length === 0 &&
+                        context.instancePath.length === 0 &&
                         typeof input === "string"
                     ) {
                         try {

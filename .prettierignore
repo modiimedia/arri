@@ -3,3 +3,4 @@
 /coverage
 /.nx/cache
 /tests/test-files
+/.nx/workspace-data

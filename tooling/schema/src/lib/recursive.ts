@@ -4,7 +4,7 @@ import {
     type ARefSchema,
     type ASchemaOptions,
     SCHEMA_METADATA,
-    type ValidationData,
+    type ValidationContext,
 } from "../schemas";
 
 let recursiveTypeCount = 0;
@@ -69,9 +69,9 @@ export function recursive<T = any>(
         string,
         {
             validate: (input: unknown) => any;
-            parse: (input: unknown, data: ValidationData) => any;
-            coerce: (input: unknown, data: ValidationData) => any;
-            serialize: (input: unknown, data: ValidationData) => any;
+            parse: (input: unknown, data: ValidationContext) => any;
+            coerce: (input: unknown, data: ValidationContext) => any;
+            serialize: (input: unknown, data: ValidationContext) => any;
         }
     > = {};
     if (!options.id) {
@@ -86,14 +86,14 @@ export function recursive<T = any>(
         metadata: {
             [SCHEMA_METADATA]: {
                 output: "" as T,
-                parse(input, data) {
+                parse(input, context) {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id]!.parse(input, data);
+                        return recursiveFns[id]!.parse(input, context);
                     }
                 },
-                serialize(input, data) {
+                serialize(input, context) {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id]!.serialize(input, data);
+                        return recursiveFns[id]!.serialize(input, context);
                     }
                     return "";
                 },
@@ -103,9 +103,9 @@ export function recursive<T = any>(
                     }
                     return false;
                 },
-                coerce(input, data) {
+                coerce(input, context) {
                     if (recursiveFns[id]) {
-                        return recursiveFns[id]!.coerce(input, data);
+                        return recursiveFns[id]!.coerce(input, context);
                     }
                 },
             },

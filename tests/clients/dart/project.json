@@ -1,6 +1,7 @@
 {
   "name": "test-client-dart",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["dart-client", "test-server"],
   "targets": {
     "pub": {
       "executor": "nx:run-commands",
@@ -19,7 +20,7 @@
     "integration-test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "dart test --reporter=expanded",
+        "command": "dart test --reporter=expanded --chain-stack-traces",
         "cwd": "tests/clients/dart"
       }
     },

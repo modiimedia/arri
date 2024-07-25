@@ -29,10 +29,9 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["tooling/eslint-plugin/**/*.ts"]
+        "command": "pnpm eslint tooling/eslint-plugin"
       }
     },
     "test": {

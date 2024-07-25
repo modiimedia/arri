@@ -13,6 +13,7 @@ async function main() {
     if (!version) {
         throw Error("No version in package.json file");
     }
+    // DART packages
     const pubspecParts = readFileSync(
         "languages/dart/dart-client/pubspec.yaml",
         { encoding: "utf-8" },
@@ -27,6 +28,7 @@ async function main() {
         "languages/dart/dart-client/pubspec.yaml",
         pubspecParts.join("\n"),
     );
+    // PACKAGE JSONS
     const childPackageJsons = await globby([
         "languages/**/package.json",
         "tooling/**/package.json",
@@ -47,9 +49,29 @@ async function main() {
         );
     });
     await Promise.all(tasks);
-
     // sync test clients
-    execSync("nx run-many -t pub -- get");
+    execSync("nx run-many -t pub -- get", {
+        stdio: "inherit",
+    });
+
+    // RUST client
+    const cargoTomlParts = readFileSync(
+        "languages/rust/rust-client/Cargo.toml",
+        { encoding: "utf-8" },
+    ).split("\n");
+    for (let i = 0; i < cargoTomlParts.length; i++) {
+        const line = cargoTomlParts[i];
+        if (line?.startsWith("version = ")) {
+            cargoTomlParts[i] = `version = "${version}"`;
+        }
+    }
+    writeFileSync(
+        "languages/rust/rust-client/Cargo.toml",
+        cargoTomlParts.join("\n"),
+    );
+    execSync(`nx run-many -t cargo -- check`, {
+        stdio: "inherit",
+    });
 }
 
 void main();

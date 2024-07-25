@@ -21,8 +21,10 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint languages/ts/ts-codegen"
+      }
     },
     "test": {
       "executor": "@nx/vite:test",
@@ -30,6 +32,13 @@
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/languages/ts/ts-codegen"
+      }
+    },
+    "show-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vite preview --outDir .temp/test-results",
+        "cwd": "languages/ts/ts-codegen"
       }
     },
     "typecheck": {
