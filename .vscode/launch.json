@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch via NPM",
+      "name": "Debug Test Server",
       "request": "launch",
       "runtimeExecutable": "pnpm",
       "args": ["nx", "dev", "test-server"],
