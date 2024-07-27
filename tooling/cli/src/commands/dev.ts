@@ -1,26 +1,27 @@
 import { existsSync } from "node:fs";
-import fs from "node:fs/promises";
 
-import { isAppDefinition } from "@arrirpc/codegen-utils";
-import { listenAndWatch } from "@joshmossas/listhen";
+import { AppDefinition } from "@arrirpc/codegen-utils";
+import { listen } from "@joshmossas/listhen";
 // import watcher from "@parcel/watcher";
 // import type ParcelWatcher from "@parcel/watcher";
 import { loadConfig } from "c12";
 import { type FSWatcher } from "chokidar";
 import { defineCommand } from "citty";
 import * as esbuild from "esbuild";
-import { App, eventHandler, toNodeListener } from "h3";
-import { ofetch } from "ofetch";
+import {
+    App,
+    dynamicEventHandler,
+    fromNodeMiddleware,
+    toNodeListener,
+} from "h3";
 import path from "pathe";
 
 import {
     createAppWithRoutesModule,
     GEN_APP_FILE,
-    GEN_SERVER_ENTRY_FILE,
     isInsideDir,
     logger,
     OUT_APP_FILE,
-    OUT_SERVER_ENTRY,
     setupWorkingDir,
 } from "../common";
 import { isResolvedArriConfig, type ResolvedArriConfig } from "../config";
@@ -42,7 +43,6 @@ export default defineCommand({
         },
     },
     async run({ args }) {
-        process.env.ARRI_DEV_MODE = "true";
         const { config } = await loadConfig({
             configFile: path.resolve(args.config),
         });
@@ -61,25 +61,7 @@ export default defineCommand({
     },
 });
 
-const startListener = (config: ResolvedArriConfig, showQr = false) =>
-    listenAndWatch(path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY), {
-        public: true,
-        port: config.port,
-        logger,
-        qr: showQr,
-        https: config.https,
-        http2: config.http2,
-        ws: true,
-    });
-
 async function bundleFilesContext(config: ResolvedArriConfig) {
-    const serverContent = `import app from './${OUT_APP_FILE}';
-
-export default app.h3App;`;
-    await fs.writeFile(
-        path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY),
-        serverContent,
-    );
     return await esbuild.context({
         ...config.esbuild,
         entryPoints: [
@@ -95,28 +77,51 @@ export default app.h3App;`;
     });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ArriApp = {
+    h3App: App;
+    getAppDefinition(): AppDefinition;
+};
+
 async function createDevServer(config: ResolvedArriConfig) {
     const h3 = await import("h3");
     const app = h3.createApp();
-    let dynamicHandler = eventHandler(
+    const dynamicHandler = dynamicEventHandler(
         () => "<div>initializing server...</div>",
     );
-    app.use((event) => dynamicHandler(event));
+    app.use(dynamicHandler);
     let ws: App["websocket"] | undefined;
-    async function reload() {
+    const listener = await listen(toNodeListener(app), {
+        port: config.port,
+        https: config.https,
+        http2: config.http2,
+        public: true,
+        ws: {
+            resolve(info) {
+                if (ws?.resolve) {
+                    return ws.resolve(info);
+                }
+                return {};
+            },
+        },
+    });
+    async function reload(): Promise<AppDefinition> {
         const appEntry = (
-            (await import(
-                path.resolve(config.rootDir, ".output", OUT_SERVER_ENTRY)
-            )) as any
-        ).default as App;
-        dynamicHandler = appEntry.handler;
-        ws = appEntry.websocket;
+            await import(
+                path.resolve(
+                    config.rootDir,
+                    ".output",
+                    `${OUT_APP_FILE}?version=${Date.now()}`,
+                )
+            )
+        ).default as ArriApp;
+        dynamicHandler.set(fromNodeMiddleware(appEntry.h3App.handler as any));
+        ws = appEntry.h3App.websocket;
+        return appEntry.getAppDefinition();
     }
     await reload();
     return {
         h3App: app,
-        nodeListener: toNodeListener(app),
+        listener,
         reload,
         ws,
     };
@@ -126,25 +131,23 @@ async function startDevServer(config: ResolvedArriConfig) {
     await setupWorkingDir(config);
     const watcher = await import("chokidar");
     let fileWatcher: FSWatcher | undefined;
-    await Promise.all([
-        createEntryModule(config),
-        createAppWithRoutesModule(config),
-    ]);
+    await createAppWithRoutesModule(config);
     const context = await bundleFilesContext(config);
     await context.rebuild();
-    const listener = await startListener(config, true);
-    setTimeout(async () => {
-        await generateClients(config);
-    }, 1000);
+    const devServer = await createDevServer(config);
+    let appDef = await devServer.reload();
+    let appDefStr = JSON.stringify(appDef);
+    if (config.generators.length) {
+        logger.info(`Running generators...`);
+        await generateClientsFromDefinition(appDef, config);
+    } else {
+        logger.warn(`No generators specified in config. Skipping codegen.`);
+    }
     const cleanExit = async () => {
         process.exit();
     };
     process.on("exit", async () => {
-        await Promise.allSettled([
-            listener.close(),
-            fileWatcher?.close(),
-            context.dispose(),
-        ]);
+        await Promise.allSettled([fileWatcher?.close(), context.dispose()]);
     });
     process.on("SIGINT", cleanExit);
     process.on("SIGTERM", cleanExit);
@@ -187,22 +190,27 @@ async function startDevServer(config: ResolvedArriConfig) {
                 return;
             }
             await createAppWithRoutesModule(config);
-            let bundleCreated = false;
             try {
+                const reloadStart = new Date().getTime();
                 logger.log(
                     "Change detected. Bundling files and restarting server....",
                 );
                 await context.rebuild();
-                bundleCreated = true;
+                const newAppDef = await devServer.reload();
+                const newAppDefStr = JSON.stringify(newAppDef);
+                logger.log(
+                    `Server restarted in ${new Date().getTime() - reloadStart}ms`,
+                );
+                if (config.generators.length && newAppDefStr !== appDefStr) {
+                    logger.info(
+                        `App Definition updated. Regenerating clients...`,
+                    );
+                    await generateClientsFromDefinition(newAppDef, config);
+                    appDef = newAppDef;
+                    appDefStr = newAppDefStr;
+                }
             } catch (err) {
                 logger.error("ERROR", err);
-                bundleCreated = false;
-            }
-            if (bundleCreated && config.generators.length) {
-                setTimeout(async () => {
-                    await generateClients(config);
-                    bundleCreated = false;
-                }, 1000);
             }
         });
     }
@@ -213,48 +221,22 @@ export interface ArriServiceConfig {
     globPatterns: string[];
 }
 
-async function generateClients(config: ResolvedArriConfig) {
+async function generateClientsFromDefinition(
+    appDef: AppDefinition,
+    config: ResolvedArriConfig,
+) {
+    const startTime = new Date().getTime();
     try {
-        const protocol =
-            config.https === true || typeof config.https === "object"
-                ? "https"
-                : "http";
-        if (protocol === "https") {
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-        }
-        const result = await ofetch(
-            `${protocol}://127.0.0.1:${config.port}${DEV_DEFINITION_ENDPOINT}`,
-        );
-        if (!isAppDefinition(result)) {
-            return;
-        }
-        logger.log(`Generating client code...`);
         const clientCount = config.generators.length;
         await Promise.allSettled(
             config.generators.map((generator) =>
-                generator.generator(result, true),
+                generator.generator(appDef, true),
             ),
         );
         logger.success(
-            `Generated ${clientCount} client${clientCount === 1 ? "" : "s"}`,
+            `Generated ${clientCount} client${clientCount === 1 ? "" : "s"} in ${new Date().getTime() - startTime}ms`,
         );
     } catch (err) {
         logger.error(err);
     }
-}
-
-async function createEntryModule(config: ResolvedArriConfig) {
-    const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
-    const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.srcDir), appModule)
-        .split(".");
-    appImportParts.pop();
-    const virtualEntry = `import { toNodeListener } from '@arrirpc/server';
-import app from './${GEN_APP_FILE}';
-
-export default app.h3App;`;
-    await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, GEN_SERVER_ENTRY_FILE),
-        virtualEntry,
-    );
 }
