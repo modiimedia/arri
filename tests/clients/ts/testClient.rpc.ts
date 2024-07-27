@@ -113,6 +113,10 @@ export class TestClientTestsService {
             clientVersion: "10",
         });
     }
+    /**
+     * If the target language supports it. Generated code should mark this procedure as deprecated.
+     * @deprecated
+     */
     async deprecatedRpc(params: DeprecatedRpcParams): Promise<undefined> {
         return arriRequest<undefined, DeprecatedRpcParams>({
             url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
@@ -229,6 +233,9 @@ export class TestClientTestsService {
             options,
         );
     }
+    /**
+     * This route will always return an error. The client should automatically retry with exponential backoff.
+     */
     streamConnectionErrorTest(
         params: StreamConnectionErrorTestParams,
         options: SseOptions<StreamConnectionErrorTestResponse> = {},
@@ -251,6 +258,9 @@ export class TestClientTestsService {
             options,
         );
     }
+    /**
+     * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+     */
     streamLargeObjects(
         options: SseOptions<StreamLargeObjectsResponse> = {},
     ): EventSourceController {
@@ -308,6 +318,9 @@ export class TestClientTestsService {
             options,
         );
     }
+    /**
+     * When the client receives the 'done' event, it should close the connection and NOT reconnect
+     */
     streamTenEventsThenEnd(
         options: SseOptions<ChatMessage> = {},
     ): EventSourceController {
