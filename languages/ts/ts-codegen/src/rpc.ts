@@ -5,7 +5,7 @@ import {
     WsRpcDefinition,
 } from "@arrirpc/codegen-utils";
 
-import { CodegenContext, validVarName } from "./common";
+import { CodegenContext, getJsDocComment, validVarName } from "./common";
 
 export function tsRpcFromDefinition(
     def: RpcDefinition,
@@ -39,7 +39,10 @@ export function httpRpcFromDefinition(
         def.method === "get" ? "toUrlQueryString" : "toJsonString";
     if (def.isEventStream) {
         context.usedFeatures.sse = true;
-        return `    ${key}(${params ? `params: ${params},` : ""} options: SseOptions<${response ?? "undefined"}> = {}): EventSourceController {
+        return `${getJsDocComment({
+            description: def.description,
+            isDeprecated: def.isDeprecated,
+        })}    ${key}(${params ? `params: ${params},` : ""} options: SseOptions<${response ?? "undefined"}> = {}): EventSourceController {
         return arriSseRequest<${response ?? "undefined"}, ${params ?? "undefined"}>(
             {
                 url: \`\${this._baseUrl}${def.path}\`,
@@ -55,7 +58,10 @@ export function httpRpcFromDefinition(
         )
     }`;
     }
-    return `    async ${key}(${params ? `params: ${params}` : ""}): Promise<${response ?? "undefined"}> {
+    return `${getJsDocComment({
+        description: def.description,
+        isDeprecated: def.isDeprecated,
+    })}    async ${key}(${params ? `params: ${params}` : ""}): Promise<${response ?? "undefined"}> {
         return arriRequest<${response ?? "undefined"}, ${params ?? "undefined"}>({
             url: \`\${this._baseUrl}${def.path}\`,
             method: "${def.method.toLowerCase()}",
@@ -81,7 +87,10 @@ export function wsRpcFromDefinition(
     const response = def.response
         ? `${context.typePrefix}${pascalCase(validVarName(def.response), { normalize: true })}`
         : undefined;
-    return `    async ${key}(options: WsOptions<${response ?? "undefined"}> = {}): Promise<WsController<${params ?? "undefined"},${response ?? "undefined"}>> {
+    return `${getJsDocComment({
+        description: def.description,
+        isDeprecated: def.isDeprecated,
+    })}    async ${key}(options: WsOptions<${response ?? "undefined"}> = {}): Promise<WsController<${params ?? "undefined"},${response ?? "undefined"}>> {
         return arriWsRequest<${params ?? "undefined"}, ${response ?? "undefined"}>({
             url: \`\${this._baseUrl}${def.path}\`,
             headers: this._headers,
