@@ -66,9 +66,7 @@ export const dartClientGenerator = defineGeneratorPlugin(
                     const destination = path.resolve(options.outputFile);
                     await fs.writeFile(destination, result);
                     if (options.format !== false) {
-                        execSync(`dart format ${destination}`, {
-                            stdio: "inherit",
-                        });
+                        execSync(`dart format ${destination}`);
                     }
                 } catch (err) {
                     console.error(err);

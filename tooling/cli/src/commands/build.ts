@@ -86,11 +86,14 @@ async function startBuild(config: ResolvedArriConfig, skipCodeGen = false) {
         );
         const def = JSON.parse(readFileSync(defJson, { encoding: "utf-8" }));
         if (isAppDefinition(def) && clientCount > 0) {
-            logger.log(`Generating ${clientCount} clients`);
+            const startTime = new Date().getTime();
+            logger.log(`Generating ${clientCount} client(s)...`);
             await Promise.all(
                 config.generators.map((plugin) => plugin.generator(def)),
             );
-            logger.log(`${clientCount} clients generated`);
+            logger.log(
+                `${clientCount} client(s) generated in ${new Date().getTime() - startTime}ms`,
+            );
         } else {
             logger.warn(
                 "No client generators specified. Skipping client codegen.",
