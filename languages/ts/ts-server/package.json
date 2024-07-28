@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/server",
-  "version": "0.57.3",
+  "version": "0.57.4",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
