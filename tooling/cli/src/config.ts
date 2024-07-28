@@ -38,6 +38,11 @@ export interface ArriConfig {
          * Use this to add directories outside of the srcDir that should trigger a dev server reload
          */
         additionalWatchDirs?: string[];
+        /**
+         * If you want to serve both https and http on the dev server
+         */
+        httpWithHttps?: boolean;
+        httpWithHttpsPort?: number;
     };
 }
 

@@ -7,11 +7,11 @@ import {
     type SchemaFormValues,
 } from "@arrirpc/codegen-utils";
 import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
-import { DEV_DEFINITION_ENDPOINT } from "arri";
 import {
     type App,
     createApp,
     createRouter,
+    defineEventHandler,
     eventHandler,
     H3Event,
     type Router,
@@ -87,7 +87,7 @@ export class ArriApp {
         if (!opts.disableDefinitionRoute) {
             this.h3Router.get(
                 this.definitionPath,
-                eventHandler((event) => {
+                defineEventHandler((event) => {
                     setResponseHeader(
                         event,
                         "Content-Type",
@@ -123,20 +123,20 @@ export class ArriApp {
                 },
             });
         }
-        // this route is used by the dev server when auto-generating client code
-        if (process.env.ARRI_DEV_MODE === "true") {
-            this.h3Router.get(
-                DEV_DEFINITION_ENDPOINT,
-                eventHandler((event) => {
-                    setResponseHeader(
-                        event,
-                        "Content-Type",
-                        "application/json",
-                    );
-                    return this.getAppDefinition();
-                }),
-            );
-        }
+        // // this route is used by the dev server when auto-generating client code
+        // if (process.env.ARRI_DEV_MODE === "true") {
+        //     this.h3Router.get(
+        //         DEV_DEFINITION_ENDPOINT,
+        //         eventHandler((event) => {
+        //             setResponseHeader(
+        //                 event,
+        //                 "Content-Type",
+        //                 "application/json",
+        //             );
+        //             return this.getAppDefinition();
+        //         }),
+        //     );
+        // }
         // default fallback route
         this.h3Router.use(
             "/**",
@@ -283,7 +283,7 @@ export interface ArriOptions {
     onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onError?: (
         error: ArriServerError,
-        event: RequestHookContext,
+        event: RequestHookEvent,
     ) => void | Promise<void>;
 }
 

@@ -1,6 +1,11 @@
 import { SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
 
-import { CodegenContext, getTsTypeName, TsProperty } from "./common";
+import {
+    CodegenContext,
+    getJsDocComment,
+    getTsTypeName,
+    TsProperty,
+} from "./common";
 import { tsObjectFromSchema } from "./object";
 
 export function tsTaggedUnionFromSchema(
@@ -66,7 +71,7 @@ export function tsTaggedUnionFromSchema(
         });
         subTypes.push({ value: key, data: subType });
     }
-    result.content = `export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(" |")};
+    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(" |")};
 export const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
     new(): ${prefixedTypeName} {
         return $$${subTypes[0]!.data.typeName}.new();
