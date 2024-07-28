@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import { AppDefinition } from "@arrirpc/codegen-utils";
-import { listen } from "@joshmossas/listhen";
+import { listen, Listener } from "@joshmossas/listhen";
 // import watcher from "@parcel/watcher";
 // import type ParcelWatcher from "@parcel/watcher";
 import { loadConfig } from "c12";
@@ -104,6 +104,28 @@ async function createDevServer(config: ResolvedArriConfig) {
             },
         },
     });
+    let secondaryListener: Listener | undefined;
+    if (config.devServer.httpWithHttps) {
+        secondaryListener = await listen(toNodeListener(app), {
+            port: config.devServer.httpWithHttpsPort ?? config.port + 1,
+            https: false,
+            http2: config.http2,
+            public: true,
+            ws: {
+                resolve(info) {
+                    if (ws?.resolve) {
+                        return ws.resolve(info);
+                    }
+                    return {};
+                },
+            },
+            qr: false,
+            showURL: false,
+        });
+        logger.info(
+            `Serving unencrypted traffic from port ${secondaryListener.address.port}`,
+        );
+    }
     async function reload(): Promise<AppDefinition> {
         const appEntry = (
             await import(
@@ -122,6 +144,7 @@ async function createDevServer(config: ResolvedArriConfig) {
     return {
         h3App: app,
         listener,
+        secondaryListener,
         reload,
         ws,
     };
