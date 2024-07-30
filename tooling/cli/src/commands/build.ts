@@ -222,7 +222,8 @@ async function createCodegenEntryFile(config: ResolvedArriConfig) {
     writeFileSync(
         path.resolve(__dirname, "../.output", "__definition.json"),
         JSON.stringify(def),
-    );`,
+    );
+    process.exit(0);`,
         { tabWidth: 4, parser: "typescript" },
     );
     await fs.writeFile(
