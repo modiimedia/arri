@@ -56,7 +56,7 @@ class ArriWebsocketController<TIncoming, TOutgoing> {
     channel.sink.add(serializer(msg));
   }
 
-  void close([int? statusCode = status.goingAway, String? reason]) {
+  void close([int? statusCode = status.normalClosure, String? reason]) {
     channel.sink.close(statusCode, reason);
   }
 
