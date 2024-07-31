@@ -8,6 +8,7 @@ Arri is a code-first RPC framework. Type-safe clients get generated directly fro
 
 -   [Server Implementations](#server-implementations)
 -   [Client Generators](#client-generators)
+    -   [Create Your Own](#create-your-own)
 -   [Other Tooling](#other-tooling)
 -   [Manually Creating An App Definition](#manually-creating-an-app-definition)
 
@@ -38,6 +39,10 @@ Below are the language client generators that are planned to have first party su
 ✅ completed
 
 🚧 in progress
+
+### Create Your Own
+
+-   [Creating a custom Arri generator](./docs/creating-a-custom-generator.md)
 
 ## Other Tooling
 
