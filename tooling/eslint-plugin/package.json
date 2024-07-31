@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/eslint-plugin",
-  "version": "0.57.7",
+  "version": "0.57.8",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
   "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
