@@ -1,6 +1,6 @@
 import { type ExtractParams } from "./middleware";
 
-export interface ArriEventContext extends Record<string, unknown> {}
+export interface ArriEventContext extends Record<string, any> {}
 
 export type RpcEventContext<TParams = undefined> = ArriEventContext & {
     rpcName: string;
@@ -39,6 +39,6 @@ export type MiddlewareEventContext = ArriEventContext & {
 
 export type RequestHookContext = ArriEventContext & {
     rpcName?: string;
-    params?: Record<string, unknown>;
+    params?: Record<string, any>;
     response?: unknown;
 };

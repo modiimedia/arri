@@ -157,7 +157,9 @@ export class ArriApp {
             }),
         );
     }
-
+    use(input: Middleware): void;
+    use(input: ArriRouter): void;
+    use(input: ArriService): void;
     use(input: Middleware | ArriRouter | ArriService): void {
         if (typeof input === "object" && input instanceof ArriRouter) {
             for (const route of input.getRoutes()) {
