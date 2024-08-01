@@ -72,7 +72,7 @@ function parse<T>(
     if (data.instancePath.length === 0 && typeof input === "string") {
         try {
             parsedInput = JSON.parse(input);
-        } catch (err) {
+        } catch (_) {
             data.errors.push({
                 instancePath: data.instancePath,
                 schemaPath: `${data.schemaPath}/elements`,
