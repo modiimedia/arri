@@ -112,29 +112,34 @@ All error responses must conform to this pattern.
 
 ## Rule 5: You must be able to produce an AppDefinition file
 
-For details about the app definition specification see [here](../specifications/arri_app_definition.md). This specification can be manually created or automatically created at build time.
+For details about the app definition specification see [here](../specifications/arri_app_definition.md).
 
-All official Arri server implementations will provide mechanisms for automatically generating this specification from your server code. This is in-keeping with Arri's "code-first" philosophy. The method by which this is accomplished will depend on the meta-programming tools available in the target language.
+This is the most difficult rule to implement and you will probably spend the majority of your implementation time on this step. For those that want to opt out of this step arri provides tools to manually create app definitions, which can be seen [here](../README.md#manually-creating-an-app-definition).
 
-The most common of these approaches are:
+Arri takes a "code-first" approach which means it prioritizing automatically generating these definitions from your server code. In this, the code becomes the source of truth. The methods by which you accomplish this automatic generation doesn't matter and will likely depend on the language with which the server is being implemented in. The most common approaches to this sort of problem are:
 
 -   Schema builders
 -   Macros
 -   Annotations + Codegen
 
+### Examples
+
+#### Typescript
+
 The typescript implementation uses the schema builder approach (similar to Zod) which makes the type definitions and rpc definitions available at runtime.
 
 ```ts
+// Arri Models
 const UserParams = a.object("UserParams", {
     userId: a.string(),
 });
-
 const User = a.object("User", {
     id: a.string(),
     name: a.string(),
 });
 
-const getUsers = defineRpc({
+// RPC
+export const getUser = defineRpc({
     params: UserParams,
     response: User,
     handler({ params }) {
@@ -143,7 +148,18 @@ const getUsers = defineRpc({
 });
 ```
 
-In a language like Rust, the server implementation will likely make use of proc macros/.
+These schemas then get registered on the app instance:
+
+```ts
+import { getUser } from "./wherever";
+const app = new ArriApp();
+
+app.rpc("getUser", getUser);
+```
+
+#### Rust
+
+In a language like Rust, the server implementation will likely make use of proc macros.
 
 ```rust
 #[derive(ArriModel)]
@@ -162,6 +178,8 @@ async fn get_user(params: UserParams) -> Result<User, ()> {
     // implementation here
 }
 ```
+
+### After creating an app definition
 
 Once you have generated the app definition you simply pass it to the Arri code generator.
 
