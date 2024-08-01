@@ -24,7 +24,7 @@ When I have time I would like to add more languages to this list. Currently I ha
 
 ## Client Generators
 
-Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients.
+Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
 | Language                                            | HTTP | SSE |
 | --------------------------------------------------- | ---- | --- |
@@ -39,10 +39,6 @@ Below are the language client generators that are planned to have first party su
 ✅ completed
 
 🚧 in progress
-
-### Create Your Own
-
--   [Creating a custom Arri generator](./docs/creating-a-custom-generator.md)
 
 ## Other Tooling
 
