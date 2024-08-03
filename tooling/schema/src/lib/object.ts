@@ -39,7 +39,7 @@ export function object<
     input: TInput,
 ): AObjectSchema<InferObjectOutput<TInput>, TAdditionalProps>;
 export function object<
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     TInput extends Record<any, ASchema> = {},
     TAdditionalProps extends boolean = false,
 >(
@@ -117,7 +117,7 @@ export function parseObjectSchema<T>(
         try {
             const result = JSON.parse(input);
             parsedInput = result;
-        } catch (err) {
+        } catch (_err) {
             data.errors.push({
                 instancePath: data.instancePath,
                 schemaPath: `${data.schemaPath}/properties`,
@@ -341,7 +341,6 @@ export function omit<
     };
     Object.keys(inputSchema.properties).forEach((key) => {
         if (keys.includes(key as any)) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete schema.properties[key];
         }
     });
@@ -355,7 +354,6 @@ export function omit<
                 return;
             }
             if (keys.includes(key as any)) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete schema.optionalProperties[key];
             }
         });

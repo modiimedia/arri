@@ -21,9 +21,11 @@ When I have time I would like to add more languages to this list. Currently I ha
 -   rust
 -   dart
 
+See this [guide](/docs/implementing-an-arri-server.md) for information on how to implement your own Arri server
+
 ## Client Generators
 
-Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients.
+Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
 | Language                                            | HTTP | SSE |
 | --------------------------------------------------- | ---- | --- |

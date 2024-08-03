@@ -1,4 +1,4 @@
-import { updatePackageJson, updatePubspecYaml } from "./use";
+import { updateCargoToml, updatePackageJson, updatePubspecYaml } from "./use";
 
 describe("updatePackageJson()", () => {
     it("updates relevant lines and preserves formatting", () => {
@@ -65,6 +65,53 @@ describe("updatePubspecYaml()", () => {
     # this is another comment`;
         const output = updatePubspecYaml(input, "2.0.0");
         expect(output.content).toBe(expectedOutput);
+        expect(output.updated).toBe(true);
+    });
+});
+
+describe("updateCargoToml()", () => {
+    it("updates relevant lines while preserving formatting and comments", () => {
+        const input1 = `[package]
+name = "rust"
+version = "0.0.1"
+# this is a comment
+edition = "2021"
+
+[dependencies]
+arri_client = "0.1.0" # this is another comment
+tokio = { version = "1.39.2", features = ["full"] }`;
+        const expectedOutput1 = `[package]
+name = "rust"
+version = "0.0.1"
+# this is a comment
+edition = "2021"
+
+[dependencies]
+arri_client = "2.0.0" # this is another comment
+tokio = { version = "1.39.2", features = ["full"] }`;
+        const output = updateCargoToml(input1, "2.0.0");
+        expect(output.content).toBe(expectedOutput1);
+        expect(output.updated).toBe(true);
+        const input2 = `[package]
+name = "rust"
+version = "0.0.1"
+# this is a comment
+edition = "2021"
+
+[dependencies]
+arri_client = { version = '0.1.0' } # this is another comment
+tokio = { version = "1.39.2", features = ["full"] }`;
+        const expectedOutput2 = `[package]
+name = "rust"
+version = "0.0.1"
+# this is a comment
+edition = "2021"
+
+[dependencies]
+arri_client = { version = '2.1.1' } # this is another comment
+tokio = { version = "1.39.2", features = ["full"] }`;
+        const output2 = updateCargoToml(input2, "2.1.1");
+        expect(output2.content).toBe(expectedOutput2);
         expect(output.updated).toBe(true);
     });
 });

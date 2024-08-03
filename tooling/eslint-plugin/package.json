@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/eslint-plugin",
-  "version": "0.57.1",
+  "version": "0.57.8",
   "license": "MIT",
   "author": {
     "name": "joshmossas",
@@ -30,7 +30,7 @@
     "dist"
   ],
   "devDependencies": {
-    "@types/eslint": "^8.56.11"
+    "@types/eslint": "^9.6.0"
   },
   "peerDependencies": {
     "eslint": ">=8.0.0"
