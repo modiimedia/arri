@@ -151,11 +151,10 @@ async function runGenerators(
 ) {
     logger.info(`Generating ${generators?.length} client(s)`);
     await Promise.allSettled(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         generators.map((gen) =>
             gen.generator(
                 def ?? {
-                    schemaVersion: "0.0.6",
+                    schemaVersion: "0.0.7",
                     procedures: {},
                     definitions: {},
                 },
