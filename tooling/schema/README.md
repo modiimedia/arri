@@ -1,8 +1,6 @@
 # Arri Schema
 
-A type builder and validation library built on top of the [Json Type Definition (RFC 8927)](https://jsontypedef.com) This library is pretty similar to [Typebox](https://github.com/sinclairzx81/typebox) except that it creates Json Type Definition (JTD) objects instead of Json Schema objects.
-
-A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
+A type builder and validation library for [Arri Type Definitions](/specifications/arri_type_definition.md). A lot of inspiration was taken from both [Typebox](https://github.com/sinclairzx81/typebox) and [Zod](https://github.com/colinhacks/zod) when designing this library.
 
 ## Project Philosophy
 
@@ -16,7 +14,11 @@ I am not looking to support every feature of Typescript's type system or even ev
 
 ### Adherence to RFC 8927
 
-To represent the data-models in a language agnostic way this library heavily relies on JSON Type Definition (JTD). However, this library does not strictly comply with the JTD specification. The reason for this is because JTD does not support 64-bit integers. I believe sharing large integers across languages is a huge pain point especially when going to and from Javascript. For this reason alone, I have opted to break away from the JTD spec and add support for `int64` and `uint64`. So while I have no intention to break further away from the spec I am open to it if a large enough issue arises (in my view). If you use this library be aware that I'm using a superset of JTD rather than a strict spec compliant implementation.
+Originally this library was created as a way for building schemas for [Json Type Definition](https://jsontypedef.com/). However over time parts of the internal schema were modified to better suite the goals of Arri RPC. Some of these modifications include:
+
+-   Adding support for 64-bit integers
+-   Replacing the `additionalProperties` field with `strict` to allow for additional properties by default.
+-   Restrict `ref` to only be used for object types.
 
 ## Table of Contents
 
