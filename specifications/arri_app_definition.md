@@ -71,16 +71,14 @@ This is the root object that makes up an Arri app definition document.
                         "id": "UserRole"
                     }
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "GetUserParams": {
             "properties": {
                 "userId": {
                     "type": "string"
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "CreateUserParams": {
             "properties": {
@@ -95,16 +93,14 @@ This is the root object that makes up an Arri app definition document.
                         "id": "UserRole"
                     }
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "WatchUserParams": {
             "properties": {
                 "userId": {
                     "type": "string"
                 }
-            },
-            "additionalProperties": true
+            }
         }
     }
 }

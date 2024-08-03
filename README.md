@@ -161,7 +161,6 @@ JSON app definitions are something that would normally be automatically generate
                     "metadata": {}
                 }
             },
-            "additionalProperties": true,
             "metadata": {
                 "id": "HelloParams",
                 "metadata": {}
@@ -174,7 +173,6 @@ JSON app definitions are something that would normally be automatically generate
                     "metadata": {}
                 }
             },
-            "additionalProperties": true,
             "metadata": {
                 "id": "HelloResponse"
             }
