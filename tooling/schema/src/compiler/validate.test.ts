@@ -459,7 +459,7 @@ it("validates nullable discriminators", () => {
     );
 });
 
-it("uses additionalProperties properly", () => {
+it("uses strict properly", () => {
     const LooseSchema = a.compile(
         a.object({ id: a.string(), name: a.string() }),
     );
@@ -469,7 +469,7 @@ it("uses additionalProperties properly", () => {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: false },
+            { strict: true },
         ),
     );
     const input = {

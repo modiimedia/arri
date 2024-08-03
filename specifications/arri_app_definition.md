@@ -2,7 +2,7 @@ _This is a work in progress_
 
 # Arri App Definition
 
-This documents defines the app definition specification for Arri RPC. The current schema version is 0.0.6.
+This documents defines the app definition specification for Arri RPC. The current schema version is 0.0.7.
 
 ## Overview
 
@@ -23,7 +23,7 @@ This is the root object that makes up an Arri app definition document.
 
 ```json
 {
-    "schemaVersion": "0.0.6",
+    "schemaVersion": "0.0.7",
     "info": {
         "name": "My Arri Server",
         "description": "This is a server I made using Arri RPC",
@@ -71,16 +71,14 @@ This is the root object that makes up an Arri app definition document.
                         "id": "UserRole"
                     }
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "GetUserParams": {
             "properties": {
                 "userId": {
                     "type": "string"
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "CreateUserParams": {
             "properties": {
@@ -95,16 +93,14 @@ This is the root object that makes up an Arri app definition document.
                         "id": "UserRole"
                     }
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "WatchUserParams": {
             "properties": {
                 "userId": {
                     "type": "string"
                 }
-            },
-            "additionalProperties": true
+            }
         }
     }
 }

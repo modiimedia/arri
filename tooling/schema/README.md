@@ -214,14 +214,13 @@ a.validate({
         "created": {
             "type": "timestamp"
         }
-    },
-    "additionalProperties": true
+    }
 }
 ```
 
 #### Strict Mode
 
-By default @arrirpc/schema will ignore and strip out any additional properties when validating objects. If you want validation to fail when additional properties are present then modify the `additionalProperties` option.
+By default @arrirpc/schema will ignore and strip out any additional properties when validating objects. If you want validation to fail when additional properties are present then modify the `strict` option.
 
 ```ts
 const UserStrict = a.object(
@@ -231,7 +230,7 @@ const UserStrict = a.object(
         created: a.timestamp(),
     },
     {
-        additionalProperties: false,
+        strict: true,
     },
 );
 
@@ -258,7 +257,7 @@ a.parse(UserStrict, {
             "type": "timestamp"
         }
     },
-    "additionalProperties": false
+    "strict": true
 }
 ```
 
@@ -339,16 +338,14 @@ a.validate(Shape, {
                 "height": {
                     "type": "float32"
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "CIRCLE": {
             "properties": {
                 "radius": {
                     "type": "float32"
                 }
-            },
-            "additionalProperties": true
+            }
         }
     }
 }
@@ -426,7 +423,6 @@ a.validate(BinaryTree, {
             "nullable": true
         }
     },
-    "additionalProperties": true,
     "metadata": {
         "id": "BinaryTree"
     }

@@ -133,7 +133,7 @@ const BookParams = a.object(
 type BookParams = a.infer<typeof BookParams>;
 
 const def: AppDefinition = {
-    schemaVersion: "0.0.6",
+    schemaVersion: "0.0.7",
     info: {
         version: "20",
     },

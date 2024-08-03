@@ -79,7 +79,7 @@ export const TestUpdateUserParams = a.pick(
 );
 
 export const TestAppDefinition: AppDefinition = {
-    schemaVersion: "0.0.6",
+    schemaVersion: "0.0.7",
     info: {
         title: "Test App Client",
         description: "This is a example app definition",
@@ -243,7 +243,7 @@ export const ExampleRecursive = a.recursive<ExampleRecursive>(
 );
 
 export const ReferenceAppDefinition: AppDefinition = {
-    schemaVersion: "0.0.6",
+    schemaVersion: "0.0.7",
     procedures: {},
     definitions: {
         ExamplePayload,
