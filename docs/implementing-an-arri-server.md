@@ -87,7 +87,7 @@ http://myapi.com/users/get-user?a=FOO&b=BAR&c=BAZ
 
 ### Additional Notes
 
-Because GET requests must send parameters through as URL query params. This means that the following types cannot be supported for parameters:
+Because GET requests must send parameters through as URL query params. This means that the following types cannot be supported for parameters when an RPC is bound to a GET method:
 
 -   "any" types
 -   arrays
