@@ -24,7 +24,6 @@ Arri doesn't differentiate between any of the following HTTP methods:
 
 -   `GET`
 -   `POST`
--   `UPDATE`
 -   `PATCH`
 -   `PUT`
 -   `DELETE`
@@ -38,7 +37,13 @@ The following HTTP methods preserve their standard usage/meaning:
 
 Although the Arri specification doesn't require you to implement `HEAD` for your routes.
 
-## Rule 3: All RPC parameters are passed through the request body as JSON with the exception of GET requests
+## Rule 3: All inputs and outputs must be a named object
+
+Procedures cannot send / receive arbitrary types like `string` or `boolean`. All parameters and responses must be a named object. So when using [Arri Type Definition](/specifications/arri_type_definition.md) that means that the "Property" Schema Form and "Discriminator" Schema Form are the only valid inputs and outputs that can be assigned to procedures.
+
+Allowing for unnamed inputs and outputs complicates code-generation.
+
+## Rule 4: All RPC parameters are passed through the request body as JSON with the exception of GET requests
 
 Arri doesn't not mix passing of information between the URL and the request body. The URL is used to specify which RPC is being called and the body is used to pass parameters to the RPC. The only exception to this rule is when an RPC uses a `GET` HTTP method. When using a `GET` method, the parameters are passed as URL query params.
 
@@ -92,7 +97,7 @@ Because GET requests must send parameters through as URL query params. This mean
 
 Additionally when receiving RPC params through query parameters every field will be encoded as a string so you need to be able to parse those values from the string.
 
-## Rule 4: Where returning an error the server returns an Arri error response.
+## Rule 5: Where returning an error the server returns an Arri error response.
 
 An Arri response looks like this:
 
@@ -110,7 +115,7 @@ An Arri response looks like this:
 
 All error responses must conform to this pattern.
 
-## Rule 5: You must be able to produce an AppDefinition file
+## Rule 6: You must be able to produce an AppDefinition file
 
 For details about the app definition specification see [here](../specifications/arri_app_definition.md).
 
