@@ -53,8 +53,10 @@ export function object<
         : ((propB ?? {}) as AObjectSchemaOptions<TAdditionalProps>);
     const schema: SchemaFormProperties = {
         properties: {},
-        strict: options.strict,
     };
+    if (typeof options.strict === "boolean") {
+        schema.strict = options.strict;
+    }
     for (const key of Object.keys(input)) {
         const prop = input[key]!;
         if (prop.metadata[SCHEMA_METADATA].optional) {
@@ -253,8 +255,10 @@ export function pick<
     const schema: SchemaFormProperties = {
         properties: {},
         nullable: inputSchema.nullable,
-        strict: options.strict,
     };
+    if (typeof options.strict === "boolean") {
+        schema.strict = options.strict;
+    }
 
     Object.keys(inputSchema.properties).forEach((key) => {
         if (!schema.properties) {
@@ -337,14 +341,15 @@ export function omit<
             ...inputSchema.properties,
         },
         nullable: inputSchema.nullable,
-        strict: options.strict,
     };
+    if (typeof options.strict === "boolean") {
+        schema.strict = options.strict;
+    }
     Object.keys(inputSchema.properties).forEach((key) => {
         if (keys.includes(key as any)) {
             delete schema.properties[key];
         }
     });
-
     if (inputSchema.optionalProperties) {
         schema.optionalProperties = {
             ...(inputSchema.optionalProperties as any),
@@ -451,8 +456,10 @@ export function extend<
             ...baseSchema.optionalProperties,
             ...inputSchema.optionalProperties,
         },
-        strict: options.strict,
     };
+    if (typeof options.strict === "boolean") {
+        schema.strict = options.strict;
+    }
 
     const isType = (
         input: unknown,
@@ -489,9 +496,11 @@ export function partial<
     const newSchema: SchemaFormProperties = {
         properties: {},
         optionalProperties: {},
-        strict: options.strict,
         nullable: schema.nullable,
     };
+    if (typeof options.strict === "boolean") {
+        schema.strict = options.strict;
+    }
     for (const key of Object.keys(schema.properties)) {
         const prop = schema.properties[key]!;
         (newSchema.optionalProperties as any)[key] = optional(prop);
