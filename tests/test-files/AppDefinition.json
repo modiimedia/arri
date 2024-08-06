@@ -13,6 +13,7 @@
       "path": "/books/get-book",
       "transport": "http",
       "method": "get",
+      "description": "Get a book",
       "params": "BookParams",
       "response": "Book"
     },
@@ -20,6 +21,8 @@
       "path": "/books/create-book",
       "transport": "http",
       "method": "post",
+      "description": "Create a book",
+      "isDeprecated": true,
       "params": "Book",
       "response": "Book"
     },
@@ -27,9 +30,10 @@
       "path": "/books/watch-book",
       "transport": "http",
       "method": "get",
+      "isEventStream": true,
+      "isDeprecated": true,
       "params": "BookParams",
-      "response": "Book",
-      "isEventStream": true
+      "response": "Book"
     },
     "books.createConnection": {
       "path": "/books/create-connection",
@@ -41,12 +45,27 @@
   "definitions": {
     "Book": {
       "properties": {
-        "id": { "type": "string", "metadata": {} },
-        "name": { "type": "string", "metadata": {} },
-        "createdAt": { "type": "timestamp", "metadata": {} },
-        "updatedAt": { "type": "timestamp", "metadata": {} }
+        "id": {
+          "type": "string",
+          "metadata": { "description": "The book ID" }
+        },
+        "name": {
+          "type": "string",
+          "metadata": { "description": "The book title" }
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "metadata": {
+            "description": "When the book was created",
+            "isDeprecated": true
+          }
+        },
+        "updatedAt": {
+          "type": "timestamp",
+          "metadata": { "isDeprecated": true }
+        }
       },
-      "metadata": { "id": "Book" }
+      "metadata": { "id": "Book", "description": "This is a book" }
     },
     "BookParams": {
       "properties": { "bookId": { "type": "string", "metadata": {} } },
