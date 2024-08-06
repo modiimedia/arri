@@ -179,7 +179,7 @@ While:
 }
 ```
 
-Would reject that same input
+Would accept that same input
 
 ### "Values" Schema Form
 
