@@ -117,6 +117,16 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
 
+  languages/go/go-codegen:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+    devDependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema
+
   languages/kotlin/kotlin-codegen:
     dependencies:
       '@arrirpc/codegen-utils':
