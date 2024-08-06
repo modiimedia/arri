@@ -148,3 +148,29 @@ export function instanceDepth(context: CodegenContext) {
 export function isNullable(schema: Schema, context: CodegenContext) {
     return schema.nullable === true || context.isOptional === true;
 }
+
+export function getCodeComment(
+    metadata?: Schema["metadata"],
+    prefix?: string,
+    valueField?: "field" | "method" | "class",
+) {
+    if (!metadata?.description && !metadata?.isDeprecated) return "";
+    const descriptionPart = metadata.description
+        ?.split("\n")
+        .map((line) => `${prefix ?? ""}* ${line}`)
+        .join("\n");
+    const finalDescription = metadata.description
+        ? `${prefix ?? ""}/**\n${descriptionPart}${prefix ?? ""}\n*/`
+        : "";
+    const deprecationMessage = `@Deprecated(message = "This ${valueField ?? "item"} was marked as deprecated by the server")`;
+    if (metadata.description && metadata.isDeprecated) {
+        return `${finalDescription}\n${deprecationMessage}\n`;
+    }
+    if (metadata.isDeprecated) {
+        return `${deprecationMessage}\n`;
+    }
+    if (metadata.description) {
+        return `${finalDescription}\n`;
+    }
+    return "";
+}

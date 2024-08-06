@@ -30,7 +30,7 @@
       "executor": "@nx/vite:test",
       "inputs": [
         "{projectRoot}/src",
-        "{workspaceRoot}/languages/ts/ts-codegen-reference/src"
+        "{workspaceRoot}/languages/ts/ts-codegen-reference/src/referenceClient.test.ts"
       ],
       "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-codegen"],
       "options": {

@@ -72,6 +72,9 @@ class ExampleClientBooksService(
     private val baseUrl: String,
     private val headers: headersFn,
 ) {
+    /**
+     * Get a book
+     */
     suspend fun getBook(params: BookParams): Book {
         val response = __prepareRequest(
             client = httpClient,
@@ -94,6 +97,10 @@ class ExampleClientBooksService(
         throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
+    /**
+     * Create a book
+     */
+    @Deprecated(message = "This method was marked as deprecated by the server")
     suspend fun createBook(params: Book): Book {
         val response = __prepareRequest(
             client = httpClient,
@@ -116,6 +123,7 @@ class ExampleClientBooksService(
         throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
+    @Deprecated(message = "This method was marked as deprecated by the server")
     fun watchBook(
         scope: CoroutineScope,
         params: BookParams,
@@ -264,10 +272,24 @@ data class ExampleClientError(
     }
 }
 
+/**
+ * This is a book
+ */
 data class Book(
+    /**
+     * The book ID
+     */
     val id: String,
+    /**
+     * The book title
+     */
     val name: String,
+    /**
+     * When the book was created
+     */
+    @Deprecated(message = "This field was marked as deprecated by the server")
     val createdAt: Instant,
+    @Deprecated(message = "This field was marked as deprecated by the server")
     val updatedAt: Instant,
 ) : ExampleClientModel {
     override fun toJson(): String {
