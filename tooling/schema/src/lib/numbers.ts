@@ -174,7 +174,7 @@ export function int64(
                     instancePath: data.instancePath,
                 });
                 return undefined;
-            } catch (err) {
+            } catch (_) {
                 data.errors.push({
                     message: `Error at ${data.instancePath}. Unable to transform ${input} to BigInt`,
                     schemaPath: `${data.schemaPath}/type`,
@@ -241,7 +241,7 @@ export function uint64(
                     instancePath: data.instancePath,
                 });
                 return undefined;
-            } catch (err) {
+            } catch (_) {
                 data.errors.push({
                     message: `Error at ${data.instancePath}. Unable to transform ${input} to BigInt.`,
                     schemaPath: `${data.schemaPath}/type`,

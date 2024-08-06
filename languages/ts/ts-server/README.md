@@ -276,7 +276,9 @@ stream.close()
 stream.onClosed(cb: () => any)
 ```
 
-### Creating Websocket Procedures (Experimental)
+### Creating Websocket Procedures (Experimental
+
+Very experimental. Do not use in production.
 
 ```ts
 // Websocket procedures work really well with discriminated unions

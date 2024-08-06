@@ -436,7 +436,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             `${innerTargetVal}.${input.discriminatorKey} = "${input.discriminatorValue}";`,
         );
     }
-    if (!input.schema.additionalProperties) {
+    if (input.schema.strict) {
         const keyVal = `_${depthStr}_keys`;
         const optionalKeyVal = `_${depthStr}_optionalKeys`;
         const keys = Object.keys(input.schema.properties)
@@ -450,7 +450,7 @@ function objectTemplate(input: TemplateInput<SchemaFormProperties>): string {
             const ${optionalKeyVal} = [${optionalKeys}];
             for (let _key of Object.keys(${input.val})) {
                 if(!${keyVal}.includes(_key) && !${optionalKeyVal}.includes(_key) && _key !== "${input.discriminatorKey ?? ""}") {
-                    $fallback("${input.instancePath}", "${input.schemaPath}/additionalProperties", \`The following key is now allowed by the schema "\${_key}".\`);
+                    $fallback("${input.instancePath}", "${input.schemaPath}/strict", \`The following key is now allowed by the schema "\${_key}".\`);
                 }
             }
                 `,

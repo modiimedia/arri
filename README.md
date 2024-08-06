@@ -4,6 +4,8 @@ _**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
 Arri is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
+Go [here](/languages/ts/ts-server/README.md) to get started with a Typescript server. More server implementations to come.
+
 ## Table of Contents
 
 -   [Server Implementations](#server-implementations)
@@ -21,9 +23,11 @@ When I have time I would like to add more languages to this list. Currently I ha
 -   rust
 -   dart
 
+See this [guide](/docs/implementing-an-arri-server.md) for information on how to implement your own Arri server
+
 ## Client Generators
 
-Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients.
+Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
 | Language                                            | HTTP | SSE |
 | --------------------------------------------------- | ---- | --- |
@@ -159,7 +163,6 @@ JSON app definitions are something that would normally be automatically generate
                     "metadata": {}
                 }
             },
-            "additionalProperties": true,
             "metadata": {
                 "id": "HelloParams",
                 "metadata": {}
@@ -172,7 +175,6 @@ JSON app definitions are something that would normally be automatically generate
                     "metadata": {}
                 }
             },
-            "additionalProperties": true,
             "metadata": {
                 "id": "HelloResponse"
             }

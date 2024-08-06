@@ -196,7 +196,7 @@ test("create app definition", () => {
         },
     });
     const expectedResult: AppDefinition = {
-        schemaVersion: "0.0.6",
+        schemaVersion: "0.0.7",
         procedures: {
             sayHello: {
                 transport: "http",
@@ -227,7 +227,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {},
             },
             CreateConnectionResponse: {
@@ -237,7 +236,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {},
             },
             SettingsParams: {
@@ -247,7 +245,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {
                     id: "SettingsParams",
                 },
@@ -259,7 +256,6 @@ test("create app definition", () => {
                         metadata: {},
                     },
                 },
-                additionalProperties: true,
                 metadata: {
                     id: "Settings",
                 },

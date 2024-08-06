@@ -116,10 +116,10 @@ export function jsonSchemaScalarToJtdScalar(
 export function jsonSchemaObjectToJtdObject(input: JsonSchemaObject): Schema {
     const result: SchemaFormProperties = {
         properties: {},
-        additionalProperties:
+        strict:
             typeof input.additionalProperties === "boolean"
-                ? input.additionalProperties
-                : true,
+                ? !input.additionalProperties
+                : undefined,
         metadata: {
             id: input.$id ?? input.title,
             description: input.description,

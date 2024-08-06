@@ -1,8 +1,10 @@
 import { type AppDefinition } from "@arrirpc/codegen-utils";
 import { a } from "@arrirpc/schema";
+import { getHeaders } from "h3";
 
 import { ArriApp } from "./app";
 import { defineEventStreamRpc } from "./eventStreamRpc";
+import { defineMiddleware } from "./middleware";
 import { defineRpc } from "./rpc";
 
 it("creates valid app definition", () => {
@@ -49,7 +51,7 @@ it("creates valid app definition", () => {
 
     const def = app.getAppDefinition();
     const expectedResult: AppDefinition = {
-        schemaVersion: "0.0.6",
+        schemaVersion: "0.0.7",
         procedures: {
             sayHello: {
                 transport: "http",
@@ -75,4 +77,52 @@ it("creates valid app definition", () => {
     expect(JSON.parse(JSON.stringify(def))).toStrictEqual(
         JSON.parse(JSON.stringify(expectedResult)),
     );
+});
+
+it("allows for H3 Utilities in App Hooks", () => {
+    const app = new ArriApp({
+        onRequest(event) {
+            getHeaders(event);
+        },
+        onError(error, event) {
+            getHeaders(event);
+        },
+        onAfterResponse(event) {
+            getHeaders(event);
+        },
+        onBeforeResponse(event) {
+            getHeaders(event);
+        },
+    });
+    app.use(
+        defineMiddleware((event) => {
+            getHeaders(event);
+        }),
+    );
+    app.rpc(
+        "myRpc",
+        defineRpc({
+            params: a.object({
+                id: a.string(),
+            }),
+            response: undefined,
+            handler({ params }, event) {
+                assertType<string>(params.id);
+                getHeaders(event);
+            },
+            postHandler(_, event) {
+                getHeaders(event);
+            },
+        }),
+    );
+    app.route({
+        path: "/some-route",
+        method: "get",
+        handler(event) {
+            getHeaders(event);
+        },
+        postHandler(event) {
+            getHeaders(event);
+        },
+    });
 });

@@ -177,7 +177,7 @@ function objectTemplate(input: TemplateInput<AObjectSchema<any>>): string {
     } else {
         parts.push(`typeof ${input.val} === 'object' && ${input.val} !== null`);
     }
-    if (!input.schema.additionalProperties) {
+    if (input.schema.strict) {
         const allowedKeys = Object.keys(input.schema.properties);
         for (const key of Object.keys(input.schema.optionalProperties ?? {})) {
             allowedKeys.push(key);

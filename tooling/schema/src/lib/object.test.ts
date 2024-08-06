@@ -76,26 +76,6 @@ describe("a.object()", () => {
                 },
             });
         });
-        it("accounts for the additional properties parameter when inferring types", () => {
-            const SomeObject = a.object(
-                {
-                    id: a.string(),
-                    email: a.string(),
-                },
-                { additionalProperties: true },
-            );
-            type SomeObject = a.infer<typeof SomeObject>;
-            assertType<SomeObject>({
-                id: "12355",
-                email: "johndoe@gmail.com",
-            });
-            assertType<SomeObject>({
-                id: "12345",
-                email: "johndoe@gmail.com",
-                isAdmin: false,
-                someOtherProp: [{ id: 1, date: new Date() }],
-            });
-        });
         it("infers extended objects", () => {
             const SomeObject = a.object({
                 id: a.string(),
@@ -225,7 +205,6 @@ describe("a.object()", () => {
                     metadata: {},
                 },
             },
-            additionalProperties: true,
             metadata: {},
         });
     });
@@ -412,7 +391,6 @@ describe("a.pick()", () => {
                 },
             },
             optionalProperties: {},
-            additionalProperties: true,
             metadata: {},
         });
     });
@@ -420,7 +398,7 @@ describe("a.pick()", () => {
 
 describe("a.omit()", () => {
     const UserSubsetSchema = a.omit(UserSchema, ["id", "isAdmin"], {
-        additionalProperties: false,
+        strict: true,
     });
     type UserSubsetSchema = a.infer<typeof UserSubsetSchema>;
     const parse = (input: unknown) => a.safeParse(UserSubsetSchema, input);
@@ -476,7 +454,7 @@ describe("a.omit()", () => {
                     metadata: {},
                 },
             },
-            additionalProperties: false,
+            strict: true,
             metadata: {},
         });
     });
@@ -592,7 +570,6 @@ describe("a.partial()", () => {
                     metadata: {},
                 },
             },
-            additionalProperties: true,
             metadata: {},
         });
     });
