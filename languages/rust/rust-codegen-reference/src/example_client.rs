@@ -74,6 +74,7 @@ impl ArriClientService for ExampleClientBooksService {
 }
 
 impl ExampleClientBooksService {
+    /// Get a book
     pub async fn get_book(&self, params: BookParams) -> Result<Book, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -88,6 +89,9 @@ impl ExampleClientBooksService {
         )
         .await
     }
+
+    /// Create a book
+    #[deprecated]
     pub async fn create_book(&self, params: Book) -> Result<Book, ArriServerError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
@@ -102,6 +106,7 @@ impl ExampleClientBooksService {
         )
         .await
     }
+    #[deprecated]
     pub async fn watch_book<OnEvent>(
         &self,
         params: BookParams,
@@ -128,11 +133,17 @@ impl ExampleClientBooksService {
     }
 }
 
+/// This is a book
 #[derive(Clone, Debug, PartialEq)]
 pub struct Book {
+    /// The book ID
     pub id: String,
+    /// The book title
     pub name: String,
+    /// When the book was created
+    #[deprecated]
     pub created_at: DateTime<FixedOffset>,
+    #[deprecated]
     pub updated_at: DateTime<FixedOffset>,
 }
 

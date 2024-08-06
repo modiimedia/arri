@@ -197,3 +197,24 @@ export function getDartClassName(
         context.modelPrefix,
     );
 }
+
+export function getCodeComments(
+    metadata?: Schema["metadata"],
+    leading?: string,
+) {
+    if (!metadata?.description && !metadata?.isDeprecated) return "";
+    if (!metadata.description && metadata.isDeprecated) {
+        return `${leading ?? ""}@deprecated\n`;
+    }
+    const descriptionString = metadata.description
+        ?.split("\n")
+        .map((line) => `${leading ?? ""}/// ${line}`)
+        .join("\n");
+    if (descriptionString && metadata.isDeprecated) {
+        return `${descriptionString}\n${leading ?? ""}@deprecated\n`;
+    }
+    if (descriptionString) {
+        return `${descriptionString}\n`;
+    }
+    return "";
+}
