@@ -83,6 +83,8 @@ jobs:
           fetch-depth: 0
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.4.4
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Setup Gradle
