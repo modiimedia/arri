@@ -129,7 +129,11 @@ class TestClientTestsService(
         throw TestClientError.fromJson(response.bodyAsText())
     }
 
-    suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
+    /**
+* If the target language supports it. Generated code should mark this procedure as deprecated.
+*/
+@Deprecated(message = "This method was marked as deprecated by the server")
+suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         val response = __prepareRequest(
             client = httpClient,
             url = "$baseUrl/rpcs/tests/deprecated-rpc",
@@ -305,7 +309,10 @@ class TestClientTestsService(
             return job
         }
 
-    fun streamConnectionErrorTest(
+    /**
+* This route will always return an error. The client should automatically retry with exponential backoff.
+*/
+fun streamConnectionErrorTest(
             scope: CoroutineScope,
             params: StreamConnectionErrorTestParams,
             lastEventId: String? = null,
@@ -341,7 +348,10 @@ class TestClientTestsService(
             return job
         }
 
-    fun streamLargeObjects(
+    /**
+* Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
+*/
+fun streamLargeObjects(
             scope: CoroutineScope,
             
             lastEventId: String? = null,
@@ -449,7 +459,10 @@ class TestClientTestsService(
             return job
         }
 
-    fun streamTenEventsThenEnd(
+    /**
+* When the client receives the 'done' event, it should close the connection and NOT reconnect
+*/
+fun streamTenEventsThenEnd(
             scope: CoroutineScope,
             
             lastEventId: String? = null,
@@ -741,7 +754,9 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
+@Deprecated(message = "This class was marked as deprecated by the server")
 data class DeprecatedRpcParams(
+@Deprecated(message = "This field was marked as deprecated by the server")
     val deprecatedField: String,
 ) : TestClientModel {
     override fun toJson(): String {
@@ -2049,7 +2064,6 @@ val `object`: ObjectWithEveryNullableTypeObject? = when (__input.jsonObject["obj
                         __input.jsonObject["object"]!!,
                         "$instancePath/object",
                     )
-                    
                     else -> null
                 }
 val record: MutableMap<String, Boolean?>? = when (__input.jsonObject["record"]) {
@@ -2078,7 +2092,6 @@ val nestedObject: ObjectWithEveryNullableTypeNestedObject? = when (__input.jsonO
                         __input.jsonObject["nestedObject"]!!,
                         "$instancePath/nestedObject",
                     )
-                    
                     else -> null
                 }
 val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>? = when (__input.jsonObject["nestedArray"]) {
@@ -2096,7 +2109,6 @@ val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayE
                         __element!!,
                         "$instancePath/undefined",
                     )
-                    
                     else -> null
                 }
                             )
@@ -2503,7 +2515,6 @@ val data: ObjectWithEveryNullableTypeNestedObjectData? = when (__input.jsonObjec
                         __input.jsonObject["data"]!!,
                         "$instancePath/data",
                     )
-                    
                     else -> null
                 }
             return ObjectWithEveryNullableTypeNestedObject(
@@ -2591,7 +2602,6 @@ val data: ObjectWithEveryNullableTypeNestedObjectDataData? = when (__input.jsonO
                         __input.jsonObject["data"]!!,
                         "$instancePath/data",
                     )
-                    
                     else -> null
                 }
             return ObjectWithEveryNullableTypeNestedObjectData(
@@ -3122,7 +3132,6 @@ val `object`: ObjectWithEveryOptionalTypeObject? = when (__input.jsonObject["obj
                         __input.jsonObject["object"]!!,
                         "$instancePath/object",
                     )
-                    
                     else -> null
                 }
 val record: MutableMap<String, Boolean>? = when (__input.jsonObject["record"]) {
@@ -3151,7 +3160,6 @@ val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = when (__input.jsonO
                         __input.jsonObject["nestedObject"]!!,
                         "$instancePath/nestedObject",
                     )
-                    
                     else -> null
                 }
 val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = when (__input.jsonObject["nestedArray"]) {
@@ -3884,6 +3892,9 @@ sealed interface RecursiveUnion : TestClientModel {
     }
 }
 
+/**
+* Child node
+*/
 data class RecursiveUnionChild(
     val data: RecursiveUnion,
 ) : RecursiveUnion {
@@ -3940,6 +3951,9 @@ val data: RecursiveUnion = when (__input.jsonObject["data"]) {
 
 
 
+/**
+* List of children node
+*/
 data class RecursiveUnionChildren(
     val data: MutableList<RecursiveUnion>,
 ) : RecursiveUnion {
@@ -4015,6 +4029,9 @@ val data: MutableList<RecursiveUnion> = when (__input.jsonObject["data"]) {
 
 
 
+/**
+* Text node
+*/
 data class RecursiveUnionText(
     val data: String,
 ) : RecursiveUnion {
@@ -4068,6 +4085,9 @@ val data: String = when (__input.jsonObject["data"]) {
 
 
 
+/**
+* Shape node
+*/
 data class RecursiveUnionShape(
     val data: RecursiveUnionShapeData,
 ) : RecursiveUnion {
@@ -5475,6 +5495,9 @@ val userId: String = when (__input.jsonObject["userId"]) {
 data class UsersWatchUserResponse(
     val id: String,
     val role: UsersWatchUserResponseRole,
+    /**
+    * A profile picture    
+*/
     val photo: UserPhoto?,
     val createdAt: Instant,
     val numFollowers: Int,
@@ -5609,7 +5632,6 @@ val photo: UserPhoto? = when (__input.jsonObject["photo"]) {
                         __input.jsonObject["photo"]!!,
                         "$instancePath/photo",
                     )
-                    
                     else -> null
                 }
 val createdAt: Instant = when (__input.jsonObject["createdAt"]) {
@@ -5759,11 +5781,17 @@ enum class UsersWatchUserResponseRole {
     }
 }
 
+/**
+* A profile picture
+*/
 data class UserPhoto(
     val url: String,
     val width: Double,
     val height: Double,
     val bytes: Long,
+    /**
+    * When the photo was last updated in nanoseconds    
+*/
     val nanoseconds: ULong,
 ) : TestClientModel {
     override fun toJson(): String {
