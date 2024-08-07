@@ -196,7 +196,7 @@ arri codegen https://myapi.com/__definition # http endpoint
 
 ## Bonus: Create a plugin for the Arri CLI
 
-Server plugins dictate what happens when you run `arri dev` and `arri build`.
+Server plugins dictate what happens when you run `arri dev` and `arri build`. By creating a plugin you can create a fully automated experience.
 
 In order to create a server plugin use the `defineServerConfig` helper from the `arri` package:
 
@@ -267,7 +267,7 @@ Let's say we've configured a go generator that reads our go application and outp
 const goServer = defineServerConfig({
     devArgs: {},
     devFn(_, generators) {
-        // run go generate
+        // run "go generate"
         execSync("go generate", {
             stdio: "inherit",
         });
@@ -277,7 +277,7 @@ const goServer = defineServerConfig({
         ) as AppDefinition;
         // run all of the registered Arri generators
         await Promise.all(generators.map((item) => item.generator(appDef)));
-        // start run application
+        // start the go application
         execSync("go run main.go", {
             stdio: 'inherit'
         });
