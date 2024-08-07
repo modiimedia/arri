@@ -5,8 +5,8 @@ export interface ServerConfig<
     TDevArgs extends ArgsDef | undefined = any,
     TBuildArgs extends ArgsDef | undefined = any,
 > {
-    devArgs: TDevArgs;
-    buildArgs: TBuildArgs;
+    devArgs?: TDevArgs;
+    buildArgs?: TBuildArgs;
     devFn: (
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         args: TDevArgs extends ArgsDef ? ParsedArgs<TDevArgs> : {},
