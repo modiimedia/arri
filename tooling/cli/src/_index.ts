@@ -5,6 +5,8 @@ import { typescriptClientGenerator } from "@arrirpc/codegen-ts";
 
 export { DEV_DEFINITION_ENDPOINT } from "./commands/dev";
 export * from "./config";
+export * from "./serverConfigs/_config";
+export * from "./serverConfigs/_index";
 export {
     type AppDefinition,
     createAppDefinition,

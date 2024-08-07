@@ -1,7 +1,6 @@
-import { defineConfig } from "arri";
+import { defineConfig, tsServer } from "arri";
 
 export default defineConfig({
-    entry: "app.ts",
-    port: 3000,
+    server: tsServer(),
     generators: [],
 });

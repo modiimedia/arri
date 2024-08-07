@@ -1,4 +1,4 @@
-import { defineConfig, generators } from "arri";
+import { defineConfig, generators, tsServer } from "arri";
 import { readFileSync } from "fs";
 import path from "path";
 
@@ -9,11 +9,11 @@ const prettierConfig = JSON.parse(
 );
 
 export default defineConfig({
-    srcDir: "src",
-    port: 2020,
-    entry: "app.ts",
-    serverEntry: "server.ts",
-    http2: true,
+    server: tsServer({
+        serverEntry: "server.ts",
+        http2: true,
+        port: 2020,
+    }),
     generators: [
         generators.typescriptClient({
             clientName: "TestClient",
