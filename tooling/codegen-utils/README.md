@@ -27,7 +27,7 @@ export default defineGeneratorPlugin((options: MyPluginOptions) => {
 
 ```ts
 // type guards
-isAddDefinition(input);
+isAppDefinition(input);
 isRpcDefinition(input);
 isServiceDefinition(input);
 isSchema(input);
