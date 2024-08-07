@@ -45,10 +45,10 @@ pnpm run dev
 
 ```bash
 # npm
-npm install arri @arri/server @arri/schema
+npm install arri @arrirpc/server @arrirpc/schema
 
 # pnpm
-pnpm install arri @arri/server @arri/schema
+pnpm install arri @arrirpc/server @arrirpc/schema
 ```
 
 ### Scaffold Your Project
