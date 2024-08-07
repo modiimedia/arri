@@ -26,25 +26,6 @@ import prettier from "prettier";
 import { isInsideDir, logger } from "../common";
 import { defineServerConfig } from "./_config";
 
-const defaultTsServerConfig: Required<TsServerConfig> = {
-    port: 3000,
-    entry: "app.ts",
-    serverEntry: "",
-    rootDir: ".",
-    srcDir: "src",
-    procedureDir: "procedures",
-    procedureGlobPatterns: ["**/*.rpc.ts"],
-    buildDir: ".arri",
-    esbuild: {},
-    https: false,
-    http2: false,
-    devServer: {
-        additionalWatchDirs: undefined,
-        httpWithHttps: undefined,
-        httpWithHttpsPort: undefined,
-    },
-};
-
 export function tsServer(serverConfig?: TsServerConfig) {
     return defineServerConfig({
         devArgs: undefined,
@@ -153,156 +134,26 @@ export interface TsServerConfig {
     };
 }
 
-export const GEN_APP_FILE = "__arri_app.ts";
-export const GEN_SERVER_ENTRY_FILE = "__arri_server.ts";
-export const OUT_APP_FILE = "app.mjs";
-export const OUT_SERVER_ENTRY = "server.mjs";
-export const OUT_CODEGEN = "codegen.mjs";
-
-export const VIRTUAL_MODULES = {
-    APP: "virtual:arri/app",
-} as const;
-
-export async function setupWorkingDir(config: Required<TsServerConfig>) {
-    const arriDir = path.resolve(config.rootDir, config.buildDir);
-    const outDir = path.resolve(config.rootDir, ".output");
-    if (existsSync(arriDir)) {
-        await fs.rm(arriDir, { recursive: true, force: true });
-    }
-    if (existsSync(outDir)) {
-        await fs.rm(outDir, { recursive: true, force: true });
-    }
-    await fs.mkdir(arriDir);
-    await fs.mkdir(outDir);
-}
-
-interface RpcRoute {
-    name: string;
-    importName: string;
-    importPath: string;
-}
-
-export async function createAppWithRoutesModule(
-    config: Required<TsServerConfig>,
-) {
-    const glob = await import("globby");
-    const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
-    const appImportParts = path
-        .relative(path.resolve(config.rootDir, config.buildDir), appModule)
-        .split(".");
-    appImportParts.pop();
-    const routes: RpcRoute[] = [];
-    const existingRoutes: string[] = [];
-    await Promise.all(
-        config.procedureGlobPatterns.map(async (pattern) => {
-            const results = await getFsRouteBatch(glob.globby, pattern, config);
-            for (const result of results) {
-                if (!existingRoutes.includes(result.name)) {
-                    routes.push(result);
-                    existingRoutes.push(result.name);
-                }
-            }
-        }),
-    );
-    routes.sort((a, b) => (a.name < b.name ? -1 : 1));
-    const module = await prettier.format(
-        `import sourceMapSupport from 'source-map-support';
-        sourceMapSupport.install();
-        import app from '${appImportParts.join(".")}';
-        ${routes
-            .map(
-                (route) =>
-                    `import ${route.importName} from '${route.importPath}';`,
-            )
-            .join("\n")}
-
-        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`).join("\n")}
-
-        export default app;`,
-        { parser: "typescript", tabWidth: 4 },
-    );
-    await fs.writeFile(
-        path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
-        module,
-    );
-}
-
-export async function getFsRouteBatch(
-    glob: typeof globby,
-    globPattern: string,
-    config: Required<TsServerConfig>,
-): Promise<RpcRoute[]> {
-    if (!config.procedureDir) {
-        return [];
-    }
-    const target =
-        `${config.rootDir}/${config.srcDir}/${config.procedureDir}/${globPattern}`
-            .split("//")
-            .join("/")
-            .split("//")
-            .join("/");
-    const files = await glob(target, {
-        onlyFiles: true,
-    });
-    const routes: RpcRoute[] = [];
-    for (const file of files) {
-        const meta = getRpcMetaFromPath(config, file);
-        if (meta) {
-            const importParts = path
-                .relative(path.resolve(config.rootDir, config.buildDir), file)
-                .split(".");
-            importParts.pop();
-            routes.push({
-                name: meta.id,
-                importName: camelCase(meta.id.split(".").join("_")),
-                importPath: `./${importParts.join(".")}`,
-            });
-        }
-    }
-    return routes;
-}
-
-const disallowedNameChars = "~`!@#$%^&*()-+=[]{}\\|:;\"'<>,./";
-
-export const getRpcMetaFromPath = (
-    config: Required<TsServerConfig>,
-    filePath: string,
-): { id: string; httpPath: string } | undefined => {
-    if (!config.procedureDir) {
-        return undefined;
-    }
-    const resolvedFilePath = filePath.split("./").join("/");
-    const parts = resolvedFilePath.split("/");
-    const reversedParts = [...parts].reverse();
-    const nameParts: string[] = [];
-
-    for (const part of reversedParts) {
-        if (part === config.procedureDir) {
-            break;
-        }
-        nameParts.push(part);
-    }
-    const fileName = nameParts.reverse().pop() ?? "";
-    const serviceParts = nameParts
-        .filter((part) => part.trim().length > 0)
-        .map((part) => removeDisallowedChars(part, disallowedNameChars));
-    const fileNameParts = fileName.split(".");
-    if (!fileNameParts.length) {
-        return undefined;
-    }
-    const rpcName = removeDisallowedChars(
-        fileNameParts[0]!,
-        disallowedNameChars,
-    );
-    const httpParts = [
-        ...serviceParts.map((part) => kebabCase(part)),
-        kebabCase(rpcName),
-    ];
-    return {
-        id: [...serviceParts, rpcName].join("."),
-        httpPath: `/${httpParts.join("/")}`,
-    };
+const defaultTsServerConfig: Required<TsServerConfig> = {
+    port: 3000,
+    entry: "app.ts",
+    serverEntry: "",
+    rootDir: ".",
+    srcDir: "src",
+    procedureDir: "procedures",
+    procedureGlobPatterns: ["**/*.rpc.ts"],
+    buildDir: ".arri",
+    esbuild: {},
+    https: false,
+    http2: false,
+    devServer: {
+        additionalWatchDirs: undefined,
+        httpWithHttps: undefined,
+        httpWithHttpsPort: undefined,
+    },
 };
+
+/////// PRODUCTION BUILD //////////
 
 export async function startBuild(
     generators: Generator<any>[],
@@ -324,7 +175,7 @@ export async function startBuild(
             ),
         )
     ) {
-        logger.error(`Unabled to find entry at ${appEntry}`);
+        logger.error(`Unable to find entry at ${appEntry}`);
         process.exit(1);
     }
     await setupWorkingDir(serverConfig);
@@ -518,6 +369,8 @@ type ArriApp = {
     getAppDefinition(): AppDefinition;
 };
 
+///// DEV SERVER ////////
+
 async function createDevServer(config: Required<TsServerConfig>) {
     const h3 = await import("h3");
     const app = h3.createApp();
@@ -601,7 +454,7 @@ export async function startDevServer(
     let appDefStr = JSON.stringify(appDef);
     if (generators.length) {
         logger.info(`Running generators...`);
-        await generateClientsFromDefinition(appDef, config, generators);
+        await generateClientsFromDefinition(appDef, generators);
     } else {
         logger.warn(`No generators specified in config. Skipping codegen.`);
     }
@@ -667,11 +520,7 @@ export async function startDevServer(
                     logger.info(
                         `App Definition updated. Regenerating clients...`,
                     );
-                    await generateClientsFromDefinition(
-                        newAppDef,
-                        config,
-                        generators,
-                    );
+                    await generateClientsFromDefinition(newAppDef, generators);
                     appDef = newAppDef;
                     appDefStr = newAppDefStr;
                 }
@@ -687,9 +536,10 @@ export interface ArriServiceConfig {
     globPatterns: string[];
 }
 
+//// CLIENT GENERATION /////
+
 async function generateClientsFromDefinition(
     appDef: AppDefinition,
-    config: Required<TsServerConfig>,
     generators: Generator<any>[],
 ) {
     const startTime = new Date().getTime();
@@ -705,3 +555,156 @@ async function generateClientsFromDefinition(
         logger.error(err);
     }
 }
+
+////// SHARED UTILS ///////
+
+export const GEN_APP_FILE = "__arri_app.ts";
+export const GEN_SERVER_ENTRY_FILE = "__arri_server.ts";
+export const OUT_APP_FILE = "app.mjs";
+export const OUT_SERVER_ENTRY = "server.mjs";
+export const OUT_CODEGEN = "codegen.mjs";
+
+export const VIRTUAL_MODULES = {
+    APP: "virtual:arri/app",
+} as const;
+
+export async function setupWorkingDir(config: Required<TsServerConfig>) {
+    const arriDir = path.resolve(config.rootDir, config.buildDir);
+    const outDir = path.resolve(config.rootDir, ".output");
+    if (existsSync(arriDir)) {
+        await fs.rm(arriDir, { recursive: true, force: true });
+    }
+    if (existsSync(outDir)) {
+        await fs.rm(outDir, { recursive: true, force: true });
+    }
+    await fs.mkdir(arriDir);
+    await fs.mkdir(outDir);
+}
+
+interface RpcRoute {
+    name: string;
+    importName: string;
+    importPath: string;
+}
+
+export async function createAppWithRoutesModule(
+    config: Required<TsServerConfig>,
+) {
+    const glob = await import("globby");
+    const appModule = path.resolve(config.rootDir, config.srcDir, config.entry);
+    const appImportParts = path
+        .relative(path.resolve(config.rootDir, config.buildDir), appModule)
+        .split(".");
+    appImportParts.pop();
+    const routes: RpcRoute[] = [];
+    const existingRoutes: string[] = [];
+    await Promise.all(
+        config.procedureGlobPatterns.map(async (pattern) => {
+            const results = await getFsRouteBatch(glob.globby, pattern, config);
+            for (const result of results) {
+                if (!existingRoutes.includes(result.name)) {
+                    routes.push(result);
+                    existingRoutes.push(result.name);
+                }
+            }
+        }),
+    );
+    routes.sort((a, b) => (a.name < b.name ? -1 : 1));
+    const module = await prettier.format(
+        `import sourceMapSupport from 'source-map-support';
+        sourceMapSupport.install();
+        import app from '${appImportParts.join(".")}';
+        ${routes
+            .map(
+                (route) =>
+                    `import ${route.importName} from '${route.importPath}';`,
+            )
+            .join("\n")}
+
+        ${routes.map((route) => `app.rpc('${route.name}', ${route.importName});`).join("\n")}
+
+        export default app;`,
+        { parser: "typescript", tabWidth: 4 },
+    );
+    await fs.writeFile(
+        path.resolve(config.rootDir, config.buildDir, GEN_APP_FILE),
+        module,
+    );
+}
+
+export async function getFsRouteBatch(
+    glob: typeof globby,
+    globPattern: string,
+    config: Required<TsServerConfig>,
+): Promise<RpcRoute[]> {
+    if (!config.procedureDir) {
+        return [];
+    }
+    const target =
+        `${config.rootDir}/${config.srcDir}/${config.procedureDir}/${globPattern}`
+            .split("//")
+            .join("/")
+            .split("//")
+            .join("/");
+    const files = await glob(target, {
+        onlyFiles: true,
+    });
+    const routes: RpcRoute[] = [];
+    for (const file of files) {
+        const meta = getRpcMetaFromPath(config, file);
+        if (meta) {
+            const importParts = path
+                .relative(path.resolve(config.rootDir, config.buildDir), file)
+                .split(".");
+            importParts.pop();
+            routes.push({
+                name: meta.id,
+                importName: camelCase(meta.id.split(".").join("_")),
+                importPath: `./${importParts.join(".")}`,
+            });
+        }
+    }
+    return routes;
+}
+
+const disallowedNameChars = "~`!@#$%^&*()-+=[]{}\\|:;\"'<>,./";
+
+export const getRpcMetaFromPath = (
+    config: Required<TsServerConfig>,
+    filePath: string,
+): { id: string; httpPath: string } | undefined => {
+    if (!config.procedureDir) {
+        return undefined;
+    }
+    const resolvedFilePath = filePath.split("./").join("/");
+    const parts = resolvedFilePath.split("/");
+    const reversedParts = [...parts].reverse();
+    const nameParts: string[] = [];
+
+    for (const part of reversedParts) {
+        if (part === config.procedureDir) {
+            break;
+        }
+        nameParts.push(part);
+    }
+    const fileName = nameParts.reverse().pop() ?? "";
+    const serviceParts = nameParts
+        .filter((part) => part.trim().length > 0)
+        .map((part) => removeDisallowedChars(part, disallowedNameChars));
+    const fileNameParts = fileName.split(".");
+    if (!fileNameParts.length) {
+        return undefined;
+    }
+    const rpcName = removeDisallowedChars(
+        fileNameParts[0]!,
+        disallowedNameChars,
+    );
+    const httpParts = [
+        ...serviceParts.map((part) => kebabCase(part)),
+        kebabCase(rpcName),
+    ];
+    return {
+        id: [...serviceParts, rpcName].join("."),
+        httpPath: `/${httpParts.join("/")}`,
+    };
+};

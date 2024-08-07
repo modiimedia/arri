@@ -38,6 +38,7 @@
     "nitropack",
     "nocheck",
     "ofetch",
+    "outfile",
     "pathe",
     "peekable",
     "postversion",
