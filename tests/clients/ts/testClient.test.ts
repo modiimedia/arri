@@ -1,6 +1,6 @@
 import { ArriErrorInstance } from "@arrirpc/client";
+import { ofetch } from "@joshmossas/ofetch";
 import { randomUUID } from "crypto";
-import { ofetch } from "ofetch";
 import { expect, test } from "vitest";
 
 import {
