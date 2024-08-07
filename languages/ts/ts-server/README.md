@@ -2,7 +2,7 @@
 
 Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
 
-Parameters and responses are defined using (@arrirpc/schema)[/tooling/schema/README.md] for automatic validation and serialization of inputs and outputs and to generate Arri Type Definitions for client generators.
+Parameters and responses are defined using [@arrirpc/schema](/tooling/schema/README.md) for automatic validation and serialization of inputs and outputs and to generate Arri Type Definitions for client generators.
 
 ## Table of Contents
 
