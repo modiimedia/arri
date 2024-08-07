@@ -76,6 +76,9 @@ export class ExampleClientBooksService {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
     }
+    /**
+     * Get a book
+     */
     async getBook(params: BookParams): Promise<Book> {
         return arriRequest<Book, BookParams>({
             url: `${this._baseUrl}/books/get-book`,
@@ -88,6 +91,10 @@ export class ExampleClientBooksService {
             clientVersion: "20",
         });
     }
+    /**
+     * Create a book
+     * @deprecated
+     */
     async createBook(params: Book): Promise<Book> {
         return arriRequest<Book, Book>({
             url: `${this._baseUrl}/books/create-book`,
@@ -100,6 +107,9 @@ export class ExampleClientBooksService {
             clientVersion: "20",
         });
     }
+    /**
+     * @deprecated
+     */
     watchBook(
         params: BookParams,
         options: SseOptions<Book> = {},
@@ -137,10 +147,26 @@ export class ExampleClientBooksService {
     }
 }
 
+/**
+ * This is a book
+ */
 export interface Book {
+    /**
+     * The book ID
+     */
     id: string;
+    /**
+     * The book title
+     */
     name: string;
+    /**
+     * When the book was created
+     * @deprecated
+     */
     createdAt: Date;
+    /**
+     * @deprecated
+     */
     updatedAt: Date;
 }
 export const $$Book: ArriModelValidator<Book> = {

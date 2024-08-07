@@ -21,7 +21,7 @@ jobs:
         with:
           version: 9.6.0
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: pnpm
@@ -57,7 +57,7 @@ jobs:
         with:
           version: 9.6.0
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: pnpm
@@ -83,6 +83,8 @@ jobs:
           fetch-depth: 0
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.4.4
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Setup Gradle
@@ -92,7 +94,7 @@ jobs:
         with:
           version: 9.6.0
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: pnpm

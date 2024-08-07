@@ -3,6 +3,7 @@ import { SchemaFormProperties } from "@arrirpc/codegen-utils";
 import {
     CodegenContext,
     DartProperty,
+    getCodeComments,
     getDartClassName,
     outputIsNullable,
     validDartIdentifier,
@@ -83,7 +84,12 @@ export function dartClassFromSchema(
 
         const propName = validDartIdentifier(key);
         propNames.push(propName);
-        fieldParts.push(`  final ${typeResult.typeName} ${propName};`);
+        fieldParts.push(
+            `${getCodeComments(
+                innerSchema.metadata,
+                "  ",
+            )}  final ${typeResult.typeName} ${propName};`,
+        );
         constructorParts.push(`    required this.${propName},`);
         defaultParts.push(`      ${propName}: ${typeResult.defaultValue},`);
         fromJsonParts.push(
@@ -127,7 +133,9 @@ export function dartClassFromSchema(
 
         const propName = validDartIdentifier(key);
         propNames.push(propName);
-        fieldParts.push(`  final ${typeResult.typeName} ${propName};`);
+        fieldParts.push(
+            `${getCodeComments(innerSchema.metadata, "  ")}  final ${typeResult.typeName} ${propName};`,
+        );
         constructorParts.push(`    this.${propName},`);
         fromJsonParts.push(
             `    final ${propName} = ${typeResult.fromJson(`_input_["${key}"]`, key)};`,
@@ -156,7 +164,7 @@ export function dartClassFromSchema(
 `;
     }
 
-    result.content = `class ${finalClassName} implements ${context.discriminatorParentId ?? "ArriModel"} {
+    result.content = `${getCodeComments(schema.metadata)}class ${finalClassName} implements ${context.discriminatorParentId ?? "ArriModel"} {
 ${fieldParts.join("\n")}
   const ${finalClassName}({
 ${constructorParts.join("\n")}

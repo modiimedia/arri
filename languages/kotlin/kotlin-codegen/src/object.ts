@@ -3,6 +3,7 @@ import { type SchemaFormProperties } from "@arrirpc/codegen-utils";
 import {
     type CodegenContext,
     getClassName,
+    getCodeComment,
     isNullable,
     kotlinIdentifier,
     type KotlinProperty,
@@ -27,7 +28,6 @@ export function kotlinObjectFromSchema(
                         ${input}!!,
                         "$instancePath/${key}",
                     )
-                    
                     else -> null
                 }`;
             }
@@ -96,7 +96,7 @@ export function kotlinObjectFromSchema(
             subContent.push(type.content);
         }
         fieldParts.push(
-            `    val ${kotlinKey}: ${type.typeName}${type.isNullable ? "?" : ""},`,
+            `${getCodeComment(prop.metadata, "    ", "field")}    val ${kotlinKey}: ${type.typeName}${type.isNullable ? "?" : ""},`,
         );
         if (i === 0 && !context.discriminatorKey) {
             toJsonParts.push(`output += "\\"${key}\\":"`);
@@ -136,7 +136,9 @@ export function kotlinObjectFromSchema(
         const addCommaPart = isFirst
             ? ""
             : `\n        if (hasProperties) output += ","\n`;
-        fieldParts.push(`    val ${kotlinKey}: ${type.typeName}? = null,`);
+        fieldParts.push(
+            `${getCodeComment(schema.optionalProperties![key]!.metadata, "    ", "field")}    val ${kotlinKey}: ${type.typeName}? = null,`,
+        );
         if (hasKnownKeys) {
             toJsonParts.push(`if (${kotlinKey} != null) {
                 output += ",\\"${key}\\":"
@@ -164,7 +166,7 @@ ${isLast ? "" : "    hasProperties = true"}\n}`);
     if (context.discriminatorKey && context.discriminatorValue) {
         discriminatorField = `\n    override val ${kotlinIdentifier(context.discriminatorKey)} get() = "${context.discriminatorValue}"\n`;
     }
-    const content = `data class ${className}(
+    const content = `${getCodeComment(schema.metadata, "", "class")}data class ${className}(
 ${fieldParts.join("\n")}
 ) : ${implementedClass} {${discriminatorField}
     override fun toJson(): String {
