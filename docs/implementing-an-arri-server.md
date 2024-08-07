@@ -39,9 +39,7 @@ Although the Arri specification doesn't require you to implement `HEAD` for your
 
 ## Rule 3: All inputs and outputs must be a named object
 
-Procedures cannot send / receive arbitrary types like `string` or `boolean`. All parameters and responses must be a named object. So when using [Arri Type Definition](/specifications/arri_type_definition.md) that means that the "Property" Schema Form and "Discriminator" Schema Form are the only valid inputs and outputs that can be assigned to procedures.
-
-Allowing for unnamed inputs and outputs complicates code-generation.
+Procedures cannot send / receive arbitrary types like `string` or `boolean`. All parameters and responses must be a named object. So when using [Arri Type Definition](/specifications/arri_type_definition.md) that means that the "Property" Schema Form and "Discriminator" Schema Form are the only valid inputs and outputs that can be assigned to procedures. This ensures that every input and output can be mapped to a `class` / `struct` / `object` which simiplifies code-generation.
 
 ## Rule 4: All RPC parameters are passed through the request body as JSON with the exception of GET requests
 
