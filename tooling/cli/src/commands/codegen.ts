@@ -1,10 +1,10 @@
 import fs from "node:fs";
 
 import { type AppDefinition, isAppDefinition } from "@arrirpc/codegen-utils";
+import { ofetch } from "@joshmossas/ofetch";
 import { loadConfig } from "c12";
 import { watch } from "chokidar";
 import { defineCommand } from "citty";
-import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { logger } from "../common";

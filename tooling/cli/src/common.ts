@@ -7,9 +7,9 @@ import {
     removeDisallowedChars,
 } from "@arrirpc/codegen-utils";
 import { a, ValidationError } from "@arrirpc/schema";
+import { ofetch } from "@joshmossas/ofetch";
 import { createConsola } from "consola";
 import { type globby } from "globby";
-import { ofetch } from "ofetch";
 import path from "pathe";
 import prettier from "prettier";
 

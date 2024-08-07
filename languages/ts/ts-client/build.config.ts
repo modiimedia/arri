@@ -12,5 +12,5 @@ export default defineBuildConfig({
     clean: true,
     declaration: true,
     failOnWarn: true,
-    externals: ["ofetch", "@arrirpc/schema"],
+    externals: ["ofetch", "@joshmossas/ofetch", "@arrirpc/schema"],
 });
