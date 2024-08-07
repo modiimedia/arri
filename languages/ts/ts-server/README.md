@@ -82,12 +82,10 @@ Create an `arri.config.ts` in the project directory
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, servers, generators } from "arri";
 
 export default defineConfig({
-    entry: "app.ts",
-    port: 3000,
-    srcDir: "src",
+    server: servers.tsServer(),
     generators: [
         generators.typescriptClient({
             // options
@@ -176,9 +174,11 @@ export default defineRpc({
 
 ```ts
 export default defineConfig({
+    servers: servers.tsServer({
+        procedureDir: "procedures", // change which directory to look for procedures (This is relative to the srcDir)
+        procedureGlobPatterns: ["**/*.rpc.ts"], // change the file name glob pattern for finding rpcs
+    }),
     // rest of config
-    procedureDir: "procedures", // change which directory to look for procedures (This is relative to the srcDir)
-    procedureGlobPatterns: ["**/*.rpc.ts"], // change the file name glob pattern for finding rpcs
 });
 ```
 
@@ -438,10 +438,10 @@ declare module "@arrirpc/server" {
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, servers, generators } from "arri";
 
 export default defineConfig({
-    // rest of config
+    server: servers.tsServer(),
     generators: [
         generators.typescriptClient({...}),
         generators.dartClient({...}),

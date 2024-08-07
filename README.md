@@ -17,7 +17,7 @@ Go [here](/languages/ts/ts-server/README.md) to get started with a Typescript se
 
 -   [Typescript](/languages/ts/ts-server/README.md)
 
-When I have time I would like to add more languages to this list. Currently I have the following lanaguages on my shortlist for potential server implementations:
+When I have time I would like to add more languages to this list. Currently I have the following languages on my shortlist for potential server implementations:
 
 -   go
 -   rust

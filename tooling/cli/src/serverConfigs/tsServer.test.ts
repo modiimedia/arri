@@ -1,16 +1,14 @@
-import { getRpcMetaFromPath } from "../common";
-import { type ResolvedArriConfig } from "../config";
+import { getRpcMetaFromPath, TsServerConfig } from "./tsServer";
 
 describe("Naming RPCs", () => {
     test("Basic route", () => {
-        const config: ResolvedArriConfig = {
+        const config: Required<TsServerConfig> = {
             port: 3000,
             rootDir: "/files/items/examples-app",
             srcDir: "src",
             entry: "",
             procedureDir: "procedures",
             procedureGlobPatterns: ["**/*.rpc.ts"],
-            generators: [],
             buildDir: ".arri",
             esbuild: {},
             serverEntry: "",
@@ -26,14 +24,13 @@ describe("Naming RPCs", () => {
         expect(result?.httpPath).toBe("/users/get-user");
     });
     test("Route with weird chars", () => {
-        const config: ResolvedArriConfig = {
+        const config: Required<TsServerConfig> = {
             port: 3000,
             rootDir: "",
             srcDir: "src",
             entry: "",
             procedureDir: "procedures",
             procedureGlobPatterns: ["**/*.rpc.ts"],
-            generators: [],
             buildDir: ".arri",
             esbuild: {},
             serverEntry: "",
