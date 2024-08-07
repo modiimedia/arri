@@ -18,7 +18,7 @@ Originally this library was created as a way for building schemas for [Json Type
 
 -   Adding support for 64-bit integers
 -   Replacing the `additionalProperties` field with `strict` to allow for additional properties by default.
--   Restrict `ref` to only be used for object types.
+-   Restrict `ref` to only be used for recursive references.
 
 ## Table of Contents
 
