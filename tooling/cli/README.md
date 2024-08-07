@@ -74,7 +74,7 @@ For full details visit the [server docs](https://github.com/modiimedia/arri/blob
 import { defineConfig } from "arri";
 
 export default defineConfig({
-    server: tsServer({
+    server: servers.tsServer({
         srcDir: "src",
         entry: "app.ts",
         port: 3000,

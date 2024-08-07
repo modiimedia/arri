@@ -1,5 +1,4 @@
-import { TsServerConfig } from "../_index";
-import { getRpcMetaFromPath } from "./tsServer";
+import { getRpcMetaFromPath, TsServerConfig } from "./tsServer";
 
 describe("Naming RPCs", () => {
     test("Basic route", () => {

@@ -1,4 +1,4 @@
-import { defineConfig, generators, tsServer } from "arri";
+import { defineConfig, generators, servers } from "arri";
 import { readFileSync } from "fs";
 import path from "path";
 
@@ -9,7 +9,7 @@ const prettierConfig = JSON.parse(
 );
 
 export default defineConfig({
-    server: tsServer({
+    server: servers.tsServer({
         serverEntry: "server.ts",
         http2: true,
         port: 2020,
