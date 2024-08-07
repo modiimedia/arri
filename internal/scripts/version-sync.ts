@@ -28,6 +28,14 @@ async function main() {
         "languages/dart/dart-client/pubspec.yaml",
         pubspecParts.join("\n"),
     );
+    const dartChangelog = readFileSync(
+        "languages/dart/dart-client/CHANGELOG.md",
+        "utf8",
+    );
+    writeFileSync(
+        "languages/dart/dart-client/CHANGELOG.md",
+        `## ${version}\n\n${dartChangelog}`,
+    );
     // PACKAGE JSONS
     const childPackageJsons = await globby([
         "languages/**/package.json",
