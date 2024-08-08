@@ -195,11 +195,22 @@ app.rpc('sayHello',
 
 // defining a service
 const app = new ArriApp();
+const usersService = defineService("users");
+usersService.rpc("getUser", defineRpc({...}));
+usersService.rpc("createUser", defineRpc({...}));
+
+// register the service on the app instance
+app.use(usersService);
+```
+
+There's also a shorthand for initializing services with procedures
+
+```ts
+// this is equivalent to what we showed above
 const usersService = defineService("users", {
     getUser: defineRpc({..}),
     createUser: defineRpc({..}),
 });
-app.use(usersService);
 ```
 
 #### Creating Event Stream Procedures
