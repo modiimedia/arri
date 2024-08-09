@@ -142,6 +142,16 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/schema
 
+  languages/swift/swift-codegen:
+    dependencies:
+      '@arrirpc/codegen-utils':
+        specifier: workspace:*
+        version: link:../../../tooling/codegen-utils
+    devDependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../../tooling/schema
+
   languages/ts/ts-client:
     dependencies:
       '@arrirpc/schema':
