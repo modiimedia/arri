@@ -1,20 +1,21 @@
 import XCTest
 @testable import SwiftCodegenReference
 
-let location = "../../../tests/test-files/Book.json"
+let dateFormatter: ExampleClientDateFormatter = ExampleClientDateFormatter()
 let targetDateStr = "2001-01-01T16:00:00.000Z"
-let formatter: ExampleClientDateFormatter = ExampleClientDateFormatter()
+let targetDate = dateFormatter.date(from: targetDateStr) ?? Date.now
 
 final class BookTests: XCTestCase {
+    let location = "../../../tests/test-files/Book.json"
     var control: Book = Book(
             id: "1",
             name: "The Adventures of Tom Sawyer",
-            createdAt: formatter.date(from: targetDateStr) ?? Date.now,
-            updatedAt: formatter.date(from: targetDateStr) ?? Date.now
+            createdAt: targetDate,
+            updatedAt: targetDate
         )
 
     func testFromJson() throws {
-        let bookJson: String? = try? NSString(contentsOfFile: location, encoding: NSUTF8StringEncoding) as String?
+        let bookJson: String? = try? String(contentsOfFile: location, encoding: .utf8)
         let result1 = Book(JSONString: bookJson ?? "") ?? Book()
         let result2: Book = Book(JSONString: control.toJSONString() ?? "") ?? Book()
         XCTAssertEqual(result1, control)

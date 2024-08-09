@@ -43,7 +43,6 @@ public struct Book: ExampleClientModel, Equatable {
     public var createdAt: Date = Date.now
     public var updatedAt: Date = Date.now
 
-    public init() {}
     public init(
         id: String,
         name: String,
@@ -55,6 +54,7 @@ public struct Book: ExampleClientModel, Equatable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
+    public init() {}
     public init?(map: Map) {}
 
     public mutating func mapping(map: Map) {
@@ -86,11 +86,9 @@ public struct BookParams: ExampleClientModel {
     }
     public init() {}
     public init?(map: ObjectMapper.Map) {}
-
     public mutating func mapping(map: Map) {
         self.bookId <- map["bookId"]
     }
-
     public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("bookId=\(self.bookId)")
@@ -98,23 +96,23 @@ public struct BookParams: ExampleClientModel {
     }
 }
 
-struct NestedObject: ExampleClientModel {
+public struct NestedObject: ExampleClientModel {
     public var id: String = ""
     public var content: String = ""
-    init(
+    public init(
         id: String,
         content: String
     ) {
         self.id = id
         self.content = content
     }
-    init() {}
-    init?(map: Map) {}
-    mutating func mapping(map: Map) {
+    public init() {}
+    public init?(map: Map) {}
+    public mutating func mapping(map: Map) {
         self.id <- map["id"]
         self.content <- map["content"]
     }
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("id=\(self.id)")
         __queryParts.append("content=\(self.content)")
@@ -123,31 +121,71 @@ struct NestedObject: ExampleClientModel {
     }
 }
 
-struct ObjectWithEveryType: ExampleClientModel {
-    var string: String = ""
-    var boolean: Bool = false
-    var timestamp: Date = Date.now
-    var float32: Float32 = 0.0
-    var float64: Float64 = 0.0
-    var int8: Int8 = 0
-    var uint8: UInt8 = 0
-    var int16: Int16 = 0
-    var uint16: UInt16 = 0
-    var int32: Int32 = 0
-    var uint32: UInt32 = 0
-    var int64: Int64 = 0
-    var uint64: UInt64 = 0
-    var `enum`: Enumerator = Enumerator.foo
-    var object: NestedObject = NestedObject()
-    var array: [Bool] = []
-    var record: Dictionary<String, Bool> = Dictionary()
-    var discriminator: Discriminator = Discriminator.a(DiscriminatorA())
-    var any: Any? = nil
+public struct ObjectWithEveryType: ExampleClientModel {
+    public var string: String = ""
+    public var boolean: Bool = false
+    public var timestamp: Date = Date.now
+    public var float32: Float32 = 0.0
+    public var float64: Float64 = 0.0
+    public var int8: Int8 = 0
+    public var uint8: UInt8 = 0
+    public var int16: Int16 = 0
+    public var uint16: UInt16 = 0
+    public var int32: Int32 = 0
+    public var uint32: UInt32 = 0
+    public var int64: Int64 = 0
+    public var uint64: UInt64 = 0
+    public var `enum`: Enumerator = Enumerator.foo
+    public var object: NestedObject = NestedObject()
+    public var array: [Bool] = []
+    public var record: Dictionary<String, Bool> = Dictionary()
+    public var discriminator: Discriminator = Discriminator.a(DiscriminatorA())
+    public var any: Any? = nil
 
-    init() {}
-    init?(map: Map) {}
-
-    mutating func mapping(map: Map) {
+    public init(
+        string: String,
+        boolean: Bool,
+        timestamp: Date,
+        float32: Float32,
+        float64: Float64,
+        int8: Int8,
+        uint8: UInt8,
+        int16: Int16,
+        uint16: UInt16,
+        int32: Int32,
+        uint32: UInt32,
+        int64: Int64,
+        uint64: UInt64,
+        `enum`: Enumerator,
+        object: NestedObject,
+        array: [Bool],
+        record: Dictionary<String, Bool>,
+        discriminator: Discriminator,
+        any: Any?
+    ) {
+        self.string = string
+        self.boolean = boolean
+        self.timestamp = timestamp
+        self.float32 = float32
+        self.float64 = float64
+        self.int8 = int8
+        self.uint8 = uint8
+        self.int16 = int16
+        self.uint16 = uint16
+        self.int32 = int32
+        self.uint32 = uint32
+        self.int64 = int64
+        self.uint64 = uint64
+        self.`enum` = `enum`
+        self.object = object
+        self.array = array
+        self.record = record
+        self.discriminator = discriminator
+        self.any = any
+    }
+    public init() {}
+    public init?(map: Map) {}
+    public mutating func mapping(map: Map) {
         self.string <- map["string"]
         self.boolean <- map["boolean"]
         self.timestamp <- (map["timestamp"], __dateTransformer)
@@ -161,14 +199,14 @@ struct ObjectWithEveryType: ExampleClientModel {
         self.uint32 <- map["uint32"]
         self.int64 <- map["int64"]
         self.uint64 <- map["uint64"]
-        self.enum <- map["enum"] // TODO
+        self.`enum` <- map["enum"] // TODO
         self.object <- map["object"] // TODO
         self.array <- map["array"] // TODO
         self.record <- map["record"] // TODO
         self.discriminator <- map["discriminator"] // TODO
+        self.any <- map["any"] // TODO
     }
-
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("string=\(self.string)")
         __queryParts.append("boolean=\(self.boolean)")
@@ -183,7 +221,7 @@ struct ObjectWithEveryType: ExampleClientModel {
         __queryParts.append("uint32=\(self.uint32)")
         __queryParts.append("int64=\(self.int64)")
         __queryParts.append("uint64=\(self.uint64)")
-        __queryParts.append("enum=\(self.enum.serialValue())")
+        __queryParts.append("enum=\(self.`enum`.serialValue())")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
@@ -191,8 +229,7 @@ struct ObjectWithEveryType: ExampleClientModel {
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any")
         return __queryParts.joined(separator: "&")
     }
-
-    static func == (left: ObjectWithEveryType, right: ObjectWithEveryType) -> Bool {
+    public static func == (left: ObjectWithEveryType, right: ObjectWithEveryType) -> Bool {
         return 
             left.string == right.string && 
             left.boolean == right.boolean && 
@@ -207,7 +244,7 @@ struct ObjectWithEveryType: ExampleClientModel {
             left.uint32 == right.uint32 &&
             left.int64 == right.int64 &&
             left.uint64 == right.uint64 &&
-            left.enum == right.enum &&
+            left.`enum` == right.`enum` &&
             left.object == right.object &&
             left.array == right.array && 
             left.record == right.record &&
@@ -216,12 +253,12 @@ struct ObjectWithEveryType: ExampleClientModel {
     }
 }
 
-enum Enumerator {
+public enum Enumerator {
     case foo
     case bar
     case baz
 
-    init(string: String) {
+    public init(string: String) {
        switch(string) {
         case "FOO":
             self = .foo
@@ -237,7 +274,7 @@ enum Enumerator {
        }
     }
 
-    func serialValue() -> String {
+    public func serialValue() -> String {
         switch (self) {
             case .foo:
                 return "FOO"
@@ -249,13 +286,13 @@ enum Enumerator {
     }
 }
 
-enum Discriminator: ExampleClientEnum {
+public enum Discriminator: ExampleClientEnum {
 
     case a(DiscriminatorA)
     case b(DiscriminatorB)
     case c(DiscriminatorC)
 
-    func toJsonString() -> String {
+    public func toJsonString() -> String {
         switch(self) {
             case .a(let __innerVal):
                 return __innerVal.toJSONString() ?? ""
@@ -267,7 +304,7 @@ enum Discriminator: ExampleClientEnum {
     }
 
 
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         switch(self) {
             case .a(let __innerVal):
                 return __innerVal.toQueryString()
@@ -279,23 +316,23 @@ enum Discriminator: ExampleClientEnum {
     }
 }
 
-struct DiscriminatorA: ExampleClientModel {
+public struct DiscriminatorA: ExampleClientModel {
     let typeName: String = "A"
-    var id: String = ""
+    public var id: String = ""
 
-    init(
+    public init(
         id: String
     ) {
         self.id = id
     }
-    init() {}
-    init?(map: Map) {}
+    public init() {}
+    public init?(map: Map) {}
 
-    mutating func mapping(map: Map) {
+    public mutating func mapping(map: Map) {
         self.id <- map["id"]
     }
 
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("type=A")
         __queryParts.append("id=\(self.id)")
@@ -303,27 +340,27 @@ struct DiscriminatorA: ExampleClientModel {
     }
 }
 
-struct DiscriminatorB: ExampleClientModel {
+public struct DiscriminatorB: ExampleClientModel {
     let typeName: String = "B"
-    var id: String = ""
-    var name: String = ""
+    public var id: String = ""
+    public var name: String = ""
 
-    init(
+    public init(
         id: String,
         name: String
     ) {
         self.id = id
         self.name = name
     }
-    init() {}
-    init?(map: Map) {}
+    public init() {}
+    public init?(map: Map) {}
 
-    mutating func mapping(map: Map) {
+    public mutating func mapping(map: Map) {
         self.id <- map["id"]
         self.name <- map["name"]
     }
 
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("type=B")
         __queryParts.append("id=\(self.id)")
@@ -332,13 +369,13 @@ struct DiscriminatorB: ExampleClientModel {
     }
 }
 
-struct DiscriminatorC: ExampleClientModel {
+public struct DiscriminatorC: ExampleClientModel {
     let typeName: String = "C"
-    var id: String = ""
-    var name: String = ""
-    var date: Date = Date.now
+    public var id: String = ""
+    public var name: String = ""
+    public var date: Date = Date.now
 
-    init(
+    public init(
         id: String,
         name: String,
         date: Date
@@ -347,16 +384,16 @@ struct DiscriminatorC: ExampleClientModel {
         self.name = name
         self.date = date
     }
-    init() {}
-    init?(map: Map) {}
+    public init() {}
+    public init?(map: Map) {}
 
-    mutating func mapping(map: Map) {
+    public mutating func mapping(map: Map) {
         self.id <- map["id"]
         self.name <- map["name"]
         self.date <- (map["date"], __dateTransformer)
     }
 
-    func toQueryString() -> String {
+    public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("type=C")
         __queryParts.append("id=\(self.id)")

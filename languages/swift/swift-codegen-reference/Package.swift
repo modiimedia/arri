@@ -15,7 +15,7 @@ let package = Package(
             targets: ["SwiftCodegenReference"]),
     ],
     dependencies: [
-      .package(url: "https://github.com/tristanhimmelman/ObjectMapper.git", .upToNextMajor(from: "4.1.0")),  
+        .package(url: "https://github.com/tristanhimmelman/ObjectMapper.git", .upToNextMajor(from: "4.1.0")),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
