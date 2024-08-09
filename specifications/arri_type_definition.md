@@ -18,7 +18,7 @@ ATD schemas are not intended to be written by hand. Their intended workflow is t
 
 ## Schema Forms
 
-Arri Type Definitions can take on one of eight forms.
+Arri Type Definitions are JSON documents that can take on one of eight forms.
 
 -   The [empty form](#empty-schema-form)
 -   The [type form](#type-schema-form)
