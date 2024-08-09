@@ -198,13 +198,11 @@ export function isARecordSchema(
 }
 
 // object types
-export interface AObjectSchema<
-    TVal = any,
-    TAllowAdditionalProperties extends boolean = false,
-> extends ASchema<TVal> {
+export interface AObjectSchema<TVal = any, TStrict extends boolean = false>
+    extends ASchema<TVal> {
     properties: Record<string, ASchema>;
     optionalProperties?: Record<string, ASchema>;
-    additionalProperties?: TAllowAdditionalProperties;
+    strict?: TStrict;
 }
 export function isAObjectSchema(input: unknown): input is AObjectSchema {
     return isASchema(input) && isSchemaFormProperties(input);
@@ -215,16 +213,13 @@ export interface AObjectSchemaOptions<TAdditionalProps extends boolean = false>
     /**
      * Allow this object to include additional properties not specified here
      */
-    additionalProperties?: TAdditionalProps;
+    strict?: TAdditionalProps;
 }
 
 // object helper types
-export type InferObjectOutput<
-    TInput = any,
-    TAdditionalProps extends boolean = false,
-> = TAdditionalProps extends true
-    ? ResolveObject<InferObjectRawType<TInput>> & Record<any, any>
-    : ResolveObject<InferObjectRawType<TInput>>;
+export type InferObjectOutput<TInput = any> = ResolveObject<
+    InferObjectRawType<TInput>
+>;
 
 export type InferObjectRawType<TInput> =
     TInput extends Record<any, any>

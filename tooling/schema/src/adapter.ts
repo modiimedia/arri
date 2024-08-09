@@ -1,5 +1,5 @@
 import { ValidationError } from "./_index";
-import { compile } from "./compile";
+import { type compile } from "./compile";
 import { type ASchema, SCHEMA_METADATA, ValidationContext } from "./schemas";
 
 export type ValidationAdapter = <T>(input: any) => ASchema<T>;

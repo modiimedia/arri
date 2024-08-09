@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.0.6",
+  "schemaVersion": "0.0.7",
   "info": { "version": "20" },
   "procedures": {
     "sendObject": {
@@ -13,6 +13,7 @@
       "path": "/books/get-book",
       "transport": "http",
       "method": "get",
+      "description": "Get a book",
       "params": "BookParams",
       "response": "Book"
     },
@@ -20,6 +21,8 @@
       "path": "/books/create-book",
       "transport": "http",
       "method": "post",
+      "description": "Create a book",
+      "isDeprecated": true,
       "params": "Book",
       "response": "Book"
     },
@@ -27,9 +30,10 @@
       "path": "/books/watch-book",
       "transport": "http",
       "method": "get",
+      "isEventStream": true,
+      "isDeprecated": true,
       "params": "BookParams",
-      "response": "Book",
-      "isEventStream": true
+      "response": "Book"
     },
     "books.createConnection": {
       "path": "/books/create-connection",
@@ -41,17 +45,30 @@
   "definitions": {
     "Book": {
       "properties": {
-        "id": { "type": "string", "metadata": {} },
-        "name": { "type": "string", "metadata": {} },
-        "createdAt": { "type": "timestamp", "metadata": {} },
-        "updatedAt": { "type": "timestamp", "metadata": {} }
+        "id": {
+          "type": "string",
+          "metadata": { "description": "The book ID" }
+        },
+        "name": {
+          "type": "string",
+          "metadata": { "description": "The book title" }
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "metadata": {
+            "description": "When the book was created",
+            "isDeprecated": true
+          }
+        },
+        "updatedAt": {
+          "type": "timestamp",
+          "metadata": { "isDeprecated": true }
+        }
       },
-      "additionalProperties": true,
-      "metadata": { "id": "Book" }
+      "metadata": { "id": "Book", "description": "This is a book" }
     },
     "BookParams": {
       "properties": { "bookId": { "type": "string", "metadata": {} } },
-      "additionalProperties": true,
       "metadata": { "id": "BookParams" }
     },
     "NestedObject": {
@@ -59,7 +76,6 @@
         "id": { "type": "string", "metadata": {} },
         "content": { "type": "string", "metadata": {} }
       },
-      "additionalProperties": true,
       "metadata": { "id": "NestedObject" }
     },
     "ObjectWithEveryType": {
@@ -86,7 +102,6 @@
             "id": { "type": "string", "metadata": {} },
             "content": { "type": "string", "metadata": {} }
           },
-          "additionalProperties": true,
           "metadata": { "id": "NestedObject" }
         },
         "array": {
@@ -102,7 +117,6 @@
           "mapping": {
             "A": {
               "properties": { "id": { "type": "string", "metadata": {} } },
-              "additionalProperties": true,
               "metadata": {}
             },
             "B": {
@@ -110,7 +124,6 @@
                 "id": { "type": "string", "metadata": {} },
                 "name": { "type": "string", "metadata": {} }
               },
-              "additionalProperties": true,
               "metadata": {}
             },
             "C": {
@@ -119,7 +132,6 @@
                 "name": { "type": "string", "metadata": {} },
                 "date": { "type": "timestamp", "metadata": {} }
               },
-              "additionalProperties": true,
               "metadata": {}
             }
           },
@@ -127,7 +139,6 @@
         },
         "any": { "metadata": {} }
       },
-      "additionalProperties": true,
       "metadata": { "id": "ObjectWithEveryType" }
     },
     "ObjectWithOptionalFields": {
@@ -155,7 +166,6 @@
             "id": { "type": "string", "metadata": {} },
             "content": { "type": "string", "metadata": {} }
           },
-          "additionalProperties": true,
           "metadata": { "id": "NestedObject" }
         },
         "array": {
@@ -171,7 +181,6 @@
           "mapping": {
             "A": {
               "properties": { "id": { "type": "string", "metadata": {} } },
-              "additionalProperties": true,
               "metadata": {}
             },
             "B": {
@@ -179,7 +188,6 @@
                 "id": { "type": "string", "metadata": {} },
                 "name": { "type": "string", "metadata": {} }
               },
-              "additionalProperties": true,
               "metadata": {}
             },
             "C": {
@@ -188,7 +196,6 @@
                 "name": { "type": "string", "metadata": {} },
                 "date": { "type": "timestamp", "metadata": {} }
               },
-              "additionalProperties": true,
               "metadata": {}
             }
           },
@@ -196,7 +203,6 @@
         },
         "any": { "metadata": {} }
       },
-      "additionalProperties": true,
       "metadata": { "id": "ObjectWithOptionalFields" }
     },
     "ObjectWithNullableFields": {
@@ -224,7 +230,6 @@
             "id": { "type": "string", "metadata": {} },
             "content": { "type": "string", "metadata": {} }
           },
-          "additionalProperties": true,
           "metadata": { "id": "NestedObject" },
           "nullable": true
         },
@@ -243,7 +248,6 @@
           "mapping": {
             "A": {
               "properties": { "id": { "type": "string", "metadata": {} } },
-              "additionalProperties": true,
               "metadata": {}
             },
             "B": {
@@ -251,7 +255,6 @@
                 "id": { "type": "string", "metadata": {} },
                 "name": { "type": "string", "metadata": {} }
               },
-              "additionalProperties": true,
               "metadata": {}
             },
             "C": {
@@ -260,7 +263,6 @@
                 "name": { "type": "string", "metadata": {} },
                 "date": { "type": "timestamp", "metadata": {} }
               },
-              "additionalProperties": true,
               "metadata": {}
             }
           },
@@ -269,7 +271,6 @@
         },
         "any": { "metadata": {}, "nullable": true }
       },
-      "additionalProperties": true,
       "metadata": { "id": "ObjectWithNullableFields" }
     },
     "RecursiveObject": {
@@ -277,7 +278,6 @@
         "left": { "ref": "RecursiveObject", "metadata": {}, "nullable": true },
         "right": { "ref": "RecursiveObject", "metadata": {}, "nullable": true }
       },
-      "additionalProperties": true,
       "metadata": { "id": "RecursiveObject" }
     }
   }

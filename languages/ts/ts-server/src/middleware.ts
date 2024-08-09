@@ -15,5 +15,5 @@ export type ExtractParam<Path, NextPart> = Path extends `:${infer Param}`
 
 export type ExtractParams<Path> = Path extends `${infer Segment}/${infer Rest}`
     ? ExtractParam<Segment, ExtractParams<Rest>>
-    : // eslint-disable-next-line @typescript-eslint/ban-types
+    : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       ExtractParam<Path, {}>;

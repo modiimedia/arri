@@ -191,11 +191,61 @@ const TypeBoxUserValidator = TypeCompiler.Compile(TypeBoxUser);
 
 const ajv = new Ajv({ strict: false });
 const AjvUserValidator = ajv.compile<ArriUser>(TypeBoxUser);
-
 const ajvJtd = new AjvJtd({ strictSchema: false });
-const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(ArriUser);
-const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(ArriUser);
-const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(ArriUser);
+const AjvInput = {
+    properties: {
+        id: { type: "int32", metadata: {} },
+        role: { enum: ["standard", "admin", "moderator"], metadata: {} },
+        name: { type: "string", metadata: {} },
+        email: { type: "string", metadata: {}, nullable: true },
+        createdAt: { type: "int32", metadata: {} },
+        updatedAt: { type: "int32", metadata: {} },
+        recentNotifications: {
+            elements: {
+                discriminator: "type",
+                mapping: {
+                    POST_LIKE: {
+                        properties: {
+                            userId: { type: "string", metadata: {} },
+                            postId: { type: "string", metadata: {} },
+                        },
+                        metadata: {},
+                        additionalProperties: true,
+                    },
+                    POST_COMMENT: {
+                        properties: {
+                            userId: { type: "string", metadata: {} },
+                            postId: { type: "string", metadata: {} },
+                            commentText: { type: "string", metadata: {} },
+                        },
+                        metadata: {},
+                        additionalProperties: true,
+                    },
+                },
+                metadata: {},
+            },
+            metadata: {},
+        },
+    },
+    optionalProperties: {
+        settings: {
+            properties: {
+                preferredTheme: {
+                    enum: ["light", "dark", "system"],
+                    metadata: {},
+                },
+                allowNotifications: { type: "boolean", metadata: {} },
+            },
+            metadata: {},
+            additionalProperties: true,
+        },
+    },
+    metadata: {},
+    additionalProperties: true,
+};
+const AjvJtdUserValidator = ajvJtd.compile<ArriUser>(AjvInput);
+const AjvJtdUserParser = ajvJtd.compileParser<ArriUser>(AjvInput);
+const AjvJtdUserSerializer = ajvJtd.compileSerializer<ArriUser>(AjvInput);
 
 void benny.suite(
     "Object Validation",

@@ -1,19 +1,11 @@
 import { test } from "vitest";
 
-import {
-    type ArriConfig,
-    defineConfig,
-    isArriConfig,
-    isResolvedArriConfig,
-} from "./config";
+import { type ArriConfig, isArriConfig } from "./config";
 test("isArriConfig()", () => {
-    const config: ArriConfig = {};
+    const config: ArriConfig = {
+        generators: [],
+    };
     expect(isArriConfig(config)).toBe(true);
     config.generators = [];
-    config.entry = "app.ts";
     expect(isArriConfig(config)).toBe(true);
-});
-test("isResolvedArriConfig()", () => {
-    const config = defineConfig({});
-    expect(isResolvedArriConfig(config)).toBe(true);
 });

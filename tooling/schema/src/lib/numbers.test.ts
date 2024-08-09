@@ -133,7 +133,7 @@ describe("int64", () => {
             "9223372036854775808",
             "-9223372036854775809",
             -1,
-            // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+            // eslint-disable-next-line no-loss-of-precision
             9999999999999999999999999999999999999999999,
             null,
             "14315h",

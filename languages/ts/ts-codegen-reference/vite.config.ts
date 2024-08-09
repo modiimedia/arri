@@ -6,7 +6,7 @@ export default defineConfig({
 
     plugins: [
         viteTsConfigPaths({
-            root: "../../",
+            root: "../../../",
         }) as any,
     ],
 
@@ -23,7 +23,7 @@ export default defineConfig({
         globals: true,
         reporters: ["default"],
         pool: "threads",
-        pollOptions: {
+        poolOptions: {
             threads: {
                 singleThread: true,
             },

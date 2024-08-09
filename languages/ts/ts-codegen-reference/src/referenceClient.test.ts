@@ -3,11 +3,13 @@ import path from "node:path";
 
 import {
     $$Book,
+    $$NestedObject,
     $$ObjectWithEveryType,
     $$ObjectWithNullableFields,
     $$ObjectWithOptionalFields,
     $$RecursiveObject,
     Book,
+    NestedObject,
     ObjectWithEveryType,
     ObjectWithNullableFields,
     ObjectWithOptionalFields,
@@ -41,7 +43,35 @@ describe("Book", () => {
     });
 });
 
-describe("NestedObject", () => {});
+describe("NestedObject", () => {
+    const noSpecialCharsTargetValue: NestedObject = {
+        id: "1",
+        content: "hello world",
+    };
+    const noSpecialCharsJson = testFile("NestedObject_NoSpecialChars.json");
+    const specialCharsTargetValue: NestedObject = {
+        id: "1",
+        content:
+            'double-quote: " | backslash: \\ | backspace: \b | form-feed: \f | newline: \n | carriage-return: \r | tab: \t | unicode: \u0000',
+    };
+    const specialCharsJson = testFile("NestedObject_SpecialChars.json");
+    test("JSON Parsing", () => {
+        expect($$NestedObject.fromJsonString(noSpecialCharsJson)).toStrictEqual(
+            noSpecialCharsTargetValue,
+        );
+        expect($$NestedObject.fromJsonString(specialCharsJson)).toStrictEqual(
+            specialCharsTargetValue,
+        );
+    });
+    test("JSON Output", () => {
+        expect($$NestedObject.toJsonString(noSpecialCharsTargetValue)).toEqual(
+            noSpecialCharsJson,
+        );
+        expect($$NestedObject.toJsonString(specialCharsTargetValue)).toEqual(
+            specialCharsJson,
+        );
+    });
+});
 
 describe("ObjectWithEveryType", () => {
     const targetValue: ObjectWithEveryType = {

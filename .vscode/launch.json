@@ -1,6 +1,14 @@
 {
   "configurations": [
     {
+      "name": "Debug Test Server",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "args": ["nx", "dev", "test-server"],
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
       "type": "lldb",
       "request": "launch",
       "sourceLanguages": ["swift"],
@@ -39,6 +47,9 @@
       "name": "Release SwiftCodegenReference (languages/swift/swift-codegen-reference)",
       "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/release/SwiftCodegenReference",
       "preLaunchTask": "swift: Build Release SwiftCodegenReference (languages/swift/swift-codegen-reference)"
+      // Use IntelliSense to learn about possible attributes.
+      // Hover to view descriptions of existing attributes.
+      // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     }
   ]
 }

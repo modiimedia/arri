@@ -1,14 +1,9 @@
 {
   "name": "@arrirpc/codegen-utils",
-  "version": "0.57.1",
+  "version": "0.59.0",
   "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -18,9 +13,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
     "jtd-utils": "workspace:*",

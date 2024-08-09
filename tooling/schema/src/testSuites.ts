@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-loss-of-precision */
 import { a } from "./_index";
 import { type ASchema } from "./schemas";
 
@@ -179,17 +178,12 @@ export const validationTestSuites: Record<
     int32: {
         schema: a.int32(),
         goodInputs: [491451, -13411],
-        badInputs: [
-            999999999999999999,
-            -9999999999999999999,
-            199.5,
-            "hello world",
-        ],
+        badInputs: [999999999999999, -999999999999999, 199.5, "hello world"],
     },
     uint32: {
         schema: a.uint32(),
         goodInputs: [4815141, 100],
-        badInputs: [-1, 100.5, 13999999999999999999999, "hello world"],
+        badInputs: [-1, 100.5, 1399999999999999, "hello world"],
     },
     int16: {
         schema: a.int16(),
@@ -684,13 +678,13 @@ export const validationTestSuites: Record<
             { id: "1" },
         ],
     },
-    "object with additionalProperties false": {
+    "object with strict true": {
         schema: a.object(
             {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: false },
+            { strict: true },
         ),
         goodInputs: [
             {
@@ -714,13 +708,13 @@ export const validationTestSuites: Record<
             true,
         ],
     },
-    "object with additionalProperties true": {
+    "object with strict false": {
         schema: a.object(
             {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: true },
+            { strict: false },
         ),
         goodInputs: [
             {

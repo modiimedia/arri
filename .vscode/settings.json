@@ -3,6 +3,8 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
+  "dart.onlyAnalyzeProjectsWithOpenFiles": true,
+  "dart.projectSearchDepth": 3,
   "dart.analysisExcludedFolders": [
     "**/node_modules",
     "**/dist",
@@ -15,7 +17,10 @@
     "languages/ts",
     "languages/cpp",
     "dist",
-    "tests/server"
+    "tests/server",
+    "tests/clients/ts",
+    "tests/clients/kotlin",
+    "tests/clients/rust"
   ],
   "cSpell.words": [
     "Arri",
@@ -26,13 +31,16 @@
     "codegen",
     "Consola",
     "degit",
+    "joshmossas",
     "kotlinx",
     "ktor",
+    "listhen",
     "middlewares",
     "modii",
     "nitropack",
     "nocheck",
     "ofetch",
+    "outfile",
     "pathe",
     "peekable",
     "postversion",
