@@ -1,5 +1,5 @@
 {
-  "name": "@arrirpc/codegen-swift",
+  "name": "swift-codegen",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "languages/swift/swift-codegen/src",
   "projectType": "library",

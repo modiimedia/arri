@@ -1,5 +1,5 @@
 {
-  "name": "@arrirpc/codegen-swift",
+  "name": "swift-codegen-reference",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "targets": {}
 }
