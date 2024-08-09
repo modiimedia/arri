@@ -199,7 +199,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
         self.uint32 <- map["uint32"]
         self.int64 <- map["int64"]
         self.uint64 <- map["uint64"]
-        self.`enum` <- map["enum"] // TODO
+        self.`enum` <- map["enum"] is String ? Enumerator(string: map["enum"] as String) : Enumerator.foo // TODO
         self.object <- map["object"] // TODO
         self.array <- map["array"] // TODO
         self.record <- map["record"] // TODO
