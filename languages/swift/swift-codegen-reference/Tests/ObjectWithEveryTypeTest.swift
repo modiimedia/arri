@@ -32,9 +32,9 @@ final class ObjectWithEveryTypeTests: XCTestCase {
         any: "hello world")
 
     func testFromJson() throws {
-        let objectJson = try String(contentsOfFile: location, encoding: .utf8)
-        let result = ObjectWithEveryType(JSONString: objectJson) ?? ObjectWithEveryType()
+        let objectJson = try? String(contentsOfFile: location, encoding: .utf8)
+        let result = ObjectWithEveryType(JSONString: objectJson ?? "")
         XCTAssertEqual(result, control)
-        XCTAssertEqual(control.toJSONString(), objectJson)
+        XCTAssertEqual(control.toJSONString(), objectJson!)
     }
 }

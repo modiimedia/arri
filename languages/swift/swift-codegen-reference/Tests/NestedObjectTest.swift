@@ -18,11 +18,11 @@ final class NestedObjectTests: XCTestCase {
         let objectJson: String? = try? String(contentsOfFile: noSpecialCharsLocation, encoding: .utf8)
         let result: NestedObject = NestedObject(JSONString: objectJson ?? "")
         XCTAssertEqual(result, noSpecialCharsControl)
-        XCTAssertEqual(noSpecialCharsControl.toJSONString(), objectJson)
-        let specialCharsObjectJson = try? String(contentsOfFile: specialCharsLocation, encoding: .utf8)
+        XCTAssertEqual(noSpecialCharsControl.toJSONString(), objectJson!)
+        let specialCharsObjectJson: String? = try? String(contentsOfFile: specialCharsLocation, encoding: .utf8)
         let specialCharsResult = NestedObject(JSONString: specialCharsObjectJson ?? "")
         XCTAssertEqual(specialCharsResult, specialCharsControl)
-        XCTAssertEqual(specialCharsControl.toJSONString(), specialCharsObjectJson)
+        XCTAssertEqual(specialCharsControl.toJSONString(), specialCharsObjectJson!)
     }
     func testToQueryString() throws {
         let expectedResult = "id=1&content=hello world"

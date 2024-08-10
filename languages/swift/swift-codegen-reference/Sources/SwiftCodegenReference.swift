@@ -69,13 +69,18 @@ public struct Book: ExampleClientModel, Equatable {
     }
     public init() {}
     public init(json: JSON) {
-        self.id = json["name"].string ?? ""
+        self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
         self.createdAt = __dateFormatter.date(from: json["createdAt"].string ?? "") ?? Date.now
         self.updatedAt = __dateFormatter.date(from: json["updatedAt"].string ?? "") ?? Date.now 
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
 
     public func toJSONString() -> String{
@@ -114,7 +119,12 @@ public struct BookParams: ExampleClientModel {
         self.bookId = json["bookId"].string ?? ""
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
     public func toJSONString() -> String {
         var __json = "{"
@@ -146,10 +156,19 @@ public struct NestedObject: ExampleClientModel {
         self.content = json["content"].string ?? ""
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
     public func toJSONString() -> String {
         var __json = "{"
+        __json += "\"id\":"
+        __json += serializeString(input: self.id)
+        __json += ",\"content\":"
+        __json += serializeString(input: self.content)
         __json += "}"
         return __json
     }
@@ -255,7 +274,12 @@ public struct ObjectWithEveryType: ExampleClientModel {
         self.any = json["any"]
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
     public func toJSONString() -> String {
         var __json = "{"
@@ -423,7 +447,12 @@ public enum Discriminator: ExampleClientModel {
         }
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
     public func toJSONString() -> String {
         switch(self) {
@@ -461,12 +490,18 @@ public struct DiscriminatorA: ExampleClientModel {
         self.id = json["id"].string ?? ""
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
 
     public func toJSONString() -> String {
         var __json = "{"
-        __json += "\"id\":"
+        __json += "\"typeName\":\"A\""
+        __json += ",\"id\":"
         __json += serializeString(input: self.id)
         __json += "}"
         return __json
@@ -497,10 +532,16 @@ public struct DiscriminatorB: ExampleClientModel {
         self.name = json["name"].string ?? ""
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
     public func toJSONString() -> String {
     var __json = "{"
+    __json += "\"typeName\":\"B\""
     __json += "\"id\":"
     __json += serializeString(input: self.id)
     __json += ",\"name\":"
@@ -540,11 +581,17 @@ public struct DiscriminatorC: ExampleClientModel {
         self.date = __dateFormatter.date(from: json["date"].string ?? "") ?? Date.now
     }
     public init(JSONString: String) {
-        self.init(json: JSON(stringLiteral: JSONString))
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data)
+        } catch {
+            self.init()
+        }
     }
 
     public func toJSONString() -> String {
         var __json = "{"
+        __json += "\"typeName\":\"C\""
         __json += "\"id\":"
         __json += serializeString(input: self.id)
         __json += ",\"name\":"
