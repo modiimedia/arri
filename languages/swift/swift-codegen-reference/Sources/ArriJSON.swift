@@ -1190,7 +1190,7 @@ public func <= (lhs: JSON, rhs: JSON) -> Bool {
 public func >= (lhs: JSON, rhs: JSON) -> Bool {
 
     switch (lhs.type, rhs.type) {
-    case (.number, .number): return lhs.rawNumber >= rhs.rawNumber
+    case (.number, .number): return gte(lhs: lhs.rawNumber, rhs: rhs.rawNumber)
     case (.string, .string): return lhs.rawString >= rhs.rawString
     case (.bool, .bool):     return lhs.rawBool == rhs.rawBool
     case (.array, .array):   return lhs.rawArray as NSArray == rhs.rawArray as NSArray
@@ -1203,7 +1203,7 @@ public func >= (lhs: JSON, rhs: JSON) -> Bool {
 public func > (lhs: JSON, rhs: JSON) -> Bool {
 
     switch (lhs.type, rhs.type) {
-    case (.number, .number): return (lhs.rawNumber as NSNumber) > (rhs.rawNumber as NSNumber)
+    case (.number, .number): return gt(lhs: lhs.rawNumber, rhs: rhs.rawNumber)
     case (.string, .string): return lhs.rawString > rhs.rawString
     default:                 return false
     }
@@ -1213,7 +1213,7 @@ public func > (lhs: JSON, rhs: JSON) -> Bool {
 public func < (lhs: JSON, rhs: JSON) -> Bool {
 
     switch (lhs.type, rhs.type) {
-    case (.number, .number): return (lhs.rawNumber as NSNumber) < (rhs.rawNumber as NSNumber)
+    case (.number, .number): return lt(lhs: lhs.rawNumber, rhs: rhs.rawNumber)
     case (.string, .string): return lhs.rawString < rhs.rawString
     default:                 return false
     }
@@ -1237,22 +1237,23 @@ extension NSNumber {
     }
 }
 
-// #if !os(Linux)
-func == (lhs: NSNumber, rhs: NSNumber) -> Bool {
+func eq(lhs: NSNumber, rhs: NSNumber) -> Bool {
     switch (lhs.isBool, rhs.isBool) {
     case (false, true): return false
     case (true, false): return false
     default:            return lhs.compare(rhs) == .orderedSame
     }
 }
-// #endif
 
 func != (lhs: NSNumber, rhs: NSNumber) -> Bool {
     return !(lhs == rhs)
 }
 
-func < (lhs: NSNumber, rhs: NSNumber) -> Bool {
+func ne(lhs: NSNumber, rhs: NSNumber) -> Bool {
+    return !eq(lhs: lhs, rhs: rhs)
+}
 
+func lt(lhs: NSNumber, rhs: NSNumber) -> Bool {
     switch (lhs.isBool, rhs.isBool) {
     case (false, true): return false
     case (true, false): return false
@@ -1260,8 +1261,7 @@ func < (lhs: NSNumber, rhs: NSNumber) -> Bool {
     }
 }
 
-func > (lhs: NSNumber, rhs: NSNumber) -> Bool {
-
+func gt(lhs: NSNumber, rhs: NSNumber) -> Bool {
     switch (lhs.isBool, rhs.isBool) {
     case (false, true): return false
     case (true, false): return false
@@ -1269,17 +1269,16 @@ func > (lhs: NSNumber, rhs: NSNumber) -> Bool {
     }
 }
 
-func <= (lhs: NSNumber, rhs: NSNumber) -> Bool {
-
+func lte(lhs: NSNumber, rhs: NSNumber) -> Bool {
     switch (lhs.isBool, rhs.isBool) {
     case (false, true): return false
     case (true, false): return false
     default:            return lhs.compare(rhs) != .orderedDescending
     }
+
 }
 
-func >= (lhs: NSNumber, rhs: NSNumber) -> Bool {
-
+func gte(lhs: NSNumber, rhs: NSNumber) -> Bool {
     switch (lhs.isBool, rhs.isBool) {
     case (false, true): return false
     case (true, false): return false
