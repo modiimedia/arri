@@ -14,15 +14,15 @@ final class NestedObjectTests: XCTestCase {
         content: "double-quote: \" | backslash: \\ | backspace: \u{0008} | form-feed: \u{0c} | newline: \n | carriage-return: \r | tab: \t | unicode: \u{0000}"
     )
 
-    func testFromJson() throws {
-        let objectJson: String? = try? String(contentsOfFile: noSpecialCharsLocation, encoding: .utf8)
-        let result: NestedObject = NestedObject(JSONString: objectJson ?? "")
+    func testFromJSON() throws {
+        let objectJson: String = try String(contentsOfFile: noSpecialCharsLocation, encoding: .utf8)
+        let result: NestedObject = NestedObject(JSONString: objectJson)
         XCTAssertEqual(result, noSpecialCharsControl)
-        XCTAssertEqual(noSpecialCharsControl.toJSONString(), objectJson!)
-        let specialCharsObjectJson: String? = try? String(contentsOfFile: specialCharsLocation, encoding: .utf8)
-        let specialCharsResult = NestedObject(JSONString: specialCharsObjectJson ?? "")
+        XCTAssertEqual(noSpecialCharsControl.toJSONString(), objectJson)
+        let specialCharsObjectJson: String = try String(contentsOfFile: specialCharsLocation, encoding: .utf8)
+        let specialCharsResult = NestedObject(JSONString: specialCharsObjectJson)
         XCTAssertEqual(specialCharsResult, specialCharsControl)
-        XCTAssertEqual(specialCharsControl.toJSONString(), specialCharsObjectJson!)
+        XCTAssertEqual(specialCharsControl.toJSONString(), specialCharsObjectJson)
     }
     func testToQueryString() throws {
         let expectedResult = "id=1&content=hello world"

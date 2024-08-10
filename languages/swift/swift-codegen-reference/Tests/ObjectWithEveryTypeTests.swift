@@ -35,6 +35,7 @@ final class ObjectWithEveryTypeTests: XCTestCase {
         let objectJson = try? String(contentsOfFile: location, encoding: .utf8)
         let result = ObjectWithEveryType(JSONString: objectJson ?? "")
         XCTAssertEqual(result, control)
-        XCTAssertEqual(control.toJSONString(), objectJson!)
+        // We cannot compare JSON strings because Swift dictionaries do not preserve ordering
+        XCTAssertEqual(ObjectWithEveryType(JSONString: result.toJSONString()), control)
     }
 }

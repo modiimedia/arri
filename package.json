@@ -20,6 +20,8 @@
     "test:skip-cache": "nx run-many -t test --skip-nx-cache",
     "build": "nx run-many -t build --exclude=playground",
     "build:skip-cache": "nx run-many -t build --skip-nx-cache --exclude=playground",
+    "compile": "nx run-many -t compile",
+    "compile:skip-cache": "nx run-many -t compile --skip-nx-cache",
     "lint": "nx run-many -t lint",
     "lint:fix": "nx run-many -t lint --fix",
     "lint:skip-cache": "nx run-many -t lint --skip-nx-cache",

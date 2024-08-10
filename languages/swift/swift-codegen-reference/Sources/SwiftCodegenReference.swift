@@ -26,6 +26,7 @@ public protocol ExampleClientModel: Equatable {
     init(JSONString: String)
     func toJSONString() -> String
     func toQueryString() -> String
+    func clone() -> Self
 }
 public protocol ExampleClientEnum: Equatable {
     init()
@@ -104,6 +105,14 @@ public struct Book: ExampleClientModel, Equatable {
         __queryParts.append("updatedAt=\(__dateFormatter.string(from: self.updatedAt))")
         return __queryParts.joined(separator: "&")
     }
+    public func clone() -> Book {
+        return Book(
+            id: self.id,
+            name: self.name,
+            createdAt: self.createdAt,
+            updatedAt: self.updatedAt
+        )
+    }
 }
 
 public struct BookParams: ExampleClientModel {
@@ -137,6 +146,11 @@ public struct BookParams: ExampleClientModel {
         var __queryParts: [String] = []
         __queryParts.append("bookId=\(self.bookId)")
         return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> BookParams {
+        return BookParams(
+            bookId: self.bookId
+        )
     }
 }
 
@@ -177,6 +191,12 @@ public struct NestedObject: ExampleClientModel {
         __queryParts.append("id=\(self.id)")
         __queryParts.append("content=\(self.content)")
         return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> NestedObject {
+        return NestedObject(
+            id: self.id,
+            content: self.content
+        )
     }
 }
 
@@ -362,27 +382,36 @@ public struct ObjectWithEveryType: ExampleClientModel {
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any")
         return __queryParts.joined(separator: "&")
     }
-    public static func == (left: ObjectWithEveryType, right: ObjectWithEveryType) -> Bool {
-        return 
-            left.string == right.string && 
-            left.boolean == right.boolean && 
-            left.timestamp == right.timestamp &&
-            left.float32 == right.float32 &&
-            left.float64 == right.float64 &&
-            left.int8 == right.int8 &&
-            left.uint8 == right.uint8 &&
-            left.int16 == right.int16 &&
-            left.uint16 == right.uint16 &&
-            left.int32 == right.int32 &&
-            left.uint32 == right.uint32 &&
-            left.int64 == right.int64 &&
-            left.uint64 == right.uint64 &&
-            left.`enum` == right.`enum` &&
-            left.object == right.object &&
-            left.array == right.array && 
-            left.record == right.record &&
-            left.discriminator == right.discriminator &&
-            left.any == right.any
+    public func clone() -> ObjectWithEveryType {
+        var __arrayCloned: [Bool] = []
+        for __arrayElement in self.array {
+            __arrayCloned.append(__arrayElement)
+        }
+        var __recordCloned: Dictionary<String, Bool> = Dictionary()
+        for (__recordKey, __recordValue) in self.record {
+            __recordCloned[__recordKey] = __recordValue
+        }
+        return ObjectWithEveryType(
+            string: self.string,
+            boolean: self.boolean,
+            timestamp: self.timestamp,
+            float32: self.float32,
+            float64: self.float64,
+            int8: self.int8,
+            uint8: self.uint8,
+            int16: self.int16,
+            uint16: self.uint16,
+            int32: self.int32,
+            uint32: self.uint32,
+            int64: self.int64,
+            uint64: self.uint64,
+            enum: self.enum,
+            object: self.object.clone(),
+            array: __arrayCloned,
+            record: __recordCloned,
+            discriminator: self.discriminator.clone(),
+            any: self.any
+        )
     }
 }
 
@@ -474,6 +503,16 @@ public enum Discriminator: ExampleClientModel {
                 return __innerVal.toQueryString()
         }
     }
+    public func clone() -> Discriminator {
+        switch(self) {
+            case .a(let __innerVal):
+                return .a(__innerVal.clone()) 
+            case .b(let __innerVal):
+                return .b(__innerVal.clone()) 
+            case .c(let __innerVal): 
+                return .c(__innerVal.clone())
+        }
+    }
 }
 
 public struct DiscriminatorA: ExampleClientModel {
@@ -511,6 +550,11 @@ public struct DiscriminatorA: ExampleClientModel {
         __queryParts.append("type=A")
         __queryParts.append("id=\(self.id)")
        return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> DiscriminatorA {
+        return DiscriminatorA(
+            id: self.id
+        )
     }
 }
 
@@ -557,6 +601,12 @@ public struct DiscriminatorB: ExampleClientModel {
         __queryParts.append("name=\(self.name)")
         return __queryParts.joined(separator: "&")
     }
+    public func clone() -> DiscriminatorB {
+        return DiscriminatorB(
+            id: self.id,
+            name: self.name
+        )
+    }
 }
 
 public struct DiscriminatorC: ExampleClientModel {
@@ -583,25 +633,23 @@ public struct DiscriminatorC: ExampleClientModel {
     public init(JSONString: String) {
         do {
             let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            self.init(json: data) 
         } catch {
             self.init()
         }
     }
-
     public func toJSONString() -> String {
         var __json = "{"
         __json += "\"typeName\":\"C\""
-        __json += "\"id\":"
+        __json += ",\"id\":"
         __json += serializeString(input: self.id)
         __json += ",\"name\":"
         __json += serializeString(input: self.name)
-        __json += "\"date\":"
+        __json += ",\"date\":"
         __json += "\"\(__dateFormatter.string(from: self.date))\""
         __json += "}"
         return __json
     }
-
     public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("type=C")
@@ -609,5 +657,694 @@ public struct DiscriminatorC: ExampleClientModel {
         __queryParts.append("name=\(self.name)")
         __queryParts.append("date=\(__dateFormatter.string(from: self.date))")
         return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> DiscriminatorC {
+        return DiscriminatorC(
+            id: self.id,
+            name: self.name,
+            date: self.date
+        )
+    }
+}
+
+public struct ObjectWithOptionalFields: ExampleClientModel {
+    public var string: String?
+    public var boolean: Bool?
+    public var timestamp: Date?
+    public var float32: Float32?
+    public var float64: Float64?
+    public var int8: Int8?
+    public var uint8: UInt8?
+    public var int16: Int16?
+    public var uint16: UInt16?
+    public var int32: Int32?
+    public var uint32: UInt32?
+    public var int64: Int64?
+    public var uint64: UInt64?
+    public var `enum`: Enumerator?
+    public var object: NestedObject?
+    public var array: [Bool]?
+    public var record: Dictionary<String, Bool>?
+    public var discriminator: Discriminator?
+    public var any: JSON?
+
+    public init(
+        string: String?,
+        boolean: Bool?,
+        timestamp: Date?,
+        float32: Float32?,
+        float64: Float64?,
+        int8: Int8?,
+        uint8: UInt8?,
+        int16: Int16?,
+        uint16: UInt16?,
+        int32: Int32?,
+        uint32: UInt32?,
+        int64: Int64?,
+        uint64: UInt64?,
+        `enum`: Enumerator?,
+        object: NestedObject?,
+        array: [Bool]?,
+        record: Dictionary<String, Bool>?,
+        discriminator: Discriminator?,
+        any: JSON?
+    ) {
+        self.string = string
+        self.boolean = boolean
+        self.timestamp = timestamp
+        self.float32 = float32
+        self.float64 = float64
+        self.int8 = int8
+        self.uint8 = uint8
+        self.int16 = int16
+        self.uint16 = uint16
+        self.int32 = int32
+        self.uint32 = uint32
+        self.int64 = int64
+        self.uint64 = uint64
+        self.`enum` = `enum`
+        self.object = object
+        self.array = array
+        self.record = record
+        self.discriminator = discriminator
+        self.any = any
+    }
+    public init() {}
+    public init(json: JSON) {
+        if json["string"].exists() {
+            self.string = json["string"].string
+        }
+        if json["boolean"].exists() {
+            self.boolean = json["boolean"].bool
+        }
+        if json["timestamp"].exists() {
+            self.timestamp = __dateFormatter.date(from: json["timestamp"].string ?? "")
+        }
+        if json["float32"].exists() {
+            self.float32 = json["float32"].float
+        }
+        if json["float64"].exists() {
+            self.float64 = json["float64"].double
+        }
+        if json["int8"].exists() {
+            self.int8 = json["int8"].int8
+        }
+        if json["uint8"].exists() {
+            self.uint8 = json["uint8"].uInt8
+        }
+        if json["int16"].exists() {
+            self.int16 = json["int16"].int16
+        }
+        if json["uint16"].exists() {
+            self.uint16 = json["uint16"].uInt16
+        }
+        if json["int32"].exists() {
+            self.int32 = json["int32"].int32
+        }
+        if json["uint32"].exists() {
+            self.uint32 = json["uint32"].uInt32
+        }
+        if json["int64"].exists() {
+            self.int64 = Int64(json["int64"].string ?? "0")
+        }
+        if json["uint64"].exists() {
+            self.uint64 = UInt64(json["uint64"].string ?? "0")
+        }
+        if json["enum"].exists() {
+            self.`enum` = Enumerator(serialValue: json["enum"].string ?? "")
+        }
+        if json["object"].exists() {
+            self.object = NestedObject(json: json["object"])
+        }
+        if json["array"].exists() {
+            self.array = []
+            for __arrayJsonElement in json["array"].array ?? [] {
+                self.array!.append(contentsOf: [__arrayJsonElement.bool ?? false])
+            }
+        }
+        if json["record"].exists() {
+            self.record = Dictionary()
+            for (__recordKey, __recordValue) in json["record"].dictionary ?? Dictionary() {
+                self.record![__recordKey] = __recordValue.bool ?? false
+            }
+        }
+        if json["discriminator"].exists() {
+            self.discriminator = Discriminator(json: json["discriminator"])
+        }
+        if json["any"].exists() {
+            self.any = json["any"]
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data) 
+        } catch {
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        var __numKeys = 0
+        if self.string != nil {
+            __json += "\"string\":"
+            __json += serializeString(input: self.string!)
+            __numKeys += 1
+        }
+        if self.boolean != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"boolean\":"
+            __json += "\(self.boolean!)"
+            __numKeys += 1
+        }
+        if self.timestamp != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"timestamp\":"
+            __json += "\"\(__dateFormatter.string(from: self.timestamp!))\""
+            __numKeys += 1
+        }
+        if self.float32 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"float32\":"
+            __json += "\(self.float32!)"
+            __numKeys += 1
+        }
+        if self.float64 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"float64\":"
+            __json += "\(self.float64!)"
+            __numKeys += 1
+        }
+        if self.int8 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"int8\":"
+            __json += "\(self.int8!)"
+            __numKeys += 1
+        }
+        if self.uint8 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"uint8\":"
+            __json += "\(self.uint8!)"
+            __numKeys += 1
+        }
+        if self.int16 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"int16\":"
+            __json += "\(self.int16!)"
+            __numKeys += 1
+        }
+        if self.uint16 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"uint16\":"
+            __json += "\(self.uint16!)"
+            __numKeys += 1
+        }
+        if self.int32 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"int32\":"
+            __json += "\(self.int32!)"
+            __numKeys += 1
+        }
+        if self.uint32 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"uint32\":"
+            __json += "\(self.uint32!)"
+            __numKeys += 1
+        }
+        if self.int64 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"int64\":"
+            __json += "\"\(self.int64!)\""
+            __numKeys += 1
+        }
+        if self.uint64 != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"uint64\":"
+            __json += "\"\(self.uint64!)\""
+            __numKeys += 1
+        }
+        if self.enum != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"enum\":"
+            __json += "\"\(self.enum!.serialValue())\""
+            __numKeys += 1
+        }
+        if self.object != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"object\":"
+            __json += self.object!.toJSONString()
+            __numKeys += 1
+        }
+        if self.array != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"array\":"
+            __json += "["
+            for (__index, __element) in self.array!.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\(__element)"
+            }
+            __json += "]"
+            __numKeys += 1
+        }
+        if self.record != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"record\":"
+            __json += "{"
+            for (__index, (__key, __value)) in self.record!.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\"\(__key)\":"
+                __json += "\(__value)"
+            }
+            __json += "}"
+            __numKeys += 1
+        }
+        if self.discriminator != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"discriminator\":"
+            __json += self.discriminator!.toJSONString()
+            __numKeys += 1
+        }
+        if self.any != nil {
+            if __numKeys > 0 {
+                __json += ","
+            }
+            __json += "\"any\":"
+            __json += serializeAny(input: self.any!)
+            __numKeys += 1
+        }
+        __json += "}"
+        return __json
+    }
+    public func toQueryString() -> String {
+       var __queryParts: [String] = []
+       if self.string != nil {
+        __queryParts.append("string=\(self.string!)")
+       }
+       if self.boolean != nil {
+        __queryParts.append("boolean=\(self.boolean!)")
+       }
+       if self.timestamp != nil {
+        __queryParts.append("timestamp=\(__dateFormatter.string(from: self.timestamp!))")
+       }
+       return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> ObjectWithOptionalFields {
+        var __arrayCloned: [Bool]?
+        if (self.array != nil) {
+            __arrayCloned = []
+            for __arrayElement in self.array! {
+                __arrayCloned!.append(__arrayElement)
+            }
+        }
+        var __recordCloned: Dictionary<String, Bool>?
+        if (self.record != nil) {
+            __recordCloned = Dictionary()
+            for (__recordKey, __recordValue) in self.record! {
+                __recordCloned![__recordKey] = __recordValue
+            }
+        }
+        return ObjectWithOptionalFields(
+            string: self.string,
+            boolean: self.boolean,
+            timestamp: self.timestamp,
+            float32: self.float32,
+            float64: self.float64,
+            int8: self.int8,
+            uint8: self.uint8,
+            int16: self.int16,
+            uint16: self.uint16,
+            int32: self.int32,
+            uint32: self.uint32,
+            int64: self.int64,
+            uint64: self.uint64,
+            enum: self.enum,
+            object: self.object?.clone(),
+            array: __arrayCloned,
+            record: __recordCloned,
+            discriminator: self.discriminator?.clone(),
+            any: self.any
+        )
+    }
+}
+
+public struct ObjectWithNullableFields: ExampleClientModel {
+    public var string: String?
+    public var boolean: Bool?
+    public var timestamp: Date?
+    public var float32: Float32?
+    public var float64: Float64?
+    public var int8: Int8?
+    public var uint8: UInt8?
+    public var int16: Int16?
+    public var uint16: UInt16?
+    public var int32: Int32?
+    public var uint32: UInt32?
+    public var int64: Int64?
+    public var uint64: UInt64?
+    public var `enum`: Enumerator?
+    public var object: NestedObject?
+    public var array: [Bool]?
+    public var record: Dictionary<String, Bool>?
+    public var discriminator: Discriminator?
+    public var any: JSON = JSON(parseJSON: "null")
+
+    public init(
+        string: String?,
+        boolean: Bool?,
+        timestamp: Date?,
+        float32: Float32?,
+        float64: Float64?,
+        int8: Int8?,
+        uint8: UInt8?,
+        int16: Int16?,
+        uint16: UInt16?,
+        int32: Int32?,
+        uint32: UInt32?,
+        int64: Int64?,
+        uint64: UInt64?,
+        `enum`: Enumerator?,
+        object: NestedObject?,
+        array: [Bool]?,
+        record: Dictionary<String, Bool>?,
+        discriminator: Discriminator?,
+        any: JSON
+    ) {
+        self.string = string
+        self.boolean = boolean
+        self.timestamp = timestamp
+        self.float32 = float32
+        self.float64 = float64
+        self.int8 = int8
+        self.uint8 = uint8
+        self.int16 = int16
+        self.uint16 = uint16
+        self.int32 = int32
+        self.uint32 = uint32
+        self.int64 = int64
+        self.uint64 = uint64
+        self.`enum` = `enum`
+        self.object = object
+        self.array = array
+        self.record = record
+        self.discriminator = discriminator
+        self.any = any
+    }
+    public init() {}
+    public init(json: JSON) {
+        if json["string"].string != nil {
+            self.string = json["string"].string
+        }
+        if json["boolean"].bool != nil {
+            self.boolean = json["boolean"].bool
+        }
+        if json["timestamp"].string != nil {
+            self.timestamp = __dateFormatter.date(from: json["timestamp"].string ?? "")
+        }
+        if json["float32"].float != nil {
+            self.float32 = json["float32"].float
+        }
+        if json["float64"].double != nil {
+            self.float64 = json["float64"].double
+        }
+        if json["int8"].int8 != nil {
+            self.int8 = json["int8"].int8
+        }
+        if json["uint8"].uInt8 != nil {
+            self.uint8 = json["uint8"].uInt8
+        }
+        if json["int16"].int16 != nil {
+            self.int16 = json["int16"].int16
+        }
+        if json["uint16"].uInt16 != nil {
+            self.uint16 = json["uint16"].uInt16
+        }
+        if json["int32"].int32 != nil {
+            self.int32 = json["int32"].int32
+        }
+        if json["uint32"].uInt32 != nil {
+            self.uint32 = json["uint32"].uInt32
+        }
+        if json["int64"].string != nil {
+            self.int64 = Int64(json["int64"].string ?? "0")
+        }
+        if json["uint64"].string != nil {
+            self.uint64 = UInt64(json["uint64"].string ?? "0")
+        }
+        if json["enum"].string != nil {
+            self.`enum` = Enumerator(serialValue: json["enum"].string ?? "")
+        }
+        if json["object"].dictionary != nil {
+            self.object = NestedObject(json: json["object"])
+        }
+        if json["array"].array != nil {
+            self.array = []
+            for __arrayJsonElement in json["array"].array ?? [] {
+                self.array!.append(contentsOf: [__arrayJsonElement.bool ?? false])
+            }
+        }
+        if json["record"].dictionary != nil {
+            self.record = Dictionary()
+            for (__recordKey, __recordValue) in json["record"].dictionary ?? Dictionary() {
+                self.record![__recordKey] = __recordValue.bool ?? false
+            }
+        }
+        if json["discriminator"].dictionary != nil {
+            self.discriminator = Discriminator(json: json["discriminator"])
+        }
+        if json["any"].exists() {
+            self.any = json["any"]
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data) 
+        } catch {
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"string\":"
+        if self.string != nil {
+            __json += serializeString(input: self.string!)
+        } else {
+            __json += "null"
+        }
+        __json += ",\"boolean\":"
+        if self.boolean != nil {
+            __json += "\(self.boolean!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"timestamp\":"
+        if self.timestamp != nil {
+            __json += "\"\(__dateFormatter.string(from: self.timestamp!))\""
+        } else {
+            __json += "null"
+        }
+        __json += ",\"float32\":"
+        if self.float32 != nil {
+            __json += "\(self.float32!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"float64\":"
+        if self.float64 != nil {
+            __json += "\(self.float64!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"int8\":"
+        if self.int8 != nil {
+            __json += "\(self.int8!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"uint8\":"
+        if self.uint8 != nil {
+            __json += "\(self.uint8!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"int16\":"
+        if self.int16 != nil {
+            __json += "\(self.int16!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"uint16\":"
+        if self.uint16 != nil {
+            __json += "\(self.uint16!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"int32\":"
+        if self.int32 != nil {
+            __json += "\(self.int32!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"uint32\":"
+        if self.uint32 != nil {
+            __json += "\(self.uint32!)"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"int64\":"
+        if self.int64 != nil {
+            __json += "\"\(self.int64!)\""
+        } else {
+            __json += "null"
+        }
+        __json += ",\"uint64\":"
+        if self.uint64 != nil {
+            __json += "\"\(self.uint64!)\""
+        } else {
+            __json += "null"
+        }
+        __json += ",\"enum\":"
+        if self.enum != nil {
+            __json += "\"\(self.enum!.serialValue())\""
+        } else {
+            __json += "null"
+        }
+        __json += ",\"object\":"
+        if self.object != nil {
+            __json += self.object!.toJSONString()
+        } else {
+            __json += "null"
+        }
+        __json += ",\"array\":"
+        if self.array != nil {
+            __json += "["
+            for (__index, __element) in self.array!.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\(__element)"
+            }
+            __json += "]"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"record\":"
+        if self.record != nil {
+            __json += "{"
+            for (__index, (__key, __value)) in self.record!.enumerated() {
+                if __index > 0 {
+                    __json += ","
+                }
+                __json += "\"\(__key)\":"
+                __json += "\(__value)"
+            }
+            __json += "}"
+        } else {
+            __json += "null"
+        }
+        __json += ",\"discriminator\":"
+        if self.discriminator != nil {
+            __json += self.discriminator!.toJSONString()
+        } else {
+            __json += "null"
+        }
+        __json += ",\"any\":"
+        __json += serializeAny(input: self.any)
+        __json += "}"
+        return __json
+    }
+    public func toQueryString() -> String {
+       var __queryParts: [String] = []
+       if self.string != nil {
+        __queryParts.append("string=\(self.string!)")
+       } else {
+        __queryParts.append("string=null")
+       }
+       if self.boolean != nil {
+        __queryParts.append("boolean=\(self.boolean!)")
+       } else {
+        __queryParts.append("boolean=null")
+       }
+       if self.timestamp != nil {
+        __queryParts.append("timestamp=\(__dateFormatter.string(from: self.timestamp!))")
+       } else {
+        __queryParts.append("timestamp=null")
+       }
+       return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> ObjectWithNullableFields {
+        var __arrayCloned: [Bool]?
+        if (self.array != nil) {
+            __arrayCloned = []
+            for __arrayElement in self.array! {
+                __arrayCloned!.append(__arrayElement)
+            }
+        }
+        var __recordCloned: Dictionary<String, Bool>?
+        if (self.record != nil) {
+            __recordCloned = Dictionary()
+            for (__recordKey, __recordValue) in self.record! {
+                __recordCloned![__recordKey] = __recordValue
+            }
+        }
+        return ObjectWithNullableFields(
+            string: self.string,
+            boolean: self.boolean,
+            timestamp: self.timestamp,
+            float32: self.float32,
+            float64: self.float64,
+            int8: self.int8,
+            uint8: self.uint8,
+            int16: self.int16,
+            uint16: self.uint16,
+            int32: self.int32,
+            uint32: self.uint32,
+            int64: self.int64,
+            uint64: self.uint64,
+            enum: self.enum,
+            object: self.object?.clone(),
+            array: __arrayCloned,
+            record: __recordCloned,
+            discriminator: self.discriminator?.clone(),
+            any: self.any
+        )
     }
 }
