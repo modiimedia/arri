@@ -14,17 +14,12 @@ let package = Package(
             name: "SwiftCodegenReference",
             targets: ["SwiftCodegenReference"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/tristanhimmelman/ObjectMapper.git", .upToNextMajor(from: "4.1.0")),
-    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "SwiftCodegenReference",
-            dependencies: [
-                "ObjectMapper"
-            ]
+            dependencies: []
         ),
         .testTarget(
             name: "BookTests",

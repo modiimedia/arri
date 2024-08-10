@@ -16,11 +16,9 @@ final class BookTests: XCTestCase {
 
     func testFromJson() throws {
         let bookJson: String? = try? String(contentsOfFile: location, encoding: .utf8)
-        let result1 = Book(JSONString: bookJson ?? "") ?? Book()
-        let result2: Book = Book(JSONString: control.toJSONString() ?? "") ?? Book()
-        XCTAssertEqual(result1, control)
-        XCTAssertEqual(result2, control)
-        XCTAssertEqual(result1, result2)
+        let result = Book(JSONString: bookJson ?? "") ?? Book()
+        XCTAssertEqual(result, control)
+        XCTAssertEqual(control.toJSONString(), bookJson)
     }
     func testToQueryString() throws {
         let expectedResult = "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z"

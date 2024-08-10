@@ -1,5 +1,22 @@
 {
   "name": "swift-codegen-reference",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "swift build",
+        "cwd": "languages/swift/swift-codegen-reference"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "swift test",
+        "cwd": "languages/swift/swift-codegen-reference"
+      }
+    }
+  }
 }

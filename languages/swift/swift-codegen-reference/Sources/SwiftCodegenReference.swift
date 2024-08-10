@@ -1,12 +1,36 @@
 import Foundation
-import ObjectMapper
 
-public protocol ExampleClientModel: Mappable, Equatable {
+let jsonEncoder = JSONEncoder()
+
+func serializeString(input: String) -> String {
+    do {
+        let inputValue = try jsonEncoder.encode(input)
+        return String(data: inputValue, encoding: .utf8) ?? "\"\""
+    } catch {
+        return "\"\""
+    }
+}
+
+func serializeAny(input: JSON) -> String {
+    do {
+        let inputValue = try jsonEncoder.encode(input)
+        return String(data: inputValue, encoding: .utf8) ?? "null"
+    } catch {
+        return "null"
+    }
+}
+
+public protocol ExampleClientModel: Equatable {
+    init()
+    init(json: JSON)
+    init(JSONString: String)
+    func toJSONString() -> String
     func toQueryString() -> String
 }
 public protocol ExampleClientEnum: Equatable {
-    func toJsonString() -> String
-    func toQueryString() -> String
+    init()
+    init(serialValue: String)
+    func serialValue() -> String
 }
 public class ExampleClientDateFormatter {
     public let RFC3339DateFormatter: DateFormatter
@@ -25,17 +49,6 @@ public class ExampleClientDateFormatter {
 }
 
 private let __dateFormatter = ExampleClientDateFormatter()
-private let __dateTransformer = TransformOf<Date, String>(
-    fromJSON: {
-        if($0 == nil) {
-            return Date.now
-        }
-        return __dateFormatter.date(from: $0!)
-    }, 
-    toJSON: {
-        return __dateFormatter.string(from: $0 ?? Date.now)
-    }
-)
 
 public struct Book: ExampleClientModel, Equatable {
     public var id: String = ""
@@ -55,15 +68,29 @@ public struct Book: ExampleClientModel, Equatable {
         self.updatedAt = updatedAt
     }
     public init() {}
-    public init?(map: Map) {}
-
-    public mutating func mapping(map: Map) {
-       self.id <- map["id"]
-       self.name <- map["name"]
-       self.createdAt <- (map["createdAt"], __dateTransformer)
-       self.updatedAt <- (map["updatedAt"], __dateTransformer)
+    public init(json: JSON) {
+        self.id = json["name"].string ?? ""
+        self.name = json["name"].string ?? ""
+        self.createdAt = __dateFormatter.date(from: json["createdAt"].string ?? "") ?? Date.now
+        self.updatedAt = __dateFormatter.date(from: json["updatedAt"].string ?? "") ?? Date.now 
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
     }
 
+    public func toJSONString() -> String{
+        var __json = "{"
+        __json += "\"id\":"
+        __json += serializeString(input: self.id)
+        __json += ",\"name\":"
+        __json += serializeString(input: self.name)
+        __json += ",\"createdAt\":"
+        __json += "\"\(__dateFormatter.string(from: self.createdAt))\""
+        __json += ",\"updatedAt\":"
+        __json += "\"\(__dateFormatter.string(from: self.updatedAt))\""
+        __json += "}"
+        return __json
+    }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("id=\(self.id)")
@@ -74,8 +101,6 @@ public struct Book: ExampleClientModel, Equatable {
     }
 }
 
-
-
 public struct BookParams: ExampleClientModel {
     public var bookId: String = ""
 
@@ -85,9 +110,18 @@ public struct BookParams: ExampleClientModel {
         self.bookId = bookId
     }
     public init() {}
-    public init?(map: ObjectMapper.Map) {}
-    public mutating func mapping(map: Map) {
-        self.bookId <- map["bookId"]
+    public init(json: JSON) {
+        self.bookId = json["bookId"].string ?? ""
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"bookId\":"
+        __json += serializeString(input: self.bookId)
+        __json += "}"
+        return __json
     }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
@@ -107,17 +141,23 @@ public struct NestedObject: ExampleClientModel {
         self.content = content
     }
     public init() {}
-    public init?(map: Map) {}
-    public mutating func mapping(map: Map) {
-        self.id <- map["id"]
-        self.content <- map["content"]
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+        self.content = json["content"].string ?? ""
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "}"
+        return __json
     }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("id=\(self.id)")
         __queryParts.append("content=\(self.content)")
         return __queryParts.joined(separator: "&")
-    
     }
 }
 
@@ -140,7 +180,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
     public var array: [Bool] = []
     public var record: Dictionary<String, Bool> = Dictionary()
     public var discriminator: Discriminator = Discriminator.a(DiscriminatorA())
-    public var any: Any? = nil
+    public var any: JSON = JSON()
 
     public init(
         string: String,
@@ -161,7 +201,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
         array: [Bool],
         record: Dictionary<String, Bool>,
         discriminator: Discriminator,
-        any: Any?
+        any: JSON
     ) {
         self.string = string
         self.boolean = boolean
@@ -184,27 +224,96 @@ public struct ObjectWithEveryType: ExampleClientModel {
         self.any = any
     }
     public init() {}
-    public init?(map: Map) {}
-    public mutating func mapping(map: Map) {
-        self.string <- map["string"]
-        self.boolean <- map["boolean"]
-        self.timestamp <- (map["timestamp"], __dateTransformer)
-        self.float32 <- map["float32"]
-        self.float64 <- map["float64"]
-        self.int8 <- map["int8"]
-        self.uint8 <- map["uint8"]
-        self.int16 <- map["int16"]
-        self.uint16 <- map["uint16"]
-        self.int32 <- map["int32"]
-        self.uint32 <- map["uint32"]
-        self.int64 <- map["int64"]
-        self.uint64 <- map["uint64"]
-        self.`enum` <- map["enum"] is String ? Enumerator(string: map["enum"] as String) : Enumerator.foo // TODO
-        self.object <- map["object"] // TODO
-        self.array <- map["array"] // TODO
-        self.record <- map["record"] // TODO
-        self.discriminator <- map["discriminator"] // TODO
-        self.any <- map["any"] // TODO
+    public init(json: JSON) {
+        self.string = json["string"].string ?? ""
+        self.boolean = json["boolean"].bool ?? false
+        self.timestamp = __dateFormatter.date(from: json["timestamp"].string ?? "") ?? Date.now
+        self.float32 = json["float32"].number?.floatValue ?? 0.0
+        self.float64 = json["float64"].number?.doubleValue ?? 0.0
+        self.int8 = json["int8"].number?.int8Value ?? 0
+        self.uint8 = json["uint8"].number?.uint8Value ?? 0
+        self.int16 = json["int16"].number?.int16Value ?? 0
+        self.uint16 = json["uint16"].number?.uint16Value ?? 0
+        self.int32 = json["int32"].number?.int32Value ?? 0
+        self.uint32 = json["uint32"].number?.uint32Value ?? 0
+        self.int64 = Int64(json["int64"].string ?? "0") ?? 0
+        self.uint64 = UInt64(json["uint64"].string ?? "0") ?? 0
+        self.`enum` = Enumerator(serialValue: json["enum"].string ?? "")
+        self.object = NestedObject(json: json["object"])
+        self.array = []
+        let __arrayJson = json["array"].array ?? []
+        for __arrayJsonElement in __arrayJson {
+            self.array.append(contentsOf: [__arrayJsonElement.bool ?? false])
+        }
+        self.record = Dictionary()
+        let __recordJson = json["record"].dictionary ?? Dictionary()
+        for __recordJsonKey in __recordJson.keys {
+            let __recordJsonValue = __recordJson[__recordJsonKey]?.bool ?? false
+            self.record[__recordJsonKey] = __recordJsonValue
+        }
+        self.discriminator = Discriminator(json: json["discriminator"])
+        self.any = json["any"]
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"string\":"
+        __json += serializeString(input: self.string)
+        __json += ",\"boolean\":"
+        __json += "\(self.boolean)"
+        __json += ",\"timestamp\":"
+        __json += "\"\(__dateFormatter.string(from: self.timestamp))\""
+        __json += ",\"float32\":"
+        __json += "\(self.float32)"
+        __json += ",\"float64\":"
+        __json += "\(self.float64)"
+        __json += ",\"int8\":"
+        __json += "\(self.int8)"
+        __json += ",\"uint8\":"
+        __json += "\(self.uint8)"
+        __json += ",\"int16\":"
+        __json += "\(self.int16)"
+        __json += ",\"uint16\":"
+        __json += "\(self.uint16)"
+        __json += ",\"int32\":"
+        __json += "\(self.int32)"
+        __json += ",\"uint32\":"
+        __json += "\(self.uint32)"
+        __json += ",\"int64\":"
+        __json += "\"\(self.int64)\""
+        __json += ",\"uint64\":"
+        __json += "\"\(self.uint64)\""
+        __json += ",\"enum\":"
+        __json += "\"\(self.enum.serialValue())\""
+        __json += ",\"object\":"
+        __json += self.object.toJSONString()
+        __json += ",\"array\":"
+        __json += "["
+        for (__index, __element) in self.array.enumerated() {
+            if __index > 0 {
+                __json += ","
+            }
+            __json += "\(__element)"
+        }
+        __json += "]"
+        __json += ",\"record\":"
+        __json += "{"
+        for (__index, __key) in self.record.keys.enumerated() {
+            if __index > 0 {
+                __json += ","
+            }
+            __json += "\"\(__key)\":"
+            __json += "\(self.record[__key]!)"
+        }
+        __json += "}"
+        __json += ",\"discriminator\":"
+        __json += self.discriminator.toJSONString()
+        __json += ",\"any\":"
+        __json += serializeAny(input: self.any)
+        __json += "}"
+        return __json
     }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
@@ -249,17 +358,20 @@ public struct ObjectWithEveryType: ExampleClientModel {
             left.array == right.array && 
             left.record == right.record &&
             left.discriminator == right.discriminator &&
-            left.any as? String == right.any as? String
+            left.any == right.any
     }
 }
 
-public enum Enumerator {
+public enum Enumerator: ExampleClientEnum {
     case foo
     case bar
     case baz
 
-    public init(string: String) {
-       switch(string) {
+    public init() {
+        self = .foo
+    }
+    public init(serialValue: String) {
+       switch(serialValue) {
         case "FOO":
             self = .foo
             break;
@@ -273,7 +385,6 @@ public enum Enumerator {
             self = .foo
        }
     }
-
     public func serialValue() -> String {
         switch (self) {
             case .foo:
@@ -286,24 +397,44 @@ public enum Enumerator {
     }
 }
 
-public enum Discriminator: ExampleClientEnum {
-
+public enum Discriminator: ExampleClientModel {
     case a(DiscriminatorA)
     case b(DiscriminatorB)
     case c(DiscriminatorC)
 
-    public func toJsonString() -> String {
+    public init() {
+        self = .a(DiscriminatorA())
+    }
+    public init(json: JSON) {
+        let typeName = json["typeName"].string ?? ""
+        switch (typeName) {
+            case "A":
+                self = .a(DiscriminatorA(json: json))
+                break
+            case "B":
+                self = .b(DiscriminatorB(json: json))
+                break
+            case "C":
+                self = .c(DiscriminatorC(json: json))
+                break;
+            default:
+                self = .a(DiscriminatorA())
+                break;
+        }
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
+    }
+    public func toJSONString() -> String {
         switch(self) {
             case .a(let __innerVal):
-                return __innerVal.toJSONString() ?? ""
+                return __innerVal.toJSONString()
             case .b(let __innerVal):
-                return __innerVal.toJSONString() ?? ""
+                return __innerVal.toJSONString()
             case .c(let __innerVal):
-                return __innerVal.toJSONString() ?? ""
+                return __innerVal.toJSONString()
         }        
     }
-
-
     public func toQueryString() -> String {
         switch(self) {
             case .a(let __innerVal):
@@ -326,12 +457,20 @@ public struct DiscriminatorA: ExampleClientModel {
         self.id = id
     }
     public init() {}
-    public init?(map: Map) {}
-
-    public mutating func mapping(map: Map) {
-        self.id <- map["id"]
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
     }
 
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"id\":"
+        __json += serializeString(input: self.id)
+        __json += "}"
+        return __json
+    }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
         __queryParts.append("type=A")
@@ -353,11 +492,21 @@ public struct DiscriminatorB: ExampleClientModel {
         self.name = name
     }
     public init() {}
-    public init?(map: Map) {}
-
-    public mutating func mapping(map: Map) {
-        self.id <- map["id"]
-        self.name <- map["name"]
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+        self.name = json["name"].string ?? ""
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
+    }
+    public func toJSONString() -> String {
+    var __json = "{"
+    __json += "\"id\":"
+    __json += serializeString(input: self.id)
+    __json += ",\"name\":"
+    __json += serializeString(input: self.name)
+    __json += "}"
+    return __json
     }
 
     public func toQueryString() -> String {
@@ -385,12 +534,25 @@ public struct DiscriminatorC: ExampleClientModel {
         self.date = date
     }
     public init() {}
-    public init?(map: Map) {}
+    public init(json: JSON) {
+        self.id = json["id"].string ?? ""
+        self.name = json["name"].string ?? ""
+        self.date = __dateFormatter.date(from: json["date"].string ?? "") ?? Date.now
+    }
+    public init(JSONString: String) {
+        self.init(json: JSON(stringLiteral: JSONString))
+    }
 
-    public mutating func mapping(map: Map) {
-        self.id <- map["id"]
-        self.name <- map["name"]
-        self.date <- (map["date"], __dateTransformer)
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"id\":"
+        __json += serializeString(input: self.id)
+        __json += ",\"name\":"
+        __json += serializeString(input: self.name)
+        __json += "\"date\":"
+        __json += "\"\(__dateFormatter.string(from: self.date))\""
+        __json += "}"
+        return __json
     }
 
     public func toQueryString() -> String {
