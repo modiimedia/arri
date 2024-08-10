@@ -1,7 +1,7 @@
 import Foundation
 import ArriClient
 
-public struct Book: ArriClientModel, Equatable {
+public struct Book: ArriClientModel {
     public var id: String = ""
     public var name: String = ""
     public var createdAt: Date = Date.now
