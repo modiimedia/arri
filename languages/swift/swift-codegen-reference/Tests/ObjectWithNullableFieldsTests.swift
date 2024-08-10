@@ -1,4 +1,5 @@
 import XCTest
+import ArriClient
 @testable import SwiftCodegenReference
 
 final class ObjectWithNullableFieldsTests: XCTestCase {

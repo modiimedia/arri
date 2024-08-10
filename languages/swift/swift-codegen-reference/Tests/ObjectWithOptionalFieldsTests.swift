@@ -35,7 +35,7 @@ final class ObjectWithOptionalFieldsTests: XCTestCase {
         ),
         any: "hello world"
     )
-    func testFromJson() throws {
+    func testFromJSON() throws {
         let allUndefJson = try String(contentsOfFile: allUndefLocation, encoding: .utf8)
         let allUndefResult = ObjectWithOptionalFields(JSONString: allUndefJson)
         XCTAssertEqual(allUndefResult, allUndefControl)

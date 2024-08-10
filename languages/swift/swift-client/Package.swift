@@ -4,27 +4,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-codegen-reference",
+    name: "ArriClient",
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "SwiftCodegenReference",
-            targets: ["SwiftCodegenReference"]),
-    ],
-    dependencies: [
-        .package(name: "ArriClient", path: "../swift-client")
+            name: "ArriClient",
+            targets: ["ArriClient"]),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "SwiftCodegenReference",
-            dependencies: [
-                "ArriClient"
-            ]
-        ),
+            name: "ArriClient"),
         .testTarget(
-            name: "SwiftCodegenReferenceTests",
-            dependencies: ["SwiftCodegenReference", "ArriClient"]),
+            name: "ArriClientTests",
+            dependencies: ["ArriClient"]),
     ]
 )

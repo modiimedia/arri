@@ -1,7 +1,8 @@
 import XCTest
+import ArriClient
 @testable import SwiftCodegenReference
 
-let dateFormatter: ExampleClientDateFormatter = ExampleClientDateFormatter()
+let dateFormatter: ArriClientDateFormatter = ArriClientDateFormatter()
 let targetDateStr = "2001-01-01T16:00:00.000Z"
 let targetDate = dateFormatter.date(from: targetDateStr) ?? Date.now
 

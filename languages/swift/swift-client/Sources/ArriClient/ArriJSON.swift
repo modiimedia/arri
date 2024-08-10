@@ -1211,7 +1211,6 @@ public func > (lhs: JSON, rhs: JSON) -> Bool {
 
 
 public func < (lhs: JSON, rhs: JSON) -> Bool {
-
     switch (lhs.type, rhs.type) {
     case (.number, .number): return lt(lhs: lhs.rawNumber, rhs: rhs.rawNumber)
     case (.string, .string): return lhs.rawString < rhs.rawString

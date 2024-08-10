@@ -1,57 +1,7 @@
 import Foundation
+import ArriClient
 
-let jsonEncoder = JSONEncoder()
-
-func serializeString(input: String) -> String {
-    do {
-        let inputValue = try jsonEncoder.encode(input)
-        return String(data: inputValue, encoding: .utf8) ?? "\"\""
-    } catch {
-        return "\"\""
-    }
-}
-
-func serializeAny(input: JSON) -> String {
-    do {
-        let inputValue = try jsonEncoder.encode(input)
-        return String(data: inputValue, encoding: .utf8) ?? "null"
-    } catch {
-        return "null"
-    }
-}
-
-public protocol ExampleClientModel: Equatable {
-    init()
-    init(json: JSON)
-    init(JSONString: String)
-    func toJSONString() -> String
-    func toQueryString() -> String
-    func clone() -> Self
-}
-public protocol ExampleClientEnum: Equatable {
-    init()
-    init(serialValue: String)
-    func serialValue() -> String
-}
-public class ExampleClientDateFormatter {
-    public let RFC3339DateFormatter: DateFormatter
-    public init() {
-        RFC3339DateFormatter   = DateFormatter()
-        RFC3339DateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        RFC3339DateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-        RFC3339DateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-    }
-    public func date(from: String) -> Date? {
-        return RFC3339DateFormatter.date(from: from)
-    }
-    public func string(from: Date) -> String {
-        return RFC3339DateFormatter.string(from: from)
-    }    
-}
-
-private let __dateFormatter = ExampleClientDateFormatter()
-
-public struct Book: ExampleClientModel, Equatable {
+public struct Book: ArriClientModel, Equatable {
     public var id: String = ""
     public var name: String = ""
     public var createdAt: Date = Date.now
@@ -72,8 +22,8 @@ public struct Book: ExampleClientModel, Equatable {
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
-        self.createdAt = __dateFormatter.date(from: json["createdAt"].string ?? "") ?? Date.now
-        self.updatedAt = __dateFormatter.date(from: json["updatedAt"].string ?? "") ?? Date.now 
+        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date.now
+        self.updatedAt = parseDate(json["updatedAt"].string ?? "") ?? Date.now
     }
     public init(JSONString: String) {
         do {
@@ -91,9 +41,9 @@ public struct Book: ExampleClientModel, Equatable {
         __json += ",\"name\":"
         __json += serializeString(input: self.name)
         __json += ",\"createdAt\":"
-        __json += "\"\(__dateFormatter.string(from: self.createdAt))\""
+        __json += serializeDate(self.createdAt)
         __json += ",\"updatedAt\":"
-        __json += "\"\(__dateFormatter.string(from: self.updatedAt))\""
+        __json += serializeDate(self.updatedAt)
         __json += "}"
         return __json
     }
@@ -101,8 +51,8 @@ public struct Book: ExampleClientModel, Equatable {
         var __queryParts: [String] = []
         __queryParts.append("id=\(self.id)")
         __queryParts.append("name=\(self.name)")
-        __queryParts.append("createdAt=\(__dateFormatter.string(from: self.createdAt))")
-        __queryParts.append("updatedAt=\(__dateFormatter.string(from: self.updatedAt))")
+        __queryParts.append("createdAt=\(serializeDate(self.createdAt, withQuotes: false))")
+        __queryParts.append("updatedAt=\(serializeDate(self.updatedAt, withQuotes: false))")
         return __queryParts.joined(separator: "&")
     }
     public func clone() -> Book {
@@ -115,7 +65,7 @@ public struct Book: ExampleClientModel, Equatable {
     }
 }
 
-public struct BookParams: ExampleClientModel {
+public struct BookParams: ArriClientModel {
     public var bookId: String = ""
 
     public init(
@@ -154,7 +104,7 @@ public struct BookParams: ExampleClientModel {
     }
 }
 
-public struct NestedObject: ExampleClientModel {
+public struct NestedObject: ArriClientModel {
     public var id: String = ""
     public var content: String = ""
     public init(
@@ -200,7 +150,7 @@ public struct NestedObject: ExampleClientModel {
     }
 }
 
-public struct ObjectWithEveryType: ExampleClientModel {
+public struct ObjectWithEveryType: ArriClientModel {
     public var string: String = ""
     public var boolean: Bool = false
     public var timestamp: Date = Date.now
@@ -266,7 +216,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
     public init(json: JSON) {
         self.string = json["string"].string ?? ""
         self.boolean = json["boolean"].bool ?? false
-        self.timestamp = __dateFormatter.date(from: json["timestamp"].string ?? "") ?? Date.now
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date.now
         self.float32 = json["float32"].number?.floatValue ?? 0.0
         self.float64 = json["float64"].number?.doubleValue ?? 0.0
         self.int8 = json["int8"].number?.int8Value ?? 0
@@ -308,7 +258,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
         __json += ",\"boolean\":"
         __json += "\(self.boolean)"
         __json += ",\"timestamp\":"
-        __json += "\"\(__dateFormatter.string(from: self.timestamp))\""
+        __json += serializeDate(self.timestamp)
         __json += ",\"float32\":"
         __json += "\(self.float32)"
         __json += ",\"float64\":"
@@ -363,7 +313,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
         var __queryParts: [String] = []
         __queryParts.append("string=\(self.string)")
         __queryParts.append("boolean=\(self.boolean)")
-        __queryParts.append("timestamp=\(__dateFormatter.string(from: self.timestamp))")
+        __queryParts.append("timestamp=\(serializeDate(self.timestamp, withQuotes: false))")
         __queryParts.append("float32=\(self.float32)")
         __queryParts.append("float64=\(self.float64)")
         __queryParts.append("int8=\(self.int8)")
@@ -415,7 +365,7 @@ public struct ObjectWithEveryType: ExampleClientModel {
     }
 }
 
-public enum Enumerator: ExampleClientEnum {
+public enum Enumerator: ArriClientEnum {
     case foo
     case bar
     case baz
@@ -450,7 +400,7 @@ public enum Enumerator: ExampleClientEnum {
     }
 }
 
-public enum Discriminator: ExampleClientModel {
+public enum Discriminator: ArriClientModel {
     case a(DiscriminatorA)
     case b(DiscriminatorB)
     case c(DiscriminatorC)
@@ -515,7 +465,7 @@ public enum Discriminator: ExampleClientModel {
     }
 }
 
-public struct DiscriminatorA: ExampleClientModel {
+public struct DiscriminatorA: ArriClientModel {
     let typeName: String = "A"
     public var id: String = ""
 
@@ -558,7 +508,7 @@ public struct DiscriminatorA: ExampleClientModel {
     }
 }
 
-public struct DiscriminatorB: ExampleClientModel {
+public struct DiscriminatorB: ArriClientModel {
     let typeName: String = "B"
     public var id: String = ""
     public var name: String = ""
@@ -609,7 +559,7 @@ public struct DiscriminatorB: ExampleClientModel {
     }
 }
 
-public struct DiscriminatorC: ExampleClientModel {
+public struct DiscriminatorC: ArriClientModel {
     let typeName: String = "C"
     public var id: String = ""
     public var name: String = ""
@@ -628,7 +578,7 @@ public struct DiscriminatorC: ExampleClientModel {
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
-        self.date = __dateFormatter.date(from: json["date"].string ?? "") ?? Date.now
+        self.date = parseDate(json["date"].string ?? "") ?? Date.now
     }
     public init(JSONString: String) {
         do {
@@ -646,7 +596,7 @@ public struct DiscriminatorC: ExampleClientModel {
         __json += ",\"name\":"
         __json += serializeString(input: self.name)
         __json += ",\"date\":"
-        __json += "\"\(__dateFormatter.string(from: self.date))\""
+        __json += serializeDate(self.date)
         __json += "}"
         return __json
     }
@@ -655,7 +605,7 @@ public struct DiscriminatorC: ExampleClientModel {
         __queryParts.append("type=C")
         __queryParts.append("id=\(self.id)")
         __queryParts.append("name=\(self.name)")
-        __queryParts.append("date=\(__dateFormatter.string(from: self.date))")
+        __queryParts.append("date=\(serializeDate(self.date, withQuotes: false))")
         return __queryParts.joined(separator: "&")
     }
     public func clone() -> DiscriminatorC {
@@ -667,7 +617,7 @@ public struct DiscriminatorC: ExampleClientModel {
     }
 }
 
-public struct ObjectWithOptionalFields: ExampleClientModel {
+public struct ObjectWithOptionalFields: ArriClientModel {
     public var string: String?
     public var boolean: Bool?
     public var timestamp: Date?
@@ -738,7 +688,7 @@ public struct ObjectWithOptionalFields: ExampleClientModel {
             self.boolean = json["boolean"].bool
         }
         if json["timestamp"].exists() {
-            self.timestamp = __dateFormatter.date(from: json["timestamp"].string ?? "")
+            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date.now
         }
         if json["float32"].exists() {
             self.float32 = json["float32"].float
@@ -824,7 +774,7 @@ public struct ObjectWithOptionalFields: ExampleClientModel {
                 __json += ","
             }
             __json += "\"timestamp\":"
-            __json += "\"\(__dateFormatter.string(from: self.timestamp!))\""
+            __json += serializeDate(self.timestamp!)
             __numKeys += 1
         }
         if self.float32 != nil {
@@ -976,15 +926,47 @@ public struct ObjectWithOptionalFields: ExampleClientModel {
     public func toQueryString() -> String {
        var __queryParts: [String] = []
        if self.string != nil {
-        __queryParts.append("string=\(self.string!)")
-       }
-       if self.boolean != nil {
-        __queryParts.append("boolean=\(self.boolean!)")
-       }
-       if self.timestamp != nil {
-        __queryParts.append("timestamp=\(__dateFormatter.string(from: self.timestamp!))")
-       }
-       return __queryParts.joined(separator: "&")
+            __queryParts.append("string=\(self.string!)")
+        }
+        if self.boolean != nil {
+            __queryParts.append("boolean=\(self.boolean!)")
+        }
+        if self.timestamp != nil {
+            __queryParts.append("timestamp=\(serializeDate(self.timestamp!, withQuotes: false))")
+        }
+        if self.int8 != nil {
+            __queryParts.append("int8=\(self.int8!)")
+        }
+        if self.uint8 != nil {
+            __queryParts.append("uint8=\(self.uint8!)")
+        }
+        if self.int16 != nil {
+            __queryParts.append("int16=\(self.int16!)")
+        }
+        if self.uint16 != nil {
+            __queryParts.append("uint16=\(self.uint16!)")
+        }
+        if self.int32 != nil {
+            __queryParts.append("int32=\(self.int32!)")
+        }
+        if self.uint32 != nil {
+            __queryParts.append("uint32=\(self.uint32!)")
+        }
+        if self.int64 != nil {
+            __queryParts.append("int64=\(self.int64!)")
+        }
+        if self.uint64 != nil {
+            __queryParts.append("uint64=\(self.uint64!)")
+        }
+        if self.enum != nil {
+            __queryParts.append("enum=\(self.enum!.serialValue())")
+        }
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
+        print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any")
+        return __queryParts.joined(separator: "&")
     }
     public func clone() -> ObjectWithOptionalFields {
         var __arrayCloned: [Bool]?
@@ -1025,7 +1007,7 @@ public struct ObjectWithOptionalFields: ExampleClientModel {
     }
 }
 
-public struct ObjectWithNullableFields: ExampleClientModel {
+public struct ObjectWithNullableFields: ArriClientModel {
     public var string: String?
     public var boolean: Bool?
     public var timestamp: Date?
@@ -1096,7 +1078,7 @@ public struct ObjectWithNullableFields: ExampleClientModel {
             self.boolean = json["boolean"].bool
         }
         if json["timestamp"].string != nil {
-            self.timestamp = __dateFormatter.date(from: json["timestamp"].string ?? "")
+            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date.now
         }
         if json["float32"].float != nil {
             self.float32 = json["float32"].float
@@ -1177,7 +1159,7 @@ public struct ObjectWithNullableFields: ExampleClientModel {
         }
         __json += ",\"timestamp\":"
         if self.timestamp != nil {
-            __json += "\"\(__dateFormatter.string(from: self.timestamp!))\""
+            __json += serializeDate(self.timestamp!)
         } else {
             __json += "null"
         }
@@ -1292,23 +1274,73 @@ public struct ObjectWithNullableFields: ExampleClientModel {
         return __json
     }
     public func toQueryString() -> String {
-       var __queryParts: [String] = []
-       if self.string != nil {
-        __queryParts.append("string=\(self.string!)")
-       } else {
-        __queryParts.append("string=null")
-       }
-       if self.boolean != nil {
-        __queryParts.append("boolean=\(self.boolean!)")
-       } else {
-        __queryParts.append("boolean=null")
-       }
-       if self.timestamp != nil {
-        __queryParts.append("timestamp=\(__dateFormatter.string(from: self.timestamp!))")
-       } else {
-        __queryParts.append("timestamp=null")
-       }
-       return __queryParts.joined(separator: "&")
+        var __queryParts: [String] = []
+        if self.string != nil {
+            __queryParts.append("string=\(self.string!)")
+        } else {
+            __queryParts.append("string=null")
+        }
+        if self.boolean != nil {
+            __queryParts.append("boolean=\(self.boolean!)")
+        } else {
+            __queryParts.append("boolean=null")
+        }
+        if self.timestamp != nil {
+            __queryParts.append("timestamp=\(serializeDate(self.timestamp!, withQuotes: false))")
+        } else {
+            __queryParts.append("timestamp=null")
+        }
+        if self.int8 != nil {
+            __queryParts.append("int8=\(self.int8!)")
+        } else {
+            __queryParts.append("int8=null")
+        }
+        if self.uint8 != nil {
+            __queryParts.append("uint8=\(self.uint8!)")
+        } else {
+            __queryParts.append("uint8=null")
+        }
+        if self.int16 != nil {
+            __queryParts.append("int16=\(self.int16!)")
+        } else {
+            __queryParts.append("int16=null")
+        }
+        if self.uint16 != nil {
+            __queryParts.append("uint16=\(self.uint16!)")
+        } else {
+            __queryParts.append("uint16=null")
+        }
+        if self.int32 != nil {
+            __queryParts.append("int32=\(self.int32!)")
+        } else {
+            __queryParts.append("int32=null")
+        }
+        if self.uint32 != nil {
+            __queryParts.append("uint32=\(self.uint32!)")
+        } else {
+            __queryParts.append("uint32=null")
+        }
+        if self.int64 != nil {
+            __queryParts.append("int64=\(self.int64!)")
+        } else {
+            __queryParts.append("int64=null")
+        }
+        if self.uint64 != nil {
+            __queryParts.append("uint64=\(self.uint64!)")
+        } else {
+            __queryParts.append("uint64=null")
+        }
+        if self.enum != nil {
+            __queryParts.append("enum=\(self.enum!.serialValue())")
+        } else {
+            __queryParts.append("enum=null")
+        }
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
+        print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any")
+        return __queryParts.joined(separator: "&")
     }
     public func clone() -> ObjectWithNullableFields {
         var __arrayCloned: [Bool]?
@@ -1346,5 +1378,68 @@ public struct ObjectWithNullableFields: ExampleClientModel {
             discriminator: self.discriminator?.clone(),
             any: self.any
         )
+    }
+}
+
+public final class RecursiveObject: ArriClientModel {
+    public var left: RecursiveObject?
+    public var right: RecursiveObject?
+    public init(
+        left: RecursiveObject?,
+        right: RecursiveObject?
+    ) {
+        self.left = left
+        self.right = right
+    }
+    public required init() {}
+    public required init(json: JSON) {
+        if json["left"].dictionary != nil {
+            self.left = RecursiveObject(json: json["left"])
+        }
+        if json["right"].dictionary != nil {
+            self.right = RecursiveObject(json: json["right"])
+        }
+    }
+    public required convenience init(JSONString: String) {
+        do {
+            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: data) 
+        } catch {
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+        __json += "\"left\":"
+        if self.left != nil {
+            __json += self.left!.toJSONString()
+        } else {
+            __json += "null"
+        }
+        __json += ",\"right\":"
+        if self.right != nil {
+            __json += self.right!.toJSONString()
+        } else {
+            __json += "null"
+        }
+        __json += "}"
+        return __json
+    }
+    public func toQueryString() -> String {
+        var __queryParts: [String] = []
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
+        return __queryParts.joined(separator: "&")
+    }
+    public func clone() -> RecursiveObject {
+        return Self(
+            left: self.left?.clone(),
+            right: self.right?.clone()
+        )
+    }
+    public static func == (lhs: RecursiveObject, rhs: RecursiveObject) -> Bool {
+        return 
+            lhs.left == rhs.left &&
+            lhs.right == rhs.right
     }
 }
