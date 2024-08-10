@@ -2,6 +2,8 @@ name: tests
 on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 jobs:
   lint:
     if: github.event.pull_request.draft == false
