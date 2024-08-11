@@ -1,10 +1,99 @@
 import Foundation
 import ArriClient
+import HTTPTypes
 
+public class ExampleClient {
+    var baseURL: String
+    var HTTPClient: ArriHTTPClient
+    var headers: () -> Dictionary<String, String>
+    var books: ExampleClientBooksService
+
+    public init(
+        baseURL: String,
+        HTTPClient: ArriHTTPClient,
+        headers: @escaping () -> Dictionary<String, String>
+    ) {
+        self.baseURL = baseURL
+        self.HTTPClient = HTTPClient
+        self.headers = headers
+        self.books = ExampleClientBooksService(
+            baseURL: baseURL,
+            HTTPClient: HTTPClient,
+            headers: headers
+        )
+    }
+
+    func sendObject(_ params: NestedObject) async throws -> NestedObject {
+        let result: NestedObject = try await parsedArriHttpRequest(
+            http: self.HTTPClient,
+            url: "\(self.baseURL)/send-object",
+            method: HTTPRequest.Method.post,
+            headers: self.headers,
+            clientVersion: "20",
+            params: params
+        )
+        return result
+    }
+}
+
+public class ExampleClientBooksService {
+    var baseURL: String
+    var HTTPClient: ArriHTTPClient
+    var headers: () -> Dictionary<String, String>
+
+    public init(
+        baseURL: String,
+        HTTPClient: ArriHTTPClient,
+        headers: @escaping () -> Dictionary<String, String>
+    ) {
+        self.baseURL = baseURL
+        self.HTTPClient = HTTPClient
+        self.headers = headers
+    }
+    /// Get a book
+    func getBook(_ params: BookParams) async throws -> Book {
+        let result: Book = try await parsedArriHttpRequest(
+            http: self.HTTPClient,
+            url: "\(self.baseURL)/books/get-book",
+            method: HTTPRequest.Method.get,
+            headers: self.headers,
+            clientVersion: "20",
+            params: params
+        )
+        return result
+    }
+    /// Create a book
+    @available(*, deprecated)
+    func createBook(_ params: Book) async throws -> Book {
+        let result: Book = try await parsedArriHttpRequest(
+            http: self.HTTPClient,
+            url: "\(self.baseURL)/books/create-book",
+            method: HTTPRequest.Method.post,
+            headers: self.headers,
+            clientVersion: "20",
+            params: params
+        )
+        return result
+    }
+    @available(*, deprecated)
+    func watchBook(_ params: Book) async throws -> Book {
+        throw ArriRequestError.notImplementedError
+    }
+    func createConnection(_ params: BookParams) async throws -> Book {
+        throw ArriRequestError.notImplementedError
+    }
+}
+
+/// This is a book
 public struct Book: ArriClientModel {
+    /// The book ID
     public var id: String = ""
+    /// The book title
     public var name: String = ""
+    /// When the book was created
+    @available(*, deprecated)
     public var createdAt: Date = Date.now
+    @available(*, deprecated)
     public var updatedAt: Date = Date.now
 
     public init(

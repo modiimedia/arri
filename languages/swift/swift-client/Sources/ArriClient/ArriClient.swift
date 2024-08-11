@@ -1,83 +1,69 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 import Foundation
-import AsyncHTTPClient
-import NIOCore
+import HTTPTypes
 
 let jsonEncoder = JSONEncoder()
 let jsonDecoder = JSONDecoder()
 
+extension HTTPField.Name {
+    static let clientVersionHeader = Self("client-version")!
+}
+
+
 public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClientModel>(
+    http: ArriHTTPClient,
     url: String,
-    method: ArriHTTPMethod,
+    method: HTTPRequest.Method,
     headers: () -> Dictionary<String, String>,
     clientVersion: String,
-    params: TParams?
+    params: TParams?,
+    timeoutSeconds: Int64 = 60
 ) async throws -> TResponse {
-    var request = HTTPClientRequest(url: url)
+    let parsedURL = URL(string: url)
+    if parsedURL == nil {
+        throw ArriRequestError.invalidURLError
+    }
+    var request = HTTPRequest(method: method, scheme: parsedURL!.scheme, authority: parsedURL!.host, path: parsedURL!.path)
     if !clientVersion.isEmpty {
-        request.headers.add(name: "client-version", value: clientVersion)
+        request.headerFields[.clientVersionHeader] = clientVersion
     }
     let headerDict = headers()
     for (key, value) in headerDict {
-        request.headers.add(name: key, value: value)
+        let headerName = HTTPField.Name(key)
+        if headerName != nil {
+            request.headerFields[headerName!] = value
+        }
     }
-    switch method {
-        case .get: 
-            request.method = .GET
-            break;
-        case .patch: 
-            request.method = .PATCH
-            break;
-        case .post: 
-            request.method = .POST
-            break;
-        case .put: 
-            request.method = .PUT
-            break;
-        case .delete: 
-            request.method = .DELETE
-            break;
-    }
+    var body: String?
     switch method {
         case .get:
             if params != nil {
-                request.url = request.url + "?\(params!.toQueryString())"
+                request.path = request.path! + "?\(params!.toQueryString())"
             }
             break;
         default:
             if params != nil {
-                request.headers.add(name: "Content-Type", value: "application/json")
-                request.body = .bytes(ByteBuffer(string: params!.toJSONString()))
+                request.headerFields[.contentType] = "application/json"
+                body = params!.toJSONString()
             }
             break;
     }
-    let response = try await HTTPClient.shared.execute(request, timeout: .seconds(30))
+    let (response, bodyResponse) = try await http.handleHTTPRequest(request: request, body: body)
     if response.status == .ok {
-        let body = try await response.body.collect(upTo: 1024 * 1024)
-        let jsonData = String(buffer: body)
-        let result = TResponse.init(JSONString: jsonData)
+        let result = TResponse.init(JSONString: bodyResponse ?? "")
         return result
     }
-    let body = try await response.body.collect(upTo: 1024 * 1024)
-    let jsonData = String(buffer: body)
-    var error = ArriResponseError(JSONString: jsonData)
+    var error = ArriResponseError(JSONString: bodyResponse ?? "")
     if error.code == 0 {
-        error.code = response.status.code
+        error.code = UInt(response.status.code)
     }
     throw error
 }
 
-public enum ArriHTTPMethod {
-    case get
-    case post
-    case put
-    case patch
-    case delete
-}
-
 public enum ArriRequestError: Error {
-    case invalidUrl
+    case invalidURLError
+    case notImplementedError
 }
 
 public struct ArriResponseError: ArriClientModel, Error {
@@ -151,6 +137,9 @@ public func serializeAny(input: JSON) -> String {
     } catch {
         return "null"
     }
+}
+public protocol ArriHTTPClient {
+    func handleHTTPRequest(request: HTTPRequest, body: String?) async throws -> (response: HTTPResponse, body: String?)
 }
 public protocol ArriClientModel: Equatable {
     init()

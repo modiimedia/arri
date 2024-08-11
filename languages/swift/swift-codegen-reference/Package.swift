@@ -19,9 +19,7 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "SwiftCodegenReference",
-            dependencies: [
-                "ArriClient"
-            ]
+            dependencies: ["ArriClient"]
         ),
         .testTarget(
             name: "SwiftCodegenReferenceTests",

@@ -12,7 +12,7 @@ let package = Package(
             targets: ["ArriClient"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.9.0")
+        .package(url: "https://github.com/apple/swift-http-types.git", from: "1.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -20,7 +20,7 @@ let package = Package(
         .target(
             name: "ArriClient",
             dependencies: [
-                .product(name: "AsyncHTTPClient", package: "async-http-client")
+                .product(name: "HTTPTypes", package: "swift-http-types")
             ]
         ),
         .testTarget(
