@@ -92,9 +92,9 @@ public struct Book: ArriClientModel {
     public var name: String = ""
     /// When the book was created
     @available(*, deprecated)
-    public var createdAt: Date = Date.now
+    public var createdAt: Date = Date()
     @available(*, deprecated)
-    public var updatedAt: Date = Date.now
+    public var updatedAt: Date = Date()
 
     public init(
         id: String,
@@ -111,8 +111,8 @@ public struct Book: ArriClientModel {
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
-        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date.now
-        self.updatedAt = parseDate(json["updatedAt"].string ?? "") ?? Date.now
+        self.createdAt = parseDate(json["createdAt"].string ?? "") ?? Date()
+        self.updatedAt = parseDate(json["updatedAt"].string ?? "") ?? Date()
     }
     public init(JSONString: String) {
         do {
@@ -242,7 +242,7 @@ public struct NestedObject: ArriClientModel {
 public struct ObjectWithEveryType: ArriClientModel {
     public var string: String = ""
     public var boolean: Bool = false
-    public var timestamp: Date = Date.now
+    public var timestamp: Date = Date()
     public var float32: Float32 = 0.0
     public var float64: Float64 = 0.0
     public var int8: Int8 = 0
@@ -305,7 +305,7 @@ public struct ObjectWithEveryType: ArriClientModel {
     public init(json: JSON) {
         self.string = json["string"].string ?? ""
         self.boolean = json["boolean"].bool ?? false
-        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date.now
+        self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         self.float32 = json["float32"].number?.floatValue ?? 0.0
         self.float64 = json["float64"].number?.doubleValue ?? 0.0
         self.int8 = json["int8"].number?.int8Value ?? 0
@@ -652,7 +652,7 @@ public struct DiscriminatorC: ArriClientModel {
     let typeName: String = "C"
     public var id: String = ""
     public var name: String = ""
-    public var date: Date = Date.now
+    public var date: Date = Date()
 
     public init(
         id: String,
@@ -667,7 +667,7 @@ public struct DiscriminatorC: ArriClientModel {
     public init(json: JSON) {
         self.id = json["id"].string ?? ""
         self.name = json["name"].string ?? ""
-        self.date = parseDate(json["date"].string ?? "") ?? Date.now
+        self.date = parseDate(json["date"].string ?? "") ?? Date()
     }
     public init(JSONString: String) {
         do {
@@ -777,7 +777,7 @@ public struct ObjectWithOptionalFields: ArriClientModel {
             self.boolean = json["boolean"].bool
         }
         if json["timestamp"].exists() {
-            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date.now
+            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         }
         if json["float32"].exists() {
             self.float32 = json["float32"].float
@@ -1167,7 +1167,7 @@ public struct ObjectWithNullableFields: ArriClientModel {
             self.boolean = json["boolean"].bool
         }
         if json["timestamp"].string != nil {
-            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date.now
+            self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         }
         if json["float32"].float != nil {
             self.float32 = json["float32"].float

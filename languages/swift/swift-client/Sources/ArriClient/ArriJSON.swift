@@ -1177,7 +1177,7 @@ public func == (lhs: JSON, rhs: JSON) -> Bool {
 public func <= (lhs: JSON, rhs: JSON) -> Bool {
 
     switch (lhs.type, rhs.type) {
-    case (.number, .number): return lhs.rawNumber <= rhs.rawNumber
+    case (.number, .number): return lte(lhs: lhs.rawNumber, rhs: rhs.rawNumber)
     case (.string, .string): return lhs.rawString <= rhs.rawString
     case (.bool, .bool):     return lhs.rawBool == rhs.rawBool
     case (.array, .array):   return lhs.rawArray as NSArray == rhs.rawArray as NSArray
