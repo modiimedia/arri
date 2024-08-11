@@ -29,6 +29,7 @@ const main = defineCommand({
                 choices: ["codegen", "tooling"],
             },
         ]);
+        let projectName: string;
         let pkgName: string;
         let pkgLocation: string;
         let depth: number;
@@ -57,6 +58,7 @@ const main = defineCommand({
                         await mkdir(langDir);
                     }
                     pkgName = `@arrirpc/codegen-${lang}`;
+                    projectName = `codegen-${lang}`;
                     pkgLocation = `languages/${lang}/${lang}-codegen`;
 
                     depth = 3;
@@ -77,6 +79,9 @@ const main = defineCommand({
                 ]);
                 isCodegen = false;
                 pkgName = kebabCase(inputResult.name);
+                projectName = kebabCase(
+                    inputResult.name.replace("@arrirpc/", ""),
+                );
                 pkgLocation = `tooling/${pkgName}`;
                 depth = 2;
                 outDir = path.resolve(__dirname, "../../tooling", pkgName);
@@ -104,7 +109,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "project.json"),
-                projectJsonTemplate(pkgName, pkgLocation, depth),
+                projectJsonTemplate(projectName, pkgName, pkgLocation, depth),
             ),
             writeFile(
                 path.resolve(outDir, "README.md"),
@@ -187,6 +192,7 @@ function packageJsonTemplate(
 }
 
 function projectJsonTemplate(
+    projectName: string,
     packageName: string,
     packageLocation: string,
     depth: number,
@@ -196,7 +202,7 @@ function projectJsonTemplate(
         prefix += "../";
     }
     return `{
-  "name": "${packageName}",
+  "name": "${projectName}",
   "$schema": "${prefix}node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "${packageLocation}/src",
   "projectType": "library",

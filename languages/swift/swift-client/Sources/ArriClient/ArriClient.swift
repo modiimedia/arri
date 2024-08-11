@@ -10,7 +10,6 @@ extension HTTPField.Name {
     static let clientVersionHeader = Self("client-version")!
 }
 
-
 public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClientModel>(
     http: ArriHTTPClient,
     url: String,
