@@ -463,18 +463,18 @@ public enum Enumerator: ArriClientEnum {
         self = .foo
     }
     public init(serialValue: String) {
-       switch(serialValue) {
-        case "FOO":
-            self = .foo
-            break;
-        case "BAR":
-            self = .bar
-            break;
-        case "BAZ":
-            self = .baz
-            break;
-        default:
-            self = .foo
+        switch(serialValue) {
+            case "FOO":
+                self = .foo
+                break;
+            case "BAR":
+                self = .bar
+                break;
+            case "BAZ":
+                self = .baz
+                break;
+            default:
+                self = .foo
        }
     }
     public func serialValue() -> String {
@@ -1022,6 +1022,12 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         }
         if self.timestamp != nil {
             __queryParts.append("timestamp=\(serializeDate(self.timestamp!, withQuotes: false))")
+        }
+        if self.float32 != nil {
+            __queryParts.append("float32=\(self.float32!)")
+        }
+        if self.float64 != nil {
+            __queryParts.append("float64=\(self.float64!)")
         }
         if self.int8 != nil {
             __queryParts.append("int8=\(self.int8!)")

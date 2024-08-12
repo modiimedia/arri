@@ -1,14 +1,18 @@
 import {
     AppDefinition,
     defineGeneratorPlugin,
+    isSchemaFormEnum,
     isSchemaFormType,
     Schema,
 } from "@arrirpc/codegen-utils";
 
 import { GeneratorContext, SwiftProperty } from "./_common";
 import { swiftAnyFromSchema } from "./any";
+import { swiftEnumFromSchema } from "./enum";
 import {
     swiftBooleanFromSchema,
+    swiftLargeIntFromSchema,
+    swiftNumberFromSchema,
     swiftStringFromSchema,
     swiftTimestampFromSchema,
 } from "./primitives";
@@ -75,19 +79,79 @@ export function swiftTypeFromSchema(
             case "timestamp":
                 return swiftTimestampFromSchema(schema, context);
             case "float32":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "Float32",
+                    "float",
+                    "0.0",
+                );
             case "float64":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "Float64",
+                    "double",
+                    "0.0",
+                );
             case "int8":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "Int8",
+                    "int8",
+                    "0",
+                );
             case "uint8":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "UInt8",
+                    "uInt8",
+                    "0",
+                );
             case "int16":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "Int16",
+                    "int16",
+                    "0",
+                );
             case "uint16":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "UInt16",
+                    "uInt16",
+                    "0",
+                );
             case "int32":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "Int32",
+                    "int32",
+                    "0",
+                );
             case "uint32":
+                return swiftNumberFromSchema(
+                    schema,
+                    context,
+                    "UInt32",
+                    "uInt32",
+                    "0",
+                );
             case "int64":
+                return swiftLargeIntFromSchema(schema, context, "Int64");
             case "uint64":
-                break;
+                return swiftLargeIntFromSchema(schema, context, "UInt64");
             default:
                 schema.type satisfies never;
                 break;
+        }
+        if (isSchemaFormEnum(schema)) {
+            return swiftEnumFromSchema(schema, context);
         }
     }
     return swiftAnyFromSchema(schema, context);

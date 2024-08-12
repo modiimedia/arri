@@ -171,3 +171,115 @@ export function swiftTimestampFromSchema(
         content: "",
     };
 }
+
+export function swiftNumberFromSchema(
+    schema: SchemaFormType,
+    context: GeneratorContext,
+    typeName: string,
+    jsonAccessor: string,
+    defaultValue: string,
+): SwiftProperty {
+    const isNullable = isNullableType(schema, context);
+    return {
+        typeName: isNullable ? `${typeName}?` : typeName,
+        defaultValue: isNullable ? "" : defaultValue,
+        isNullable,
+        fromJsonTemplate(input, target) {
+            if (context.isOptional) {
+                return `if ${input}.exists() {
+                    ${target} = ${input}.${jsonAccessor}
+                }`;
+            }
+            if (schema.nullable) {
+                return `if ${input}.${jsonAccessor} != nil {
+                    ${target} = ${input}.${jsonAccessor}
+                }`;
+            }
+            return `${target} = ${input}.${jsonAccessor} ?? ${defaultValue}`;
+        },
+        toJsonTemplate(input, target) {
+            if (context.isOptional) {
+                return `${target} += "\\(${input}!)"`;
+            }
+            if (schema.nullable) {
+                return `if ${input} != nil {
+                    ${target} += "\\(${input}!)"
+                } else {
+                    ${target} += "null"
+                }`;
+            }
+            return `${target} += "\\(${input})"`;
+        },
+        toQueryStringTemplate(input, target, key) {
+            if (context.isOptional) {
+                return `if ${input} != nil {
+                    ${target}.append("${key}=\\(${input}!)")
+                }`;
+            }
+            if (schema.nullable) {
+                return `if ${input} != nil {
+                    ${target}.append("${key}=\\(${input}!)")
+                } else {
+                    ${target}.append("${key}=null") 
+                }`;
+            }
+            return `${target}.append("${key}=\\(${input})")`;
+        },
+        content: "",
+    };
+}
+
+export function swiftLargeIntFromSchema(
+    schema: SchemaFormType,
+    context: GeneratorContext,
+    typeName: string,
+): SwiftProperty {
+    const isNullable = isNullableType(schema, context);
+    return {
+        typeName: isNullable ? `${typeName}?` : typeName,
+        defaultValue: isNullable ? "" : "0",
+        isNullable,
+        fromJsonTemplate(input, target) {
+            if (context.isOptional) {
+                return `if ${input}.exists() {
+                    ${target} = ${typeName}(${input}.string ?? "0")
+                }`;
+            }
+            if (schema.nullable) {
+                return `if ${input}.string != nil {
+                    ${target} = ${typeName}(${input}.string ?? "0")
+                }`;
+            }
+            return `${target} = ${typeName}(${input}.string ?? "0")`;
+        },
+        toJsonTemplate(input, target) {
+            if (context.isOptional) {
+                return `${target} += "\\"\\(${input}!)\\""`;
+            }
+            if (schema.nullable) {
+                return `if ${input} != nil {
+                    ${target} += "\\"\\(${input}!)\\""
+                } else {
+                    ${target} += "null" 
+                }`;
+            }
+            return `${target} += "\\"\\(${input})\\""`;
+        },
+        toQueryStringTemplate(input, target, key) {
+            if (context.isOptional) {
+                return `if ${input} != nil {
+                    ${target}.append("${key}=\\(${input}!)")
+                }`;
+            }
+            if (schema.nullable) {
+                return `if ${input} != nil {
+                    ${target}.append("${key}=\\(${input}!)")
+                } else {
+                    ${target}.append("${key}=null") 
+                }`;
+            }
+            return `${target}.append("${key}=\\(${input})")`;
+        },
+        content: "",
+    };
+}
