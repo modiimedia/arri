@@ -417,8 +417,8 @@ public struct ObjectWithEveryType: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator")
-        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
         return __queryParts.joined(separator: "&")
     }
     public func clone() -> ObjectWithEveryType {
@@ -1053,8 +1053,8 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator")
-        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.")
         return __queryParts.joined(separator: "&")
     }
     public func clone() -> ObjectWithOptionalFields {
@@ -1427,8 +1427,8 @@ public struct ObjectWithNullableFields: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator")
-        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any")
+        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.")
+        print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.")
         return __queryParts.joined(separator: "&")
     }
     public func clone() -> ObjectWithNullableFields {
