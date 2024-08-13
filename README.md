@@ -2,7 +2,7 @@ _**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
 # Arri RPC
 
-Arri is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
+Arri RPC is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
 Go [here](/languages/ts/ts-server/README.md) to get started with a Typescript server. More server implementations to come.
 
