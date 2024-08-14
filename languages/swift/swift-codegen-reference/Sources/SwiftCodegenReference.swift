@@ -321,7 +321,8 @@ public struct ObjectWithEveryType: ArriClientModel {
         self.array = []
         let __arrayJson = json["array"].array ?? []
         for __arrayJsonElement in __arrayJson {
-            self.array.append(contentsOf: [__arrayJsonElement.bool ?? false])
+            let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+            self.array.append(__arrayJsonElementValue)
         }
         self.record = Dictionary()
         let __recordJson = json["record"].dictionary ?? Dictionary()

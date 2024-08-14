@@ -53,9 +53,9 @@ export function swiftObjectFromSchema(
             return `print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, key) {
-            let fieldContent = `${key.split("`").join("")}: self.${key}.clone()`;
+            let fieldContent = `self.${key}.clone()`;
             if (isNullable) {
-                fieldContent = `${key.split("`").join("")}: self.${key}?.clone()`;
+                fieldContent = `self.${key}?.clone()`;
             }
             return {
                 tempKey: "",
@@ -125,7 +125,11 @@ export function swiftObjectFromSchema(
         initArgParts.push(`${fieldName}: ${subType.typeName}`);
         initBodyParts.push(`self.${fieldName} = ${fieldName}`);
         initFromJsonParts.push(
-            subType.fromJsonTemplate(`json["${key}"]`, `self.${fieldName}`),
+            subType.fromJsonTemplate(
+                `json["${key}"]`,
+                `self.${fieldName}`,
+                key,
+            ),
         );
         if (numKeys > 0) {
             toJsonParts.push(`__json += ",\\"${key}\\":"`);

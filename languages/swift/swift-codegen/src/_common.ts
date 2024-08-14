@@ -24,7 +24,7 @@ export interface SwiftProperty {
     defaultValue: string;
     isNullable: boolean;
     canBeQueryString: boolean;
-    fromJsonTemplate: (input: string, target: string) => string;
+    fromJsonTemplate: (input: string, target: string, key: string) => string;
     toJsonTemplate: (input: string, target: string) => string;
     toQueryStringTemplate: (
         input: string,
@@ -37,7 +37,6 @@ export interface SwiftProperty {
     ) => {
         bodyContent: string;
         fieldContent: string;
-        tempKey: string;
     };
     content: string;
 }

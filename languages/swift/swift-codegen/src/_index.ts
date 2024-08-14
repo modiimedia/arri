@@ -1,6 +1,7 @@
 import {
     AppDefinition,
     defineGeneratorPlugin,
+    isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormType,
@@ -9,6 +10,7 @@ import {
 
 import { GeneratorContext, SwiftProperty } from "./_common";
 import { swiftAnyFromSchema } from "./any";
+import { swiftArrayFromSchema } from "./array";
 import { swiftEnumFromSchema } from "./enum";
 import { swiftObjectFromSchema } from "./object";
 import {
@@ -159,6 +161,9 @@ export function swiftTypeFromSchema(
     }
     if (isSchemaFormProperties(schema)) {
         return swiftObjectFromSchema(schema, context);
+    }
+    if (isSchemaFormElements(schema)) {
+        return swiftArrayFromSchema(schema, context);
     }
     return swiftAnyFromSchema(schema, context);
 }
