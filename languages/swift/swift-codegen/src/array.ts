@@ -33,8 +33,7 @@ export function swiftArrayFromSchema(
         fromJsonTemplate(input, target, key) {
             const innerKey = validSwiftKey(key);
             const mainContent = `${target} = []
-            let __${innerKey}Json = ${input}.array ?? []
-            for __${innerKey}JsonElement in __${innerKey}Json {
+            for __${innerKey}JsonElement in ${input}.array ?? [] {
                 let ${subType.fromJsonTemplate(`__${innerKey}JsonElement`, `__${innerKey}JsonElementValue`, `element`)}
                 ${target}${isNullable ? "!" : ""}.append(__${innerKey}JsonElementValue)
             }`;
@@ -74,8 +73,8 @@ export function swiftArrayFromSchema(
         cloneTemplate(input, key) {
             const innerKey = validSwiftKey(key);
             const subTypeClonedResult = subType.cloneTemplate?.(
-                `__${innerKey}Cloned`,
-                `${innerKey}Cloned`,
+                `__${innerKey}Element`,
+                `__${innerKey}Element`,
             );
             if (isNullable) {
                 return {

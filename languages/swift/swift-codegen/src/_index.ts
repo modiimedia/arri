@@ -5,6 +5,7 @@ import {
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormType,
+    isSchemaFormValues,
     Schema,
 } from "@arrirpc/codegen-utils";
 
@@ -20,6 +21,7 @@ import {
     swiftStringFromSchema,
     swiftTimestampFromSchema,
 } from "./primitives";
+import { swiftDictionaryFromSchema } from "./record";
 
 export interface SwiftClientGeneratorOptions {
     clientName: string;
@@ -88,7 +90,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Float32",
-                    "floatValue",
+                    "float",
                     "0.0",
                 );
             case "float64":
@@ -96,7 +98,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Float64",
-                    "doubleValue",
+                    "double",
                     "0.0",
                 );
             case "int8":
@@ -104,7 +106,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Int8",
-                    "int8Value",
+                    "int8",
                     "0",
                 );
             case "uint8":
@@ -112,7 +114,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "UInt8",
-                    "uint8Value",
+                    "uInt8",
                     "0",
                 );
             case "int16":
@@ -120,7 +122,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Int16",
-                    "int16Value",
+                    "int16",
                     "0",
                 );
             case "uint16":
@@ -128,7 +130,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "UInt16",
-                    "uint16Value",
+                    "uInt16",
                     "0",
                 );
             case "int32":
@@ -136,7 +138,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Int32",
-                    "int32Value",
+                    "int32",
                     "0",
                 );
             case "uint32":
@@ -144,7 +146,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "UInt32",
-                    "uint32Value",
+                    "uInt32",
                     "0",
                 );
             case "int64":
@@ -164,6 +166,9 @@ export function swiftTypeFromSchema(
     }
     if (isSchemaFormElements(schema)) {
         return swiftArrayFromSchema(schema, context);
+    }
+    if (isSchemaFormValues(schema)) {
+        return swiftDictionaryFromSchema(schema, context);
     }
     return swiftAnyFromSchema(schema, context);
 }

@@ -306,29 +306,28 @@ public struct ObjectWithEveryType: ArriClientModel {
         self.string = json["string"].string ?? ""
         self.boolean = json["boolean"].bool ?? false
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
-        self.float32 = json["float32"].number?.floatValue ?? 0.0
-        self.float64 = json["float64"].number?.doubleValue ?? 0.0
-        self.int8 = json["int8"].number?.int8Value ?? 0
-        self.uint8 = json["uint8"].number?.uint8Value ?? 0
-        self.int16 = json["int16"].number?.int16Value ?? 0
-        self.uint16 = json["uint16"].number?.uint16Value ?? 0
-        self.int32 = json["int32"].number?.int32Value ?? 0
-        self.uint32 = json["uint32"].number?.uint32Value ?? 0
+        self.float32 = json["float32"].float ?? 0.0
+        self.float64 = json["float64"].double ?? 0.0
+        self.int8 = json["int8"].int8 ?? 0
+        self.uint8 = json["uint8"].uInt8 ?? 0
+        self.int16 = json["int16"].int16 ?? 0
+        self.uint16 = json["uint16"].uInt16 ?? 0
+        self.int32 = json["int32"].int32 ?? 0
+        self.uint32 = json["uint32"].uInt32 ?? 0
         self.int64 = Int64(json["int64"].string ?? "0") ?? 0
         self.uint64 = UInt64(json["uint64"].string ?? "0") ?? 0
         self.`enum` = Enumerator(serialValue: json["enum"].string ?? "")
         self.object = NestedObject(json: json["object"])
         self.array = []
-        let __arrayJson = json["array"].array ?? []
-        for __arrayJsonElement in __arrayJson {
+        for __arrayJsonElement in json["array"].array ?? [] {
             let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
             self.array.append(__arrayJsonElementValue)
         }
         self.record = Dictionary()
         let __recordJson = json["record"].dictionary ?? Dictionary()
-        for __recordJsonKey in __recordJson.keys {
-            let __recordJsonValue = __recordJson[__recordJsonKey]?.bool ?? false
-            self.record[__recordJsonKey] = __recordJsonValue
+        for (__key, __value) in __recordJson {
+            let __parsedValue = __value.bool ?? false
+            self.record[__key] = __parsedValue
         }
         self.discriminator = Discriminator(json: json["discriminator"])
         self.any = json["any"]
@@ -384,12 +383,12 @@ public struct ObjectWithEveryType: ArriClientModel {
         __json += "]"
         __json += ",\"record\":"
         __json += "{"
-        for (__index, __key) in self.record.keys.enumerated() {
+        for (__index, (__key, __value)) in self.record.enumerated() {
             if __index > 0 {
                 __json += ","
             }
             __json += "\"\(__key)\":"
-            __json += "\(self.record[__key]!)"
+            __json += "\(__value)"
         }
         __json += "}"
         __json += ",\"discriminator\":"
@@ -819,7 +818,8 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         if json["array"].exists() {
             self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                self.array!.append(contentsOf: [__arrayJsonElement.bool ?? false])
+                let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+                self.array!.append(__arrayJsonElementValue)
             }
         }
         if json["record"].exists() {
@@ -1215,7 +1215,8 @@ public struct ObjectWithNullableFields: ArriClientModel {
         if json["array"].array != nil {
             self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                self.array!.append(contentsOf: [__arrayJsonElement.bool ?? false])
+                let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+                self.array!.append(__arrayJsonElementValue)
             }
         }
         if json["record"].dictionary != nil {

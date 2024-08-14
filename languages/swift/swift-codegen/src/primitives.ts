@@ -191,15 +191,15 @@ export function swiftNumberFromSchema(
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
-                    ${target} = ${input}.number?.${jsonAccessor}
+                    ${target} = ${input}.${jsonAccessor}
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input}.${jsonAccessor} != nil {
-                    ${target} = ${input}.number?.${jsonAccessor}
+                    ${target} = ${input}.${jsonAccessor}
                 }`;
             }
-            return `${target} = ${input}.number?.${jsonAccessor} ?? ${defaultValue}`;
+            return `${target} = ${input}.${jsonAccessor} ?? ${defaultValue}`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
