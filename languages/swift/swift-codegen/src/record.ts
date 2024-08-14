@@ -63,6 +63,8 @@ export function swiftDictionaryFromSchema(
             if (schema.nullable) {
                 return `if ${input} != nil {
                     ${mainContent}
+                } else {
+                    ${target} += "null" 
                 }`;
             }
             return mainContent;
