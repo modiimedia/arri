@@ -2,6 +2,7 @@ import {
     AppDefinition,
     defineGeneratorPlugin,
     isSchemaFormEnum,
+    isSchemaFormProperties,
     isSchemaFormType,
     Schema,
 } from "@arrirpc/codegen-utils";
@@ -9,6 +10,7 @@ import {
 import { GeneratorContext, SwiftProperty } from "./_common";
 import { swiftAnyFromSchema } from "./any";
 import { swiftEnumFromSchema } from "./enum";
+import { swiftObjectFromSchema } from "./object";
 import {
     swiftBooleanFromSchema,
     swiftLargeIntFromSchema,
@@ -58,6 +60,7 @@ export function createSwiftClient(
             generatedTypes: context.generatedTypes,
         });
         if (subType.content) {
+            console.log("HAS CONTENT", subType.content.length);
             typeContent.push(subType.content);
         }
     }
@@ -83,7 +86,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Float32",
-                    "float",
+                    "floatValue",
                     "0.0",
                 );
             case "float64":
@@ -91,7 +94,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Float64",
-                    "double",
+                    "doubleValue",
                     "0.0",
                 );
             case "int8":
@@ -99,7 +102,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Int8",
-                    "int8",
+                    "int8Value",
                     "0",
                 );
             case "uint8":
@@ -107,7 +110,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "UInt8",
-                    "uInt8",
+                    "uint8Value",
                     "0",
                 );
             case "int16":
@@ -115,7 +118,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Int16",
-                    "int16",
+                    "int16Value",
                     "0",
                 );
             case "uint16":
@@ -123,7 +126,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "UInt16",
-                    "uInt16",
+                    "uint16Value",
                     "0",
                 );
             case "int32":
@@ -131,7 +134,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "Int32",
-                    "int32",
+                    "int32Value",
                     "0",
                 );
             case "uint32":
@@ -139,7 +142,7 @@ export function swiftTypeFromSchema(
                     schema,
                     context,
                     "UInt32",
-                    "uInt32",
+                    "uint32Value",
                     "0",
                 );
             case "int64":
@@ -150,9 +153,12 @@ export function swiftTypeFromSchema(
                 schema.type satisfies never;
                 break;
         }
-        if (isSchemaFormEnum(schema)) {
-            return swiftEnumFromSchema(schema, context);
-        }
+    }
+    if (isSchemaFormEnum(schema)) {
+        return swiftEnumFromSchema(schema, context);
+    }
+    if (isSchemaFormProperties(schema)) {
+        return swiftObjectFromSchema(schema, context);
     }
     return swiftAnyFromSchema(schema, context);
 }

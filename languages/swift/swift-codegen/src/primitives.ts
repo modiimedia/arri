@@ -13,6 +13,7 @@ export function swiftStringFromSchema(
         typeName,
         isNullable,
         defaultValue,
+        canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -24,7 +25,7 @@ export function swiftStringFromSchema(
             ${target} = ${input}.string
         }`;
             }
-            return `        ${target} = ${input}.string`;
+            return `        ${target} = ${input}.string ?? ""`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
@@ -71,6 +72,7 @@ export function swiftBooleanFromSchema(
         typeName,
         isNullable,
         defaultValue,
+        canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
@@ -127,6 +129,7 @@ export function swiftTimestampFromSchema(
         typeName,
         defaultValue,
         isNullable,
+        canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
@@ -166,7 +169,7 @@ export function swiftTimestampFromSchema(
                     ${target}.append("${key}=null") 
                 }`;
             }
-            return `${target}.append("${key}=\\(serializeDate(${input}!, withQuotes: false))")`;
+            return `${target}.append("${key}=\\(serializeDate(${input}, withQuotes: false))")`;
         },
         content: "",
     };
@@ -184,18 +187,19 @@ export function swiftNumberFromSchema(
         typeName: isNullable ? `${typeName}?` : typeName,
         defaultValue: isNullable ? "" : defaultValue,
         isNullable,
+        canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
-                    ${target} = ${input}.${jsonAccessor}
+                    ${target} = ${input}.number?.${jsonAccessor}
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input}.${jsonAccessor} != nil {
-                    ${target} = ${input}.${jsonAccessor}
+                    ${target} = ${input}.number?.${jsonAccessor}
                 }`;
             }
-            return `${target} = ${input}.${jsonAccessor} ?? ${defaultValue}`;
+            return `${target} = ${input}.number?.${jsonAccessor} ?? ${defaultValue}`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
@@ -239,6 +243,7 @@ export function swiftLargeIntFromSchema(
         typeName: isNullable ? `${typeName}?` : typeName,
         defaultValue: isNullable ? "" : "0",
         isNullable,
+        canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
@@ -250,7 +255,7 @@ export function swiftLargeIntFromSchema(
                     ${target} = ${typeName}(${input}.string ?? "0")
                 }`;
             }
-            return `${target} = ${typeName}(${input}.string ?? "0")`;
+            return `${target} = ${typeName}(${input}.string ?? "0") ?? 0`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {

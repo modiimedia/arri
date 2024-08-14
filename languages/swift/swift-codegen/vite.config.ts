@@ -21,13 +21,9 @@ export default defineConfig({
 
     test: {
         globals: true,
-        reporters: ["default"],
+        reporters: ["default", "html"],
+        outputFile: ".temp/test-results/index.html",
         pool: "threads",
-        pollOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         cache: {
             dir: "../../../node_modules/.vitest",
         },

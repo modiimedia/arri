@@ -123,7 +123,7 @@ public struct Book: ArriClientModel {
         }
     }
 
-    public func toJSONString() -> String{
+    public func toJSONString() -> String {
         var __json = "{"
         __json += "\"id\":"
         __json += serializeString(input: self.id)
@@ -369,7 +369,7 @@ public struct ObjectWithEveryType: ArriClientModel {
         __json += ",\"uint64\":"
         __json += "\"\(self.uint64)\""
         __json += ",\"enum\":"
-        __json += "\"\(self.enum.serialValue())\""
+        __json += "\"\(self.`enum`.serialValue())\""
         __json += ",\"object\":"
         __json += self.object.toJSONString()
         __json += ",\"array\":"
@@ -444,7 +444,7 @@ public struct ObjectWithEveryType: ArriClientModel {
             uint32: self.uint32,
             int64: self.int64,
             uint64: self.uint64,
-            enum: self.enum,
+            enum: self.`enum`,
             object: self.object.clone(),
             array: __arrayCloned,
             record: __recordCloned,
@@ -946,12 +946,12 @@ public struct ObjectWithOptionalFields: ArriClientModel {
             __json += "\"\(self.uint64!)\""
             __numKeys += 1
         }
-        if self.enum != nil {
+        if self.`enum` != nil {
             if __numKeys > 0 {
                 __json += ","
             }
             __json += "\"enum\":"
-            __json += "\"\(self.enum!.serialValue())\""
+            __json += "\"\(self.`enum`!.serialValue())\""
             __numKeys += 1
         }
         if self.object != nil {
@@ -1053,8 +1053,8 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         if self.uint64 != nil {
             __queryParts.append("uint64=\(self.uint64!)")
         }
-        if self.enum != nil {
-            __queryParts.append("enum=\(self.enum!.serialValue())")
+        if self.`enum` != nil {
+            __queryParts.append("enum=\(self.`enum`!.serialValue())")
         }
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
@@ -1092,7 +1092,7 @@ public struct ObjectWithOptionalFields: ArriClientModel {
             uint32: self.uint32,
             int64: self.int64,
             uint64: self.uint64,
-            enum: self.enum,
+            enum: self.`enum`,
             object: self.object?.clone(),
             array: __arrayCloned,
             record: __recordCloned,
@@ -1319,8 +1319,8 @@ public struct ObjectWithNullableFields: ArriClientModel {
             __json += "null"
         }
         __json += ",\"enum\":"
-        if self.enum != nil {
-            __json += "\"\(self.enum!.serialValue())\""
+        if self.`enum` != nil {
+            __json += "\"\(self.`enum`!.serialValue())\""
         } else {
             __json += "null"
         }
@@ -1425,8 +1425,8 @@ public struct ObjectWithNullableFields: ArriClientModel {
         } else {
             __queryParts.append("uint64=null")
         }
-        if self.enum != nil {
-            __queryParts.append("enum=\(self.enum!.serialValue())")
+        if self.`enum` != nil {
+            __queryParts.append("enum=\(self.`enum`!.serialValue())")
         } else {
             __queryParts.append("enum=null")
         }
@@ -1466,7 +1466,7 @@ public struct ObjectWithNullableFields: ArriClientModel {
             uint32: self.uint32,
             int64: self.int64,
             uint64: self.uint64,
-            enum: self.enum,
+            enum: self.`enum`,
             object: self.object?.clone(),
             array: __arrayCloned,
             record: __recordCloned,
@@ -1479,7 +1479,7 @@ public struct ObjectWithNullableFields: ArriClientModel {
 public final class RecursiveObject: ArriClientModel {
     public var left: RecursiveObject?
     public var right: RecursiveObject?
-    public init(
+    public required init(
         left: RecursiveObject?,
         right: RecursiveObject?
     ) {

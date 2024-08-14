@@ -11,6 +11,7 @@ export function swiftAnyFromSchema(
         typeName: isNullable ? "JSON?" : "JSON",
         defaultValue: isNullable ? "" : "JSON()",
         isNullable,
+        canBeQueryString: false,
         fromJsonTemplate(input, target) {
             if (isNullable) {
                 return `        if ${input}.exists() {

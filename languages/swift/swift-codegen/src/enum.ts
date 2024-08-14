@@ -27,6 +27,7 @@ export function swiftEnumFromSchema(
         typeName: isNullable ? `${typeName}?` : typeName,
         isNullable,
         defaultValue,
+        canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
@@ -91,7 +92,7 @@ ${schema.enum
                 self = .${defaultEnumValue}
         }
     }
-        public func serialValue() -> Self {
+        public func serialValue() -> String {
             switch (self) {
 ${schema.enum
     .map(

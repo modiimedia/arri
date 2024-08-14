@@ -40,6 +40,12 @@
           "command": "vitest watch --passWithNoTests --globals"
         }
       }
+    },
+    "show-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm vite preview --outDir languages/swift/swift-codegen/.temp/test-results"
+      }
     }
   },
   "tags": []
