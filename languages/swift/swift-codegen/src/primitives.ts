@@ -29,9 +29,7 @@ export function swiftStringFromSchema(
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `if ${input} != nil {
-                    ${target} += serializeString(input: ${input}!)
-                }`;
+                return `${target} += serializeString(input: ${input}!)`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
@@ -145,7 +143,7 @@ export function swiftTimestampFromSchema(
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `${target} += serializeDate(${target}!)`;
+                return `${target} += serializeDate(${input}!)`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
@@ -159,7 +157,7 @@ export function swiftTimestampFromSchema(
         toQueryStringTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(serializeDate(${input}!), withQuotes: false)")
+                    ${target}.append("${key}=\\(serializeDate(${input}!, withQuotes: false))")
                 }`;
             }
             if (schema.nullable) {

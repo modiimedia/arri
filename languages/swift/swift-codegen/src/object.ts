@@ -159,6 +159,7 @@ export function swiftObjectFromSchema(
         }
         numKeys++;
     }
+    let numOptionalKeys = 0;
     for (const key of Object.keys(schema.optionalProperties ?? {})) {
         const subSchema = schema.optionalProperties![key]!;
         const subType = swiftTypeFromSchema(subSchema, {
@@ -170,7 +171,60 @@ export function swiftObjectFromSchema(
             generatedTypes: context.generatedTypes,
             isOptional: true,
         });
-        //// TODO
+        if (subType.content) subContent.push(subType.content);
+        if (isSchemaFormRef(subSchema)) hasRecursiveSubType = true;
+        if (subType.canBeQueryString) canBeQueryString = true;
+        const fieldName = validSwiftKey(key);
+        fieldNames.push(fieldName);
+        fieldNameParts.push(
+            `${codeComments(subSchema)}public var ${fieldName}: ${subType.typeName}`,
+        );
+        initArgParts.push(`${fieldName}: ${subType.typeName}`);
+        initBodyParts.push(`self.${fieldName} = ${fieldName}`);
+        initFromJsonParts.push(
+            subType.fromJsonTemplate(
+                `json["${key}"]`,
+                `self.${fieldName}`,
+                key,
+            ),
+        );
+        let toJsonContent = ``;
+        if (numKeys > 0) {
+            toJsonContent += `__json += ",\\"${key}\\":"\n`;
+        } else {
+            if (numOptionalKeys > 0) {
+                toJsonContent += `if __numKeys > 0 {
+                    __json += ","
+                }\n`;
+            }
+            toJsonContent += `__json += "\\"${key}\\":"\n`;
+        }
+        toJsonContent += subType.toJsonTemplate(`self.${fieldName}`, `__json`);
+        toJsonContent += `\n__numKeys += 1`;
+        toJsonParts.push(`if self.${fieldName} != nil {
+            ${toJsonContent}
+        }`);
+        if (subType.canBeQueryString) canBeQueryString = true;
+        toQueryStringParts.push(
+            subType.toQueryStringTemplate(
+                `self.${fieldName}`,
+                `__queryParts`,
+                key,
+            ),
+        );
+        const cloneResult = subType.cloneTemplate?.(
+            `self.${fieldName}`,
+            fieldName,
+        );
+        if (cloneResult) {
+            cloneBodyParts.push(cloneResult.bodyContent);
+            cloneFieldParts.push(`${fieldName}: ${cloneResult.fieldContent}`);
+        } else {
+            cloneFieldParts.push(
+                `${fieldName.split("`").join("")}: self.${fieldName}`,
+            );
+        }
+        numOptionalKeys++;
     }
     const declaration = hasRecursiveSubType ? `final class` : "struct";
     const initPrefix = hasRecursiveSubType ? `public required` : `public`;

@@ -19,7 +19,7 @@ export function swiftAnyFromSchema(
         isNullable,
         canBeQueryString: false,
         fromJsonTemplate(input, target) {
-            if (schema.nullable) {
+            if (isNullable) {
                 return `        if ${input}.exists() {
             ${target} = ${input}
         }`;
