@@ -14,6 +14,7 @@ import {
 import { GeneratorContext, SwiftProperty } from "./_common";
 import { swiftAnyFromSchema } from "./any";
 import { swiftArrayFromSchema } from "./array";
+import { swiftTaggedUnionFromSchema } from "./discriminator";
 import { swiftEnumFromSchema } from "./enum";
 import { swiftObjectFromSchema } from "./object";
 import {
@@ -174,7 +175,7 @@ export function swiftTypeFromSchema(
         return swiftDictionaryFromSchema(schema, context);
     }
     if (isSchemaFormDiscriminator(schema)) {
-        // TODO
+        return swiftTaggedUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return swiftRefFromSchema(schema, context);

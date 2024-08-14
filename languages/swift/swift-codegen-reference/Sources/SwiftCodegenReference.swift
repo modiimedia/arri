@@ -257,7 +257,7 @@ public struct ObjectWithEveryType: ArriClientModel {
     public var object: NestedObject = NestedObject()
     public var array: [Bool] = []
     public var record: Dictionary<String, Bool> = Dictionary()
-    public var discriminator: Discriminator = Discriminator.a(DiscriminatorA())
+    public var discriminator: Discriminator = Discriminator()
     public var any: JSON = JSON()
 
     public init(
@@ -498,8 +498,8 @@ public enum Discriminator: ArriClientModel {
         self = .a(DiscriminatorA())
     }
     public init(json: JSON) {
-        let typeName = json["typeName"].string ?? ""
-        switch (typeName) {
+        let discriminator = json["typeName"].string ?? ""
+        switch (discriminator) {
             case "A":
                 self = .a(DiscriminatorA(json: json))
                 break
@@ -508,10 +508,10 @@ public enum Discriminator: ArriClientModel {
                 break
             case "C":
                 self = .c(DiscriminatorC(json: json))
-                break;
+                break
             default:
                 self = .a(DiscriminatorA())
-                break;
+                break
         }
     }
     public init(JSONString: String) {
@@ -586,7 +586,7 @@ public struct DiscriminatorA: ArriClientModel {
     }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
-        __queryParts.append("type=A")
+        __queryParts.append("typeName=A")
         __queryParts.append("id=\(self.id)")
        return __queryParts.joined(separator: "&")
     }
@@ -625,7 +625,7 @@ public struct DiscriminatorB: ArriClientModel {
     public func toJSONString() -> String {
     var __json = "{"
     __json += "\"typeName\":\"B\""
-    __json += "\"id\":"
+    __json += ",\"id\":"
     __json += serializeString(input: self.id)
     __json += ",\"name\":"
     __json += serializeString(input: self.name)
@@ -635,7 +635,7 @@ public struct DiscriminatorB: ArriClientModel {
 
     public func toQueryString() -> String {
         var __queryParts: [String] = []
-        __queryParts.append("type=B")
+        __queryParts.append("typeName=B")
         __queryParts.append("id=\(self.id)")
         __queryParts.append("name=\(self.name)")
         return __queryParts.joined(separator: "&")
@@ -691,7 +691,7 @@ public struct DiscriminatorC: ArriClientModel {
     }
     public func toQueryString() -> String {
         var __queryParts: [String] = []
-        __queryParts.append("type=C")
+        __queryParts.append("typeName=C")
         __queryParts.append("id=\(self.id)")
         __queryParts.append("name=\(self.name)")
         __queryParts.append("date=\(serializeDate(self.date, withQuotes: false))")

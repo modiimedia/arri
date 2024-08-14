@@ -7,13 +7,19 @@ export function swiftAnyFromSchema(
     context: GeneratorContext,
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
+    let defaultValue = "JSON()";
+    if (schema.nullable) {
+        defaultValue = 'JSON(parseJSON: "null")';
+    } else if (context.isOptional) {
+        defaultValue = "";
+    }
     return {
-        typeName: isNullable ? "JSON?" : "JSON",
-        defaultValue: isNullable ? "" : "JSON()",
+        typeName: context.isOptional ? "JSON?" : "JSON",
+        defaultValue: defaultValue,
         isNullable,
         canBeQueryString: false,
         fromJsonTemplate(input, target) {
-            if (isNullable) {
+            if (schema.nullable) {
                 return `        if ${input}.exists() {
             ${target} = ${input}
         }`;

@@ -92,16 +92,16 @@ ${schema.enum
                 self = .${defaultEnumValue}
         }
     }
-        public func serialValue() -> String {
-            switch (self) {
+    public func serialValue() -> String {
+        switch (self) {
 ${schema.enum
     .map(
         (val) => `            case .${camelCase(val, { normalize: true })}:
                 return "${val}"`,
     )
     .join("\n")}
-            }
         }
+    }
 }`;
     context.generatedTypes.push(typeName);
     return result;
