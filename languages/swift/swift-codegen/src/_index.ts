@@ -1,9 +1,11 @@
 import {
     AppDefinition,
     defineGeneratorPlugin,
+    isSchemaFormDiscriminator,
     isSchemaFormElements,
     isSchemaFormEnum,
     isSchemaFormProperties,
+    isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
     Schema,
@@ -22,6 +24,7 @@ import {
     swiftTimestampFromSchema,
 } from "./primitives";
 import { swiftDictionaryFromSchema } from "./record";
+import { swiftRefFromSchema } from "./ref";
 
 export interface SwiftClientGeneratorOptions {
     clientName: string;
@@ -169,6 +172,12 @@ export function swiftTypeFromSchema(
     }
     if (isSchemaFormValues(schema)) {
         return swiftDictionaryFromSchema(schema, context);
+    }
+    if (isSchemaFormDiscriminator(schema)) {
+        // TODO
+    }
+    if (isSchemaFormRef(schema)) {
+        return swiftRefFromSchema(schema, context);
     }
     return swiftAnyFromSchema(schema, context);
 }

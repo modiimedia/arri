@@ -83,7 +83,7 @@ export function swiftDictionaryFromSchema(
                         __${innerKey}Cloned = Dictionary()
                         for (__${innerKey}Key, __${innerKey}Value) in ${input}! {
                             ${subTypeClonedResult?.bodyContent ?? ""}
-                            __${innerKey}Cloned[__${innerKey}Key] = ${subTypeClonedResult?.fieldContent ?? `__${innerKey}Value`}
+                            __${innerKey}Cloned![__${innerKey}Key] = ${subTypeClonedResult?.fieldContent ?? `__${innerKey}Value`}
                         }          
                     }`,
                     fieldContent: `__${innerKey}Cloned`,

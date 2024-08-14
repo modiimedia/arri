@@ -137,7 +137,7 @@ export function swiftObjectFromSchema(
             toJsonParts.push(`__json += "\\"${key}\\":"`);
         }
         toJsonParts.push(subType.toJsonTemplate(`self.${fieldName}`, `__json`));
-        if (!subType.canBeQueryString) canBeQueryString = true;
+        if (subType.canBeQueryString) canBeQueryString = true;
         toQueryStringParts.push(
             subType.toQueryStringTemplate(
                 `self.${fieldName}`,
@@ -172,11 +172,18 @@ export function swiftObjectFromSchema(
         });
         //// TODO
     }
-    const declaration = hasRecursiveSubType ? `class` : "struct";
+    const declaration = hasRecursiveSubType ? `final class` : "struct";
     const initPrefix = hasRecursiveSubType ? `public required` : `public`;
     const initJsonStringPrefix = hasRecursiveSubType
         ? `public required convenience`
         : `public`;
+    let equalsPart = "";
+    if (hasRecursiveSubType) {
+        equalsPart = `public static func == (lhs: ${prefixedTypeName}, rhs: ${prefixedTypeName}) -> Bool {
+            return
+${fieldNames.map((field) => `               lhs.${field} == rhs.${field}`).join(" &&\n")}
+        }`;
+    }
     result.content = `${codeComments(schema)}public ${declaration} ${prefixedTypeName}: ArriClientModel {
 ${fieldNameParts.join("\n")}
     ${initPrefix} init(
@@ -214,6 +221,7 @@ ${cloneBodyParts.join("\n")}
 ${cloneFieldParts.join(",\n")}
         )
     }
+    ${equalsPart}
 }
     
 ${subContent.join("\n")}`;

@@ -48,21 +48,32 @@ export function isNullableType(
     return schema.nullable === true || context.isOptional === true;
 }
 
+export function validTypeName(input: string): string {
+    const formatted = removeDisallowedChars(
+        pascalCase(input, { normalize: true }),
+        illegalPropertyChars,
+    );
+    if (reservedKeywords[formatted]) {
+        return `_${formatted}`;
+    }
+    if (stringStartsWithNumber(formatted)) {
+        return `_${formatted}`;
+    }
+    return formatted;
+}
+
 export function getTypeName(schema: Schema, context: GeneratorContext): string {
     if (schema.metadata?.id) {
-        const typeName = pascalCase(schema.metadata.id, { normalize: true });
+        const typeName = validTypeName(schema.metadata.id);
         return typeName;
     }
     if (context.discriminatorParent && context.discriminatorValue) {
-        const typeName = pascalCase(
+        const typeName = validTypeName(
             `${context.discriminatorParent}_${context.discriminatorValue}`,
-            { normalize: true },
         );
         return typeName;
     }
-    const typeName = pascalCase(context.instancePath.split("/").join("_"), {
-        normalize: true,
-    });
+    const typeName = validTypeName(context.instancePath.split("/").join("_"));
     return typeName;
 }
 

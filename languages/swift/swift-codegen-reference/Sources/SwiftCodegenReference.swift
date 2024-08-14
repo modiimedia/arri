@@ -1066,14 +1066,14 @@ public struct ObjectWithOptionalFields: ArriClientModel {
     }
     public func clone() -> ObjectWithOptionalFields {
         var __arrayCloned: [Bool]?
-        if (self.array != nil) {
+        if self.array != nil {
             __arrayCloned = []
             for __arrayElement in self.array! {
                 __arrayCloned!.append(__arrayElement)
             }
         }
         var __recordCloned: Dictionary<String, Bool>?
-        if (self.record != nil) {
+        if self.record != nil {
             __recordCloned = Dictionary()
             for (__recordKey, __recordValue) in self.record! {
                 __recordCloned![__recordKey] = __recordValue
@@ -1387,6 +1387,16 @@ public struct ObjectWithNullableFields: ArriClientModel {
         } else {
             __queryParts.append("timestamp=null")
         }
+        if self.float32 != nil {
+            __queryParts.append("float32=\(self.float32!)")
+        } else {
+            __queryParts.append("float32=null")
+        }
+        if self.float64 != nil {
+            __queryParts.append("float64=\(self.float64!)")
+        } else {
+            __queryParts.append("float64=null")
+        }
         if self.int8 != nil {
             __queryParts.append("int8=\(self.int8!)")
         } else {
@@ -1441,14 +1451,14 @@ public struct ObjectWithNullableFields: ArriClientModel {
     }
     public func clone() -> ObjectWithNullableFields {
         var __arrayCloned: [Bool]?
-        if (self.array != nil) {
+        if self.array != nil {
             __arrayCloned = []
             for __arrayElement in self.array! {
                 __arrayCloned!.append(__arrayElement)
             }
         }
         var __recordCloned: Dictionary<String, Bool>?
-        if (self.record != nil) {
+        if self.record != nil {
             __recordCloned = Dictionary()
             for (__recordKey, __recordValue) in self.record! {
                 __recordCloned![__recordKey] = __recordValue
@@ -1523,13 +1533,12 @@ public final class RecursiveObject: ArriClientModel {
         return __json
     }
     public func toQueryString() -> String {
-        var __queryParts: [String] = []
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
-        return __queryParts.joined(separator: "&")
+        return ""
     }
     public func clone() -> RecursiveObject {
-        return Self(
+        return RecursiveObject(
             left: self.left?.clone(),
             right: self.right?.clone()
         )
