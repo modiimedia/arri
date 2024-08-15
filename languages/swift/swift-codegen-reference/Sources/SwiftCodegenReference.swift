@@ -23,7 +23,7 @@ public class ExampleClient {
         )
     }
 
-    func sendObject(_ params: NestedObject) async throws -> NestedObject {
+    public func sendObject(_ params: NestedObject) async throws -> NestedObject {
         let result: NestedObject = try await parsedArriHttpRequest(
             http: self.HTTPClient,
             url: "\(self.baseURL)/send-object",
@@ -51,7 +51,7 @@ public class ExampleClientBooksService {
         self.headers = headers
     }
     /// Get a book
-    func getBook(_ params: BookParams) async throws -> Book {
+    public func getBook(_ params: BookParams) async throws -> Book {
         let result: Book = try await parsedArriHttpRequest(
             http: self.HTTPClient,
             url: "\(self.baseURL)/books/get-book",
@@ -64,7 +64,7 @@ public class ExampleClientBooksService {
     }
     /// Create a book
     @available(*, deprecated)
-    func createBook(_ params: Book) async throws -> Book {
+    public func createBook(_ params: Book) async throws -> Book {
         let result: Book = try await parsedArriHttpRequest(
             http: self.HTTPClient,
             url: "\(self.baseURL)/books/create-book",
@@ -76,10 +76,10 @@ public class ExampleClientBooksService {
         return result
     }
     @available(*, deprecated)
-    func watchBook(_ params: Book) async throws -> Book {
+    public func watchBook(_ params: Book) async throws -> Book {
         throw ArriRequestError.notImplementedError
     }
-    func createConnection(_ params: BookParams) async throws -> Book {
+    public func createConnection(_ params: BookParams) async throws -> Book {
         throw ArriRequestError.notImplementedError
     }
 }

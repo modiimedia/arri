@@ -9,6 +9,7 @@ import {
     isSchemaFormType,
     isSchemaFormValues,
     Schema,
+    unflattenProcedures,
 } from "@arrirpc/codegen-utils";
 
 import { GeneratorContext, SwiftProperty } from "./_common";
@@ -24,6 +25,7 @@ import {
     swiftStringFromSchema,
     swiftTimestampFromSchema,
 } from "./primitives";
+import { swiftServiceFromSchema } from "./procedures";
 import { swiftDictionaryFromSchema } from "./record";
 import { swiftRefFromSchema } from "./ref";
 
@@ -56,6 +58,8 @@ export function createSwiftClient(
         schemaPath: "",
         generatedTypes: [],
     };
+    const services = unflattenProcedures(def.procedures);
+    const mainService = swiftServiceFromSchema(services, context);
     const typeContent: string[] = [];
     for (const key of Object.keys(def.definitions)) {
         const subSchema = def.definitions[key]!;
@@ -72,8 +76,11 @@ export function createSwiftClient(
             typeContent.push(subType.content);
         }
     }
-    return `
+    return `import Foundation
+import ArriClient
+import HTTPTypes
 
+${mainService}
 ${typeContent.join("\n")}`;
 }
 
