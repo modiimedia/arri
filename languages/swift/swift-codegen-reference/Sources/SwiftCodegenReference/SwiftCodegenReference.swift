@@ -75,8 +75,20 @@ public class ExampleClientBooksService {
         return result
     }
     @available(*, deprecated)
-    public func watchBook(_ params: Book) async throws -> Book {
-        throw ArriRequestError.notImplementedError
+    public func watchBook(_ params: Book, options: EventSourceOptions<Book>) -> Task<(), any Error> {
+        let task = Task {
+            var eventSource = EventSource<Book>(
+                url: "\(self.baseURL)/books/watch-book",
+                method: "GET",
+                headers: self.headers,
+                body: params.toJSONString(),
+                delegate: self.delegate,
+                clientVersion: "20", 
+                options: options
+            )
+            try await eventSource.sendRequest()
+        }
+        return task
     }
     public func createConnection(_ params: BookParams) async throws -> Book {
         throw ArriRequestError.notImplementedError

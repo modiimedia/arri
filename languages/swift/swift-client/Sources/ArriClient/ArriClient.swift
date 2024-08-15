@@ -191,6 +191,7 @@ public protocol ArriRequestDelegate {
 }
 
 public struct DefaultRequestDelegate: ArriRequestDelegate {
+    public init() {}
     public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
         let httpRequest = self.prepareHttpRequest(request: request)
         let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
@@ -246,7 +247,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
 }
 
 public enum ArriSSEResponse {
-    case ok(ArriHTTPResponse<any AsyncSequence>)
+    case ok(ArriHTTPResponse<HTTPClientResponse.Body>)
     case error(ArriHTTPResponse<String>)
 }
 
@@ -342,8 +343,55 @@ extension URLSession {
 }
 
 //// Server Sent Events ////
+public enum SSEEvent<T: ArriClientModel> {
+    case message(SSEMessageEvent<T>)
+    case ping
+    case done
 
-public struct SseEvent: Equatable {
+    init(rawEvent: RawSSEEvent) {
+        switch (rawEvent.event) {
+           
+            case "ping":
+                self = .ping
+                break;
+            case "done":
+                self = .done
+                break;
+            case "message":
+                self = .message(SSEMessageEvent<T>(
+                    id: rawEvent.id,
+                    data: T.init(JSONString: rawEvent.data),
+                    retry: rawEvent.retry
+                ))
+                break;
+            default:
+                self = .message(SSEMessageEvent<T>(
+                    id: rawEvent.id,
+                    data: T.init(JSONString: rawEvent.data),
+                    retry: rawEvent.retry
+                ))
+                break;
+        }
+    }
+}
+
+public struct SSEMessageEvent<T: Equatable>: Equatable {
+    public var id: String?
+    public let event: String = "message"
+    public var data: T
+    public var retry: UInt32?
+    init(
+        id: String?,
+        data: T,
+        retry: UInt32?
+    ) {
+        self.id = id
+        self.data = data
+        self.retry = retry
+    }
+}
+
+public struct RawSSEEvent: Equatable {
     var id: String?
     var event: String = "message"
     var data: String = ""
@@ -362,7 +410,7 @@ public struct SseEvent: Equatable {
     }
 }
 
-public enum SseLineResult: Equatable {
+public enum SSELineResult: Equatable {
     case id(String)
     case event(String)
     case data(String)
@@ -403,8 +451,8 @@ public enum SseLineResult: Equatable {
     }
 }
 
-public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], String) {
-    var events: [SseEvent] = []
+public func sseEventListFromString(input: String, debug: Bool) -> ([RawSSEEvent], String) {
+    var events: [RawSSEEvent] = []
     var id: String?
     var event: String?
     var data: String?
@@ -413,7 +461,7 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], S
     var leftoverIndex = 0
     var previousChar: Character?
     var ignoreNextNewLine = false
-    func handleLineResult(_ result: SseLineResult) {
+    func handleLineResult(_ result: SSELineResult) {
         switch (result) {
             case .id(let value):
                 id = value
@@ -434,7 +482,7 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], S
     }
     func handleEnd() {
         if data != nil {
-            events.append(SseEvent(id: id, event: event ?? "message", data: data!, retry: retry))
+            events.append(RawSSEEvent(id: id, event: event ?? "message", data: data!, retry: retry))
         }
         id = nil
         event = nil
@@ -446,7 +494,7 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], S
             case Character("\r"):
                 let isEnd = previousChar == Character("\n") || previousChar == Character("\r")
                 ignoreNextNewLine = true
-                handleLineResult(SseLineResult(string: line))
+                handleLineResult(SSELineResult(string: line))
                 if isEnd {
                     handleEnd()
                     let nextCharIndex = input.index(input.startIndex, offsetBy: index + 1)
@@ -470,7 +518,7 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], S
                     break;
                 }
                 let isEnd = previousChar == Character("\n")
-                handleLineResult(SseLineResult(string: line))
+                handleLineResult(SSELineResult(string: line))
                 if isEnd {
                    handleEnd()
                    leftoverIndex = index + 1
@@ -487,26 +535,83 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], S
     return (events, String(leftover))
 }
 
-public struct EventSource<T> {
-    public var url: String
-    public var method: String
-    public var headers: () -> Dictionary<String, String>
-    public var body: String?
-    public var clientVersion: String
+public protocol ArriCancellable {
+    mutating func cancel() -> ()
+}
+
+public struct EventSourceOptions<T: ArriClientModel> {
+    public var onMessage: (T, inout EventSource<T>) -> ()
+    public var onRequest: ((ArriHTTPRequest, inout EventSource<T>) -> ()) = { _, __ in }
+    public var onResponse: ((ArriSSEResponse, inout EventSource<T>) -> ()) = { _, __ in }
+    public var onResponseError: ((ArriResponseError, inout EventSource<T>) -> ()) = { _, __ in }
+    public var onClose: (() -> ()) = { }
+    public var maxRetryCount: UInt32?
+    public var maxRetryInterval: UInt32 = 30000
+    public init(
+        onMessage: @escaping (T, inout EventSource<T>) -> ()
+    ) {
+        self.onMessage = onMessage
+    }
+    public init(
+        onMessage: @escaping (T, inout EventSource<T>) -> (),
+        maxRetryCount: UInt32?,
+        maxRetryInterval: UInt32?
+    ) {
+        self.onMessage = onMessage
+        self.maxRetryCount = maxRetryCount
+        self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
+    }
+    public init(
+        onMessage: @escaping (T, inout EventSource<T>) -> (),
+        onResponseError: @escaping (ArriResponseError, inout EventSource<T>) -> (),
+        maxRetryCount: UInt32?,
+        maxRetryInterval: UInt32?
+    ) {
+        self.onMessage = onMessage
+        self.onResponseError = onResponseError
+        self.maxRetryCount = maxRetryCount
+        self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
+    }
+    public init(
+        onMessage: @escaping (T, inout EventSource<T>) -> (),
+        onRequest: ((ArriHTTPRequest, inout EventSource<T>) -> ())?,
+        onResponse: ((ArriSSEResponse, inout EventSource<T>) -> ())?,
+        onResponseError: ((ArriResponseError, inout EventSource<T>) -> ())?,
+        onClose: (() -> ())?,
+        maxRetryCount: UInt32?,
+        maxRetryInterval: UInt32?
+    ) {
+        self.onMessage = onMessage
+        self.onRequest = onRequest ?? self.onRequest
+        self.onResponse = onResponse ?? self.onResponse
+        self.onResponseError = onResponseError ?? self.onResponseError
+        self.onClose = onClose ?? self.onClose
+        self.maxRetryCount = maxRetryCount
+        self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
+    }
+}
+
+public struct EventSource<T: ArriClientModel>: ArriCancellable {
+    var url: String
+    var method: String
+    var headers: () -> Dictionary<String, String>
+    var body: String?
+    var clientVersion: String
+    var lastEventId: String?
     var delegate: ArriRequestDelegate
+    var options: EventSourceOptions<T>
     var retryCount: UInt32 = 0
-    var maxRetryCount: UInt32?
-    var retryInterval: UInt64 = 0
-    var maxRetryInterval: UInt64
-    init(
+    var retryInterval: UInt32 = 0
+    var cancelled = false
+    var pendingData = ""
+    public init(
         url: String,
         method: String,
         headers: @escaping () -> Dictionary<String, String>,
         body: String?,
         delegate: ArriRequestDelegate,
         clientVersion: String,
-        maxRetryCount: UInt32?,
-        maxRetryInterval: UInt64 = 30000
+        options: EventSourceOptions<T>
     ) {
         self.url = url
         self.method = method
@@ -514,11 +619,14 @@ public struct EventSource<T> {
         self.body = body
         self.delegate = delegate
         self.clientVersion = clientVersion
-        self.maxRetryCount = maxRetryCount
-        self.maxRetryInterval = maxRetryInterval
+        self.options = options
     }
 
-    mutating public func sendRequest() async throws {
+    mutating public func cancel() {
+        self.cancelled = true
+    }
+
+    public mutating func sendRequest() async throws {
         let url = URL(string: self.url)
         if url == nil {
             throw ArriRequestError.invalidURLError
@@ -528,28 +636,89 @@ public struct EventSource<T> {
         if !self.clientVersion.isEmpty {
             headers["client-version"] = self.clientVersion
         }
+        if self.lastEventId != nil && !self.lastEventId!.isEmpty {
+            headers["Last-Event-Id"] = self.lastEventId!
+        }
         let request = ArriHTTPRequest(url: url!, method: self.method, headers: self.headers(), body: self.body)
+        self.options.onRequest(request, &self)
+        if cancelled {
+            return
+        }
         let response = try await delegate.handleHTTPEventStreamRequest(request: request)
+        self.options.onResponse(response, &self)
+        if cancelled {
+            return
+        }
         switch (response) {        
-            case .error(let errorResponse): 
-                if self.maxRetryCount != nil && self.retryCount > self.maxRetryCount! {
+            case .error(let errorResponse):
+                var error = ArriResponseError(JSONString: errorResponse.body ?? "")
+                if error.code == 0 {
+                    error.code = errorResponse.statusCode
+                }
+                if error.message.isEmpty {
+                    error.message = errorResponse.statusMessage ?? ""
+                }
+                self.options.onResponseError(error, &self)
+                if cancelled {
                     return
                 }
-                break; 
+                return try await handleRetry()
             case .ok(let okResponse):
                 self.retryCount = 0
-                
+                if okResponse.body == nil {
+                    throw ArriResponseError()
+                }
+                for try await buffer in okResponse.body! {
+                    if cancelled {
+                        return
+                    }
+                    let chunk = String(buffer: buffer)
+                    let (rawEvents, leftover) = sseEventListFromString(input: "\(pendingData)\(chunk)", debug: false)
+                    pendingData = leftover
+                    for rawEvent in rawEvents {
+                        if rawEvent.id != nil && !rawEvent.id!.isEmpty {
+                            lastEventId = rawEvent.id!
+                        }
+                        let event = SSEEvent<T>(rawEvent: rawEvent)
+                        switch (event) {                        
+                            case .done: 
+                                cancelled = true
+                                return
+                            case .message(let messageEvent):
+                                self.options.onMessage(messageEvent.data, &self)
+                                if cancelled {
+                                    return
+                                }
+                                break 
+                            case .ping:
+                                break 
+                        }
+                    }
+                }
                 break; 
+        }
+        if cancelled {
+            return
         }        
+        return try await handleRetry()
+    }
+
+    mutating func handleRetry()  async throws {
+        if self.options.maxRetryCount != nil && self.retryCount > self.options.maxRetryCount! {
+            return
+        }
+        if self.retryCount >= 5 && self.retryInterval == 0 {
+            self.retryInterval = 10
+        } else if self.retryInterval > 0 {
+            self.retryInterval = self.retryInterval * 2
+        }
+        if self.retryInterval > self.options.maxRetryInterval {
+            self.retryInterval = self.options.maxRetryInterval
+        }
+        if self.retryInterval > 0 {
+            sleep(self.retryInterval / 1000)
+        }
+        self.retryCount += 1
+        return try await self.sendRequest()
     }
 }
-
-public func parsedArriHTTPEventStreamRequest<TParams: ArriClientModel, TResponse: ArriClientModel>(
-    delegate: ArriRequestDelegate,
-    url: String,
-    method: String,
-    headers: () -> Dictionary<String, String>,
-    clientVersion: String,
-    params: TParams?,
-    timeoutSeconds: Int64 = 60
-)

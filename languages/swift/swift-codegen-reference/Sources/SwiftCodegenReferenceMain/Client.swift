@@ -6,6 +6,8 @@ import NIOCore
 import SwiftCodegenReference
 
 struct CustomRequestDelegate: ArriRequestDelegate {
+
+
     func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
         var httpRequest = HTTPClientRequest(url: request.url.absoluteString)
         for (key, value) in request.headers {
@@ -31,8 +33,9 @@ struct CustomRequestDelegate: ArriRequestDelegate {
             body: responseString
         )
     }
-    func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws {
-        
+    
+    func handleHTTPEventStreamRequest(request: ArriClient.ArriHTTPRequest) async throws -> ArriClient.ArriSSEResponse {
+        throw ArriRequestError.notImplementedError
     }
 
 }
