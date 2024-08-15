@@ -2,6 +2,9 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
+import AsyncHTTPClient
+import NIOHTTP1
+import NIOCore
 
 let jsonEncoder = JSONEncoder()
 let jsonDecoder = JSONDecoder()
@@ -184,38 +187,102 @@ public func serializeAny(input: JSON) -> String {
 
 public protocol ArriRequestDelegate {
     func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String>
-    func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ()
+    func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse
 }
 
 public struct DefaultRequestDelegate: ArriRequestDelegate {
-    public init() {}
     public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
-        var urlRequest = URLRequest(url: request.url)
-        urlRequest.httpMethod = request.method
-
-        for (key, value) in request.headers {
-            urlRequest.setValue(value, forHTTPHeaderField: key)
+        let httpRequest = self.prepareHttpRequest(request: request)
+        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
+        let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
+        var responseString: String?
+        if responseBody != nil {
+            responseString = String(buffer: responseBody!)
         }
-        if request.body != nil {
-            let data = request.body!.data(using: .utf8)
-            urlRequest.httpBody = data
-        }
-        let (data, response) = try await URLSession.shared.asyncData(with: urlRequest)
-        let responseStatusCode = UInt(response.statusCode)
-        var responseBody: String?
-        if data != nil && !data!.isEmpty {
-            responseBody = String(data: data!, encoding: .utf8)
+        var responseHeaders: Dictionary<String, String> = Dictionary()
+        for header in response.headers {
+            responseHeaders[header.name] = header.value
         }
         return ArriHTTPResponse(
-            statusCode: responseStatusCode,
-            statusMessage: nil,
-            body: responseBody
+            statusCode: response.status.code,
+            statusMessage: response.status.reasonPhrase,
+            body: responseString
         )
     }
-    public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws {
-        
+    public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse {
+        let httpRequest = self.prepareHttpRequest(request: request)
+        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
+        if response.status.code >= 200 && response.status.code < 300 && response.headers["Content-Type"].contains("text/event-stream") {
+            return .ok(ArriHTTPResponse(
+                statusCode: response.status.code,
+                statusMessage: response.status.reasonPhrase,
+                body: response.body
+            ))
+        }
+        let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
+        var responseString: String?
+        if responseBody != nil {
+            responseString = String(buffer: responseBody!)
+        }
+        return .error(
+            ArriHTTPResponse(
+                statusCode: response.status.code,
+                statusMessage: response.status.reasonPhrase,
+                body: responseString
+            )
+        )
+    }
+    func prepareHttpRequest(request: ArriHTTPRequest) -> HTTPClientRequest {
+        var httpRequest = HTTPClientRequest(url: request.url.absoluteString)
+        for (key, value) in request.headers {
+            httpRequest.headers.add(name: key, value: value)
+        }
+        httpRequest.method = HTTPMethod(rawValue: request.method)
+        if request.body != nil {
+            httpRequest.body = .bytes(ByteBuffer(string: request.body!))
+        }
+        return httpRequest
     }
 }
+
+public enum ArriSSEResponse {
+    case ok(ArriHTTPResponse<any AsyncSequence>)
+    case error(ArriHTTPResponse<String>)
+}
+
+// Commenting this out. Need to figure out how to get streamed http responses using only the FoundationNetworking libs. (Cross-platform only)
+// Linux doesn't have access to `await URLSession.data` or `await URLSession.asyncBytes` and I haven't yet figured out how to get around that
+//
+// public struct DefaultRequestDelegate: ArriRequestDelegate {
+//     public init() {}
+//     public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
+//         var urlRequest = URLRequest(url: request.url)
+//         urlRequest.httpMethod = request.method
+
+//         for (key, value) in request.headers {
+//             urlRequest.setValue(value, forHTTPHeaderField: key)
+//         }
+//         if request.body != nil {
+//             let data = request.body!.data(using: .utf8)
+//             urlRequest.httpBody = data
+//         }
+//         let (data, response) = try await URLSession.shared.asyncData(with: urlRequest)
+//         let responseStatusCode = UInt(response.statusCode)
+//         var responseBody: String?
+//         if data != nil && !data!.isEmpty {
+//             responseBody = String(data: data!, encoding: .utf8)
+//         }
+//         return ArriHTTPResponse(
+//             statusCode: responseStatusCode,
+//             statusMessage: nil,
+//             body: responseBody
+//         )
+//     }
+//     public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws {
+//         var config = URLSessionConfiguration.default
+//         let session = URLSession(configuration: config, delegate: nil, delegateQueue: OperationQueue.main)
+//     }
+// }
 
 public struct ArriHTTPRequest {
     public var url: URL
@@ -419,3 +486,70 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], S
     let leftover = input.suffix(from: input.index(input.startIndex, offsetBy: leftoverIndex))
     return (events, String(leftover))
 }
+
+public struct EventSource<T> {
+    public var url: String
+    public var method: String
+    public var headers: () -> Dictionary<String, String>
+    public var body: String?
+    public var clientVersion: String
+    var delegate: ArriRequestDelegate
+    var retryCount: UInt32 = 0
+    var maxRetryCount: UInt32?
+    var retryInterval: UInt64 = 0
+    var maxRetryInterval: UInt64
+    init(
+        url: String,
+        method: String,
+        headers: @escaping () -> Dictionary<String, String>,
+        body: String?,
+        delegate: ArriRequestDelegate,
+        clientVersion: String,
+        maxRetryCount: UInt32?,
+        maxRetryInterval: UInt64 = 30000
+    ) {
+        self.url = url
+        self.method = method
+        self.headers = headers
+        self.body = body
+        self.delegate = delegate
+        self.clientVersion = clientVersion
+        self.maxRetryCount = maxRetryCount
+        self.maxRetryInterval = maxRetryInterval
+    }
+
+    mutating public func sendRequest() async throws {
+        let url = URL(string: self.url)
+        if url == nil {
+            throw ArriRequestError.invalidURLError
+        }
+        var headers = self.headers()
+        headers["Accepts"] = "text/event-stream,application/json"
+        if !self.clientVersion.isEmpty {
+            headers["client-version"] = self.clientVersion
+        }
+        let request = ArriHTTPRequest(url: url!, method: self.method, headers: self.headers(), body: self.body)
+        let response = try await delegate.handleHTTPEventStreamRequest(request: request)
+        switch (response) {        
+            case .error(let errorResponse): 
+                if self.maxRetryCount != nil && self.retryCount > self.maxRetryCount! {
+                    return
+                }
+                break; 
+            case .ok(let okResponse):
+                self.retryCount = 0
+                
+                break; 
+        }        
+    }
+}
+
+public func parsedArriHTTPEventStreamRequest<TParams: ArriClientModel, TResponse: ArriClientModel>(
+    delegate: ArriRequestDelegate,
+    url: String,
+    method: String,
+    headers: () -> Dictionary<String, String>,
+    clientVersion: String,
+    params: TParams?,
+    timeoutSeconds: Int64 = 60
+)
