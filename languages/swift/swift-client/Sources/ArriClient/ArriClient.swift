@@ -179,3 +179,147 @@ public func serializeDate(_ input: Date, withQuotes: Bool = true) -> String {
     }
     return __dateFormatter.string(from: input)
 }
+
+public struct SseEvent: Equatable {
+    var id: String?
+    var event: String = "message"
+    var data: String = ""
+    var retry: UInt32?
+    init() {}
+    init(
+        id: String?,
+        event: String,
+        data: String,
+        retry: UInt32?
+    ) {
+        self.id = id
+        self.event = event
+        self.data = data
+        self.retry = retry
+    }
+}
+
+public enum SseLineResult: Equatable {
+    case id(String)
+    case event(String)
+    case data(String)
+    case retry(UInt32)
+    case none
+   
+    init(string: String) {
+        if(string.starts(with: "id:")) {
+            let index = string.index(string.startIndex, offsetBy: 3)
+            let result = String(string.suffix(from: index)).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !result.isEmpty {
+                self = .id(result)
+                return
+            }
+        }
+        if(string.starts(with: "event:")) {
+            let index = string.index(string.startIndex, offsetBy: 6)
+            let result = String(string.suffix(from: index)).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !result.isEmpty {
+                self = .event(result)
+                return
+            }
+        }
+        if(string.starts(with: "data:")) {
+            let index = string.index(string.startIndex, offsetBy: 5)
+            self = .data(String(string.suffix(from: index)).trimmingCharacters(in: .whitespacesAndNewlines))
+            return
+        }
+        if(string.starts(with: "retry:")) {
+            let index = string.index(string.startIndex, offsetBy: 6)
+            let result = UInt32(string.suffix(from: index).trimmingCharacters(in: .whitespacesAndNewlines))
+            if result != nil {
+                self = .retry(result!)
+                return
+            }
+        }
+        self = .none
+    }
+}
+
+public func sseEventListFromString(input: String, debug: Bool) -> ([SseEvent], String) {
+    var events: [SseEvent] = []
+    var id: String?
+    var event: String?
+    var data: String?
+    var retry: UInt32?
+    var line = ""
+    var leftoverIndex = 0
+    var previousChar: Character?
+    var ignoreNextNewLine = false
+    func handleLineResult(_ result: SseLineResult) {
+        switch (result) {
+            case .id(let value):
+                id = value
+                break 
+            case .event(let value):
+                event = value
+                break
+            case .data(let value): 
+                data = value
+                break                    
+            case .retry(let value):
+                retry = value
+                break; 
+            case .none: 
+                break
+        }
+        line = ""
+    }
+    func handleEnd() {
+        if data != nil {
+            events.append(SseEvent(id: id, event: event ?? "message", data: data!, retry: retry))
+        }
+        id = nil
+        event = nil
+        data = nil
+        retry = nil
+    }
+    for (index, char) in input.enumerated() {
+        switch (char) {
+            case Character("\r"):
+                let isEnd = previousChar == Character("\n") || previousChar == Character("\r")
+                ignoreNextNewLine = true
+                handleLineResult(SseLineResult(string: line))
+                if isEnd {
+                    handleEnd()
+                    let nextCharIndex = input.index(input.startIndex, offsetBy: index + 1)
+                    let nextChar = input[nextCharIndex]
+                    switch nextChar {
+                        case Character("\n"):
+                            leftoverIndex = index + 2
+                            break;
+                        case Character("\r"):
+                            leftoverIndex = index + 2
+                            break;
+                        default:
+                            leftoverIndex = index + 1
+                            break;
+                    }
+                }
+                break;
+            case Character("\n"):
+                if ignoreNextNewLine {
+                    ignoreNextNewLine = false
+                    break;
+                }
+                let isEnd = previousChar == Character("\n")
+                handleLineResult(SseLineResult(string: line))
+                if isEnd {
+                   handleEnd()
+                   leftoverIndex = index + 1
+                }
+                break;
+            default:
+                ignoreNextNewLine = false
+                line.append(char)
+                break;
+        }
+        previousChar = char
+    }
+    let leftover = input.suffix(from: input.index(input.startIndex, offsetBy: leftoverIndex))
+    return (events, String(leftover))
+}
