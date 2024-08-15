@@ -1,61 +1,55 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
 import Foundation
-import HTTPTypes
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 let jsonEncoder = JSONEncoder()
 let jsonDecoder = JSONDecoder()
 
-extension HTTPField.Name {
-    static let clientVersionHeader = Self("client-version")!
-}
-
 public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClientModel>(
-    http: ArriHTTPClient,
+    delegate: ArriRequestDelegate,
     url: String,
-    method: HTTPRequest.Method,
+    method: String,
     headers: () -> Dictionary<String, String>,
     clientVersion: String,
     params: TParams?,
     timeoutSeconds: Int64 = 60
 ) async throws -> TResponse {
-    let parsedURL = URL(string: url)
-    if parsedURL == nil {
-        throw ArriRequestError.invalidURLError
-    }
-    var request = HTTPRequest(method: method, scheme: parsedURL!.scheme, authority: parsedURL!.host, path: parsedURL!.path)
+    var finalURLString = url
+    var finalHeaders = headers()
     if !clientVersion.isEmpty {
-        request.headerFields[.clientVersionHeader] = clientVersion
+        finalHeaders["client-version"] = clientVersion
     }
-    let headerDict = headers()
-    for (key, value) in headerDict {
-        let headerName = HTTPField.Name(key)
-        if headerName != nil {
-            request.headerFields[headerName!] = value
-        }
-    }
-    var body: String?
+    var finalBody: String?
     switch method {
-        case .get:
+        case "GET":
             if params != nil {
-                request.path = request.path! + "?\(params!.toQueryString())"
+                finalURLString = finalURLString + "?\(params!.toQueryString())"
             }
             break;
         default:
             if params != nil {
-                request.headerFields[.contentType] = "application/json"
-                body = params!.toJSONString()
+                finalHeaders["Content-Type"] = "application/json"
+                finalBody = params!.toJSONString()
             }
             break;
     }
-    let (response, bodyResponse) = try await http.handleHTTPRequest(request: request, body: body)
-    if response.status == .ok {
-        let result = TResponse.init(JSONString: bodyResponse ?? "")
+    let parsedURL = URL(string: finalURLString)
+    if parsedURL == nil {
+        throw ArriRequestError.invalidURLError
+    }
+    let request = ArriHTTPRequest(url: parsedURL!, method: method, headers: finalHeaders, body: finalBody)
+    let response = try await delegate.handleHTTPRequest(request: request)
+    if response.statusCode >= 200 && response.statusCode < 300 {
+        let result = TResponse.init(JSONString: response.body ?? "")
         return result
     }
-    var error = ArriResponseError(JSONString: bodyResponse ?? "")
+    var error = ArriResponseError(JSONString: response.body ?? "")
     if error.code == 0 {
-        error.code = UInt(response.status.code)
+        error.code = response.statusCode
+    }
+    if error.message.isEmpty {
+        error.message = response.statusMessage ?? "Unknown error"
     }
     throw error
 }
@@ -121,25 +115,11 @@ public struct ArriResponseError: ArriClientModel, Error {
 }
 
 
-public func serializeString(input: String) -> String {
-    do {
-        let inputValue = try jsonEncoder.encode(input)
-        return String(data: inputValue, encoding: .utf8) ?? "\"\""
-    } catch {
-        return "\"\""
-    }
-}
-public func serializeAny(input: JSON) -> String {
-    do {
-        let inputValue = try jsonEncoder.encode(input)
-        return String(data: inputValue, encoding: .utf8) ?? "null"
-    } catch {
-        return "null"
-    }
-}
-public protocol ArriHTTPClient {
-    func handleHTTPRequest(request: HTTPRequest, body: String?) async throws -> (response: HTTPResponse, body: String?)
-}
+
+
+
+//// Serialize / Deserialize
+
 public protocol ArriClientModel: Equatable {
     init()
     init(json: JSON)
@@ -179,6 +159,122 @@ public func serializeDate(_ input: Date, withQuotes: Bool = true) -> String {
     }
     return __dateFormatter.string(from: input)
 }
+public func serializeString(input: String) -> String {
+    do {
+        let inputValue = try jsonEncoder.encode(input)
+        return String(data: inputValue, encoding: .utf8) ?? "\"\""
+    } catch {
+        return "\"\""
+    }
+}
+public func serializeAny(input: JSON) -> String {
+    do {
+        let inputValue = try jsonEncoder.encode(input)
+        return String(data: inputValue, encoding: .utf8) ?? "null"
+    } catch {
+        return "null"
+    }
+}
+
+
+
+
+
+//// Request Delegate ////
+
+public protocol ArriRequestDelegate {
+    func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String>
+    func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ()
+}
+
+public struct DefaultRequestDelegate: ArriRequestDelegate {
+    public init() {}
+    public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
+        var urlRequest = URLRequest(url: request.url)
+        urlRequest.httpMethod = request.method
+
+        for (key, value) in request.headers {
+            urlRequest.setValue(value, forHTTPHeaderField: key)
+        }
+        if request.body != nil {
+            let data = request.body!.data(using: .utf8)
+            urlRequest.httpBody = data
+        }
+        let (data, response) = try await URLSession.shared.asyncData(with: urlRequest)
+        let responseStatusCode = UInt(response.statusCode)
+        var responseBody: String?
+        if data != nil && !data!.isEmpty {
+            responseBody = String(data: data!, encoding: .utf8)
+        }
+        return ArriHTTPResponse(
+            statusCode: responseStatusCode,
+            statusMessage: nil,
+            body: responseBody
+        )
+    }
+    public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws {
+        
+    }
+}
+
+public struct ArriHTTPRequest {
+    public var url: URL
+    public var method: String
+    public var headers: Dictionary<String, String>
+    public var body: String?
+    public init(
+        url: URL,
+        method: String,
+        headers: Dictionary<String, String>,
+        body: String?
+    ) {
+        self.url = url
+        self.method = method
+        self.headers = headers
+        self.body = body
+    }
+}
+public struct ArriHTTPResponse<T> {
+    public var statusCode: UInt
+    public var statusMessage: String?
+    public var body: T?
+    public init(statusCode: UInt) {
+        self.statusCode = statusCode
+    }
+    public init(
+        statusCode: UInt,
+        statusMessage: String?,
+        body: T?
+    ) {
+        self.statusCode = statusCode
+        self.statusMessage = statusMessage
+        self.body = body
+    }
+}
+
+public enum ArriResponseErrors: Error {
+    case invalidUrlResponse
+}
+
+extension URLSession {
+    func asyncData(with: URLRequest) async throws -> (Data?, HTTPURLResponse) {
+        return try await withCheckedThrowingContinuation { continuation in
+            URLSession.shared.dataTask(with: with) {data, response, error in 
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let response = response as? HTTPURLResponse else {
+                    continuation.resume(throwing: ArriResponseErrors.invalidUrlResponse)                    
+                    return
+                }
+                continuation.resume(returning: (data, response))
+            }.resume()
+        }
+    }
+}
+
+//// Server Sent Events ////
 
 public struct SseEvent: Equatable {
     var id: String?

@@ -18,7 +18,7 @@ test("Swift Codegen Matches SwiftCodegenReference.swift", () => {
     const reference = fs.readFileSync(
         path.resolve(
             __dirname,
-            "../../swift-codegen-reference/Sources/SwiftCodegenReference.swift",
+            "../../swift-codegen-reference/Sources/SwiftCodegenReference/SwiftCodegenReference.swift",
         ),
         "utf8",
     );

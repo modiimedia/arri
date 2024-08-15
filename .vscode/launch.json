@@ -47,9 +47,26 @@
       "name": "Release SwiftCodegenReference (languages/swift/swift-codegen-reference)",
       "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/release/SwiftCodegenReference",
       "preLaunchTask": "swift: Build Release SwiftCodegenReference (languages/swift/swift-codegen-reference)"
-      // Use IntelliSense to learn about possible attributes.
-      // Hover to view descriptions of existing attributes.
-      // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference",
+      "name": "Debug SwiftCodegenReferenceMain (languages/swift/swift-codegen-reference)",
+      "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/debug/SwiftCodegenReferenceMain",
+      "preLaunchTask": "swift: Build Debug SwiftCodegenReferenceMain (languages/swift/swift-codegen-reference)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference",
+      "name": "Release SwiftCodegenReferenceMain (languages/swift/swift-codegen-reference)",
+      "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/release/SwiftCodegenReferenceMain",
+      "preLaunchTask": "swift: Build Release SwiftCodegenReferenceMain (languages/swift/swift-codegen-reference)"
     }
   ]
 }

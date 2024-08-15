@@ -56,7 +56,7 @@ export function swiftHttpProcedureFromSchema(
         ${response ? `let result: ${response} = ` : ""}try await parsedArriHttpRequest(
             http: self.HTTPClient,
             url: "\\(self.baseURL)${schema.path}",
-            method: HTTPRequest.Method.${schema.method},
+            method: "${schema.method.toUpperCase()}",
             headers: self.headers,
             clientVersion: "${context.clientVersion}"${params ? "," : ""}
             ${params ? `params: params` : ""}

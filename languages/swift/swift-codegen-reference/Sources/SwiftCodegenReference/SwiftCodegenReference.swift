@@ -1,33 +1,32 @@
 import Foundation
 import ArriClient
-import HTTPTypes
 
 public class ExampleClient {
     var baseURL: String
-    var HTTPClient: ArriHTTPClient
+    var delegate: ArriRequestDelegate
     var headers: () -> Dictionary<String, String>
-    var books: ExampleClientBooksService
+    public var books: ExampleClientBooksService
 
     public init(
         baseURL: String,
-        HTTPClient: ArriHTTPClient,
+        delegate: ArriRequestDelegate,
         headers: @escaping () -> Dictionary<String, String>
     ) {
         self.baseURL = baseURL
-        self.HTTPClient = HTTPClient
+        self.delegate = delegate
         self.headers = headers
         self.books = ExampleClientBooksService(
             baseURL: baseURL,
-            HTTPClient: HTTPClient,
+            delegate: delegate,
             headers: headers
         )
     }
 
     public func sendObject(_ params: NestedObject) async throws -> NestedObject {
         let result: NestedObject = try await parsedArriHttpRequest(
-            http: self.HTTPClient,
+            delegate: self.delegate,
             url: "\(self.baseURL)/send-object",
-            method: HTTPRequest.Method.post,
+            method: "POST",
             headers: self.headers,
             clientVersion: "20",
             params: params
@@ -38,24 +37,24 @@ public class ExampleClient {
 
 public class ExampleClientBooksService {
     var baseURL: String
-    var HTTPClient: ArriHTTPClient
+    var delegate: ArriRequestDelegate
     var headers: () -> Dictionary<String, String>
 
     public init(
         baseURL: String,
-        HTTPClient: ArriHTTPClient,
+        delegate: ArriRequestDelegate,
         headers: @escaping () -> Dictionary<String, String>
     ) {
         self.baseURL = baseURL
-        self.HTTPClient = HTTPClient
+        self.delegate = delegate
         self.headers = headers
     }
     /// Get a book
     public func getBook(_ params: BookParams) async throws -> Book {
         let result: Book = try await parsedArriHttpRequest(
-            http: self.HTTPClient,
+            delegate: self.delegate,
             url: "\(self.baseURL)/books/get-book",
-            method: HTTPRequest.Method.get,
+            method: "GET",
             headers: self.headers,
             clientVersion: "20",
             params: params
@@ -66,9 +65,9 @@ public class ExampleClientBooksService {
     @available(*, deprecated)
     public func createBook(_ params: Book) async throws -> Book {
         let result: Book = try await parsedArriHttpRequest(
-            http: self.HTTPClient,
+            delegate: self.delegate,
             url: "\(self.baseURL)/books/create-book",
-            method: HTTPRequest.Method.post,
+            method: "POST",
             headers: self.headers,
             clientVersion: "20",
             params: params
