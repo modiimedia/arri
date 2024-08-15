@@ -324,8 +324,7 @@ public struct ObjectWithEveryType: ArriClientModel {
             self.array.append(__arrayJsonElementValue)
         }
         self.record = Dictionary()
-        let __recordJson = json["record"].dictionary ?? Dictionary()
-        for (__key, __value) in __recordJson {
+        for (__key, __value) in json["record"].dictionary ?? Dictionary() {
             let __parsedValue = __value.bool ?? false
             self.record[__key] = __parsedValue
         }
@@ -824,8 +823,8 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         }
         if json["record"].exists() {
             self.record = Dictionary()
-            for (__recordKey, __recordValue) in json["record"].dictionary ?? Dictionary() {
-                self.record![__recordKey] = __recordValue.bool ?? false
+            for (__key, __value) in json["record"].dictionary ?? Dictionary() {
+                self.record![__key] = __value.bool ?? false
             }
         }
         if json["discriminator"].exists() {
@@ -1221,8 +1220,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
         }
         if json["record"].dictionary != nil {
             self.record = Dictionary()
-            for (__recordKey, __recordValue) in json["record"].dictionary ?? Dictionary() {
-                self.record![__recordKey] = __recordValue.bool ?? false
+            for (__key, __value) in json["record"].dictionary ?? Dictionary() {
+                let __parsedValue = __value.bool ?? false
+                self.record![__key] = __parsedValue
             }
         }
         if json["discriminator"].dictionary != nil {

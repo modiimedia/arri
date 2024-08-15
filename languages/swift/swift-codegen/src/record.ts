@@ -30,11 +30,9 @@ export function swiftDictionaryFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: false,
-        fromJsonTemplate(input, target, key) {
-            const innerKey = validSwiftKey(key);
+        fromJsonTemplate(input, target, _) {
             const mainContent = `${target} = Dictionary()
-            let __${innerKey}Json = ${input}.dictionary ?? Dictionary()
-            for (__key, __value) in __${innerKey}Json {
+            for (__key, __value) in ${input}.dictionary ?? Dictionary() {
                 let ${subType.fromJsonTemplate(`__value`, `__parsedValue`, `__parsedValue`)}
                 ${target}${isNullable ? "!" : ""}[__key] = __parsedValue            
             }`;
