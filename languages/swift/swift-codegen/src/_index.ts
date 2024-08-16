@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 import {
     AppDefinition,
     defineGeneratorPlugin,
@@ -39,7 +41,8 @@ export const swiftClientGenerator = defineGeneratorPlugin(
     (options: SwiftClientGeneratorOptions) => {
         return {
             async generator(def, _isDevServer) {
-                const _content = createSwiftClient(def, options);
+                const content = createSwiftClient(def, options);
+                fs.writeFileSync(options.outputFile, content, "utf8");
             },
             options,
         };
@@ -72,7 +75,6 @@ export function createSwiftClient(
             generatedTypes: context.generatedTypes,
         });
         if (subType.content) {
-            console.log("HAS CONTENT", subType.content.length);
             typeContent.push(subType.content);
         }
     }

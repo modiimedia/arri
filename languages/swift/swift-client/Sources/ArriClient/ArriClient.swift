@@ -15,7 +15,7 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     method: String,
     headers: () -> Dictionary<String, String>,
     clientVersion: String,
-    params: TParams?,
+    params: TParams,
     timeoutSeconds: Int64 = 60
 ) async throws -> TResponse {
     var finalURLString = url
@@ -26,14 +26,14 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     var finalBody: String?
     switch method {
         case "GET":
-            if params != nil {
-                finalURLString = finalURLString + "?\(params!.toQueryString())"
+            if !(params is EmptyArriModel) {
+                finalURLString = finalURLString + "?\(params.toQueryString())"
             }
             break;
         default:
-            if params != nil {
+            if !(params is EmptyArriModel) {
                 finalHeaders["Content-Type"] = "application/json"
-                finalBody = params!.toJSONString()
+                finalBody = params.toJSONString()
             }
             break;
     }
@@ -132,7 +132,25 @@ public protocol ArriClientModel: Equatable {
     func toQueryString() -> String
     func clone() -> Self
 }
-public struct EmptyArriModel {}
+public struct EmptyArriModel: ArriClientModel {
+    public init() {}
+    public init(json: JSON) {}
+
+    public init(JSONString: String) {}
+
+    public func toJSONString() -> String {
+        return ""
+    }
+
+    public func toQueryString() -> String {
+        return ""
+    }
+
+    public func clone() -> EmptyArriModel {
+        return EmptyArriModel()        
+    }
+
+}
 public protocol ArriClientEnum: Equatable {
     init()
     init(serialValue: String)

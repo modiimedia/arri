@@ -66,13 +66,13 @@ export function swiftHttpProcedureFromSchema(
         }`;
     }
     return `${comments}public func ${rpcName}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
-        ${response ? `let result: ${response} = ` : ""}try await parsedArriHttpRequest(
+        ${response ? `let result: ${response} = ` : "let _: EmptyArriModel = "}try await parsedArriHttpRequest(
             delegate: self.delegate,
             url: "\\(self.baseURL)${schema.path}",
             method: "${schema.method.toUpperCase()}",
             headers: self.headers,
-            clientVersion: "${context.clientVersion}"${params ? "," : ""}
-            ${params ? `params: params` : ""}
+            clientVersion: "${context.clientVersion}",
+            ${params ? `params: params` : "params: EmptyArriModel()"}
         )
         ${response ? `return result` : ""}
     }`;
@@ -169,7 +169,7 @@ export function swiftServiceFromSchema(
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
-${services.map((service) => `   public let ${service.key}: ${service.typeName}`).join("\n")}
+${services.map((service) => `    public let ${service.key}: ${service.typeName}`).join("\n")}
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,

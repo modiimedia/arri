@@ -4,6 +4,13 @@
   "sourceRoot": "languages/swift/swift-codegen/src",
   "projectType": "library",
   "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "languages/swift/swift-codegen"
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
@@ -21,10 +28,9 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["languages/swift/swift-codegen/**/*.ts"]
+        "command": "pnpm eslint languages/swift/swift-codegen"
       }
     },
     "test": {

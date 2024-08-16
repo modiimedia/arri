@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
@@ -8,11 +9,10 @@ const packageJson = JSON.parse(
     }),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
-    entries: ["./src/index"],
+    entries: [{ name: "index", input: "./src/_index.ts" }],
     rollup: {
         emitCJS: true,
         dts: {

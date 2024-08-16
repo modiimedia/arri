@@ -92,12 +92,8 @@ const main = defineCommand({
         await mkdir(path.resolve(outDir, "src"));
         await Promise.all([
             writeFile(
-                path.resolve(outDir, "src/index.ts"),
+                path.resolve(outDir, "src/_index.ts"),
                 `// ${pkgName} entry\n// todo`,
-            ),
-            writeFile(
-                path.resolve(outDir, ".eslintrc.json"),
-                eslintConfigTemplate(depth),
             ),
             writeFile(
                 path.resolve(outDir, "build.config.ts"),
@@ -118,14 +114,6 @@ const main = defineCommand({
             writeFile(
                 path.resolve(outDir, "tsconfig.json"),
                 tsConfigTemplate(depth),
-            ),
-            writeFile(
-                path.resolve(outDir, "tsconfig.lib.json"),
-                tsConfigLibTemplate(),
-            ),
-            writeFile(
-                path.resolve(outDir, "tsconfig.spec.json"),
-                tsConfigSpecTemplate(),
             ),
             writeFile(
                 path.resolve(outDir, "vite.config.ts"),
@@ -229,6 +217,13 @@ function projectJsonTemplate(
         "command": "pnpm eslint ${packageLocation}"
       }
     },
+    "typecheck": {
+        "executor": "nx:run-commands",
+        "options": {
+            "command": "tsc --noEmit",
+            "cwd": "${packageLocation}"
+        }
+    },
     "test": {
       "executor": "@nx/vite:test",
       "outputs": ["{workspaceRoot}/coverage/${packageLocation}"],
@@ -249,32 +244,6 @@ function projectJsonTemplate(
 `;
 }
 
-function eslintConfigTemplate(depth: number) {
-    let prefix = "";
-    for (let i = 0; i < depth; i++) {
-        prefix += "../";
-    }
-    return `{
-  "extends": ["${prefix}.eslintrc.js"],
-  "ignorePatterns": [],
-  "overrides": [
-    {
-      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "rules": {}
-    },
-    {
-      "files": ["*.ts", "*.tsx"],
-      "rules": {}
-    },
-    {
-      "files": ["*.js", "*.jsx"],
-      "rules": {}
-    }
-  ]
-}
-`;
-}
-
 function buildConfigTemplate(_packageName: string) {
     return `import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -290,7 +259,7 @@ const packageJson = JSON.parse(
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
-    entries: ["./src/index"],
+    entries: [{ name: "index", input: "./src/_index.ts" }],
     rollup: {
         emitCJS: true,
         dts: {
@@ -313,55 +282,8 @@ function tsConfigTemplate(depth: number) {
     return `{
   "extends": "${prefix}tsconfig.base.json",
   "compilerOptions": {
-    "types": ["vitest"]
-  },
-  "references": [
-    {
-      "path": "./tsconfig.lib.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
-}
-`;
-}
-
-function tsConfigLibTemplate() {
-    return `{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "types": ["node"]
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
-}
-`;
-}
-
-function tsConfigSpecTemplate() {
-    return `{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node"]
-  },
-  "include": [
-    "vite.config.ts",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.tsx",
-    "src/**/*.spec.tsx",
-    "src/**/*.test.js",
-    "src/**/*.spec.js",
-    "src/**/*.test.jsx",
-    "src/**/*.spec.jsx",
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-  ],
-  "exclude": []
+    "types": ["vitest", "vitest/globals", "node"]
+  }
 }
 `;
 }
@@ -394,7 +316,8 @@ export default defineConfig({
 
     test: {
         globals: true,
-        reporters: ["default"],
+        reporters: ["default", "html"],
+        outputFile: ".temp/test-results/index.html",
         pool: "threads",
         pollOptions: {
             threads: {

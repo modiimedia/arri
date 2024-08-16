@@ -24,7 +24,5 @@
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*"
   },
-  "devDependencies": {
-    "@arrirpc/schema": "workspace:*"
-  }
+  "devDependencies": {}
 }

@@ -20,7 +20,7 @@ export function swiftRefFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: false,
-        fromJsonTemplate(input, target, key) {
+        fromJsonTemplate(input, target, _key) {
             if (context.isOptional) {
                 return `if ${input}.exists() {
                     ${target} = ${prefixedTypeName}(json: ${input})

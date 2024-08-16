@@ -67,6 +67,46 @@
       "name": "Release SwiftCodegenReferenceMain (languages/swift/swift-codegen-reference)",
       "program": "${workspaceFolder:arri}/languages/swift/swift-codegen-reference/.build/release/SwiftCodegenReferenceMain",
       "preLaunchTask": "swift: Build Release SwiftCodegenReferenceMain (languages/swift/swift-codegen-reference)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/tests/clients/swift",
+      "name": "Debug swift (tests/clients/swift)",
+      "program": "${workspaceFolder:arri}/tests/clients/swift/.build/debug/swift",
+      "preLaunchTask": "swift: Build Debug swift (tests/clients/swift)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/tests/clients/swift",
+      "name": "Release swift (tests/clients/swift)",
+      "program": "${workspaceFolder:arri}/tests/clients/swift/.build/release/swift",
+      "preLaunchTask": "swift: Build Release swift (tests/clients/swift)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/tests/clients/swift",
+      "name": "Debug TestClientSwift (tests/clients/swift)",
+      "program": "${workspaceFolder:arri}/tests/clients/swift/.build/debug/TestClientSwift",
+      "preLaunchTask": "swift: Build Debug TestClientSwift (tests/clients/swift)"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:arri}/tests/clients/swift",
+      "name": "Release TestClientSwift (tests/clients/swift)",
+      "program": "${workspaceFolder:arri}/tests/clients/swift/.build/release/TestClientSwift",
+      "preLaunchTask": "swift: Build Release TestClientSwift (tests/clients/swift)"
     }
   ]
 }

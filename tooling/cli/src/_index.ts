@@ -1,6 +1,7 @@
 import { dartClientGenerator } from "@arrirpc/codegen-dart";
 import { kotlinClientGenerator } from "@arrirpc/codegen-kotlin";
 import { rustClientGenerator } from "@arrirpc/codegen-rust";
+import { swiftClientGenerator } from "@arrirpc/codegen-swift";
 import { typescriptClientGenerator } from "@arrirpc/codegen-ts";
 
 export { DEV_DEFINITION_ENDPOINT } from "./commands/dev";
@@ -17,4 +18,5 @@ export const generators = {
     kotlinClient: kotlinClientGenerator,
     rustClient: rustClientGenerator,
     typescriptClient: typescriptClientGenerator,
+    swiftClient: swiftClientGenerator,
 } as const;
