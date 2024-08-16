@@ -232,4 +232,213 @@ final class TestSwiftClientTests: XCTestCase {
         let result = try await client.tests.sendRecursiveUnion(input)
         XCTAssertEqual(input, result)
     }
+
+    func testStreamMessages() async {
+        let input = ChatMessageParams(channelId: "12345")
+        var msgCount = 0
+        var errorCount = 0
+        let _ = await client.tests.streamMessages(input, options: EventSourceOptions(
+            onMessage: { msg, controller in 
+                switch (msg) {
+                    case .text(let msg):
+                        XCTAssertEqual(msg.channelId, "12345")
+                        break;
+                    case .image(let msg):
+                        XCTAssertEqual(msg.channelId, "12345")
+                        break;
+                    case .url(let msg):
+                        XCTAssertEqual(msg.channelId, "12345")
+                        break;
+                }
+                msgCount += 1
+                if msgCount >= 10 {
+                    controller.cancel()
+                }
+            },
+            onRequestError: { error, controller in
+                errorCount += 1
+                print("UNEXPECTED REQUEST_ERROR \(error)")
+                controller.cancel()
+            },
+            onResponseError: { error, controller in 
+                errorCount += 1
+                print("UNEXPECTED RESPONSE_ERROR: \(error)")
+                controller.cancel()
+            }
+        )).result
+        XCTAssertEqual(errorCount, 0)
+        XCTAssertEqual(msgCount, 10)
+    }
+    func testStreamLargeObject() async {
+        var msgCount = 0
+        var errorCount = 0
+        let _ = await client.tests.streamLargeObjects(options: EventSourceOptions(
+            onMessage: { msg, es in 
+                msgCount += 1
+                if msgCount >= 5 {
+                    es.cancel()
+                }
+            },
+            onRequestError: {err, es in 
+                errorCount += 1
+                print("UNEXPECTED REQUEST_ERROR: \(err)")
+                es.cancel()
+            },
+            onResponseError: { err, es in 
+                errorCount += 1
+                print("UNEXPECTED RESPONSE_ERROR: \(err)")
+                es.cancel()
+            })
+        ).result
+        XCTAssertEqual(errorCount, 0)
+        XCTAssertEqual(msgCount, 5)
+    }
+    func testStreamAutoReconnect() async throws {
+        var msgCount = 0
+        var openCount = 0
+        var errorCount = 0
+        let _ = await client.tests.streamAutoReconnect(AutoReconnectParams(messageCount: 5), options: EventSourceOptions(
+            onMessage: { msg, es in 
+                msgCount += 1
+                if msgCount >= 100 {
+                    es.cancel()
+                }
+            },
+            onRequest: nil,
+            onRequestError: {err, es in 
+                errorCount += 1
+                print("UNEXPECTED REQUEST_ERROR: \(err)")
+                es.cancel()
+            },
+            onResponse: { _, es in 
+                openCount += 1
+                if openCount >= 3 {
+                    es.cancel()
+                }
+            },
+            onResponseError: { err, es in 
+                errorCount += 1
+                print("UNEXPECTED RESPONSE_ERROR: \(err)")
+                es.cancel()
+            },
+            onClose: nil,
+            maxRetryCount: nil,
+            maxRetryInterval: nil
+            )
+        ).result
+        XCTAssertEqual(errorCount, 0)
+        XCTAssertEqual(openCount, 3)
+        XCTAssertEqual(msgCount, 10)
+    }
+    func testStreamConnectionError() async throws {
+        var msgCount = 0
+        var openCount = 0
+        var reqErrorCount = 0
+        var resErrorCount = 0
+        let _ = await client.tests.streamConnectionErrorTest(StreamConnectionErrorTestParams(statusCode: 411, statusMessage: "This is a test"), options: EventSourceOptions(
+            onMessage: {_, es in 
+                msgCount += 1
+                es.cancel()
+            },
+            onRequest: nil,
+            onRequestError: { err, es in
+                print("UNEXPECTED REQUEST_ERROR: \(err)")
+                reqErrorCount += 1
+                es.cancel()
+            },
+            onResponse: { _, es in 
+                openCount += 1
+                if openCount >= 10 {
+                    es.cancel()
+                }
+            },
+            onResponseError: { err, es in 
+                resErrorCount += 1
+                XCTAssertEqual(err.code, 411)
+                XCTAssertEqual(err.message, "This is a test")
+                if resErrorCount >= 5 {
+                    es.cancel()
+                }
+            },
+            onClose: nil,
+            maxRetryCount: nil,
+            maxRetryInterval: nil
+        )).result
+        XCTAssertEqual(msgCount, 0)
+        XCTAssertEqual(reqErrorCount, 0)
+        XCTAssertEqual(openCount, resErrorCount)
+        XCTAssert(resErrorCount > 1)
+    }
+    func testStreamRetryWithNewCredentials() async throws {
+        let customClient = TestClient(
+            baseURL: "http://localhost:2020",
+            delegate: DefaultRequestDelegate(),
+            headers: {
+                var headers: Dictionary<String, String> = Dictionary()
+                headers["x-test-header"] = "test-client-swift-\(UUID())"
+                return headers
+            }
+        )
+        var msgCount = 0
+        var errorCount = 0
+        var openCount = 0
+        let task = customClient.tests.streamRetryWithNewCredentials(
+            options: EventSourceOptions(
+                onMessage: {_, __ in 
+                    msgCount += 1
+                },
+                onRequest: nil,
+                onRequestError: { err, __ in 
+                    print("UNEXPECTED_REQUEST_ERROR: \(err)")
+                    errorCount += 1
+                },
+                onResponse: { _, __ in 
+                    openCount += 1
+                },
+                onResponseError: { err, __ in 
+                    print("UNEXPECTED_RESPONSE_ERROR: \(err)")
+                    errorCount += 1
+                },
+                onClose: nil,
+                maxRetryCount: nil,
+                maxRetryInterval: nil
+            )
+        )
+        try await Task.sleep(for: .seconds(1))
+        if !task.isCancelled {
+            task.cancel()
+        }
+        XCTAssert(msgCount > 0)
+        XCTAssert(openCount > 0)
+        XCTAssertEqual(errorCount, 0)
+    }
+    func testStreamTenEventsThenEnd() async {
+        var msgCount = 0
+        var errorCount = 0
+        var openCount = 0
+        let _ = await client.tests.streamTenEventsThenEnd(options: EventSourceOptions(onMessage: { _, es in 
+            msgCount += 1
+        },
+            onRequest: nil,
+            onRequestError: { err, es in 
+                print("UNEXPECTED_REQUEST_ERROR: \(err)")
+                errorCount += 1
+                es.cancel()
+            },
+            onResponse: { _, __ in 
+                openCount += 1
+            },
+            onResponseError: { err, es in 
+                print("UNEXPECTED_RESPONSE_ERROR: \(err)")
+                errorCount += 1
+                es.cancel()
+            },
+            onClose: nil,
+            maxRetryCount: nil,
+            maxRetryInterval: nil
+        )).result
+        XCTAssertEqual(msgCount, 10)
+        XCTAssertEqual(errorCount, 0)
+        XCTAssertEqual(openCount, 1)
+    }
 }

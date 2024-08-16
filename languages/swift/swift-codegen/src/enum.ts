@@ -28,6 +28,7 @@ export function swiftEnumFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: true,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {

@@ -13,6 +13,7 @@ import { swiftObjectFromSchema } from "./object";
 type DiscriminatorPart = {
     discriminatorValue: string;
     discriminatorCase: string;
+    hasRequiredRef: boolean;
     typeName: string;
     content: string;
 };
@@ -30,6 +31,7 @@ export function swiftTaggedUnionFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: false,
+        hasRequiredRef: context.containsRequiredRef[typeName] ?? false,
         fromJsonTemplate(input, target, _) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -85,20 +87,32 @@ export function swiftTaggedUnionFromSchema(
             discriminatorKey,
             discriminatorParent: typeName,
             discriminatorValue: key,
+            containsRequiredRef: context.containsRequiredRef,
         });
         const discriminatorCase = validSwiftKey(key);
         const discriminatorPart: DiscriminatorPart = {
             discriminatorValue: discriminatorValue,
             discriminatorCase: discriminatorCase,
+            hasRequiredRef: subType.hasRequiredRef,
             typeName: subType.typeName.replace("?", ""),
             content: subType.content,
         };
         discriminatorParts.push(discriminatorPart);
     }
-    const defaultPart = discriminatorParts[0];
-    if (!defaultPart) {
+    if (!discriminatorParts.length) {
         throw new Error(
             `Invalid schema at ${context.schemaPath}. Discriminators must have at least one mapping.`,
+        );
+    }
+    let defaultPart: DiscriminatorPart | undefined;
+    for (const part of discriminatorParts) {
+        if (part.hasRequiredRef) continue;
+        defaultPart = part;
+        break;
+    }
+    if (!defaultPart) {
+        throw new Error(
+            `Invalid schema a ${context.schemaPath}. All subtypes have a required recursive reference. This creates an infinite loop.`,
         );
     }
     result.content = `${codeComments(schema)}public enum ${prefixedTypeName}: ArriClientModel {

@@ -58,7 +58,7 @@ export function swiftHttpProcedureFromSchema(
                 url: "\\(self.baseURL)${schema.path}",
                 method: "${schema.method.toUpperCase()}",
                 headers: self.headers,
-                body: ${params ? "params.toJSONString()" : "nil"},
+                params: ${params ? "params" : "nil"},
                 delegate: self.delegate,
                 clientVersion: "${context.clientVersion}",
                 options: options
@@ -138,6 +138,7 @@ export function swiftServiceFromSchema(
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
                 generatedTypes: context.generatedTypes,
+                containsRequiredRef: context.containsRequiredRef,
             });
             if (subService) {
                 const subServiceKey = validSwiftKey(key);
@@ -161,6 +162,7 @@ export function swiftServiceFromSchema(
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
                 generatedTypes: context.generatedTypes,
+                containsRequiredRef: context.containsRequiredRef,
             });
             if (rpc) {
                 procedureParts.push(rpc);

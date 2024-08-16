@@ -23,6 +23,7 @@ export function swiftObjectFromSchema(
         defaultValue,
         isNullable,
         canBeQueryString: false,
+        hasRequiredRef: context.containsRequiredRef[typeName] ?? false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `         if ${input}.exists() {
@@ -105,8 +106,13 @@ export function swiftObjectFromSchema(
             instancePath: `/${typeName}/${key}`,
             schemaPath: `${context.schemaPath}/properties/${key}`,
             generatedTypes: context.generatedTypes,
+            containsRequiredRef: context.containsRequiredRef,
         });
         if (subType.content) subContent.push(subType.content);
+        if (subType.hasRequiredRef && !subType.isNullable) {
+            context.containsRequiredRef[typeName] = true;
+            result.hasRequiredRef = true;
+        }
         if (isSchemaFormRef(subSchema)) {
             hasRecursiveSubType = true;
         }
@@ -172,9 +178,12 @@ export function swiftObjectFromSchema(
             schemaPath: `${context.schemaPath}/optionalProperties/${key}`,
             generatedTypes: context.generatedTypes,
             isOptional: true,
+            containsRequiredRef: context.containsRequiredRef,
         });
         if (subType.content) subContent.push(subType.content);
-        if (isSchemaFormRef(subSchema)) hasRecursiveSubType = true;
+        if (isSchemaFormRef(subSchema)) {
+            hasRecursiveSubType = true;
+        }
         if (subType.canBeQueryString) canBeQueryString = true;
         const fieldName = validSwiftKey(key);
         fieldNames.push(fieldName);

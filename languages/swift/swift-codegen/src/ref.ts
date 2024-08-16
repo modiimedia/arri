@@ -20,6 +20,7 @@ export function swiftRefFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: false,
+        hasRequiredRef: !isNullable,
         fromJsonTemplate(input, target, _key) {
             if (context.isOptional) {
                 return `if ${input}.exists() {

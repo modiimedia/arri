@@ -174,7 +174,7 @@ public class TestClientTestsService {
                 url: "\(self.baseURL)/rpcs/tests/stream-auto-reconnect",
                 method: "GET",
                 headers: self.headers,
-                body: params.toJSONString(),
+                params: params,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -190,7 +190,7 @@ public class TestClientTestsService {
                 url: "\(self.baseURL)/rpcs/tests/stream-connection-error-test",
                 method: "GET",
                 headers: self.headers,
-                body: params.toJSONString(),
+                params: params,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -206,7 +206,7 @@ public class TestClientTestsService {
                 url: "\(self.baseURL)/rpcs/tests/stream-large-objects",
                 method: "GET",
                 headers: self.headers,
-                body: nil,
+                params: nil,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -221,7 +221,7 @@ public class TestClientTestsService {
                 url: "\(self.baseURL)/rpcs/tests/stream-messages",
                 method: "GET",
                 headers: self.headers,
-                body: params.toJSONString(),
+                params: params,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -236,7 +236,7 @@ public class TestClientTestsService {
                 url: "\(self.baseURL)/rpcs/tests/stream-retry-with-new-credentials",
                 method: "GET",
                 headers: self.headers,
-                body: nil,
+                params: nil,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -252,7 +252,7 @@ public class TestClientTestsService {
                 url: "\(self.baseURL)/rpcs/tests/stream-ten-events-then-end",
                 method: "GET",
                 headers: self.headers,
-                body: nil,
+                params: nil,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -292,7 +292,7 @@ public class TestClientUsersService {
                 url: "\(self.baseURL)/rpcs/users/watch-user",
                 method: "GET",
                 headers: self.headers,
-                body: params.toJSONString(),
+                params: params,
                 delegate: self.delegate,
                 clientVersion: "10",
                 options: options
@@ -3317,7 +3317,7 @@ public enum RecursiveUnion: ArriClientModel {
     case text(RecursiveUnionText)
     case shape(RecursiveUnionShape)
     public init() {
-        self = .child(RecursiveUnionChild())
+        self = .children(RecursiveUnionChildren())
     }
     public init(json: JSON) {
         let discriminator = json["type"].string ?? ""
@@ -3335,7 +3335,7 @@ public enum RecursiveUnion: ArriClientModel {
                 self = .shape(RecursiveUnionShape(json: json))
                 break
             default:
-                self = .child(RecursiveUnionChild())
+                self = .children(RecursiveUnionChildren())
                 break
         }
     }

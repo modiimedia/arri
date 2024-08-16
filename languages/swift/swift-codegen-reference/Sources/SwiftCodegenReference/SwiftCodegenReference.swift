@@ -81,7 +81,7 @@ public class ExampleClientBooksService {
                 url: "\(self.baseURL)/books/watch-book",
                 method: "GET",
                 headers: self.headers,
-                body: params.toJSONString(),
+                params: params,
                 delegate: self.delegate,
                 clientVersion: "20", 
                 options: options

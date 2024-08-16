@@ -19,6 +19,7 @@ export function swiftDictionaryFromSchema(
         instancePath: `${context.instancePath}/[value]`,
         schemaPath: `${context.schemaPath}/values`,
         generatedTypes: context.generatedTypes,
+        containsRequiredRef: context.containsRequiredRef,
     });
     const isNullable = isNullableType(schema, context);
     const typeName = isNullable
@@ -30,6 +31,7 @@ export function swiftDictionaryFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: false,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target, _) {
             const mainContent = `        ${target} = Dictionary()
             for (__key, __value) in ${input}.dictionary ?? Dictionary() {

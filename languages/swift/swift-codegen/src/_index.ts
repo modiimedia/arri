@@ -60,6 +60,7 @@ export function createSwiftClient(
         instancePath: "",
         schemaPath: "",
         generatedTypes: [],
+        containsRequiredRef: {},
     };
     const services = unflattenProcedures(def.procedures);
     const mainService = swiftServiceFromSchema(services, context);
@@ -73,6 +74,7 @@ export function createSwiftClient(
             instancePath: `/${key}`,
             schemaPath: `/${key}`,
             generatedTypes: context.generatedTypes,
+            containsRequiredRef: context.containsRequiredRef,
         });
         if (subType.content) {
             typeContent.push(subType.content);

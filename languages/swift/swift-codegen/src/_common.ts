@@ -17,6 +17,7 @@ export interface GeneratorContext {
     discriminatorKey?: string;
     discriminatorValue?: string;
     isOptional?: boolean;
+    containsRequiredRef: Record<string, boolean>;
 }
 
 export interface SwiftProperty {
@@ -24,6 +25,7 @@ export interface SwiftProperty {
     defaultValue: string;
     isNullable: boolean;
     canBeQueryString: boolean;
+    hasRequiredRef: boolean;
     fromJsonTemplate: (input: string, target: string, key: string) => string;
     toJsonTemplate: (input: string, target: string) => string;
     toQueryPartTemplate: (input: string, target: string, key: string) => string;

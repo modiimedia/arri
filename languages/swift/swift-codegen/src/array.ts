@@ -19,6 +19,7 @@ export function swiftArrayFromSchema(
         instancePath: `${context.instancePath}/[element]`,
         schemaPath: `${context.schemaPath}/elements`,
         generatedTypes: context.generatedTypes,
+        containsRequiredRef: context.containsRequiredRef,
     });
     const isNullable = isNullableType(schema, context);
     const typeName = isNullable
@@ -30,6 +31,7 @@ export function swiftArrayFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: false,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target, key) {
             const innerKey = validSwiftKey(key);
             const mainContent = `        ${target} = []

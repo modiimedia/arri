@@ -14,6 +14,7 @@ export function swiftStringFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: true,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -71,6 +72,7 @@ export function swiftBooleanFromSchema(
         isNullable,
         defaultValue,
         canBeQueryString: true,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -128,6 +130,7 @@ export function swiftTimestampFromSchema(
         defaultValue,
         isNullable,
         canBeQueryString: true,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -186,6 +189,7 @@ export function swiftNumberFromSchema(
         defaultValue: isNullable ? "" : defaultValue,
         isNullable,
         canBeQueryString: true,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
@@ -242,6 +246,7 @@ export function swiftLargeIntFromSchema(
         defaultValue: isNullable ? "" : "0",
         isNullable,
         canBeQueryString: true,
+        hasRequiredRef: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {

@@ -63,12 +63,12 @@ public enum ArriRequestError: Error {
 }
 
 public struct ArriResponseError: ArriClientModel, Error {
-    public var code: UInt = 0
+    public var code: UInt32 = 0
     public var message: String = ""
     public var data: JSON?
     public var stack: [String]?
     public init(
-        code: UInt,
+        code: UInt32,
         message: String,
         data: JSON?,
         stack: [String]?
@@ -80,7 +80,17 @@ public struct ArriResponseError: ArriClientModel, Error {
     }
     public init() {}
     public init(json: JSON) {
-    
+        self.code = json["code"].uInt32 ?? 0
+        self.message = json["message"].string ?? ""
+        if json["data"].exists() {
+            self.data = json["data"]
+        }
+        if json["stack"].exists() {
+            self.stack = []
+            for element in json["stack"].array ?? [] {
+                self.stack!.append(element.string ?? "")
+            }
+        }
     }
     public init(JSONString: String) {
         do {
@@ -157,6 +167,18 @@ public protocol ArriClientEnum: Equatable {
     init(serialValue: String)
     func serialValue() -> String
 }
+@propertyWrapper
+public enum Box<T> {
+    indirect case next(T)
+    init(_ wrappedValue: T) {
+        self = .next(wrappedValue)
+    }
+    public var wrappedValue: T {
+        switch self {
+            case .next(let value): return value
+        }
+    }
+}
 public class ArriClientDateFormatter {
     public let RFC3339DateFormatter: DateFormatter
     public init() {
@@ -226,7 +248,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
             responseHeaders[header.name] = header.value
         }
         return ArriHTTPResponse(
-            statusCode: response.status.code,
+            statusCode: UInt32(response.status.code),
             statusMessage: response.status.reasonPhrase,
             body: responseString
         )
@@ -236,7 +258,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
         let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
         if response.status.code >= 200 && response.status.code < 300 && response.headers["Content-Type"].contains("text/event-stream") {
             return .ok(ArriHTTPResponse(
-                statusCode: response.status.code,
+                statusCode: UInt32(response.status.code),
                 statusMessage: response.status.reasonPhrase,
                 body: response.body
             ))
@@ -248,7 +270,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
         }
         return .error(
             ArriHTTPResponse(
-                statusCode: response.status.code,
+                statusCode: UInt32(response.status.code),
                 statusMessage: response.status.reasonPhrase,
                 body: responseString
             )
@@ -324,14 +346,14 @@ public struct ArriHTTPRequest {
     }
 }
 public struct ArriHTTPResponse<T> {
-    public var statusCode: UInt
+    public var statusCode: UInt32
     public var statusMessage: String?
     public var body: T?
-    public init(statusCode: UInt) {
+    public init(statusCode: UInt32) {
         self.statusCode = statusCode
     }
     public init(
-        statusCode: UInt,
+        statusCode: UInt32,
         statusMessage: String?,
         body: T?
     ) {
@@ -576,12 +598,21 @@ public struct EventSourceOptions<T: ArriClientModel> {
     }
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> (),
-        maxRetryCount: UInt32?,
-        maxRetryInterval: UInt32?
+        maxRetryCount: UInt32? = nil,
+        maxRetryInterval: UInt32? = nil
     ) {
         self.onMessage = onMessage
         self.maxRetryCount = maxRetryCount
         self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
+    }
+    public init(
+        onMessage: @escaping (T, inout EventSource<T>) -> (),
+        onRequestError: ((ArriRequestError, inout EventSource<T>) -> ())? = nil,
+        onResponseError: ((ArriResponseError, inout EventSource<T>) -> ())? = nil
+    ) {
+        self.onMessage = onMessage
+        self.onRequestError = onRequestError ?? self.onRequestError
+        self.onResponseError = onResponseError ?? self.onResponseError
     }
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> (),
@@ -621,7 +652,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
     var url: String
     var method: String
     var headers: () -> Dictionary<String, String>
-    var body: String?
+    var params: (any ArriClientModel)?
     var clientVersion: String
     var lastEventId: String?
     var delegate: ArriRequestDelegate
@@ -634,7 +665,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         url: String,
         method: String,
         headers: @escaping () -> Dictionary<String, String>,
-        body: String?,
+        params: (any ArriClientModel)?,
         delegate: ArriRequestDelegate,
         clientVersion: String,
         options: EventSourceOptions<T>
@@ -642,7 +673,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         self.url = url
         self.method = method
         self.headers = headers
-        self.body = body
+        self.params = params
         self.delegate = delegate
         self.clientVersion = clientVersion
         self.options = options
@@ -653,8 +684,8 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
     }
 
     public mutating func sendRequest() async {
-        let url = URL(string: self.url)
-        if url == nil {
+        var urlComponents = URLComponents(string: self.url)
+        if urlComponents == nil {
             options.onRequestError(ArriRequestError.invalidUrl, &self)
             if cancelled {
                 return
@@ -669,7 +700,19 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         if self.lastEventId != nil && !self.lastEventId!.isEmpty {
             headers["Last-Event-Id"] = self.lastEventId!
         }
-        let request = ArriHTTPRequest(url: url!, method: self.method, headers: self.headers(), body: self.body)
+        var body: String?
+        if self.params != nil {
+            switch (self.method) {
+                case "GET":
+                    urlComponents!.queryItems = self.params!.toURLQueryParts()
+                    break;
+                default:
+                    body = self.params!.toJSONString()
+                    headers["Content-Type"] = "application/json"
+                    break;
+            }
+        }
+        let request = ArriHTTPRequest(url: urlComponents!.url!, method: self.method, headers: self.headers(), body: body)
         self.options.onRequest(request, &self)
         if cancelled {
             return
@@ -719,6 +762,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                     }
                     return await handleRetry()
                 }
+                
                 do {
                     for try await buffer in okResponse.body! {
                         if cancelled {
