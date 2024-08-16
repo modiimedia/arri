@@ -28,7 +28,7 @@ struct CustomRequestDelegate: ArriRequestDelegate {
             responseHeaders[header.name] = header.value
         }
         return ArriHTTPResponse(
-            statusCode: response.status.code,
+            statusCode: UInt32(response.status.code),
             statusMessage: response.status.reasonPhrase,
             body: responseString
         )
