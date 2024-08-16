@@ -56,7 +56,7 @@ export function swiftTaggedUnionFromSchema(
             }
             return `${target} += ${input}.toJSONString()`;
         },
-        toQueryStringTemplate(_, __, ___) {
+        toQueryPartTemplate(_, __, ___) {
             return `print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, _) {
@@ -139,12 +139,12 @@ ${discriminatorParts
     .join("\n")}
         }
     }
-    public func toQueryString() -> String {
+    public func toURLQueryParts() -> [URLQueryItem] {
         switch(self) {
 ${discriminatorParts
     .map(
         (part) => `            case .${part.discriminatorCase}(let __innerVal):
-                return __innerVal.toQueryString()`,
+                return __innerVal.toURLQueryParts()`,
     )
     .join("\n")}
         }

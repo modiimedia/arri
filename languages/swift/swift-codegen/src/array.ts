@@ -68,7 +68,7 @@ export function swiftArrayFromSchema(
             }
             return mainContent;
         },
-        toQueryStringTemplate(_, __, ___) {
+        toQueryPartTemplate(_, __, ___) {
             return `print("[WARNING] arrays cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, key) {

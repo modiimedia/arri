@@ -54,20 +54,20 @@ export function swiftEnumFromSchema(
             }
             return `${target} += "\\"\\(${input}.serialValue())\\""`;
         },
-        toQueryStringTemplate(input, target, key) {
+        toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!.serialValue())")
+                    ${target}.append(URLQueryItem(name: "${key}", value: ${input}!.serialValue()))
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!.serialValue())")
+                    ${target}.append(URLQueryItem(name: "${key}", value: ${input}!.serialValue()))
                 } else {
-                    ${target}.append("${key}=null") 
+                    ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append("${key}=\\(${input}.serialValue())")`;
+            return `${target}.append(URLQueryItem(name: "${key}", value: ${input}.serialValue()))`;
         },
         content: "",
     };

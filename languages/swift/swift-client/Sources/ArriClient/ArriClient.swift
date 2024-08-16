@@ -18,7 +18,10 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     params: TParams,
     timeoutSeconds: Int64 = 60
 ) async throws -> TResponse {
-    var finalURLString = url
+    var parsedURL = URLComponents(string: url)
+    if parsedURL == nil {
+        throw ArriRequestError.invalidUrl
+    }
     var finalHeaders = headers()
     if !clientVersion.isEmpty {
         finalHeaders["client-version"] = clientVersion
@@ -27,7 +30,7 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     switch method {
         case "GET":
             if !(params is EmptyArriModel) {
-                finalURLString = finalURLString + "?\(params.toQueryString())"
+                parsedURL!.queryItems = params.toURLQueryParts()
             }
             break;
         default:
@@ -37,11 +40,7 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
             }
             break;
     }
-    let parsedURL = URL(string: finalURLString)
-    if parsedURL == nil {
-        throw ArriRequestError.invalidUrl
-    }
-    let request = ArriHTTPRequest(url: parsedURL!, method: method, headers: finalHeaders, body: finalBody)
+    let request = ArriHTTPRequest(url: parsedURL!.url!, method: method, headers: finalHeaders, body: finalBody)
     let response = try await delegate.handleHTTPRequest(request: request)
     if response.statusCode >= 200 && response.statusCode < 300 {
         let result = TResponse.init(JSONString: response.body ?? "")
@@ -101,12 +100,11 @@ public struct ArriResponseError: ArriClientModel, Error {
         return __json
     
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("code=\(self.code)")
-        __queryParts.append("message=\(self.message)")
-        return __queryParts.joined(separator: "&")
-    
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "code", value: "\(self.code)"))
+        __queryParts.append(URLQueryItem(name: "message", value: "\(self.message)"))
+        return __queryParts
     }
     public func clone() -> ArriResponseError {
         return ArriResponseError(
@@ -129,7 +127,8 @@ public protocol ArriClientModel: Equatable {
     init(json: JSON)
     init(JSONString: String)
     func toJSONString() -> String
-    func toQueryString() -> String
+    // func toURLQueryString() -> String
+    func toURLQueryParts() -> [URLQueryItem]
     func clone() -> Self
 }
 public struct EmptyArriModel: ArriClientModel {
@@ -141,9 +140,11 @@ public struct EmptyArriModel: ArriClientModel {
     public func toJSONString() -> String {
         return ""
     }
-
-    public func toQueryString() -> String {
-        return ""
+    // public func toURLQueryString() -> String {
+    //     return ""
+    // }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        return []
     }
 
     public func clone() -> EmptyArriModel {
@@ -189,6 +190,7 @@ public func serializeString(input: String) -> String {
         return "\"\""
     }
 }
+
 public func serializeAny(input: JSON) -> String {
     do {
         let inputValue = try jsonEncoder.encode(input)

@@ -49,7 +49,7 @@ export function swiftObjectFromSchema(
             }
             return `${target} += ${input}.toJSONString()`;
         },
-        toQueryStringTemplate(_, __, ___) {
+        toQueryPartTemplate(_, __, ___) {
             return `print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, _key) {
@@ -93,7 +93,7 @@ export function swiftObjectFromSchema(
             `      __json += "\\"${context.discriminatorKey}\\":\\"${context.discriminatorValue}\\""`,
         );
         toQueryStringParts.push(
-            `       __queryParts.append("${context.discriminatorKey}=${context.discriminatorValue}")`,
+            `       __queryParts.append(URLQueryItem(name: "${context.discriminatorKey}", value: "${context.discriminatorValue}"))`,
         );
     }
     for (const key of Object.keys(schema.properties)) {
@@ -139,7 +139,7 @@ export function swiftObjectFromSchema(
         toJsonParts.push(subType.toJsonTemplate(`self.${fieldName}`, `__json`));
         if (subType.canBeQueryString) canBeQueryString = true;
         toQueryStringParts.push(
-            subType.toQueryStringTemplate(
+            subType.toQueryPartTemplate(
                 `self.${fieldName}`,
                 `__queryParts`,
                 key,
@@ -208,7 +208,7 @@ export function swiftObjectFromSchema(
         }`);
         if (subType.canBeQueryString) canBeQueryString = true;
         toQueryStringParts.push(
-            subType.toQueryStringTemplate(
+            subType.toQueryPartTemplate(
                 `self.${fieldName}`,
                 `__queryParts`,
                 key,
@@ -266,10 +266,10 @@ ${toJsonParts.join("\n")}
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        ${canBeQueryString ? `var __queryParts: [String] = []` : ""}
+    public func toURLQueryParts() -> [URLQueryItem] {
+        ${canBeQueryString ? `var __queryParts: [URLQueryItem] = []` : ""}
 ${toQueryStringParts.join("\n")}
-        ${canBeQueryString ? `return __queryParts.joined(separator: "&")` : `return ""`}
+        ${canBeQueryString ? `return __queryParts` : `return []`}
     }
     public func clone() -> ${prefixedTypeName} {
 ${cloneBodyParts.join("\n")}

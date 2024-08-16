@@ -26,11 +26,7 @@ export interface SwiftProperty {
     canBeQueryString: boolean;
     fromJsonTemplate: (input: string, target: string, key: string) => string;
     toJsonTemplate: (input: string, target: string) => string;
-    toQueryStringTemplate: (
-        input: string,
-        target: string,
-        key: string,
-    ) => string;
+    toQueryPartTemplate: (input: string, target: string, key: string) => string;
     cloneTemplate?: (
         input: string,
         key: string,

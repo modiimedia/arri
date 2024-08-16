@@ -147,13 +147,13 @@ public struct Book: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("id=\(self.id)")
-        __queryParts.append("name=\(self.name)")
-        __queryParts.append("createdAt=\(serializeDate(self.createdAt, withQuotes: false))")
-        __queryParts.append("updatedAt=\(serializeDate(self.updatedAt, withQuotes: false))")
-        return __queryParts.joined(separator: "&")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        __queryParts.append(URLQueryItem(name: "name", value: self.name))
+        __queryParts.append(URLQueryItem(name: "createdAt", value: serializeDate(self.createdAt, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "updatedAt", value: serializeDate(self.updatedAt, withQuotes: false)))
+        return __queryParts
     }
     public func clone() -> Book {
         return Book(
@@ -192,10 +192,10 @@ public struct BookParams: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("bookId=\(self.bookId)")
-        return __queryParts.joined(separator: "&")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "bookId", value: self.bookId))
+        return __queryParts
     }
     public func clone() -> BookParams {
         return BookParams(
@@ -236,11 +236,11 @@ public struct NestedObject: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("id=\(self.id)")
-        __queryParts.append("content=\(self.content)")
-        return __queryParts.joined(separator: "&")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        __queryParts.append(URLQueryItem(name: "content", value: self.content))
+        return __queryParts
     }
     public func clone() -> NestedObject {
         return NestedObject(
@@ -410,28 +410,28 @@ public struct ObjectWithEveryType: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("string=\(self.string)")
-        __queryParts.append("boolean=\(self.boolean)")
-        __queryParts.append("timestamp=\(serializeDate(self.timestamp, withQuotes: false))")
-        __queryParts.append("float32=\(self.float32)")
-        __queryParts.append("float64=\(self.float64)")
-        __queryParts.append("int8=\(self.int8)")
-        __queryParts.append("uint8=\(self.uint8)")
-        __queryParts.append("int16=\(self.int16)")
-        __queryParts.append("uint16=\(self.uint16)")
-        __queryParts.append("int32=\(self.int32)")
-        __queryParts.append("uint32=\(self.uint32)")
-        __queryParts.append("int64=\(self.int64)")
-        __queryParts.append("uint64=\(self.uint64)")
-        __queryParts.append("enum=\(self.`enum`.serialValue())")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "string", value: self.string))
+        __queryParts.append(URLQueryItem(name: "boolean", value: "\(self.boolean)"))
+        __queryParts.append(URLQueryItem(name: "timestamp", value: serializeDate(self.timestamp, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "float32", value: "\(self.float32)"))
+        __queryParts.append(URLQueryItem(name: "float64", value: "\(self.float64)"))
+        __queryParts.append(URLQueryItem(name: "int8", value: "\(self.int8)"))
+        __queryParts.append(URLQueryItem(name: "uint8", value: "\(self.uint8)"))
+        __queryParts.append(URLQueryItem(name: "int16", value: "\(self.int16)"))
+        __queryParts.append(URLQueryItem(name: "uint16", value: "\(self.uint16)"))
+        __queryParts.append(URLQueryItem(name: "int32", value: "\(self.int32)"))
+        __queryParts.append(URLQueryItem(name: "uint32", value: "\(self.uint32)"))
+        __queryParts.append(URLQueryItem(name: "int64", value: "\(self.int64)"))
+        __queryParts.append(URLQueryItem(name: "uint64", value: "\(self.uint64)"))
+        __queryParts.append(URLQueryItem(name: "enum", value: self.`enum`.serialValue()))
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/discriminator.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
-        return __queryParts.joined(separator: "&")
+        return __queryParts
     }
     public func clone() -> ObjectWithEveryType {
         var __arrayCloned: [Bool] = []
@@ -544,14 +544,14 @@ public enum Discriminator: ArriClientModel {
                 return __innerVal.toJSONString()
         }        
     }
-    public func toQueryString() -> String {
+    public func toURLQueryParts() -> [URLQueryItem] {
         switch(self) {
             case .a(let __innerVal):
-                return __innerVal.toQueryString()
+                return __innerVal.toURLQueryParts()
             case .b(let __innerVal):
-                return __innerVal.toQueryString()
+                return __innerVal.toURLQueryParts()
             case .c(let __innerVal):
-                return __innerVal.toQueryString()
+                return __innerVal.toURLQueryParts()
         }
     }
     public func clone() -> Discriminator {
@@ -596,11 +596,11 @@ public struct DiscriminatorA: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("typeName=A")
-        __queryParts.append("id=\(self.id)")
-       return __queryParts.joined(separator: "&")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "typeName", value: "A"))
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+       return __queryParts
     }
     public func clone() -> DiscriminatorA {
         return DiscriminatorA(
@@ -645,12 +645,12 @@ public struct DiscriminatorB: ArriClientModel {
     return __json
     }
 
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("typeName=B")
-        __queryParts.append("id=\(self.id)")
-        __queryParts.append("name=\(self.name)")
-        return __queryParts.joined(separator: "&")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "typeName", value: "B"))
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        __queryParts.append(URLQueryItem(name: "name", value: self.name))
+        return __queryParts
     }
     public func clone() -> DiscriminatorB {
         return DiscriminatorB(
@@ -701,13 +701,13 @@ public struct DiscriminatorC: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
-        __queryParts.append("typeName=C")
-        __queryParts.append("id=\(self.id)")
-        __queryParts.append("name=\(self.name)")
-        __queryParts.append("date=\(serializeDate(self.date, withQuotes: false))")
-        return __queryParts.joined(separator: "&")
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "typeName", value: "C"))
+        __queryParts.append(URLQueryItem(name: "id", value: self.id))
+        __queryParts.append(URLQueryItem(name: "name", value: self.name))
+        __queryParts.append(URLQueryItem(name: "date", value: serializeDate(self.date, withQuotes: false)))
+        return __queryParts
     }
     public func clone() -> DiscriminatorC {
         return DiscriminatorC(
@@ -1028,56 +1028,56 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-       var __queryParts: [String] = []
-       if self.string != nil {
-            __queryParts.append("string=\(self.string!)")
+    public func toURLQueryParts() -> [URLQueryItem] {
+var __queryParts: [URLQueryItem] = []
+        if self.string != nil {
+            __queryParts.append(URLQueryItem(name: "string", value: self.string!))
         }
         if self.boolean != nil {
-            __queryParts.append("boolean=\(self.boolean!)")
+            __queryParts.append(URLQueryItem(name: "boolean", value: "\(self.boolean!)"))
         }
         if self.timestamp != nil {
-            __queryParts.append("timestamp=\(serializeDate(self.timestamp!, withQuotes: false))")
+            __queryParts.append(URLQueryItem(name: "timestamp", value: serializeDate(self.timestamp!, withQuotes: false)))
         }
         if self.float32 != nil {
-            __queryParts.append("float32=\(self.float32!)")
+            __queryParts.append(URLQueryItem(name: "float32", value: "\(self.float32!)"))
         }
         if self.float64 != nil {
-            __queryParts.append("float64=\(self.float64!)")
+            __queryParts.append(URLQueryItem(name: "float64", value: "\(self.float64!)"))
         }
         if self.int8 != nil {
-            __queryParts.append("int8=\(self.int8!)")
+            __queryParts.append(URLQueryItem(name: "int8", value: "\(self.int8!)"))
         }
         if self.uint8 != nil {
-            __queryParts.append("uint8=\(self.uint8!)")
+            __queryParts.append(URLQueryItem(name: "uint8", value: "\(self.uint8!)"))
         }
         if self.int16 != nil {
-            __queryParts.append("int16=\(self.int16!)")
+            __queryParts.append(URLQueryItem(name: "int16", value: "\(self.int16!)"))
         }
         if self.uint16 != nil {
-            __queryParts.append("uint16=\(self.uint16!)")
+            __queryParts.append(URLQueryItem(name: "uint16", value: "\(self.uint16!)"))
         }
         if self.int32 != nil {
-            __queryParts.append("int32=\(self.int32!)")
+            __queryParts.append(URLQueryItem(name: "int32", value: "\(self.int32!)"))
         }
         if self.uint32 != nil {
-            __queryParts.append("uint32=\(self.uint32!)")
+            __queryParts.append(URLQueryItem(name: "uint32", value: "\(self.uint32!)"))
         }
         if self.int64 != nil {
-            __queryParts.append("int64=\(self.int64!)")
+            __queryParts.append(URLQueryItem(name: "int64", value: "\(self.int64!)"))
         }
         if self.uint64 != nil {
-            __queryParts.append("uint64=\(self.uint64!)")
+            __queryParts.append(URLQueryItem(name: "uint64", value: "\(self.uint64!)"))
         }
         if self.`enum` != nil {
-            __queryParts.append("enum=\(self.`enum`!.serialValue())")
+            __queryParts.append(URLQueryItem(name: "enum", value: self.`enum`!.serialValue()))
         }
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/discriminator.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.")
-        return __queryParts.joined(separator: "&")
+        return __queryParts
     }
     public func clone() -> ObjectWithOptionalFields {
         var __arrayCloned: [Bool]?
@@ -1388,84 +1388,84 @@ public struct ObjectWithNullableFields: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
-        var __queryParts: [String] = []
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
         if self.string != nil {
-            __queryParts.append("string=\(self.string!)")
+            __queryParts.append(URLQueryItem(name: "string", value: self.string!))
         } else {
-            __queryParts.append("string=null")
+            __queryParts.append(URLQueryItem(name: "string", value: "null"))
         }
         if self.boolean != nil {
-            __queryParts.append("boolean=\(self.boolean!)")
+            __queryParts.append(URLQueryItem(name: "boolean", value: "\(self.boolean!)"))
         } else {
-            __queryParts.append("boolean=null")
+            __queryParts.append(URLQueryItem(name: "boolean", value: "null"))
         }
         if self.timestamp != nil {
-            __queryParts.append("timestamp=\(serializeDate(self.timestamp!, withQuotes: false))")
+            __queryParts.append(URLQueryItem(name: "timestamp", value: serializeDate(self.timestamp!, withQuotes: false)))
         } else {
-            __queryParts.append("timestamp=null")
+            __queryParts.append(URLQueryItem(name: "timestamp", value: "null"))
         }
         if self.float32 != nil {
-            __queryParts.append("float32=\(self.float32!)")
+            __queryParts.append(URLQueryItem(name: "float32", value: "\(self.float32!)"))
         } else {
-            __queryParts.append("float32=null")
+            __queryParts.append(URLQueryItem(name: "float32", value: "null"))
         }
         if self.float64 != nil {
-            __queryParts.append("float64=\(self.float64!)")
+            __queryParts.append(URLQueryItem(name: "float64", value: "\(self.float64!)"))
         } else {
-            __queryParts.append("float64=null")
+            __queryParts.append(URLQueryItem(name: "float64", value: "null"))
         }
         if self.int8 != nil {
-            __queryParts.append("int8=\(self.int8!)")
+            __queryParts.append(URLQueryItem(name: "int8", value: "\(self.int8!)"))
         } else {
-            __queryParts.append("int8=null")
+            __queryParts.append(URLQueryItem(name: "int8", value: "null"))
         }
         if self.uint8 != nil {
-            __queryParts.append("uint8=\(self.uint8!)")
+            __queryParts.append(URLQueryItem(name: "uint8", value: "\(self.uint8!)"))
         } else {
-            __queryParts.append("uint8=null")
+            __queryParts.append(URLQueryItem(name: "uint8", value: "null"))
         }
         if self.int16 != nil {
-            __queryParts.append("int16=\(self.int16!)")
+            __queryParts.append(URLQueryItem(name: "int16", value: "\(self.int16!)"))
         } else {
-            __queryParts.append("int16=null")
+            __queryParts.append(URLQueryItem(name: "int16", value: "null"))
         }
         if self.uint16 != nil {
-            __queryParts.append("uint16=\(self.uint16!)")
+            __queryParts.append(URLQueryItem(name: "uint16", value: "\(self.uint16!)"))
         } else {
-            __queryParts.append("uint16=null")
+            __queryParts.append(URLQueryItem(name: "uint16", value: "null"))
         }
         if self.int32 != nil {
-            __queryParts.append("int32=\(self.int32!)")
+            __queryParts.append(URLQueryItem(name: "int32", value: "\(self.int32!)"))
         } else {
-            __queryParts.append("int32=null")
+            __queryParts.append(URLQueryItem(name: "int32", value: "null"))
         }
         if self.uint32 != nil {
-            __queryParts.append("uint32=\(self.uint32!)")
+            __queryParts.append(URLQueryItem(name: "uint32", value: "\(self.uint32!)"))
         } else {
-            __queryParts.append("uint32=null")
+            __queryParts.append(URLQueryItem(name: "uint32", value: "null"))
         }
         if self.int64 != nil {
-            __queryParts.append("int64=\(self.int64!)")
+            __queryParts.append(URLQueryItem(name: "int64", value: "\(self.int64!)"))
         } else {
-            __queryParts.append("int64=null")
+            __queryParts.append(URLQueryItem(name: "int64", value: "null"))
         }
         if self.uint64 != nil {
-            __queryParts.append("uint64=\(self.uint64!)")
+            __queryParts.append(URLQueryItem(name: "uint64", value: "\(self.uint64!)"))
         } else {
-            __queryParts.append("uint64=null")
+            __queryParts.append(URLQueryItem(name: "uint64", value: "null"))
         }
         if self.`enum` != nil {
-            __queryParts.append("enum=\(self.`enum`!.serialValue())")
+            __queryParts.append(URLQueryItem(name: "enum", value: self.`enum`!.serialValue()))
         } else {
-            __queryParts.append("enum=null")
+            __queryParts.append(URLQueryItem(name: "enum", value: "null"))
         }
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/discriminator.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.")
-        return __queryParts.joined(separator: "&")
+        return __queryParts
     }
     public func clone() -> ObjectWithNullableFields {
         var __arrayCloned: [Bool]?
@@ -1550,10 +1550,10 @@ public final class RecursiveObject: ArriClientModel {
         __json += "}"
         return __json
     }
-    public func toQueryString() -> String {
+    public func toURLQueryParts() -> [URLQueryItem] {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/left.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /RecursiveObject/right.")
-        return ""
+        return []
     }
     public func clone() -> RecursiveObject {
         return RecursiveObject(

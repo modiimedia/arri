@@ -40,20 +40,20 @@ export function swiftStringFromSchema(
             }
             return `${target} += serializeString(input: ${input})`;
         },
-        toQueryStringTemplate(input, target, key) {
+        toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: ${input}!))
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: ${input}!))
                 } else {
-                    ${target}.append("${key}=null") 
+                    ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append("${key}=\\(${input}${schema.nullable ? "!" : ""})")`;
+            return `${target}.append(URLQueryItem(name: "${key}", value: ${input}))`;
         },
         content: "",
     };
@@ -97,20 +97,20 @@ export function swiftBooleanFromSchema(
             }
             return `${target} += "\\(${input})"`;
         },
-        toQueryStringTemplate(input, target, key) {
+        toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 } else {
-                    ${target}.append("${key}=null") 
+                    ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append("${key}=\\(${input})")`;
+            return `${target}.append(URLQueryItem(name: "${key}", value: "\\(${input})"))`;
         },
         content: "",
     };
@@ -154,20 +154,20 @@ export function swiftTimestampFromSchema(
             }
             return `${target} += serializeDate(${input})`;
         },
-        toQueryStringTemplate(input, target, key) {
+        toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(serializeDate(${input}!, withQuotes: false))")
+                    ${target}.append(URLQueryItem(name: "${key}", value: serializeDate(${input}!, withQuotes: false)))
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(serializeDate(${input}!, withQuotes: false))")
+                    ${target}.append(URLQueryItem(name: "${key}", value: serializeDate(${input}!, withQuotes: false)))
                 } else {
-                    ${target}.append("${key}=null") 
+                    ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append("${key}=\\(serializeDate(${input}, withQuotes: false))")`;
+            return `${target}.append(URLQueryItem(name: "${key}", value: serializeDate(${input}, withQuotes: false)))`;
         },
         content: "",
     };
@@ -212,20 +212,20 @@ export function swiftNumberFromSchema(
             }
             return `${target} += "\\(${input})"`;
         },
-        toQueryStringTemplate(input, target, key) {
+        toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 } else {
-                    ${target}.append("${key}=null") 
+                    ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append("${key}=\\(${input})")`;
+            return `${target}.append(URLQueryItem(name: "${key}", value: "\\(${input})"))`;
         },
         content: "",
     };
@@ -268,20 +268,20 @@ export function swiftLargeIntFromSchema(
             }
             return `${target} += "\\"\\(${input})\\""`;
         },
-        toQueryStringTemplate(input, target, key) {
+        toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 }`;
             }
             if (schema.nullable) {
                 return `if ${input} != nil {
-                    ${target}.append("${key}=\\(${input}!)")
+                    ${target}.append(URLQueryItem(name: "${key}", value: "\\(${input}!)"))
                 } else {
-                    ${target}.append("${key}=null") 
+                    ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append("${key}=\\(${input})")`;
+            return `${target}.append(URLQueryItem(name: "${key}", value: "\\(${input})"))`;
         },
         content: "",
     };

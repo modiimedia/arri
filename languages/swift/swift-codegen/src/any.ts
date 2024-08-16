@@ -32,7 +32,7 @@ export function swiftAnyFromSchema(
             }
             return `${target} += serializeAny(input: ${input})`;
         },
-        toQueryStringTemplate(_, __, ___) {
+        toQueryPartTemplate(_, __, ___) {
             return `print("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",

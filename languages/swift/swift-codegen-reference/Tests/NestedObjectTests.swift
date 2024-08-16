@@ -26,7 +26,7 @@ final class NestedObjectTests: XCTestCase {
         XCTAssertEqual(specialCharsControl.toJSONString(), specialCharsObjectJson)
     }
     func testToQueryString() throws {
-        let expectedResult = "id=1&content=hello world"
-        XCTAssertEqual(expectedResult, noSpecialCharsControl.toQueryString())
+        let expectedResult = [URLQueryItem(name: "id", value: "1"), URLQueryItem(name: "content", value: "hello world")]
+        XCTAssertEqual(expectedResult, noSpecialCharsControl.toURLQueryParts())
     }
 }

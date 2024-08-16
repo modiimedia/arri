@@ -22,8 +22,13 @@ final class BookTests: XCTestCase {
         XCTAssertEqual(control.toJSONString(), bookJson)
     }
     func testToQueryString() {
-        let expectedResult = "id=1&name=The Adventures of Tom Sawyer&createdAt=2001-01-01T16:00:00.000Z&updatedAt=2001-01-01T16:00:00.000Z"
-        XCTAssertEqual(expectedResult, control.toQueryString())
+        let expectedResult = [
+            URLQueryItem(name: "id", value: "1"),
+            URLQueryItem(name: "name", value: "The Adventures of Tom Sawyer"),
+            URLQueryItem(name: "createdAt", value: serializeDate(targetDate, withQuotes: false)),
+            URLQueryItem(name: "updatedAt", value: serializeDate(targetDate, withQuotes: false))
+        ]
+        XCTAssertEqual(expectedResult, control.toURLQueryParts())
     }
     func testCopyWith() {
         var clonedControl = control.clone()
