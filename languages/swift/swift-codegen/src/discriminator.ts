@@ -32,32 +32,32 @@ export function swiftTaggedUnionFromSchema(
         canBeQueryString: false,
         fromJsonTemplate(input, target, _) {
             if (context.isOptional) {
-                return `if ${input}.exists() {
+                return `        if ${input}.exists() {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
             if (schema.nullable) {
-                return `if ${input}.dictionary != nil {
+                return `        if ${input}.dictionary != nil {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
-            return `${target} = ${prefixedTypeName}(json: ${input})`;
+            return `        ${target} = ${prefixedTypeName}(json: ${input})`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `${target} += ${input}!.toJSONString()`;
+                return `        ${target} += ${input}!.toJSONString()`;
             }
             if (schema.nullable) {
-                return `if ${input} != nil {
+                return `        if ${input} != nil {
                     ${target} += ${input}!.toJSONString()
                 } else {
                     ${target} += "null" 
                 }`;
             }
-            return `${target} += ${input}.toJSONString()`;
+            return `        ${target} += ${input}.toJSONString()`;
         },
         toQueryPartTemplate(_, __, ___) {
-            return `print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, _) {
             return {

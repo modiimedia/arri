@@ -36,12 +36,15 @@ export function swiftHttpProcedureFromSchema(
     context: GeneratorContext,
 ): string {
     const rpcName = getRpcName(context.instancePath);
-    const comments = codeComments({
-        metadata: {
-            description: schema.description,
-            isDeprecated: schema.isDeprecated,
+    const comments = codeComments(
+        {
+            metadata: {
+                description: schema.description,
+                isDeprecated: schema.isDeprecated,
+            },
         },
-    });
+        "    ",
+    );
     const params = schema.params
         ? `${context.typePrefix}${validTypeName(schema.params)}`
         : undefined;
@@ -49,23 +52,23 @@ export function swiftHttpProcedureFromSchema(
         ? `${context.typePrefix}${validTypeName(schema.response)}`
         : undefined;
     if (schema.isEventStream) {
-        return `${comments}public func ${rpcName}(${params ? `_ params: ${params}, ` : ""}options: EventSourceOptions<${response ?? "EmptyArriModel"}>) -> Task<(), Never> {
-            let task = Task {
-                var eventSource = EventSource<${response ?? "EmptyArriModel"}>(
-                    url: "\\(self.baseURL)${schema.path}",
-                    method: "${schema.method.toUpperCase()}",
-                    headers: self.headers,
-                    body: ${params ? "params.toJSONString()" : "nil"},
-                    delegate: self.delegate,
-                    clientVersion: "${context.clientVersion}",
-                    options: options
-                )
-                await eventSource.sendRequest()
-            }
-            return task
-        }`;
+        return `${comments}    public func ${rpcName}(${params ? `_ params: ${params}, ` : ""}options: EventSourceOptions<${response ?? "EmptyArriModel"}>) -> Task<(), Never> {
+        let task = Task {
+            var eventSource = EventSource<${response ?? "EmptyArriModel"}>(
+                url: "\\(self.baseURL)${schema.path}",
+                method: "${schema.method.toUpperCase()}",
+                headers: self.headers,
+                body: ${params ? "params.toJSONString()" : "nil"},
+                delegate: self.delegate,
+                clientVersion: "${context.clientVersion}",
+                options: options
+            )
+            await eventSource.sendRequest()
+        }
+        return task
+    }`;
     }
-    return `${comments}public func ${rpcName}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
+    return `${comments}    public func ${rpcName}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
         ${response ? `let result: ${response} = ` : "let _: EmptyArriModel = "}try await parsedArriHttpRequest(
             delegate: self.delegate,
             url: "\\(self.baseURL)${schema.path}",
@@ -180,7 +183,7 @@ ${services.map((service) => `    public let ${service.key}: ${service.typeName}`
         self.headers = headers
 ${services
     .map(
-        (service) => `       self.${service.key} = ${service.typeName}(
+        (service) => `        self.${service.key} = ${service.typeName}(
             baseURL: baseURL,
             delegate: delegate,
             headers: headers

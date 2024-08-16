@@ -28,12 +28,12 @@ export function swiftAnyFromSchema(
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `${target} += serializeAny(input: ${input}!)`;
+                return `        ${target} += serializeAny(input: ${input}!)`;
             }
-            return `${target} += serializeAny(input: ${input})`;
+            return `        ${target} += serializeAny(input: ${input})`;
         },
         toQueryPartTemplate(_, __, ___) {
-            return `print("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `        print("[WARNING] any's cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: "",
     };

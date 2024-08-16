@@ -25,32 +25,32 @@ export function swiftObjectFromSchema(
         canBeQueryString: false,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `if ${input}.exists() {
+                return `         if ${input}.exists() {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
             if (schema.nullable) {
-                return `if ${input}.dictionary != nil {
+                return `        if ${input}.dictionary != nil {
                     ${target} = ${prefixedTypeName}(json: ${input})
                 }`;
             }
-            return `${target} = ${prefixedTypeName}(json: ${input})`;
+            return `        ${target} = ${prefixedTypeName}(json: ${input})`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `${target} += ${input}!.toJSONString()`;
+                return `        ${target} += ${input}!.toJSONString()`;
             }
             if (schema.nullable) {
-                return `if ${input} != nil {
+                return `        if ${input} != nil {
                     ${target} += ${input}!.toJSONString()
                 } else {
                     ${target} += "null" 
                 }`;
             }
-            return `${target} += ${input}.toJSONString()`;
+            return `        ${target} += ${input}.toJSONString()`;
         },
         toQueryPartTemplate(_, __, ___) {
-            return `print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, _key) {
             let fieldContent = `${input}.clone()`;
@@ -87,13 +87,13 @@ export function swiftObjectFromSchema(
         const discriminatorKey = validSwiftKey(context.discriminatorKey);
         fieldNames.push(discriminatorKey);
         fieldNameParts.push(
-            `let ${discriminatorKey}: String = "${context.discriminatorValue}"`,
+            `    let ${discriminatorKey}: String = "${context.discriminatorValue}"`,
         );
         toJsonParts.push(
-            `      __json += "\\"${context.discriminatorKey}\\":\\"${context.discriminatorValue}\\""`,
+            `        __json += "\\"${context.discriminatorKey}\\":\\"${context.discriminatorValue}\\""`,
         );
         toQueryStringParts.push(
-            `       __queryParts.append(URLQueryItem(name: "${context.discriminatorKey}", value: "${context.discriminatorValue}"))`,
+            `        __queryParts.append(URLQueryItem(name: "${context.discriminatorKey}", value: "${context.discriminatorValue}"))`,
         );
     }
     for (const key of Object.keys(schema.properties)) {
@@ -115,15 +115,15 @@ export function swiftObjectFromSchema(
         fieldNames.push(fieldName);
         if (subType.defaultValue) {
             fieldNameParts.push(
-                `${codeComments(subSchema)}public var ${fieldName}: ${subType.typeName} = ${subType.defaultValue}`,
+                `${codeComments(subSchema, "    ")}    public var ${fieldName}: ${subType.typeName} = ${subType.defaultValue}`,
             );
         } else {
             fieldNameParts.push(
-                `${codeComments(subSchema)}public var ${fieldName}: ${subType.typeName}`,
+                `${codeComments(subSchema, "    ")}    public var ${fieldName}: ${subType.typeName}`,
             );
         }
-        initArgParts.push(`${fieldName}: ${subType.typeName}`);
-        initBodyParts.push(`self.${fieldName} = ${fieldName}`);
+        initArgParts.push(`        ${fieldName}: ${subType.typeName}`);
+        initBodyParts.push(`            self.${fieldName} = ${fieldName}`);
         initFromJsonParts.push(
             subType.fromJsonTemplate(
                 `json["${key}"]`,
@@ -132,9 +132,9 @@ export function swiftObjectFromSchema(
             ),
         );
         if (numKeys > 0) {
-            toJsonParts.push(`__json += ",\\"${key}\\":"`);
+            toJsonParts.push(`        __json += ",\\"${key}\\":"`);
         } else {
-            toJsonParts.push(`__json += "\\"${key}\\":"`);
+            toJsonParts.push(`        __json += "\\"${key}\\":"`);
         }
         toJsonParts.push(subType.toJsonTemplate(`self.${fieldName}`, `__json`));
         if (subType.canBeQueryString) canBeQueryString = true;
@@ -151,10 +151,12 @@ export function swiftObjectFromSchema(
         );
         if (cloneResult) {
             cloneBodyParts.push(cloneResult.bodyContent);
-            cloneFieldParts.push(`${fieldName}: ${cloneResult.fieldContent}`);
+            cloneFieldParts.push(
+                `            ${fieldName}: ${cloneResult.fieldContent}`,
+            );
         } else {
             cloneFieldParts.push(
-                `${fieldName.split("`").join("")}: self.${fieldName}`,
+                `            ${fieldName.split("`").join("")}: self.${fieldName}`,
             );
         }
         numKeys++;
@@ -177,10 +179,10 @@ export function swiftObjectFromSchema(
         const fieldName = validSwiftKey(key);
         fieldNames.push(fieldName);
         fieldNameParts.push(
-            `${codeComments(subSchema)}public var ${fieldName}: ${subType.typeName}`,
+            `${codeComments(subSchema, "    ")}    public var ${fieldName}: ${subType.typeName}`,
         );
-        initArgParts.push(`${fieldName}: ${subType.typeName}`);
-        initBodyParts.push(`self.${fieldName} = ${fieldName}`);
+        initArgParts.push(`        ${fieldName}: ${subType.typeName}`);
+        initBodyParts.push(`            self.${fieldName} = ${fieldName}`);
         initFromJsonParts.push(
             subType.fromJsonTemplate(
                 `json["${key}"]`,
@@ -190,20 +192,20 @@ export function swiftObjectFromSchema(
         );
         let toJsonContent = ``;
         if (numKeys > 0) {
-            toJsonContent += `__json += ",\\"${key}\\":"\n`;
+            toJsonContent += `        __json += ",\\"${key}\\":"\n`;
         } else {
             if (numOptionalKeys > 0) {
-                toJsonContent += `if __numKeys > 0 {
+                toJsonContent += `            if __numKeys > 0 {
                     __json += ","
                 }\n`;
             }
-            toJsonContent += `__json += "\\"${key}\\":"\n`;
+            toJsonContent += `            __json += "\\"${key}\\":"\n`;
         }
         toJsonContent += subType.toJsonTemplate(`self.${fieldName}`, `__json`);
         if (numKeys === 0) {
-            toJsonContent += `\n__numKeys += 1`;
+            toJsonContent += `            \n__numKeys += 1`;
         }
-        toJsonParts.push(`if self.${fieldName} != nil {
+        toJsonParts.push(`        if self.${fieldName} != nil {
             ${toJsonContent}
         }`);
         if (subType.canBeQueryString) canBeQueryString = true;
@@ -220,10 +222,12 @@ export function swiftObjectFromSchema(
         );
         if (cloneResult) {
             cloneBodyParts.push(cloneResult.bodyContent);
-            cloneFieldParts.push(`${fieldName}: ${cloneResult.fieldContent}`);
+            cloneFieldParts.push(
+                `            ${fieldName}: ${cloneResult.fieldContent}`,
+            );
         } else {
             cloneFieldParts.push(
-                `${fieldName.split("`").join("")}: self.${fieldName}`,
+                `            ${fieldName.split("`").join("")}: self.${fieldName}`,
             );
         }
         numOptionalKeys++;

@@ -31,26 +31,26 @@ export function swiftDictionaryFromSchema(
         defaultValue,
         canBeQueryString: false,
         fromJsonTemplate(input, target, _) {
-            const mainContent = `${target} = Dictionary()
+            const mainContent = `        ${target} = Dictionary()
             for (__key, __value) in ${input}.dictionary ?? Dictionary() {
                 var __parsedValue: ${subType.typeName}
                 ${subType.fromJsonTemplate(`__value`, `__parsedValue`, `__parsedValue`)}
                 ${target}${isNullable ? "!" : ""}[__key] = __parsedValue            
             }`;
             if (context.isOptional) {
-                return `if ${input}.exists() {
-                    ${mainContent}
+                return `        if ${input}.exists() {
+${mainContent}
                 }`;
             }
             if (schema.nullable) {
-                return `if ${input}.dictionary != nil {
-                    ${mainContent}
+                return `        if ${input}.dictionary != nil {
+${mainContent}
                 }`;
             }
             return mainContent;
         },
         toJsonTemplate(input, target) {
-            const mainContent = `${target} += "{"
+            const mainContent = `        ${target} += "{"
             for (__index, (__key, __value)) in ${input}${isNullable ? "!" : ""}.enumerated() {
                 if __index > 0 {
                     ${target} += ","
@@ -69,7 +69,7 @@ export function swiftDictionaryFromSchema(
             return mainContent;
         },
         toQueryPartTemplate(_, __, ___) {
-            return `print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, key) {
             const innerKey = validSwiftKey(key);

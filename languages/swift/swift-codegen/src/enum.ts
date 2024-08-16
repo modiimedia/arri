@@ -30,44 +30,44 @@ export function swiftEnumFromSchema(
         canBeQueryString: true,
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `if ${input}.exists() {
+                return `        if ${input}.exists() {
                     ${target} = ${prefixedTypeName}(serialValue: ${input}.string ?? "")
                 }`;
             }
             if (schema.nullable) {
-                return `if ${input}.string != nil {
+                return `        if ${input}.string != nil {
                     ${target} = ${prefixedTypeName}(serialValue: ${input}.string ?? "")
                 }`;
             }
-            return `${target} = ${prefixedTypeName}(serialValue: ${input}.string ?? "")`;
+            return `        ${target} = ${prefixedTypeName}(serialValue: ${input}.string ?? "")`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {
-                return `${target} += "\\"\\(${input}!.serialValue())\\""`;
+                return `        ${target} += "\\"\\(${input}!.serialValue())\\""`;
             }
             if (schema.nullable) {
-                return `if ${input} != nil {
+                return `        if ${input} != nil {
                     ${target} += "\\"\\(${input}!.serialValue())\\""
                 } else {
                     ${target} += "null" 
                 }`;
             }
-            return `${target} += "\\"\\(${input}.serialValue())\\""`;
+            return `        ${target} += "\\"\\(${input}.serialValue())\\""`;
         },
         toQueryPartTemplate(input, target, key) {
             if (context.isOptional) {
-                return `if ${input} != nil {
+                return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: ${input}!.serialValue()))
                 }`;
             }
             if (schema.nullable) {
-                return `if ${input} != nil {
+                return `        if ${input} != nil {
                     ${target}.append(URLQueryItem(name: "${key}", value: ${input}!.serialValue()))
                 } else {
                     ${target}.append(URLQueryItem(name: "${key}", value: "null")) 
                 }`;
             }
-            return `${target}.append(URLQueryItem(name: "${key}", value: ${input}.serialValue()))`;
+            return `        ${target}.append(URLQueryItem(name: "${key}", value: ${input}.serialValue()))`;
         },
         content: "",
     };

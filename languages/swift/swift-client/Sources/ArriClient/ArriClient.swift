@@ -63,10 +63,10 @@ public enum ArriRequestError: Error {
 }
 
 public struct ArriResponseError: ArriClientModel, Error {
-    var code: UInt = 0
-    var message: String = ""
-    var data: JSON?
-    var stack: [String]?
+    public var code: UInt = 0
+    public var message: String = ""
+    public var data: JSON?
+    public var stack: [String]?
     public init(
         code: UInt,
         message: String,

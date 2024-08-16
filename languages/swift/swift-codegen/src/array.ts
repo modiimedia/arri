@@ -32,26 +32,26 @@ export function swiftArrayFromSchema(
         canBeQueryString: false,
         fromJsonTemplate(input, target, key) {
             const innerKey = validSwiftKey(key);
-            const mainContent = `${target} = []
+            const mainContent = `        ${target} = []
             for __${innerKey}JsonElement in ${input}.array ?? [] {
                 var __${innerKey}JsonElementValue: ${subType.typeName}
                 ${subType.fromJsonTemplate(`__${innerKey}JsonElement`, `__${innerKey}JsonElementValue`, `element`)}
                 ${target}${isNullable ? "!" : ""}.append(__${innerKey}JsonElementValue)
             }`;
             if (context.isOptional) {
-                return `if ${input}.exists() {
-                ${mainContent}
+                return `        if ${input}.exists() {
+${mainContent}
                 }`;
             }
             if (schema.nullable) {
-                return `if ${input}.array != nil {
-                    ${mainContent}
+                return `        if ${input}.array != nil {
+${mainContent}
                 }`;
             }
             return mainContent;
         },
         toJsonTemplate(input, target) {
-            const mainContent = `${target} += "["
+            const mainContent = `       ${target} += "["
             for (__index, __element) in ${input}${isNullable ? "!" : ""}.enumerated() {
                 if __index > 0 {
                     ${target} += ","
@@ -60,7 +60,7 @@ export function swiftArrayFromSchema(
             }
             ${target} += "]"`;
             if (schema.nullable) {
-                return `if ${input} != nil {
+                return `        if ${input} != nil {
                     ${mainContent}
                 } else {
                     ${target} += "null" 
@@ -69,7 +69,7 @@ export function swiftArrayFromSchema(
             return mainContent;
         },
         toQueryPartTemplate(_, __, ___) {
-            return `print("[WARNING] arrays cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `        print("[WARNING] arrays cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, key) {
             const innerKey = validSwiftKey(key);

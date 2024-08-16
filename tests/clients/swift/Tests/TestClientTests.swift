@@ -12,6 +12,13 @@ final class TestSwiftClientTests: XCTestCase {
             return headers
         }
     )
+    let unauthenticatedClient = TestClient(
+        baseURL: "http://localhost:2020",
+        delegate: DefaultRequestDelegate(),
+        headers: {
+            return Dictionary()
+        }
+    )
     let testDate = Date(timeIntervalSince1970: 500000)
     func testSendObject() async throws {
         let input = ObjectWithEveryType(
@@ -111,6 +118,56 @@ final class TestSwiftClientTests: XCTestCase {
         clonedInput.nestedObject?.data?.id = "I have been changed"
         XCTAssertNotEqual(input, clonedInput)
     }
+    
+    func testSendPartialObject() async throws {
+        let input = ObjectWithEveryOptionalType(
+            any: nil,
+            boolean: nil,
+            string: nil,
+            timestamp: nil,
+            float32: nil,
+            float64: nil,
+            int8: nil,
+            uint8: nil,
+            int16: nil,
+            uint16: nil,
+            int32: nil,
+            uint32: nil,
+            int64: nil,
+            uint64: nil,
+            enumerator: nil,
+            array: nil,
+            object: nil,
+            record: nil,
+            discriminator: nil,
+            nestedObject: nil,
+            nestedArray: [
+                [ObjectWithEveryOptionalTypeNestedArrayElementElement(id: "1", timestamp: testDate)],
+                [],
+            ]
+        )
+        let result = try await client.tests.sendPartialObject(input)
+        XCTAssertEqual(input, result)
+        var clonedInput = input.clone()
+        XCTAssertEqual(input, clonedInput)
+        clonedInput.int8 = -10
+        XCTAssertNotEqual(input, clonedInput)
+    }
+
+    func testSendUnauthenticatedRequest() async {
+        var didError = false
+        do {
+            let _ = try await unauthenticatedClient.tests.sendObject(ObjectWithEveryType())
+        } catch {
+            didError = true
+            XCTAssert(error is ArriResponseError)
+            if error is ArriResponseError {
+                let e = error as! ArriResponseError
+                XCTAssertEqual(e.code, 401)
+            }
+        }
+        XCTAssert(didError)
+    }
 
     func testRpcWithNoParams() async throws {
         let getReqResult = try await client.tests.emptyParamsGetRequest()
@@ -124,5 +181,55 @@ final class TestSwiftClientTests: XCTestCase {
         let postReqResult: () = try await client.tests.emptyResponsePostRequest(DefaultPayload(message: "Hello world"))
         XCTAssert(getReqResult as Any is Void)
         XCTAssert(postReqResult as Any is Void)
+    }
+
+    func testSendRecursiveObject() async throws {
+        let input = RecursiveObject(
+            left: RecursiveObject(
+                left: nil, 
+                right: nil, 
+                value: "A"
+            ), 
+            right: RecursiveObject(
+                left: nil, 
+                right: RecursiveObject(
+                    left: nil,
+                    right: nil,
+                    value: "B"
+                ),
+                value: "AA"
+            ),
+            value: "1"
+        )
+        let result = try await client.tests.sendRecursiveObject(input)
+        XCTAssertEqual(input, result)
+    }
+
+    func testSendRecursiveUnion() async throws {
+        let input = RecursiveUnion.children(RecursiveUnionChildren(data: [
+            RecursiveUnion.child(
+                RecursiveUnionChild(
+                    data: RecursiveUnion.text(
+                        RecursiveUnionText(data: "hello world")
+                    )
+                )
+            ),
+            RecursiveUnion.shape(
+                RecursiveUnionShape(
+                    data: RecursiveUnionShapeData(
+                        width: 1,
+                        height: 1.5,
+                        color: "blue"
+                    )
+                )
+            ),
+            RecursiveUnion.children(
+                RecursiveUnionChildren(
+                    data: []
+                )
+            )
+        ]))
+        let result = try await client.tests.sendRecursiveUnion(input)
+        XCTAssertEqual(input, result)
     }
 }
