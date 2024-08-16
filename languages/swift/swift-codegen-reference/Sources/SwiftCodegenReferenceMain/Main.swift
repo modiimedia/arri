@@ -28,7 +28,7 @@ struct Main {
         var msgCount = 0
         var errorCount = 0
         await client2.books.watchBook(
-            Book(), 
+            BookParams(), 
             options: EventSourceOptions(
                 onMessage: {book, controller in 
                     print("NEW BOOK: \(book)")

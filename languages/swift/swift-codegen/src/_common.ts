@@ -50,7 +50,9 @@ export function isNullableType(
 
 export function validTypeName(input: string): string {
     const formatted = removeDisallowedChars(
-        pascalCase(input, { normalize: true }),
+        pascalCase(input.split("[").join("_").split("]").join("_"), {
+            normalize: true,
+        }),
         illegalPropertyChars,
     );
     if (reservedKeywords[formatted]) {

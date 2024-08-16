@@ -504,7 +504,7 @@ public var object: ObjectWithEveryTypeObject = ObjectWithEveryTypeObject()
 public var record: Dictionary<String, Bool> = Dictionary()
 public var discriminator: ObjectWithEveryTypeDiscriminator = ObjectWithEveryTypeDiscriminator()
 public var nestedObject: ObjectWithEveryTypeNestedObject = ObjectWithEveryTypeNestedObject()
-public var nestedArray: [[ObjectWithEveryTypeNestedArrayelementelement]] = []
+public var nestedArray: [[ObjectWithEveryTypeNestedArrayElementElement]] = []
     public init(
 any: JSON,
 boolean: Bool,
@@ -526,7 +526,7 @@ object: ObjectWithEveryTypeObject,
 record: Dictionary<String, Bool>,
 discriminator: ObjectWithEveryTypeDiscriminator,
 nestedObject: ObjectWithEveryTypeNestedObject,
-nestedArray: [[ObjectWithEveryTypeNestedArrayelementelement]]
+nestedArray: [[ObjectWithEveryTypeNestedArrayElementElement]]
     ) {
 self.any = any
 self.boolean = boolean
@@ -569,22 +569,26 @@ self.uint64 = UInt64(json["uint64"].string ?? "0") ?? 0
 self.enumerator = ObjectWithEveryTypeEnumerator(serialValue: json["enumerator"].string ?? "")
 self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+                var __arrayJsonElementValue: Bool
+                __arrayJsonElementValue = __arrayJsonElement.bool ?? false
                 self.array.append(__arrayJsonElementValue)
             }
 self.object = ObjectWithEveryTypeObject(json: json["object"])
 self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                let __parsedValue = __value.bool ?? false
+                var __parsedValue: Bool
+                __parsedValue = __value.bool ?? false
                 self.record[__key] = __parsedValue            
             }
 self.discriminator = ObjectWithEveryTypeDiscriminator(json: json["discriminator"])
 self.nestedObject = ObjectWithEveryTypeNestedObject(json: json["nestedObject"])
 self.nestedArray = []
             for __nestedArrayJsonElement in json["nestedArray"].array ?? [] {
-                let __nestedArrayJsonElementValue = []
+                var __nestedArrayJsonElementValue: [ObjectWithEveryTypeNestedArrayElementElement]
+                __nestedArrayJsonElementValue = []
             for __elementJsonElement in __nestedArrayJsonElement.array ?? [] {
-                let __elementJsonElementValue = ObjectWithEveryTypeNestedArrayelementelement(json: __elementJsonElement)
+                var __elementJsonElementValue: ObjectWithEveryTypeNestedArrayElementElement
+                __elementJsonElementValue = ObjectWithEveryTypeNestedArrayElementElement(json: __elementJsonElement)
                 __nestedArrayJsonElementValue.append(__elementJsonElementValue)
             }
                 self.nestedArray.append(__nestedArrayJsonElementValue)
@@ -714,12 +718,12 @@ var __recordCloned: Dictionary<String, Bool> = Dictionary()
                     }
 
 
-var __nestedArrayCloned: [[ObjectWithEveryTypeNestedArrayelementelement]] = []
+var __nestedArrayCloned: [[ObjectWithEveryTypeNestedArrayElementElement]] = []
                 for __nestedArrayElement in self.nestedArray {
-                    var __nestedArrayElementCloned: [ObjectWithEveryTypeNestedArrayelementelement] = []
+                    var __nestedArrayElementCloned: [ObjectWithEveryTypeNestedArrayElementElement] = []
                 for __nestedArrayElementElement in __nestedArrayElement {
                     
-                    __nestedArrayElementCloned.append(self.__nestedArrayElementElement.clone())
+                    __nestedArrayElementCloned.append(__nestedArrayElementElement.clone())
                 }
                     __nestedArrayCloned.append(__nestedArrayElementCloned)
                 }
@@ -1157,7 +1161,7 @@ timestamp: self.timestamp
 }
     
 
-public struct ObjectWithEveryTypeNestedArrayelementelement: ArriClientModel {
+public struct ObjectWithEveryTypeNestedArrayElementElement: ArriClientModel {
 public var id: String = ""
 public var timestamp: Date = Date()
     public init(
@@ -1196,9 +1200,9 @@ __queryParts.append("id=\(self.id)")
 __queryParts.append("timestamp=\(serializeDate(self.timestamp, withQuotes: false))")
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> ObjectWithEveryTypeNestedArrayelementelement {
+    public func clone() -> ObjectWithEveryTypeNestedArrayElementElement {
 
-        return ObjectWithEveryTypeNestedArrayelementelement(
+        return ObjectWithEveryTypeNestedArrayElementElement(
 id: self.id,
 timestamp: self.timestamp
         )
@@ -1228,7 +1232,7 @@ public var object: ObjectWithEveryNullableTypeObject?
 public var record: Dictionary<String, Bool?>?
 public var discriminator: ObjectWithEveryNullableTypeDiscriminator?
 public var nestedObject: ObjectWithEveryNullableTypeNestedObject?
-public var nestedArray: [[ObjectWithEveryNullableTypeNestedArrayelementelement?]?]?
+public var nestedArray: [[ObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
     public init(
 any: JSON,
 boolean: Bool?,
@@ -1250,7 +1254,7 @@ object: ObjectWithEveryNullableTypeObject?,
 record: Dictionary<String, Bool?>?,
 discriminator: ObjectWithEveryNullableTypeDiscriminator?,
 nestedObject: ObjectWithEveryNullableTypeNestedObject?,
-nestedArray: [[ObjectWithEveryNullableTypeNestedArrayelementelement?]?]?
+nestedArray: [[ObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
     ) {
 self.any = any
 self.boolean = boolean
@@ -1324,7 +1328,8 @@ if json["enumerator"].string != nil {
 if json["array"].array != nil {
                     self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                let if __arrayJsonElement.bool != nil {
+                var __arrayJsonElementValue: Bool?
+                if __arrayJsonElement.bool != nil {
                     __arrayJsonElementValue = __arrayJsonElement.bool
                 }
                 self.array!.append(__arrayJsonElementValue)
@@ -1336,7 +1341,8 @@ if json["object"].dictionary != nil {
 if json["record"].dictionary != nil {
                     self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                let if __value.bool != nil {
+                var __parsedValue: Bool?
+                if __value.bool != nil {
                     __parsedValue = __value.bool
                 }
                 self.record![__key] = __parsedValue            
@@ -1351,11 +1357,13 @@ if json["nestedObject"].dictionary != nil {
 if json["nestedArray"].array != nil {
                     self.nestedArray = []
             for __nestedArrayJsonElement in json["nestedArray"].array ?? [] {
-                let if __nestedArrayJsonElement.array != nil {
+                var __nestedArrayJsonElementValue: [ObjectWithEveryNullableTypeNestedArrayElementElement?]?
+                if __nestedArrayJsonElement.array != nil {
                     __nestedArrayJsonElementValue = []
             for __elementJsonElement in __nestedArrayJsonElement.array ?? [] {
-                let if __elementJsonElement.dictionary != nil {
-                    __elementJsonElementValue = ObjectWithEveryNullableTypeNestedArrayelementelement(json: __elementJsonElement)
+                var __elementJsonElementValue: ObjectWithEveryNullableTypeNestedArrayElementElement?
+                if __elementJsonElement.dictionary != nil {
+                    __elementJsonElementValue = ObjectWithEveryNullableTypeNestedArrayElementElement(json: __elementJsonElement)
                 }
                 __nestedArrayJsonElementValue!.append(__elementJsonElementValue)
             }
@@ -1646,16 +1654,16 @@ var __recordCloned: Dictionary<String, Bool?>?
                     }
 
 
-var __nestedArrayCloned: [[ObjectWithEveryNullableTypeNestedArrayelementelement?]?]?
+var __nestedArrayCloned: [[ObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
                 if self.nestedArray != nil {
                     __nestedArrayCloned = []
                     for __nestedArrayElement in self.nestedArray! {
-                        var __nestedArrayElementCloned: [ObjectWithEveryNullableTypeNestedArrayelementelement?]?
+                        var __nestedArrayElementCloned: [ObjectWithEveryNullableTypeNestedArrayElementElement?]?
                 if __nestedArrayElement != nil {
                     __nestedArrayElementCloned = []
                     for __nestedArrayElementElement in __nestedArrayElement! {
                         
-                        __nestedArrayElementCloned!.append(self.__nestedArrayElementElement?.clone())
+                        __nestedArrayElementCloned!.append(__nestedArrayElementElement?.clone())
                     }
                 }
                         __nestedArrayCloned!.append(__nestedArrayElementCloned)
@@ -2227,7 +2235,7 @@ timestamp: self.timestamp
 }
     
 
-public struct ObjectWithEveryNullableTypeNestedArrayelementelement: ArriClientModel {
+public struct ObjectWithEveryNullableTypeNestedArrayElementElement: ArriClientModel {
 public var id: String?
 public var timestamp: Date?
     public init(
@@ -2286,9 +2294,9 @@ if self.timestamp != nil {
                 }
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> ObjectWithEveryNullableTypeNestedArrayelementelement {
+    public func clone() -> ObjectWithEveryNullableTypeNestedArrayElementElement {
 
-        return ObjectWithEveryNullableTypeNestedArrayelementelement(
+        return ObjectWithEveryNullableTypeNestedArrayElementElement(
 id: self.id,
 timestamp: self.timestamp
         )
@@ -2318,7 +2326,7 @@ public var object: ObjectWithEveryOptionalTypeObject?
 public var record: Dictionary<String, Bool>?
 public var discriminator: ObjectWithEveryOptionalTypeDiscriminator?
 public var nestedObject: ObjectWithEveryOptionalTypeNestedObject?
-public var nestedArray: [[ObjectWithEveryOptionalTypeNestedArrayelementelement]]?
+public var nestedArray: [[ObjectWithEveryOptionalTypeNestedArrayElementElement]]?
     public init(
 any: JSON?,
 boolean: Bool?,
@@ -2340,7 +2348,7 @@ object: ObjectWithEveryOptionalTypeObject?,
 record: Dictionary<String, Bool>?,
 discriminator: ObjectWithEveryOptionalTypeDiscriminator?,
 nestedObject: ObjectWithEveryOptionalTypeNestedObject?,
-nestedArray: [[ObjectWithEveryOptionalTypeNestedArrayelementelement]]?
+nestedArray: [[ObjectWithEveryOptionalTypeNestedArrayElementElement]]?
     ) {
 self.any = any
 self.boolean = boolean
@@ -2414,7 +2422,8 @@ if json["enumerator"].exists() {
 if json["array"].exists() {
                 self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+                var __arrayJsonElementValue: Bool
+                __arrayJsonElementValue = __arrayJsonElement.bool ?? false
                 self.array!.append(__arrayJsonElementValue)
             }
                 }
@@ -2424,7 +2433,8 @@ if json["object"].exists() {
 if json["record"].exists() {
                     self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                let __parsedValue = __value.bool ?? false
+                var __parsedValue: Bool
+                __parsedValue = __value.bool ?? false
                 self.record![__key] = __parsedValue            
             }
                 }
@@ -2437,9 +2447,11 @@ if json["nestedObject"].exists() {
 if json["nestedArray"].exists() {
                 self.nestedArray = []
             for __nestedArrayJsonElement in json["nestedArray"].array ?? [] {
-                let __nestedArrayJsonElementValue = []
+                var __nestedArrayJsonElementValue: [ObjectWithEveryOptionalTypeNestedArrayElementElement]
+                __nestedArrayJsonElementValue = []
             for __elementJsonElement in __nestedArrayJsonElement.array ?? [] {
-                let __elementJsonElementValue = ObjectWithEveryOptionalTypeNestedArrayelementelement(json: __elementJsonElement)
+                var __elementJsonElementValue: ObjectWithEveryOptionalTypeNestedArrayElementElement
+                __elementJsonElementValue = ObjectWithEveryOptionalTypeNestedArrayElementElement(json: __elementJsonElement)
                 __nestedArrayJsonElementValue.append(__elementJsonElementValue)
             }
                 self.nestedArray!.append(__nestedArrayJsonElementValue)
@@ -2727,14 +2739,14 @@ var __recordCloned: Dictionary<String, Bool>?
                     }
 
 
-var __nestedArrayCloned: [[ObjectWithEveryOptionalTypeNestedArrayelementelement]]?
+var __nestedArrayCloned: [[ObjectWithEveryOptionalTypeNestedArrayElementElement]]?
                 if self.nestedArray != nil {
                     __nestedArrayCloned = []
                     for __nestedArrayElement in self.nestedArray! {
-                        var __nestedArrayElementCloned: [ObjectWithEveryOptionalTypeNestedArrayelementelement] = []
+                        var __nestedArrayElementCloned: [ObjectWithEveryOptionalTypeNestedArrayElementElement] = []
                 for __nestedArrayElementElement in __nestedArrayElement {
                     
-                    __nestedArrayElementCloned.append(self.__nestedArrayElementElement.clone())
+                    __nestedArrayElementCloned.append(__nestedArrayElementElement.clone())
                 }
                         __nestedArrayCloned!.append(__nestedArrayElementCloned)
                     }
@@ -3173,7 +3185,7 @@ timestamp: self.timestamp
 }
     
 
-public struct ObjectWithEveryOptionalTypeNestedArrayelementelement: ArriClientModel {
+public struct ObjectWithEveryOptionalTypeNestedArrayElementElement: ArriClientModel {
 public var id: String = ""
 public var timestamp: Date = Date()
     public init(
@@ -3212,9 +3224,9 @@ __queryParts.append("id=\(self.id)")
 __queryParts.append("timestamp=\(serializeDate(self.timestamp, withQuotes: false))")
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> ObjectWithEveryOptionalTypeNestedArrayelementelement {
+    public func clone() -> ObjectWithEveryOptionalTypeNestedArrayElementElement {
 
-        return ObjectWithEveryOptionalTypeNestedArrayelementelement(
+        return ObjectWithEveryOptionalTypeNestedArrayElementElement(
 id: self.id,
 timestamp: self.timestamp
         )
@@ -3436,7 +3448,8 @@ self.data = data
     public init(json: JSON) {
 self.data = []
             for __dataJsonElement in json["data"].array ?? [] {
-                let __dataJsonElementValue = RecursiveUnion(json: __dataJsonElement)
+                var __dataJsonElementValue: RecursiveUnion
+                __dataJsonElementValue = RecursiveUnion(json: __dataJsonElement)
                 self.data.append(__dataJsonElementValue)
             }
     }
@@ -3819,10 +3832,10 @@ message: self.message
 
 public struct StreamLargeObjectsResponse: ArriClientModel {
 public var numbers: [Float64] = []
-public var objects: [StreamLargeObjectsResponseObjectselement] = []
+public var objects: [StreamLargeObjectsResponseObjectsElement] = []
     public init(
 numbers: [Float64],
-objects: [StreamLargeObjectsResponseObjectselement]
+objects: [StreamLargeObjectsResponseObjectsElement]
     ) {
 self.numbers = numbers
 self.objects = objects
@@ -3831,12 +3844,14 @@ self.objects = objects
     public init(json: JSON) {
 self.numbers = []
             for __numbersJsonElement in json["numbers"].array ?? [] {
-                let __numbersJsonElementValue = __numbersJsonElement.double ?? 0.0
+                var __numbersJsonElementValue: Float64
+                __numbersJsonElementValue = __numbersJsonElement.double ?? 0.0
                 self.numbers.append(__numbersJsonElementValue)
             }
 self.objects = []
             for __objectsJsonElement in json["objects"].array ?? [] {
-                let __objectsJsonElementValue = StreamLargeObjectsResponseObjectselement(json: __objectsJsonElement)
+                var __objectsJsonElementValue: StreamLargeObjectsResponseObjectsElement
+                __objectsJsonElementValue = StreamLargeObjectsResponseObjectsElement(json: __objectsJsonElement)
                 self.objects.append(__objectsJsonElementValue)
             }
     }
@@ -3884,10 +3899,10 @@ var __numbersCloned: [Float64] = []
                     
                     __numbersCloned.append(__numbersElement)
                 }
-var __objectsCloned: [StreamLargeObjectsResponseObjectselement] = []
+var __objectsCloned: [StreamLargeObjectsResponseObjectsElement] = []
                 for __objectsElement in self.objects {
                     
-                    __objectsCloned.append(self.__objectsElement.clone())
+                    __objectsCloned.append(__objectsElement.clone())
                 }
         return StreamLargeObjectsResponse(
 numbers: __numbersCloned,
@@ -3897,7 +3912,7 @@ objects: __objectsCloned
     
 }
     
-public struct StreamLargeObjectsResponseObjectselement: ArriClientModel {
+public struct StreamLargeObjectsResponseObjectsElement: ArriClientModel {
 public var id: String = ""
 public var name: String = ""
 public var email: String = ""
@@ -3943,9 +3958,9 @@ __queryParts.append("name=\(self.name)")
 __queryParts.append("email=\(self.email)")
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> StreamLargeObjectsResponseObjectselement {
+    public func clone() -> StreamLargeObjectsResponseObjectsElement {
 
-        return StreamLargeObjectsResponseObjectselement(
+        return StreamLargeObjectsResponseObjectsElement(
 id: self.id,
 name: self.name,
 email: self.email
@@ -4791,8 +4806,8 @@ public var photo: UserPhoto?
 public var createdAt: Date = Date()
 public var numFollowers: Int32 = 0
 public var settings: UserSettings = UserSettings()
-public var recentNotifications: [UsersWatchUserResponseRecentNotificationselement] = []
-public var bookmarks: Dictionary<String, UsersWatchUserResponseBookmarksvalue> = Dictionary()
+public var recentNotifications: [UsersWatchUserResponseRecentNotificationsElement] = []
+public var bookmarks: Dictionary<String, UsersWatchUserResponseBookmarksValue> = Dictionary()
 public var metadata: Dictionary<String, JSON> = Dictionary()
 public var randomList: [JSON] = []
 public var bio: String?
@@ -4803,8 +4818,8 @@ photo: UserPhoto?,
 createdAt: Date,
 numFollowers: Int32,
 settings: UserSettings,
-recentNotifications: [UsersWatchUserResponseRecentNotificationselement],
-bookmarks: Dictionary<String, UsersWatchUserResponseBookmarksvalue>,
+recentNotifications: [UsersWatchUserResponseRecentNotificationsElement],
+bookmarks: Dictionary<String, UsersWatchUserResponseBookmarksValue>,
 metadata: Dictionary<String, JSON>,
 randomList: [JSON],
 bio: String?
@@ -4833,22 +4848,26 @@ self.numFollowers = json["numFollowers"].int32 ?? 0
 self.settings = UserSettings(json: json["settings"])
 self.recentNotifications = []
             for __recentNotificationsJsonElement in json["recentNotifications"].array ?? [] {
-                let __recentNotificationsJsonElementValue = UsersWatchUserResponseRecentNotificationselement(json: __recentNotificationsJsonElement)
+                var __recentNotificationsJsonElementValue: UsersWatchUserResponseRecentNotificationsElement
+                __recentNotificationsJsonElementValue = UsersWatchUserResponseRecentNotificationsElement(json: __recentNotificationsJsonElement)
                 self.recentNotifications.append(__recentNotificationsJsonElementValue)
             }
 self.bookmarks = Dictionary()
             for (__key, __value) in json["bookmarks"].dictionary ?? Dictionary() {
-                let __parsedValue = UsersWatchUserResponseBookmarksvalue(json: __value)
+                var __parsedValue: UsersWatchUserResponseBookmarksValue
+                __parsedValue = UsersWatchUserResponseBookmarksValue(json: __value)
                 self.bookmarks[__key] = __parsedValue            
             }
 self.metadata = Dictionary()
             for (__key, __value) in json["metadata"].dictionary ?? Dictionary() {
-                let         __parsedValue = __value
+                var __parsedValue: JSON
+                        __parsedValue = __value
                 self.metadata[__key] = __parsedValue            
             }
 self.randomList = []
             for __randomListJsonElement in json["randomList"].array ?? [] {
-                let         __randomListJsonElementValue = __randomListJsonElement
+                var __randomListJsonElementValue: JSON
+                        __randomListJsonElementValue = __randomListJsonElement
                 self.randomList.append(__randomListJsonElementValue)
             }
         if json["bio"].exists() {
@@ -4923,7 +4942,6 @@ __json += "["
 if self.bio != nil {
             __json += ",\"bio\":"
 __json += serializeString(input: self.bio!)
-__numKeys += 1
         }
         __json += "}"
         return __json
@@ -4948,15 +4966,15 @@ if self.bio != nil {
     public func clone() -> UsersWatchUserResponse {
 
 
-var __recentNotificationsCloned: [UsersWatchUserResponseRecentNotificationselement] = []
+var __recentNotificationsCloned: [UsersWatchUserResponseRecentNotificationsElement] = []
                 for __recentNotificationsElement in self.recentNotifications {
                     
                     __recentNotificationsCloned.append(__recentNotificationsElement.clone())
                 }
-var __bookmarksCloned: Dictionary<String, UsersWatchUserResponseBookmarksvalue> = Dictionary()
+var __bookmarksCloned: Dictionary<String, UsersWatchUserResponseBookmarksValue> = Dictionary()
                     for (__bookmarksKey, __bookmarksValue) in self.bookmarks {
                         
-                        __bookmarksCloned[__bookmarksKey] = self.__bookmarksValue.clone()
+                        __bookmarksCloned[__bookmarksKey] = __bookmarksValue.clone()
                     }
 var __metadataCloned: Dictionary<String, JSON> = Dictionary()
                     for (__metadataKey, __metadataValue) in self.metadata {
@@ -5170,23 +5188,23 @@ public enum UserSettingsPreferredTheme: ArriClientEnum {
         }
     }
 }
-public enum UsersWatchUserResponseRecentNotificationselement: ArriClientModel {
-    case postLike(UsersWatchUserResponseRecentNotificationselementPostLike)
-    case postComment(UsersWatchUserResponseRecentNotificationselementPostComment)
+public enum UsersWatchUserResponseRecentNotificationsElement: ArriClientModel {
+    case postLike(UsersWatchUserResponseRecentNotificationsElementPostLike)
+    case postComment(UsersWatchUserResponseRecentNotificationsElementPostComment)
     public init() {
-        self = .postLike(UsersWatchUserResponseRecentNotificationselementPostLike())
+        self = .postLike(UsersWatchUserResponseRecentNotificationsElementPostLike())
     }
     public init(json: JSON) {
         let discriminator = json["notificationType"].string ?? ""
         switch (discriminator) {
             case "POST_LIKE":
-                self = .postLike(UsersWatchUserResponseRecentNotificationselementPostLike(json: json))
+                self = .postLike(UsersWatchUserResponseRecentNotificationsElementPostLike(json: json))
                 break
             case "POST_COMMENT":
-                self = .postComment(UsersWatchUserResponseRecentNotificationselementPostComment(json: json))
+                self = .postComment(UsersWatchUserResponseRecentNotificationsElementPostComment(json: json))
                 break
             default:
-                self = .postLike(UsersWatchUserResponseRecentNotificationselementPostLike())
+                self = .postLike(UsersWatchUserResponseRecentNotificationsElementPostLike())
                 break
         }
     }
@@ -5214,7 +5232,7 @@ public enum UsersWatchUserResponseRecentNotificationselement: ArriClientModel {
                 return __innerVal.toQueryString()
         }
     }
-    public func clone() -> UsersWatchUserResponseRecentNotificationselement {
+    public func clone() -> UsersWatchUserResponseRecentNotificationsElement {
         switch(self) {
             case .postLike(let __innerVal):
                 return .postLike(__innerVal.clone())
@@ -5224,7 +5242,7 @@ public enum UsersWatchUserResponseRecentNotificationselement: ArriClientModel {
     }
 }
     
-public struct UsersWatchUserResponseRecentNotificationselementPostLike: ArriClientModel {
+public struct UsersWatchUserResponseRecentNotificationsElementPostLike: ArriClientModel {
 let notificationType: String = "POST_LIKE"
 public var postId: String = ""
 public var userId: String = ""
@@ -5266,9 +5284,9 @@ __queryParts.append("postId=\(self.postId)")
 __queryParts.append("userId=\(self.userId)")
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> UsersWatchUserResponseRecentNotificationselementPostLike {
+    public func clone() -> UsersWatchUserResponseRecentNotificationsElementPostLike {
 
-        return UsersWatchUserResponseRecentNotificationselementPostLike(
+        return UsersWatchUserResponseRecentNotificationsElementPostLike(
 postId: self.postId,
 userId: self.userId
         )
@@ -5277,7 +5295,7 @@ userId: self.userId
 }
     
 
-public struct UsersWatchUserResponseRecentNotificationselementPostComment: ArriClientModel {
+public struct UsersWatchUserResponseRecentNotificationsElementPostComment: ArriClientModel {
 let notificationType: String = "POST_COMMENT"
 public var postId: String = ""
 public var userId: String = ""
@@ -5326,9 +5344,9 @@ __queryParts.append("userId=\(self.userId)")
 __queryParts.append("commentText=\(self.commentText)")
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> UsersWatchUserResponseRecentNotificationselementPostComment {
+    public func clone() -> UsersWatchUserResponseRecentNotificationsElementPostComment {
 
-        return UsersWatchUserResponseRecentNotificationselementPostComment(
+        return UsersWatchUserResponseRecentNotificationsElementPostComment(
 postId: self.postId,
 userId: self.userId,
 commentText: self.commentText
@@ -5338,7 +5356,7 @@ commentText: self.commentText
 }
     
 
-public struct UsersWatchUserResponseBookmarksvalue: ArriClientModel {
+public struct UsersWatchUserResponseBookmarksValue: ArriClientModel {
 public var postId: String = ""
 public var userId: String = ""
     public init(
@@ -5377,9 +5395,9 @@ __queryParts.append("postId=\(self.postId)")
 __queryParts.append("userId=\(self.userId)")
         return __queryParts.joined(separator: "&")
     }
-    public func clone() -> UsersWatchUserResponseBookmarksvalue {
+    public func clone() -> UsersWatchUserResponseBookmarksValue {
 
-        return UsersWatchUserResponseBookmarksvalue(
+        return UsersWatchUserResponseBookmarksValue(
 postId: self.postId,
 userId: self.userId
         )

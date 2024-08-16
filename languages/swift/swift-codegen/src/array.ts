@@ -34,7 +34,8 @@ export function swiftArrayFromSchema(
             const innerKey = validSwiftKey(key);
             const mainContent = `${target} = []
             for __${innerKey}JsonElement in ${input}.array ?? [] {
-                let ${subType.fromJsonTemplate(`__${innerKey}JsonElement`, `__${innerKey}JsonElementValue`, `element`)}
+                var __${innerKey}JsonElementValue: ${subType.typeName}
+                ${subType.fromJsonTemplate(`__${innerKey}JsonElement`, `__${innerKey}JsonElementValue`, `element`)}
                 ${target}${isNullable ? "!" : ""}.append(__${innerKey}JsonElementValue)
             }`;
             if (context.isOptional) {

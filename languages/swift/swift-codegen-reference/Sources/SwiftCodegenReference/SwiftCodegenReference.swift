@@ -331,12 +331,14 @@ public struct ObjectWithEveryType: ArriClientModel {
         self.object = NestedObject(json: json["object"])
         self.array = []
         for __arrayJsonElement in json["array"].array ?? [] {
-            let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+            var __arrayJsonElementValue: Bool
+            __arrayJsonElementValue = __arrayJsonElement.bool ?? false
             self.array.append(__arrayJsonElementValue)
         }
         self.record = Dictionary()
         for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-            let __parsedValue = __value.bool ?? false
+            var __parsedValue: Bool
+            __parsedValue = __value.bool ?? false
             self.record[__key] = __parsedValue
         }
         self.discriminator = Discriminator(json: json["discriminator"])
@@ -828,14 +830,16 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         if json["array"].exists() {
             self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+                var __arrayJsonElementValue: Bool
+                __arrayJsonElementValue = __arrayJsonElement.bool ?? false
                 self.array!.append(__arrayJsonElementValue)
             }
         }
         if json["record"].exists() {
             self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                let __parsedValue = __value.bool ?? false
+                var __parsedValue: Bool
+                __parsedValue = __value.bool ?? false
                 self.record![__key] = __parsedValue
             }
         }
@@ -1226,14 +1230,16 @@ public struct ObjectWithNullableFields: ArriClientModel {
         if json["array"].array != nil {
             self.array = []
             for __arrayJsonElement in json["array"].array ?? [] {
-                let __arrayJsonElementValue = __arrayJsonElement.bool ?? false
+                var __arrayJsonElementValue: Bool
+                __arrayJsonElementValue = __arrayJsonElement.bool ?? false
                 self.array!.append(__arrayJsonElementValue)
             }
         }
         if json["record"].dictionary != nil {
             self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                let __parsedValue = __value.bool ?? false
+                var __parsedValue: Bool
+                __parsedValue = __value.bool ?? false
                 self.record![__key] = __parsedValue
             }
         }
