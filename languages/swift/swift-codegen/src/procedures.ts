@@ -49,12 +49,25 @@ export function swiftHttpProcedureFromSchema(
         ? `${context.typePrefix}${validTypeName(schema.response)}`
         : undefined;
     if (schema.isEventStream) {
-        // TODO
-        return "";
+        return `${comments}public func ${rpcName}(${params ? `_ params: ${params}, ` : ""}options: EventSourceOptions<${response ?? "EmptyArriModel"}>) -> Task<(), Never> {
+            let task = Task {
+                var eventSource = EventSource<${response ?? "EmptyArriModel"}>(
+                    url: "\\(self.baseURL)${schema.path}",
+                    method: "${schema.method.toUpperCase()}",
+                    headers: self.headers,
+                    body: ${params ? "params.toJSONString()" : "nil"},
+                    delegate: self.delegate,
+                    clientVersion: "${context.clientVersion}",
+                    options: options
+                )
+                await eventSource.sendRequest()
+            }
+            return task
+        }`;
     }
     return `${comments}public func ${rpcName}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
         ${response ? `let result: ${response} = ` : ""}try await parsedArriHttpRequest(
-            http: self.HTTPClient,
+            delegate: self.delegate,
             url: "\\(self.baseURL)${schema.path}",
             method: "${schema.method.toUpperCase()}",
             headers: self.headers,
@@ -97,7 +110,7 @@ export function swiftWsProcedureFromSchema(
         `    `,
     );
     return `${comments}    public func ${name}(${params ? `_ params: ${params}` : ""}) async throws -> ${response ?? "()"} {
-        throw ArriRequestError.notImplementedError
+        throw ArriRequestError.notImplemented
     }`;
 }
 
@@ -153,23 +166,23 @@ export function swiftServiceFromSchema(
         }
     }
     return `public class ${serviceName} {
-    var baseURL: String
-    var HTTPClient: ArriHTTPClient
-    var headers: () -> Dictionary<String, String>
-${services.map((service) => `   var ${service.key}: ${service.typeName}`).join("\n")}
+    let baseURL: String
+    let delegate: ArriRequestDelegate
+    let headers: () -> Dictionary<String, String>
+${services.map((service) => `   public let ${service.key}: ${service.typeName}`).join("\n")}
     public init(
         baseURL: String,
-        HTTPClient: ArriHTTPClient,
+        delegate: ArriRequestDelegate,
         headers: @escaping () -> Dictionary<String, String>
     ) {
         self.baseURL = baseURL
-        self.HTTPClient = HTTPClient
+        self.delegate = delegate
         self.headers = headers
 ${services
     .map(
         (service) => `       self.${service.key} = ${service.typeName}(
             baseURL: baseURL,
-            HTTPClient: HTTPClient,
+            delegate: delegate,
             headers: headers
         )`,
     )

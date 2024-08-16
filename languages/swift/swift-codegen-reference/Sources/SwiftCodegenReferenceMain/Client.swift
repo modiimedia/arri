@@ -35,7 +35,7 @@ struct CustomRequestDelegate: ArriRequestDelegate {
     }
     
     func handleHTTPEventStreamRequest(request: ArriClient.ArriHTTPRequest) async throws -> ArriClient.ArriSSEResponse {
-        throw ArriRequestError.notImplementedError
+        throw ArriRequestError.notImplemented
     }
 
 }

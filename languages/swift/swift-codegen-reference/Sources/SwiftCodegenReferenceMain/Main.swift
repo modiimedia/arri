@@ -27,13 +27,20 @@ struct Main {
         print("TIME: \((Date().timeIntervalSince1970 - startTime.timeIntervalSince1970) * 1_000)ms")
         var msgCount = 0
         var errorCount = 0
-        var task = await client2.books.watchBook(
+        await client2.books.watchBook(
             Book(), 
             options: EventSourceOptions(
                 onMessage: {book, controller in 
                     print("NEW BOOK: \(book)")
                     msgCount += 1
                     if msgCount >= 10 {
+                        controller.cancel()
+                    }
+                },
+                onRequestError: {error, controller in 
+                    errorCount += 1
+                    print("ERROR_COUNT: \(errorCount) ERROR \(error)")
+                    if errorCount >= 15 {
                         controller.cancel()
                     }
                 },

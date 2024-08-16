@@ -78,7 +78,6 @@ export function createSwiftClient(
     }
     return `import Foundation
 import ArriClient
-import HTTPTypes
 
 ${mainService}
 ${typeContent.join("\n")}`;

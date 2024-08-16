@@ -2,10 +2,10 @@ import Foundation
 import ArriClient
 
 public class ExampleClient {
-    var baseURL: String
-    var delegate: ArriRequestDelegate
-    var headers: () -> Dictionary<String, String>
-    public var books: ExampleClientBooksService
+    let baseURL: String
+    let delegate: ArriRequestDelegate
+    let headers: () -> Dictionary<String, String>
+    public let books: ExampleClientBooksService
 
     public init(
         baseURL: String,
@@ -36,9 +36,9 @@ public class ExampleClient {
 }
 
 public class ExampleClientBooksService {
-    var baseURL: String
-    var delegate: ArriRequestDelegate
-    var headers: () -> Dictionary<String, String>
+    let baseURL: String
+    let delegate: ArriRequestDelegate
+    let headers: () -> Dictionary<String, String>
 
     public init(
         baseURL: String,
@@ -75,7 +75,7 @@ public class ExampleClientBooksService {
         return result
     }
     @available(*, deprecated)
-    public func watchBook(_ params: Book, options: EventSourceOptions<Book>) -> Task<(), any Error> {
+    public func watchBook(_ params: BookParams, options: EventSourceOptions<Book>) -> Task<(), Never> {
         let task = Task {
             var eventSource = EventSource<Book>(
                 url: "\(self.baseURL)/books/watch-book",
@@ -86,12 +86,12 @@ public class ExampleClientBooksService {
                 clientVersion: "20", 
                 options: options
             )
-            try await eventSource.sendRequest()
+            await eventSource.sendRequest()
         }
         return task
     }
     public func createConnection(_ params: BookParams) async throws -> Book {
-        throw ArriRequestError.notImplementedError
+        throw ArriRequestError.notImplemented
     }
 }
 
@@ -835,7 +835,8 @@ public struct ObjectWithOptionalFields: ArriClientModel {
         if json["record"].exists() {
             self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                self.record![__key] = __value.bool ?? false
+                let __parsedValue = __value.bool ?? false
+                self.record![__key] = __parsedValue
             }
         }
         if json["discriminator"].exists() {

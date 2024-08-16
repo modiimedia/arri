@@ -39,7 +39,7 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     }
     let parsedURL = URL(string: finalURLString)
     if parsedURL == nil {
-        throw ArriRequestError.invalidURLError
+        throw ArriRequestError.invalidUrl
     }
     let request = ArriHTTPRequest(url: parsedURL!, method: method, headers: finalHeaders, body: finalBody)
     let response = try await delegate.handleHTTPRequest(request: request)
@@ -58,8 +58,9 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
 }
 
 public enum ArriRequestError: Error {
-    case invalidURLError
-    case notImplementedError
+    case invalidUrl
+    case notImplemented
+    case unableToConnect(Error)
 }
 
 public struct ArriResponseError: ArriClientModel, Error {
@@ -542,6 +543,7 @@ public protocol ArriCancellable {
 public struct EventSourceOptions<T: ArriClientModel> {
     public var onMessage: (T, inout EventSource<T>) -> ()
     public var onRequest: ((ArriHTTPRequest, inout EventSource<T>) -> ()) = { _, __ in }
+    public var onRequestError: ((ArriRequestError, inout EventSource<T>) -> ()) = { _, __ in }
     public var onResponse: ((ArriSSEResponse, inout EventSource<T>) -> ()) = { _, __ in }
     public var onResponseError: ((ArriResponseError, inout EventSource<T>) -> ()) = { _, __ in }
     public var onClose: (() -> ()) = { }
@@ -563,11 +565,13 @@ public struct EventSourceOptions<T: ArriClientModel> {
     }
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> (),
+        onRequestError: @escaping (ArriRequestError, inout EventSource<T>) -> (),
         onResponseError: @escaping (ArriResponseError, inout EventSource<T>) -> (),
         maxRetryCount: UInt32?,
         maxRetryInterval: UInt32?
     ) {
         self.onMessage = onMessage
+        self.onRequestError = onRequestError
         self.onResponseError = onResponseError
         self.maxRetryCount = maxRetryCount
         self.maxRetryInterval = maxRetryInterval ?? self.maxRetryInterval
@@ -575,6 +579,7 @@ public struct EventSourceOptions<T: ArriClientModel> {
     public init(
         onMessage: @escaping (T, inout EventSource<T>) -> (),
         onRequest: ((ArriHTTPRequest, inout EventSource<T>) -> ())?,
+        onRequestError: ((ArriRequestError, inout EventSource<T>) -> ())?,
         onResponse: ((ArriSSEResponse, inout EventSource<T>) -> ())?,
         onResponseError: ((ArriResponseError, inout EventSource<T>) -> ())?,
         onClose: (() -> ())?,
@@ -583,6 +588,7 @@ public struct EventSourceOptions<T: ArriClientModel> {
     ) {
         self.onMessage = onMessage
         self.onRequest = onRequest ?? self.onRequest
+        self.onRequestError = onRequestError ?? self.onRequestError
         self.onResponse = onResponse ?? self.onResponse
         self.onResponseError = onResponseError ?? self.onResponseError
         self.onClose = onClose ?? self.onClose
@@ -626,10 +632,14 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         self.cancelled = true
     }
 
-    public mutating func sendRequest() async throws {
+    public mutating func sendRequest() async {
         let url = URL(string: self.url)
         if url == nil {
-            throw ArriRequestError.invalidURLError
+            options.onRequestError(ArriRequestError.invalidUrl, &self)
+            if cancelled {
+                return
+            }
+            return await handleRetry()
         }
         var headers = self.headers()
         headers["Accepts"] = "text/event-stream,application/json"
@@ -644,7 +654,16 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         if cancelled {
             return
         }
-        let response = try await delegate.handleHTTPEventStreamRequest(request: request)
+        var response: ArriSSEResponse
+        do {
+            response = try await delegate.handleHTTPEventStreamRequest(request: request)
+        } catch  {
+            self.options.onRequestError(ArriRequestError.unableToConnect(error), &self)
+            if cancelled {
+                return
+            }
+            return await handleRetry()
+        }
         self.options.onResponse(response, &self)
         if cancelled {
             return
@@ -662,48 +681,76 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                 if cancelled {
                     return
                 }
-                return try await handleRetry()
+                return await handleRetry()
             case .ok(let okResponse):
                 self.retryCount = 0
                 if okResponse.body == nil {
-                    throw ArriResponseError()
-                }
-                for try await buffer in okResponse.body! {
+                    options.onResponseError(
+                        ArriResponseError(
+                            code: 0,
+                            message: "No response from server",
+                            data: nil,
+                            stack: nil
+                        ),
+                        &self
+                    )
                     if cancelled {
                         return
                     }
-                    let chunk = String(buffer: buffer)
-                    let (rawEvents, leftover) = sseEventListFromString(input: "\(pendingData)\(chunk)", debug: false)
-                    pendingData = leftover
-                    for rawEvent in rawEvents {
-                        if rawEvent.id != nil && !rawEvent.id!.isEmpty {
-                            lastEventId = rawEvent.id!
+                    return await handleRetry()
+                }
+                do {
+                    for try await buffer in okResponse.body! {
+                        if cancelled {
+                            return
                         }
-                        let event = SSEEvent<T>(rawEvent: rawEvent)
-                        switch (event) {                        
-                            case .done: 
-                                cancelled = true
-                                return
-                            case .message(let messageEvent):
-                                self.options.onMessage(messageEvent.data, &self)
-                                if cancelled {
+                        let chunk = String(buffer: buffer)
+                        let (rawEvents, leftover) = sseEventListFromString(input: "\(pendingData)\(chunk)", debug: false)
+                        pendingData = leftover
+                        for rawEvent in rawEvents {
+                            if rawEvent.id != nil && !rawEvent.id!.isEmpty {
+                                lastEventId = rawEvent.id!
+                            }
+                            let event = SSEEvent<T>(rawEvent: rawEvent)
+                            switch (event) {                        
+                                case .done: 
+                                    cancelled = true
                                     return
-                                }
-                                break 
-                            case .ping:
-                                break 
+                                case .message(let messageEvent):
+                                    self.options.onMessage(messageEvent.data, &self)
+                                    if cancelled {
+                                        return
+                                    }
+                                    break 
+                                case .ping:
+                                    break 
+                            }
                         }
                     }
+                } catch {
+                    self.options.onResponseError(
+                        ArriResponseError(
+                            code: 0,
+                            message: error.localizedDescription,
+                            data: nil,
+                            stack: nil
+                        ),
+                        &self
+                    )
+                    if cancelled {
+                        return
+                    }
+                    return await handleRetry()
                 }
                 break; 
         }
         if cancelled {
             return
         }        
-        return try await handleRetry()
+        return await handleRetry()
     }
 
-    mutating func handleRetry()  async throws {
+    mutating func handleRetry() async {
         if self.options.maxRetryCount != nil && self.retryCount > self.options.maxRetryCount! {
             return
         }
@@ -719,6 +766,6 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
             sleep(self.retryInterval / 1000)
         }
         self.retryCount += 1
-        return try await self.sendRequest()
+        return await self.sendRequest()
     }
 }
