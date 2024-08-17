@@ -1,7 +1,7 @@
 {
   "name": "test-client-ts",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "implicitDependencies": ["test-server", "ts-client"],
+  "implicitDependencies": ["ts-codegen", "ts-client"],
   "targets": {
     "integration-test": {
       "executor": "@nx/vite:test",

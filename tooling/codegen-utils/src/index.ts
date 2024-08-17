@@ -21,7 +21,6 @@ export const isHttpMethod = (input: any): input is HttpMethod => {
     if (typeof input !== "string") {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return HttpMethodValues.includes(input as any);
 };
 
@@ -147,7 +146,7 @@ export function isServiceDefinition(input: any): input is ServiceDefinition {
     if (typeof input !== "object") {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     for (const key of Object.keys(input)) {
         if (typeof input[key] !== "object") {
             return false;

@@ -1,5 +1,3 @@
-// TODO
-
 import { AppDefinition, normalizeWhitespace } from "@arrirpc/codegen-utils";
 import fs from "fs";
 import path from "path";
