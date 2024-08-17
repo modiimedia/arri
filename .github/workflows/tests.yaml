@@ -59,9 +59,9 @@ jobs:
         with:
           version: 9.6.0
       - name: Setup Swift
-        uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+        uses: swift-actions/setup-swift@v2
         with:
-          swift-version: 5.10.1
+          swift-version: "5.10.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -100,9 +100,9 @@ jobs:
         with:
           version: 9.6.0
       - name: Setup Swift
-        uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+        uses: swift-actions/setup-swift@v2
         with:
-          swift-version: 5.10.1
+          swift-version: "5.10.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
