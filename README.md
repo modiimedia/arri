@@ -35,7 +35,7 @@ Below are the language client generators that are planned to have first party su
 | [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅  |
 | [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅  |
 | [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅  |
-| Swift                                               | 🚧   | 🚧  |
+| [Swift](languages/swift/swift-codegen/README.md)    | ✅   | ✅  |
 | Go                                                  |      |     |
 | Python                                              |      |     |
 

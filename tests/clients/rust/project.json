@@ -16,6 +16,19 @@
         "command": "cargo",
         "cwd": "tests/clients/rust"
       }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "cargo build",
+        "cwd": "tests/clients/rust"
+      }
     }
   }
 }

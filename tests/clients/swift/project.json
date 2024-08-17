@@ -1,0 +1,21 @@
+{
+  "name": "test-client-swift",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["test-server", "swift-client"],
+  "targets": {
+    "integration-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "swift test",
+        "cwd": "tests/clients/swift"
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "swift build",
+        "cwd": "tests/clients/swift"
+      }
+    }
+  }
+}

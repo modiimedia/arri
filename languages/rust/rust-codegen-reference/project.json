@@ -13,13 +13,27 @@
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/src",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "cache": false,
+      "options": {
+        "command": "cargo test",
+        "cwd": "languages/rust/rust-codegen-reference"
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src",
         "{projectRoot}/Cargo.toml",
         "{projectRoot}/Cargo.lock"
       ],
       "outputs": ["{projectRoot}/target"],
       "options": {
-        "command": "cargo test",
+        "command": "cargo build",
         "cwd": "languages/rust/rust-codegen-reference"
       }
     }
