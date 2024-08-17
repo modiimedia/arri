@@ -245,11 +245,18 @@ public protocol ArriRequestDelegate {
 }
 
 public struct DefaultRequestDelegate: ArriRequestDelegate {
+    var maxBodyBytes: Int = 1024 * 1024
     public init() {}
+    /// Accumulates `Body` of `ByteBuffer`s into a single `ByteBuffer`.
+    /// - Parameters:
+    ///   - maxBodyBytes: The maximum number of bytes that a single response body can take up. Default is 1048576 (1MB)
+    public init(maxBodyBytes: Int) {
+        self.maxBodyBytes = maxBodyBytes
+    }
     public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<Data> {
         let httpRequest = self.prepareHttpRequest(request: request)
         let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
-        let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
+        let responseBody = try? await response.body.collect(upTo: maxBodyBytes)
         var responseData: Data?
         if responseBody != nil {
             responseData = Data(buffer: responseBody!)
@@ -274,7 +281,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
                 body: response.body
             ))
         }
-        let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
+        let responseBody = try? await response.body.collect(upTo: maxBodyBytes)
         var responseData: Data?
         if responseBody != nil {
             responseData = Data(buffer: responseBody!)
