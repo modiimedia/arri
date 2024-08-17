@@ -1,5 +1,4 @@
 import ArriClient
-import HTTPTypes
 import AsyncHTTPClient
 import NIOHTTP1
 import NIOCore

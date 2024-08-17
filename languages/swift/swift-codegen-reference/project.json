@@ -4,7 +4,13 @@
   "targets": {
     "compile": {
       "executor": "nx:run-commands",
-      "cache": false,
+      "inputs": [
+        "{projectRoot}/Sources",
+        "{projectRoot}/Tests",
+        "{projectRoot}/Package.swift",
+        "{workspaceRoot}/languages/swift/swift-client/Sources"
+      ],
+      "outputs": ["{projectRoot}/.build"],
       "options": {
         "command": "swift build",
         "cwd": "languages/swift/swift-codegen-reference"
@@ -12,7 +18,13 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "cache": false,
+      "inputs": [
+        "{projectRoot}/Sources",
+        "{projectRoot}/Tests",
+        "{projectRoot}/Package.swift",
+        "{workspaceRoot}/languages/swift/swift-client/Sources"
+      ],
+      "outputs": ["{projectRoot}/.build"],
       "options": {
         "command": "swift test",
         "cwd": "languages/swift/swift-codegen-reference"

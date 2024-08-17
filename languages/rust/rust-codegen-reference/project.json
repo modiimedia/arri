@@ -22,6 +22,19 @@
         "command": "cargo test",
         "cwd": "languages/rust/rust-codegen-reference"
       }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "cargo build",
+        "cwd": "languages/rust/rust-codegen-reference"
+      }
     }
   }
 }
