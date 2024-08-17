@@ -110,9 +110,6 @@ importers:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../../../tooling/codegen-utils
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../../../tooling/schema
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
@@ -122,12 +119,6 @@ importers:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../../../tooling/codegen-utils
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../../../tooling/schema
-      json-schema-to-jtd:
-        specifier: workspace:*
-        version: link:../../../tooling/json-schema-to-jtd
 
   languages/rust/rust-codegen:
     dependencies:
@@ -137,10 +128,6 @@ importers:
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
-    devDependencies:
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../../../tooling/schema
 
   languages/swift/swift-codegen:
     dependencies:
@@ -172,16 +159,9 @@ importers:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../../../tooling/codegen-utils
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../../../tooling/schema
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
-    devDependencies:
-      '@arrirpc/client':
-        specifier: workspace:*
-        version: link:../ts-client
 
   languages/ts/ts-codegen-reference:
     dependencies:
@@ -357,9 +337,6 @@ importers:
 
   tooling/codegen-utils:
     dependencies:
-      '@arrirpc/schema':
-        specifier: workspace:*
-        version: link:../schema
       jtd-utils:
         specifier: workspace:*
         version: link:../jtd-utils
