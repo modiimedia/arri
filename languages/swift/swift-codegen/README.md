@@ -32,8 +32,24 @@ The generated code relies on the [Arri Swift Client](/languages/swift/swift-clie
 
 #### Swift Package Manager
 
+Add the `arri-client-swift` git repo to your package dependencies
+
 ```swift
-.package(url: "https://github.com/modiimedia/arri-client-swift.git", from: "<your-arri-cli-version>")
+.package(
+    url: "https://github.com/modiimedia/arri-client-swift.git",
+    from: "<your-arri-cli-version>"
+)
+```
+
+then add `ArriClient` as a dependency to your target
+
+```swift
+.target(
+    name: "MyApp",
+    dependencies: [
+        .product(name: "ArriClient", package: "arri-client-swift")
+    ]
+)
 ```
 
 ## Using the Generated Code

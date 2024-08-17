@@ -8,6 +8,22 @@ The installed version should match the version of your Arri CLI. Use `arri versi
 
 #### Swift Package Manager
 
+Add the `arri-client-swift` git repo to your package dependencies
+
 ```swift
-.package(url: "https://github.com/modiimedia/arri-client-swift.git", from: "<your-arri-cli-version>")
+.package(
+    url: "https://github.com/modiimedia/arri-client-swift.git",
+    from: "<your-arri-cli-version>"
+)
+```
+
+and add `ArriClient` as a dependency to your target
+
+```swift
+.target(
+    name: "MyApp",
+    dependencies: [
+        .product(name: "ArriClient", package: "arri-client-swift")
+    ]
+)
 ```
