@@ -13,6 +13,6 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": ["dist"],
-  "version": "0.59.0",
+  "version": "0.60.0",
   "dependencies": {}
 }
