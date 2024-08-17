@@ -416,6 +416,7 @@ final class TestSwiftClientTests: XCTestCase {
         var msgCount = 0
         var errorCount = 0
         var openCount = 0
+        var closeCount = 0
         let _ = await client.tests.streamTenEventsThenEnd(options: EventSourceOptions(onMessage: { _, es in 
             msgCount += 1
         },
@@ -433,12 +434,15 @@ final class TestSwiftClientTests: XCTestCase {
                 errorCount += 1
                 es.cancel()
             },
-            onClose: nil,
+            onClose: {
+                closeCount += 1
+            },
             maxRetryCount: nil,
             maxRetryInterval: nil
         )).result
         XCTAssertEqual(msgCount, 10)
         XCTAssertEqual(errorCount, 0)
         XCTAssertEqual(openCount, 1)
+        XCTAssertEqual(closeCount, 1)
     }
 }

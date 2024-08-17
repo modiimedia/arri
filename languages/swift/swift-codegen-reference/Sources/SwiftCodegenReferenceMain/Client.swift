@@ -1,13 +1,15 @@
+import Foundation
 import ArriClient
 import AsyncHTTPClient
 import NIOHTTP1
 import NIOCore
+import NIOFoundationCompat
 import SwiftCodegenReference
 
 struct CustomRequestDelegate: ArriRequestDelegate {
 
 
-    func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
+    func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<Data> {
         var httpRequest = HTTPClientRequest(url: request.url.absoluteString)
         for (key, value) in request.headers {
             httpRequest.headers.add(name: key, value: value)
@@ -18,9 +20,9 @@ struct CustomRequestDelegate: ArriRequestDelegate {
         }
         let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
         let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
-        var responseString: String?
+        var responseData: Data?
         if responseBody != nil {
-            responseString = String(buffer: responseBody!)
+            responseData = Data(buffer: responseBody!)
         }
         var responseHeaders: Dictionary<String, String> = Dictionary()
         for header in response.headers {
@@ -29,7 +31,7 @@ struct CustomRequestDelegate: ArriRequestDelegate {
         return ArriHTTPResponse(
             statusCode: UInt32(response.status.code),
             statusMessage: response.status.reasonPhrase,
-            body: responseString
+            body: responseData
         )
     }
     

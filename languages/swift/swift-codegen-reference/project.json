@@ -24,6 +24,7 @@
         "{projectRoot}/Package.swift",
         "{workspaceRoot}/languages/swift/swift-client/Sources"
       ],
+      "cache": false,
       "outputs": ["{projectRoot}/.build"],
       "options": {
         "command": "swift test",

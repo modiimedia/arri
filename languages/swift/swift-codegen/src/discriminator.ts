@@ -135,11 +135,21 @@ ${discriminatorParts
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \\(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \\(error)")
             self.init()
         }
     }

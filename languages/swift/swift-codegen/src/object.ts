@@ -264,11 +264,21 @@ ${initBodyParts.join("\n")}
     ${initPrefix} init(json: JSON) {
 ${initFromJsonParts.join("\n")}
     }
+    ${initJsonStringPrefix} init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \\(error)")
+            self.init()
+        }
+    }
     ${initJsonStringPrefix} init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \\(error)")
             self.init()
         }
     }

@@ -5,6 +5,7 @@ import FoundationNetworking
 import AsyncHTTPClient
 import NIOHTTP1
 import NIOCore
+import NIOFoundationCompat
 
 let jsonEncoder = JSONEncoder()
 let jsonDecoder = JSONDecoder()
@@ -43,10 +44,10 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     let request = ArriHTTPRequest(url: parsedURL!.url!, method: method, headers: finalHeaders, body: finalBody)
     let response = try await delegate.handleHTTPRequest(request: request)
     if response.statusCode >= 200 && response.statusCode < 300 {
-        let result = TResponse.init(JSONString: response.body ?? "")
+        let result = TResponse.init(JSONData: response.body ?? Data())
         return result
     }
-    var error = ArriResponseError(JSONString: response.body ?? "")
+    var error = ArriResponseError(JSONData: response.body ?? Data())
     if error.code == 0 {
         error.code = response.statusCode
     }
@@ -92,12 +93,22 @@ public struct ArriResponseError: ArriClientModel, Error {
             }
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
-        self.init()
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
         }
     }
     public func toJSONString() -> String {
@@ -135,6 +146,7 @@ public struct ArriResponseError: ArriClientModel, Error {
 public protocol ArriClientModel: Equatable {
     init()
     init(json: JSON)
+    init(JSONData: Data)
     init(JSONString: String)
     func toJSONString() -> String
     // func toURLQueryString() -> String
@@ -144,9 +156,8 @@ public protocol ArriClientModel: Equatable {
 public struct EmptyArriModel: ArriClientModel {
     public init() {}
     public init(json: JSON) {}
-
     public init(JSONString: String) {}
-
+    public init(JSONData: Data) {}
     public func toJSONString() -> String {
         return ""
     }
@@ -229,19 +240,19 @@ public func serializeAny(input: JSON) -> String {
 //// Request Delegate ////
 
 public protocol ArriRequestDelegate {
-    func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String>
+    func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<Data>
     func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse
 }
 
 public struct DefaultRequestDelegate: ArriRequestDelegate {
     public init() {}
-    public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<String> {
+    public func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<Data> {
         let httpRequest = self.prepareHttpRequest(request: request)
         let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
         let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
-        var responseString: String?
+        var responseData: Data?
         if responseBody != nil {
-            responseString = String(buffer: responseBody!)
+            responseData = Data(buffer: responseBody!)
         }
         var responseHeaders: Dictionary<String, String> = Dictionary()
         for header in response.headers {
@@ -250,7 +261,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
         return ArriHTTPResponse(
             statusCode: UInt32(response.status.code),
             statusMessage: response.status.reasonPhrase,
-            body: responseString
+            body: responseData
         )
     }
     public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse {
@@ -264,15 +275,15 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
             ))
         }
         let responseBody = try? await response.body.collect(upTo: 1024 * 1024)
-        var responseString: String?
+        var responseData: Data?
         if responseBody != nil {
-            responseString = String(buffer: responseBody!)
+            responseData = Data(buffer: responseBody!)
         }
         return .error(
             ArriHTTPResponse(
                 statusCode: UInt32(response.status.code),
                 statusMessage: response.status.reasonPhrase,
-                body: responseString
+                body: responseData
             )
         )
     }
@@ -291,7 +302,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
 
 public enum ArriSSEResponse {
     case ok(ArriHTTPResponse<HTTPClientResponse.Body>)
-    case error(ArriHTTPResponse<String>)
+    case error(ArriHTTPResponse<Data>)
 }
 
 // Commenting this out. Need to figure out how to get streamed http responses using only the FoundationNetworking libs. (Cross-platform only)
@@ -720,7 +731,10 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         var response: ArriSSEResponse
         do {
             response = try await delegate.handleHTTPEventStreamRequest(request: request)
-        } catch  {
+        } catch {
+            if error is CancellationError {
+                return
+            }
             self.options.onRequestError(ArriRequestError.unableToConnect(error), &self)
             if cancelled {
                 return
@@ -734,7 +748,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         }
         switch (response) {        
             case .error(let errorResponse):
-                var error = ArriResponseError(JSONString: errorResponse.body ?? "")
+                var error = ArriResponseError(JSONData: errorResponse.body ?? Data())
                 if error.code == 0 {
                     error.code = errorResponse.statusCode
                 }
@@ -798,6 +812,10 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                         }
                     }
                 } catch {
+                    if error is CancellationError {
+                        self.options.onClose()
+                        return 
+                    }
                     self.options.onResponseError(
                         ArriResponseError(
                             code: 0,

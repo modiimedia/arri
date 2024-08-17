@@ -316,11 +316,21 @@ public struct ManuallyAddedModel: ArriClientModel {
     public init(json: JSON) {
         self.hello = json["hello"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -358,11 +368,21 @@ public struct DefaultPayload: ArriClientModel {
     public init(json: JSON) {
         self.message = json["message"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -402,11 +422,21 @@ public struct DeprecatedRpcParams: ArriClientModel {
     public init(json: JSON) {
         self.deprecatedField = json["deprecatedField"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -448,11 +478,21 @@ public struct SendErrorParams: ArriClientModel {
         self.code = json["code"].uInt16 ?? 0
         self.message = json["message"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -594,11 +634,21 @@ public struct ObjectWithEveryType: ArriClientModel {
                 self.nestedArray.append(__nestedArrayJsonElementValue)
             }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -806,11 +856,21 @@ public struct ObjectWithEveryTypeObject: ArriClientModel {
         self.boolean = json["boolean"].bool ?? false
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -865,11 +925,21 @@ public enum ObjectWithEveryTypeDiscriminator: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -911,11 +981,21 @@ public struct ObjectWithEveryTypeDiscriminatorA: ArriClientModel {
     public init(json: JSON) {
         self.title = json["title"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -960,11 +1040,21 @@ public struct ObjectWithEveryTypeDiscriminatorB: ArriClientModel {
         self.title = json["title"].string ?? ""
         self.description = json["description"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1016,11 +1106,21 @@ public struct ObjectWithEveryTypeNestedObject: ArriClientModel {
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         self.data = ObjectWithEveryTypeNestedObjectData(json: json["data"])
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1073,11 +1173,21 @@ public struct ObjectWithEveryTypeNestedObjectData: ArriClientModel {
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         self.data = ObjectWithEveryTypeNestedObjectDataData(json: json["data"])
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1126,11 +1236,21 @@ public struct ObjectWithEveryTypeNestedObjectDataData: ArriClientModel {
         self.id = json["id"].string ?? ""
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1176,11 +1296,21 @@ public struct ObjectWithEveryTypeNestedArrayElementElement: ArriClientModel {
         self.id = json["id"].string ?? ""
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1372,11 +1502,21 @@ public struct ObjectWithEveryNullableType: ArriClientModel {
             }
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1754,11 +1894,21 @@ public struct ObjectWithEveryNullableTypeObject: ArriClientModel {
                     self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1837,11 +1987,21 @@ public enum ObjectWithEveryNullableTypeDiscriminator: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1885,11 +2045,21 @@ public struct ObjectWithEveryNullableTypeDiscriminatorA: ArriClientModel {
             self.title = json["title"].string
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -1946,11 +2116,21 @@ public struct ObjectWithEveryNullableTypeDiscriminatorB: ArriClientModel {
             self.description = json["description"].string
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2024,11 +2204,21 @@ public struct ObjectWithEveryNullableTypeNestedObject: ArriClientModel {
                     self.data = ObjectWithEveryNullableTypeNestedObjectData(json: json["data"])
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2107,11 +2297,21 @@ public struct ObjectWithEveryNullableTypeNestedObjectData: ArriClientModel {
                     self.data = ObjectWithEveryNullableTypeNestedObjectDataData(json: json["data"])
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2184,11 +2384,21 @@ public struct ObjectWithEveryNullableTypeNestedObjectDataData: ArriClientModel {
                     self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2254,11 +2464,21 @@ public struct ObjectWithEveryNullableTypeNestedArrayElementElement: ArriClientMo
                     self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2458,11 +2678,21 @@ public struct ObjectWithEveryOptionalType: ArriClientModel {
             }
                 }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2830,11 +3060,21 @@ public struct ObjectWithEveryOptionalTypeObject: ArriClientModel {
         self.boolean = json["boolean"].bool ?? false
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2889,11 +3129,21 @@ public enum ObjectWithEveryOptionalTypeDiscriminator: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2935,11 +3185,21 @@ public struct ObjectWithEveryOptionalTypeDiscriminatorA: ArriClientModel {
     public init(json: JSON) {
         self.title = json["title"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -2984,11 +3244,21 @@ public struct ObjectWithEveryOptionalTypeDiscriminatorB: ArriClientModel {
         self.title = json["title"].string ?? ""
         self.description = json["description"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3040,11 +3310,21 @@ public struct ObjectWithEveryOptionalTypeNestedObject: ArriClientModel {
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         self.data = ObjectWithEveryOptionalTypeNestedObjectData(json: json["data"])
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3097,11 +3377,21 @@ public struct ObjectWithEveryOptionalTypeNestedObjectData: ArriClientModel {
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
         self.data = ObjectWithEveryOptionalTypeNestedObjectDataData(json: json["data"])
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3150,11 +3440,21 @@ public struct ObjectWithEveryOptionalTypeNestedObjectDataData: ArriClientModel {
         self.id = json["id"].string ?? ""
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3200,11 +3500,21 @@ public struct ObjectWithEveryOptionalTypeNestedArrayElementElement: ArriClientMo
         self.id = json["id"].string ?? ""
         self.timestamp = parseDate(json["timestamp"].string ?? "") ?? Date()
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3258,11 +3568,21 @@ if json["right"].dictionary != nil {
                 }
         self.value = json["value"].string ?? ""
     }
+    public required convenience init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public required convenience init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3339,11 +3659,21 @@ public enum RecursiveUnion: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3398,11 +3728,21 @@ public final class RecursiveUnionChild: ArriClientModel {
     public required init(json: JSON) {
 self.data = RecursiveUnion(json: json["data"])
     }
+    public required convenience init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public required convenience init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3453,11 +3793,21 @@ public struct RecursiveUnionChildren: ArriClientModel {
                 self.data.append(__dataJsonElementValue)
             }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3510,11 +3860,21 @@ public struct RecursiveUnionText: ArriClientModel {
     public init(json: JSON) {
         self.data = json["data"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3556,11 +3916,21 @@ public struct RecursiveUnionShape: ArriClientModel {
     public init(json: JSON) {
         self.data = RecursiveUnionShapeData(json: json["data"])
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3607,11 +3977,21 @@ public struct RecursiveUnionShapeData: ArriClientModel {
         self.height = json["height"].double ?? 0.0
         self.color = json["color"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3657,11 +4037,21 @@ public struct AutoReconnectParams: ArriClientModel {
     public init(json: JSON) {
         self.messageCount = json["messageCount"].uInt8 ?? 0
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3703,11 +4093,21 @@ public struct AutoReconnectResponse: ArriClientModel {
         self.count = json["count"].uInt8 ?? 0
         self.message = json["message"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3753,11 +4153,21 @@ public struct StreamConnectionErrorTestParams: ArriClientModel {
         self.statusCode = json["statusCode"].int32 ?? 0
         self.statusMessage = json["statusMessage"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3799,11 +4209,21 @@ public struct StreamConnectionErrorTestResponse: ArriClientModel {
     public init(json: JSON) {
         self.message = json["message"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3855,11 +4275,21 @@ public struct StreamLargeObjectsResponse: ArriClientModel {
                 self.objects.append(__objectsJsonElementValue)
             }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3931,11 +4361,21 @@ public struct StreamLargeObjectsResponseObjectsElement: ArriClientModel {
         self.name = json["name"].string ?? ""
         self.email = json["email"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -3981,11 +4421,21 @@ public struct ChatMessageParams: ArriClientModel {
     public init(json: JSON) {
         self.channelId = json["channelId"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4036,11 +4486,21 @@ public enum ChatMessage: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4104,11 +4564,21 @@ public struct ChatMessageText: ArriClientModel {
         self.date = parseDate(json["date"].string ?? "") ?? Date()
         self.text = json["text"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4181,11 +4651,21 @@ public struct ChatMessageImage: ArriClientModel {
         self.date = parseDate(json["date"].string ?? "") ?? Date()
         self.image = json["image"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4258,11 +4738,21 @@ public struct ChatMessageUrl: ArriClientModel {
         self.date = parseDate(json["date"].string ?? "") ?? Date()
         self.url = json["url"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4318,11 +4808,21 @@ public struct TestsStreamRetryWithNewCredentialsResponse: ArriClientModel {
     public init(json: JSON) {
         self.message = json["message"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4373,11 +4873,21 @@ public enum WsMessageParams: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4433,11 +4943,21 @@ public struct WsMessageParamsCreateEntity: ArriClientModel {
         self.x = json["x"].double ?? 0.0
         self.y = json["y"].double ?? 0.0
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4494,11 +5014,21 @@ public struct WsMessageParamsUpdateEntity: ArriClientModel {
         self.x = json["x"].double ?? 0.0
         self.y = json["y"].double ?? 0.0
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4547,11 +5077,21 @@ public struct WsMessageParamsDisconnect: ArriClientModel {
     public init(json: JSON) {
         self.reason = json["reason"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4600,11 +5140,21 @@ public enum WsMessageResponse: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4654,11 +5204,21 @@ public struct WsMessageResponseEntityCreated: ArriClientModel {
         self.x = json["x"].double ?? 0.0
         self.y = json["y"].double ?? 0.0
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4715,11 +5275,21 @@ public struct WsMessageResponseEntityUpdated: ArriClientModel {
         self.x = json["x"].double ?? 0.0
         self.y = json["y"].double ?? 0.0
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4767,11 +5337,21 @@ public struct UsersWatchUserParams: ArriClientModel {
     public init(json: JSON) {
         self.userId = json["userId"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -4874,11 +5454,21 @@ public struct UsersWatchUserResponse: ArriClientModel {
             self.bio = json["bio"].string    
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -5059,11 +5649,21 @@ public struct UserPhoto: ArriClientModel {
         self.bytes = Int64(json["bytes"].string ?? "0") ?? 0
         self.nanoseconds = UInt64(json["nanoseconds"].string ?? "0") ?? 0
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -5121,11 +5721,21 @@ public struct UserSettings: ArriClientModel {
         self.notificationsEnabled = json["notificationsEnabled"].bool ?? false
         self.preferredTheme = UserSettingsPreferredTheme(serialValue: json["preferredTheme"].string ?? "")
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -5208,11 +5818,21 @@ public enum UsersWatchUserResponseRecentNotificationsElement: ArriClientModel {
                 break
         }
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data)
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json)
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -5258,11 +5878,21 @@ public struct UsersWatchUserResponseRecentNotificationsElementPostLike: ArriClie
         self.postId = json["postId"].string ?? ""
         self.userId = json["userId"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -5315,11 +5945,21 @@ public struct UsersWatchUserResponseRecentNotificationsElementPostComment: ArriC
         self.userId = json["userId"].string ?? ""
         self.commentText = json["commentText"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }
@@ -5371,11 +6011,21 @@ public struct UsersWatchUserResponseBookmarksValue: ArriClientModel {
         self.postId = json["postId"].string ?? ""
         self.userId = json["userId"].string ?? ""
     }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
     public init(JSONString: String) {
         do {
-            let data = try JSON(data:  JSONString.data(using: .utf8) ?? Data())
-            self.init(json: data) 
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
         } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
             self.init()
         }
     }

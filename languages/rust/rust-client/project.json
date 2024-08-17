@@ -14,11 +14,12 @@
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/src",
         "{projectRoot}/Cargo.lock",
         "{projectRoot}/Cargo.toml"
       ],
       "outputs": ["{projectRoot}/target"],
+      "cache": false,
       "options": {
         "command": "cargo test -- --nocapture",
         "cwd": "languages/rust/rust-client"
