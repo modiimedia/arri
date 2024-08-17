@@ -114,4 +114,4 @@ jobs:
         run: pnpm nx run-many -t pub -- get # install dart dependencies in all dart projects
       - run: pnpm run build
       - run: pnpm i -r
-      - run: pnpm run integration-tests
+      - run: pnpm run integration-tests:affected
