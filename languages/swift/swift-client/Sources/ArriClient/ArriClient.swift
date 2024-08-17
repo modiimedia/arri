@@ -729,6 +729,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         }
         self.options.onResponse(response, &self)
         if cancelled {
+            self.options.onClose()
             return
         }
         switch (response) {        
@@ -742,6 +743,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                 }
                 self.options.onResponseError(error, &self)
                 if cancelled {
+                    self.options.onClose()
                     return
                 }
                 return await handleRetry()
@@ -758,6 +760,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                         &self
                     )
                     if cancelled {
+                        self.options.onClose()
                         return
                     }
                     return await handleRetry()
@@ -766,6 +769,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                 do {
                     for try await buffer in okResponse.body! {
                         if cancelled {
+                            self.options.onClose()
                             return
                         }
                         let chunk = String(buffer: buffer)
@@ -779,10 +783,12 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                             switch (event) {                        
                                 case .done: 
                                     cancelled = true
+                                    self.options.onClose()
                                     return
                                 case .message(let messageEvent):
                                     self.options.onMessage(messageEvent.data, &self)
                                     if cancelled {
+                                        self.options.onClose()
                                         return
                                     }
                                     break 
@@ -802,6 +808,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                         &self
                     )
                     if cancelled {
+                        self.options.onClose()
                         return
                     }
                     return await handleRetry()
@@ -809,6 +816,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
                 break; 
         }
         if cancelled {
+            self.options.onClose()
             return
         }        
         return await handleRetry()
