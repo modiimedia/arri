@@ -1,6 +1,7 @@
 import Foundation
 import ArriClient
 
+@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
 public class ExampleClient {
     let baseURL: String
     let delegate: ArriRequestDelegate
@@ -35,6 +36,7 @@ public class ExampleClient {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
 public class ExampleClientBooksService {
     let baseURL: String
     let delegate: ArriRequestDelegate
