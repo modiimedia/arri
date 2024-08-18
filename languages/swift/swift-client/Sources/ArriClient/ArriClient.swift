@@ -10,7 +10,7 @@ import NIOFoundationCompat
 let jsonEncoder = JSONEncoder()
 let jsonDecoder = JSONDecoder()
 
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClientModel>(
     delegate: ArriRequestDelegate,
     url: String,
@@ -239,12 +239,12 @@ public func serializeAny(input: JSON) -> String {
 
 
 //// Request Delegate ////
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public protocol ArriRequestDelegate {
     func handleHTTPRequest(request: ArriHTTPRequest) async throws -> ArriHTTPResponse<Data>
     func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse
 }
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public struct DefaultRequestDelegate: ArriRequestDelegate {
     var maxBodyBytes: Int = 1024 * 1024
     public init() {}
@@ -308,7 +308,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public enum ArriSSEResponse {
     case ok(ArriHTTPResponse<HTTPClientResponse.Body>)
     case error(ArriHTTPResponse<Data>)
@@ -388,7 +388,7 @@ public enum ArriResponseErrors: Error {
 }
 
 extension URLSession {
-    @available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+    @available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
     func asyncData(with: URLRequest) async throws -> (Data?, HTTPURLResponse) {
         return try await withCheckedThrowingContinuation { continuation in
             URLSession.shared.dataTask(with: with) {data, response, error in 
@@ -599,12 +599,12 @@ public func sseEventListFromString(input: String, debug: Bool) -> ([RawSSEEvent]
     return (events, String(leftover))
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public protocol ArriCancellable {
     mutating func cancel() -> ()
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public struct EventSourceOptions<T: ArriClientModel> {
     public var onMessage: (T, inout EventSource<T>) -> ()
     public var onRequest: ((ArriHTTPRequest, inout EventSource<T>) -> ()) = { _, __ in }
@@ -671,7 +671,7 @@ public struct EventSourceOptions<T: ArriClientModel> {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public struct EventSource<T: ArriClientModel>: ArriCancellable {
     var url: String
     var method: String
@@ -707,7 +707,7 @@ public struct EventSource<T: ArriClientModel>: ArriCancellable {
         self.cancelled = true
     }
 
-    @available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+    @available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
     public mutating func sendRequest() async {
         var urlComponents = URLComponents(string: self.url)
         if urlComponents == nil {

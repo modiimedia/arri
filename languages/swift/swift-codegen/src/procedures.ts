@@ -170,7 +170,7 @@ export function swiftServiceFromSchema(
             continue;
         }
     }
-    return `@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+    return `@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 public class ${serviceName} {
     let baseURL: String
     let delegate: ArriRequestDelegate

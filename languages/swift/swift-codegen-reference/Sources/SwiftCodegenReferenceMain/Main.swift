@@ -3,7 +3,7 @@ import ArriClient
 import SwiftCodegenReference
 
 @main
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 struct Main {
     static func main() async throws {
         let client = ExampleClient(

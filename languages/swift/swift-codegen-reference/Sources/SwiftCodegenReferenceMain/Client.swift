@@ -6,7 +6,7 @@ import NIOCore
 import NIOFoundationCompat
 import SwiftCodegenReference
 
-@available(macOS 10.15, iOS 13, tvOS 13, visionOS 1, macCatalyst 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, macCatalyst 13, *)
 struct CustomRequestDelegate: ArriRequestDelegate {
 
 
