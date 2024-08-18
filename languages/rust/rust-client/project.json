@@ -40,6 +40,7 @@
         "{projectRoot}/Cargo.lock"
       ],
       "outputs": ["{projectRoot}/target"],
+      "cache": false,
       "options": {
         "command": "cargo build",
         "cwd": "languages/rust/rust-client"
