@@ -9,6 +9,8 @@ If you need any additional guidance, feel free to pop into the Arri RPC [discord
 -   [Prerequisites](#prerequisites)
 -   [Building and Running Tests](#building-and-running-tests)
 -   [Running Integration Tests](#running-integration-tests)
+-   [Project Structure](#project-structure)
+-   [Project Scaffolds](#project-scaffolds)
 
 ## Prerequisites
 
@@ -122,14 +124,23 @@ This project has the following directories
 |- internal // misc scripts used internally for local development
 ```
 
-## Creating a Code Generator
+Any language specific project should be prefixed by the language name. So for example the `python` directory might look like this
 
-I have some tooling setup to scaffold the beginnings of a code generator project. To get started run the following:
+```fs
+|- languages
+    |- python
+        |- python-client
+        |- python-codegen
+        |- python-codegen-reference
+        |- python-server
+```
+
+## Project Scaffolds
+
+There is currently a scaffolding script that will help you scaffold a "code-generator" or "tooling" project.
 
 ```bash
 pnpm scaffold
 ```
-
-Which will ask you the kind of project you are generating and what language it is for.
 
 For a more complete guide on creating a code generator see [here](/docs/creating-a-custom-generator.md) (Just use `pnpm scaffold` instead of the starter script specified there.)
