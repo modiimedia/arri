@@ -43,6 +43,8 @@ Additionally, `@arrirpc/codegen-utils` has a number of utility functions to assi
 
 ## Conventions and Best Practices
 
+_The following only applies to official Arri client generators. There are no conventions and best practices if you are looking to generate documentation, stubs for a server, or anything else that isn't a client._
+
 Client generators should aim to do the following:
 
 -   Output code that is consistent and predictable. The same input should always produce the same output.
@@ -58,8 +60,6 @@ Client generators should aim to do the following:
 -   Create clients that notify the server what version they are on with the `client-version` header.
     -   This version should come from the `info.version` field in the app definition file.
 -   Create clients that are tolerant to server side changes. [See below](#creating-tolerant-clients).
-
-There are no recommended practices or conventions if you are using arri to generate something other than a client (i.e. Docs). Do whatever you want in that case.
 
 ### Creating tolerant clients
 
