@@ -16,6 +16,7 @@
   },
   "scripts": {
     "typecheck": "nx run-many -t typecheck",
+    "format": "pnpm prettier --write **/*.ts **/**/*.ts **/**/**/*.ts **/**/**/**/*.ts **/**/**/**/**/*.ts **/*.json **/**/*.json **/**/**/*.json **/**/**/**/*.json **/**/**/**/**/*.json",
     "test": "nx run-many -t test",
     "test:skip-cache": "nx run-many -t test --skip-nx-cache",
     "build": "nx run-many -t build --exclude=playground",

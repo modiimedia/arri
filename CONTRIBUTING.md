@@ -11,6 +11,8 @@ If you need any additional guidance, feel free to pop into the Arri RPC [discord
 -   [Running Integration Tests](#running-integration-tests)
 -   [Project Structure](#project-structure)
 -   [Project Scaffolds](#project-scaffolds)
+-   [Guidelines For Pull Requests](#guidelines-for-pull-requests)
+-   [Obtaining Commit Access](#obtaining-commit-access)
 
 ## Prerequisites
 
@@ -144,3 +146,16 @@ pnpm scaffold
 ```
 
 For a more complete guide on creating a code generator see [here](/docs/creating-a-custom-generator.md) (Just use `pnpm scaffold` instead of the starter script specified there.)
+
+## Guidelines For Pull Requests
+
+-   Run `pnpm format` before submitting
+-   PRs should address primarily a single concern. Example: Do not open a PR that fixes 3 unrelated bugs.
+-   Before adding features or submitting a large PR please open up an issue or start a discussion on [discord](https://discord.gg/3pdbYGDa).
+-   Provide a good PR description as a record of what change is being made and why it was made. Link to a GitHub issue if it exists.
+
+## Obtaining Commit Access
+
+Anyone who has submitted multiple high-quality PRs may be qualified for getting commit access. I'm pretty open to other people joining on the project so long as they hold themselves to the same vision and quality standard that I have for this project.
+
+This project is not something I will be able to make succeed alone. We will need multiple people who have the same passion and vision for end-to-end type-safety to really bring it over the finish line.
