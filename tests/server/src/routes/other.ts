@@ -14,7 +14,7 @@ manualRouter.route({
     },
 });
 
-export const manualService = defineService("tests", {
+export const manualTestService = defineService("tests", {
     emptyParamsGetRequest: defineRpc({
         method: "get",
         params: undefined,

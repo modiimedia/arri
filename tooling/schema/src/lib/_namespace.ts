@@ -8,8 +8,8 @@ export { any } from "./any";
 export { array } from "./array";
 export { boolean } from "./boolean";
 export { discriminator } from "./discriminator";
-export { enumerator,stringEnum } from "./enum";
-export { clone,nullable, optional } from "./modifiers";
+export { enumerator, stringEnum } from "./enum";
+export { clone, nullable, optional } from "./modifiers";
 export {
     float32,
     float64,
@@ -23,7 +23,7 @@ export {
     uint32,
     uint64,
 } from "./numbers";
-export { extend, object, omit,partial, pick } from "./object";
+export { extend, object, omit, partial, pick } from "./object";
 export { record } from "./record";
 export { recursive } from "./recursive";
 export { string } from "./string";

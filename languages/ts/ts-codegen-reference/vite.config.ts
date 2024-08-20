@@ -2,7 +2,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/tooling/ts-codegen-reference",
+    cacheDir: "../../../node_modules/.vite/tooling/ts-codegen-reference",
 
     plugins: [
         viteTsConfigPaths({

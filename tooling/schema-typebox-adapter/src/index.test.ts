@@ -1,5 +1,5 @@
 import { a } from "@arrirpc/schema";
-import { defineEventStreamRpc,defineRpc } from "@arrirpc/server";
+import { defineEventStreamRpc, defineRpc } from "@arrirpc/server";
 import { type Static, Type } from "@sinclair/typebox";
 
 import { typeboxAdapter } from "./index";
