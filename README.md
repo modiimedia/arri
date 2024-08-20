@@ -8,6 +8,8 @@ Arri RPC is a code-first RPC framework. Type-safe clients get generated directly
 
 Go [here](/languages/ts/ts-server/README.md) to get started with a Typescript server. More server implementations to come.
 
+https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
+
 ## Table of Contents
 
 -   [Server Implementations](#server-implementations)
