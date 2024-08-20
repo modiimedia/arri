@@ -1,0 +1,58 @@
+{
+  "name": "swift-codegen",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/swift/swift-codegen/src",
+  "projectType": "library",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "languages/swift/swift-codegen"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "unbuild",
+        "cwd": "languages/swift/swift-codegen"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm publish",
+        "cwd": "languages/swift/swift-codegen"
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm eslint languages/swift/swift-codegen"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/languages/swift/swift-codegen"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/languages/swift/swift-codegen",
+        "watch": false
+      },
+      "configurations": {
+        "watch": {
+          "command": "vitest watch --passWithNoTests --globals"
+        }
+      }
+    },
+    "show-test-results": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm vite preview --outDir languages/swift/swift-codegen/.temp/test-results"
+      }
+    }
+  },
+  "tags": []
+}

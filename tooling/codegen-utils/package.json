@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-utils",
-  "version": "0.59.0",
+  "version": "0.60.3",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
   "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
@@ -14,9 +14,6 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": ["dist"],
-  "dependencies": {
-    "@arrirpc/schema": "workspace:*",
-    "jtd-utils": "workspace:*",
-    "scule": "^1.3.0"
-  }
+  "dependencies": { "jtd-utils": "workspace:*", "scule": "^1.3.0" },
+  "devDependencies": {}
 }

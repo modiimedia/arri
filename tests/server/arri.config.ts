@@ -44,5 +44,12 @@ export default defineConfig({
                 "../clients/rust/src/test_client.g.rs",
             ),
         }),
+        generators.swiftClient({
+            clientName: "TestClient",
+            outputFile: path.resolve(
+                __dirname,
+                "../clients/swift/Sources/TestClient.g.swift",
+            ),
+        }),
     ],
 });

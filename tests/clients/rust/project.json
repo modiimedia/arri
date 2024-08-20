@@ -1,7 +1,7 @@
 {
   "name": "test-client-rust",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "implicitDependencies": ["test-server", "rust-client"],
+  "implicitDependencies": ["rust-codegen", "rust-client"],
   "targets": {
     "integration-test": {
       "executor": "nx:run-commands",
@@ -14,6 +14,19 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "cargo",
+        "cwd": "tests/clients/rust"
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "cargo build",
         "cwd": "tests/clients/rust"
       }
     }

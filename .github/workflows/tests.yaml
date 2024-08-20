@@ -2,6 +2,8 @@ name: tests
 on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 jobs:
   lint:
     if: github.event.pull_request.draft == false
@@ -28,7 +30,7 @@ jobs:
       - name: Install Node Dependencies
         run: pnpm i -r --frozen-lockfile
       - name: Set NX Shas
-        uses: nrwl/nx-set-shas@v3
+        uses: nrwl/nx-set-shas@v4
         with:
           main-branch-name: master
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
@@ -56,6 +58,10 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 9.6.0
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "5.10.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -64,7 +70,7 @@ jobs:
       - name: Install Node Dependencies
         run: pnpm i -r --frozen-lockfile
       - name: Set NX Shas
-        uses: nrwl/nx-set-shas@v3
+        uses: nrwl/nx-set-shas@v4
         with:
           main-branch-name: master
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
@@ -93,6 +99,10 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 9.6.0
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "5.10.1"
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -100,8 +110,12 @@ jobs:
           cache: pnpm
       - name: Install Node Dependencies
         run: pnpm i -r --frozen-lockfile
+      - name: Set NX Shas
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: master
       - name: Install dart dependencies
         run: pnpm nx run-many -t pub -- get # install dart dependencies in all dart projects
       - run: pnpm run build
       - run: pnpm i -r
-      - run: pnpm run integration-tests
+      - run: pnpm run integration-tests:affected

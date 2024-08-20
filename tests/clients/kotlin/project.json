@@ -1,7 +1,7 @@
 {
   "name": "test-client-kotlin",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "implicitDependencies": ["test-server"],
+  "implicitDependencies": ["kotlin-codegen"],
   "targets": {
     "integration-test": {
       "executor": "nx:run-commands",
