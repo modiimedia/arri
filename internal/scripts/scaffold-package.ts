@@ -173,9 +173,7 @@ function packageJsonTemplate(
     "dependencies": {
       ${isCodegen ? `"@arrirpc/codegen-utils": "workspace:*"` : ""}
     },
-    "devDependencies": {
-      ${isCodegen ? `"@arrirpc/schema": "workspace:*"` : ""}
-    }
+    "devDependencies": {}
 }`;
 }
 
@@ -319,11 +317,6 @@ export default defineConfig({
         reporters: ["default", "html"],
         outputFile: ".temp/test-results/index.html",
         pool: "threads",
-        pollOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         cache: {
             dir: "${prefix}node_modules/.vitest",
         },

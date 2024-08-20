@@ -2,6 +2,8 @@ _**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
 # Arri RPC
 
+[![](https://dcbadge.limes.pink/api/server/INVITE)](https://discord.gg/3pdbYGDa)
+
 Arri RPC is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
 Go [here](/languages/ts/ts-server/README.md) to get started with a Typescript server. More server implementations to come.
