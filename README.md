@@ -2,7 +2,7 @@ _**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
 # Arri RPC
 
-[![](https://dcbadge.limes.pink/api/server/INVITE)](https://discord.gg/3pdbYGDa)
+[![Discord](https://img.shields.io/discord/1272569268869005322?logo=discord&logoColor=white&logoSize=)](https://discord.gg/3pdbYGDa)
 
 Arri RPC is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
