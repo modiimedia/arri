@@ -58,7 +58,7 @@ const main = defineCommand({
                         await mkdir(langDir);
                     }
                     pkgName = `@arrirpc/codegen-${lang}`;
-                    projectName = `codegen-${lang}`;
+                    projectName = `${lang}-codegen`;
                     pkgLocation = `languages/${lang}/${lang}-codegen`;
 
                     depth = 3;
@@ -93,7 +93,29 @@ const main = defineCommand({
         await Promise.all([
             writeFile(
                 path.resolve(outDir, "src/_index.ts"),
-                `// ${pkgName} entry\n// todo`,
+                isCodegen
+                    ? `import { defineGeneratorPlugin } from "@arrirpc/codegen-utils";
+
+// rename this and add any other options you need for the generator
+export interface MyGeneratorOptions {
+    clientName: string;
+    outputFile: string;
+    typePrefix?: string;
+}
+
+// rename this before publishing
+export const myGenerator = defineGeneratorPlugin(
+    (options: MyGeneratorOptions) => {
+        return {
+            generator(appDef, isDevServer) {
+                // todo: use the app definition to output some code
+            },
+            options,
+        };
+    },
+);
+`
+                    : `// ${pkgName} entry\n// todo`,
             ),
             writeFile(
                 path.resolve(outDir, "build.config.ts"),
@@ -120,6 +142,25 @@ const main = defineCommand({
                 viteConfigTemplate(pkgName, depth),
             ),
         ]);
+        if (isCodegen) {
+            await mkdir(`${outDir}-reference`);
+            await Promise.all([
+                writeFile(
+                    path.resolve(`${outDir}-reference`, "README.md"),
+                    `# ${pkgName} Reference
+
+Use this directory to make a reference output based \`../../../tests/test-files/AppDefinition.json\` that can be used to test the output of your generator.`,
+                ),
+                writeFile(
+                    path.resolve(`${outDir}-reference`, "project.json"),
+                    referenceProjectJsonTemplate(
+                        projectName,
+                        `${pkgLocation}-reference`,
+                        depth,
+                    ),
+                ),
+            ]);
+        }
         console.info(`Scaffolded new project in ${outDir}`);
     },
 });
@@ -242,9 +283,51 @@ function projectJsonTemplate(
 `;
 }
 
+function referenceProjectJsonTemplate(
+    projectName: string,
+    packageLocation: string,
+    depth: number,
+) {
+    let prefix = "";
+    for (let i = 0; i < depth; i++) {
+        prefix += "../";
+    }
+    return `{
+  "name": "${projectName}-reference",
+  "$schema": "${prefix}node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "compile": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'not implemented'",
+        "cwd": "${packageLocation}-reference"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'not implemented'",
+        "cwd": "${packageLocation}-reference"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'not implemented'",
+        "cwd": "${packageLocation}-reference"
+      }
+    }
+  },
+  "tags": []
+}
+`;
+}
+
 function buildConfigTemplate(_packageName: string) {
     return `import { readFileSync } from "node:fs";
 import path from "node:path";
+
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
@@ -253,7 +336,6 @@ const packageJson = JSON.parse(
     }),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({

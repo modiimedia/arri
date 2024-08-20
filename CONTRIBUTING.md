@@ -4,9 +4,24 @@ I'm really excited that you are interested in contributing to Arri RPC. This gui
 
 If you need any additional guidance, feel free to pop into the Arri RPC [discord](https://discord.gg/3pdbYGDa).
 
+## Table of Contents
+
+-   [Prerequisites](#prerequisites)
+-   [Building and Running Tests](#building-and-running-tests)
+-   [Running Integration Tests](#running-integration-tests)
+
 ## Prerequisites
 
 To get running with this repo, you need to install [NodeJS](https://nodejs.org/en) and [pnpm](https://pnpm.io/). This is required by the build pipeline and is required to work on the code-generators.
+
+After that you can run
+
+```bash
+pnpm i
+pnpm build
+```
+
+Which will build all the TS projects needed to get started.
 
 You will also need to install the toolchain for whatever language libraries you are looking to work in. For example you need to Rust compiler and Cargo to work on the Rust client library.
 
@@ -40,6 +55,7 @@ A simple project JSON might look like this:
 ```json
 {
     "name": "my-awesome-project",
+    "schemaPath": "../../path-to/node_modules/nx/schemas/project-schema.json"
     "targets": {
         "foo": {
             "executor": "nx:run-commands",
@@ -94,3 +110,26 @@ pnpm nx integration-test test-client-{{language}}
 ```
 
 That's it.
+
+## Project Structure
+
+This project has the following directories
+
+```fs
+|- languages // where all of the language specific code codes
+|- tooling // universal Arri RPC tooling like the CLI
+|- tests // integration tests and test files
+|- internal // misc scripts used internally for local development
+```
+
+## Creating a Code Generator
+
+I have some tooling setup to scaffold the beginnings of a code generator project. To get started run the following:
+
+```bash
+pnpm scaffold
+```
+
+Which will ask you the kind of project you are generating and what language it is for.
+
+For a more complete guide on creating a code generator see [here](/docs/creating-a-custom-generator.md) (Just use `pnpm scaffold` instead of the starter script specified there.)
