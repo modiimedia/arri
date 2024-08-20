@@ -100,7 +100,9 @@ export function tsObjectFromSchema(
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key));
-        fieldParts.push(`${fieldName}: ${prop.typeName},`);
+        fieldParts.push(
+            `${getJsDocComment(subSchema.metadata)}${fieldName}: ${prop.typeName},`,
+        );
         newParts.push(`${fieldName}: ${prop.defaultValue},`);
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName};`);
@@ -140,7 +142,9 @@ export function tsObjectFromSchema(
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key));
-        fieldParts.push(`${fieldName}?: ${prop.typeName},`);
+        fieldParts.push(
+            `${getJsDocComment(subSchema.metadata)}${fieldName}?: ${prop.typeName},`,
+        );
         const tempKey = `_${validVarName(key)}`;
         fromJsonParts.push(`let ${tempKey}: ${prop.typeName} | undefined;`);
         fromJsonParts.push(`if (typeof input.${key} !== 'undefined') {

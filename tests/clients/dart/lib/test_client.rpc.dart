@@ -90,6 +90,8 @@ class TestClientTestsService {
     );
   }
 
+  /// If the target language supports it. Generated code should mark this procedure as deprecated.
+  @deprecated
   Future<void> deprecatedRpc(DeprecatedRpcParams params) async {
     return parsedArriRequest(
       "$_baseUrl/rpcs/tests/deprecated-rpc",
@@ -210,6 +212,7 @@ class TestClientTestsService {
     );
   }
 
+  /// This route will always return an error. The client should automatically retry with exponential backoff.
   EventSource<StreamConnectionErrorTestResponse> streamConnectionErrorTest(
     StreamConnectionErrorTestParams params, {
     void Function(StreamConnectionErrorTestResponse data,
@@ -245,6 +248,7 @@ class TestClientTestsService {
     );
   }
 
+  /// Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
   EventSource<StreamLargeObjectsResponse> streamLargeObjects({
     void Function(StreamLargeObjectsResponse data,
             EventSource<StreamLargeObjectsResponse> connection)?
@@ -345,6 +349,7 @@ class TestClientTestsService {
     );
   }
 
+  /// When the client receives the 'done' event, it should close the connection and NOT reconnect
   EventSource<ChatMessage> streamTenEventsThenEnd({
     void Function(ChatMessage data, EventSource<ChatMessage> connection)?
         onMessage,
@@ -590,7 +595,9 @@ class DefaultPayload implements ArriModel {
   }
 }
 
+@deprecated
 class DeprecatedRpcParams implements ArriModel {
+  @deprecated
   final String deprecatedField;
   const DeprecatedRpcParams({
     required this.deprecatedField,
@@ -3872,6 +3879,7 @@ sealed class RecursiveUnion implements ArriModel {
   }
 }
 
+/// Child node
 class RecursiveUnionChild implements RecursiveUnion {
   final RecursiveUnion data;
   const RecursiveUnionChild({
@@ -3952,6 +3960,7 @@ class RecursiveUnionChild implements RecursiveUnion {
   }
 }
 
+/// List of children node
 class RecursiveUnionChildren implements RecursiveUnion {
   final List<RecursiveUnion> data;
   const RecursiveUnionChildren({
@@ -4036,6 +4045,7 @@ class RecursiveUnionChildren implements RecursiveUnion {
   }
 }
 
+/// Text node
 class RecursiveUnionText implements RecursiveUnion {
   final String data;
   const RecursiveUnionText({
@@ -4113,6 +4123,7 @@ class RecursiveUnionText implements RecursiveUnion {
   }
 }
 
+/// Shape node
 class RecursiveUnionShape implements RecursiveUnion {
   final RecursiveUnionShapeData data;
   const RecursiveUnionShape({
@@ -5914,6 +5925,8 @@ class UsersWatchUserParams implements ArriModel {
 class UsersWatchUserResponse implements ArriModel {
   final String id;
   final UsersWatchUserResponseRole role;
+
+  /// A profile picture
   final UserPhoto? photo;
   final DateTime createdAt;
   final int numFollowers;
@@ -6150,11 +6163,14 @@ enum UsersWatchUserResponseRole
   int compareTo(UsersWatchUserResponseRole other) => name.compareTo(other.name);
 }
 
+/// A profile picture
 class UserPhoto implements ArriModel {
   final String url;
   final double width;
   final double height;
   final BigInt bytes;
+
+  /// When the photo was last updated in nanoseconds
   final BigInt nanoseconds;
   const UserPhoto({
     required this.url,

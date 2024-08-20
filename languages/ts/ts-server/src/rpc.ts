@@ -85,7 +85,6 @@ export interface HttpRpc<
           >
         : RpcHandler<
               TParams extends RpcParamSchema ? InferType<TParams> : undefined,
-              // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
               TResponse extends RpcParamSchema ? InferType<TResponse> : void
           >;
     postHandler?: TIsEventStream extends true
@@ -269,9 +268,8 @@ export function registerRpc(
             }
 
             const response = await procedure.handler(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 event.context as any,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 event as any,
             );
             event.context.response = response;
@@ -280,7 +278,6 @@ export function registerRpc(
             }
             if (typeof response === "object") {
                 if (!responseValidator?.validate(response)) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     const errors = a.errors(procedure.response, response);
                     throw defineError(500, {
                         message:
@@ -410,7 +407,7 @@ export function getSchemaValidator(
             return validatorFromAdaptedSchema(schema);
         }
         return a.compile(schema);
-    } catch (err) {
+    } catch (_) {
         console.error(`Error compiling ${type} validator for ${rpcName}`);
         return undefined;
     }

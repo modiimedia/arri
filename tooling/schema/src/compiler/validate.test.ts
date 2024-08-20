@@ -209,7 +209,7 @@ it("validates ints", () => {
     const CompiledInt32 = compile(a.int32());
     expect(CompiledInt32.validate(5000));
     expect(CompiledInt32.validate(-1035));
-    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+    // eslint-disable-next-line no-loss-of-precision
     expect(!CompiledInt32.validate(99999999999999999999));
     expect(!CompiledInt32.validate(100.5));
     expect(!CompiledInt32.validate("100"));
@@ -459,7 +459,7 @@ it("validates nullable discriminators", () => {
     );
 });
 
-it("uses additionalProperties properly", () => {
+it("uses strict properly", () => {
     const LooseSchema = a.compile(
         a.object({ id: a.string(), name: a.string() }),
     );
@@ -469,7 +469,7 @@ it("uses additionalProperties properly", () => {
                 id: a.string(),
                 name: a.string(),
             },
-            { additionalProperties: false },
+            { strict: true },
         ),
     );
     const input = {

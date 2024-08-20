@@ -1,8 +1,8 @@
 import { a } from "@arrirpc/schema";
+import { ofetch } from "@joshmossas/ofetch";
 import { defineCommand } from "citty";
 import consola from "consola";
 import { readFile, writeFile } from "fs/promises";
-import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { getArriPackageMetadata } from "../common";
@@ -29,10 +29,10 @@ export default defineCommand({
             );
         }
         const globby = (await import("globby")).globby;
+
         // UPDATE TS DEPENDENCIES
         consola.info(`Checking for TS/JS dependencies`);
         const fileMap: Record<string, string> = {};
-
         const pkgJsonFiles = await globby(
             [
                 "package.json",
@@ -89,6 +89,28 @@ export default defineCommand({
         }
         await Promise.all(pubspecFileTasks);
 
+        // RUST DEPENDENCIES
+        consola.info("Checking for rust dependencies");
+        const cargoTomlFiles = await globby([
+            "cargo.toml",
+            "Cargo.toml",
+            "**/cargo.toml",
+            "**/Cargo.toml",
+        ]);
+        const cargoTomlTasks: Promise<any>[] = [];
+        for (const file of cargoTomlFiles) {
+            cargoTomlTasks.push(
+                readFile(path.resolve(file), "utf8").then((content) => {
+                    const result = updateCargoToml(content, version);
+                    if (result.updated) {
+                        fileMap[file] = result.content;
+                    }
+                }),
+            );
+        }
+        await Promise.all(cargoTomlTasks);
+
+        // Update all affected files
         const updateTasks: Promise<any>[] = [];
         for (const key of Object.keys(fileMap)) {
             updateTasks.push(
@@ -200,4 +222,134 @@ export function updatePubspecYaml(
         updated,
         content: output.join("\n"),
     };
+}
+
+const CratesIoPackageResponse = a.object("CratesIoPackageResponse", {
+    categories: a.array(a.any()),
+    crate: a.object("CratesIoCrate", {
+        badges: a.array(a.any()),
+        categories: a.array(a.string()),
+        created_at: a.string(),
+        description: a.string(),
+        documentation: a.any(),
+        downloads: a.uint32(),
+        exact_match: a.boolean(),
+        homepage: a.string(),
+        id: a.string(),
+        keywords: a.array(a.string()),
+        links: a.object({
+            owner_team: a.string(),
+            owner_user: a.string(),
+            owners: a.string(),
+            reverse_dependencies: a.string(),
+            version_downloads: a.string(),
+            versions: a.nullable(a.any()),
+        }),
+        max_stable_version: a.string(),
+        max_version: a.string(),
+        name: a.string(),
+        newest_version: a.string(),
+        recent_downloads: a.uint32(),
+        repository: a.string(),
+        updated_at: a.string(),
+        version: a.array(a.uint32()),
+    }),
+    keywords: a.array(
+        a.object({
+            crates_cnt: a.uint32(),
+            created_at: a.string(),
+            id: a.string(),
+            keyword: a.string(),
+        }),
+    ),
+    versions: a.array(
+        a.object({
+            audit_actions: a.array(a.any()),
+            bin_names: a.array(a.any()),
+            checksum: a.string(),
+            crate: a.string(),
+            crate_size: a.uint32(),
+            created_at: a.string(),
+            dl_path: a.string(),
+            downloads: a.uint32(),
+            features: a.any(),
+            has_lib: a.boolean(),
+            id: a.uint32(),
+            lib_links: a.nullable(a.any()),
+            license: a.string(),
+            links: a.object({
+                authors: a.string(),
+                dependencies: a.string(),
+                version_downloads: a.string(),
+            }),
+            num: a.string(),
+            published_by: a.object({
+                avatar: a.string(),
+                id: a.uint32(),
+                login: a.string(),
+                name: a.string(),
+                url: a.string(),
+            }),
+            readme_path: a.string(),
+            rust_version: a.nullable(a.string()),
+            updated_at: a.string(),
+            yanked: a.boolean(),
+        }),
+    ),
+});
+
+type CratesIoPackageResponse = a.infer<typeof CratesIoPackageResponse>;
+
+export async function getRustPackageMeta() {
+    const response = await ofetch(
+        `https://crates.io/api/v1/crates/arri_client`,
+    );
+    const meta = a.parse(CratesIoPackageResponse, response);
+    return meta;
+}
+
+export function updateCargoToml(
+    fileContent: string,
+    version: string,
+): { updated: boolean; content: string } {
+    const lines = fileContent.split("\n");
+    let updated = false;
+    const newLines: string[] = [];
+    for (const line of lines) {
+        if (line.trim().startsWith("arri_client")) {
+            let newLine = "";
+            let insertChar = true;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                if (
+                    !updated &&
+                    (char === '"' || char === "'") &&
+                    nextChar &&
+                    Number.isInteger(Number(nextChar))
+                ) {
+                    newLine += char;
+                    newLine += version;
+                    insertChar = false;
+                    updated = true;
+                    continue;
+                }
+                if (!insertChar) {
+                    if (
+                        nextChar &&
+                        Number.isInteger(Number(char)) &&
+                        (nextChar === "'" || nextChar === '"')
+                    ) {
+                        insertChar = true;
+                    }
+                    continue;
+                }
+                newLine += char;
+            }
+            newLines.push(newLine);
+            continue;
+        }
+        newLines.push(line);
+    }
+    return { updated, content: newLines.join("\n") };
 }

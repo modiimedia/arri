@@ -1,3 +1,31 @@
+## 0.60.3
+
+## 0.60.2
+
+## 0.60.1
+
+## 0.60.0
+
+## 0.59.0
+
+## 0.58.1
+
+## 0.58.0
+
+No changes
+
+## 0.57.8
+
+No changes
+
+## 0.57.6
+
+No changes
+
+## 0.57.5
+
+-   Update `http` and `web_socket_channel` to latest
+
 ## 0.0.22
 
 -   Clean up parsing logic for doubles and ints

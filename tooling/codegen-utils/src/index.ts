@@ -21,7 +21,6 @@ export const isHttpMethod = (input: any): input is HttpMethod => {
     if (typeof input !== "string") {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return HttpMethodValues.includes(input as any);
 };
 
@@ -29,7 +28,7 @@ export const isRpcHttpMethod = (input: any): input is RpcHttpMethod => {
     return isHttpMethod(input) && input !== "head";
 };
 
-export const SCHEMA_VERSION = "0.0.6";
+export const SCHEMA_VERSION = "0.0.7";
 
 export interface AppDefinition {
     schemaVersion: typeof SCHEMA_VERSION;
@@ -147,7 +146,7 @@ export function isServiceDefinition(input: any): input is ServiceDefinition {
     if (typeof input !== "object") {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     for (const key of Object.keys(input)) {
         if (typeof input[key] !== "object") {
             return false;
@@ -285,7 +284,7 @@ export function createAppDefinition(input: AppDefinitionHelper): AppDefinition {
         };
     }
     const result: AppDefinition = {
-        schemaVersion: "0.0.6",
+        schemaVersion: "0.0.7",
         ...input,
         procedures,
         definitions,

@@ -166,7 +166,7 @@ describe("errors()", () => {
                 id: a.string(),
                 date: a.timestamp(),
             },
-            { additionalProperties: false },
+            { strict: true },
         );
         const looseResult = a.errors(looseSchema, {
             id: "1",
@@ -181,7 +181,7 @@ describe("errors()", () => {
         expect(looseResult.length).toBe(0);
         expect(strictResult.length).toBe(1);
         expect(strictResult[0]!.instancePath).toBe("/message");
-        expect(strictResult[0]!.schemaPath).toBe("/additionalProperties");
+        expect(strictResult[0]!.schemaPath).toBe("/strict");
     });
     test("record errors", () => {
         const schema = a.record(

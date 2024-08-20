@@ -1,6 +1,6 @@
 import { serializeSmallString } from "@arrirpc/schema";
+import { FetchError, ofetch } from "@joshmossas/ofetch";
 import { EventSourcePlusOptions, type HttpMethod } from "event-source-plus";
-import { FetchError, ofetch } from "ofetch";
 
 import { ArriErrorInstance, isArriError } from "./errors";
 import { getHeaders } from "./utils";

@@ -3,6 +3,7 @@ import { type SchemaFormDiscriminator } from "@arrirpc/codegen-utils";
 import {
     type CodegenContext,
     getClassName,
+    getCodeComment,
     isNullable,
     kotlinIdentifier,
     type KotlinProperty,
@@ -70,7 +71,8 @@ export function kotlinDiscriminatorFromSchema(
     if (context.existingTypeIds.includes(className)) {
         return result;
     }
-    const content = `sealed interface ${className} : ${context.clientName}Model {
+    const codeComment = getCodeComment(schema.metadata, "", "class");
+    const content = `${codeComment}sealed interface ${className} : ${context.clientName}Model {
     val ${kotlinDiscriminatorKey}: String
 
     companion object Factory : ${context.clientName}ModelFactory<${className}> {

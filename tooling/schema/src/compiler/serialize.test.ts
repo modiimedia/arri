@@ -63,7 +63,7 @@ it("doesn't serialize NaN", () => {
     try {
         expect(Compiled.serialize(input));
         expect(a.serialize(Schema, input));
-    } catch (err) {
+    } catch (_) {
         expect(true).toBe(true);
     }
 });

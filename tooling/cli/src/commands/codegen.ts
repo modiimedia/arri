@@ -1,14 +1,14 @@
 import fs from "node:fs";
 
 import { type AppDefinition, isAppDefinition } from "@arrirpc/codegen-utils";
+import { ofetch } from "@joshmossas/ofetch";
 import { loadConfig } from "c12";
 import { watch } from "chokidar";
 import { defineCommand } from "citty";
-import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { logger } from "../common";
-import { isArriConfig, ResolvedArriConfig } from "../config";
+import { ArriConfig, isArriConfig } from "../config";
 
 export default defineCommand({
     meta: {
@@ -147,15 +147,14 @@ async function getAppDefinitionFromFile(file: string) {
 
 async function runGenerators(
     def: AppDefinition,
-    generators: ResolvedArriConfig["generators"],
+    generators: ArriConfig["generators"],
 ) {
     logger.info(`Generating ${generators?.length} client(s)`);
     await Promise.allSettled(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         generators.map((gen) =>
             gen.generator(
                 def ?? {
-                    schemaVersion: "0.0.6",
+                    schemaVersion: "0.0.7",
                     procedures: {},
                     definitions: {},
                 },

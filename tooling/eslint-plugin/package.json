@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/eslint-plugin",
-  "version": "0.57.4",
+  "version": "0.60.3",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
   "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
@@ -19,6 +19,6 @@
     }
   },
   "files": ["dist"],
-  "devDependencies": { "@types/eslint": "^8.56.11" },
+  "devDependencies": { "@types/eslint": "^9.6.0" },
   "peerDependencies": { "eslint": ">=8.0.0" }
 }

@@ -27,7 +27,7 @@ export function isSchema(input: unknown): input is Schema {
         "values",
         "properties",
         "optionalProperties",
-        "additionalProperties",
+        "strict",
         "discriminator",
         "mapping",
         "ref",
@@ -127,7 +127,7 @@ export function isSchemaFormElements(
 export interface SchemaFormProperties extends SchemaFormEmpty {
     properties: Record<string, Schema>;
     optionalProperties?: Record<string, Schema>;
-    additionalProperties?: boolean;
+    strict?: boolean;
 }
 export function isSchemaFormProperties(
     input: unknown,

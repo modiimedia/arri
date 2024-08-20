@@ -493,6 +493,9 @@ export const $$DefaultPayload: ArriModelValidator<DefaultPayload> = {
  * @deprecated
  */
 export interface DeprecatedRpcParams {
+    /**
+     * @deprecated
+     */
     deprecatedField: string;
 }
 export const $$DeprecatedRpcParams: ArriModelValidator<DeprecatedRpcParams> = {
@@ -6011,6 +6014,9 @@ export const $$UsersWatchUserParams: ArriModelValidator<UsersWatchUserParams> =
 export interface UsersWatchUserResponse {
     id: string;
     role: UsersWatchUserResponseRole;
+    /**
+     * A profile picture
+     */
     photo: UserPhoto | null;
     createdAt: Date;
     numFollowers: number;
@@ -6349,6 +6355,9 @@ export interface UserPhoto {
     width: number;
     height: number;
     bytes: bigint;
+    /**
+     * When the photo was last updated in nanoseconds
+     */
     nanoseconds: bigint;
 }
 export const $$UserPhoto: ArriModelValidator<UserPhoto> = {

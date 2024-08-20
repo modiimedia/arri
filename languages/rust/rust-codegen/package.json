@@ -17,6 +17,6 @@
     "@arrirpc/codegen-utils": "workspace:*",
     "pathe": "^1.1.2"
   },
-  "devDependencies": { "@arrirpc/schema": "workspace:*" },
-  "version": "0.57.4"
+  "devDependencies": {},
+  "version": "0.60.3"
 }

@@ -28,6 +28,10 @@
     },
     "test": {
       "executor": "@nx/vite:test",
+      "inputs": [
+        "{projectRoot}/src",
+        "{workspaceRoot}/src/main/kotlin/ExampleClient.kt"
+      ],
       "outputs": ["{workspaceRoot}/coverage/languages/kotlin/kotlin-codegen"],
       "options": {
         "passWithNoTests": true,

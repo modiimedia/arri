@@ -1,6 +1,7 @@
 {
   "name": "ts-codegen-reference",
-  "version": "0.57.4",
+  "private": true,
+  "version": "0.60.3",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo "\n\nPublishing NPM packages..."
 read -p "Enter OTP: " otp
