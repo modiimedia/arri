@@ -3,12 +3,14 @@ import {
     isRpcDefinition,
     isServiceDefinition,
     RpcDefinition,
+    Schema,
     ServiceDefinition,
     WsRpcDefinition,
 } from "@arrirpc/codegen-utils";
 
 import {
     CodegenContext,
+    getCodeComments,
     validDartClassName,
     validDartIdentifier,
 } from "./_common";
@@ -35,6 +37,10 @@ export function dartHttpRpcFromSchema(
     context: CodegenContext,
 ): string {
     const functionName = getFunctionName(context.instancePath);
+    const metadata: Schema["metadata"] = {
+        description: schema.description,
+        isDeprecated: schema.isDeprecated,
+    };
     let responseType = "void";
     let paramsType = "";
     if (schema.response) {
@@ -44,7 +50,7 @@ export function dartHttpRpcFromSchema(
         paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
     }
     if (schema.isEventStream) {
-        return `EventSource<${responseType}> ${functionName}(
+        return `${getCodeComments(metadata)}EventSource<${responseType}> ${functionName}(
             ${paramsType ? `${paramsType} params, ` : ""} {
             void Function(${responseType} data, EventSource<${responseType}> connection)? onMessage,
             void Function(http.StreamedResponse response, EventSource<${responseType}> connection)? onOpen,
@@ -72,7 +78,7 @@ export function dartHttpRpcFromSchema(
             );
         }`;
     }
-    return `Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ""}) async {
+    return `${getCodeComments(metadata)}Future<${responseType}> ${functionName}(${paramsType ? `${paramsType} params` : ""}) async {
         return parsedArriRequest(
             "$_baseUrl${schema.path}",
             method: HttpMethod.${schema.method.toLowerCase()},
@@ -94,6 +100,10 @@ export function dartWsRpcFromSchema(
     schema: WsRpcDefinition,
     context: CodegenContext,
 ): string {
+    const metadata: Schema["metadata"] = {
+        description: schema.description,
+        isDeprecated: schema.isDeprecated,
+    };
     const functionName = getFunctionName(context.instancePath);
     let responseType: string | undefined;
     let paramsType: string | undefined;
@@ -103,7 +113,7 @@ export function dartWsRpcFromSchema(
     if (schema.params) {
         paramsType = `${context.modelPrefix}${validDartClassName(schema.params, context.modelPrefix)}`;
     }
-    return `Future<ArriWebsocketController<${responseType ?? "void"}, ${paramsType ?? "void"}>> ${functionName}() {
+    return `${getCodeComments(metadata)}Future<ArriWebsocketController<${responseType ?? "void"}, ${paramsType ?? "void"}>> ${functionName}() {
         return arriWebsocketRequest(
             "$_baseUrl${schema.path}",
             headers: _headers,

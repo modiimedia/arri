@@ -1,7 +1,7 @@
 {
   "name": "test-client-dart",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "implicitDependencies": ["dart-client", "test-server"],
+  "implicitDependencies": ["dart-client", "dart-codegen"],
   "targets": {
     "pub": {
       "executor": "nx:run-commands",

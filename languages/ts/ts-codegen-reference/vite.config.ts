@@ -2,11 +2,11 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/tooling/ts-codegen-reference",
+    cacheDir: "../../../node_modules/.vite/tooling/ts-codegen-reference",
 
     plugins: [
         viteTsConfigPaths({
-            root: "../../",
+            root: "../../../",
         }) as any,
     ],
 
@@ -23,7 +23,7 @@ export default defineConfig({
         globals: true,
         reporters: ["default"],
         pool: "threads",
-        pollOptions: {
+        poolOptions: {
             threads: {
                 singleThread: true,
             },

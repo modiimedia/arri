@@ -1,4 +1,4 @@
-import { pascalCase,type SchemaFormEnum } from "@arrirpc/codegen-utils";
+import { pascalCase, type SchemaFormEnum } from "@arrirpc/codegen-utils";
 
 import {
     type CodegenContext,

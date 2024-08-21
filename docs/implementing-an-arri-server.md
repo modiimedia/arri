@@ -39,9 +39,7 @@ Although the Arri specification doesn't require you to implement `HEAD` for your
 
 ## Rule 3: All inputs and outputs must be a named object
 
-Procedures cannot send / receive arbitrary types like `string` or `boolean`. All parameters and responses must be a named object. So when using [Arri Type Definition](/specifications/arri_type_definition.md) that means that the "Property" Schema Form and "Discriminator" Schema Form are the only valid inputs and outputs that can be assigned to procedures.
-
-Allowing for unnamed inputs and outputs complicates code-generation.
+Procedures cannot send / receive arbitrary types like `string` or `boolean`. All parameters and responses must be a named object or `undefined`. So when using [Arri Type Definition](/specifications/arri_type_definition.md) that means that the "Property" Schema Form and "Discriminator" Schema Form are the only valid inputs and outputs that can be assigned to procedures. This ensures that every input and output can be mapped to a `class` / `struct` / `object` which simiplifies code-generation.
 
 ## Rule 4: All RPC parameters are passed through the request body as JSON with the exception of GET requests
 
@@ -193,3 +191,130 @@ arri codegen AppDefinition.json # json app def
 arri codegen AppDefinition.ts # ts app def
 arri codegen https://myapi.com/__definition # http endpoint
 ```
+
+## Bonus: Create a plugin for the Arri CLI
+
+Server plugins dictate what happens when you run `arri dev` and `arri build`. By creating a plugin you can create a fully automated experience.
+
+In order to create a server plugin use the `defineServerConfig` helper from the `arri` package:
+
+```ts
+import { defineServerConfig } from "arri";
+
+const myCustomConfig = defineServerConfig({
+    devArgs: {
+        // define what CLI args the "dev" command accepts
+        foo: {
+            type: "string",
+            required: false,
+        },
+    },
+    devFn(args, generators) {
+        console.log(args.foo); // foo is now available here
+    },
+    buildArgs: {
+        // define what CLI args the "build" command accepts
+        bar: {
+            type: "boolean",
+        },
+    },
+    buildFn(args, generators) {
+        console.log(args.bar); // bar is now available here
+    },
+});
+```
+
+Then you simply register your plugin in the arri config file:
+
+```ts
+export default defineConfig({
+    server: myCustomPlugin,
+    generators: [...]
+})
+```
+
+Now the Arri CLI will use the functions in `devFn` and `buildFn` for the `dev` and `build` commands respectively.
+
+```bash
+arri dev --foo "hello world" # outputs "hello world"
+arri build --bar # outputs false
+```
+
+You can also wrap this helper in a function if you have some options that you want users to input without needing to be passed as CLI args.
+
+```ts
+function myCustomServer(options: { port: number }) {
+    return defineServerConfig({...});
+}
+```
+
+```ts
+export default defineConfig({
+    server: myCustomServer({
+        port: 3000,
+    }),
+    generators: [...],
+});
+```
+
+### Example: A simple Go server plugin
+
+Let's say we've configured a go generator that reads our go application and outputs an [App Definition](/specifications/arri_app_definition.md) at the following location `.arri/__definition.json`. We can set up a simple plugin that looks like this.
+
+```ts
+const goServer = defineServerConfig({
+    devArgs: {},
+    devFn(_, generators) {
+        // run "go generate"
+        execSync("go generate", {
+            stdio: "inherit",
+        });
+        // read the App Definition
+        const appDef = JSON.parse(
+            readFileSync(".arri/__definition.json", "utf8"),
+        ) as AppDefinition;
+        // run all of the registered Arri generators
+        await Promise.all(generators.map((item) => item.generator(appDef)));
+        // start the go application
+        execSync("go run main.go", {
+            stdio: 'inherit'
+        });
+    },
+    buildArgs: {},
+    buildFn(_, generators) {
+        // run "go generate"
+        execSync("go generate", {
+            stdio: "inherit",
+        });
+        // read the App Definition
+        const appDef = JSON.parse(
+            readFileSync(".arri/__definition.json", "utf8"),
+        ) as AppDefinition;
+        // run all of the registered Arri generators
+        await Promise.all(generators.map((item) => item.generator(appDef)));
+        // run "go build"
+        execSync("go build", {
+            stdio: "inherit"
+        })
+    },
+});
+
+export default defineConfig({
+    server: goServer,
+    generators: [...]
+})
+```
+
+That's it. Now whenever we call `arri dev` it will:
+
+-   output JSON app definition file
+-   run the arri code generators against that file
+-   start the go server
+
+And when we call `arri build` it will:
+
+-   output JSON app definition file
+-   run the arri code generators against that file
+-   build the go application
+
+Now there's a lot more we can add to this such as file watchers and whatnot. It's just typescript so you can basically do whatever you want.

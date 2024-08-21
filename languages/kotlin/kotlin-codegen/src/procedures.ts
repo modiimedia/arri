@@ -10,6 +10,7 @@ import {
 
 import {
     type CodegenContext,
+    getCodeComment,
     kotlinClassName,
     kotlinIdentifier,
 } from "./_common";
@@ -42,9 +43,17 @@ export function kotlinHttpRpcFromSchema(
     const response = schema.response
         ? kotlinClassName(`${context.modelPrefix}_${schema.response}`)
         : undefined;
+    const codeComment = getCodeComment(
+        {
+            description: schema.description,
+            isDeprecated: schema.isDeprecated,
+        },
+        "",
+        "method",
+    );
 
     if (schema.isEventStream) {
-        return `fun ${name}(
+        return `${codeComment}fun ${name}(
             scope: CoroutineScope,
             ${params ? `params: ${params},` : ""}
             lastEventId: String? = null,
@@ -88,7 +97,7 @@ export function kotlinHttpRpcFromSchema(
                 stack = null,
             )
         }`;
-    return `suspend fun ${name}(${params ? `params: ${params}` : ""}): ${response ?? "Unit"} {
+    return `${codeComment}suspend fun ${name}(${params ? `params: ${params}` : ""}): ${response ?? "Unit"} {
         val response = __prepareRequest(
             client = httpClient,
             url = "$baseUrl${schema.path}",

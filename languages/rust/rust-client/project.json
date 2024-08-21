@@ -14,11 +14,12 @@
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/src",
         "{projectRoot}/Cargo.lock",
         "{projectRoot}/Cargo.toml"
       ],
       "outputs": ["{projectRoot}/target"],
+      "cache": false,
       "options": {
         "command": "cargo test -- --nocapture",
         "cwd": "languages/rust/rust-client"
@@ -28,6 +29,20 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "cargo publish",
+        "cwd": "languages/rust/rust-client"
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src/**/*.rs",
+        "{projectRoot}/Cargo.toml",
+        "{projectRoot}/Cargo.lock"
+      ],
+      "outputs": ["{projectRoot}/target"],
+      "cache": false,
+      "options": {
+        "command": "cargo build",
         "cwd": "languages/rust/rust-client"
       }
     }

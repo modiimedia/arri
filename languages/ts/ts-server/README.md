@@ -2,6 +2,8 @@
 
 Typescript implementation of [Arri RPC](/README.md). It's built on top of [H3](https://github.com/unjs/h3) and uses [esbuild](https://esbuild.github.io/) for bundling.
 
+Parameters and responses are defined using [@arrirpc/schema](/tooling/schema/README.md) for automatic validation and serialization of inputs and outputs and to generate Arri Type Definitions for client generators.
+
 ## Table of Contents
 
 -   [Quickstart](#quickstart)
@@ -45,10 +47,10 @@ pnpm run dev
 
 ```bash
 # npm
-npm install arri @arri/server @arri/schema
+npm install arri @arrirpc/server @arrirpc/schema
 
 # pnpm
-pnpm install arri @arri/server @arri/schema
+pnpm install arri @arrirpc/server @arrirpc/schema
 ```
 
 ### Scaffold Your Project
@@ -82,12 +84,10 @@ Create an `arri.config.ts` in the project directory
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, servers, generators } from "arri";
 
 export default defineConfig({
-    entry: "app.ts",
-    port: 3000,
-    srcDir: "src",
+    server: servers.tsServer(),
     generators: [
         generators.typescriptClient({
             // options
@@ -176,9 +176,11 @@ export default defineRpc({
 
 ```ts
 export default defineConfig({
+    servers: servers.tsServer({
+        procedureDir: "procedures", // change which directory to look for procedures (This is relative to the srcDir)
+        procedureGlobPatterns: ["**/*.rpc.ts"], // change the file name glob pattern for finding rpcs
+    }),
     // rest of config
-    procedureDir: "procedures", // change which directory to look for procedures (This is relative to the srcDir)
-    procedureGlobPatterns: ["**/*.rpc.ts"], // change the file name glob pattern for finding rpcs
 });
 ```
 
@@ -195,11 +197,22 @@ app.rpc('sayHello',
 
 // defining a service
 const app = new ArriApp();
+const usersService = defineService("users");
+usersService.rpc("getUser", defineRpc({...}));
+usersService.rpc("createUser", defineRpc({...}));
+
+// register the service on the app instance
+app.use(usersService);
+```
+
+There's also a shorthand for initializing services with procedures
+
+```ts
+// this is equivalent to what we showed above
 const usersService = defineService("users", {
     getUser: defineRpc({..}),
     createUser: defineRpc({..}),
 });
-app.use(usersService);
 ```
 
 #### Creating Event Stream Procedures
@@ -438,10 +451,10 @@ declare module "@arrirpc/server" {
 
 ```ts
 // arri.config.ts
-import { defineConfig, generators } from "arri";
+import { defineConfig, servers, generators } from "arri";
 
 export default defineConfig({
-    // rest of config
+    server: servers.tsServer(),
     generators: [
         generators.typescriptClient({...}),
         generators.dartClient({...}),

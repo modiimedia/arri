@@ -1,0 +1,22 @@
+{
+  "name": "swift-client",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "compile": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "swift build",
+        "cwd": "languages/swift/swift-client"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "swift test",
+        "cwd": "languages/swift/swift-client"
+      }
+    }
+  }
+}

@@ -29,6 +29,7 @@ const main = defineCommand({
                 choices: ["codegen", "tooling"],
             },
         ]);
+        let projectName: string;
         let pkgName: string;
         let pkgLocation: string;
         let depth: number;
@@ -57,6 +58,7 @@ const main = defineCommand({
                         await mkdir(langDir);
                     }
                     pkgName = `@arrirpc/codegen-${lang}`;
+                    projectName = `${lang}-codegen`;
                     pkgLocation = `languages/${lang}/${lang}-codegen`;
 
                     depth = 3;
@@ -77,6 +79,9 @@ const main = defineCommand({
                 ]);
                 isCodegen = false;
                 pkgName = kebabCase(inputResult.name);
+                projectName = kebabCase(
+                    inputResult.name.replace("@arrirpc/", ""),
+                );
                 pkgLocation = `tooling/${pkgName}`;
                 depth = 2;
                 outDir = path.resolve(__dirname, "../../tooling", pkgName);
@@ -87,12 +92,30 @@ const main = defineCommand({
         await mkdir(path.resolve(outDir, "src"));
         await Promise.all([
             writeFile(
-                path.resolve(outDir, "src/index.ts"),
-                `// ${pkgName} entry\n// todo`,
-            ),
-            writeFile(
-                path.resolve(outDir, ".eslintrc.json"),
-                eslintConfigTemplate(depth),
+                path.resolve(outDir, "src/_index.ts"),
+                isCodegen
+                    ? `import { defineGeneratorPlugin } from "@arrirpc/codegen-utils";
+
+// rename this and add any other options you need for the generator
+export interface MyGeneratorOptions {
+    clientName: string;
+    outputFile: string;
+    typePrefix?: string;
+}
+
+// rename this before publishing
+export const myGenerator = defineGeneratorPlugin(
+    (options: MyGeneratorOptions) => {
+        return {
+            generator(appDef, isDevServer) {
+                // todo: use the app definition to output some code
+            },
+            options,
+        };
+    },
+);
+`
+                    : `// ${pkgName} entry\n// todo`,
             ),
             writeFile(
                 path.resolve(outDir, "build.config.ts"),
@@ -104,7 +127,7 @@ const main = defineCommand({
             ),
             writeFile(
                 path.resolve(outDir, "project.json"),
-                projectJsonTemplate(pkgName, pkgLocation, depth),
+                projectJsonTemplate(projectName, pkgName, pkgLocation, depth),
             ),
             writeFile(
                 path.resolve(outDir, "README.md"),
@@ -115,18 +138,29 @@ const main = defineCommand({
                 tsConfigTemplate(depth),
             ),
             writeFile(
-                path.resolve(outDir, "tsconfig.lib.json"),
-                tsConfigLibTemplate(),
-            ),
-            writeFile(
-                path.resolve(outDir, "tsconfig.spec.json"),
-                tsConfigSpecTemplate(),
-            ),
-            writeFile(
                 path.resolve(outDir, "vite.config.ts"),
                 viteConfigTemplate(pkgName, depth),
             ),
         ]);
+        if (isCodegen) {
+            await mkdir(`${outDir}-reference`);
+            await Promise.all([
+                writeFile(
+                    path.resolve(`${outDir}-reference`, "README.md"),
+                    `# ${pkgName} Reference
+
+Use this directory to make a reference output based \`../../../tests/test-files/AppDefinition.json\` that can be used to test the output of your generator.`,
+                ),
+                writeFile(
+                    path.resolve(`${outDir}-reference`, "project.json"),
+                    referenceProjectJsonTemplate(
+                        projectName,
+                        `${pkgLocation}-reference`,
+                        depth,
+                    ),
+                ),
+            ]);
+        }
         console.info(`Scaffolded new project in ${outDir}`);
     },
 });
@@ -180,13 +214,12 @@ function packageJsonTemplate(
     "dependencies": {
       ${isCodegen ? `"@arrirpc/codegen-utils": "workspace:*"` : ""}
     },
-    "devDependencies": {
-      ${isCodegen ? `"@arrirpc/schema": "workspace:*"` : ""}
-    }
+    "devDependencies": {}
 }`;
 }
 
 function projectJsonTemplate(
+    projectName: string,
     packageName: string,
     packageLocation: string,
     depth: number,
@@ -196,7 +229,7 @@ function projectJsonTemplate(
         prefix += "../";
     }
     return `{
-  "name": "${packageName}",
+  "name": "${projectName}",
   "$schema": "${prefix}node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "${packageLocation}/src",
   "projectType": "library",
@@ -223,6 +256,13 @@ function projectJsonTemplate(
         "command": "pnpm eslint ${packageLocation}"
       }
     },
+    "typecheck": {
+        "executor": "nx:run-commands",
+        "options": {
+            "command": "tsc --noEmit",
+            "cwd": "${packageLocation}"
+        }
+    },
     "test": {
       "executor": "@nx/vite:test",
       "outputs": ["{workspaceRoot}/coverage/${packageLocation}"],
@@ -243,28 +283,43 @@ function projectJsonTemplate(
 `;
 }
 
-function eslintConfigTemplate(depth: number) {
+function referenceProjectJsonTemplate(
+    projectName: string,
+    packageLocation: string,
+    depth: number,
+) {
     let prefix = "";
     for (let i = 0; i < depth; i++) {
         prefix += "../";
     }
     return `{
-  "extends": ["${prefix}.eslintrc.js"],
-  "ignorePatterns": [],
-  "overrides": [
-    {
-      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "rules": {}
+  "name": "${projectName}-reference",
+  "$schema": "${prefix}node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "compile": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'not implemented'",
+        "cwd": "${packageLocation}-reference"
+      }
     },
-    {
-      "files": ["*.ts", "*.tsx"],
-      "rules": {}
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'not implemented'",
+        "cwd": "${packageLocation}-reference"
+      }
     },
-    {
-      "files": ["*.js", "*.jsx"],
-      "rules": {}
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'not implemented'",
+        "cwd": "${packageLocation}-reference"
+      }
     }
-  ]
+  },
+  "tags": []
 }
 `;
 }
@@ -272,6 +327,7 @@ function eslintConfigTemplate(depth: number) {
 function buildConfigTemplate(_packageName: string) {
     return `import { readFileSync } from "node:fs";
 import path from "node:path";
+
 import { defineBuildConfig } from "unbuild";
 
 const packageJson = JSON.parse(
@@ -280,11 +336,10 @@ const packageJson = JSON.parse(
     }),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
-    entries: ["./src/index"],
+    entries: [{ name: "index", input: "./src/_index.ts" }],
     rollup: {
         emitCJS: true,
         dts: {
@@ -307,55 +362,8 @@ function tsConfigTemplate(depth: number) {
     return `{
   "extends": "${prefix}tsconfig.base.json",
   "compilerOptions": {
-    "types": ["vitest"]
-  },
-  "references": [
-    {
-      "path": "./tsconfig.lib.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
-}
-`;
-}
-
-function tsConfigLibTemplate() {
-    return `{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "types": ["node"]
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
-}
-`;
-}
-
-function tsConfigSpecTemplate() {
-    return `{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node"]
-  },
-  "include": [
-    "vite.config.ts",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.tsx",
-    "src/**/*.spec.tsx",
-    "src/**/*.test.js",
-    "src/**/*.spec.js",
-    "src/**/*.test.jsx",
-    "src/**/*.spec.jsx",
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-  ],
-  "exclude": []
+    "types": ["vitest", "vitest/globals", "node"]
+  }
 }
 `;
 }
@@ -388,13 +396,9 @@ export default defineConfig({
 
     test: {
         globals: true,
-        reporters: ["default"],
+        reporters: ["default", "html"],
+        outputFile: ".temp/test-results/index.html",
         pool: "threads",
-        pollOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
         cache: {
             dir: "${prefix}node_modules/.vitest",
         },

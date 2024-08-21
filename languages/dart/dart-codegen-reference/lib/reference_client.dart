@@ -50,6 +50,7 @@ class ExampleClientBooksService {
         _baseUrl = baseUrl,
         _headers = headers;
 
+  /// Get a book
   Future<Book> getBook(BookParams params) async {
     return parsedArriRequest(
       "$_baseUrl/books/get-book",
@@ -62,6 +63,8 @@ class ExampleClientBooksService {
     );
   }
 
+  /// Create a book
+  @deprecated
   Future<Book> createBook(Book params) async {
     return parsedArriRequest(
       "$_baseUrl/books/create-book",
@@ -74,6 +77,7 @@ class ExampleClientBooksService {
     );
   }
 
+  @deprecated
   EventSource<Book> watchBook(
     BookParams params, {
     void Function(Book data, EventSource<Book> connection)? onMessage,
@@ -114,10 +118,18 @@ class ExampleClientBooksService {
   }
 }
 
+/// This is a book
 class Book implements ArriModel {
+  /// The book ID
   final String id;
+
+  /// The book title
   final String name;
+
+  /// When the book was created
+  @deprecated
   final DateTime createdAt;
+  @deprecated
   final DateTime updatedAt;
   const Book({
     required this.id,

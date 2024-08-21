@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "pathe";
 import prettier from "prettier";
 
-import { type AppDefinition } from "../../tooling/codegen-utils/dist";
+import { createAppDefinition } from "../../tooling/codegen-utils/src";
 import { a } from "../../tooling/schema/src/_index";
 
 const Enumerator = a.enumerator(["FOO", "BAR", "BAZ"], { id: "Enumerator" });
@@ -115,12 +115,15 @@ const RecursiveObject = a.recursive<RecursiveObject>(
 
 const Book = a.object(
     {
-        id: a.string(),
-        name: a.string(),
-        createdAt: a.timestamp(),
-        updatedAt: a.timestamp(),
+        id: a.string({ description: "The book ID" }),
+        name: a.string({ description: "The book title" }),
+        createdAt: a.timestamp({
+            description: "When the book was created",
+            isDeprecated: true,
+        }),
+        updatedAt: a.timestamp({ isDeprecated: true }),
     },
-    { id: "Book" },
+    { id: "Book", description: "This is a book" },
 );
 type Book = a.infer<typeof Book>;
 
@@ -132,8 +135,7 @@ const BookParams = a.object(
 );
 type BookParams = a.infer<typeof BookParams>;
 
-const def: AppDefinition = {
-    schemaVersion: "0.0.7",
+const def = createAppDefinition({
     info: {
         version: "20",
     },
@@ -142,36 +144,40 @@ const def: AppDefinition = {
             path: "/send-object",
             transport: "http",
             method: "post",
-            params: "NestedObject",
-            response: "NestedObject",
+            params: NestedObject,
+            response: NestedObject,
         },
         "books.getBook": {
             path: "/books/get-book",
             transport: "http",
             method: "get",
-            params: "BookParams",
-            response: "Book",
+            params: BookParams,
+            response: Book,
+            description: "Get a book",
         },
         "books.createBook": {
             path: "/books/create-book",
             transport: "http",
             method: "post",
-            params: "Book",
-            response: "Book",
+            params: Book,
+            response: Book,
+            description: "Create a book",
+            isDeprecated: true,
         },
         "books.watchBook": {
             path: "/books/watch-book",
             transport: "http",
             method: "get",
-            params: "BookParams",
-            response: "Book",
+            params: BookParams,
+            response: Book,
             isEventStream: true,
+            isDeprecated: true,
         },
         "books.createConnection": {
             path: "/books/create-connection",
             transport: "ws",
-            params: "BookParams",
-            response: "Book",
+            params: BookParams,
+            response: Book,
         },
     },
     definitions: {
@@ -183,7 +189,7 @@ const def: AppDefinition = {
         ObjectWithNullableFields,
         RecursiveObject,
     },
-};
+});
 
 async function main() {
     const outDir = path.resolve(__dirname, "../../tests/test-files");
