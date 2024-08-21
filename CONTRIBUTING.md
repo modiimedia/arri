@@ -115,6 +115,16 @@ pnpm nx integration-test test-client-{{language}}
 
 That's it.
 
+## Using the Playground
+
+The playground directory is used to experiment with random stuff. You can start the playground dev server like so:
+
+```ts
+pnpm nx dev playground
+```
+
+Just don't commit any changes made in the playground directory.
+
 ## Project Structure
 
 This project has the following directories
