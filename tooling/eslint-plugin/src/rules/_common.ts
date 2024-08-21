@@ -1,4 +1,4 @@
-import { type Rule,SourceCode } from "eslint";
+import { type Rule, SourceCode } from "eslint";
 import { type BaseCallExpression, type Node } from "estree";
 
 export function argHasIdKey(
