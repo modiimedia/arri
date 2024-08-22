@@ -139,7 +139,7 @@ export const myGenerator = defineGeneratorPlugin(
             ),
             writeFile(
                 path.resolve(outDir, "vite.config.ts"),
-                viteConfigTemplate(pkgName, depth),
+                viteConfigTemplate(pkgName, pkgLocation, depth),
             ),
         ]);
         if (isCodegen) {
@@ -269,7 +269,7 @@ function projectJsonTemplate(
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "${packageLocation}"
-      },
+      }
     }
   },
   "tags": []
@@ -362,7 +362,11 @@ function tsConfigTemplate(depth: number) {
 `;
 }
 
-function viteConfigTemplate(projectName: string, depth: number) {
+function viteConfigTemplate(
+    projectName: string,
+    projectLocation: string,
+    depth: number,
+) {
     let prefix = "";
     for (let i = 0; i < depth; i++) {
         prefix += "../";
@@ -371,12 +375,12 @@ function viteConfigTemplate(projectName: string, depth: number) {
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "${prefix}node_modules/.vite/tooling/${projectName}",
+    cacheDir: "${prefix}node_modules/.vite/${projectLocation}",
 
     plugins: [
         viteTsConfigPaths({
             root: "${prefix}",
-        }) as any,
+        }),
     ],
 
     // Uncomment this if you are using workers.
@@ -392,10 +396,7 @@ export default defineConfig({
         globals: true,
         reporters: ["default", "html"],
         outputFile: ".temp/test-results/index.html",
-        pool: "threads",
-        cache: {
-            dir: "${prefix}node_modules/.vitest",
-        },
+        pool: "threads",       
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     },
