@@ -35,17 +35,11 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tooling/eslint-plugin"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/eslint-plugin",
-        "watch": false
-      },
-      "configurations": {
-        "watch": {
-          "command": "vitest watch --passWithNoTests --globals"
-        }
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/eslint-plugin"
       }
     }
   },
