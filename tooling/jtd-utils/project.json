@@ -27,11 +27,11 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tooling/jtd-utils"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/jtd-utils"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/jtd-utils"
       }
     },
     "typecheck": {

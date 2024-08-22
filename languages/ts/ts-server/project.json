@@ -19,13 +19,11 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "inputs": ["{projectRoot}/src/**/*.ts"],
-      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-server"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/languages/ts/ts-server"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../../coverage/languages/ts/ts-server",
-        "watch": false
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/ts/ts-server"
       }
     },
     "publish": {

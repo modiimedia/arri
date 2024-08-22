@@ -27,13 +27,14 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/tooling/json-schema-to-jtd"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/tooling/schema"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/json-schema-to-jtd"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/json-schema-to-jtd"
       }
     },
+
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

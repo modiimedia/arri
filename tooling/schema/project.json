@@ -36,12 +36,11 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tooling/schema"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/schema",
-        "watch": false
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/schema"
       }
     },
     "typecheck": {

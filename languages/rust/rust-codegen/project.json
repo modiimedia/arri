@@ -36,18 +36,13 @@
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{workspaceRoot}/coverage/languages/rust/rust-codegen-reference/src",
-        "{workspaceRoot}/coverage/languages/rust/rust-codegen/src"
+        "{projectRoot}/src",
+        "{workspaceRoot}/languages/rust/rust-codegen-reference/src/example_client.rs"
       ],
-      "outputs": ["{workspaceRoot}/coverage/languages/rust/rust-codegen"],
+      "outputs": ["{workspaceRoot}/languages/rust/rust-codegen"],
       "options": {
-        "command": "vitest run --passWithNoTests --globals",
+        "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/rust/rust-codegen"
-      },
-      "configurations": {
-        "watch": {
-          "command": "vitest watch --passWithNoTests --globals"
-        }
       }
     },
     "show-test-results": {

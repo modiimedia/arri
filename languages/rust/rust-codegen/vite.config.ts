@@ -2,12 +2,12 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/arri-codegen/rust",
+    cacheDir: "../../../node_modules/.vite/languages/rust/rust-codegen",
 
     plugins: [
         viteTsConfigPaths({
             root: "../../../",
-        }) as any,
+        }),
     ],
 
     // Uncomment this if you are using workers.
@@ -23,9 +23,6 @@ export default defineConfig({
         globals: true,
         reporters: ["default", "html"],
         outputFile: "./.temp/reports/index.html",
-        cache: {
-            dir: "../../../node_modules/.vitest",
-        },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     },

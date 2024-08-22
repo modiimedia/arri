@@ -27,11 +27,11 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-client"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/languages/ts/ts-client"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../../coverage/languages/ts/ts-client"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/ts/ts-client"
       }
     },
     "typecheck": {
