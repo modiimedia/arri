@@ -27,13 +27,14 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tooling/codegen-utils"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/codegen-utils"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/codegen-utils"
       }
     },
+
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

@@ -4,12 +4,12 @@
   "implicitDependencies": ["ts-codegen", "ts-client"],
   "targets": {
     "integration-test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tests/clients/ts"],
       "cache": false,
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../../coverage/tests/clients/ts"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tests/clients/ts"
       }
     },
     "lint": {

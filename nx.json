@@ -44,10 +44,6 @@
     "integration-test": {
       "cache": false
     },
-    "@nx/vite:test": {
-      "cache": true,
-      "inputs": ["default", "^default", "shared-globals"]
-    },
     "lint": {
       "inputs": [
         "default",

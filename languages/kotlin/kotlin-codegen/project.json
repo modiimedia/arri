@@ -27,15 +27,15 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "inputs": [
         "{projectRoot}/src",
-        "{workspaceRoot}/src/main/kotlin/ExampleClient.kt"
+        "{workspaceRoot}/languages/kotlin/kotlin-codegen-reference/src"
       ],
-      "outputs": ["{workspaceRoot}/coverage/languages/kotlin/kotlin-codegen"],
+      "outputs": ["{workspaceRoot}/languages/kotlin/kotlin-codegen"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../../coverage/languages/kotlin/kotlin-codegen"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/kotlin/kotlin-codegen"
       }
     },
     "show-test-results": {

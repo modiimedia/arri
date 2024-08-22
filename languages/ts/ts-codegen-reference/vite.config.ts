@@ -2,12 +2,12 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/tooling/ts-codegen-reference",
+    cacheDir: "../../../node_modules/.vite/languages/ts/ts-codegen-reference",
 
     plugins: [
         viteTsConfigPaths({
             root: "../../../",
-        }) as any,
+        }),
     ],
 
     // Uncomment this if you are using workers.
@@ -27,9 +27,6 @@ export default defineConfig({
             threads: {
                 singleThread: true,
             },
-        },
-        cache: {
-            dir: "../../node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],

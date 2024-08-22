@@ -27,17 +27,11 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tooling/cli"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/cli/schema",
-        "watch": false
-      },
-      "configurations": {
-        "watch": {
-          "command": "vitest watch --passWithNoTests --globals"
-        }
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/cli"
       }
     }
   },

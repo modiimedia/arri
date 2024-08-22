@@ -1,14 +1,9 @@
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/eslint-plugin",
+    cacheDir: "../../node_modules/.vite/tooling/eslint-plugin",
 
-    plugins: [
-        viteTsConfigPaths({
-            root: "../../",
-        }),
-    ],
+    plugins: [],
 
     // Uncomment this if you are using workers.
     // worker: {

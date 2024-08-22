@@ -28,15 +28,15 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
       "inputs": [
         "{projectRoot}/src",
         "{workspaceRoot}/languages/dart/dart-codegen-reference/lib/reference_client.dart"
       ],
-      "outputs": ["{projectRoot}/.temp/test-results"],
+      "outputs": ["{workspaceRoot}/languages/dart/dart-codegen"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/languages/dart/dart-codegen"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/dart/dart-codegen"
       }
     },
     "show-test-results": {

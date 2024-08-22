@@ -23,14 +23,6 @@ export default defineConfig({
         globals: true,
         reporters: ["default"],
         pool: "threads",
-        pollOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
-        cache: {
-            dir: "../../node_modules/.vitest",
-        },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     },

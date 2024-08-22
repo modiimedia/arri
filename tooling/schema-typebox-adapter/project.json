@@ -27,13 +27,14 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/tooling/schema-typebox-adapter"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/tooling/schema"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/tooling/schema-typebox-adapter"
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "tooling/schema-typebox-adapter"
       }
     },
+
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
