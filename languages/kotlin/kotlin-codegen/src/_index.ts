@@ -507,7 +507,6 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
 // SSE_FN_END
 
 private suspend fun __handleSseRequest(
-    scope: CoroutineScope,
     httpClient: HttpClient,
     url: String,
     method: HttpMethod,
@@ -518,16 +517,16 @@ private suspend fun __handleSseRequest(
     lastEventId: String?,
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
-    onError: ((error: ${clientName}Error) -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onConnectionError: ((error: ${clientName}Error) -> Unit) = {},
+    onRequestError: ((error: Exception) -> Unit) = {},
+    onResponseError: ((error: ${clientName}Error) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
     var lastId = lastEventId
     // exponential backoff maxing out at 32 seconds
     if (backoffTime > 0) {
-        withContext(scope.coroutineContext) {
+        withContext(currentCoroutineContext()) {
             Thread.sleep(backoffTime)
         }
     }
@@ -549,16 +548,17 @@ private suspend fun __handleSseRequest(
                 onOpen(httpResponse)
             } catch (e: CancellationException) {
                 onClose()
+                httpResponse.cancel()
                 return@execute
             }
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        onConnectionError(
+                        onResponseError(
                             ${clientName}Error.fromJson(httpResponse.bodyAsText())
                         )
                     } else {
-                        onConnectionError(
+                        onResponseError(
                             ${clientName}Error(
                                 code = httpResponse.status.value,
                                 errorMessage = httpResponse.status.description,
@@ -569,10 +569,10 @@ private suspend fun __handleSseRequest(
                     }
                 } catch (e: CancellationException) {
                     onClose()
+                    httpResponse.cancel()
                     return@execute
                 }
-                __handleSseRequest(
-                    scope = scope,
+                return@execute __handleSseRequest(
                     httpClient = httpClient,
                     url = url,
                     method = method,
@@ -584,15 +584,13 @@ private suspend fun __handleSseRequest(
                     bufferCapacity = bufferCapacity,
                     onOpen = onOpen,
                     onClose = onClose,
-                    onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError,
+                    onResponseError = onResponseError,
                 )
-                return@execute
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    onConnectionError(
+                    onResponseError(
                         ${clientName}Error(
                             code = 0,
                             errorMessage = "Expected server to return Content-Type \\"text/event-stream\\". Got \\"\${httpResponse.headers["Content-Type"]}\\"",
@@ -601,10 +599,10 @@ private suspend fun __handleSseRequest(
                         )
                     )
                 } catch (e: CancellationException) {
+                    httpResponse.cancel()
                     return@execute
                 }
-                __handleSseRequest(
-                    scope = scope,
+                return@execute __handleSseRequest(
                     httpClient = httpClient,
                     url = url,
                     method = method,
@@ -616,14 +614,12 @@ private suspend fun __handleSseRequest(
                     bufferCapacity = bufferCapacity,
                     onOpen = onOpen,
                     onClose = onClose,
-                    onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError,
+                    onResponseError = onResponseError,
                 )
-                return@execute
             }
             newBackoffTime = 0
-            val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
@@ -643,6 +639,7 @@ private suspend fun __handleSseRequest(
                                 onData(event.data)
                             } catch (e: CancellationException) {
                                 onClose()
+                                httpResponse.cancel()
                                 return@execute
                             }
                         }
@@ -652,22 +649,11 @@ private suspend fun __handleSseRequest(
                             return@execute
                         }
 
-                        "error" -> {
-                            val error = ${clientName}Error.fromJson(event.data)
-                            try {
-                                onError(error)
-                            } catch (e: CancellationException) {
-                                onClose()
-                                return@execute
-                            }
-                        }
-
                         else -> {}
                     }
                 }
             }
-            __handleSseRequest(
-                scope = scope,
+            return@execute __handleSseRequest(
                 httpClient = httpClient,
                 url = url,
                 method = method,
@@ -679,22 +665,13 @@ private suspend fun __handleSseRequest(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
-                onError = onError,
                 onData = onData,
-                onConnectionError = onConnectionError,
+                onResponseError = onResponseError,
             )
         }
     } catch (e: java.net.ConnectException) {
-        onConnectionError(
-            ${clientName}Error(
-                code = 503,
-                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonPrimitive(e.toString()),
-                stack = e.stackTraceToString().split("\\n"),
-            )
-        )
-        __handleSseRequest(
-            scope = scope,
+        onRequestError(e)
+        return __handleSseRequest(
             httpClient = httpClient,
             url = url,
             method = method,
@@ -706,14 +683,12 @@ private suspend fun __handleSseRequest(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
-            onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError,
+            onResponseError = onResponseError,
         )
-        return
     } catch (e: Exception) {
-        __handleSseRequest(
-            scope = scope,
+        onRequestError(e)
+        return __handleSseRequest(
             httpClient = httpClient,
             url = url,
             method = method,
@@ -725,9 +700,8 @@ private suspend fun __handleSseRequest(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
-            onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError,
+            onResponseError = onResponseError,
         )
     }
 }`;
@@ -745,14 +719,14 @@ function getHeader(options: {
 )
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*

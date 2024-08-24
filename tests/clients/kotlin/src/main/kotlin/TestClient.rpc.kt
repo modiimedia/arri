@@ -5,14 +5,14 @@
 )
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -273,229 +273,199 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         throw TestClientError.fromJson(response.bodyAsText())
     }
 
-    fun streamAutoReconnect(
-            scope: CoroutineScope,
+    suspend fun streamAutoReconnect(
             params: AutoReconnectParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: AutoReconnectResponse) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
-                    method = HttpMethod.Get,
-                    params = params,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = AutoReconnectResponse.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-auto-reconnect",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = AutoReconnectResponse.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 
     /**
 * This route will always return an error. The client should automatically retry with exponential backoff.
 */
-fun streamConnectionErrorTest(
-            scope: CoroutineScope,
+suspend fun streamConnectionErrorTest(
             params: StreamConnectionErrorTestParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-connection-error-test",
-                    method = HttpMethod.Get,
-                    params = params,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = StreamConnectionErrorTestResponse.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-connection-error-test",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = StreamConnectionErrorTestResponse.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 
     /**
 * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
 */
-fun streamLargeObjects(
-            scope: CoroutineScope,
+suspend fun streamLargeObjects(
             
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-large-objects",
-                    method = HttpMethod.Get,
-                    params = null,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = StreamLargeObjectsResponse.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-large-objects",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = StreamLargeObjectsResponse.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 
-    fun streamMessages(
-            scope: CoroutineScope,
+    suspend fun streamMessages(
             params: ChatMessageParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: ChatMessage) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-messages",
-                    method = HttpMethod.Get,
-                    params = params,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = ChatMessage.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-messages",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = ChatMessage.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 
-    fun streamRetryWithNewCredentials(
-            scope: CoroutineScope,
+    suspend fun streamRetryWithNewCredentials(
             
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
-                    method = HttpMethod.Get,
-                    params = null,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = TestsStreamRetryWithNewCredentialsResponse.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-retry-with-new-credentials",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = TestsStreamRetryWithNewCredentialsResponse.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 
     /**
 * When the client receives the 'done' event, it should close the connection and NOT reconnect
 */
-fun streamTenEventsThenEnd(
-            scope: CoroutineScope,
+suspend fun streamTenEventsThenEnd(
             
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: ChatMessage) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
-                    method = HttpMethod.Get,
-                    params = null,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = ChatMessage.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/tests/stream-ten-events-then-end",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = ChatMessage.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 }
 
@@ -506,40 +476,35 @@ class TestClientUsersService(
     private val baseUrl: String,
     private val headers: headersFn,
 ) {
-    fun watchUser(
-            scope: CoroutineScope,
+    suspend fun watchUser(
             params: UsersWatchUserParams,
             lastEventId: String? = null,
             bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: TestClientError) -> Unit) = {},
-            onConnectionError: ((error: TestClientError) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: UsersWatchUserResponse) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl/rpcs/users/watch-user",
-                    method = HttpMethod.Get,
-                    params = params,
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        val data = UsersWatchUserResponse.fromJson(str)
-                        onData(data)
-                    }
-                )
-            }
-            return job
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl/rpcs/users/watch-user",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    val data = UsersWatchUserResponse.fromJson(str)
+                    onData(data)
+                }
+            )
         }
 }
 
@@ -6384,7 +6349,6 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
 // SSE_FN_END
 
 private suspend fun __handleSseRequest(
-    scope: CoroutineScope,
     httpClient: HttpClient,
     url: String,
     method: HttpMethod,
@@ -6395,16 +6359,16 @@ private suspend fun __handleSseRequest(
     lastEventId: String?,
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
-    onError: ((error: TestClientError) -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onConnectionError: ((error: TestClientError) -> Unit) = {},
+    onRequestError: ((error: Exception) -> Unit) = {},
+    onResponseError: ((error: TestClientError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
     var lastId = lastEventId
     // exponential backoff maxing out at 32 seconds
     if (backoffTime > 0) {
-        withContext(scope.coroutineContext) {
+        withContext(currentCoroutineContext()) {
             Thread.sleep(backoffTime)
         }
     }
@@ -6426,16 +6390,17 @@ private suspend fun __handleSseRequest(
                 onOpen(httpResponse)
             } catch (e: CancellationException) {
                 onClose()
+                httpResponse.cancel()
                 return@execute
             }
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        onConnectionError(
+                        onResponseError(
                             TestClientError.fromJson(httpResponse.bodyAsText())
                         )
                     } else {
-                        onConnectionError(
+                        onResponseError(
                             TestClientError(
                                 code = httpResponse.status.value,
                                 errorMessage = httpResponse.status.description,
@@ -6446,10 +6411,10 @@ private suspend fun __handleSseRequest(
                     }
                 } catch (e: CancellationException) {
                     onClose()
+                    httpResponse.cancel()
                     return@execute
                 }
-                __handleSseRequest(
-                    scope = scope,
+                return@execute __handleSseRequest(
                     httpClient = httpClient,
                     url = url,
                     method = method,
@@ -6461,15 +6426,13 @@ private suspend fun __handleSseRequest(
                     bufferCapacity = bufferCapacity,
                     onOpen = onOpen,
                     onClose = onClose,
-                    onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError,
+                    onResponseError = onResponseError,
                 )
-                return@execute
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    onConnectionError(
+                    onResponseError(
                         TestClientError(
                             code = 0,
                             errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
@@ -6478,10 +6441,10 @@ private suspend fun __handleSseRequest(
                         )
                     )
                 } catch (e: CancellationException) {
+                    httpResponse.cancel()
                     return@execute
                 }
-                __handleSseRequest(
-                    scope = scope,
+                return@execute __handleSseRequest(
                     httpClient = httpClient,
                     url = url,
                     method = method,
@@ -6493,14 +6456,12 @@ private suspend fun __handleSseRequest(
                     bufferCapacity = bufferCapacity,
                     onOpen = onOpen,
                     onClose = onClose,
-                    onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError,
+                    onResponseError = onResponseError,
                 )
-                return@execute
             }
             newBackoffTime = 0
-            val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
@@ -6520,6 +6481,7 @@ private suspend fun __handleSseRequest(
                                 onData(event.data)
                             } catch (e: CancellationException) {
                                 onClose()
+                                httpResponse.cancel()
                                 return@execute
                             }
                         }
@@ -6529,22 +6491,11 @@ private suspend fun __handleSseRequest(
                             return@execute
                         }
 
-                        "error" -> {
-                            val error = TestClientError.fromJson(event.data)
-                            try {
-                                onError(error)
-                            } catch (e: CancellationException) {
-                                onClose()
-                                return@execute
-                            }
-                        }
-
                         else -> {}
                     }
                 }
             }
-            __handleSseRequest(
-                scope = scope,
+            return@execute __handleSseRequest(
                 httpClient = httpClient,
                 url = url,
                 method = method,
@@ -6556,22 +6507,13 @@ private suspend fun __handleSseRequest(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
-                onError = onError,
                 onData = onData,
-                onConnectionError = onConnectionError,
+                onResponseError = onResponseError,
             )
         }
     } catch (e: java.net.ConnectException) {
-        onConnectionError(
-            TestClientError(
-                code = 503,
-                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonPrimitive(e.toString()),
-                stack = e.stackTraceToString().split("\n"),
-            )
-        )
-        __handleSseRequest(
-            scope = scope,
+        onRequestError(e)
+        return __handleSseRequest(
             httpClient = httpClient,
             url = url,
             method = method,
@@ -6583,14 +6525,12 @@ private suspend fun __handleSseRequest(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
-            onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError,
+            onResponseError = onResponseError,
         )
-        return
     } catch (e: Exception) {
-        __handleSseRequest(
-            scope = scope,
+        onRequestError(e)
+        return __handleSseRequest(
             httpClient = httpClient,
             url = url,
             method = method,
@@ -6602,9 +6542,8 @@ private suspend fun __handleSseRequest(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
-            onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError,
+            onResponseError = onResponseError,
         )
     }
 }
