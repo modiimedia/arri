@@ -282,6 +282,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: AutoReconnectResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -290,7 +291,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 params = params,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
@@ -316,6 +317,7 @@ suspend fun streamConnectionErrorTest(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: StreamConnectionErrorTestResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -324,7 +326,7 @@ suspend fun streamConnectionErrorTest(
                 params = params,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
@@ -350,6 +352,7 @@ suspend fun streamLargeObjects(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: StreamLargeObjectsResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -358,7 +361,7 @@ suspend fun streamLargeObjects(
                 params = null,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
@@ -381,6 +384,7 @@ suspend fun streamLargeObjects(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: ChatMessage) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -389,7 +393,7 @@ suspend fun streamLargeObjects(
                 params = params,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
@@ -412,6 +416,7 @@ suspend fun streamLargeObjects(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: TestsStreamRetryWithNewCredentialsResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -420,7 +425,7 @@ suspend fun streamLargeObjects(
                 params = null,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
@@ -446,6 +451,7 @@ suspend fun streamTenEventsThenEnd(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: ChatMessage) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -454,7 +460,7 @@ suspend fun streamTenEventsThenEnd(
                 params = null,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
@@ -485,6 +491,7 @@ class TestClientUsersService(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: TestClientError) -> Unit) = {},
             onData: ((data: UsersWatchUserResponse) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -493,7 +500,7 @@ class TestClientUsersService(
                 params = params,
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,

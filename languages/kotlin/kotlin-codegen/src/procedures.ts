@@ -62,6 +62,7 @@ export function kotlinHttpRpcFromSchema(
             onRequestError: ((error: Exception) -> Unit) = {},
             onResponseError: ((error: ${context.clientName}Error) -> Unit) = {},
             onData: ((${response ? `data: ${response}` : ""}) -> Unit) = {},
+            maxBackoffTime: Long? = null,
         ): Unit {
             __handleSseRequest(
                 httpClient = httpClient,
@@ -70,7 +71,7 @@ export function kotlinHttpRpcFromSchema(
                 params = ${params ? "params" : "null"},
                 headers = headers,
                 backoffTime = 0,
-                maxBackoffTime = 30000L,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
                 lastEventId = lastEventId,
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,

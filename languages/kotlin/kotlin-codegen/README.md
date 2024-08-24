@@ -72,6 +72,77 @@ val service = MyClientUsersService(
     )
 ```
 
+### Calling Procedures
+
+#### Standard HTTP Procedures
+
+```kotlin
+runBlocking {
+    // procedure with no parameters
+    val getUsersResponse = myClient.users.getUsers()
+
+    // procedure with parameters
+    val getUserResponse = myClient.users.getUser(GetUserParams(userId = "12345"))
+}
+```
+
+#### Event Stream Procedures
+
+##### Basic Usage
+
+```kotlin
+runBlocking {
+    myClient.users.watchUserChanges(
+        onData { message ->
+            println("New message: ${message}")
+        },
+        onOpen {
+            println("Connection established")
+        }
+        onRequestError { err ->
+            println("Error connecting to server: ${err}")
+        },
+        onResponseError { err ->
+            println("Server returned an error: ${err.code} ${err.message}")
+        },
+        onClose {
+            println("Connection closed")
+        }
+    )
+}
+```
+
+##### Cancelling Requests
+
+Event stream procedures can be cancelled from inside one of the hooks by throwing a `CancellationException`
+
+```kotlin
+runBlocking {
+    myClient.users.watchUserChanges(
+        onResponseError { err ->
+            println("Server returned an error: ${err.code} ${err.message}")
+            throw CancellationException()
+        }
+    )
+}
+```
+
+You can also spawn a job and cancel that job in order to cancel the Event stream procedure from the outside
+
+```kotlin
+val job = someCoroutineScope.launch {
+    myClient.users.watchUserChanges()
+}
+job.cancel()
+```
+
+##### Other Options
+
+| Option         | Type  | Description                                                                                             |
+| -------------- | ----- | ------------------------------------------------------------------------------------------------------- |
+| bufferCapacity | Int   | Max buffer size that can be allocated towards reading messages received. Default is 1024 \* 1024 (1MB). |
+| maxBackoffTime | Long? | Max wait time between retries in milliseconds. Default is 30000ms                                       |
+
 ### Using Arri Models
 
 All generated models will be data classes. They will have access to the following features:

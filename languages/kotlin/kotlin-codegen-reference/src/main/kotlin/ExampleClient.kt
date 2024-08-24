@@ -133,6 +133,7 @@ class ExampleClientBooksService(
         onRequestError: ((error: Exception) -> Unit) = {},
         onResponseError: ((error: ExampleClientError) -> Unit) = {},
         onData: ((data: Book) -> Unit) = {},
+        maxBackoffTime: Long? = null,
     ): Unit {
         __handleSseRequest(
             httpClient = httpClient,
@@ -141,7 +142,7 @@ class ExampleClientBooksService(
             params = params,
             headers = headers,
             backoffTime = 0,
-            maxBackoffTime = 30000L,
+            maxBackoffTime = maxBackoffTime ?: 30000L,
             lastEventId = lastEventId,
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
