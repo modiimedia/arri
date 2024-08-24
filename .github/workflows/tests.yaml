@@ -59,7 +59,8 @@ jobs:
         with:
           version: 9.6.0
       - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
+        # uses: swift-actions/setup-swift@v2
+        uses: redsun82/setup-swift@b2b6f77ab14f6a9b136b520dc53ec8eca27d2b992 # temporary work around for https://github.com/swift-actions/setup-swift/issues/591
         with:
           swift-version: "5.10.1"
       - name: Install Node.js
@@ -100,7 +101,8 @@ jobs:
         with:
           version: 9.6.0
       - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
+        # uses: swift-actions/setup-swift@v2
+        uses: redsun82/setup-swift@b2b6f77ab14f6a9b136b520dc53ec8eca27d2b99 # temporary work around for https://github.com/swift-actions/setup-swift/issues/591
         with:
           swift-version: "5.10.1"
       - name: Install Node.js
