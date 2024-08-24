@@ -284,107 +284,180 @@ ParseSseEventsResult<T> parseSseEvents<T>(
   String input,
   T Function(String) dataParser,
 ) {
-  final stringParts = input.split("\n\n");
-  final endingPart = stringParts.removeLast();
-  final result = <SseEvent<T>>[];
-  for (final part in stringParts) {
-    final event = parseSseEvent(part);
-    if (event == null) {
-      print("WARN: Invalid message data $event");
-      continue;
+  final List<SseEvent<T>> events = [];
+  String? id;
+  String? event;
+  String? data;
+  int? retry;
+  final splitter = LineSplitter();
+  final lines = splitter.convert(input);
+  int? lastIndex = 0;
+  for (var i = 0; i < lines.length; i++) {
+    final line = lines[i];
+    final isEnd = line == "";
+    if (line.isNotEmpty) {
+      final lineResult = SseLineResult.fromString(line);
+      switch (lineResult.type) {
+        case SseLineResultType.id:
+          id = lineResult.value;
+          break;
+        case SseLineResultType.event:
+          event = lineResult.value;
+          break;
+        case SseLineResultType.data:
+          data = lineResult.value;
+          break;
+        case SseLineResultType.retry:
+          retry = int.tryParse(lineResult.value);
+          break;
+        case SseLineResultType.none:
+          break;
+      }
     }
-    result.add(SseEvent<T>.fromString(part, dataParser));
+    if (isEnd) {
+      if (data != null) {
+        events.add(
+          SseEvent.fromSseRawEvent(
+            SseRawEvent(
+              id: id,
+              event: event ?? "message",
+              data: data,
+              retry: retry,
+            ),
+            dataParser,
+          ),
+        );
+      }
+      id = null;
+      event = null;
+      data = null;
+      retry = null;
+      lastIndex = i + 1 < lines.length ? i + 1 : null;
+    }
   }
+
   return ParseSseEventsResult(
-    events: result,
-    leftoverData: endingPart,
+    events: events,
+    leftoverData: lastIndex != null
+        ? lines.getRange(lastIndex, lines.length).join("\n")
+        : "",
   );
 }
 
-SseRawEvent<TData>? parseSseEvent<TData>(String input) {
-  try {
-    return SseRawEvent.fromString(input);
-  } catch (_) {
-    return null;
+class SseLineResult {
+  final SseLineResultType type;
+  final String value;
+  const SseLineResult({required this.type, required this.value});
+  factory SseLineResult.fromString(String input) {
+    if (input.startsWith("id:")) {
+      return SseLineResult(
+        type: SseLineResultType.id,
+        value: input.substring(3).trim(),
+      );
+    }
+    if (input.startsWith("event:")) {
+      return SseLineResult(
+        type: SseLineResultType.event,
+        value: input.substring(6).trim(),
+      );
+    }
+    if (input.startsWith("data:")) {
+      return SseLineResult(
+        type: SseLineResultType.data,
+        value: input.substring(5).trim(),
+      );
+    }
+    if (input.startsWith("retry:")) {
+      return SseLineResult(
+        type: SseLineResultType.retry,
+        value: input.substring(6).trim(),
+      );
+    }
+    return SseLineResult(
+      type: SseLineResultType.none,
+      value: "",
+    );
   }
+}
+
+enum SseLineResultType {
+  id,
+  event,
+  data,
+  retry,
+  none;
 }
 
 sealed class SseEvent<TData> {
   final String? id;
-  final String? event;
+  final String event;
+  final int? retry;
   const SseEvent({
     this.id,
-    this.event,
+    required this.event,
+    this.retry,
   });
 
-  factory SseEvent.fromString(
-    String input,
+  factory SseEvent.fromSseRawEvent(
+    SseRawEvent<TData> event,
     TData Function(String) parser,
   ) {
-    final sse = SseRawEvent<TData>.fromString(input);
     try {
-      switch (sse.event) {
-        case "message":
-          return SseMessageEvent.fromRawSseEvent(sse, parser);
+      switch (event.event) {
         case "done":
-          return SseDoneEvent.fromRawSseEvent(sse);
+          return SseDoneEvent.fromRawSseEvent(event);
+        case "message":
+          return SseMessageEvent.fromRawSseEvent(event, parser);
         default:
-          return SseMessageEvent.fromRawSseEvent(sse, parser);
+          return event;
       }
     } catch (err) {
-      return sse;
+      return event;
     }
   }
 }
 
 class SseRawEvent<TData> extends SseEvent<TData> {
   final String data;
-  const SseRawEvent({super.id, super.event, required this.data});
-
-  factory SseRawEvent.fromString(String input) {
-    final lines = input.split("\n");
-    String? id;
-    String? event;
-    String data = '';
-    for (final line in lines) {
-      if (line.startsWith("id:")) {
-        id = line.replaceFirst("id:", "").trim();
-        continue;
-      }
-      if (line.startsWith("event:")) {
-        event = line.replaceFirst("event:", "").trim();
-        continue;
-      }
-      if (line.startsWith("data:")) {
-        data = line.replaceFirst("data:", "").trim();
-        continue;
-      }
-    }
-    return SseRawEvent(id: id, event: event, data: data);
-  }
+  const SseRawEvent({
+    super.id,
+    required super.event,
+    required this.data,
+    super.retry,
+  });
 }
 
 class SseMessageEvent<TData> extends SseEvent<TData> {
   final TData data;
-  const SseMessageEvent({super.id, super.event, required this.data});
+
+  const SseMessageEvent({
+    super.id,
+    required this.data,
+    super.retry,
+  }) : super(event: "message");
 
   factory SseMessageEvent.fromRawSseEvent(
       SseRawEvent event, TData Function(String) parser) {
     return SseMessageEvent(
       id: event.id,
-      event: "message",
       data: parser(event.data),
+      retry: event.retry,
     );
   }
 }
 
 class SseDoneEvent<TData> extends SseEvent<TData> {
   final String data = "";
-  const SseDoneEvent({super.id, super.event});
+
+  const SseDoneEvent({
+    super.id,
+    super.retry,
+  }) : super(event: "done");
+
   factory SseDoneEvent.fromRawSseEvent(SseRawEvent event) {
     return SseDoneEvent(
       id: event.id,
-      event: "done",
+      retry: event.retry,
     );
   }
 }
