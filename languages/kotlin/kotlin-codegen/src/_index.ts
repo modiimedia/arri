@@ -424,57 +424,83 @@ private suspend fun __prepareRequest(
     return client.prepareRequest(builder)
 }
 
-private fun __parseSseEvent(input: String): __SseEvent {
-    val lines = input.split("\\n")
-    var id: String? = null
-    var event: String? = null
-    var data: String = ""
-    for (line in lines) {
-        if (line.startsWith("id: ")) {
-            id = line.substring(3).trim()
-            continue
-        }
-        if (line.startsWith("event: ")) {
-            event = line.substring(6).trim()
-            continue
-        }
-        if (line.startsWith("data: ")) {
-            data = line.substring(5).trim()
-            continue
-        }
-    }
-    return __SseEvent(id, event, data)
+private enum class SseEventLineType {
+    Id,
+    Event,
+    Data,
+    Retry,
+    None,
 }
 
-private class __SseEvent(val id: String? = null, val event: String? = null, val data: String)
+private fun __parseSseEventLine(line: String): Pair<SseEventLineType, String> {
+    if (line.startsWith("id:")) {
+        return Pair(SseEventLineType.Id, line.substring(3).trim())
+    }
+    if (line.startsWith("event:")) {
+        return Pair(SseEventLineType.Event, line.substring(6).trim())
+    }
+    if (line.startsWith("data:")) {
+        return Pair(SseEventLineType.Data, line.substring(5).trim())
+    }
+    if (line.startsWith("retry:")) {
+        return Pair(SseEventLineType.Retry, line.substring(6).trim())
+    }
+    return Pair(SseEventLineType.None, "")
+}
+
+private class __SseEvent(
+    val id: String? = null,
+    val event: String,
+    val data: String,
+    val retry: Int? = null
+)
 
 private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
 
 private fun __parseSseEvents(input: String): __SseEventParsingResult {
-    val inputs = input.split("\\n\\n").toMutableList()
-    if (inputs.isEmpty()) {
-        return __SseEventParsingResult(
-            events = listOf(),
-            leftover = "",
-        )
-    }
-    if (inputs.size == 1) {
-        return __SseEventParsingResult(
-            events = listOf(),
-            leftover = inputs.last(),
-        )
-    }
-    val leftover = inputs.last()
-    inputs.removeLast()
     val events = mutableListOf<__SseEvent>()
-    for (item in inputs) {
-        if (item.contains("data: ")) {
-            events.add(__parseSseEvent(item))
+    val lines = input.lines().toMutableList()
+    if (lines.isEmpty()) {
+        return __SseEventParsingResult(events = listOf(), leftover = "")
+    }
+    var id: String? = null
+    var event: String? = null
+    var data: String? = null
+    var retry: Int? = null
+    var lastIndex: Int? = 0
+    lines.forEachIndexed { index, line ->
+        if (line.isNotEmpty()) {
+            val (type, value) = __parseSseEventLine(line)
+            when (type) {
+                SseEventLineType.Id -> id = value
+                SseEventLineType.Event -> event = value
+                SseEventLineType.Data -> data = value
+                SseEventLineType.Retry -> retry = value.toInt()
+                SseEventLineType.None -> {}
+            }
+        }
+        val isEnd = line.isEmpty()
+        if (isEnd) {
+            if (data != null) {
+                events.add(
+                    __SseEvent(
+                        id = id,
+                        event = event ?: "message",
+                        data = data!!,
+                        retry = retry,
+                    )
+                )
+            }
+            id = null
+            event = null
+            data = null
+            retry = null
+            lastIndex = if (index + 1 < lines.size) index + 1 else null
         }
     }
     return __SseEventParsingResult(
         events = events,
-        leftover = leftover,
+        leftover = if (lastIndex != null) lines.subList(lastIndex!!, lines.size).joinToString(separator = "\\n") else ""
     )
 }
 
