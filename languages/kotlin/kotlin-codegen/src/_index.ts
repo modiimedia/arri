@@ -50,13 +50,13 @@ import { kotlinRefFromSchema } from "./ref";
 
 export interface ServiceContext {
     clientName: string;
-    modelPrefix?: string;
+    typePrefix?: string;
     modelJsonInstances: Record<string, string>;
 }
 
 export interface KotlinClientOptions {
     clientName?: string;
-    modelPrefix?: string;
+    typePrefix?: string;
     outputFile: string;
 }
 
@@ -78,7 +78,7 @@ export function kotlinClientFromAppDefinition(
 ): string {
     const clientName = kotlinClassName(options.clientName ?? "Client");
     const context: CodegenContext = {
-        modelPrefix: options.modelPrefix ?? "",
+        typePrefix: options.typePrefix ?? "",
         clientName,
         clientVersion: def.info?.version ?? "",
         instancePath: "",
@@ -89,7 +89,7 @@ export function kotlinClientFromAppDefinition(
     for (const key of Object.keys(def.definitions)) {
         const subSchema = def.definitions[key]!;
         const model = kotlinTypeFromSchema(subSchema, {
-            modelPrefix: context.modelPrefix,
+            typePrefix: context.typePrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,
             instancePath: `/${key}`,

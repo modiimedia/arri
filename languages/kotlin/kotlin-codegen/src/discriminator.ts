@@ -22,7 +22,7 @@ export function kotlinDiscriminatorFromSchema(
     for (const key of Object.keys(schema.mapping)) {
         const subSchema = schema.mapping[key]!;
         const subType = kotlinObjectFromSchema(subSchema, {
-            modelPrefix: context.modelPrefix,
+            typePrefix: context.typePrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,
             instancePath: context.instancePath,

@@ -13,7 +13,7 @@ export function kotlinMapFromSchema(
 ): KotlinProperty {
     const nullable = isNullable(schema, context);
     const subType = kotlinTypeFromSchema(schema.values, {
-        modelPrefix: context.modelPrefix,
+        typePrefix: context.typePrefix,
         clientName: context.clientName,
         clientVersion: context.clientVersion,
         instancePath: `${context.instancePath}/[value]`,

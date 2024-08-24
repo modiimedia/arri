@@ -14,7 +14,7 @@ export function kotlinArrayFromSchema(
     const nullable = isNullable(schema, context);
     const defaultValue = nullable ? "null" : "mutableListOf()";
     const subType = kotlinTypeFromSchema(schema.elements, {
-        modelPrefix: context.modelPrefix,
+        typePrefix: context.typePrefix,
         clientName: context.clientName,
         clientVersion: context.clientVersion,
         instancePath: `${context.instancePath}/[Element]`,

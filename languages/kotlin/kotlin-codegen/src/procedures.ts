@@ -38,10 +38,10 @@ export function kotlinHttpRpcFromSchema(
 ): string {
     const name = getProcedureName(context);
     const params = schema.params
-        ? kotlinClassName(`${context.modelPrefix}_${schema.params}`)
+        ? kotlinClassName(`${context.typePrefix}_${schema.params}`)
         : undefined;
     const response = schema.response
-        ? kotlinClassName(`${context.modelPrefix}_${schema.response}`)
+        ? kotlinClassName(`${context.typePrefix}_${schema.response}`)
         : undefined;
     const codeComment = getCodeComment(
         {

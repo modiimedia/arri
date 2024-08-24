@@ -24,7 +24,7 @@ export default defineConfig({
 | --------------------- | ------------------------------------------------------------- |
 | clientName            | The name of the generated client class (Defaults to "Client") |
 | outputFile (required) | Path to the file that will be created by the generator        |
-| modelPrefix           | Add a prefix to the generated class names                     |
+| typePrefix            | Add a prefix to the generated class names                     |
 
 ### 2) Install dependencies
 

@@ -7,7 +7,7 @@ import {
 import { stringStartsWithNumber } from "@arrirpc/codegen-utils";
 
 export interface CodegenContext {
-    modelPrefix: string;
+    typePrefix: string;
     clientName: string;
     clientVersion: string;
     instancePath: string;
@@ -97,7 +97,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
                 normalize: true,
             }),
         );
-        return `${context.modelPrefix}${className}`;
+        return `${context.typePrefix}${className}`;
     }
     const depth = instanceDepth(context);
     if (depth === 1 && !context.discriminatorKey) {
@@ -106,7 +106,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
                 normalize: true,
             }),
         );
-        return `${context.modelPrefix}${className}`;
+        return `${context.typePrefix}${className}`;
     }
 
     if (
@@ -120,7 +120,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
                 { normalize: true },
             ),
         );
-        return `${context.modelPrefix}${className}`;
+        return `${context.typePrefix}${className}`;
     }
 
     const className = kotlinClassName(
@@ -137,7 +137,7 @@ export function getClassName(schema: Schema, context: CodegenContext): string {
             },
         ),
     );
-    return `${context.modelPrefix}${className}`;
+    return `${context.typePrefix}${className}`;
 }
 
 export function instanceDepth(context: CodegenContext) {
