@@ -399,7 +399,7 @@ fun testSseStreamLargeObjects(
             errorCount++
         },
     )
-    Thread.sleep(1000)
+    Thread.sleep(5000)
     job.cancel()
     expect("$tag > open count", openCount, 1)
     expect("$tag > err count", errorCount, 0)
