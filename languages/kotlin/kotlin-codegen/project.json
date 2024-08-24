@@ -29,7 +29,7 @@
     "test": {
       "executor": "nx:run-commands",
       "inputs": [
-        "{projectRoot}/src",
+        "{workspaceRoot}/languages/kotlin/kotlin-codegen/src",
         "{workspaceRoot}/languages/kotlin/kotlin-codegen-reference/src"
       ],
       "outputs": ["{workspaceRoot}/languages/kotlin/kotlin-codegen"],

@@ -424,62 +424,89 @@ private suspend fun __prepareRequest(
     return client.prepareRequest(builder)
 }
 
-private fun __parseSseEvent(input: String): __SseEvent {
-    val lines = input.split("\\n")
-    var id: String? = null
-    var event: String? = null
-    var data: String = ""
-    for (line in lines) {
-        if (line.startsWith("id: ")) {
-            id = line.substring(3).trim()
-            continue
-        }
-        if (line.startsWith("event: ")) {
-            event = line.substring(6).trim()
-            continue
-        }
-        if (line.startsWith("data: ")) {
-            data = line.substring(5).trim()
-            continue
-        }
-    }
-    return __SseEvent(id, event, data)
+// SSE_FN_START
+private enum class SseEventLineType {
+    Id,
+    Event,
+    Data,
+    Retry,
+    None,
 }
 
-private class __SseEvent(val id: String? = null, val event: String? = null, val data: String)
+private fun __parseSseEventLine(line: String): Pair<SseEventLineType, String> {
+    if (line.startsWith("id:")) {
+        return Pair(SseEventLineType.Id, line.substring(3).trim())
+    }
+    if (line.startsWith("event:")) {
+        return Pair(SseEventLineType.Event, line.substring(6).trim())
+    }
+    if (line.startsWith("data:")) {
+        return Pair(SseEventLineType.Data, line.substring(5).trim())
+    }
+    if (line.startsWith("retry:")) {
+        return Pair(SseEventLineType.Retry, line.substring(6).trim())
+    }
+    return Pair(SseEventLineType.None, "")
+}
+
+private data class __SseEvent(
+    val id: String? = null,
+    val event: String,
+    val data: String,
+    val retry: Int? = null
+)
 
 private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover: String)
 
 private fun __parseSseEvents(input: String): __SseEventParsingResult {
-    val inputs = input.split("\\n\\n").toMutableList()
-    if (inputs.isEmpty()) {
-        return __SseEventParsingResult(
-            events = listOf(),
-            leftover = "",
-        )
-    }
-    if (inputs.size == 1) {
-        return __SseEventParsingResult(
-            events = listOf(),
-            leftover = inputs.last(),
-        )
-    }
-    val leftover = inputs.last()
-    inputs.removeLast()
     val events = mutableListOf<__SseEvent>()
-    for (item in inputs) {
-        if (item.contains("data: ")) {
-            events.add(__parseSseEvent(item))
+    val lines = input.lines()
+    if (lines.isEmpty()) {
+        return __SseEventParsingResult(events = listOf(), leftover = "")
+    }
+    var id: String? = null
+    var event: String? = null
+    var data: String? = null
+    var retry: Int? = null
+    var lastIndex: Int? = 0
+    lines.forEachIndexed { index, line ->
+        if (line.isNotEmpty()) {
+            val (type, value) = __parseSseEventLine(line)
+            when (type) {
+                SseEventLineType.Id -> id = value
+                SseEventLineType.Event -> event = value
+                SseEventLineType.Data -> data = value
+                SseEventLineType.Retry -> retry = value.toInt()
+                SseEventLineType.None -> {}
+            }
+        }
+        val isEnd = line == ""
+        if (isEnd) {
+            if (data != null) {
+                events.add(
+                    __SseEvent(
+                        id = id,
+                        event = event ?: "message",
+                        data = data!!,
+                        retry = retry,
+                    )
+                )
+            }
+            id = null
+            event = null
+            data = null
+            retry = null
+            lastIndex = if (index + 1 < lines.size) index + 1 else null
         }
     }
     return __SseEventParsingResult(
         events = events,
-        leftover = leftover,
+        leftover = if (lastIndex != null) lines.subList(lastIndex!!, lines.size).joinToString(separator = "\\n") else ""
     )
 }
+// SSE_FN_END
 
 private suspend fun __handleSseRequest(
-    scope: CoroutineScope,
     httpClient: HttpClient,
     url: String,
     method: HttpMethod,
@@ -490,16 +517,16 @@ private suspend fun __handleSseRequest(
     lastEventId: String?,
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
-    onError: ((error: ${clientName}Error) -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onConnectionError: ((error: ${clientName}Error) -> Unit) = {},
+    onRequestError: ((error: Exception) -> Unit) = {},
+    onResponseError: ((error: ${clientName}Error) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
     var lastId = lastEventId
     // exponential backoff maxing out at 32 seconds
     if (backoffTime > 0) {
-        withContext(scope.coroutineContext) {
+        withContext(currentCoroutineContext()) {
             Thread.sleep(backoffTime)
         }
     }
@@ -521,16 +548,17 @@ private suspend fun __handleSseRequest(
                 onOpen(httpResponse)
             } catch (e: CancellationException) {
                 onClose()
+                httpResponse.cancel()
                 return@execute
             }
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        onConnectionError(
+                        onResponseError(
                             ${clientName}Error.fromJson(httpResponse.bodyAsText())
                         )
                     } else {
-                        onConnectionError(
+                        onResponseError(
                             ${clientName}Error(
                                 code = httpResponse.status.value,
                                 errorMessage = httpResponse.status.description,
@@ -541,10 +569,10 @@ private suspend fun __handleSseRequest(
                     }
                 } catch (e: CancellationException) {
                     onClose()
+                    httpResponse.cancel()
                     return@execute
                 }
-                __handleSseRequest(
-                    scope = scope,
+                return@execute __handleSseRequest(
                     httpClient = httpClient,
                     url = url,
                     method = method,
@@ -556,15 +584,13 @@ private suspend fun __handleSseRequest(
                     bufferCapacity = bufferCapacity,
                     onOpen = onOpen,
                     onClose = onClose,
-                    onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError,
+                    onResponseError = onResponseError,
                 )
-                return@execute
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    onConnectionError(
+                    onResponseError(
                         ${clientName}Error(
                             code = 0,
                             errorMessage = "Expected server to return Content-Type \\"text/event-stream\\". Got \\"\${httpResponse.headers["Content-Type"]}\\"",
@@ -573,10 +599,10 @@ private suspend fun __handleSseRequest(
                         )
                     )
                 } catch (e: CancellationException) {
+                    httpResponse.cancel()
                     return@execute
                 }
-                __handleSseRequest(
-                    scope = scope,
+                return@execute __handleSseRequest(
                     httpClient = httpClient,
                     url = url,
                     method = method,
@@ -588,14 +614,12 @@ private suspend fun __handleSseRequest(
                     bufferCapacity = bufferCapacity,
                     onOpen = onOpen,
                     onClose = onClose,
-                    onError = onError,
                     onData = onData,
-                    onConnectionError = onConnectionError,
+                    onResponseError = onResponseError,
                 )
-                return@execute
             }
             newBackoffTime = 0
-            val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+            val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
@@ -615,6 +639,7 @@ private suspend fun __handleSseRequest(
                                 onData(event.data)
                             } catch (e: CancellationException) {
                                 onClose()
+                                httpResponse.cancel()
                                 return@execute
                             }
                         }
@@ -624,22 +649,11 @@ private suspend fun __handleSseRequest(
                             return@execute
                         }
 
-                        "error" -> {
-                            val error = ${clientName}Error.fromJson(event.data)
-                            try {
-                                onError(error)
-                            } catch (e: CancellationException) {
-                                onClose()
-                                return@execute
-                            }
-                        }
-
                         else -> {}
                     }
                 }
             }
-            __handleSseRequest(
-                scope = scope,
+            return@execute __handleSseRequest(
                 httpClient = httpClient,
                 url = url,
                 method = method,
@@ -651,22 +665,13 @@ private suspend fun __handleSseRequest(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
-                onError = onError,
                 onData = onData,
-                onConnectionError = onConnectionError,
+                onResponseError = onResponseError,
             )
         }
     } catch (e: java.net.ConnectException) {
-        onConnectionError(
-            ${clientName}Error(
-                code = 503,
-                errorMessage = if (e.message != null) e.message!! else "Error connecting to $url",
-                data = JsonPrimitive(e.toString()),
-                stack = e.stackTraceToString().split("\\n"),
-            )
-        )
-        __handleSseRequest(
-            scope = scope,
+        onRequestError(e)
+        return __handleSseRequest(
             httpClient = httpClient,
             url = url,
             method = method,
@@ -678,14 +683,12 @@ private suspend fun __handleSseRequest(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
-            onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError,
+            onResponseError = onResponseError,
         )
-        return
     } catch (e: Exception) {
-        __handleSseRequest(
-            scope = scope,
+        onRequestError(e)
+        return __handleSseRequest(
             httpClient = httpClient,
             url = url,
             method = method,
@@ -697,9 +700,8 @@ private suspend fun __handleSseRequest(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
-            onError = onError,
             onData = onData,
-            onConnectionError = onConnectionError,
+            onResponseError = onResponseError,
         )
     }
 }`;
@@ -717,14 +719,14 @@ function getHeader(options: {
 )
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
