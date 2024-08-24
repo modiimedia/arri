@@ -1,6 +1,5 @@
 import io.ktor.client.*
 import io.ktor.client.plugins.*
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking

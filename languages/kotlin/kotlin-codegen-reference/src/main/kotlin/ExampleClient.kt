@@ -128,7 +128,7 @@ class ExampleClientBooksService(
         scope: CoroutineScope,
         params: BookParams,
         lastEventId: String? = null,
-        bufferCapacity: Int = 1024,
+        bufferCapacity: Int = 1024 * 1024,
         onOpen: ((response: HttpResponse) -> Unit) = {},
         onClose: (() -> Unit) = {},
         onError: ((error: ExampleClientError) -> Unit) = {},
@@ -1886,6 +1886,7 @@ private suspend fun __prepareRequest(
     return client.prepareRequest(builder)
 }
 
+// SSE_FN_START
 private enum class SseEventLineType {
     Id,
     Event,
@@ -1910,7 +1911,7 @@ private fun __parseSseEventLine(line: String): Pair<SseEventLineType, String> {
     return Pair(SseEventLineType.None, "")
 }
 
-private class __SseEvent(
+private data class __SseEvent(
     val id: String? = null,
     val event: String,
     val data: String,
@@ -1921,7 +1922,7 @@ private class __SseEventParsingResult(val events: List<__SseEvent>, val leftover
 
 private fun __parseSseEvents(input: String): __SseEventParsingResult {
     val events = mutableListOf<__SseEvent>()
-    val lines = input.lines().toMutableList()
+    val lines = input.lines()
     if (lines.isEmpty()) {
         return __SseEventParsingResult(events = listOf(), leftover = "")
     }
@@ -1941,7 +1942,7 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
                 SseEventLineType.None -> {}
             }
         }
-        val isEnd = line.isEmpty()
+        val isEnd = line == ""
         if (isEnd) {
             if (data != null) {
                 events.add(
@@ -1965,6 +1966,7 @@ private fun __parseSseEvents(input: String): __SseEventParsingResult {
         leftover = if (lastIndex != null) lines.subList(lastIndex!!, lines.size).joinToString(separator = "\n") else ""
     )
 }
+// SSE_FN_END
 
 
 private suspend fun __handleSseRequest(

@@ -57,7 +57,7 @@ export function kotlinHttpRpcFromSchema(
             scope: CoroutineScope,
             ${params ? `params: ${params},` : ""}
             lastEventId: String? = null,
-            bufferCapacity: Int = 1024,
+            bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
             onError: ((error: ${context.clientName}Error) -> Unit) = {},
