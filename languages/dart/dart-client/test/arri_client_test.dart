@@ -34,6 +34,87 @@ main() {
     expect(closeCount, equals(1));
   });
 
+  test("SSE Line Result", () {
+    final idInputs = ["id:1", "id: 1"];
+    for (final input in idInputs) {
+      final result = SseLineResult.fromString(input);
+      expect(result.type, equals(SseLineResultType.id));
+      expect(result.value, equals("1"));
+    }
+    final eventInputs = ["event:foo", "event: foo"];
+    for (final input in eventInputs) {
+      final result = SseLineResult.fromString(input);
+      expect(result.type, equals(SseLineResultType.event));
+      expect(result.value, "foo");
+    }
+    final dataResults = ["data:foo", "data: foo"];
+    for (final input in dataResults) {
+      final result = SseLineResult.fromString(input);
+      expect(result.type, equals(SseLineResultType.data));
+      expect(result.value, "foo");
+    }
+    final retryResults = ["retry:150", "retry: 150"];
+    for (final input in retryResults) {
+      final result = SseLineResult.fromString(input);
+      expect(result.type, equals(SseLineResultType.retry));
+      expect(result.value, '150');
+    }
+  });
+
+  group("Parsing SSE Messages", () {
+    group("Standard SSE messages", () {
+      final standardSsePayload = [
+        "id: 1",
+        "data: hello world",
+        "",
+        "id: 2",
+        "data: hello world",
+        "",
+        ""
+      ];
+      test("with \\n separator", () {
+        final result = parseSseEvents(standardSsePayload.join("\n"), (input) {
+          return input;
+        });
+        expect(result.events.length, equals(2));
+        expect(result.events[0].id, equals("1"));
+        expect(result.events[1].id, equals("2"));
+        expect(
+          result.events.every((el) =>
+              el is SseMessageEvent<String> && el.data == "hello world"),
+          equals(true),
+        );
+        expect(result.leftoverData, equals(""));
+      });
+      test("with \r\n separator", () {
+        final result =
+            parseSseEvents(standardSsePayload.join("\r\n"), (input) => input);
+        expect(result.events.length, equals(2));
+        expect(result.events[0].id, equals("1"));
+        expect(result.events[1].id, equals("2"));
+        expect(
+          result.events.every((el) =>
+              el is SseMessageEvent<String> && el.data == "hello world"),
+          equals(true),
+        );
+        expect(result.leftoverData, equals(""));
+      });
+      test("with \r separator", () {
+        final result =
+            parseSseEvents(standardSsePayload.join("\r"), (input) => input);
+        expect(result.events.length, equals(2));
+        expect(result.events[0].id, equals("1"));
+        expect(result.events[1].id, equals("2"));
+        expect(
+          result.events.every((el) =>
+              el is SseMessageEvent<String> && el.data == "hello world"),
+          equals(true),
+        );
+        expect(result.leftoverData, equals(""));
+      });
+    });
+  });
+
   test("parsing sse messages", () {
     final streamedTxt = """id: 1
 data: hello world

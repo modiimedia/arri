@@ -84,7 +84,7 @@ export function kotlinObjectFromSchema(
         kotlinKeys.push(kotlinKey);
         const prop = schema.properties[key]!;
         const type = kotlinTypeFromSchema(prop, {
-            modelPrefix: context.modelPrefix,
+            typePrefix: context.typePrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,
             instancePath: `/${className}/${key}`,
@@ -121,7 +121,7 @@ export function kotlinObjectFromSchema(
         const kotlinKey = kotlinIdentifier(key);
         kotlinKeys.push(kotlinKey);
         const type = kotlinTypeFromSchema(schema.optionalProperties![key]!, {
-            modelPrefix: context.modelPrefix,
+            typePrefix: context.typePrefix,
             clientName: context.clientName,
             clientVersion: context.clientVersion,
             instancePath: `/${className}/${key}`,

@@ -2,12 +2,12 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/arri-codegen-kotlin",
+    cacheDir: "../../../node_modules/.vite/languages/kotlin/kotlin-codegen",
 
     plugins: [
         viteTsConfigPaths({
             root: "../../../",
-        }) as any,
+        }),
     ],
 
     // Uncomment this if you are using workers.
@@ -28,9 +28,6 @@ export default defineConfig({
         },
         globals: true,
         reporters: ["default", "html"],
-        cache: {
-            dir: "../../../node_modules/.vitest",
-        },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
         outputFile: ".temp/test-results/index.html",

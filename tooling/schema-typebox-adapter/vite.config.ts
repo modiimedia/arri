@@ -2,11 +2,11 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/@arrirpc/typebox-adapter",
+    cacheDir: "../../node_modules/.vite/@arrirpc/typebox-adapter",
 
     plugins: [
         viteTsConfigPaths({
-            root: "../../../",
+            root: "../../",
         }) as any,
     ],
 
@@ -29,7 +29,7 @@ export default defineConfig({
         globals: true,
         reporters: ["default"],
         cache: {
-            dir: "../../../node_modules/.vitest",
+            dir: "../../node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],

@@ -38,10 +38,10 @@ export function kotlinHttpRpcFromSchema(
 ): string {
     const name = getProcedureName(context);
     const params = schema.params
-        ? kotlinClassName(`${context.modelPrefix}_${schema.params}`)
+        ? kotlinClassName(`${context.typePrefix}_${schema.params}`)
         : undefined;
     const response = schema.response
-        ? kotlinClassName(`${context.modelPrefix}_${schema.response}`)
+        ? kotlinClassName(`${context.typePrefix}_${schema.response}`)
         : undefined;
     const codeComment = getCodeComment(
         {
@@ -53,40 +53,36 @@ export function kotlinHttpRpcFromSchema(
     );
 
     if (schema.isEventStream) {
-        return `${codeComment}fun ${name}(
-            scope: CoroutineScope,
+        return `${codeComment}suspend fun ${name}(
             ${params ? `params: ${params},` : ""}
             lastEventId: String? = null,
-            bufferCapacity: Int = 1024,
+            bufferCapacity: Int = 1024 * 1024,
             onOpen: ((response: HttpResponse) -> Unit) = {},
             onClose: (() -> Unit) = {},
-            onError: ((error: ${context.clientName}Error) -> Unit) = {},
-            onConnectionError: ((error: ${context.clientName}Error) -> Unit) = {},
+            onRequestError: ((error: Exception) -> Unit) = {},
+            onResponseError: ((error: ${context.clientName}Error) -> Unit) = {},
             onData: ((${response ? `data: ${response}` : ""}) -> Unit) = {},
-        ): Job {
-            val job = scope.launch {
-                __handleSseRequest(
-                    scope = scope,
-                    httpClient = httpClient,
-                    url = "$baseUrl${schema.path}",
-                    method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-                    params = ${params ? "params" : "null"},
-                    headers = headers,
-                    backoffTime = 0,
-                    maxBackoffTime = 30000L,
-                    lastEventId = lastEventId,
-                    bufferCapacity = bufferCapacity,
-                    onOpen = onOpen,
-                    onClose = onClose,
-                    onError = onError,
-                    onConnectionError = onConnectionError,
-                    onData = { str ->
-                        ${response ? `val data = ${response}.fromJson(str)` : ""}
-                        onData(${response ? "data" : ""})
-                    }
-                )
-            }
-            return job
+            maxBackoffTime: Long? = null,
+        ): Unit {
+            __handleSseRequest(
+                httpClient = httpClient,
+                url = "$baseUrl${schema.path}",
+                method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
+                params = ${params ? "params" : "null"},
+                headers = headers,
+                backoffTime = 0,
+                maxBackoffTime = maxBackoffTime ?: 30000L,
+                lastEventId = lastEventId,
+                bufferCapacity = bufferCapacity,
+                onOpen = onOpen,
+                onClose = onClose,
+                onRequestError = onRequestError,
+                onResponseError = onResponseError,
+                onData = { str ->
+                    ${response ? `val data = ${response}.fromJson(str)` : ""}
+                    onData(${response ? "data" : ""})
+                }
+            )
         }`;
     }
     const headingCheck = `if (response.headers["Content-Type"] != "application/json") {

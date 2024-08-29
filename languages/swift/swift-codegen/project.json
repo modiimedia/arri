@@ -34,17 +34,15 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{workspaceRoot}/coverage/languages/swift/swift-codegen"],
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/src",
+        "{workspaceRoot}/languages/swift/swift-codegen-reference/Sources/SwiftCodegenReference"
+      ],
+      "outputs": ["{workspaceRoot}/languages/swift/swift-codegen"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/languages/swift/swift-codegen",
-        "watch": false
-      },
-      "configurations": {
-        "watch": {
-          "command": "vitest watch --passWithNoTests --globals"
-        }
+        "command": "vitest run . --passWithNoTests --globals",
+        "cwd": "languages/swift/swift-codegen"
       }
     },
     "show-test-results": {
