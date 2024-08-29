@@ -65,6 +65,11 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.defaultFormatter": "golang.go"
+  },
   "eslint.validate": ["json"],
   "eslint.useFlatConfig": true
 }
