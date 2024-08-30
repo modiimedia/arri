@@ -51,12 +51,18 @@ type ArriTypeDef struct {
 
 type ArriSchemaError struct{}
 
-func ToTypeDef(input interface{}) (*ArriTypeDef, error) {
-	context := _TypeDefContext{IsNullable: nil}
-	return toTypeDef(reflect.TypeOf(input), context)
-}
+const (
+	PascalCase = "PASCAL_CASE"
+	CamelCase  = "CAMEL_CASE"
+	SnakeCase  = "SNAKE_CASE"
+)
+
+type KeyCasing = string
 
 type _TypeDefContext struct {
+	KeyCasing     KeyCasing
+	MaxDepth      uint32
+	CurrentDepth  uint32
 	ParentStructs []string
 	InstancePath  string
 	SchemaPath    string
@@ -64,7 +70,11 @@ type _TypeDefContext struct {
 	EnumValues    *[]string
 }
 
-func (context _TypeDefContext) copyWith(ParentStructs *[]string, InstancePath *string, SchemaPath *string, IsNullable *bool, EnumValues *[]string) _TypeDefContext {
+func (context _TypeDefContext) copyWith(CurrentDepth *uint32, ParentStructs *[]string, InstancePath *string, SchemaPath *string, IsNullable *bool, EnumValues *[]string) _TypeDefContext {
+	depth := context.CurrentDepth
+	if CurrentDepth != nil {
+		depth = *CurrentDepth
+	}
 	structs := context.ParentStructs
 	if ParentStructs != nil {
 		structs = *ParentStructs
@@ -86,6 +96,9 @@ func (context _TypeDefContext) copyWith(ParentStructs *[]string, InstancePath *s
 		enumValues = EnumValues
 	}
 	return _TypeDefContext{
+		KeyCasing:     context.KeyCasing,
+		MaxDepth:      context.MaxDepth,
+		CurrentDepth:  depth,
 		ParentStructs: structs,
 		InstancePath:  instancePath,
 		SchemaPath:    schemaPath,
@@ -95,10 +108,25 @@ func (context _TypeDefContext) copyWith(ParentStructs *[]string, InstancePath *s
 
 }
 
-func toTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func ToTypeDef(input interface{}, keyCasing KeyCasing) (*ArriTypeDef, error) {
+	casing := CamelCase
+	switch keyCasing {
+	case CamelCase, SnakeCase, PascalCase:
+		casing = keyCasing
+	case "":
+		casing = keyCasing
+	default:
+		return nil, errors.New("Invalid keyCasing \"" + keyCasing + "\"")
+	}
+	context := _TypeDefContext{KeyCasing: casing, MaxDepth: 1000, IsNullable: nil}
+	return typeToTypeDef(reflect.TypeOf(input), context)
+}
+
+func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+	if context.CurrentDepth >= context.MaxDepth {
+		return nil, fmt.Errorf("error at %s. max depth of %+v reached", context.InstancePath, context.MaxDepth)
+	}
 	switch input.Kind() {
-	case reflect.Invalid:
-		return nil, errors.ErrUnsupported
 	case
 		reflect.String,
 		reflect.Bool,
@@ -114,38 +142,28 @@ func toTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error
 		reflect.Uint32,
 		reflect.Uint64:
 		return primitiveTypeToTypeDef(input, context)
-	case
-		reflect.Uintptr,
-		reflect.Complex64,
-		reflect.Complex128,
-		reflect.Chan,
-		reflect.Func,
-		reflect.Interface,
-		reflect.Map:
-		return nil, errors.ErrUnsupported
 	case reflect.Pointer:
-		return toTypeDef(input.Elem(), context)
+		return typeToTypeDef(input.Elem(), context)
+	case reflect.Map:
+		return mapToTypeDef(input, context)
 	case
 		reflect.Array,
 		reflect.Slice:
-		return nil, errors.ErrUnsupported
+		return arrayToTypeDef(input, context)
 	case reflect.Struct:
 		if input.Name() == "Time" {
 			t := ATimestamp
 			return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
 		}
 		return structToTypeDef(input, context)
-	case reflect.UnsafePointer:
-		return nil, errors.ErrUnsupported
+	default:
+		return nil, fmt.Errorf("error at %s. %s is not a supported type", context.InstancePath, input.Kind())
 	}
-	return nil, errors.ErrUnsupported
 }
 
 func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
 	kind := value.Kind()
 	switch kind {
-	case reflect.Invalid:
-		return nil, errors.ErrUnsupported
 	case reflect.Bool:
 		t := ABoolean
 		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
@@ -179,44 +197,20 @@ func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*ArriT
 	case reflect.Uint64:
 		t := AUint64
 		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
-	case reflect.Uintptr:
-		return nil, errors.New("uintptr is not a type supported by Arri RPC")
 	case reflect.Float32:
 		t := AFloat32
 		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Float64:
 		t := AFloat64
 		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
-	case reflect.Complex64:
-		return nil, errors.New("Complex64 is not a type supported by Arri RPC")
-	case reflect.Complex128:
-		return nil, errors.New("Complex128 is not a type supported by Arri RPC")
-	case reflect.Array:
-		fallthrough
-	case reflect.Chan:
-		fallthrough
-	case reflect.Func:
-		fallthrough
-	case reflect.Interface:
-		fallthrough
-	case reflect.Map:
-		fallthrough
-	case reflect.Ptr:
-		fallthrough
-	case reflect.Slice:
-		return nil, fmt.Errorf("%+v is not a supported primitive type", kind)
 	case reflect.String:
 		if context.EnumValues != nil {
 			return &ArriTypeDef{Enum: context.EnumValues, Nullable: context.IsNullable}, nil
 		}
 		t := AString
 		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
-	case reflect.Struct:
-		return nil, errors.New("cannot convert Struct to primitive type")
-	case reflect.UnsafePointer:
-		return nil, errors.New("cannot convert UnsafePointer to primitive type")
 	default:
-		return nil, fmt.Errorf("(%+v) is not a supported primitive type", kind)
+		return nil, fmt.Errorf("error at %s. '%s' is not a supported primitive type", context.InstancePath, kind)
 	}
 }
 
@@ -260,7 +254,16 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 		}
 		key := field.Tag.Get("key")
 		if len(key) == 0 {
-			key = strcase.ToLowerCamel(field.Name)
+			switch context.KeyCasing {
+			case CamelCase:
+				key = strcase.ToLowerCamel(field.Name)
+			case SnakeCase:
+				key = strcase.ToSnake(field.Name)
+			case PascalCase:
+				key = strcase.ToCamel(field.Name)
+			default:
+				key = strcase.ToLowerCamel(field.Name)
+			}
 		}
 		var nullable *bool = nil
 		var deprecated = false
@@ -289,9 +292,10 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 		}
 		tRef := true
 		isOptional := nullable != &tRef && field.Type.Kind() == reflect.Ptr
-		instancePath := context.InstancePath + "/" + key
+		instancePath := "/" + structName + "/" + key
 		schemaPath := context.SchemaPath + "/properties/" + key
-		fieldResult, fieldError := toTypeDef(field.Type, context.copyWith(nil, &instancePath, &schemaPath, nullable, enumValues))
+		newDepth := context.CurrentDepth + 1
+		fieldResult, fieldError := typeToTypeDef(field.Type, context.copyWith(&newDepth, nil, &instancePath, &schemaPath, nullable, enumValues))
 		if fieldError != nil {
 			return nil, fieldError
 		}
@@ -347,7 +351,7 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 			return nil, errors.New("the direct child of a discriminator struct cannot be another discriminator struct")
 		}
 		schemaPath := context.SchemaPath + "/mapping/" + discriminatorValue
-		fieldResult, fieldError := structToTypeDef(field.Type.Elem(), context.copyWith(&context.ParentStructs, nil, &schemaPath, nil, nil))
+		fieldResult, fieldError := structToTypeDef(field.Type.Elem(), context.copyWith(nil, &context.ParentStructs, nil, &schemaPath, nil, nil))
 		if fieldError != nil {
 			return nil, fieldError
 		}
@@ -355,6 +359,43 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 	}
 	discriminatorKey := "type"
 	return &ArriTypeDef{Discriminator: &discriminatorKey, Mapping: &mapping, Metadata: &ArriTypeDefMetadata{Id: &name}}, nil
+}
+
+func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+	kind := input.Kind()
+	if kind != reflect.Array && kind != reflect.Slice {
+		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Array' or 'reflect.Slice'. got '%s'", context.InstancePath, kind)
+	}
+	subType := input.Elem()
+	instancePath := context.InstancePath + "/[element]"
+	schemaPath := context.SchemaPath + "/elements"
+	nullable := false
+	subTypeResult, err := typeToTypeDef(subType, context.copyWith(nil, nil, &instancePath, &schemaPath, &nullable, nil))
+	if err != nil {
+		return nil, err
+	}
+	return &ArriTypeDef{Elements: subTypeResult}, nil
+}
+
+func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+	kind := input.Kind()
+	if kind != reflect.Map {
+		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Map'. got '%s'", context.InstancePath, kind)
+	}
+	subType := input.Elem()
+	keyType := input.Key()
+	if keyType.Kind() != reflect.String {
+		return nil, fmt.Errorf("error at %s. arri only supports string keys", context.InstancePath)
+	}
+	instancePath := context.InstancePath + "/[key]"
+	schemaPath := context.SchemaPath + "/values"
+	nullable := subType.Kind() == reflect.Ptr
+	depth := context.CurrentDepth + 1
+	subTypeResult, err := typeToTypeDef(subType, context.copyWith(&depth, &context.ParentStructs, &instancePath, &schemaPath, &nullable, nil))
+	if err != nil {
+		return nil, err
+	}
+	return &ArriTypeDef{Values: subTypeResult}, nil
 }
 
 const (
@@ -370,12 +411,14 @@ type Message struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Text      string
+	Other     map[string]uint32
 }
 
 type Shape struct {
-	Rectangle *Rectangle  `discriminator:"RECTANGLE"`
-	Circle    *Circle     `discriminator:"CIRCLE"`
-	Child     *ShapeChild `discriminator:"CHILD"`
+	Rectangle *Rectangle     `discriminator:"RECTANGLE"`
+	Circle    *Circle        `discriminator:"CIRCLE"`
+	Child     *ShapeChild    `discriminator:"CHILD"`
+	Children  *ShapeChildren `discriminator:"CHILDREN"`
 }
 
 type Rectangle struct {
@@ -389,4 +432,8 @@ type Circle struct {
 
 type ShapeChild struct {
 	Child Shape
+}
+
+type ShapeChildren struct {
+	Children []Shape
 }
