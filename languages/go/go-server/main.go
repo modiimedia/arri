@@ -39,4 +39,12 @@ func main() {
 		return
 	}
 	fmt.Println(string(shapeJsonResult))
+
+	var toJsonResult, toJsonError = ToJson(msg)
+	if toJsonError != nil {
+		fmt.Println(toJsonError)
+		return
+	}
+	fmt.Println("JSON_RESULT", toJsonResult)
+	fmt.Println("JSON_RESULT", string(toJsonResult))
 }
