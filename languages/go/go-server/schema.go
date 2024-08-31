@@ -28,14 +28,14 @@ const (
 
 type ArriType = string
 
-type ArriTypeDefMetadata struct {
-	Id           *string `json:"id,omitempty"`
-	Description  *string `json:"description,omitempty"`
-	IsDeprecated *bool   `json:"isDeprecated,omitempty"`
+type ArriTypeMetadata struct {
+	Id           string `json:"id,omitempty"`
+	Description  string `json:"description,omitempty"`
+	IsDeprecated bool   `json:"isDeprecated,omitempty"`
 }
 
 type ArriTypeDef struct {
-	Metadata           *ArriTypeDefMetadata    `json:"metadata,omitempty"`
+	Metadata           *ArriTypeMetadata       `json:"metadata,omitempty"`
 	Nullable           *bool                   `json:"nullable,omitempty"`
 	Type               *ArriType               `json:"type,omitempty"`
 	Enum               *[]string               `json:"enum,omitempty"`
@@ -156,6 +156,8 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, e
 			return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
 		}
 		return structToTypeDef(input, context)
+	case reflect.Interface:
+		return &ArriTypeDef{Nullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. %s is not a supported type", context.InstancePath, input.Kind())
 	}
@@ -214,7 +216,7 @@ func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*ArriT
 	}
 }
 
-func isDiscriminatorStruct(input reflect.Type) bool {
+func IsDiscriminatorStruct(input reflect.Type) bool {
 	if input.Kind() != reflect.Struct {
 		return false
 	}
@@ -240,7 +242,7 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
 	}
-	if input.NumField() == 0 {
+	if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 
@@ -248,7 +250,7 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 	optionalFields := make(map[string]ArriTypeDef)
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
-		isDiscriminator := len(field.Tag.Get("discriminator")) > 0
+		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
 		if isDiscriminator {
 			return taggedUnionToTypeDef(structName, input, context)
 		}
@@ -301,13 +303,13 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 		}
 		if len(description) > 0 || deprecated {
 			if fieldResult.Metadata == nil {
-				fieldResult.Metadata = &ArriTypeDefMetadata{}
+				fieldResult.Metadata = &ArriTypeMetadata{}
 			}
 			if len(description) > 0 {
-				fieldResult.Metadata.Description = &description
+				fieldResult.Metadata.Description = description
 			}
 			if deprecated {
-				fieldResult.Metadata.IsDeprecated = &deprecated
+				fieldResult.Metadata.IsDeprecated = deprecated
 			}
 		}
 		if isOptional {
@@ -321,12 +323,12 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 			Properties:         &requiredFields,
 			OptionalProperties: &optionalFields,
 			Nullable:           context.IsNullable,
-			Metadata:           &ArriTypeDefMetadata{Id: &structName}}, nil
+			Metadata:           &ArriTypeMetadata{Id: structName}}, nil
 	}
 	return &ArriTypeDef{
 		Properties: &requiredFields,
 		Nullable:   context.IsNullable,
-		Metadata:   &ArriTypeDefMetadata{Id: &structName}}, nil
+		Metadata:   &ArriTypeMetadata{Id: structName}}, nil
 }
 
 func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
@@ -337,9 +339,18 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 	if input.NumField() == 0 {
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
+	discriminatorKey := "type"
 	mapping := make(map[string]ArriTypeDef)
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
+		// we only accept "DiscriminatorKey" if it's the first key in the struct
+		if i == 0 && field.Type.Name() == "DiscriminatorKey" {
+			discriminatorKeyTag := field.Tag.Get("discriminatorKey")
+			if len(discriminatorKeyTag) > 0 {
+				discriminatorKey = strings.TrimSpace(discriminatorKeyTag)
+			}
+			continue
+		}
 		discriminatorValue := field.Tag.Get("discriminator")
 		if len(discriminatorValue) == 0 {
 			return nil, errors.New("all discriminator subtypes must have the \"discriminator\" tag")
@@ -347,7 +358,7 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 		if field.Type.Kind() != reflect.Ptr {
 			return nil, errors.New("all fields in discriminators structs must be a pointer to a struct")
 		}
-		if isDiscriminatorStruct(field.Type.Elem()) {
+		if IsDiscriminatorStruct(field.Type.Elem()) {
 			return nil, errors.New("the direct child of a discriminator struct cannot be another discriminator struct")
 		}
 		schemaPath := context.SchemaPath + "/mapping/" + discriminatorValue
@@ -357,8 +368,7 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 		}
 		mapping[discriminatorValue] = *fieldResult
 	}
-	discriminatorKey := "type"
-	return &ArriTypeDef{Discriminator: &discriminatorKey, Mapping: &mapping, Metadata: &ArriTypeDefMetadata{Id: &name}}, nil
+	return &ArriTypeDef{Discriminator: &discriminatorKey, Mapping: &mapping, Metadata: &ArriTypeMetadata{Id: name}}, nil
 }
 
 func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
@@ -407,18 +417,19 @@ type MessageStatus = string
 
 type Message struct {
 	Id        string
-	Status    string `enum:"ACTIVE,INACTIVE"`
+	Status    string `enum:"ACTIVE,INACTIVE" annotations:"nullable,deprecated"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Text      string
-	Other     map[string]uint32
+	Other     interface{}
 }
 
 type Shape struct {
-	Rectangle *Rectangle     `discriminator:"RECTANGLE"`
-	Circle    *Circle        `discriminator:"CIRCLE"`
-	Child     *ShapeChild    `discriminator:"CHILD"`
-	Children  *ShapeChildren `discriminator:"CHILDREN"`
+	DiscriminatorKey `discriminatorKey:"typeName"`
+	Rectangle        *Rectangle     `discriminator:"RECTANGLE"`
+	Circle           *Circle        `discriminator:"CIRCLE"`
+	Child            *ShapeChild    `discriminator:"CHILD"`
+	Children         *ShapeChildren `discriminator:"CHILDREN"`
 }
 
 type Rectangle struct {
@@ -437,3 +448,5 @@ type ShapeChild struct {
 type ShapeChildren struct {
 	Children []Shape
 }
+
+type DiscriminatorKey struct{}

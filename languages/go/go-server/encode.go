@@ -1,37 +1,78 @@
 package main
 
 import (
-	"bytes"
+	"errors"
 	"fmt"
 	"math/bits"
 	"reflect"
 	"strconv"
+	"strings"
+	"time"
 	"unicode/utf8"
 	"unsafe"
+
+	"arri-server/arri_json"
+
+	"github.com/iancoleman/strcase"
 )
 
-func ToJson(input interface{}) ([]byte, error) {
-	buf := bytes.Buffer{}
-	err := typeToJson(reflect.ValueOf(input), buf, _EncodingContext{})
+func ToJson(input interface{}, keyCasing KeyCasing) ([]byte, error) {
+	buf := []byte{}
+	err := typeToJson(
+		reflect.ValueOf(input),
+		&buf,
+		_EncodingContext{
+			KeyCasing:    keyCasing,
+			MaxDepth:     10000,
+			CurrentDepth: 0,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	return buf, nil
 }
 
 type _EncodingContext struct {
-	EnumValues []string
+	MaxDepth           uint32
+	CurrentDepth       uint32
+	EnumValues         []string
+	KeyCasing          KeyCasing
+	DiscriminatorKey   string
+	DiscriminatorValue string
 }
 
-func (context _EncodingContext) copyWith(EnumValues *[]string) _EncodingContext {
+func (context _EncodingContext) copyWith(CurrentDepth *uint32, EnumValues *[]string, DiscriminatorKey *string, DiscriminatorValue *string) _EncodingContext {
+	depth := context.CurrentDepth
+	if CurrentDepth != nil {
+		depth = *CurrentDepth
+	}
 	enumValues := context.EnumValues
 	if EnumValues != nil {
 		enumValues = *EnumValues
 	}
-	return _EncodingContext{EnumValues: enumValues}
+	dKey := context.DiscriminatorKey
+	if DiscriminatorKey != nil {
+		dKey = *DiscriminatorKey
+	}
+	dValue := context.DiscriminatorValue
+	if DiscriminatorValue != nil {
+		dValue = *DiscriminatorValue
+	}
+	return _EncodingContext{
+		MaxDepth:           context.MaxDepth,
+		CurrentDepth:       depth,
+		EnumValues:         enumValues,
+		KeyCasing:          context.KeyCasing,
+		DiscriminatorKey:   dKey,
+		DiscriminatorValue: dValue,
+	}
 }
 
-func typeToJson(input reflect.Value, target bytes.Buffer, context _EncodingContext) error {
+func typeToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	if context.CurrentDepth >= context.MaxDepth {
+		return fmt.Errorf("max depth of %+v reached", context.MaxDepth)
+	}
 	kind := input.Kind()
 	switch kind {
 	case reflect.Bool:
@@ -43,71 +84,204 @@ func typeToJson(input reflect.Value, target bytes.Buffer, context _EncodingConte
 	case reflect.Int, reflect.Uint, reflect.Int64, reflect.Uint64:
 		return bigIntToJson(input, target)
 	case reflect.Struct:
+		if input.Type().Name() == "Time" {
+			return timestampToJson(input, target)
+		}
 		return structToJson(input, target, context)
+	case reflect.Array, reflect.Slice:
+		return listToJson(input, target, context)
 	case reflect.Pointer:
-		// TODO
-		return nil
+		if input.IsNil() {
+			*target = append(*target, "null"...)
+			return nil
+		}
+		return typeToJson(input.Elem(), target, context)
 	case reflect.Map:
-		// TODO
-		return nil
+		return mapToJson(input, target, context)
 	}
-
+	if input.Type().Kind() == reflect.Interface {
+		return anyToJson(input, target, context)
+	}
 	return fmt.Errorf("unsupported Kind %s", kind)
 }
 
-func boolToJson(input reflect.Value, target bytes.Buffer) error {
+func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	*target = append(*target, "{"...)
+	keys := input.MapKeys()
+	for i := 0; i < len(keys); i++ {
+		if i != 0 {
+			*target = append(*target, ","...)
+		}
+		key := keys[i]
+		if key.Kind() != reflect.String {
+			return fmt.Errorf("arri only supports string keys in maps")
+		}
+		*target = append(*target, "\""+key.String()+"\":"...)
+		value := input.MapIndex(key)
+		depth := context.CurrentDepth + 1
+		fieldError := typeToJson(value, target, context.copyWith(&depth, nil, nil, nil))
+		if fieldError != nil {
+			return fieldError
+		}
+	}
+	*target = append(*target, "}"...)
+	return nil
+}
+
+func anyToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	result, err := arri_json.Marshal(input.Interface(), context.KeyCasing)
+	if err != nil {
+		return err
+	}
+	*target = append(*target, result...)
+	return nil
+}
+
+func listToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	slice := input.Slice(0, input.Len())
+	*target = append(*target, "["...)
+	for i := 0; i < slice.Len(); i++ {
+		if i > 0 {
+			*target = append(*target, ","...)
+		}
+		element := slice.Index(i)
+		typeToJson(element, target, context)
+	}
+	*target = append(*target, "]"...)
+	return nil
+}
+
+func timestampToJson(input reflect.Value, target *[]byte) error {
+	timeValue, _ := input.Interface().(time.Time)
+	*target = append(*target, "\""+timeValue.Format("2006-01-02T15:04:05.000Z")+"\""...)
+	return nil
+}
+
+func boolToJson(input reflect.Value, target *[]byte) error {
 	val := input.Bool()
 	if val {
-		target.WriteString("true")
+		*target = append(*target, "true"...)
 	} else {
-		target.WriteString("false")
+		*target = append(*target, "false"...)
 	}
 	return nil
 }
 
-func numberToJson(input reflect.Value, target bytes.Buffer) error {
+func numberToJson(input reflect.Value, target *[]byte) error {
 	switch input.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32:
-		target.WriteString(string(input.Int()))
+		*target = append(*target, fmt.Sprint(input.Int())...)
 		return nil
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		target.WriteString(string(input.Uint()))
+		*target = append(*target, fmt.Sprint(input.Uint())...)
 		return nil
 	case reflect.Float32, reflect.Float64:
-		target.WriteString(strconv.FormatFloat(input.Float(), 'f', -1, 64))
+		*target = append(*target, strconv.FormatFloat(input.Float(), 'f', -1, 64)...)
 		return nil
 	}
 	return fmt.Errorf("unsupported Kind %s", input.Kind())
 }
 
-func bigIntToJson(input reflect.Value, target bytes.Buffer) error {
+func bigIntToJson(input reflect.Value, target *[]byte) error {
 	switch input.Kind() {
 	case reflect.Int, reflect.Int64:
-		target.WriteString("\"" + string(input.Int()) + "\"")
+		*target = append(*target, "\""+fmt.Sprint(input.Int())+"\""...)
 		return nil
 	case reflect.Uint, reflect.Uint64:
-		target.WriteString("\"" + string(input.Uint()) + "\"")
+		*target = append(*target, "\""+fmt.Sprint(input.Uint())+"\""...)
 		return nil
 	}
 	return fmt.Errorf("unsupported Kind %s", input.Kind())
 }
 
-func structToJson(input reflect.Value, target bytes.Buffer, context _EncodingContext) error {
-	target.WriteString("{")
+func structToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	if IsDiscriminatorStruct(input.Type()) {
+		return taggedUnionToJson(input, target, context)
+	}
+	*target = append(*target, "{"...)
+	numFields := 0
+	if len(context.DiscriminatorKey) > 0 && len(context.DiscriminatorValue) > 0 {
+		s := "\"" + context.DiscriminatorKey + "\":\"" + context.DiscriminatorValue + "\""
+		*target = append(*target, s...)
+		numFields++
+	}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		fieldType := input.Type().Field(i)
-		target.WriteString("\"" + fieldType.Name + "\":")
-		fieldErr := typeToJson(field, target, context)
+		key := fieldType.Tag.Get("key")
+		if len(key) == 0 {
+			switch context.KeyCasing {
+			case CamelCase:
+				key = strcase.ToLowerCamel(fieldType.Name)
+			case SnakeCase:
+				key = strcase.ToSnake(fieldType.Name)
+			case PascalCase:
+				key = strcase.ToCamel(fieldType.Name)
+			default:
+				key = strcase.ToLowerCamel(fieldType.Name)
+			}
+		}
+		isNullable := false
+		annotations := strings.Split(fieldType.Tag.Get("annotations"), ",")
+		for i := 0; i < len(annotations); i++ {
+			annotation := annotations[i]
+			switch annotation {
+			case "nullable":
+				isNullable = true
+			}
+		}
+		isPointer := fieldType.Type.Kind() == reflect.Ptr
+		if isPointer && field.IsNil() {
+			if isNullable {
+				if numFields > 0 {
+					*target = append(*target, ","...)
+				}
+				*target = append(*target, "\""+key+"\":null"...)
+				numFields++
+			}
+			continue
+		}
+		if numFields > 0 {
+			*target = append(*target, ","...)
+		}
+		*target = append(*target, "\""+key+"\":"...)
+		depth := context.CurrentDepth + 1
+		fieldErr := typeToJson(field, target, context.copyWith(&depth, nil, nil, nil))
 		if fieldErr != nil {
 			return fieldErr
 		}
+		numFields++
 	}
-	target.WriteString("}")
+	*target = append(*target, "}"...)
 	return nil
 }
 
-func stringToJson(input reflect.Value, target bytes.Buffer, context _EncodingContext) error {
+func taggedUnionToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	discriminatorKey := "type"
+	for i := 0; i < input.NumField(); i++ {
+		field := input.Field(i)
+		fieldType := input.Type().Field(i)
+		if i == 0 && fieldType.Name == "DiscriminatorKey" {
+			discriminatorKeyTag := fieldType.Tag.Get("discriminatorKey")
+			if len(discriminatorKeyTag) > 0 {
+				discriminatorKey = strings.TrimSpace(discriminatorKeyTag)
+			}
+			continue
+		}
+		discriminatorValue := fieldType.Tag.Get("discriminator")
+		if len(discriminatorValue) == 0 {
+			return errors.New("all discriminator subtypes must have the \"discriminator\" tag")
+		}
+		if field.IsNil() {
+			continue
+		}
+		subType := field.Elem()
+		return structToJson(subType, target, context.copyWith(nil, nil, &discriminatorKey, &discriminatorValue))
+	}
+	return fmt.Errorf("error serializing %s. at least one field must not be nil", input.Type().Name())
+}
+
+func stringToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	if len(context.EnumValues) > 0 {
 		return enumToJson(input, target, context)
 	}
@@ -115,14 +289,14 @@ func stringToJson(input reflect.Value, target bytes.Buffer, context _EncodingCon
 	return nil
 }
 
-func enumToJson(input reflect.Value, target bytes.Buffer, context _EncodingContext) error {
+func enumToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	if input.Kind() != reflect.String {
 		return fmt.Errorf("unsupported Kind %s", input.Kind())
 	}
 	val := input.String()
 	for i := 0; i < len(context.EnumValues); i++ {
 		if val == context.EnumValues[i] {
-			target.WriteString("\"" + val + "\"")
+			*target = append(*target, "\""+val+"\""...)
 			return nil
 		}
 	}
@@ -145,13 +319,296 @@ func stringToUint64Slice(s string) []uint64 {
 	}))
 }
 
-func appendNormalizedString(buf bytes.Buffer, s string) {
+func appendString[Bytes []byte | string](dst []byte, src Bytes, escapeHTML bool) []byte {
+	dst = append(dst, '"')
+	start := 0
+	for i := 0; i < len(src); {
+		if b := src[i]; b < utf8.RuneSelf {
+			if htmlSafeSet[b] || (!escapeHTML && safeSet[b]) {
+				i++
+				continue
+			}
+			dst = append(dst, src[start:i]...)
+			switch b {
+			case '\\', '"':
+				dst = append(dst, '\\', b)
+			case '\b':
+				dst = append(dst, '\\', 'b')
+			case '\f':
+				dst = append(dst, '\\', 'f')
+			case '\n':
+				dst = append(dst, '\\', 'n')
+			case '\r':
+				dst = append(dst, '\\', 'r')
+			case '\t':
+				dst = append(dst, '\\', 't')
+			default:
+				// This encodes bytes < 0x20 except for \b, \f, \n, \r and \t.
+				// If escapeHTML is set, it also escapes <, >, and &
+				// because they can lead to security holes when
+				// user-controlled strings are rendered into JSON
+				// and served to some browsers.
+				dst = append(dst, '\\', 'u', '0', '0', hex[b>>4], hex[b&0xF])
+			}
+			i++
+			start = i
+			continue
+		}
+		// TODO(https://go.dev/issue/56948): Use generic utf8 functionality.
+		// For now, cast only a small portion of byte slices to a string
+		// so that it can be stack allocated. This slows down []byte slightly
+		// due to the extra copy, but keeps string performance roughly the same.
+		n := len(src) - i
+		if n > utf8.UTFMax {
+			n = utf8.UTFMax
+		}
+		c, size := utf8.DecodeRuneInString(string(src[i : i+n]))
+		if c == utf8.RuneError && size == 1 {
+			dst = append(dst, src[start:i]...)
+			dst = append(dst, `\ufffd`...)
+			i += size
+			start = i
+			continue
+		}
+		// U+2028 is LINE SEPARATOR.
+		// U+2029 is PARAGRAPH SEPARATOR.
+		// They are both technically valid characters in JSON strings,
+		// but don't work in JSONP, which has to be evaluated as JavaScript,
+		// and can lead to security holes there. It is valid JSON to
+		// escape them, so we do so unconditionally.
+		// See https://en.wikipedia.org/wiki/JSON#Safety.
+		if c == '\u2028' || c == '\u2029' {
+			dst = append(dst, src[start:i]...)
+			dst = append(dst, '\\', 'u', '2', '0', '2', hex[c&0xF])
+			i += size
+			start = i
+			continue
+		}
+		i += size
+	}
+	dst = append(dst, src[start:]...)
+	dst = append(dst, '"')
+	return dst
+}
+
+// safeSet holds the value true if the ASCII character with the given array
+// position can be represented inside a JSON string without any further
+// escaping.
+//
+// All values are true except for the ASCII control characters (0-31), the
+// double quote ("), and the backslash character ("\").
+var safeSet = [utf8.RuneSelf]bool{
+	' ':      true,
+	'!':      true,
+	'"':      false,
+	'#':      true,
+	'$':      true,
+	'%':      true,
+	'&':      true,
+	'\'':     true,
+	'(':      true,
+	')':      true,
+	'*':      true,
+	'+':      true,
+	',':      true,
+	'-':      true,
+	'.':      true,
+	'/':      true,
+	'0':      true,
+	'1':      true,
+	'2':      true,
+	'3':      true,
+	'4':      true,
+	'5':      true,
+	'6':      true,
+	'7':      true,
+	'8':      true,
+	'9':      true,
+	':':      true,
+	';':      true,
+	'<':      true,
+	'=':      true,
+	'>':      true,
+	'?':      true,
+	'@':      true,
+	'A':      true,
+	'B':      true,
+	'C':      true,
+	'D':      true,
+	'E':      true,
+	'F':      true,
+	'G':      true,
+	'H':      true,
+	'I':      true,
+	'J':      true,
+	'K':      true,
+	'L':      true,
+	'M':      true,
+	'N':      true,
+	'O':      true,
+	'P':      true,
+	'Q':      true,
+	'R':      true,
+	'S':      true,
+	'T':      true,
+	'U':      true,
+	'V':      true,
+	'W':      true,
+	'X':      true,
+	'Y':      true,
+	'Z':      true,
+	'[':      true,
+	'\\':     false,
+	']':      true,
+	'^':      true,
+	'_':      true,
+	'`':      true,
+	'a':      true,
+	'b':      true,
+	'c':      true,
+	'd':      true,
+	'e':      true,
+	'f':      true,
+	'g':      true,
+	'h':      true,
+	'i':      true,
+	'j':      true,
+	'k':      true,
+	'l':      true,
+	'm':      true,
+	'n':      true,
+	'o':      true,
+	'p':      true,
+	'q':      true,
+	'r':      true,
+	's':      true,
+	't':      true,
+	'u':      true,
+	'v':      true,
+	'w':      true,
+	'x':      true,
+	'y':      true,
+	'z':      true,
+	'{':      true,
+	'|':      true,
+	'}':      true,
+	'~':      true,
+	'\u007f': true,
+}
+
+// htmlSafeSet holds the value true if the ASCII character with the given
+// array position can be safely represented inside a JSON string, embedded
+// inside of HTML <script> tags, without any additional escaping.
+//
+// All values are true except for the ASCII control characters (0-31), the
+// double quote ("), the backslash character ("\"), HTML opening and closing
+// tags ("<" and ">"), and the ampersand ("&").
+var htmlSafeSet = [utf8.RuneSelf]bool{
+	' ':      true,
+	'!':      true,
+	'"':      false,
+	'#':      true,
+	'$':      true,
+	'%':      true,
+	'&':      false,
+	'\'':     true,
+	'(':      true,
+	')':      true,
+	'*':      true,
+	'+':      true,
+	',':      true,
+	'-':      true,
+	'.':      true,
+	'/':      true,
+	'0':      true,
+	'1':      true,
+	'2':      true,
+	'3':      true,
+	'4':      true,
+	'5':      true,
+	'6':      true,
+	'7':      true,
+	'8':      true,
+	'9':      true,
+	':':      true,
+	';':      true,
+	'<':      false,
+	'=':      true,
+	'>':      false,
+	'?':      true,
+	'@':      true,
+	'A':      true,
+	'B':      true,
+	'C':      true,
+	'D':      true,
+	'E':      true,
+	'F':      true,
+	'G':      true,
+	'H':      true,
+	'I':      true,
+	'J':      true,
+	'K':      true,
+	'L':      true,
+	'M':      true,
+	'N':      true,
+	'O':      true,
+	'P':      true,
+	'Q':      true,
+	'R':      true,
+	'S':      true,
+	'T':      true,
+	'U':      true,
+	'V':      true,
+	'W':      true,
+	'X':      true,
+	'Y':      true,
+	'Z':      true,
+	'[':      true,
+	'\\':     false,
+	']':      true,
+	'^':      true,
+	'_':      true,
+	'`':      true,
+	'a':      true,
+	'b':      true,
+	'c':      true,
+	'd':      true,
+	'e':      true,
+	'f':      true,
+	'g':      true,
+	'h':      true,
+	'i':      true,
+	'j':      true,
+	'k':      true,
+	'l':      true,
+	'm':      true,
+	'n':      true,
+	'o':      true,
+	'p':      true,
+	'q':      true,
+	'r':      true,
+	's':      true,
+	't':      true,
+	'u':      true,
+	'v':      true,
+	'w':      true,
+	'x':      true,
+	'y':      true,
+	'z':      true,
+	'{':      true,
+	'|':      true,
+	'}':      true,
+	'~':      true,
+	'\u007f': true,
+}
+
+func appendNormalizedString(target *[]byte, s string) {
 	valLen := len(s)
 	if valLen == 0 {
-		buf.WriteString(`""`)
+		*target = append(*target, `""`...)
 		return
 	}
-	buf.WriteString(`"`)
+	*target = append(*target, `"`...)
 	var (
 		i, j int
 	)
@@ -176,8 +633,8 @@ func appendNormalizedString(buf bytes.Buffer, s string) {
 				goto ESCAPE_END
 			}
 		}
-		buf.WriteString(s)
-		buf.WriteString(`"`)
+		*target = append(*target, s...)
+		*target = append(*target, `"`...)
 		return
 	}
 ESCAPE_END:
@@ -192,40 +649,40 @@ ESCAPE_END:
 
 		switch c {
 		case '\\', '"':
-			buf.WriteString(s[i:j])
-			buf.WriteString("\\")
-			buf.WriteByte(c)
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, "\\"...)
+			*target = append(*target, c)
 			i = j + 1
 			j = j + 1
 			continue
 
 		case '\n':
-			buf.WriteString(s[i:j])
-			buf.WriteString("\\n")
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, "\\n"...)
 			i = j + 1
 			j = j + 1
 			continue
 
 		case '\r':
-			buf.WriteString(s[i:j])
-			buf.WriteString("\\r")
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, "\\r"...)
 			i = j + 1
 			j = j + 1
 			continue
 
 		case '\t':
-			buf.WriteString(s[i:j])
-			buf.WriteString("\\t")
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, "\\t"...)
 			i = j + 1
 			j = j + 1
 			continue
 
 		case 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0B, 0x0C, 0x0E, 0x0F, // 0x00-0x0F
 			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F: // 0x10-0x1F
-			buf.WriteString(s[i:j])
-			buf.WriteString(`\u00`)
-			buf.WriteByte(hex[c>>4])
-			buf.WriteByte(hex[c&0xF])
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, `\u00`...)
+			*target = append(*target, hex[c>>4])
+			*target = append(*target, hex[c&0xF])
 			i = j + 1
 			j = j + 1
 			continue
@@ -234,8 +691,8 @@ ESCAPE_END:
 		state, size := decodeRuneInString(s[j:])
 		switch state {
 		case runeErrorState:
-			buf.WriteString(s[i:j])
-			buf.WriteString(`\ufffd`)
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, `\ufffd`...)
 			i = j + 1
 			j = j + 1
 			continue
@@ -247,23 +704,22 @@ ESCAPE_END:
 			// escape them, so we do so unconditionally.
 			// See http://timelessrepo.com/json-isnt-a-javascript-subset for discussion.
 		case lineSepState:
-			buf.WriteString(s[i:j])
-			buf.WriteString(`\u2028`)
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, `\u2028`...)
 			i = j + 3
 			j = j + 3
 			continue
 		case paragraphSepState:
-			buf.WriteString(s[i:j])
-			buf.WriteString(`\u2029`)
+			*target = append(*target, s[i:j]...)
+			*target = append(*target, `\u2029`...)
 			i = j + 3
 			j = j + 3
 			continue
 		}
 		j += size
 	}
-	buf.WriteString(s[i:])
-	buf.WriteString(`"`)
-	return
+	*target = append(*target, s[i:]...)
+	*target = append(*target, `"`...)
 }
 
 const (
