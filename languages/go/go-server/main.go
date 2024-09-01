@@ -1,9 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"time"
+	"log"
+	"net/http"
 )
 
 const (
@@ -14,32 +14,31 @@ const (
 	Delete = "DELETE"
 )
 
+type MyCustomContext struct {
+}
+
 func main() {
-	var msg = Message{Id: "1", Text: "Hello world!", CreatedAt: time.Now(), UpdatedAt: time.Now(), Other: "Hello world"}
-	var result, err = ToTypeDef(msg, SnakeCase)
+	result, err := ToRpcDef(SayHello, ArriHttpRpcOptions{Method: HttpMethodPost})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	var jsonResult, _ = json.Marshal(result)
+	jsonResult, _ := ToJson(result, KeyCasingCamelCase)
 	fmt.Println(string(jsonResult))
-	var shapeResult, shapeErr = ToTypeDef(Shape{Rectangle: &Rectangle{Width: 10, Height: 1501}}, SnakeCase)
-	if shapeErr != nil {
-		fmt.Println("SHAPE_ERROR")
-		fmt.Println(shapeErr)
-		return
-	}
-	var shapeJsonResult, shapeJsonError = json.Marshal(shapeResult)
-	if shapeJsonError != nil {
-		fmt.Println(shapeJsonError.Error())
-		return
-	}
-	fmt.Println(string(shapeJsonResult))
+	mux := http.DefaultServeMux
+	options := AppOptions[MyCustomContext]{}
+	app := NewApp(
+		mux,
+		options,
+		(func(r *http.Request) (*MyCustomContext, *ErrorResponse) {
+			return &MyCustomContext{}, nil
+		}),
+	)
+	Rpc(app, GetUser)
+	Rpc(app, UpdateUser)
+	log.Fatal(http.ListenAndServe(":4040", mux))
+}
 
-	var toJsonResult, toJsonError = ToJson(msg, SnakeCase)
-	if toJsonError != nil {
-		fmt.Println(toJsonError)
-		return
-	}
-	fmt.Println("JSON_RESULT", string(toJsonResult))
+func SayHello(msg Message) string {
+	return msg.Text
 }

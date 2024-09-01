@@ -85,7 +85,7 @@ func TestBasicJsonEncoding(t *testing.T) {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := ToJson(basicJsonInput, CamelCase)
+	json, err := ToJson(basicJsonInput, KeyCasingCamelCase)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -98,12 +98,12 @@ func TestBasicJsonEncoding(t *testing.T) {
 
 func BenchmarkStdJsonEncoding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Marshal(basicJsonInput, CamelCase)
+		arri_json.Marshal(basicJsonInput, KeyCasingCamelCase)
 	}
 }
 
 func BenchmarkArriJsonEncoding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		ToJson(basicJsonInput, CamelCase)
+		ToJson(basicJsonInput, KeyCasingCamelCase)
 	}
 }

@@ -158,22 +158,17 @@ func timestampToJson(input reflect.Value, target *[]byte) error {
 }
 
 func boolToJson(input reflect.Value, target *[]byte) error {
-	val := input.Bool()
-	if val {
-		*target = append(*target, "true"...)
-	} else {
-		*target = append(*target, "false"...)
-	}
+	*target = strconv.AppendBool(*target, input.Bool())
 	return nil
 }
 
 func numberToJson(input reflect.Value, target *[]byte) error {
 	switch input.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32:
-		*target = append(*target, fmt.Sprint(input.Int())...)
+		*target = strconv.AppendInt(*target, input.Int(), 10)
 		return nil
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		*target = append(*target, fmt.Sprint(input.Uint())...)
+		*target = strconv.AppendUint(*target, input.Uint(), 10)
 		return nil
 	case reflect.Float32, reflect.Float64:
 		*target = append(*target, strconv.FormatFloat(input.Float(), 'f', -1, 64)...)
@@ -211,11 +206,11 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 		key := fieldType.Tag.Get("key")
 		if len(key) == 0 {
 			switch context.KeyCasing {
-			case CamelCase:
+			case KeyCasingCamelCase:
 				key = strcase.ToLowerCamel(fieldType.Name)
-			case SnakeCase:
+			case KeyCasingSnakeCase:
 				key = strcase.ToSnake(fieldType.Name)
-			case PascalCase:
+			case KeyCasingPascalCase:
 				key = strcase.ToCamel(fieldType.Name)
 			default:
 				key = strcase.ToLowerCamel(fieldType.Name)

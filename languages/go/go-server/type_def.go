@@ -52,9 +52,9 @@ type ArriTypeDef struct {
 type ArriSchemaError struct{}
 
 const (
-	PascalCase = "PASCAL_CASE"
-	CamelCase  = "CAMEL_CASE"
-	SnakeCase  = "SNAKE_CASE"
+	KeyCasingPascalCase = "PASCAL_CASE"
+	KeyCasingCamelCase  = "CAMEL_CASE"
+	KeyCasingSnakeCase  = "SNAKE_CASE"
 )
 
 type KeyCasing = string
@@ -109,9 +109,9 @@ func (context _TypeDefContext) copyWith(CurrentDepth *uint32, ParentStructs *[]s
 }
 
 func ToTypeDef(input interface{}, keyCasing KeyCasing) (*ArriTypeDef, error) {
-	casing := CamelCase
+	casing := KeyCasingCamelCase
 	switch keyCasing {
-	case CamelCase, SnakeCase, PascalCase:
+	case KeyCasingCamelCase, KeyCasingSnakeCase, KeyCasingPascalCase:
 		casing = keyCasing
 	case "":
 		casing = keyCasing
@@ -257,11 +257,11 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 		key := field.Tag.Get("key")
 		if len(key) == 0 {
 			switch context.KeyCasing {
-			case CamelCase:
+			case KeyCasingCamelCase:
 				key = strcase.ToLowerCamel(field.Name)
-			case SnakeCase:
+			case KeyCasingSnakeCase:
 				key = strcase.ToSnake(field.Name)
-			case PascalCase:
+			case KeyCasingPascalCase:
 				key = strcase.ToCamel(field.Name)
 			default:
 				key = strcase.ToLowerCamel(field.Name)
@@ -413,6 +413,10 @@ const (
 	Inactive = "INACTIVE"
 )
 
+type ArriModel interface {
+	ToJson(KeyCasing KeyCasing) ([]byte, error)
+}
+
 type MessageStatus = string
 
 type Message struct {
@@ -422,6 +426,12 @@ type Message struct {
 	UpdatedAt time.Time
 	Text      string
 	Other     interface{}
+}
+
+func MessageFromJson()
+
+func (m *Message) ToJson(casing KeyCasing) ([]byte, error) {
+	return ToJson(m, casing)
 }
 
 type Shape struct {
