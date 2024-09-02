@@ -213,7 +213,7 @@ func bigIntToJson(input reflect.Value, target *[]byte) error {
 
 func structToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	if IsDiscriminatorStruct(input.Type()) {
-		return taggedUnionToJson(input, target, context)
+		return discriminatorToJson(input, target, context)
 	}
 	*target = append(*target, "{"...)
 	numFields := 0
@@ -224,39 +224,54 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 	}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
-		fieldType := input.Type().Field(i)
-		key := fieldType.Tag.Get("key")
+		fieldType := field.Type()
+		structField := input.Type().Field(i)
+		key := structField.Tag.Get("key")
 		if len(key) == 0 {
 			switch context.KeyCasing {
 			case KeyCasingCamelCase:
-				key = strcase.ToLowerCamel(fieldType.Name)
+				key = strcase.ToLowerCamel(structField.Name)
 			case KeyCasingSnakeCase:
-				key = strcase.ToSnake(fieldType.Name)
+				key = strcase.ToSnake(structField.Name)
 			case KeyCasingPascalCase:
-				key = strcase.ToCamel(fieldType.Name)
+				key = strcase.ToCamel(structField.Name)
 			default:
-				key = strcase.ToLowerCamel(fieldType.Name)
+				key = strcase.ToLowerCamel(structField.Name)
 			}
 		}
-		isNullable := false
-		annotations := strings.Split(fieldType.Tag.Get("annotations"), ",")
-		for i := 0; i < len(annotations); i++ {
-			annotation := annotations[i]
-			switch annotation {
-			case "nullable":
-				isNullable = true
+		isOptional := isOptionalType(fieldType)
+		if isOptional {
+			optionField := extractOptionalValue(&field)
+			if optionField == nil {
+				continue
 			}
+			field = *optionField
+			fieldType = optionField.Type()
 		}
-		isPointer := fieldType.Type.Kind() == reflect.Ptr
-		if isPointer && field.IsNil() {
-			if isNullable {
+		isNullable := isNullableType(fieldType)
+		if isNullable {
+			nullableField := extractNullableValue(&field)
+			if nullableField == nil {
 				if numFields > 0 {
 					*target = append(*target, ","...)
 				}
 				*target = append(*target, "\""+key+"\":null"...)
 				numFields++
+				continue
+
+			} else {
+				field = *nullableField
+				fieldType = nullableField.Type()
 			}
-			continue
+		}
+		isOptional2 := isOptionalType(fieldType)
+		if isOptional2 {
+			optionField := extractOptionalValue(&field)
+			if optionField == nil {
+				continue
+			}
+			field = *optionField
+			fieldType = optionField.Type()
 		}
 		if numFields > 0 {
 			*target = append(*target, ","...)
@@ -273,7 +288,41 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 	return nil
 }
 
-func taggedUnionToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func extractOptionalValue(input *reflect.Value) *reflect.Value {
+	if input.IsZero() {
+		return nil
+	}
+	kind := input.Kind()
+	if kind == reflect.Ptr {
+		el := input.Elem()
+		return &el
+	}
+	isSet := input.FieldByName("isSet").Bool()
+	if !isSet {
+		return nil
+	}
+	value := input.FieldByName("value")
+	return &value
+}
+
+func isOptionalType(input reflect.Type) bool {
+	return input.Kind() == reflect.Ptr || input.Kind() == reflect.Struct && strings.Contains(input.Name(), "Option[")
+}
+
+func extractNullableValue(input *reflect.Value) *reflect.Value {
+	isSet := input.FieldByName("isSet").Bool()
+	if !isSet {
+		return nil
+	}
+	value := input.FieldByName("value")
+	return &value
+}
+
+func isNullableType(input reflect.Type) bool {
+	return input.Kind() == reflect.Struct && strings.Contains(input.Name(), "Nullable[")
+}
+
+func discriminatorToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	discriminatorKey := "type"
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)

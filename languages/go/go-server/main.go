@@ -1,11 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 type MyCustomContext struct{}
+
+func onRequest(r *http.Request, c MyCustomContext) *ErrorResponse {
+	fmt.Println("NEW REQUEST", r.URL.Path)
+	return nil
+}
 
 func main() {
 	mux := http.DefaultServeMux
@@ -14,7 +21,13 @@ func main() {
 		AppVersion:     "1",
 		AppDescription: "Hello",
 		RpcRoutePrefix: "/procedures",
+		OnRequest:      onRequest,
+		OnError: func(r *http.Request, mcc *MyCustomContext, err error) {
+			fmt.Println("NEW ERROR", r.URL.Path, err.Error())
+		},
 	}
+	result, _ := ToJson(User{Name: None[Nullable[string]]()}, KeyCasingCamelCase)
+	fmt.Println(string(result))
 	app := NewApp(
 		mux,
 		options,
@@ -37,17 +50,20 @@ func main() {
 }
 
 type UserParams struct {
-	UserId string
+	UserId string `arri:"required"`
 }
 type User struct {
-	Id      string
-	Name    string
-	Email   string
-	IsAdmin bool
+	Id       string
+	Name     Option[Nullable[string]]
+	Email    string
+	IsAdmin  bool
+	Metadata struct {
+		CreatedAt time.Time
+	}
 }
 
 func DeleteUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
-	return &User{Id: params.UserId}, nil
+	return &User{Id: params.UserId, Name: None[Nullable[string]]()}, nil
 }
 
 func GetUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {

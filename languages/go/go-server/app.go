@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
@@ -17,7 +16,6 @@ type App[TContext any] struct {
 }
 
 func (app *App[TContext]) GetAppDefinition() AAppDef {
-
 	return AAppDef{
 		SchemaVersion: "0.0.7",
 		Info: &AAppDefInfo{
@@ -42,10 +40,10 @@ type AppOptions[TContext any] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         *func(*http.Request, *TContext) *ErrorResponse
-	OnBeforeResponse  *func(*http.Request, *TContext, *any) *ErrorResponse
-	OnAfterResponse   *func(*http.Request, *TContext, *any) *ErrorResponse
-	OnError           *func(*http.Request, *TContext, error)
+	OnRequest         func(*http.Request, TContext) *ErrorResponse
+	OnBeforeResponse  func(*http.Request, TContext, any) *ErrorResponse
+	OnAfterResponse   func(*http.Request, TContext, any) *ErrorResponse
+	OnError           func(*http.Request, *TContext, error)
 }
 
 func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, *ErrorResponse)) App[TContext] {
@@ -61,11 +59,41 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	if len(app.Options.RpcDefinitionPath) > 0 {
 		defPath = app.Options.RpcDefinitionPath
 	}
+	onRequest := app.Options.OnRequest
+	if onRequest == nil {
+		onRequest = func(r *http.Request, t TContext) *ErrorResponse {
+			return nil
+		}
+	}
+	onBeforeResponse := app.Options.OnBeforeResponse
+	if onBeforeResponse == nil {
+		onBeforeResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+			return nil
+		}
+	}
+	onAfterResponse := app.Options.OnAfterResponse
+	if onAfterResponse == nil {
+		onAfterResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+			return nil
+		}
+	}
+	onError := app.Options.OnError
+	if onError == nil {
+		onError = func(r *http.Request, t *TContext, err error) {}
+	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		ctx, ctxErr := app.CreateContext(r)
+		if ctxErr != nil {
+			handleError(false, w, r, ctx, *ctxErr, onError)
+			return
+		}
+		onRequestErr := onRequest(r, *ctx)
+		if onRequestErr != nil {
+			handleError(false, w, r, ctx, *onRequestErr, onError)
+			return
+		}
 		if r.URL.Path != "/" {
-			w.WriteHeader(404)
-			jsonResult, _ := ToJson(ErrorResponse{Code: 404, Message: "Not found"}, KeyCasingCamelCase)
-			w.Write(jsonResult)
+			handleError(false, w, r, ctx, ErrorResponse{Code: 404, Message: "Not found"}, onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -80,8 +108,18 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 			Version:     &app.Options.AppVersion,
 			SchemaPath:  defPath,
 		}
+		onBeforeResponseErr := onBeforeResponse(r, *ctx, response)
+		if onBeforeResponseErr != nil {
+			handleError[TContext](false, w, r, ctx, *onBeforeResponseErr, onError)
+			return
+		}
 		jsonResult, _ := ToJson(response, app.Options.KeyCasing)
 		w.Write(jsonResult)
+		onAfterResponseErr := onAfterResponse(r, *ctx, response)
+		if onAfterResponseErr != nil {
+			handleError(true, w, r, ctx, *onAfterResponseErr, onError)
+			return
+		}
 	})
 
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +128,23 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		w.Write(jsonResult)
 	})
 	return app
+}
+
+func handleError[TContext any](
+	responseSent bool,
+	w http.ResponseWriter,
+	r *http.Request,
+	context *TContext,
+	err ErrorResponse,
+	onError func(*http.Request, *TContext, error),
+) {
+	onError(r, context, err)
+	if responseSent {
+		return
+	}
+	w.WriteHeader(int(err.Code))
+	body, _ := ToJson(err, KeyCasingCamelCase)
+	w.Write(body)
 }
 
 type RpcOptions struct {
@@ -121,37 +176,61 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	params := reflect.TypeOf(handler).In(0)
 	typeDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 	paramSchema, _ := typeToTypeDef(params, typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.Id, Value: *paramSchema})
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.value.Id, Value: *paramSchema})
 	response := handlerType.Out(0)
 	responseSchema, _ := typeToTypeDef(response, typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.Id, Value: *responseSchema})
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.value.Id, Value: *responseSchema})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __aOrderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
-	for i := 0; i < len(*app.Procedures); i++ {
-		fmt.Println((*app.Procedures)[i].Key)
+	onRequest := app.Options.OnRequest
+	if onRequest == nil {
+		onRequest = func(r *http.Request, t TContext) *ErrorResponse {
+			return nil
+		}
+	}
+	onBeforeResponse := app.Options.OnBeforeResponse
+	if onBeforeResponse == nil {
+		onBeforeResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+			return nil
+		}
+	}
+	onAfterResponse := app.Options.OnAfterResponse
+	if onAfterResponse == nil {
+		onAfterResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+			return nil
+		}
+	}
+	onError := app.Options.OnError
+	if onError == nil {
+		onError = func(r *http.Request, t *TContext, err error) {}
 	}
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
-		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			w.WriteHeader(404)
-			errResponse, _ := ToJson(ErrorResponse{Code: 404, Message: "Not found"}, KeyCasingCamelCase)
-			w.Write(errResponse)
+		ctx, ctxErr := app.CreateContext(r)
+		if ctxErr != nil {
+			handleError(false, w, r, nil, *ctxErr, app.Options.OnError)
 			return
 		}
-		var ctx *TContext = nil
-		if app.CreateContext != nil {
-			ctxResult, ctxErr := app.CreateContext(r)
-			if ctxErr != nil {
-				w.WriteHeader(int(ctxErr.Code))
-				jsonResult, _ := ToJson(ctxErr, KeyCasingCamelCase)
-				w.Write(jsonResult)
-				return
-			}
-			ctx = ctxResult
+		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
+			handleError(false, w, r, ctx, ErrorResponse{Code: 404, Message: "Not found"}, onError)
+			return
 		}
-		fmt.Println("CONTEXT", ctx)
+		onRequestErr := onRequest(r, *ctx)
+		if onRequestErr != nil {
+			handleError(false, w, r, ctx, *onRequestErr, onError)
+			return
+		}
+		onBeforeResponseErr := onBeforeResponse(r, *ctx, "")
+		if onBeforeResponseErr != nil {
+			handleError(false, w, r, ctx, *onBeforeResponseErr, onError)
+			return
+		}
 		w.WriteHeader(200)
 		body := "success"
 		w.Write([]byte(body))
+		onAfterResponseErr := onAfterResponse(r, *ctx, "")
+		if onAfterResponseErr != nil {
+			handleError(false, w, r, ctx, *onAfterResponseErr, onError)
+		}
 	})
 }
 
