@@ -361,10 +361,10 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 				fieldResult.Metadata = Some(ATypeMetadata{})
 			}
 			if len(description) > 0 {
-				fieldResult.Metadata.value.Description = Some(description)
+				fieldResult.Metadata.Value.Description = Some(description)
 			}
 			if deprecated {
-				fieldResult.Metadata.value.IsDeprecated = Some(deprecated)
+				fieldResult.Metadata.Value.IsDeprecated = Some(deprecated)
 			}
 		}
 		if isOptional {

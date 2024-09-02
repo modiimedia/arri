@@ -19,8 +19,9 @@ import (
 
 func ToJson(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	buf := []byte{}
+	val := reflect.ValueOf(input)
 	err := typeToJson(
-		reflect.ValueOf(input),
+		val,
 		&buf,
 		_EncodingContext{
 			KeyCasing:    keyCasing,
@@ -91,17 +92,20 @@ func typeToJson(input reflect.Value, target *[]byte, context _EncodingContext) e
 		return structToJson(input, target, context)
 	case reflect.Array, reflect.Slice:
 		return listToJson(input, target, context)
-	case reflect.Pointer:
+	case reflect.Ptr, reflect.UnsafePointer:
 		if input.IsNil() {
 			*target = append(*target, "null"...)
 			return nil
 		}
-		return typeToJson(input.Elem(), target, context)
+		el := input.Elem()
+		return typeToJson(el, target, context)
 	case reflect.Map:
 		return mapToJson(input, target, context)
 	}
 	if input.Type().Kind() == reflect.Interface {
-		return anyToJson(input, target, context)
+		el := input.Elem()
+		return typeToJson(el, target, context)
+		// return anyToJson(input, target, context)
 	}
 	return fmt.Errorf("unsupported Kind %s", kind)
 }
@@ -293,40 +297,6 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 	}
 	*target = append(*target, "}"...)
 	return nil
-}
-
-func extractOptionalValue(input *reflect.Value) *reflect.Value {
-	if input.IsZero() {
-		return nil
-	}
-	kind := input.Kind()
-	if kind == reflect.Ptr {
-		el := input.Elem()
-		return &el
-	}
-	isSet := input.FieldByName("isSet").Bool()
-	if !isSet {
-		return nil
-	}
-	value := input.FieldByName("value")
-	return &value
-}
-
-func isOptionalType(input reflect.Type) bool {
-	return input.Kind() == reflect.Ptr || input.Kind() == reflect.Struct && strings.Contains(input.Name(), "Option[")
-}
-
-func extractNullableValue(input *reflect.Value) *reflect.Value {
-	isSet := input.FieldByName("isSet").Bool()
-	if !isSet {
-		return nil
-	}
-	value := input.FieldByName("value")
-	return &value
-}
-
-func isNullableType(input reflect.Type) bool {
-	return input.Kind() == reflect.Struct && strings.Contains(input.Name(), "Nullable[")
 }
 
 func discriminatorToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {

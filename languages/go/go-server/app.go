@@ -176,10 +176,10 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	params := reflect.TypeOf(handler).In(0)
 	typeDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 	paramSchema, _ := typeToTypeDef(params, typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.value.Id, Value: *paramSchema})
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.Unwrap().Id, Value: *paramSchema})
 	response := handlerType.Out(0)
 	responseSchema, _ := typeToTypeDef(response, typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.value.Id, Value: *responseSchema})
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __aOrderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
