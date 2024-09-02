@@ -16,6 +16,10 @@ func onRequest(r *http.Request, c MyCustomContext) *ErrorResponse {
 }
 
 func main() {
+	target := User{}
+	FromJson([]byte(`{"id":"hello world"}`), User{})
+	fmt.Printf("%v", target)
+	return
 	mux := http.DefaultServeMux
 	options := AppOptions[MyCustomContext]{
 		AppName:        "My Awesome App",
