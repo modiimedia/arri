@@ -26,30 +26,50 @@ const (
 	AUint64    = "uint64"
 )
 
-type ArriType = string
+type AType = string
 
-type ArriTypeMetadata struct {
-	Id           string `json:"id,omitempty"`
-	Description  string `json:"description,omitempty"`
-	IsDeprecated bool   `json:"isDeprecated,omitempty"`
+type TypeMetadata struct {
+	Id           string  `key:"id" json:"id,omitempty"`
+	Description  *string `key:"description" json:"description,omitempty"`
+	IsDeprecated *bool   `key:"isDeprecated" json:"isDeprecated,omitempty"`
 }
 
-type ArriTypeDef struct {
-	Metadata           *ArriTypeMetadata       `json:"metadata,omitempty"`
-	Nullable           *bool                   `json:"nullable,omitempty"`
-	Type               *ArriType               `json:"type,omitempty"`
-	Enum               *[]string               `json:"enum,omitempty"`
-	Elements           *ArriTypeDef            `json:"elements,omitempty"`
-	Properties         *map[string]ArriTypeDef `json:"properties,omitempty"`
-	OptionalProperties *map[string]ArriTypeDef `json:"optionalProperties,omitempty"`
-	Strict             *bool                   `json:"strict,omitempty"`
-	Values             *ArriTypeDef            `json:"values,omitempty"`
-	Discriminator      *string                 `json:"discriminator,omitempty"`
-	Mapping            *map[string]ArriTypeDef `json:"mapping,omitempty"`
-	Ref                *string                 `json:"ref,omitempty"`
+type ATypeDef struct {
+	Metadata           *TypeMetadata                     `key:"metadata" json:"metadata,omitempty"`
+	Nullable           *bool                             `key:"nullable" json:"nullable,omitempty"`
+	Type               *AType                            `key:"type" json:"type,omitempty"`
+	Enum               *[]string                         `key:"enum" json:"enum,omitempty"`
+	Elements           *ATypeDef                         `key:"elements" json:"elements,omitempty"`
+	Properties         *[]__aOrderedMapEntry__[ATypeDef] `key:"properties" json:"properties,omitempty"`
+	OptionalProperties *[]__aOrderedMapEntry__[ATypeDef] `key:"optionalProperties" json:"optionalProperties,omitempty"`
+	Strict             *bool                             `key:"strict" json:"strict,omitempty"`
+	Values             *ATypeDef                         `key:"values" json:"values,omitempty"`
+	Discriminator      *string                           `key:"discriminator" json:"discriminator,omitempty"`
+	Mapping            *map[string]ATypeDef              `key:"mapping" json:"mapping,omitempty"`
+	Ref                *string                           `key:"ref" json:"ref,omitempty"`
 }
 
-type ArriSchemaError struct{}
+type __aOrderedMapEntry__[T interface{}] struct {
+	Key   string
+	Value T
+}
+
+func __updateAOrderedMap__[T interface{}](state []__aOrderedMapEntry__[T], newValue __aOrderedMapEntry__[T]) []__aOrderedMapEntry__[T] {
+	var targetIndex *int = nil
+	for i := 0; i < len(state); i++ {
+		value := state[i]
+		if value.Key == newValue.Key {
+			targetIndex = &i
+			break
+		}
+	}
+	if targetIndex != nil {
+		state[*targetIndex] = newValue
+		return state
+	}
+	state = append(state, newValue)
+	return state
+}
 
 const (
 	KeyCasingPascalCase = "PASCAL_CASE"
@@ -68,6 +88,18 @@ type _TypeDefContext struct {
 	SchemaPath    string
 	IsNullable    *bool
 	EnumValues    *[]string
+}
+
+func _NewTypeDefContext(keyCasing KeyCasing) _TypeDefContext {
+	casing := KeyCasingCamelCase
+	switch keyCasing {
+	case KeyCasingCamelCase, KeyCasingSnakeCase, KeyCasingPascalCase:
+		casing = keyCasing
+	case "":
+		casing = keyCasing
+	}
+	return _TypeDefContext{KeyCasing: casing, MaxDepth: 1000, IsNullable: nil}
+
 }
 
 func (context _TypeDefContext) copyWith(CurrentDepth *uint32, ParentStructs *[]string, InstancePath *string, SchemaPath *string, IsNullable *bool, EnumValues *[]string) _TypeDefContext {
@@ -108,21 +140,12 @@ func (context _TypeDefContext) copyWith(CurrentDepth *uint32, ParentStructs *[]s
 
 }
 
-func ToTypeDef(input interface{}, keyCasing KeyCasing) (*ArriTypeDef, error) {
-	casing := KeyCasingCamelCase
-	switch keyCasing {
-	case KeyCasingCamelCase, KeyCasingSnakeCase, KeyCasingPascalCase:
-		casing = keyCasing
-	case "":
-		casing = keyCasing
-	default:
-		return nil, errors.New("Invalid keyCasing \"" + keyCasing + "\"")
-	}
-	context := _TypeDefContext{KeyCasing: casing, MaxDepth: 1000, IsNullable: nil}
+func ToTypeDef(input interface{}, keyCasing KeyCasing) (*ATypeDef, error) {
+	context := _NewTypeDefContext(keyCasing)
 	return typeToTypeDef(reflect.TypeOf(input), context)
 }
 
-func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
 	if context.CurrentDepth >= context.MaxDepth {
 		return nil, fmt.Errorf("error at %s. max depth of %+v reached", context.InstancePath, context.MaxDepth)
 	}
@@ -153,64 +176,64 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, e
 	case reflect.Struct:
 		if input.Name() == "Time" {
 			t := ATimestamp
-			return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+			return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 		}
 		return structToTypeDef(input, context)
 	case reflect.Interface:
-		return &ArriTypeDef{Nullable: context.IsNullable}, nil
+		return &ATypeDef{Nullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. %s is not a supported type", context.InstancePath, input.Kind())
 	}
 }
 
-func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
 	kind := value.Kind()
 	switch kind {
 	case reflect.Bool:
 		t := ABoolean
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Int:
 		t := AInt64
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Int8:
 		t := AInt8
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Int16:
 		t := AInt16
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Int32:
 		t := AInt32
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Int64:
 		t := AInt64
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Uint:
 		t := AUint64
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Uint8:
 		t := AUint8
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Uint16:
 		t := AUint16
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Uint32:
 		t := AUint32
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Uint64:
 		t := AUint64
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Float32:
 		t := AFloat32
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.Float64:
 		t := AFloat64
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	case reflect.String:
 		if context.EnumValues != nil {
-			return &ArriTypeDef{Enum: context.EnumValues, Nullable: context.IsNullable}, nil
+			return &ATypeDef{Enum: context.EnumValues, Nullable: context.IsNullable}, nil
 		}
 		t := AString
-		return &ArriTypeDef{Type: &t, Nullable: context.IsNullable}, nil
+		return &ATypeDef{Type: &t, Nullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. '%s' is not a supported primitive type", context.InstancePath, kind)
 	}
@@ -229,12 +252,12 @@ func IsDiscriminatorStruct(input reflect.Type) bool {
 	return false
 }
 
-func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
 	structName := input.Name()
 	for i := 0; i < len(context.ParentStructs); i++ {
 		name := context.ParentStructs[i]
 		if name == structName {
-			return &ArriTypeDef{Ref: &structName}, nil
+			return &ATypeDef{Ref: &structName}, nil
 		}
 	}
 	context.ParentStructs = append(context.ParentStructs, structName)
@@ -246,8 +269,8 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 
-	requiredFields := make(map[string]ArriTypeDef)
-	optionalFields := make(map[string]ArriTypeDef)
+	requiredFields := []__aOrderedMapEntry__[ATypeDef]{}
+	optionalFields := []__aOrderedMapEntry__[ATypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
@@ -303,35 +326,35 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef,
 		}
 		if len(description) > 0 || deprecated {
 			if fieldResult.Metadata == nil {
-				fieldResult.Metadata = &ArriTypeMetadata{}
+				fieldResult.Metadata = &TypeMetadata{}
 			}
 			if len(description) > 0 {
-				fieldResult.Metadata.Description = description
+				fieldResult.Metadata.Description = &description
 			}
 			if deprecated {
-				fieldResult.Metadata.IsDeprecated = deprecated
+				fieldResult.Metadata.IsDeprecated = &deprecated
 			}
 		}
 		if isOptional {
-			optionalFields[key] = *fieldResult
+			optionalFields = append(optionalFields, __aOrderedMapEntry__[ATypeDef]{Key: key, Value: *fieldResult})
 		} else {
-			requiredFields[key] = *fieldResult
+			requiredFields = append(requiredFields, __aOrderedMapEntry__[ATypeDef]{Key: key, Value: *fieldResult})
 		}
 	}
 	if len(optionalFields) > 0 {
-		return &ArriTypeDef{
+		return &ATypeDef{
 			Properties:         &requiredFields,
 			OptionalProperties: &optionalFields,
 			Nullable:           context.IsNullable,
-			Metadata:           &ArriTypeMetadata{Id: structName}}, nil
+			Metadata:           &TypeMetadata{Id: structName}}, nil
 	}
-	return &ArriTypeDef{
+	return &ATypeDef{
 		Properties: &requiredFields,
 		Nullable:   context.IsNullable,
-		Metadata:   &ArriTypeMetadata{Id: structName}}, nil
+		Metadata:   &TypeMetadata{Id: structName}}, nil
 }
 
-func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
@@ -340,7 +363,7 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 	discriminatorKey := "type"
-	mapping := make(map[string]ArriTypeDef)
+	mapping := make(map[string]ATypeDef)
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		// we only accept "DiscriminatorKey" if it's the first key in the struct
@@ -368,15 +391,16 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 		}
 		mapping[discriminatorValue] = *fieldResult
 	}
-	return &ArriTypeDef{Discriminator: &discriminatorKey, Mapping: &mapping, Metadata: &ArriTypeMetadata{Id: name}}, nil
+	return &ATypeDef{Discriminator: &discriminatorKey, Mapping: &mapping, Metadata: &TypeMetadata{Id: name}}, nil
 }
 
-func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Array && kind != reflect.Slice {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Array' or 'reflect.Slice'. got '%s'", context.InstancePath, kind)
 	}
 	subType := input.Elem()
+	fmt.Println(subType.Name())
 	instancePath := context.InstancePath + "/[element]"
 	schemaPath := context.SchemaPath + "/elements"
 	nullable := false
@@ -384,10 +408,10 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, 
 	if err != nil {
 		return nil, err
 	}
-	return &ArriTypeDef{Elements: subTypeResult}, nil
+	return &ATypeDef{Elements: subTypeResult}, nil
 }
 
-func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, error) {
+func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Map {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Map'. got '%s'", context.InstancePath, kind)
@@ -405,7 +429,7 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ArriTypeDef, er
 	if err != nil {
 		return nil, err
 	}
-	return &ArriTypeDef{Values: subTypeResult}, nil
+	return &ATypeDef{Values: subTypeResult}, nil
 }
 
 const (
@@ -427,8 +451,6 @@ type Message struct {
 	Text      string
 	Other     interface{}
 }
-
-func MessageFromJson()
 
 func (m *Message) ToJson(casing KeyCasing) ([]byte, error) {
 	return ToJson(m, casing)

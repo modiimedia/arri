@@ -2,8 +2,8 @@ package main
 
 import "testing"
 
-func myTestFunc(_ Message) (Shape, error) {
-	return Shape{}, nil
+func myTestFunc(_ Message, _ any) (*Shape, error) {
+	return &Shape{}, nil
 }
 
 func BenchmarkToRpcDef(b *testing.B) {

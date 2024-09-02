@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -11,8 +12,22 @@ type App[TContext any] struct {
 	CreateContext        func(r *http.Request) (*TContext, *ErrorResponse)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
-	Procedures           map[string]ArriRpcDef
-	Models               map[string]ArriTypeDef
+	Procedures           *[]__aOrderedMapEntry__[ARpcDef]
+	Definitions          *[]__aOrderedMapEntry__[ATypeDef]
+}
+
+func (app *App[TContext]) GetAppDefinition() AAppDef {
+
+	return AAppDef{
+		SchemaVersion: "0.0.7",
+		Info: &AAppDefInfo{
+			Name:        app.Options.AppName,
+			Description: app.Options.AppDescription,
+			Version:     app.Options.AppVersion,
+		},
+		Procedures:  *app.Procedures,
+		Definitions: *app.Definitions,
+	}
 }
 
 type AppOptions[TContext any] struct {
@@ -34,24 +49,87 @@ type AppOptions[TContext any] struct {
 }
 
 func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, *ErrorResponse)) App[TContext] {
-	return App[TContext]{
+	app := App[TContext]{
 		Mux:                  mux,
 		CreateContext:        createContext,
 		Options:              options,
 		InitializationErrors: []error{},
-		Procedures:           map[string]ArriRpcDef{},
-		Models:               map[string]ArriTypeDef{},
+		Procedures:           &[]__aOrderedMapEntry__[ARpcDef]{},
+		Definitions:          &[]__aOrderedMapEntry__[ATypeDef]{},
 	}
+	defPath := app.Options.RpcRoutePrefix + "/__definition"
+	if len(app.Options.RpcDefinitionPath) > 0 {
+		defPath = app.Options.RpcDefinitionPath
+	}
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			w.WriteHeader(404)
+			jsonResult, _ := ToJson(ErrorResponse{Code: 404, Message: "Not found"}, KeyCasingCamelCase)
+			w.Write(jsonResult)
+			return
+		}
+		w.WriteHeader(200)
+		response := struct {
+			Title       string
+			Description string
+			Version     *string
+			SchemaPath  string
+		}{
+			Title:       app.Options.AppName,
+			Description: app.Options.AppDescription,
+			Version:     &app.Options.AppVersion,
+			SchemaPath:  defPath,
+		}
+		jsonResult, _ := ToJson(response, app.Options.KeyCasing)
+		w.Write(jsonResult)
+	})
+
+	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
+		jsonResult, _ := ToJson(app.GetAppDefinition(), app.Options.KeyCasing)
+		w.WriteHeader(200)
+		w.Write(jsonResult)
+	})
+	return app
 }
 
-func Rpc[TParams, TResponse, TContext any](app App[TContext], handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+type RpcOptions struct {
+	Path         string
+	Method       HttpMethod
+	Description  string
+	IsDeprecated bool
+}
+
+func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptions, handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
-	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	rpcSchema.Http.Path = app.Options.RpcRoutePrefix + rpcSchema.Http.Path
 	if rpcError != nil {
-		app.InitializationErrors = append(app.InitializationErrors, rpcError)
-		return
+		panic(rpcError)
 	}
-	app.Procedures[rpcName] = *rpcSchema
+	if options != nil {
+		rpcSchema.Http.Method = options.Method
+		if len(options.Path) > 0 {
+			rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Path
+		}
+		if len(options.Description) > 0 {
+			rpcSchema.Http.Description = &options.Description
+		}
+		if options.IsDeprecated {
+			rpcSchema.Http.IsDeprecated = &options.IsDeprecated
+		}
+	}
+	params := reflect.TypeOf(handler).In(0)
+	typeDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+	paramSchema, _ := typeToTypeDef(params, typeDefContext)
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.Id, Value: *paramSchema})
+	response := handlerType.Out(0)
+	responseSchema, _ := typeToTypeDef(response, typeDefContext)
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.Id, Value: *responseSchema})
+	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __aOrderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
+	for i := 0; i < len(*app.Procedures); i++ {
+		fmt.Println((*app.Procedures)[i].Key)
+	}
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
 			w.WriteHeader(404)
@@ -75,4 +153,12 @@ func Rpc[TParams, TResponse, TContext any](app App[TContext], handler func(TPara
 		body := "success"
 		w.Write([]byte(body))
 	})
+}
+
+func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+	rpc(app, nil, handler)
+}
+
+func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], options RpcOptions, handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+	rpc(app, &options, handler)
 }

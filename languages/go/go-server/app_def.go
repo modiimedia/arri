@@ -9,16 +9,20 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type ArriAppDef struct {
-	SchemaVersion string
-	Info          *ArriAppDefInfo
-	Procedures    map[string]ArriRpcDef
-	Definitions   map[string]ArriTypeDef
+type AAppDef struct {
+	SchemaVersion string                           `key:"schemaVersion" json:"schemaVersion" `
+	Info          *AAppDefInfo                     `key:"info" json:"info,omitempty" `
+	Procedures    []__aOrderedMapEntry__[ARpcDef]  `key:"procedures" json:"procedures" `
+	Definitions   []__aOrderedMapEntry__[ATypeDef] `key:"definitions" json:"definitions"`
 }
 
-type ArriAppDefInfo struct{}
+type AAppDefInfo struct {
+	Name        string `key:"name" json:"name,omitempty"`
+	Description string `key:"description" json:"description,omitempty"`
+	Version     string `key:"version" json:"version,omitempty"`
+}
 
-type ArriRpcDef struct {
+type ARpcDef struct {
 	DiscriminatorKey `discriminatorKey:"transport"`
 	Http             *ArriHttpRpcDef `discriminator:"http"`
 }
@@ -34,13 +38,13 @@ const (
 type HttpMethod = string
 
 type ArriHttpRpcDef struct {
-	Path          string
-	Method        HttpMethod
-	IsEventStream *bool
-	Params        *string
-	Response      *string
-	Description   *string
-	IsDeprecated  *bool
+	Path          string     `key:"path"`
+	Method        HttpMethod `key:"method"`
+	IsEventStream *bool      `key:"isEventStream"`
+	Params        *string    `key:"params"`
+	Response      *string    `key:"response"`
+	Description   *string    `key:"description"`
+	IsDeprecated  *bool      `key:"isDeprecated"`
 }
 
 type ArriHttpRpcOptions struct {
@@ -50,24 +54,7 @@ type ArriHttpRpcOptions struct {
 	IsDeprecated bool
 }
 
-type UserParams struct {
-	UserId string
-}
-type User struct {
-	Id    string
-	Name  string
-	Email string
-}
-
-func GetUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
-	return &User{Id: params.UserId}, nil
-}
-
-func UpdateUser(params User, context MyCustomContext) (*User, *ErrorResponse) {
-	return &params, nil
-}
-
-func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*ArriRpcDef, error) {
+func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*ARpcDef, error) {
 	fnName := rpcNameFromFunctionName(GetFunctionName(value))
 	valueType := reflect.TypeOf(value)
 	valueKind := valueType.Kind()
@@ -75,7 +62,7 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*ArriRpcDef, error
 		return nil, errors.ErrUnsupported
 	}
 	params := valueType.In(0).Name()
-	response := valueType.Out(0).Name()
+	response := valueType.Out(0).Elem().Name()
 	path := "/" + strcase.ToKebab(fnName)
 	if len(options.Path) > 0 {
 		path = options.Path
@@ -92,7 +79,7 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*ArriRpcDef, error
 	if options.IsDeprecated {
 		isDeprecated = &options.IsDeprecated
 	}
-	return &ArriRpcDef{
+	return &ARpcDef{
 			Http: &ArriHttpRpcDef{
 				Path:         path,
 				Method:       method,

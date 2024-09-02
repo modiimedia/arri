@@ -1,44 +1,59 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
 
-const (
-	Get    = "GET"
-	Post   = "POST"
-	Put    = "PUT"
-	Patch  = "PATCH"
-	Delete = "DELETE"
-)
-
-type MyCustomContext struct {
-}
+type MyCustomContext struct{}
 
 func main() {
-	result, err := ToRpcDef(SayHello, ArriHttpRpcOptions{Method: HttpMethodPost})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	jsonResult, _ := ToJson(result, KeyCasingCamelCase)
-	fmt.Println(string(jsonResult))
 	mux := http.DefaultServeMux
-	options := AppOptions[MyCustomContext]{}
+	options := AppOptions[MyCustomContext]{
+		AppName:        "My Awesome App",
+		AppVersion:     "1",
+		AppDescription: "Hello",
+		RpcRoutePrefix: "/procedures",
+	}
 	app := NewApp(
 		mux,
 		options,
+		// create the RPC context for each request
+		// this is generic so users can user whatever struct they want for their context
 		(func(r *http.Request) (*MyCustomContext, *ErrorResponse) {
 			return &MyCustomContext{}, nil
 		}),
 	)
-	Rpc(app, GetUser)
-	Rpc(app, UpdateUser)
+	// register an RPC
+	Rpc(&app, GetUser)
+	Rpc(&app, DeleteUser)
+	// register an RPC with a custom HTTP method and path
+	RpcWithOptions(&app, RpcOptions{
+		Method: HttpMethodPatch,
+		Path:   "/update-user",
+	}, UpdateUser)
+	log.Println("starting server at http://localhost:4040")
 	log.Fatal(http.ListenAndServe(":4040", mux))
 }
 
-func SayHello(msg Message) string {
-	return msg.Text
+type UserParams struct {
+	UserId string
+}
+type User struct {
+	Id      string
+	Name    string
+	Email   string
+	IsAdmin bool
+}
+
+func DeleteUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
+	return &User{Id: params.UserId}, nil
+}
+
+func GetUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
+	return &User{Id: params.UserId}, nil
+}
+
+func UpdateUser(params User, context MyCustomContext) (*User, *ErrorResponse) {
+	return &params, nil
 }

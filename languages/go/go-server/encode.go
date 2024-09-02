@@ -113,9 +113,6 @@ func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) er
 			*target = append(*target, ","...)
 		}
 		key := keys[i]
-		if key.Kind() != reflect.String {
-			return fmt.Errorf("arri only supports string keys in maps")
-		}
 		*target = append(*target, "\""+key.String()+"\":"...)
 		value := input.MapIndex(key)
 		depth := context.CurrentDepth + 1
@@ -137,8 +134,33 @@ func anyToJson(input reflect.Value, target *[]byte, context _EncodingContext) er
 	return nil
 }
 
+func orderedMapEntryToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	slice := input.Slice(0, input.Len())
+	*target = append(*target, "{"...)
+	seenKeys := map[string]bool{}
+	for i := 0; i < slice.Len(); i++ {
+		if i > 0 {
+			*target = append(*target, ","...)
+		}
+		entry := slice.Index(i)
+		key := entry.FieldByName("Key").String()
+		hasSeenKey, keyExists := seenKeys[key]
+		if keyExists && hasSeenKey {
+			return fmt.Errorf("duplicate key \"" + key + "\"")
+		}
+		value := entry.FieldByName("Value")
+		*target = append(*target, "\""+key+"\":"...)
+		typeToJson(value, target, context)
+	}
+	*target = append(*target, "}"...)
+	return nil
+}
+
 func listToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	slice := input.Slice(0, input.Len())
+	if strings.Contains(input.Type().Elem().Name(), "__aOrderedMapEntry__[") {
+		return orderedMapEntryToJson(input, target, context)
+	}
 	*target = append(*target, "["...)
 	for i := 0; i < slice.Len(); i++ {
 		if i > 0 {
