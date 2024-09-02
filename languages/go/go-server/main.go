@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 )
 
 type MyCustomContext struct{}
@@ -65,13 +64,10 @@ type UserParams struct {
 	UserId string `arri:"required"`
 }
 type User struct {
-	Id       string
-	Name     Option[string]
-	Email    string
-	IsAdmin  bool
-	Metadata struct {
-		CreatedAt time.Time
-	}
+	Id      string
+	Name    Option[string]
+	Email   string
+	IsAdmin bool
 }
 
 func DeleteUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
