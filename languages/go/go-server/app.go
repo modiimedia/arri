@@ -241,3 +241,14 @@ func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TPar
 func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], options RpcOptions, handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
 	rpc(app, &options, handler)
 }
+
+func RegisterDef[TContent any](app *App[TContent], input any) {
+	def, err := ToTypeDef(input, app.Options.KeyCasing)
+	if err != nil {
+		panic(err)
+	}
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{
+		Key:   def.Metadata.Unwrap().Id,
+		Value: *def,
+	})
+}

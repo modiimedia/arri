@@ -26,7 +26,16 @@ func main() {
 			fmt.Println("NEW ERROR", r.URL.Path, err.Error())
 		},
 	}
-	result, _ := ToJson(User{Name: None[Nullable[string]]()}, KeyCasingCamelCase)
+	result, _ := ToJson(
+		Shape{
+			Child: &Child{
+				Child: NotNull(
+					Shape{Rectangle: &Rectangle{}},
+				),
+			},
+		},
+		KeyCasingCamelCase,
+	)
 	fmt.Println(string(result))
 	app := NewApp(
 		mux,
@@ -40,6 +49,7 @@ func main() {
 	// register an RPC
 	Rpc(&app, GetUser)
 	Rpc(&app, DeleteUser)
+	RegisterDef(&app, Message{})
 	// register an RPC with a custom HTTP method and path
 	RpcWithOptions(&app, RpcOptions{
 		Method: HttpMethodPatch,

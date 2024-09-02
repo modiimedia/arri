@@ -28,25 +28,25 @@ const (
 
 type AType = string
 
-type TypeMetadata struct {
-	Id           string         `key:"id" json:"id,omitempty"`
-	Description  Option[string] `key:"description" json:"description,omitempty"`
-	IsDeprecated Option[bool]   `key:"isDeprecated" json:"isDeprecated,omitempty"`
+type ATypeMetadata struct {
+	Id           string         `key:"id"`
+	Description  Option[string] `key:"description"`
+	IsDeprecated Option[bool]   `key:"isDeprecated"`
 }
 
 type ATypeDef struct {
-	Metadata           Option[TypeMetadata]                     `key:"metadata" json:"metadata,omitempty"`
-	Nullable           Option[bool]                             `key:"nullable" json:"nullable,omitempty"`
-	Type               Option[AType]                            `key:"type" json:"type,omitempty"`
-	Enum               Option[[]string]                         `key:"enum" json:"enum,omitempty"`
-	Elements           *ATypeDef                                `key:"elements" json:"elements,omitempty"`
-	Properties         Option[[]__aOrderedMapEntry__[ATypeDef]] `key:"properties" json:"properties,omitempty"`
-	OptionalProperties Option[[]__aOrderedMapEntry__[ATypeDef]] `key:"optionalProperties" json:"optionalProperties,omitempty"`
-	Strict             Option[bool]                             `key:"strict" json:"strict,omitempty"`
-	Values             *ATypeDef                                `key:"values" json:"values,omitempty"`
-	Discriminator      Option[string]                           `key:"discriminator" json:"discriminator,omitempty"`
-	Mapping            Option[map[string]ATypeDef]              `key:"mapping" json:"mapping,omitempty"`
-	Ref                Option[string]                           `key:"ref" json:"ref,omitempty"`
+	Metadata           Option[ATypeMetadata]                    `key:"metadata" `
+	Nullable           Option[bool]                             `key:"nullable"`
+	Type               Option[AType]                            `key:"type"`
+	Enum               Option[[]string]                         `key:"enum"`
+	Elements           *ATypeDef                                `key:"elements"`
+	Properties         Option[[]__aOrderedMapEntry__[ATypeDef]] `key:"properties"`
+	OptionalProperties Option[[]__aOrderedMapEntry__[ATypeDef]] `key:"optionalProperties"`
+	Strict             Option[bool]                             `key:"strict"`
+	Values             *ATypeDef                                `key:"values"`
+	Discriminator      Option[string]                           `key:"discriminator"`
+	Mapping            Option[map[string]ATypeDef]              `key:"mapping"`
+	Ref                Option[string]                           `key:"ref"`
 }
 
 type __aOrderedMapEntry__[T interface{}] struct {
@@ -87,6 +87,7 @@ type _TypeDefContext struct {
 	InstancePath  string
 	SchemaPath    string
 	IsNullable    Option[bool]
+	EnumName      Option[string]
 	EnumValues    Option[[]string]
 }
 
@@ -103,36 +104,28 @@ func _NewTypeDefContext(keyCasing KeyCasing) _TypeDefContext {
 		MaxDepth:     1000,
 		InstancePath: "",
 		IsNullable:   None[bool](),
+		EnumName:     None[string](),
 		EnumValues:   None[[]string](),
 	}
 
 }
 
-func (context _TypeDefContext) copyWith(CurrentDepth *uint32, ParentStructs *[]string, InstancePath *string, SchemaPath *string, IsNullable *bool, EnumValues *[]string) _TypeDefContext {
-	depth := context.CurrentDepth
-	if CurrentDepth != nil {
-		depth = *CurrentDepth
-	}
-	structs := context.ParentStructs
-	if ParentStructs != nil {
-		structs = *ParentStructs
-	}
-	instancePath := context.InstancePath
-	if InstancePath != nil {
-		instancePath = *InstancePath
-	}
-	schemaPath := context.SchemaPath
-	if SchemaPath != nil {
-		schemaPath = *SchemaPath
-	}
-	isNullable := context.IsNullable
-	if IsNullable != nil {
-		isNullable = Some(*IsNullable)
-	}
-	enumValues := context.EnumValues
-	if EnumValues != nil {
-		enumValues = Some(*EnumValues)
-	}
+func (context _TypeDefContext) copyWith(
+	CurrentDepth Option[uint32],
+	ParentStructs Option[[]string],
+	InstancePath Option[string],
+	SchemaPath Option[string],
+	IsNullable Option[Option[bool]],
+	EnumValues Option[Option[[]string]],
+	EnumName Option[Option[string]],
+) _TypeDefContext {
+	depth := CurrentDepth.UnwrapOr(context.CurrentDepth)
+	structs := ParentStructs.UnwrapOr(context.ParentStructs)
+	instancePath := InstancePath.UnwrapOr(context.InstancePath)
+	schemaPath := SchemaPath.UnwrapOr(context.SchemaPath)
+	isNullable := IsNullable.UnwrapOr(context.IsNullable)
+	enumValues := EnumValues.UnwrapOr(context.EnumValues)
+	enumName := EnumName.UnwrapOr(context.EnumName)
 	return _TypeDefContext{
 		KeyCasing:     context.KeyCasing,
 		MaxDepth:      context.MaxDepth,
@@ -142,6 +135,7 @@ func (context _TypeDefContext) copyWith(CurrentDepth *uint32, ParentStructs *[]s
 		SchemaPath:    schemaPath,
 		IsNullable:    isNullable,
 		EnumValues:    enumValues,
+		EnumName:      enumName,
 	}
 
 }
@@ -236,7 +230,15 @@ func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*AType
 		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.String:
 		if context.EnumValues.IsSome() {
-			return &ATypeDef{Enum: context.EnumValues, Nullable: context.IsNullable}, nil
+			metadata := None[ATypeMetadata]()
+			if context.EnumName.IsSome() {
+				metadata = Some(ATypeMetadata{Id: context.EnumName.Unwrap()})
+			}
+			return &ATypeDef{
+				Enum:     context.EnumValues,
+				Nullable: context.IsNullable,
+				Metadata: metadata,
+			}, nil
 		}
 		t := AString
 		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
@@ -307,7 +309,8 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 		}
 		fieldType := field.Type
 		description := field.Tag.Get("description")
-		var enumValues *[]string
+		enumValues := None[Option[[]string]]()
+		enumName := None[Option[string]]()
 		if len(field.Tag.Get("enum")) > 0 {
 			valueList := []string{}
 			values := strings.Split(field.Tag.Get("enum"), ",")
@@ -315,16 +318,19 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 				value := values[i]
 				valueList = append(valueList, strings.TrimSpace(value))
 			}
-			enumValues = &valueList
+			enumValues = Some(Some(valueList))
+		}
+		if len(field.Tag.Get("enumName")) > 0 {
+			s := strings.TrimSpace(field.Tag.Get("enumName"))
+			enumName = Some(Some(s))
 		}
 		isOptional := isOptionalType(fieldType)
 		if isOptional {
 			fieldType = extractOptionalType(fieldType)
 		}
-		var isNullable *bool = nil
+		isNullable := None[Option[bool]]()
 		if isNullableType(fieldType) {
-			t := true
-			isNullable = &t
+			isNullable = Some(Some(true))
 			fieldType = extractNullableType(fieldType)
 		}
 		isOptional2 := isOptionalType(fieldType)
@@ -335,13 +341,24 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 		instancePath := "/" + structName + "/" + key
 		schemaPath := context.SchemaPath + "/properties/" + key
 		newDepth := context.CurrentDepth + 1
-		fieldResult, fieldError := typeToTypeDef(fieldType, context.copyWith(&newDepth, nil, &instancePath, &schemaPath, isNullable, enumValues))
+		fieldResult, fieldError := typeToTypeDef(
+			fieldType,
+			context.copyWith(
+				Some(newDepth),
+				None[[]string](),
+				Some(instancePath),
+				Some(schemaPath),
+				isNullable,
+				enumValues,
+				enumName,
+			),
+		)
 		if fieldError != nil {
 			return nil, fieldError
 		}
 		if len(description) > 0 || deprecated {
 			if fieldResult.Metadata.IsNone() {
-				fieldResult.Metadata = Some(TypeMetadata{})
+				fieldResult.Metadata = Some(ATypeMetadata{})
 			}
 			if len(description) > 0 {
 				fieldResult.Metadata.value.Description = Some(description)
@@ -362,12 +379,12 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 			Properties:         Some(requiredFields),
 			OptionalProperties: Some(optionalFields),
 			Nullable:           context.IsNullable,
-			Metadata:           Some(TypeMetadata{Id: structName})}, nil
+			Metadata:           Some(ATypeMetadata{Id: structName})}, nil
 	}
 	return &ATypeDef{
 		Properties: Some(requiredFields),
 		Nullable:   context.IsNullable,
-		Metadata:   Some(TypeMetadata{Id: structName}),
+		Metadata:   Some(ATypeMetadata{Id: structName}),
 	}, nil
 }
 
@@ -416,13 +433,24 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 			return nil, errors.New("the direct child of a discriminator struct cannot be another discriminator struct")
 		}
 		schemaPath := context.SchemaPath + "/mapping/" + discriminatorValue
-		fieldResult, fieldError := structToTypeDef(field.Type.Elem(), context.copyWith(nil, &context.ParentStructs, nil, &schemaPath, nil, nil))
+		fieldResult, fieldError := structToTypeDef(
+			field.Type.Elem(),
+			context.copyWith(
+				None[uint32](),
+				None[[]string](),
+				None[string](),
+				Some(schemaPath),
+				None[Option[bool]](),
+				None[Option[[]string]](),
+				None[Option[string]](),
+			),
+		)
 		if fieldError != nil {
 			return nil, fieldError
 		}
 		mapping[discriminatorValue] = *fieldResult
 	}
-	return &ATypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(TypeMetadata{Id: name})}, nil
+	return &ATypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(ATypeMetadata{Id: name})}, nil
 }
 
 func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
@@ -434,7 +462,18 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, err
 	instancePath := context.InstancePath + "/[element]"
 	schemaPath := context.SchemaPath + "/elements"
 	nullable := false
-	subTypeResult, err := typeToTypeDef(subType, context.copyWith(nil, nil, &instancePath, &schemaPath, &nullable, nil))
+	subTypeResult, err := typeToTypeDef(
+		subType,
+		context.copyWith(
+			None[uint32](),
+			None[[]string](),
+			Some(instancePath),
+			Some(schemaPath),
+			Some(Some(nullable)),
+			None[Option[[]string]](),
+			None[Option[string]](),
+		),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -455,7 +494,17 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error
 	schemaPath := context.SchemaPath + "/values"
 	nullable := subType.Kind() == reflect.Ptr
 	depth := context.CurrentDepth + 1
-	subTypeResult, err := typeToTypeDef(subType, context.copyWith(&depth, &context.ParentStructs, &instancePath, &schemaPath, &nullable, nil))
+	subTypeResult, err := typeToTypeDef(
+		subType, context.copyWith(
+			Some(depth),
+			None[[]string](),
+			Some(instancePath),
+			Some(schemaPath),
+			Some(Some(nullable)),
+			None[Option[[]string]](),
+			None[Option[string]](),
+		),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -475,7 +524,7 @@ type MessageStatus = string
 
 type Message struct {
 	Id        string
-	Status    string `arri:"required,nullable" enum:"ACTIVE,INACTIVE"`
+	Status    string `enum:"ACTIVE,INACTIVE" enumName:"Status"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Text      string
@@ -497,18 +546,18 @@ type Shape struct {
 type DiscriminatorKey struct{}
 
 type Rectangle struct {
-	Width  float64 `arri:"required,nullable"`
-	Height float64 `arri:"required,nullable"`
+	Width  float64
+	Height float64
 }
 
 type Circle struct {
-	Radius float64 `arri:"required"`
+	Radius float64
 }
 
 type Child struct {
-	Child Shape `arri:"required"`
+	Child Nullable[Shape]
 }
 
 type Children struct {
-	Children []Shape `arri:"required"`
+	Children Nullable[[]Shape]
 }

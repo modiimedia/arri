@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/bits"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -108,13 +109,19 @@ func typeToJson(input reflect.Value, target *[]byte, context _EncodingContext) e
 func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	*target = append(*target, "{"...)
 	keys := input.MapKeys()
+	orderedKeys := []string{}
 	for i := 0; i < len(keys); i++ {
+		key := keys[i]
+		orderedKeys = append(orderedKeys, key.String())
+	}
+	sort.Strings(orderedKeys)
+	for i := 0; i < len(orderedKeys); i++ {
 		if i != 0 {
 			*target = append(*target, ","...)
 		}
-		key := keys[i]
-		*target = append(*target, "\""+key.String()+"\":"...)
-		value := input.MapIndex(key)
+		key := orderedKeys[i]
+		*target = append(*target, "\""+key+"\":"...)
+		value := input.MapIndex(reflect.ValueOf(key))
 		depth := context.CurrentDepth + 1
 		fieldError := typeToJson(value, target, context.copyWith(&depth, nil, nil, nil))
 		if fieldError != nil {

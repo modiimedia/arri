@@ -24,35 +24,38 @@ func None[T any]() Option[T] {
 }
 
 func (s *Option[T]) Unwrap() T {
-	if !s.isSet {
+	if s == nil || !s.isSet {
 		panic("Cannot get from None type")
 	}
 	return s.value
 }
 
 func (s *Option[T]) UnwrapOr(fallback T) T {
-	if s.isSet {
+	if s != nil && s.isSet {
 		return s.value
 	}
 	return fallback
 }
 
 func (s *Option[T]) IsSome() bool {
-	return s.isSet
+	return s != nil && s.isSet
 }
 
 func (s *Option[_]) IsNone() bool {
-	return !s.isSet
+	return s == nil || !s.isSet
 }
 
 func (s *Option[T]) MarshalJSON() ([]byte, error) {
-	if !s.isSet {
+	if s == nil || !s.isSet {
 		return []byte{}, nil
 	}
 	return json.Marshal(s.value)
 }
 
 func (s *Option[T]) UnmarshalJSON(data []byte) error {
+	if s == nil {
+		s = &Option[T]{}
+	}
 	if string(data) == "" {
 		s.isSet = false
 		return nil
@@ -85,23 +88,22 @@ func NotNull[T any](value T) Nullable[T] {
 }
 
 func (s *Nullable[_]) IsNull() bool {
-	return !s.isSet
+	return s != nil && !s.isSet
 }
 
 func (s *Nullable[T]) Unwrap() T {
-	if s.isSet {
+	if s != nil && s.isSet {
 		return s.value
-	} else {
-		panic("cannot Get value isn't set")
 	}
+	panic("cannot Get value isn't set")
 }
 
 func (s *Nullable[T]) UnwrapOr(other T) T {
-	if s.isSet {
+	if s != nil && s.isSet {
 		return s.value
-	} else {
-		return other
 	}
+	return other
+
 }
 
 func (s Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -111,7 +113,10 @@ func (s Nullable[T]) MarshalJSON() ([]byte, error) {
 	return []byte("null"), nil
 }
 
-func (s *Nullable[_]) UnmarshalJSON(data []byte) error {
+func (s *Nullable[T]) UnmarshalJSON(data []byte) error {
+	if s == nil {
+		s = &Nullable[T]{}
+	}
 	if string(data) == "null" {
 		s.isSet = false
 		return nil
