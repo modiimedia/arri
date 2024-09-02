@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,17 +27,14 @@ func main() {
 			fmt.Println("NEW ERROR", r.URL.Path, err.Error())
 		},
 	}
+	input := User{}
 	result, _ := ToJson(
-		Shape{
-			Child: &Child{
-				Child: NotNull(
-					Shape{Rectangle: &Rectangle{}},
-				),
-			},
-		},
+		input,
 		KeyCasingCamelCase,
 	)
-	fmt.Println(string(result))
+	jsonResult, _ := json.Marshal(input)
+	fmt.Println("ARRI", string(result))
+	fmt.Println("STD", string(jsonResult))
 	app := NewApp(
 		mux,
 		options,
@@ -64,7 +62,7 @@ type UserParams struct {
 }
 type User struct {
 	Id       string
-	Name     Option[Nullable[string]]
+	Name     Option[string]
 	Email    string
 	IsAdmin  bool
 	Metadata struct {
@@ -73,7 +71,7 @@ type User struct {
 }
 
 func DeleteUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
-	return &User{Id: params.UserId, Name: None[Nullable[string]]()}, nil
+	return &User{Id: params.UserId, Name: None[string]()}, nil
 }
 
 func GetUser(params UserParams, context MyCustomContext) (*User, *ErrorResponse) {
