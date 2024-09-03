@@ -7,55 +7,6 @@ import (
 	"time"
 )
 
-type nestedObject struct {
-	Id      string
-	Content string
-}
-
-type objectWithEveryType struct {
-	String        string
-	Boolean       bool
-	Timestamp     time.Time
-	Float32       float32
-	Float64       float64
-	Int8          int8
-	Uint8         uint8
-	Int16         int16
-	Uint16        uint16
-	Int32         int32
-	Uint32        uint32
-	Int64         int64
-	Uint64        uint64
-	Enum          string `enum:"FOO,BAR,BAZ"`
-	Object        nestedObject
-	Array         []bool
-	Record        map[string]bool
-	Discriminator discriminator
-	Any           any
-}
-
-type discriminator struct {
-	DiscriminatorKey `discriminatorKey:"typeName"`
-	A                *discriminatorA `discriminator:"A"`
-	B                *discriminatorB `discriminator:"B"`
-	C                *discriminatorC `discriminator:"C"`
-}
-
-type discriminatorA struct {
-	Id string
-}
-
-type discriminatorB struct {
-	Id   string
-	Name string
-}
-
-type discriminatorC struct {
-	Id   string
-	Name string
-	Date time.Time
-}
-
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
 var basicJsonInput = objectWithEveryType{
 	String:        "",

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 type MyCustomContext struct{}
@@ -15,9 +16,20 @@ func onRequest(r *http.Request, c MyCustomContext) *ErrorResponse {
 }
 
 func main() {
-	target := User{}
-	FromJson([]byte(`{"id":"hello world"}`), &User{})
-	fmt.Printf("%v", target)
+	referenceInput, _ := os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
+	referenceTarget := objectWithEveryType{}
+	err := FromJson(referenceInput, &referenceTarget, KeyCasingCamelCase)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("RESULT: %+v\n", referenceTarget)
+	toJsonResult, toJsonErr := ToJson(referenceTarget, KeyCasingCamelCase)
+	if toJsonErr != nil {
+		fmt.Printf("JSON_ERROR: %+v\n", toJsonErr)
+		return
+	}
+	fmt.Printf("JSON_RESULT: %+v\n", string(toJsonResult))
 	return
 	mux := http.DefaultServeMux
 	options := AppOptions[MyCustomContext]{

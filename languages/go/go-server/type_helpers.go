@@ -3,15 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
-
-	"github.com/tidwall/gjson"
 )
-
-type ArriMarshaller interface {
-	ArriMarshalJSON() ([]byte, error)
-	ArriUnmarshalJSON(data *gjson.Result, keyCasing KeyCasing) error
-}
 
 //// Optional Types ////
 
@@ -68,30 +60,11 @@ func (s *Option[T]) UnmarshalJSON(data []byte) error {
 		s.IsSet = false
 		return nil
 	}
-	json.Unmarshal(data, &s.Value)
-	return nil
-}
-
-func (s Option[T]) ArriMarshalJSON(keyCasing KeyCasing) ([]byte, error) {
-	if !s.IsSet {
-		return []byte{}, nil
-	}
-	return ToJson(s.Value, keyCasing)
-}
-
-func (s *Option[T]) ArriUnmarshalJSON(data *gjson.Result, keyCasing KeyCasing) error {
-	if s == nil {
-		s = &Option[T]{}
-	}
-	if !data.Exists() {
-		s.IsSet = false
-		return nil
-	}
-	val := reflect.ValueOf(s.Value)
-	err := typeFromJson(data, &val)
+	err := json.Unmarshal(data, &s.Value)
 	if err != nil {
 		return err
 	}
+	s.IsSet = true
 	return nil
 }
 
@@ -158,28 +131,6 @@ func (s *Nullable[T]) UnmarshalJSON(data []byte) error {
 	}
 	s.IsSet = true
 	return nil
-}
-
-func (s Nullable[T]) ArriMarshalJSON(keyCasing KeyCasing) ([]byte, error) {
-	if !s.IsSet {
-		return ToJson(s.Value, keyCasing)
-	}
-	return []byte("null"), nil
-}
-
-func (s *Nullable[T]) ArriUnmarshalJSON(data *gjson.Result, keyCasing KeyCasing) error {
-	if s == nil {
-		*s = Null[T]()
-	}
-	if !data.Exists() {
-		return fmt.Errorf("expected \"null\" got undefined")
-	}
-	if data.Type == gjson.Null {
-		s.IsSet = false
-		return nil
-	}
-	val := reflect.ValueOf(s)
-	return typeFromJson(data, &val)
 }
 
 func (s Nullable[T]) String() string {
