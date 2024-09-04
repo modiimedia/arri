@@ -204,6 +204,9 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	if onError == nil {
 		onError = func(r *http.Request, t *TContext, err error) {}
 	}
+
+	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
+
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
@@ -218,6 +221,12 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 		if onRequestErr != nil {
 			handleError(false, w, r, ctx, *onRequestErr, onError)
 			return
+		}
+		params := paramsZero.Interface()
+		switch rpcSchema.Http.Method {
+		case HttpMethodGet:
+			query := r.URL.Query()
+			FromUrlQuery(query, &params, app.Options.KeyCasing)
 		}
 		onBeforeResponseErr := onBeforeResponse(r, *ctx, "")
 		if onBeforeResponseErr != nil {

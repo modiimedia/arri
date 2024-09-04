@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -143,7 +144,7 @@ func floatFromJson(data *gjson.Result, target *reflect.Value, context *Validatio
 	}
 	value := data.Float()
 	if bitSize == 32 {
-		if value > 3.40282347e+38 || value < -3.40282347e+38 {
+		if value > FLOAT32_MAX || value < FLOAT32_MIN {
 			err := NewValidationError("expected 32bit float got "+fmt.Sprint(value), context.InstancePath, context.SchemaPath)
 			return &err
 		}
@@ -168,6 +169,20 @@ func timestampFromJson(data *gjson.Result, target *reflect.Value, context *Valid
 	return nil
 }
 
+const (
+	INT8_MAX    = 127
+	INT8_MIN    = -128
+	INT16_MAX   = 32767
+	INT16_MIN   = -32768
+	INT32_MAX   = 2147483647
+	INT32_MIN   = -2147483648
+	UINT8_MAX   = 255
+	UINT16_MAX  = 65535
+	UINT32_MAX  = 4294967295
+	FLOAT32_MAX = 3.40282347e+38
+	FLOAT32_MIN = -3.40282347e+38
+)
+
 func intFromJson(data *gjson.Result, target *reflect.Value, context *ValidationContext, bitSize int) *ValidationError {
 	if data.Type != gjson.Number {
 		err := NewValidationError("expected number got \""+data.Type.String()+"\"", context.InstancePath, context.SchemaPath)
@@ -176,21 +191,21 @@ func intFromJson(data *gjson.Result, target *reflect.Value, context *ValidationC
 	val := data.Int()
 	switch bitSize {
 	case 8:
-		if val > 127 || val < -128 {
+		if val > INT8_MAX || val < INT8_MIN {
 			err := NewValidationError("expected number between -128 and 127 got "+fmt.Sprint(val), context.InstancePath, context.SchemaPath)
 			return &err
 		}
 		target.Set(reflect.ValueOf(int8(val)))
 		return nil
 	case 16:
-		if val > 32767 || val < -32768 {
+		if val > INT16_MAX || val < INT16_MIN {
 			err := NewValidationError("expected number between -32768 and 32767 got "+fmt.Sprint(val), context.InstancePath, context.SchemaPath)
 			return &err
 		}
 		target.Set(reflect.ValueOf(int16(val)))
 		return nil
 	case 32:
-		if val > 2147483647 || val < -2147483648 {
+		if val > INT32_MAX || val < INT32_MIN {
 			err := NewValidationError("expected number between -2147483648 and 2147483647 got "+fmt.Sprint(val), context.InstancePath, context.SchemaPath)
 			return &err
 		}
@@ -210,21 +225,21 @@ func uintFromJson(data *gjson.Result, target *reflect.Value, context *Validation
 	val := data.Uint()
 	switch bitSize {
 	case 8:
-		if val > 255 {
+		if val > UINT8_MAX {
 			err := NewValidationError("expected number between 0 and 255 got "+fmt.Sprint(val), context.InstancePath, context.SchemaPath)
 			return &err
 		}
 		target.Set(reflect.ValueOf(uint8(val)))
 		return nil
 	case 16:
-		if val > 65535 {
+		if val > UINT16_MAX {
 			err := NewValidationError("expected number between 0 and 65535 got "+fmt.Sprint(val), context.InstancePath, context.SchemaPath)
 			return &err
 		}
 		target.Set(reflect.ValueOf(uint16(val)))
 		return nil
 	case 32:
-		if val > 4294967295 {
+		if val > UINT32_MAX {
 			err := NewValidationError("expected number between 0 and 4294967295 got "+fmt.Sprint(val), context.InstancePath, context.SchemaPath)
 			return &err
 		}
@@ -480,5 +495,138 @@ func nullableFromJson(data *gjson.Result, target *reflect.Value, context *Valida
 		return err
 	}
 	isSet.SetBool(true)
+	return nil
+}
+
+func FromUrlQuery(values url.Values, target *any, keyCasing KeyCasing) *ValidationError {
+	reflectValue := reflect.ValueOf(target).Elem()
+	ctx := ValidationContext{MaxDepth: 1000, KeyCasing: keyCasing}
+	if reflectValue.Kind() != reflect.Struct {
+		err := NewValidationError("only structs can be decoded from url query params", ctx.InstancePath, ctx.SchemaPath)
+		return &err
+	}
+	numFields := reflectValue.NumField()
+	targetType := reflectValue.Type()
+	for i := 0; i < numFields; i++ {
+		field := reflectValue.Field(i)
+		fieldMeta := targetType.Field(i)
+		fieldType := field.Type()
+	}
+}
+
+func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+	kind := target.Kind()
+	switch kind {
+	case reflect.Bool:
+		return boolFromUrlQuery(value, target, context)
+	case reflect.String:
+		if len(context.EnumValues) > 0 {
+			return enumFromUrlQuery(value, target, context)
+		}
+		target.SetString(value)
+		return nil
+	case reflect.Float32:
+		parsedVal, parsingErr := strconv.ParseFloat(value, 32)
+		if parsingErr != nil {
+			err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
+			return &err
+		}
+		target.Set(reflect.ValueOf(parsedVal))
+		return nil
+	case reflect.Float64:
+		parsedVal, parsingErr := strconv.ParseFloat(value, 64)
+		if parsingErr != nil {
+			err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
+			return &err
+		}
+		target.SetFloat(parsedVal)
+		return nil
+	case reflect.Int8:
+		return intFromUrlQuery(value, target, context, false, 8)
+	case reflect.Uint8:
+		return intFromUrlQuery(value, target, context, true, 8)
+	case reflect.Int16:
+		return intFromUrlQuery(value, target, context, false, 16)
+	case reflect.Uint16:
+		return intFromUrlQuery(value, target, context, true, 16)
+	case reflect.Int32:
+		return intFromUrlQuery(value, target, context, false, 32)
+	case reflect.Uint32:
+		return intFromUrlQuery(value, target, context, true, 32)
+	case reflect.Int64, reflect.Int:
+		return intFromUrlQuery(value, target, context, false, 64)
+	case reflect.Uint64, reflect.Uint:
+		return intFromUrlQuery(value, target, context, true, 64)
+	case reflect.Array, reflect.Slice:
+		err := NewValidationError("decoding lists from url query strings is not supported", context.InstancePath, context.SchemaPath)
+		return &err
+	case reflect.Struct:
+		if target.Type().Name() == "Time" {
+			return timestampFromUrlQuery(value, target, context)
+		}
+		err := NewValidationError("decoding nested objects from url query strings is not supported", context.InstancePath, context.SchemaPath)
+		return &err
+	case reflect.Ptr:
+		subTarget := target.Elem()
+		return typeFromUrlQuery(value, &subTarget, context)
+	case reflect.Map:
+		err := NewValidationError("decoding nested objects from url query strings is not supported", context.InstancePath, context.SchemaPath)
+		return &err
+	}
+	err := NewValidationError("unsupported type", context.InstancePath, context.SchemaPath)
+	return &err
+}
+
+func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+	switch value {
+	case "true", "TRUE", "1":
+		target.SetBool(true)
+		return nil
+	case "false", "FALSE", "0":
+		target.SetBool(false)
+		return nil
+	}
+	err := NewValidationError("cannot convert \""+value+"\" to a boolean", context.InstancePath, context.SchemaPath)
+	return &err
+}
+
+func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+	for i := 0; i < len(context.EnumValues); i++ {
+		enumVal := context.EnumValues[i]
+		if enumVal == value {
+			target.SetString(enumVal)
+			return nil
+		}
+	}
+	err := NewValidationError(fmt.Sprint("expected on of the following values %+v", context.EnumValues), context.InstancePath, context.SchemaPath)
+	return &err
+}
+
+func intFromUrlQuery(value string, target *reflect.Value, context *ValidationContext, isUnsigned bool, bitSize int) *ValidationError {
+	if isUnsigned {
+		parsedVal, parsingErr := strconv.ParseUint(value, 10, bitSize)
+		if parsingErr != nil {
+			err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
+			return &err
+		}
+		target.Set(reflect.ValueOf(parsedVal))
+		return nil
+	}
+	parsedVal, parsingErr := strconv.ParseInt(value, 10, bitSize)
+	if parsingErr != nil {
+		err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
+		return &err
+	}
+	target.Set(reflect.ValueOf(parsedVal))
+	return nil
+}
+
+func timestampFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+	parsedValue, parsingErr := time.ParseInLocation(time.RFC3339, value, time.UTC)
+	if parsingErr != nil {
+		err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
+		return &err
+	}
+	target.Set(reflect.ValueOf(parsedValue))
 	return nil
 }
