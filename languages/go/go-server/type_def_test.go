@@ -1,7 +1,7 @@
 package arri_test
 
 import (
-	"arri"
+	arri "arri/languages/go/go-server"
 	"testing"
 )
 

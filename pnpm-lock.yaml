@@ -209,18 +209,33 @@ importers:
         specifier: ^1.1.26
         version: 1.1.26
 
-  playground:
+  playground/go:
+    devDependencies:
+      '@types/node':
+        specifier: 22.5.0
+        version: 22.5.0
+      arri:
+        specifier: workspace:*
+        version: link:../../tooling/cli
+      chokidar:
+        specifier: ^3.6.0
+        version: 3.6.0
+
+  playground/ts:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../tooling/schema
+        version: link:../../tooling/schema
       '@arrirpc/server':
         specifier: workspace:*
-        version: link:../languages/ts/ts-server
+        version: link:../../languages/ts/ts-server
     devDependencies:
+      '@types/node':
+        specifier: 22.5.0
+        version: 22.5.0
       arri:
         specifier: workspace:*
-        version: link:../tooling/cli
+        version: link:../../tooling/cli
 
   tests/clients/ts:
     dependencies:

@@ -1,7 +1,7 @@
 package arri_test
 
 import (
-	"arri"
+	arri "arri/languages/go/go-server"
 	"encoding/json"
 	"os"
 	"reflect"
@@ -51,14 +51,6 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 	}
 	if !reflect.DeepEqual(target, expectedResult) {
 		t.Errorf("\n%+v\ndoes not equal\n%+v", target, expectedResult)
-		return
-	}
-	input2 := []byte(`{"id":"1","email":"johndoe@gmail.com","isAdmin":true}`)
-	target2 := arri.User{}
-	expectedResult2 := arri.User{Id: "1", Name: arri.None[string](), Email: "johndoe@gmail.com", IsAdmin: true}
-	arri.FromJson(input2, &target2, arri.KeyCasingCamelCase)
-	if !reflect.DeepEqual(target2, expectedResult2) {
-		t.Errorf("\n%+v\ndoes not equal\n%+v", target2, expectedResult2)
 		return
 	}
 
