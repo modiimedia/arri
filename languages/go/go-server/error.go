@@ -1,4 +1,4 @@
-package main
+package arri
 
 type ErrorResponse struct {
 	Code    uint32

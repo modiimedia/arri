@@ -1,9 +1,12 @@
-package main
+package arri_test
 
-import "testing"
+import (
+	"arri"
+	"testing"
+)
 
 func BenchmarkToTypeDef(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		ToTypeDef(basicJsonInput, KeyCasingCamelCase)
+		arri.ToTypeDef(basicJsonInput, arri.KeyCasingCamelCase)
 	}
 }

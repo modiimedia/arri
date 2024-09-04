@@ -1,7 +1,8 @@
-package main
+package arri_test
 
 import (
-	"arri-server/arri_json"
+	"arri"
+	"encoding/json"
 	"os"
 	"testing"
 	"time"
@@ -36,7 +37,7 @@ func TestBasicJsonEncoding(t *testing.T) {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := ToJson(basicJsonInput, KeyCasingCamelCase)
+	json, err := arri.ToJson(basicJsonInput, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -49,12 +50,12 @@ func TestBasicJsonEncoding(t *testing.T) {
 
 func BenchmarkStdJsonEncoding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Marshal(basicJsonInput, KeyCasingCamelCase)
+		json.Marshal(basicJsonInput)
 	}
 }
 
 func BenchmarkArriJsonEncoding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		ToJson(basicJsonInput, KeyCasingCamelCase)
+		arri.ToJson(basicJsonInput, arri.KeyCasingCamelCase)
 	}
 }

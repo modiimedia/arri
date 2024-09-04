@@ -1,6 +1,7 @@
-package main
+package arri_test
 
 import (
+	"arri"
 	"encoding/json"
 	"os"
 	"reflect"
@@ -43,7 +44,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		}},
 		Any: "hello world",
 	}
-	decodeErr := FromJson(_objectWithEveryTypeInput, &target, KeyCasingCamelCase)
+	decodeErr := arri.FromJson(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
 	if decodeErr != nil {
 		t.Errorf(decodeErr.Error())
 		return
@@ -53,9 +54,9 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		return
 	}
 	input2 := []byte(`{"id":"1","email":"johndoe@gmail.com","isAdmin":true}`)
-	target2 := User{}
-	expectedResult2 := User{Id: "1", Name: None[string](), Email: "johndoe@gmail.com", IsAdmin: true}
-	FromJson(input2, &target2, KeyCasingCamelCase)
+	target2 := arri.User{}
+	expectedResult2 := arri.User{Id: "1", Name: arri.None[string](), Email: "johndoe@gmail.com", IsAdmin: true}
+	arri.FromJson(input2, &target2, arri.KeyCasingCamelCase)
 	if !reflect.DeepEqual(target2, expectedResult2) {
 		t.Errorf("\n%+v\ndoes not equal\n%+v", target2, expectedResult2)
 		return
@@ -64,10 +65,10 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 }
 
 type benchUser struct {
-	Id       string         `json:"id"`
-	Name     Option[string] `json:"name"`
-	Email    string         `json:"email"`
-	IsAdmin  bool           `json:"isAdmin"`
+	Id       string              `json:"id"`
+	Name     arri.Option[string] `json:"name"`
+	Email    string              `json:"email"`
+	IsAdmin  bool                `json:"isAdmin"`
 	Metadata struct {
 		Foo string `json:"foo"`
 		Bar bool   `json:"bar"`
@@ -80,7 +81,7 @@ var benchUserInput = []byte(`{"id":"1","email":"johndoe@gmail.com","isAdmin":tru
 func TestDecodeStdUser(t *testing.T) {
 	target := benchUser{}
 	json.Unmarshal(benchUserInput, &target)
-	err := FromJson(benchUserInput, &target, KeyCasingCamelCase)
+	err := arri.FromJson(benchUserInput, &target, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Errorf(err.Error())
 		return
@@ -96,7 +97,7 @@ func BenchmarkStdDecodeObjectWithEveryType(b *testing.B) {
 func BenchmarkArriDecodeObjectWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		target := objectWithEveryType{}
-		FromJson(_objectWithEveryTypeInput, &target, KeyCasingCamelCase)
+		arri.FromJson(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -110,6 +111,6 @@ func BenchmarkStdDecodeUser(b *testing.B) {
 func BenchmarkArriDecodeUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		user := benchUser{}
-		FromJson(benchUserInput, &user, KeyCasingCamelCase)
+		arri.FromJson(benchUserInput, &user, arri.KeyCasingCamelCase)
 	}
 }

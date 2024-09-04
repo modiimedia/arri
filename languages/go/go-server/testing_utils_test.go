@@ -1,6 +1,9 @@
-package main
+package arri_test
 
-import "time"
+import (
+	"arri"
+	"time"
+)
 
 type nestedObject struct {
 	Id      string `json:"id"`
@@ -30,10 +33,10 @@ type objectWithEveryType struct {
 }
 
 type discriminator struct {
-	DiscriminatorKey `discriminatorKey:"typeName"`
-	A                *discriminatorA `discriminator:"A"`
-	B                *discriminatorB `discriminator:"B"`
-	C                *discriminatorC `discriminator:"C"`
+	arri.DiscriminatorKey `discriminatorKey:"typeName"`
+	A                     *discriminatorA `discriminator:"A"`
+	B                     *discriminatorB `discriminator:"B"`
+	C                     *discriminatorC `discriminator:"C"`
 }
 
 type discriminatorA struct {

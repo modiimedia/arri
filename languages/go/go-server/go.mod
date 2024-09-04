@@ -1,9 +1,8 @@
-module arri-server
+module arri
 
 go 1.22.5
 
 require (
-	github.com/buger/jsonparser v1.1.1
 	github.com/iancoleman/strcase v0.3.0
 	github.com/tidwall/gjson v1.17.3
 )
