@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/bits"
@@ -11,8 +12,6 @@ import (
 	"time"
 	"unicode/utf8"
 	"unsafe"
-
-	"arri-server/arri_json"
 
 	"github.com/iancoleman/strcase"
 )
@@ -44,30 +43,23 @@ type _EncodingContext struct {
 	DiscriminatorValue string
 }
 
-func (context _EncodingContext) copyWith(CurrentDepth *uint32, EnumValues *[]string, DiscriminatorKey *string, DiscriminatorValue *string) _EncodingContext {
-	depth := context.CurrentDepth
-	if CurrentDepth != nil {
-		depth = *CurrentDepth
-	}
-	enumValues := context.EnumValues
-	if EnumValues != nil {
-		enumValues = *EnumValues
-	}
-	dKey := context.DiscriminatorKey
-	if DiscriminatorKey != nil {
-		dKey = *DiscriminatorKey
-	}
-	dValue := context.DiscriminatorValue
-	if DiscriminatorValue != nil {
-		dValue = *DiscriminatorValue
-	}
+func (context _EncodingContext) copyWith(
+	CurrentDepth Option[uint32],
+	EnumValues Option[[]string],
+	DiscriminatorKey Option[string],
+	DiscriminatorValue Option[string],
+) _EncodingContext {
+	currentDepth := CurrentDepth.UnwrapOr(context.CurrentDepth)
+	enumValues := EnumValues.UnwrapOr(context.EnumValues)
+	discriminatorKey := DiscriminatorKey.UnwrapOr(context.DiscriminatorKey)
+	discriminatorValue := DiscriminatorValue.UnwrapOr(context.DiscriminatorValue)
 	return _EncodingContext{
 		MaxDepth:           context.MaxDepth,
-		CurrentDepth:       depth,
+		CurrentDepth:       currentDepth,
 		EnumValues:         enumValues,
 		KeyCasing:          context.KeyCasing,
-		DiscriminatorKey:   dKey,
-		DiscriminatorValue: dValue,
+		DiscriminatorKey:   discriminatorKey,
+		DiscriminatorValue: discriminatorValue,
 	}
 }
 
@@ -101,13 +93,26 @@ func typeToJson(input reflect.Value, target *[]byte, context _EncodingContext) e
 		return typeToJson(el, target, context)
 	case reflect.Map:
 		return mapToJson(input, target, context)
+	case reflect.Interface:
+		inner := input.Elem()
+		if inner.Kind() == reflect.Invalid {
+			return anyToJson(input, target, context)
+		}
+		return typeToJson(inner, target, context)
+	case reflect.Invalid:
+		return anyToJson(input, target, context)
 	}
-	if input.Type().Kind() == reflect.Interface {
-		el := input.Elem()
-		return typeToJson(el, target, context)
-		// return anyToJson(input, target, context)
-	}
+
 	return fmt.Errorf("unsupported Kind %s", kind)
+}
+
+func anyToJson(input reflect.Value, target *[]byte, _ _EncodingContext) error {
+	result, err := json.Marshal(input.Interface())
+	if err != nil {
+		return err
+	}
+	*target = append(*target, result...)
+	return nil
 }
 
 func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
@@ -119,6 +124,7 @@ func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) er
 		orderedKeys = append(orderedKeys, key.String())
 	}
 	sort.Strings(orderedKeys)
+	ctx := context.copyWith(Some(context.CurrentDepth+1), Some([]string{}), Some(""), Some(""))
 	for i := 0; i < len(orderedKeys); i++ {
 		if i != 0 {
 			*target = append(*target, ","...)
@@ -126,22 +132,12 @@ func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) er
 		key := orderedKeys[i]
 		*target = append(*target, "\""+key+"\":"...)
 		value := input.MapIndex(reflect.ValueOf(key))
-		depth := context.CurrentDepth + 1
-		fieldError := typeToJson(value, target, context.copyWith(&depth, nil, nil, nil))
+		fieldError := typeToJson(value, target, ctx)
 		if fieldError != nil {
 			return fieldError
 		}
 	}
 	*target = append(*target, "}"...)
-	return nil
-}
-
-func anyToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
-	result, err := arri_json.Marshal(input.Interface(), context.KeyCasing)
-	if err != nil {
-		return err
-	}
-	*target = append(*target, result...)
 	return nil
 }
 
@@ -250,46 +246,37 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 				key = strcase.ToLowerCamel(structField.Name)
 			}
 		}
+		enumTag := structField.Tag.Get("enum")
+		enumValues := []string{}
+		if len(enumTag) > 0 {
+			vals := strings.Split(enumTag, ",")
+			for i := 0; i < len(vals); i++ {
+				val := strings.TrimSpace(vals[i])
+				enumValues = append(enumValues, val)
+			}
+		}
+		ctx := context.copyWith(Some(context.CurrentDepth+1), Some(enumValues), Some(""), Some(""))
 		isOptional := isOptionalType(fieldType)
 		if isOptional {
-			optionField := extractOptionalValue(&field)
-			if optionField == nil {
-				continue
+			didAppend, err := optionalTypeToJson(field, target, ctx, key, numFields > 0)
+			if err != nil {
+				return err
 			}
-			field = *optionField
-			fieldType = optionField.Type()
+			if didAppend {
+				numFields++
+			}
+			continue
 		}
 		isNullable := isNullableType(fieldType)
 		if isNullable {
-			nullableField := extractNullableValue(&field)
-			if nullableField == nil {
-				if numFields > 0 {
-					*target = append(*target, ","...)
-				}
-				*target = append(*target, "\""+key+"\":null"...)
-				numFields++
-				continue
-
-			} else {
-				field = *nullableField
-				fieldType = nullableField.Type()
-			}
-		}
-		isOptional2 := isOptionalType(fieldType)
-		if isOptional2 {
-			optionField := extractOptionalValue(&field)
-			if optionField == nil {
-				continue
-			}
-			field = *optionField
-			fieldType = optionField.Type()
+			*target = append(*target, "\""+key+"\":null"...)
+			return nullableTypeToJson(field, target, ctx)
 		}
 		if numFields > 0 {
 			*target = append(*target, ","...)
 		}
 		*target = append(*target, "\""+key+"\":"...)
-		depth := context.CurrentDepth + 1
-		fieldErr := typeToJson(field, target, context.copyWith(&depth, nil, nil, nil))
+		fieldErr := typeToJson(field, target, ctx)
 		if fieldErr != nil {
 			return fieldErr
 		}
@@ -297,6 +284,27 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 	}
 	*target = append(*target, "}"...)
 	return nil
+}
+
+func nullableTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+	innerVal := extractNullableValue(&input)
+	if innerVal != nil {
+		return typeToJson(input, target, context)
+	}
+	*target = append(*target, "null"...)
+	return nil
+}
+
+func optionalTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext, keyName string, hasPreviousKeys bool) (didAdd bool, err error) {
+	innerVal := extractOptionalValue(&input)
+	if innerVal != nil {
+		if hasPreviousKeys {
+			*target = append(*target, ","...)
+		}
+		*target = append(*target, "\""+keyName+"\":"...)
+		return true, typeToJson(input, target, context)
+	}
+	return false, nil
 }
 
 func discriminatorToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
@@ -319,7 +327,16 @@ func discriminatorToJson(input reflect.Value, target *[]byte, context _EncodingC
 			continue
 		}
 		subType := field.Elem()
-		return structToJson(subType, target, context.copyWith(nil, nil, &discriminatorKey, &discriminatorValue))
+		return structToJson(
+			subType,
+			target,
+			context.copyWith(
+				None[uint32](),
+				None[[]string](),
+				Some(discriminatorKey),
+				Some(discriminatorValue),
+			),
+		)
 	}
 	return fmt.Errorf("error serializing %s. at least one field must not be nil", input.Type().Name())
 }

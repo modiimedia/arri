@@ -165,7 +165,7 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, erro
 		reflect.Uint32,
 		reflect.Uint64:
 		return primitiveTypeToTypeDef(input, context)
-	case reflect.Pointer:
+	case reflect.Ptr:
 		return typeToTypeDef(input.Elem(), context)
 	case reflect.Map:
 		return mapToTypeDef(input, context)
@@ -393,12 +393,12 @@ func extractOptionalType(input reflect.Type) reflect.Type {
 	if kind == reflect.Ptr {
 		return input.Elem()
 	}
-	field, _ := input.FieldByName("value")
+	field, _ := input.FieldByName("Value")
 	return field.Type
 }
 
 func extractNullableType(input reflect.Type) reflect.Type {
-	field, _ := input.FieldByName("value")
+	field, _ := input.FieldByName("Value")
 	return field.Type
 }
 

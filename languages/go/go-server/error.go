@@ -3,8 +3,8 @@ package main
 type ErrorResponse struct {
 	Code    uint32
 	Message string
-	Data    *any
-	Stack   *[]string
+	Data    Option[any]
+	Stack   Option[[]string]
 }
 
 func (a ErrorResponse) Error() string {

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 )
 
 type MyCustomContext struct{}
@@ -16,21 +14,6 @@ func onRequest(r *http.Request, c MyCustomContext) *ErrorResponse {
 }
 
 func main() {
-	referenceInput, _ := os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
-	referenceTarget := objectWithEveryType{}
-	err := FromJson(referenceInput, &referenceTarget, KeyCasingCamelCase)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("RESULT: %+v\n", referenceTarget)
-	toJsonResult, toJsonErr := ToJson(referenceTarget, KeyCasingCamelCase)
-	if toJsonErr != nil {
-		fmt.Printf("JSON_ERROR: %+v\n", toJsonErr)
-		return
-	}
-	fmt.Printf("JSON_RESULT: %+v\n", string(toJsonResult))
-	return
 	mux := http.DefaultServeMux
 	options := AppOptions[MyCustomContext]{
 		AppName:        "My Awesome App",
@@ -42,14 +25,6 @@ func main() {
 			fmt.Println("NEW ERROR", r.URL.Path, err.Error())
 		},
 	}
-	input := User{}
-	result, _ := ToJson(
-		input,
-		KeyCasingCamelCase,
-	)
-	jsonResult, _ := json.Marshal(input)
-	fmt.Println("ARRI", string(result))
-	fmt.Println("STD", string(jsonResult))
 	app := NewApp(
 		mux,
 		options,
@@ -73,7 +48,7 @@ func main() {
 }
 
 type UserParams struct {
-	UserId string `arri:"required"`
+	UserId string
 }
 type User struct {
 	Id      string

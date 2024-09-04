@@ -36,5 +36,5 @@ func extractNullableValue(input *reflect.Value) *reflect.Value {
 }
 
 func isNullableType(input reflect.Type) bool {
-	return input.Kind() == reflect.Struct && strings.Contains(input.Name(), "Nullable[")
+	return input.Kind() == reflect.Struct && input != nil && strings.Contains(input.Name(), "Nullable[")
 }

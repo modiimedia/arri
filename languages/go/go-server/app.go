@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -178,7 +179,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	paramSchema, _ := typeToTypeDef(params, typeDefContext)
 	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.Unwrap().Id, Value: *paramSchema})
 	response := handlerType.Out(0)
-	responseSchema, _ := typeToTypeDef(response, typeDefContext)
+	responseSchema, _ := typeToTypeDef(response.Elem(), typeDefContext)
 	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __aOrderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
@@ -206,7 +207,6 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	}
 
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
-
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
@@ -222,11 +222,31 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			handleError(false, w, r, ctx, *onRequestErr, onError)
 			return
 		}
-		params := paramsZero.Interface()
+		params, paramsOk := paramsZero.Interface().(TParams)
+		if !paramsOk {
+			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: "Error initializing empty params"}, onError)
+			return
+		}
 		switch rpcSchema.Http.Method {
 		case HttpMethodGet:
-			query := r.URL.Query()
-			FromUrlQuery(query, &params, app.Options.KeyCasing)
+			handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: "Get requests not yet supported"}, onError)
+			return
+		default:
+			b, bErr := io.ReadAll(r.Body)
+			if bErr != nil {
+				handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: bErr.Error()}, onError)
+				return
+			}
+			fromJsonErr := FromJson(b, &params, app.Options.KeyCasing)
+			if fromJsonErr != nil {
+				handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: fromJsonErr.Error(), Data: Some[any](fromJsonErr)}, onError)
+				return
+			}
+		}
+		response, responseErr := handler(params, *ctx)
+		if responseErr != nil {
+			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: responseErr.Error(), Data: Some[any](responseErr)}, onError)
+			return
 		}
 		onBeforeResponseErr := onBeforeResponse(r, *ctx, "")
 		if onBeforeResponseErr != nil {
@@ -234,7 +254,11 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			return
 		}
 		w.WriteHeader(200)
-		body := "success"
+		body, bodyErr := ToJson(response, app.Options.KeyCasing)
+		if bodyErr != nil {
+			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: bodyErr.Error(), Data: Some[any](bodyErr)}, onError)
+			return
+		}
 		w.Write([]byte(body))
 		onAfterResponseErr := onAfterResponse(r, *ctx, "")
 		if onAfterResponseErr != nil {

@@ -19,6 +19,10 @@ type ValidationError struct {
 	SchemaPath   string
 }
 
+func (e *ValidationError) Error() string {
+	return e.Message + " at \"" + e.InstancePath + "\""
+}
+
 func NewValidationError(Message string, InstancePath string, SchemaPath string) ValidationError {
 	return ValidationError{Message: Message, InstancePath: InstancePath, SchemaPath: SchemaPath}
 }
@@ -45,10 +49,6 @@ func (c ValidationContext) copyWith(CurrentDepth Option[uint32], EnumValues Opti
 		SchemaPath:   schemaPath,
 		KeyCasing:    c.KeyCasing,
 	}
-}
-
-func (e *ValidationError) Error() string {
-	return e.Message + " at \"" + e.InstancePath + "\""
 }
 
 func FromJson[T any](data []byte, v *T, keyCasing KeyCasing) *ValidationError {
@@ -115,7 +115,11 @@ func typeFromJson(data *gjson.Result, target *reflect.Value, context *Validation
 	case reflect.Map:
 		return mapFromJson(data, target, context)
 	case reflect.Interface:
-		return anyFromJson(data, target, context)
+		subType := target.Elem()
+		if subType.Kind() == reflect.Invalid {
+			return anyFromJson(data, target, context)
+		}
+		return typeFromJson(data, &subType, context)
 	}
 	err := NewValidationError("unsupported type \""+kind.String()+"\"", context.InstancePath, context.SchemaPath)
 	return &err
@@ -356,6 +360,8 @@ func structFromJson(data *gjson.Result, target *reflect.Value, context *Validati
 		case KeyCasingPascalCase:
 		case KeyCasingSnakeCase:
 			fieldName = strcase.ToSnake(fieldName)
+		default:
+			fieldName = strcase.ToLowerCamel(fieldName)
 		}
 		jsonResult := data.Get(fieldName)
 		enumValues := None[[]string]()
@@ -511,7 +517,9 @@ func FromUrlQuery(values url.Values, target *any, keyCasing KeyCasing) *Validati
 		field := reflectValue.Field(i)
 		fieldMeta := targetType.Field(i)
 		fieldType := field.Type()
+		fmt.Println(fieldMeta, fieldType)
 	}
+	return nil
 }
 
 func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
@@ -598,7 +606,7 @@ func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 			return nil
 		}
 	}
-	err := NewValidationError(fmt.Sprint("expected on of the following values %+v", context.EnumValues), context.InstancePath, context.SchemaPath)
+	err := NewValidationError(fmt.Sprintf("expected on of the following values %+v", context.EnumValues), context.InstancePath, context.SchemaPath)
 	return &err
 }
 
