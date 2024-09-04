@@ -11,7 +11,7 @@ import (
 type MyCustomContext struct{}
 
 func onRequest(r *http.Request, c MyCustomContext) *arri.ErrorResponse {
-	fmt.Println("NEW REQUEST!!!!", r.URL.Path)
+	fmt.Println("NEW REQUEST", r.URL.Path)
 	return nil
 }
 
@@ -25,7 +25,7 @@ func main() {
 		RpcRoutePrefix: "/procedures",
 		OnRequest:      onRequest,
 		OnError: func(r *http.Request, mcc *MyCustomContext, err error) {
-			fmt.Println("NEW ERROR!!!", r.URL.Path, err.Error())
+			fmt.Println("NEW ERROR", r.URL.Path, err.Error())
 		},
 	}
 	app := arri.NewApp(

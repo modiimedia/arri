@@ -8,23 +8,22 @@ const goServer = defineServerConfig({
         const watcher = chokidar.watch(["**/*.go"], { ignoreInitial: true });
         let childProcess: ChildProcess | undefined;
         function spawnProcess() {
-            childProcess = spawn("go", ["run", "."], {
+            execSync("go build -o .output/server", {
+                stdio: "inherit",
+            });
+            childProcess = spawn(".output/server", {
                 stdio: "inherit",
             });
         }
         async function closeChildProcess() {
             if (!childProcess) return true;
             return new Promise((res, rej) => {
-                childProcess?.on("close", () => {
-                    res(true);
-                });
-                childProcess?.on("exit", () => {
-                    res(true);
-                });
+                childProcess?.on("close", () => res(true));
+                childProcess?.on("exit", () => res(true));
                 childProcess?.on("error", (err) => {
                     rej(err);
                 });
-                childProcess?.kill("SIGKILL");
+                childProcess?.kill("SIGTERM");
             });
         }
         spawnProcess();
