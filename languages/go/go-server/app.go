@@ -1,14 +1,18 @@
 package arri
 
 import (
+	"flag"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
 )
 
 type App[TContext any] struct {
 	Mux                  *http.ServeMux
+	Port                 uint32
 	CreateContext        func(r *http.Request) (*TContext, *ErrorResponse)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
@@ -27,6 +31,62 @@ func (app *App[TContext]) GetAppDefinition() AAppDef {
 		Procedures:  *app.Procedures,
 		Definitions: *app.Definitions,
 	}
+}
+
+func (app *App[TContext]) Run(options RunOptions) error {
+	defOutput := flag.String("def-out", "", "definition-out")
+	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
+	appDefOutput := appDefCmd.String("output", "__definition.json", "output")
+	if len(os.Args) >= 2 {
+		switch os.Args[1] {
+		case "def", "definition":
+			appDefCmd.Parse(os.Args[2:])
+			return appDefToFile(app.GetAppDefinition(), *appDefOutput, app.Options.KeyCasing)
+		}
+	}
+	if len(os.Args) > 1 {
+		flag.Parse()
+	}
+	if len(*defOutput) > 0 {
+		err := appDefToFile(app.GetAppDefinition(), *defOutput, app.Options.KeyCasing)
+		if err != nil {
+			return err
+		}
+	}
+	return startServer(app, options)
+}
+
+func appDefToFile(appDef AAppDef, output string, keyCasing KeyCasing) error {
+	appDefJson, appDefJsonErr := ToJson(appDef, keyCasing)
+	if appDefJsonErr != nil {
+		return appDefJsonErr
+	}
+	writeFileErr := os.WriteFile(output, appDefJson, 0644)
+	if writeFileErr != nil {
+		return writeFileErr
+	}
+	return nil
+}
+
+func startServer[TContext any](app *App[TContext], options RunOptions) error {
+	port := app.Port
+	if port == 0 {
+		port = 3000
+	}
+	keyFile := options.KeyFile
+	certFile := options.CertFile
+	if len(keyFile) > 0 && len(certFile) > 0 {
+		fmt.Printf("Starting server at https://localhost:%v\n", port)
+		return http.ListenAndServeTLS(fmt.Sprintf(":%v", port), certFile, keyFile, app.Mux)
+	}
+	fmt.Printf("Starting server at http://localhost:%v\n", port)
+	return http.ListenAndServe(fmt.Sprintf(":%v", port), app.Mux)
+}
+
+type RunOptions struct {
+	Port     uint32
+	CertFile string
+	KeyFile  string
 }
 
 type AppOptions[TContext any] struct {
@@ -124,9 +184,28 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	})
 
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
+		ctx, ctxErr := app.CreateContext(r)
+		if ctxErr != nil {
+			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: ctxErr.Error()}, onError)
+			return
+		}
+		onRequestError := onRequest(r, *ctx)
+		if onRequestError != nil {
+			handleError(false, w, r, ctx, ErrorResponse{Code: onRequestError.Code, Message: onRequestError.Error()}, onError)
+		}
 		jsonResult, _ := ToJson(app.GetAppDefinition(), app.Options.KeyCasing)
+		beforeResponseErr := onBeforeResponse(r, *ctx, jsonResult)
+		if beforeResponseErr != nil {
+			handleError(false, w, r, ctx, ErrorResponse{Code: beforeResponseErr.Code, Message: beforeResponseErr.Error()}, onError)
+			return
+		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
+		afterResponseErr := onAfterResponse(r, *ctx, jsonResult)
+		if afterResponseErr != nil {
+			handleError(true, w, r, ctx, ErrorResponse{Code: afterResponseErr.Code, Message: afterResponseErr.Message}, onError)
+			return
+		}
 	})
 	return app
 }

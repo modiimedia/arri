@@ -3,6 +3,7 @@
   "devDependencies": {
     "@types/node": "22.5.0",
     "arri": "workspace:*",
-    "chokidar": "^3.6.0"
+    "chokidar": "^3.6.0",
+    "consola": "^3.2.3"
   }
 }

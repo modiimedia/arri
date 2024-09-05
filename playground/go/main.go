@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 )
 
 type MyCustomContext struct{}
@@ -16,7 +15,6 @@ func onRequest(r *http.Request, c MyCustomContext) *arri.ErrorResponse {
 }
 
 func main() {
-	fmt.Println("Starting server")
 	mux := http.DefaultServeMux
 	options := arri.AppOptions[MyCustomContext]{
 		AppName:        "My Awesome App",
@@ -37,7 +35,6 @@ func main() {
 			return &MyCustomContext{}, nil
 		}),
 	)
-	fmt.Println(os.Getenv("ARRI_DEV"))
 	// register an RPC
 	arri.Rpc(&app, GetUser)
 	arri.Rpc(&app, DeleteUser)
@@ -47,8 +44,11 @@ func main() {
 		Method: arri.HttpMethodPatch,
 		Path:   "/update-user",
 	}, UpdateUser)
-	log.Println("starting server at http://localhost:4040")
-	log.Fatal(http.ListenAndServe(":4040", mux))
+	appErr := app.Run(arri.RunOptions{})
+	if appErr != nil {
+		log.Fatal(appErr)
+		return
+	}
 }
 
 type UserParams struct {
@@ -59,6 +59,7 @@ type User struct {
 	Name    arri.Option[string]
 	Email   string
 	IsAdmin bool
+	Foo     string
 }
 
 func DeleteUser(params UserParams, context MyCustomContext) (*User, *arri.ErrorResponse) {
