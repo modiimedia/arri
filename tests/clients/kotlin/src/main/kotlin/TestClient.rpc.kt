@@ -886,9 +886,9 @@ output += int32
 output += ",\"uint32\":"
 output += uint32
 output += ",\"int64\":"
-output += "\"$int64\""
+output += "\"${int64}\""
 output += ",\"uint64\":"
-output += "\"$uint64\""
+output += "\"${uint64}\""
 output += ",\"enumerator\":"
 output += "\"${enumerator.serialValue}\""
 output += ",\"array\":"
@@ -909,7 +909,7 @@ output += "{"
                     output += ","
                 }
                 output += "\"${__entry.key}\":"
-                output += "\"$__entry.value\""
+                output += "\"${__entry.value}\""
             }
             output += "}"
 output += ",\"discriminator\":"
@@ -1803,12 +1803,12 @@ output += ",\"uint32\":"
 output += uint32
 output += ",\"int64\":"
 output += when (int64) {
-                    is Long -> "\"$int64\""
+                    is Long -> "\"${int64}\""
                     else -> "null"
                 }
 output += ",\"uint64\":"
 output += when (uint64) {
-                    is ULong -> "\"$uint64\""
+                    is ULong -> "\"${uint64}\""
                     else -> "null"
                 }
 output += ",\"enumerator\":"
@@ -1842,7 +1842,7 @@ if (record == null) {
                         }
                         output += "\"${__entry.key}\":"
                         output += when (__entry.value) {
-                    is ULong -> "\"$__entry.value\""
+                    is ULong -> "\"${__entry.value}\""
                     else -> "null"
                 }
                     }
@@ -2852,14 +2852,14 @@ if (int64 != null) {
         if (hasProperties) output += ","
 
     output += "\"int64\":"
-    output += "\"$int64\""
+    output += "\"${int64}\""
     hasProperties = true
 }
 if (uint64 != null) {
         if (hasProperties) output += ","
 
     output += "\"uint64\":"
-    output += "\"$uint64\""
+    output += "\"${uint64}\""
     hasProperties = true
 }
 if (enumerator != null) {
@@ -2900,7 +2900,7 @@ if (record != null) {
                     output += ","
                 }
                 output += "\"${__entry.key}\":"
-                output += "\"$__entry.value\""
+                output += "\"${__entry.value}\""
             }
             output += "}"
     hasProperties = true
@@ -5778,9 +5778,9 @@ output += width
 output += ",\"height\":"
 output += height
 output += ",\"bytes\":"
-output += "\"$bytes\""
+output += "\"${bytes}\""
 output += ",\"nanoseconds\":"
-output += "\"$nanoseconds\""
+output += "\"${nanoseconds}\""
 output += "}"
 return output    
     }
