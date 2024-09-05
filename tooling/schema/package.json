@@ -27,7 +27,6 @@
     "uncrypto": "^0.1.3"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.1",
     "ajv": "^8.17.1",
     "benny": "^3.7.1"
   }
