@@ -684,7 +684,7 @@ pub struct ObjectWithEveryType {
     pub enumerator: ObjectWithEveryTypeEnumerator,
     pub array: Vec<bool>,
     pub object: ObjectWithEveryTypeObject,
-    pub record: BTreeMap<String, bool>,
+    pub record: BTreeMap<String, u64>,
     pub discriminator: ObjectWithEveryTypeDiscriminator,
     pub nested_object: ObjectWithEveryTypeNestedObject,
     pub nested_array: Vec<Vec<ObjectWithEveryTypeNestedArrayElementElement>>,
@@ -825,15 +825,15 @@ impl ArriModel for ObjectWithEveryType {
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
-                        let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
+                        let mut record_val_result: BTreeMap<String, u64> = BTreeMap::new();
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
                                 match Some(_value_.to_owned()) {
-                                    Some(serde_json::Value::Bool(value_val)) => {
-                                        value_val.to_owned()
+                                    Some(serde_json::Value::String(value_val)) => {
+                                        value_val.parse::<u64>().unwrap_or(0)
                                     }
-                                    _ => false,
+                                    _ => 0,
                                 },
                             );
                         }
@@ -970,7 +970,7 @@ impl ArriModel for ObjectWithEveryType {
                 _json_output_.push(',');
             }
             _json_output_.push_str(format!("\"{}\":", _key_).as_str());
-            _json_output_.push_str(_value_.to_string().as_str());
+            _json_output_.push_str(format!("\"{}\"", _value_).as_str());
         }
         _json_output_.push('}');
         _json_output_.push_str(",\"discriminator\":");
@@ -1503,7 +1503,7 @@ pub struct ObjectWithEveryNullableType {
     pub enumerator: Option<ObjectWithEveryNullableTypeEnumerator>,
     pub array: Option<Vec<Option<bool>>>,
     pub object: Option<ObjectWithEveryNullableTypeObject>,
-    pub record: Option<BTreeMap<String, Option<bool>>>,
+    pub record: Option<BTreeMap<String, Option<u64>>>,
     pub discriminator: Option<ObjectWithEveryNullableTypeDiscriminator>,
     pub nested_object: Option<ObjectWithEveryNullableTypeNestedObject>,
     pub nested_array:
@@ -1684,13 +1684,16 @@ impl ArriModel for ObjectWithEveryNullableType {
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
-                        let mut record_val_result: BTreeMap<String, Option<bool>> = BTreeMap::new();
+                        let mut record_val_result: BTreeMap<String, Option<u64>> = BTreeMap::new();
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
                                 match Some(_value_.to_owned()) {
-                                    Some(serde_json::Value::Bool(value_val)) => {
-                                        Some(value_val.to_owned())
+                                    Some(serde_json::Value::String(value_val)) => {
+                                        match value_val.parse::<u64>() {
+                                            Ok(value_val_result) => Some(value_val_result),
+                                            Err(_) => None,
+                                        }
                                     }
                                     _ => None,
                                 },
@@ -1964,7 +1967,7 @@ impl ArriModel for ObjectWithEveryNullableType {
                     _json_output_.push_str(format!("\"{}\":", _key_).as_str());
                     match _value_ {
                         Some(value_val) => {
-                            _json_output_.push_str(value_val.to_string().as_str());
+                            _json_output_.push_str(format!("\"{}\"", value_val).as_str());
                         }
                         _ => {
                             _json_output_.push_str("null");
@@ -2878,7 +2881,7 @@ pub struct ObjectWithEveryOptionalType {
     pub enumerator: Option<ObjectWithEveryOptionalTypeEnumerator>,
     pub array: Option<Vec<bool>>,
     pub object: Option<ObjectWithEveryOptionalTypeObject>,
-    pub record: Option<BTreeMap<String, bool>>,
+    pub record: Option<BTreeMap<String, u64>>,
     pub discriminator: Option<ObjectWithEveryOptionalTypeDiscriminator>,
     pub nested_object: Option<ObjectWithEveryOptionalTypeNestedObject>,
     pub nested_array: Option<Vec<Vec<ObjectWithEveryOptionalTypeNestedArrayElementElement>>>,
@@ -3058,15 +3061,15 @@ impl ArriModel for ObjectWithEveryOptionalType {
                 };
                 let record = match _val_.get("record") {
                     Some(serde_json::Value::Object(record_val)) => {
-                        let mut record_val_result: BTreeMap<String, bool> = BTreeMap::new();
+                        let mut record_val_result: BTreeMap<String, u64> = BTreeMap::new();
                         for (_key_, _value_) in record_val.into_iter() {
                             record_val_result.insert(
                                 _key_.to_owned(),
                                 match Some(_value_.to_owned()) {
-                                    Some(serde_json::Value::Bool(value_val)) => {
-                                        value_val.to_owned()
+                                    Some(serde_json::Value::String(value_val)) => {
+                                        value_val.parse::<u64>().unwrap_or(0)
                                     }
-                                    _ => false,
+                                    _ => 0,
                                 },
                             );
                         }
@@ -3363,7 +3366,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
                         _json_output_.push(',');
                     }
                     _json_output_.push_str(format!("\"{}\":", _key_).as_str());
-                    _json_output_.push_str(_value_.to_string().as_str());
+                    _json_output_.push_str(format!("\"{}\"", _value_).as_str());
                 }
                 _json_output_.push('}');
                 _has_keys_ = true;

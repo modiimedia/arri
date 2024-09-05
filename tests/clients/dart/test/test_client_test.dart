@@ -69,8 +69,8 @@ Future<void> main() async {
         timestamp: targetDate,
       ),
       record: {
-        "A": true,
-        "B": false,
+        "A": BigInt.from(1),
+        "B": BigInt.from(0),
       },
       discriminator: ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
       nestedObject: ObjectWithEveryTypeNestedObject(
@@ -195,8 +195,8 @@ Future<void> main() async {
       object: ObjectWithEveryNullableTypeObject(
           boolean: true, string: "", timestamp: DateTime.now()),
       record: {
-        "A": true,
-        "B": false,
+        "A": BigInt.from(1),
+        "B": BigInt.from(0),
       },
       discriminator:
           ObjectWithEveryNullableTypeDiscriminatorA(title: "Hello World"),

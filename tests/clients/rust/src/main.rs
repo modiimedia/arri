@@ -55,9 +55,9 @@ mod tests {
     async fn can_send_and_receive_objects() {
         let client = TestClient::create(get_config(headers()));
         let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
-        let mut record = BTreeMap::<String, bool>::new();
-        record.insert("A".to_string(), true);
-        record.insert("B".to_string(), false);
+        let mut record = BTreeMap::<String, u64>::new();
+        record.insert("A".to_string(), 1);
+        record.insert("B".to_string(), 0);
         let mut input = ObjectWithEveryType {
             any: serde_json::Value::String("hello world".to_string()),
             boolean: true,
@@ -179,9 +179,9 @@ mod tests {
             nested_object: None,
             nested_array: None,
         };
-        let mut record = BTreeMap::<String, Option<bool>>::new();
-        record.insert("A".to_string(), Some(true));
-        record.insert("B".to_string(), Some(false));
+        let mut record = BTreeMap::<String, Option<u64>>::new();
+        record.insert("A".to_string(), Some(1));
+        record.insert("B".to_string(), Some(0));
         let mut no_null_input = ObjectWithEveryNullableType {
             any: serde_json::Value::Bool(true),
             boolean: Some(false),
@@ -386,9 +386,9 @@ mod tests {
         let config = get_config(headers());
         let client = TestClient::create(config);
         let target_date = DateTime::from_timestamp_millis(TARGET_MS).unwrap();
-        let mut record = BTreeMap::<String, bool>::new();
-        record.insert("A".to_string(), false);
-        record.insert("B".to_string(), true);
+        let mut record = BTreeMap::<String, u64>::new();
+        record.insert("A".to_string(), 1);
+        record.insert("B".to_string(), 0);
         let input = ObjectWithEveryOptionalType {
             any: None,
             boolean: None,
