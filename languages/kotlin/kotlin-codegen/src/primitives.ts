@@ -342,11 +342,11 @@ export function kotlinInt64FromSchema(
         toJson(input, target) {
             if (schema.nullable) {
                 return `${target} += when (${input}) {
-                    is Long -> "\\"$${input}\\""
+                    is Long -> "\\"\${${input}}\\""
                     else -> "null"
                 }`;
             }
-            return `${target} += "\\"$${input}\\""`;
+            return `${target} += "\\"\${${input}}\\""`;
         },
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
@@ -476,11 +476,11 @@ export function kotlinUint64FromSchema(
         toJson(input, target) {
             if (schema.nullable) {
                 return `${target} += when (${input}) {
-                    is ULong -> "\\"$${input}\\""
+                    is ULong -> "\\"\${${input}}\\""
                     else -> "null"
                 }`;
             }
-            return `${target} += "\\"$${input}\\""`;
+            return `${target} += "\\"\${${input}}\\""`;
         },
         toQueryString(input, target, key) {
             return defaultToQueryString(context, input, target, key);
