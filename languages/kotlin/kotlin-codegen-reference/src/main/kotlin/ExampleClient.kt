@@ -531,9 +531,9 @@ data class ObjectWithEveryType(
         output += ",\"uint32\":"
         output += uint32
         output += ",\"int64\":"
-        output += "\"$int64\""
+        output += "\"${int64}\""
         output += ",\"uint64\":"
-        output += "\"$uint64\""
+        output += "\"${uint64}\""
         output += ",\"enum\":"
         output += "\"${enum.serialValue}\""
         output += ",\"object\":"
@@ -1131,13 +1131,13 @@ data class ObjectWithOptionalFields(
         if (int64 != null) {
             if (hasProperties) output += ","
             output += "\"int64\":"
-            output += "\"$int64\""
+            output += "\"${int64}\""
             hasProperties = true
         }
         if (uint64 != null) {
             if (hasProperties) output += ","
             output += "\"uint64\":"
-            output += "\"$uint64\""
+            output += "\"${uint64}\""
             hasProperties = true
         }
         if (enum != null) {
@@ -1460,12 +1460,12 @@ data class ObjectWithNullableFields(
         output += uint32
         output += ",\"int64\":"
         output += when (int64) {
-            is Long -> "\"$int64\""
+            is Long -> "\"${int64}\""
             else -> "null"
         }
         output += ",\"uint64\":"
         output += when (uint64) {
-            is ULong -> "\"$uint64\""
+            is ULong -> "\"${uint64}\""
             else -> "null"
         }
         output += ",\"enum\":"

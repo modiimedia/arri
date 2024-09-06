@@ -617,7 +617,7 @@ export interface ObjectWithEveryType {
     enumerator: ObjectWithEveryTypeEnumerator;
     array: boolean[];
     object: ObjectWithEveryTypeObject;
-    record: Record<string, boolean>;
+    record: Record<string, bigint>;
     discriminator: ObjectWithEveryTypeDiscriminator;
     nestedObject: ObjectWithEveryTypeNestedObject;
     nestedArray: ObjectWithEveryTypeNestedArrayelementelement[][];
@@ -693,7 +693,10 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             $$ObjectWithEveryTypeObject.validate(input.object) &&
             isObject(input.record) &&
             Object.values(input.record).every(
-                (_value) => typeof _value === "boolean",
+                (_value) =>
+                    typeof _value === "bigint" &&
+                    _value >= BigInt(0) &&
+                    _value <= UINT64_MAX,
             ) &&
             $$ObjectWithEveryTypeDiscriminator.validate(input.discriminator) &&
             $$ObjectWithEveryTypeNestedObject.validate(input.nestedObject) &&
@@ -861,15 +864,17 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         } else {
             _object = $$ObjectWithEveryTypeObject.new();
         }
-        let _record: Record<string, boolean>;
+        let _record: Record<string, bigint>;
         if (isObject(input.record)) {
             _record = {};
             for (const [_key, _value] of Object.entries(input.record)) {
-                let _recordValue: boolean;
-                if (typeof _value === "boolean") {
+                let _recordValue: bigint;
+                if (typeof _value === "string" && BigInt(_value) >= BigInt(0)) {
+                    _recordValue = BigInt(_value);
+                } else if (typeof _value === "bigint" && _value >= BigInt(0)) {
                     _recordValue = _value;
                 } else {
-                    _recordValue = false;
+                    _recordValue = BigInt(0);
                 }
                 _record[_key] = _recordValue;
             }
@@ -997,7 +1002,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
                 json += ",";
             }
             json += `"${_key}":`;
-            json += `${_value}`;
+            json += `"${_value}"`;
             _recordPropertyCount++;
         }
         json += "}";
@@ -1667,7 +1672,7 @@ export interface ObjectWithEveryNullableType {
     enumerator: ObjectWithEveryNullableTypeEnumerator | null;
     array: (boolean | null)[] | null;
     object: ObjectWithEveryNullableTypeObject | null;
-    record: Record<string, boolean | null> | null;
+    record: Record<string, bigint | null> | null;
     discriminator: ObjectWithEveryNullableTypeDiscriminator | null;
     nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
     nestedArray:
@@ -1767,7 +1772,10 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                 ((isObject(input.record) &&
                     Object.values(input.record).every(
                         (_value) =>
-                            typeof _value === "boolean" || _value === null,
+                            (typeof _value === "bigint" &&
+                                _value >= BigInt(0) &&
+                                _value <= UINT64_MAX) ||
+                            _value === null,
                     )) ||
                     input.record === null) &&
                 ($$ObjectWithEveryNullableTypeDiscriminator.validate(
@@ -1948,15 +1956,23 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
             } else {
                 _object = null;
             }
-            let _record: Record<string, boolean | null> | null;
+            let _record: Record<string, bigint | null> | null;
             if (isObject(input.record)) {
                 _record = {};
                 for (const [_key, _value] of Object.entries(input.record)) {
-                    let _recordValue: boolean | null;
-                    if (typeof _value === "boolean") {
+                    let _recordValue: bigint | null;
+                    if (
+                        typeof _value === "string" &&
+                        BigInt(_value) >= BigInt(0)
+                    ) {
+                        _recordValue = BigInt(_value);
+                    } else if (
+                        typeof _value === "bigint" &&
+                        _value >= BigInt(0)
+                    ) {
                         _recordValue = _value;
                     } else {
-                        _recordValue = false;
+                        _recordValue = null;
                     }
                     _record[_key] = _recordValue;
                 }
@@ -2125,7 +2141,11 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                         json += ",";
                     }
                     json += `"${_key}":`;
-                    json += `${_value}`;
+                    if (typeof _value === "bigint") {
+                        json += `"${_value}"`;
+                    } else {
+                        json += "null";
+                    }
                     _recordPropertyCount++;
                 }
                 json += "}";
@@ -2911,7 +2931,7 @@ export interface ObjectWithEveryOptionalType {
     enumerator?: ObjectWithEveryOptionalTypeEnumerator;
     array?: boolean[];
     object?: ObjectWithEveryOptionalTypeObject;
-    record?: Record<string, boolean>;
+    record?: Record<string, bigint>;
     discriminator?: ObjectWithEveryOptionalTypeDiscriminator;
     nestedObject?: ObjectWithEveryOptionalTypeNestedObject;
     nestedArray?: ObjectWithEveryOptionalTypeNestedArrayelementelement[][];
@@ -2986,7 +3006,10 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                     typeof input.object === "undefined") &&
                 ((isObject(input.record) &&
                     Object.values(input.record).every(
-                        (_value) => typeof _value === "boolean",
+                        (_value) =>
+                            typeof _value === "bigint" &&
+                            _value >= BigInt(0) &&
+                            _value <= UINT64_MAX,
                     )) ||
                     typeof input.record === "undefined") &&
                 ($$ObjectWithEveryOptionalTypeDiscriminator.validate(
@@ -3199,16 +3222,24 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                     _object = $$ObjectWithEveryOptionalTypeObject.new();
                 }
             }
-            let _record: Record<string, boolean> | undefined;
+            let _record: Record<string, bigint> | undefined;
             if (typeof input.record !== "undefined") {
                 if (isObject(input.record)) {
                     _record = {};
                     for (const [_key, _value] of Object.entries(input.record)) {
-                        let _recordValue: boolean;
-                        if (typeof _value === "boolean") {
+                        let _recordValue: bigint;
+                        if (
+                            typeof _value === "string" &&
+                            BigInt(_value) >= BigInt(0)
+                        ) {
+                            _recordValue = BigInt(_value);
+                        } else if (
+                            typeof _value === "bigint" &&
+                            _value >= BigInt(0)
+                        ) {
                             _recordValue = _value;
                         } else {
-                            _recordValue = false;
+                            _recordValue = BigInt(0);
                         }
                         _record[_key] = _recordValue;
                     }
@@ -3428,7 +3459,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                         json += ",";
                     }
                     json += `"${_key}":`;
-                    json += `${_value}`;
+                    json += `"${_value}"`;
                     _recordPropertyCount++;
                 }
                 json += "}";
@@ -6146,10 +6177,14 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 _bookmarks = {};
                 for (const [_key, _value] of Object.entries(input.bookmarks)) {
                     let _bookmarksValue: UsersWatchUserResponseBookmarksvalue;
-                    if (typeof _value === "boolean") {
-                        _bookmarksValue = _value;
+                    if (isObject(_value)) {
+                        _bookmarksValue =
+                            $$UsersWatchUserResponseBookmarksvalue.fromJson(
+                                _value,
+                            );
                     } else {
-                        _bookmarksValue = false;
+                        _bookmarksValue =
+                            $$UsersWatchUserResponseBookmarksvalue.new();
                     }
                     _bookmarks[_key] = _bookmarksValue;
                 }
@@ -6161,11 +6196,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 _metadata = {};
                 for (const [_key, _value] of Object.entries(input.metadata)) {
                     let _metadataValue: any;
-                    if (typeof _value === "boolean") {
-                        _metadataValue = _value;
-                    } else {
-                        _metadataValue = false;
-                    }
+                    _metadataValue = _value;
                     _metadata[_key] = _metadataValue;
                 }
             } else {

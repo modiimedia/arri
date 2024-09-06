@@ -97,8 +97,8 @@ const input: ObjectWithEveryType = {
         timestamp: new Date(),
     },
     record: {
-        A: true,
-        B: false,
+        A: BigInt("1"),
+        B: BigInt("0"),
     },
     discriminator: {
         type: "B",

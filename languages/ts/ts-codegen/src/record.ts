@@ -38,11 +38,7 @@ export function tsRecordFromSchema(
                 ${target} = {};
                 for (const [_key, _value] of Object.entries(${input})) {
                     let ${target}Value: ${innerType.typeName};
-                    if (typeof _value === 'boolean') {
-                        ${target}Value = _value;
-                    } else {
-                        ${target}Value = false;
-                    }
+                    ${innerType.fromJsonTemplate("_value", `${target}Value`)}
                     ${target}[_key] = ${target}Value;
                 }
             } else {

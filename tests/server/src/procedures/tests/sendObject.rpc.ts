@@ -23,7 +23,7 @@ export const ObjectWithEveryType = a.object("ObjectWithEveryType", {
         boolean: a.boolean(),
         timestamp: a.timestamp(),
     }),
-    record: a.record(a.boolean()),
+    record: a.record(a.uint64()),
     discriminator: a.discriminator("type", {
         A: a.object({
             title: a.string(),

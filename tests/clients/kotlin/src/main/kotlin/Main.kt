@@ -64,7 +64,7 @@ fun main() {
                 )
             )
         ),
-        record = mutableMapOf(Pair("01", true), Pair("02", false)),
+        record = mutableMapOf(Pair("01", 1UL), Pair("02", 0UL)),
         nestedObject = ObjectWithEveryTypeNestedObject(
             id = "d1", timestamp = targetDate, data = ObjectWithEveryTypeNestedObjectData(
                 id = "d2", timestamp = targetDate, data = ObjectWithEveryTypeNestedObjectDataData(
@@ -171,7 +171,7 @@ fun main() {
                     title = "Hello world",
                     description = ""
                 ),
-                record = mutableMapOf(Pair("A", true), Pair("B", false)),
+                record = mutableMapOf(Pair("A", 1UL), Pair("B", 0UL)),
             )
         )
         val result = client.tests.sendObjectWithNullableFields(input)

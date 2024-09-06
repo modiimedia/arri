@@ -854,7 +854,7 @@ data class ObjectWithEveryType(
     val enumerator: ObjectWithEveryTypeEnumerator,
     val array: MutableList<Boolean>,
     val `object`: ObjectWithEveryTypeObject,
-    val record: MutableMap<String, Boolean>,
+    val record: MutableMap<String, ULong>,
     val discriminator: ObjectWithEveryTypeDiscriminator,
     val nestedObject: ObjectWithEveryTypeNestedObject,
     val nestedArray: MutableList<MutableList<ObjectWithEveryTypeNestedArrayElementElement>>,
@@ -886,9 +886,9 @@ output += int32
 output += ",\"uint32\":"
 output += uint32
 output += ",\"int64\":"
-output += "\"$int64\""
+output += "\"${int64}\""
 output += ",\"uint64\":"
-output += "\"$uint64\""
+output += "\"${uint64}\""
 output += ",\"enumerator\":"
 output += "\"${enumerator.serialValue}\""
 output += ",\"array\":"
@@ -909,7 +909,7 @@ output += "{"
                     output += ","
                 }
                 output += "\"${__entry.key}\":"
-                output += __entry.value
+                output += "\"${__entry.value}\""
             }
             output += "}"
 output += ",\"discriminator\":"
@@ -1094,13 +1094,13 @@ val `object`: ObjectWithEveryTypeObject = when (__input.jsonObject["object"]) {
 
                 else -> ObjectWithEveryTypeObject.new()
             }
-val record: MutableMap<String, Boolean> = when (__input.jsonObject["record"]) {
+val record: MutableMap<String, ULong> = when (__input.jsonObject["record"]) {
                 is JsonObject -> {
-                    val __value: MutableMap<String, Boolean> = mutableMapOf()
+                    val __value: MutableMap<String, ULong> = mutableMapOf()
                     for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                is JsonPrimitive -> __entry.value!!.jsonPrimitive.booleanOrNull ?: false
-                else -> false
+                is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
+                else -> 0UL
             }
                     }
                     __value
@@ -1761,7 +1761,7 @@ data class ObjectWithEveryNullableType(
     val enumerator: ObjectWithEveryNullableTypeEnumerator?,
     val array: MutableList<Boolean?>?,
     val `object`: ObjectWithEveryNullableTypeObject?,
-    val record: MutableMap<String, Boolean?>?,
+    val record: MutableMap<String, ULong?>?,
     val discriminator: ObjectWithEveryNullableTypeDiscriminator?,
     val nestedObject: ObjectWithEveryNullableTypeNestedObject?,
     val nestedArray: MutableList<MutableList<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?,
@@ -1803,12 +1803,12 @@ output += ",\"uint32\":"
 output += uint32
 output += ",\"int64\":"
 output += when (int64) {
-                    is Long -> "\"$int64\""
+                    is Long -> "\"${int64}\""
                     else -> "null"
                 }
 output += ",\"uint64\":"
 output += when (uint64) {
-                    is ULong -> "\"$uint64\""
+                    is ULong -> "\"${uint64}\""
                     else -> "null"
                 }
 output += ",\"enumerator\":"
@@ -1841,7 +1841,10 @@ if (record == null) {
                             output += ","
                         }
                         output += "\"${__entry.key}\":"
-                        output += __entry.value
+                        output += when (__entry.value) {
+                    is ULong -> "\"${__entry.value}\""
+                    else -> "null"
+                }
                     }
                     output += "}"
                 }
@@ -2038,12 +2041,12 @@ val `object`: ObjectWithEveryNullableTypeObject? = when (__input.jsonObject["obj
                     )
                     else -> null
                 }
-val record: MutableMap<String, Boolean?>? = when (__input.jsonObject["record"]) {
+val record: MutableMap<String, ULong?>? = when (__input.jsonObject["record"]) {
                 is JsonObject -> {
-                    val __value: MutableMap<String, Boolean?> = mutableMapOf()
+                    val __value: MutableMap<String, ULong?> = mutableMapOf()
                     for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                    is JsonPrimitive -> __entry.value!!.jsonPrimitive.booleanOrNull
+                    is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull()
                     else -> null
                 }
                     }
@@ -2755,7 +2758,7 @@ data class ObjectWithEveryOptionalType(
     val enumerator: ObjectWithEveryOptionalTypeEnumerator? = null,
     val array: MutableList<Boolean>? = null,
     val `object`: ObjectWithEveryOptionalTypeObject? = null,
-    val record: MutableMap<String, Boolean>? = null,
+    val record: MutableMap<String, ULong>? = null,
     val discriminator: ObjectWithEveryOptionalTypeDiscriminator? = null,
     val nestedObject: ObjectWithEveryOptionalTypeNestedObject? = null,
     val nestedArray: MutableList<MutableList<ObjectWithEveryOptionalTypeNestedArrayElementElement>>? = null,
@@ -2849,14 +2852,14 @@ if (int64 != null) {
         if (hasProperties) output += ","
 
     output += "\"int64\":"
-    output += "\"$int64\""
+    output += "\"${int64}\""
     hasProperties = true
 }
 if (uint64 != null) {
         if (hasProperties) output += ","
 
     output += "\"uint64\":"
-    output += "\"$uint64\""
+    output += "\"${uint64}\""
     hasProperties = true
 }
 if (enumerator != null) {
@@ -2897,7 +2900,7 @@ if (record != null) {
                     output += ","
                 }
                 output += "\"${__entry.key}\":"
-                output += __entry.value
+                output += "\"${__entry.value}\""
             }
             output += "}"
     hasProperties = true
@@ -3106,13 +3109,13 @@ val `object`: ObjectWithEveryOptionalTypeObject? = when (__input.jsonObject["obj
                     )
                     else -> null
                 }
-val record: MutableMap<String, Boolean>? = when (__input.jsonObject["record"]) {
+val record: MutableMap<String, ULong>? = when (__input.jsonObject["record"]) {
                 is JsonObject -> {
-                    val __value: MutableMap<String, Boolean> = mutableMapOf()
+                    val __value: MutableMap<String, ULong> = mutableMapOf()
                     for (__entry in __input.jsonObject["record"]!!.jsonObject.entries) {
                         __value[__entry.key] = when (__entry.value) {
-                is JsonPrimitive -> __entry.value!!.jsonPrimitive.booleanOrNull ?: false
-                else -> false
+                is JsonPrimitive -> __entry.value!!.jsonPrimitive.contentOrNull?.toULongOrNull() ?: 0UL
+                else -> 0UL
             }
                     }
                     __value
@@ -5775,9 +5778,9 @@ output += width
 output += ",\"height\":"
 output += height
 output += ",\"bytes\":"
-output += "\"$bytes\""
+output += "\"${bytes}\""
 output += ",\"nanoseconds\":"
-output += "\"$nanoseconds\""
+output += "\"${nanoseconds}\""
 output += "}"
 return output    
     }

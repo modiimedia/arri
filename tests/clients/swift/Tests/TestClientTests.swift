@@ -43,7 +43,7 @@ final class TestSwiftClientTests: XCTestCase {
                 boolean: true,
                 timestamp: testDate
             ),
-            record: Dictionary(dictionaryLiteral: ("A", true), ("B", false)),
+            record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0)),
             discriminator: ObjectWithEveryTypeDiscriminator.b(
                 ObjectWithEveryTypeDiscriminatorB(
                     title: "this is a title",
@@ -89,7 +89,7 @@ final class TestSwiftClientTests: XCTestCase {
             enumerator: ObjectWithEveryNullableTypeEnumerator.a,
             array: [nil, true, false],
             object: ObjectWithEveryNullableTypeObject(string: nil, boolean: true, timestamp: nil),
-            record: Dictionary(dictionaryLiteral: ("A", nil), ("B", true), ("C", false)),
+            record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0), ("C", 4)),
             discriminator: ObjectWithEveryNullableTypeDiscriminator.a(
                 ObjectWithEveryNullableTypeDiscriminatorA(title: nil)
             ),

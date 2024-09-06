@@ -770,7 +770,7 @@ class ObjectWithEveryType implements ArriModel {
   final ObjectWithEveryTypeEnumerator enumerator;
   final List<bool> array;
   final ObjectWithEveryTypeObject object;
-  final Map<String, bool> record;
+  final Map<String, BigInt> record;
   final ObjectWithEveryTypeDiscriminator discriminator;
   final ObjectWithEveryTypeNestedObject nestedObject;
   final List<List<ObjectWithEveryTypeNestedArrayElementElement>> nestedArray;
@@ -853,10 +853,10 @@ class ObjectWithEveryType implements ArriModel {
         ? (_input_["record"] as Map<String, dynamic>).map(
             (_key_, _val_) => MapEntry(
               _key_,
-              typeFromDynamic<bool>(_val_, false),
+              bigIntFromDynamic(_val_, BigInt.zero),
             ),
           )
-        : <String, bool>{};
+        : <String, BigInt>{};
     final discriminator = _input_["discriminator"] is Map<String, dynamic>
         ? ObjectWithEveryTypeDiscriminator.fromJson(_input_["discriminator"])
         : ObjectWithEveryTypeDiscriminator.empty();
@@ -927,7 +927,7 @@ class ObjectWithEveryType implements ArriModel {
       "record": record.map(
         (_key_, _val_) => MapEntry(
           _key_,
-          _val_,
+          _val_.toString(),
         ),
       ),
       "discriminator": discriminator.toJson(),
@@ -998,7 +998,7 @@ class ObjectWithEveryType implements ArriModel {
     ObjectWithEveryTypeEnumerator? enumerator,
     List<bool>? array,
     ObjectWithEveryTypeObject? object,
-    Map<String, bool>? record,
+    Map<String, BigInt>? record,
     ObjectWithEveryTypeDiscriminator? discriminator,
     ObjectWithEveryTypeNestedObject? nestedObject,
     List<List<ObjectWithEveryTypeNestedArrayElementElement>>? nestedArray,
@@ -1761,7 +1761,7 @@ class ObjectWithEveryNullableType implements ArriModel {
   final ObjectWithEveryNullableTypeEnumerator? enumerator;
   final List<bool?>? array;
   final ObjectWithEveryNullableTypeObject? object;
-  final Map<String, bool?>? record;
+  final Map<String, BigInt?>? record;
   final ObjectWithEveryNullableTypeDiscriminator? discriminator;
   final ObjectWithEveryNullableTypeNestedObject? nestedObject;
   final List<List<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?
@@ -1847,7 +1847,7 @@ class ObjectWithEveryNullableType implements ArriModel {
         ? (_input_["record"] as Map<String, dynamic>).map(
             (_key_, _val_) => MapEntry(
               _key_,
-              nullableTypeFromDynamic<bool>(_val_),
+              nullableBigIntFromDynamic(_val_),
             ),
           )
         : null;
@@ -1923,7 +1923,7 @@ class ObjectWithEveryNullableType implements ArriModel {
       "record": record?.map(
         (_key_, _val_) => MapEntry(
           _key_,
-          _val_,
+          _val_?.toString(),
         ),
       ),
       "discriminator": discriminator?.toJson(),
@@ -1994,7 +1994,7 @@ class ObjectWithEveryNullableType implements ArriModel {
     ObjectWithEveryNullableTypeEnumerator? Function()? enumerator,
     List<bool?>? Function()? array,
     ObjectWithEveryNullableTypeObject? Function()? object,
-    Map<String, bool?>? Function()? record,
+    Map<String, BigInt?>? Function()? record,
     ObjectWithEveryNullableTypeDiscriminator? Function()? discriminator,
     ObjectWithEveryNullableTypeNestedObject? Function()? nestedObject,
     List<List<ObjectWithEveryNullableTypeNestedArrayElementElement?>?>?
@@ -2774,7 +2774,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
   final ObjectWithEveryOptionalTypeEnumerator? enumerator;
   final List<bool>? array;
   final ObjectWithEveryOptionalTypeObject? object;
-  final Map<String, bool>? record;
+  final Map<String, BigInt>? record;
   final ObjectWithEveryOptionalTypeDiscriminator? discriminator;
   final ObjectWithEveryOptionalTypeNestedObject? nestedObject;
   final List<List<ObjectWithEveryOptionalTypeNestedArrayElementElement>>?
@@ -2838,7 +2838,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
         ? (_input_["record"] as Map<String, dynamic>).map(
             (_key_, _val_) => MapEntry(
               _key_,
-              typeFromDynamic<bool>(_val_, false),
+              bigIntFromDynamic(_val_, BigInt.zero),
             ),
           )
         : null;
@@ -2917,7 +2917,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
       _output_["record"] = record!.map(
         (_key_, _val_) => MapEntry(
           _key_,
-          _val_,
+          _val_.toString(),
         ),
       );
     if (discriminator != null)
@@ -2990,7 +2990,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
     ObjectWithEveryOptionalTypeEnumerator? Function()? enumerator,
     List<bool>? Function()? array,
     ObjectWithEveryOptionalTypeObject? Function()? object,
-    Map<String, bool>? Function()? record,
+    Map<String, BigInt>? Function()? record,
     ObjectWithEveryOptionalTypeDiscriminator? Function()? discriminator,
     ObjectWithEveryOptionalTypeNestedObject? Function()? nestedObject,
     List<List<ObjectWithEveryOptionalTypeNestedArrayElementElement>>?

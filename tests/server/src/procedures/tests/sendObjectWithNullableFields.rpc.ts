@@ -27,7 +27,7 @@ export const ObjectWithEveryNullableType = a.object(
                 timestamp: a.nullable(a.timestamp()),
             }),
         ),
-        record: a.nullable(a.record(a.nullable(a.boolean()))),
+        record: a.nullable(a.record(a.nullable(a.uint64()))),
         discriminator: a.nullable(
             a.discriminator("type", {
                 A: a.object({

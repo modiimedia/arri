@@ -544,7 +544,7 @@ public struct ObjectWithEveryType: ArriClientModel {
     public var enumerator: ObjectWithEveryTypeEnumerator = ObjectWithEveryTypeEnumerator.a
     public var array: [Bool] = []
     public var object: ObjectWithEveryTypeObject = ObjectWithEveryTypeObject()
-    public var record: Dictionary<String, Bool> = Dictionary()
+    public var record: Dictionary<String, UInt64> = Dictionary()
     public var discriminator: ObjectWithEveryTypeDiscriminator = ObjectWithEveryTypeDiscriminator()
     public var nestedObject: ObjectWithEveryTypeNestedObject = ObjectWithEveryTypeNestedObject()
     public var nestedArray: [[ObjectWithEveryTypeNestedArrayElementElement]] = []
@@ -566,7 +566,7 @@ public struct ObjectWithEveryType: ArriClientModel {
         enumerator: ObjectWithEveryTypeEnumerator,
         array: [Bool],
         object: ObjectWithEveryTypeObject,
-        record: Dictionary<String, Bool>,
+        record: Dictionary<String, UInt64>,
         discriminator: ObjectWithEveryTypeDiscriminator,
         nestedObject: ObjectWithEveryTypeNestedObject,
         nestedArray: [[ObjectWithEveryTypeNestedArrayElementElement]]
@@ -619,8 +619,8 @@ public struct ObjectWithEveryType: ArriClientModel {
         self.object = ObjectWithEveryTypeObject(json: json["object"])
         self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                var __parsedValue: Bool
-                        __parsedValue = __value.bool ?? false
+                var __parsedValue: UInt64
+                        __parsedValue = UInt64(__value.string ?? "0") ?? 0
                 self.record[__key] = __parsedValue            
             }
         self.discriminator = ObjectWithEveryTypeDiscriminator(json: json["discriminator"])
@@ -706,7 +706,7 @@ public struct ObjectWithEveryType: ArriClientModel {
                     __json += ","
                 }
                 __json += "\"\(__key)\":"
-                        __json += "\(__value)"
+                        __json += "\"\(__value)\""
             }
             __json += "}"
         __json += ",\"discriminator\":"
@@ -764,7 +764,7 @@ var __arrayCloned: [Bool] = []
                     __arrayCloned.append(__arrayElement)
                 }
 
-var __recordCloned: Dictionary<String, Bool> = Dictionary()
+var __recordCloned: Dictionary<String, UInt64> = Dictionary()
                     for (__recordKey, __recordValue) in self.record {
                         
                         __recordCloned[__recordKey] = __recordValue
@@ -1362,7 +1362,7 @@ public struct ObjectWithEveryNullableType: ArriClientModel {
     public var enumerator: ObjectWithEveryNullableTypeEnumerator?
     public var array: [Bool?]?
     public var object: ObjectWithEveryNullableTypeObject?
-    public var record: Dictionary<String, Bool?>?
+    public var record: Dictionary<String, UInt64?>?
     public var discriminator: ObjectWithEveryNullableTypeDiscriminator?
     public var nestedObject: ObjectWithEveryNullableTypeNestedObject?
     public var nestedArray: [[ObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
@@ -1384,7 +1384,7 @@ public struct ObjectWithEveryNullableType: ArriClientModel {
         enumerator: ObjectWithEveryNullableTypeEnumerator?,
         array: [Bool?]?,
         object: ObjectWithEveryNullableTypeObject?,
-        record: Dictionary<String, Bool?>?,
+        record: Dictionary<String, UInt64?>?,
         discriminator: ObjectWithEveryNullableTypeDiscriminator?,
         nestedObject: ObjectWithEveryNullableTypeNestedObject?,
         nestedArray: [[ObjectWithEveryNullableTypeNestedArrayElementElement?]?]?
@@ -1474,9 +1474,9 @@ public struct ObjectWithEveryNullableType: ArriClientModel {
         if json["record"].dictionary != nil {
         self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                var __parsedValue: Bool?
-                        if __value.bool != nil {
-                    __parsedValue = __value.bool
+                var __parsedValue: UInt64?
+                        if __value.string != nil {
+                    __parsedValue = UInt64(__value.string ?? "0")
                 }
                 self.record![__key] = __parsedValue            
             }
@@ -1644,7 +1644,7 @@ if self.record != nil {
                 }
                 __json += "\"\(__key)\":"
                         if __value != nil {
-                    __json += "\(__value!)"
+                    __json += "\"\(__value!)\""
                 } else {
                     __json += "null" 
                 }
@@ -1787,7 +1787,7 @@ var __arrayCloned: [Bool?]?
                     }
                 }
 
-var __recordCloned: Dictionary<String, Bool?>?
+var __recordCloned: Dictionary<String, UInt64?>?
                     if self.record != nil {
                         __recordCloned = Dictionary()
                         for (__recordKey, __recordValue) in self.record! {
@@ -2546,7 +2546,7 @@ public struct ObjectWithEveryOptionalType: ArriClientModel {
     public var enumerator: ObjectWithEveryOptionalTypeEnumerator?
     public var array: [Bool]?
     public var object: ObjectWithEveryOptionalTypeObject?
-    public var record: Dictionary<String, Bool>?
+    public var record: Dictionary<String, UInt64>?
     public var discriminator: ObjectWithEveryOptionalTypeDiscriminator?
     public var nestedObject: ObjectWithEveryOptionalTypeNestedObject?
     public var nestedArray: [[ObjectWithEveryOptionalTypeNestedArrayElementElement]]?
@@ -2568,7 +2568,7 @@ public struct ObjectWithEveryOptionalType: ArriClientModel {
         enumerator: ObjectWithEveryOptionalTypeEnumerator?,
         array: [Bool]?,
         object: ObjectWithEveryOptionalTypeObject?,
-        record: Dictionary<String, Bool>?,
+        record: Dictionary<String, UInt64>?,
         discriminator: ObjectWithEveryOptionalTypeDiscriminator?,
         nestedObject: ObjectWithEveryOptionalTypeNestedObject?,
         nestedArray: [[ObjectWithEveryOptionalTypeNestedArrayElementElement]]?
@@ -2656,8 +2656,8 @@ public struct ObjectWithEveryOptionalType: ArriClientModel {
         if json["record"].exists() {
         self.record = Dictionary()
             for (__key, __value) in json["record"].dictionary ?? Dictionary() {
-                var __parsedValue: Bool
-                        __parsedValue = __value.bool ?? false
+                var __parsedValue: UInt64
+                        __parsedValue = UInt64(__value.string ?? "0") ?? 0
                 self.record![__key] = __parsedValue            
             }
                 }
@@ -2853,7 +2853,7 @@ __numKeys += 1
                     __json += ","
                 }
                 __json += "\"\(__key)\":"
-                        __json += "\(__value)"
+                        __json += "\"\(__value)\""
             }
             __json += "}"            
 __numKeys += 1
@@ -2962,7 +2962,7 @@ var __arrayCloned: [Bool]?
                     }
                 }
 
-var __recordCloned: Dictionary<String, Bool>?
+var __recordCloned: Dictionary<String, UInt64>?
                     if self.record != nil {
                         __recordCloned = Dictionary()
                         for (__recordKey, __recordValue) in self.record! {
