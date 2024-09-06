@@ -18,8 +18,17 @@ type ValidationError struct {
 	SchemaPath   string
 }
 
-func (e *ValidationError) Error() string {
+func (e ValidationError) Error() string {
 	return e.Message + " at \"" + e.InstancePath + "\""
+}
+
+func (e ValidationError) ErrorResponse() ErrorResponse {
+	return ErrorResponse{
+		Code:    400,
+		Message: e.Message + " at \"" + e.InstancePath + "\"",
+		Data:    Some[any](e),
+		Stack:   None[[]string](),
+	}
 }
 
 func NewValidationError(Message string, InstancePath string, SchemaPath string) ValidationError {

@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 type MyCustomContext struct{}
 
-func onRequest(r *http.Request, c MyCustomContext) *arri.ErrorResponse {
+func onRequest(r *http.Request, c MyCustomContext) arri.Error {
 	fmt.Println("NEW REQUEST", r.URL.Path)
 	return nil
 }
@@ -31,7 +32,7 @@ func main() {
 		options,
 		// create the RPC context for each request
 		// this is generic so users can user whatever struct they want for their context
-		(func(r *http.Request) (*MyCustomContext, *arri.ErrorResponse) {
+		(func(r *http.Request) (*MyCustomContext, arri.Error) {
 			return &MyCustomContext{}, nil
 		}),
 	)
@@ -55,21 +56,25 @@ type UserParams struct {
 	UserId string
 }
 type User struct {
-	Id      string
-	Name    arri.Option[string]
-	Email   string
-	IsAdmin bool
-	Foo     string
+	Id        string
+	Name      arri.Nullable[string]
+	Email     string
+	IsAdmin   bool
+	CreatedAt time.Time
 }
 
-func DeleteUser(params UserParams, context MyCustomContext) (*User, *arri.ErrorResponse) {
-	return &User{Id: params.UserId, Name: arri.None[string]()}, nil
+func DeleteUser(params UserParams, context MyCustomContext) (*User, arri.Error) {
+	return &User{Id: params.UserId, Name: arri.Null[string]()}, nil
 }
 
-func GetUser(params UserParams, context MyCustomContext) (*User, *arri.ErrorResponse) {
-	return &User{Id: params.UserId}, nil
+func GetUser(params UserParams, context MyCustomContext) (*User, arri.Error) {
+	return &User{
+		Id:        params.UserId,
+		Name:      arri.NotNull("John Doe"),
+		CreatedAt: time.Now(),
+	}, nil
 }
 
-func UpdateUser(params User, context MyCustomContext) (*User, *arri.ErrorResponse) {
+func UpdateUser(params User, context MyCustomContext) (*User, arri.Error) {
 	return &params, nil
 }

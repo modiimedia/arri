@@ -13,7 +13,7 @@ import (
 type App[TContext any] struct {
 	Mux                  *http.ServeMux
 	Port                 uint32
-	CreateContext        func(r *http.Request) (*TContext, *ErrorResponse)
+	CreateContext        func(r *http.Request) (*TContext, Error)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
 	Procedures           *[]__aOrderedMapEntry__[ARpcDef]
@@ -101,13 +101,13 @@ type AppOptions[TContext any] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         func(*http.Request, TContext) *ErrorResponse
-	OnBeforeResponse  func(*http.Request, TContext, any) *ErrorResponse
-	OnAfterResponse   func(*http.Request, TContext, any) *ErrorResponse
+	OnRequest         func(*http.Request, TContext) Error
+	OnBeforeResponse  func(*http.Request, TContext, any) Error
+	OnAfterResponse   func(*http.Request, TContext, any) Error
 	OnError           func(*http.Request, *TContext, error)
 }
 
-func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, *ErrorResponse)) App[TContext] {
+func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, Error)) App[TContext] {
 	app := App[TContext]{
 		Mux:                  mux,
 		CreateContext:        createContext,
@@ -122,19 +122,19 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	}
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t TContext) *ErrorResponse {
+		onRequest = func(r *http.Request, t TContext) Error {
 			return nil
 		}
 	}
 	onBeforeResponse := app.Options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+		onBeforeResponse = func(r *http.Request, t TContext, a any) Error {
 			return nil
 		}
 	}
 	onAfterResponse := app.Options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+		onAfterResponse = func(r *http.Request, t TContext, a any) Error {
 			return nil
 		}
 	}
@@ -145,12 +145,12 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
-			handleError(false, w, r, ctx, *ctxErr, onError)
+			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
 			return
 		}
 		onRequestErr := onRequest(r, *ctx)
 		if onRequestErr != nil {
-			handleError(false, w, r, ctx, *onRequestErr, onError)
+			handleError(false, w, r, ctx, onRequestErr.ErrorResponse(), onError)
 			return
 		}
 		if r.URL.Path != "/" {
@@ -171,14 +171,14 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		}
 		onBeforeResponseErr := onBeforeResponse(r, *ctx, response)
 		if onBeforeResponseErr != nil {
-			handleError[TContext](false, w, r, ctx, *onBeforeResponseErr, onError)
+			handleError[TContext](false, w, r, ctx, onBeforeResponseErr.ErrorResponse(), onError)
 			return
 		}
 		jsonResult, _ := ToJson(response, app.Options.KeyCasing)
 		w.Write(jsonResult)
 		onAfterResponseErr := onAfterResponse(r, *ctx, response)
 		if onAfterResponseErr != nil {
-			handleError(true, w, r, ctx, *onAfterResponseErr, onError)
+			handleError(true, w, r, ctx, onAfterResponseErr.ErrorResponse(), onError)
 			return
 		}
 	})
@@ -186,24 +186,24 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
-			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: ctxErr.Error()}, onError)
+			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
 			return
 		}
 		onRequestError := onRequest(r, *ctx)
 		if onRequestError != nil {
-			handleError(false, w, r, ctx, ErrorResponse{Code: onRequestError.Code, Message: onRequestError.Error()}, onError)
+			handleError(false, w, r, ctx, onRequestError.ErrorResponse(), onError)
 		}
 		jsonResult, _ := ToJson(app.GetAppDefinition(), app.Options.KeyCasing)
 		beforeResponseErr := onBeforeResponse(r, *ctx, jsonResult)
 		if beforeResponseErr != nil {
-			handleError(false, w, r, ctx, ErrorResponse{Code: beforeResponseErr.Code, Message: beforeResponseErr.Error()}, onError)
+			handleError(false, w, r, ctx, beforeResponseErr.ErrorResponse(), onError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
 		afterResponseErr := onAfterResponse(r, *ctx, jsonResult)
 		if afterResponseErr != nil {
-			handleError(true, w, r, ctx, ErrorResponse{Code: afterResponseErr.Code, Message: afterResponseErr.Message}, onError)
+			handleError(true, w, r, ctx, afterResponseErr.ErrorResponse(), onError)
 			return
 		}
 	})
@@ -234,7 +234,7 @@ type RpcOptions struct {
 	IsDeprecated bool
 }
 
-func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptions, handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptions, handler func(TParams, TContext) (TResponse, Error)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	rpcSchema.Http.Path = app.Options.RpcRoutePrefix + rpcSchema.Http.Path
@@ -264,19 +264,19 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __aOrderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t TContext) *ErrorResponse {
+		onRequest = func(r *http.Request, t TContext) Error {
 			return nil
 		}
 	}
 	onBeforeResponse := app.Options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+		onBeforeResponse = func(r *http.Request, t TContext, a any) Error {
 			return nil
 		}
 	}
 	onAfterResponse := app.Options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t TContext, a any) *ErrorResponse {
+		onAfterResponse = func(r *http.Request, t TContext, a any) Error {
 			return nil
 		}
 	}
@@ -289,7 +289,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
-			handleError(false, w, r, nil, *ctxErr, app.Options.OnError)
+			handleError(false, w, r, nil, ctxErr.ErrorResponse(), app.Options.OnError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
@@ -298,7 +298,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 		}
 		onRequestErr := onRequest(r, *ctx)
 		if onRequestErr != nil {
-			handleError(false, w, r, ctx, *onRequestErr, onError)
+			handleError(false, w, r, ctx, onRequestErr.ErrorResponse(), onError)
 			return
 		}
 		params, paramsOk := paramsZero.Interface().(TParams)
@@ -318,18 +318,19 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			}
 			fromJsonErr := FromJson(b, &params, app.Options.KeyCasing)
 			if fromJsonErr != nil {
-				handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: fromJsonErr.Error(), Data: Some[any](fromJsonErr)}, onError)
+				handleError(false, w, r, ctx, fromJsonErr.ErrorResponse(), onError)
 				return
 			}
 		}
 		response, responseErr := handler(params, *ctx)
 		if responseErr != nil {
-			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: responseErr.Error(), Data: Some[any](responseErr)}, onError)
+			payload := responseErr.ErrorResponse()
+			handleError(false, w, r, ctx, payload, onError)
 			return
 		}
 		onBeforeResponseErr := onBeforeResponse(r, *ctx, "")
 		if onBeforeResponseErr != nil {
-			handleError(false, w, r, ctx, *onBeforeResponseErr, onError)
+			handleError(false, w, r, ctx, onBeforeResponseErr.ErrorResponse(), onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -341,16 +342,16 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 		w.Write([]byte(body))
 		onAfterResponseErr := onAfterResponse(r, *ctx, "")
 		if onAfterResponseErr != nil {
-			handleError(false, w, r, ctx, *onAfterResponseErr, onError)
+			handleError(false, w, r, ctx, onAfterResponseErr.ErrorResponse(), onError)
 		}
 	})
 }
 
-func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TParams, TContext) (TResponse, Error)) {
 	rpc(app, nil, handler)
 }
 
-func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], options RpcOptions, handler func(TParams, TContext) (*TResponse, *ErrorResponse)) {
+func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], options RpcOptions, handler func(TParams, TContext) (TResponse, Error)) {
 	rpc(app, &options, handler)
 }
 
