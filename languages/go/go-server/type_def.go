@@ -5,56 +5,55 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/iancoleman/strcase"
 )
 
 const (
-	AString    = "string"
-	ABoolean   = "boolean"
-	ATimestamp = "timestamp"
-	AFloat32   = "float32"
-	AFloat64   = "float64"
-	AInt8      = "int8"
-	AInt16     = "int16"
-	AInt32     = "int32"
-	AInt64     = "int64"
-	AUint8     = "uint8"
-	AUint16    = "uint16"
-	AUint32    = "uint32"
-	AUint64    = "uint64"
+	String    = "string"
+	Boolean   = "boolean"
+	Timestamp = "timestamp"
+	Float32   = "float32"
+	Float64   = "float64"
+	Int8      = "int8"
+	Int16     = "int16"
+	Int32     = "int32"
+	Int64     = "int64"
+	Uint8     = "uint8"
+	Uint16    = "uint16"
+	Uint32    = "uint32"
+	Uint64    = "uint64"
 )
 
-type AType = string
+type Type = string
 
-type ATypeMetadata struct {
+type TypeDefMetadata struct {
 	Id           string         `key:"id"`
 	Description  Option[string] `key:"description"`
 	IsDeprecated Option[bool]   `key:"isDeprecated"`
 }
 
-type ATypeDef struct {
-	Metadata           Option[ATypeMetadata]                    `key:"metadata" `
-	Nullable           Option[bool]                             `key:"nullable"`
-	Type               Option[AType]                            `key:"type"`
-	Enum               Option[[]string]                         `key:"enum"`
-	Elements           *ATypeDef                                `key:"elements"`
-	Properties         Option[[]__aOrderedMapEntry__[ATypeDef]] `key:"properties"`
-	OptionalProperties Option[[]__aOrderedMapEntry__[ATypeDef]] `key:"optionalProperties"`
-	Strict             Option[bool]                             `key:"strict"`
-	Values             *ATypeDef                                `key:"values"`
-	Discriminator      Option[string]                           `key:"discriminator"`
-	Mapping            Option[map[string]ATypeDef]              `key:"mapping"`
-	Ref                Option[string]                           `key:"ref"`
+type TypeDef struct {
+	Metadata           Option[TypeDefMetadata]                `key:"metadata" `
+	Nullable           Option[bool]                           `key:"nullable"`
+	Type               Option[Type]                           `key:"type"`
+	Enum               Option[[]string]                       `key:"enum"`
+	Elements           *TypeDef                               `key:"elements"`
+	Properties         Option[[]__orderedMapEntry__[TypeDef]] `key:"properties"`
+	OptionalProperties Option[[]__orderedMapEntry__[TypeDef]] `key:"optionalProperties"`
+	Strict             Option[bool]                           `key:"strict"`
+	Values             *TypeDef                               `key:"values"`
+	Discriminator      Option[string]                         `key:"discriminator"`
+	Mapping            Option[map[string]TypeDef]             `key:"mapping"`
+	Ref                Option[string]                         `key:"ref"`
 }
 
-type __aOrderedMapEntry__[T interface{}] struct {
+type __orderedMapEntry__[T interface{}] struct {
 	Key   string
 	Value T
 }
 
-func __updateAOrderedMap__[T interface{}](state []__aOrderedMapEntry__[T], newValue __aOrderedMapEntry__[T]) []__aOrderedMapEntry__[T] {
+func __updateAOrderedMap__[T interface{}](state []__orderedMapEntry__[T], newValue __orderedMapEntry__[T]) []__orderedMapEntry__[T] {
 	var targetIndex *int = nil
 	for i := 0; i < len(state); i++ {
 		value := state[i]
@@ -140,12 +139,12 @@ func (context _TypeDefContext) copyWith(
 
 }
 
-func ToTypeDef(input interface{}, keyCasing KeyCasing) (*ATypeDef, error) {
+func ToTypeDef(input interface{}, keyCasing KeyCasing) (*TypeDef, error) {
 	context := _NewTypeDefContext(keyCasing)
 	return typeToTypeDef(reflect.TypeOf(input), context)
 }
 
-func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
+func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	if context.CurrentDepth >= context.MaxDepth {
 		return nil, fmt.Errorf("error at %s. max depth of %+v reached", context.InstancePath, context.MaxDepth)
 	}
@@ -175,73 +174,73 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, erro
 		return arrayToTypeDef(input, context)
 	case reflect.Struct:
 		if input.Name() == "Time" {
-			t := ATimestamp
-			return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+			t := Timestamp
+			return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 		}
 		return structToTypeDef(input, context)
 	case reflect.Interface:
-		return &ATypeDef{Nullable: context.IsNullable}, nil
+		return &TypeDef{Nullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. %s is not a supported type", context.InstancePath, input.Kind())
 	}
 }
 
-func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
+func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	kind := value.Kind()
 	switch kind {
 	case reflect.Bool:
-		t := ABoolean
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Boolean
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Int:
-		t := AInt64
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Int64
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Int8:
-		t := AInt8
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Int8
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Int16:
-		t := AInt16
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Int16
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Int32:
-		t := AInt32
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Int32
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Int64:
-		t := AInt64
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Int64
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Uint:
-		t := AUint64
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Uint64
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Uint8:
-		t := AUint8
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Uint8
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Uint16:
-		t := AUint16
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Uint16
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Uint32:
-		t := AUint32
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Uint32
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Uint64:
-		t := AUint64
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Uint64
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Float32:
-		t := AFloat32
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Float32
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.Float64:
-		t := AFloat64
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := Float64
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	case reflect.String:
 		if context.EnumValues.IsSome() {
-			metadata := None[ATypeMetadata]()
+			metadata := None[TypeDefMetadata]()
 			if context.EnumName.IsSome() {
-				metadata = Some(ATypeMetadata{Id: context.EnumName.Unwrap()})
+				metadata = Some(TypeDefMetadata{Id: context.EnumName.Unwrap()})
 			}
-			return &ATypeDef{
+			return &TypeDef{
 				Enum:     context.EnumValues,
 				Nullable: context.IsNullable,
 				Metadata: metadata,
 			}, nil
 		}
-		t := AString
-		return &ATypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
+		t := String
+		return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
 	default:
 		return nil, fmt.Errorf("error at %s. '%s' is not a supported primitive type", context.InstancePath, kind)
 	}
@@ -260,12 +259,12 @@ func IsDiscriminatorStruct(input reflect.Type) bool {
 	return false
 }
 
-func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
+func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	structName := input.Name()
 	for i := 0; i < len(context.ParentStructs); i++ {
 		name := context.ParentStructs[i]
 		if name == structName {
-			return &ATypeDef{Ref: Some(structName)}, nil
+			return &TypeDef{Ref: Some(structName)}, nil
 		}
 	}
 	context.ParentStructs = append(context.ParentStructs, structName)
@@ -277,8 +276,8 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 
-	requiredFields := []__aOrderedMapEntry__[ATypeDef]{}
-	optionalFields := []__aOrderedMapEntry__[ATypeDef]{}
+	requiredFields := []__orderedMapEntry__[TypeDef]{}
+	optionalFields := []__orderedMapEntry__[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
@@ -358,7 +357,7 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 		}
 		if len(description) > 0 || deprecated {
 			if fieldResult.Metadata.IsNone() {
-				fieldResult.Metadata = Some(ATypeMetadata{})
+				fieldResult.Metadata = Some(TypeDefMetadata{})
 			}
 			if len(description) > 0 {
 				fieldResult.Metadata.Value.Description = Some(description)
@@ -368,23 +367,23 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, er
 			}
 		}
 		if isOptional {
-			optionalFields = __updateAOrderedMap__(optionalFields, __aOrderedMapEntry__[ATypeDef]{Key: key, Value: *fieldResult})
+			optionalFields = __updateAOrderedMap__(optionalFields, __orderedMapEntry__[TypeDef]{Key: key, Value: *fieldResult})
 		} else {
-			requiredFields = __updateAOrderedMap__(requiredFields, __aOrderedMapEntry__[ATypeDef]{Key: key, Value: *fieldResult})
+			requiredFields = __updateAOrderedMap__(requiredFields, __orderedMapEntry__[TypeDef]{Key: key, Value: *fieldResult})
 
 		}
 	}
 	if len(optionalFields) > 0 {
-		return &ATypeDef{
+		return &TypeDef{
 			Properties:         Some(requiredFields),
 			OptionalProperties: Some(optionalFields),
 			Nullable:           context.IsNullable,
-			Metadata:           Some(ATypeMetadata{Id: structName})}, nil
+			Metadata:           Some(TypeDefMetadata{Id: structName})}, nil
 	}
-	return &ATypeDef{
+	return &TypeDef{
 		Properties: Some(requiredFields),
 		Nullable:   context.IsNullable,
-		Metadata:   Some(ATypeMetadata{Id: structName}),
+		Metadata:   Some(TypeDefMetadata{Id: structName}),
 	}, nil
 }
 
@@ -402,7 +401,7 @@ func extractNullableType(input reflect.Type) reflect.Type {
 	return field.Type
 }
 
-func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
+func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
@@ -411,7 +410,7 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 	discriminatorKey := "type"
-	mapping := make(map[string]ATypeDef)
+	mapping := make(map[string]TypeDef)
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		// we only accept "DiscriminatorKey" if it's the first key in the struct
@@ -450,10 +449,10 @@ func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefConte
 		}
 		mapping[discriminatorValue] = *fieldResult
 	}
-	return &ATypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(ATypeMetadata{Id: name})}, nil
+	return &TypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(TypeDefMetadata{Id: name})}, nil
 }
 
-func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
+func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Array && kind != reflect.Slice {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Array' or 'reflect.Slice'. got '%s'", context.InstancePath, kind)
@@ -477,10 +476,10 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, err
 	if err != nil {
 		return nil, err
 	}
-	return &ATypeDef{Elements: subTypeResult}, nil
+	return &TypeDef{Elements: subTypeResult}, nil
 }
 
-func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error) {
+func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Map {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Map'. got '%s'", context.InstancePath, kind)
@@ -508,56 +507,5 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*ATypeDef, error
 	if err != nil {
 		return nil, err
 	}
-	return &ATypeDef{Values: subTypeResult}, nil
-}
-
-const (
-	Active   = "ACTIVE"
-	Inactive = "INACTIVE"
-)
-
-type ArriModel interface {
-	ToJson(KeyCasing KeyCasing) ([]byte, error)
-}
-
-type MessageStatus = string
-
-type Message struct {
-	Id        string
-	Status    string `enum:"ACTIVE,INACTIVE" enumName:"Status"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Text      string
-	Other     interface{}
-}
-
-func (m *Message) ToJson(casing KeyCasing) ([]byte, error) {
-	return ToJson(m, casing)
-}
-
-type Shape struct {
-	DiscriminatorKey `discriminatorKey:"typeName"`
-	*Rectangle       `discriminator:"RECTANGLE"`
-	*Circle          `discriminator:"CIRCLE"`
-	*Child           `discriminator:"CHILD"`
-	*Children        `discriminator:"CHILDREN"`
-}
-
-type DiscriminatorKey struct{}
-
-type Rectangle struct {
-	Width  float64
-	Height float64
-}
-
-type Circle struct {
-	Radius float64
-}
-
-type Child struct {
-	Child Nullable[Shape]
-}
-
-type Children struct {
-	Children Nullable[[]Shape]
+	return &TypeDef{Values: subTypeResult}, nil
 }

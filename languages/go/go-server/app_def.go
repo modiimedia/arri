@@ -10,10 +10,10 @@ import (
 )
 
 type AAppDef struct {
-	SchemaVersion string                           `key:"schemaVersion" json:"schemaVersion" `
-	Info          *AAppDefInfo                     `key:"info" json:"info,omitempty" `
-	Procedures    []__aOrderedMapEntry__[ARpcDef]  `key:"procedures" json:"procedures" `
-	Definitions   []__aOrderedMapEntry__[ATypeDef] `key:"definitions" json:"definitions"`
+	SchemaVersion string                         `key:"schemaVersion" json:"schemaVersion" `
+	Info          *AAppDefInfo                   `key:"info" json:"info,omitempty" `
+	Procedures    []__orderedMapEntry__[ARpcDef] `key:"procedures" json:"procedures" `
+	Definitions   []__orderedMapEntry__[TypeDef] `key:"definitions" json:"definitions"`
 }
 
 type AAppDefInfo struct {

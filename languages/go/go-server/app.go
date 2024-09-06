@@ -16,8 +16,8 @@ type App[TContext any] struct {
 	CreateContext        func(r *http.Request) (*TContext, Error)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
-	Procedures           *[]__aOrderedMapEntry__[ARpcDef]
-	Definitions          *[]__aOrderedMapEntry__[ATypeDef]
+	Procedures           *[]__orderedMapEntry__[ARpcDef]
+	Definitions          *[]__orderedMapEntry__[TypeDef]
 }
 
 func (app *App[TContext]) GetAppDefinition() AAppDef {
@@ -113,8 +113,8 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		CreateContext:        createContext,
 		Options:              options,
 		InitializationErrors: []error{},
-		Procedures:           &[]__aOrderedMapEntry__[ARpcDef]{},
-		Definitions:          &[]__aOrderedMapEntry__[ATypeDef]{},
+		Procedures:           &[]__orderedMapEntry__[ARpcDef]{},
+		Definitions:          &[]__orderedMapEntry__[TypeDef]{},
 	}
 	defPath := app.Options.RpcRoutePrefix + "/__definition"
 	if len(app.Options.RpcDefinitionPath) > 0 {
@@ -256,12 +256,12 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	params := reflect.TypeOf(handler).In(0)
 	typeDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 	paramSchema, _ := typeToTypeDef(params, typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: paramSchema.Metadata.Unwrap().Id, Value: *paramSchema})
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramSchema.Metadata.Unwrap().Id, Value: *paramSchema})
 	response := handlerType.Out(0)
 	responseSchema, _ := typeToTypeDef(response.Elem(), typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
-	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __aOrderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
+	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
 		onRequest = func(r *http.Request, t TContext) Error {
@@ -360,7 +360,7 @@ func RegisterDef[TContent any](app *App[TContent], input any) {
 	if err != nil {
 		panic(err)
 	}
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __aOrderedMapEntry__[ATypeDef]{
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{
 		Key:   def.Metadata.Unwrap().Id,
 		Value: *def,
 	})

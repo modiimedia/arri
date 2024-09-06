@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+type DiscriminatorKey struct{}
+
 //// Optional Types ////
 
 type Option[T any] struct {

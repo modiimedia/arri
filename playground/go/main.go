@@ -39,7 +39,6 @@ func main() {
 	// register an RPC
 	arri.Rpc(&app, GetUser)
 	arri.Rpc(&app, DeleteUser)
-	arri.RegisterDef(&app, arri.Message{})
 	// register an RPC with a custom HTTP method and path
 	arri.RpcWithOptions(&app, arri.RpcOptions{
 		Method: arri.HttpMethodPatch,

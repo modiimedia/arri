@@ -1,9 +1,21 @@
 package arri
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
-func myTestFunc(_ Message, _ any) (*Shape, error) {
-	return &Shape{}, nil
+type message struct {
+	Id        string
+	Name      string
+	Email     Nullable[string]
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Message   string
+}
+
+func myTestFunc(_ message, _ any) (*message, error) {
+	return &message{}, nil
 }
 
 func BenchmarkToRpcDef(b *testing.B) {
