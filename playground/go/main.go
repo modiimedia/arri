@@ -6,9 +6,15 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-type MyCustomContext struct{}
+type MyCustomContext struct {
+	ReqId      string
+	ReqStart   time.Time
+	IsLoggedIn bool
+}
 
 func onRequest(r *http.Request, c MyCustomContext) arri.Error {
 	fmt.Println("NEW REQUEST", r.URL.Path)
@@ -33,11 +39,15 @@ func main() {
 		// create the RPC context for each request
 		// this is generic so users can user whatever struct they want for their context
 		(func(r *http.Request) (*MyCustomContext, arri.Error) {
-			return &MyCustomContext{}, nil
+			ctx := MyCustomContext{
+				ReqId:    uuid.New().String(),
+				ReqStart: time.Now(),
+			}
+			return &ctx, nil
 		}),
 	)
 	// register an RPC
-	arri.Rpc(&app, GetUser)
+	arri.RpcWithOptions(&app, arri.RpcOptions{Method: arri.HttpMethodGet}, GetUser)
 	arri.Rpc(&app, DeleteUser)
 	// register an RPC with a custom HTTP method and path
 	arri.RpcWithOptions(&app, arri.RpcOptions{

@@ -26,7 +26,7 @@ func (e ErrorResponse) ErrorResponse() ErrorResponse {
 
 func (e ErrorResponse) ToJson() []byte {
 	output := []byte{}
-	output = append(output, "{\"code\":"+strconv.FormatUint(uint64(e.Code), 32)...)
+	output = append(output, "{\"code\":"+strconv.FormatUint(uint64(e.Code), 10)...)
 	output = append(output, ",\"message\":"...)
 	appendNormalizedString(&output, e.Message)
 	if e.Data.IsSome() {

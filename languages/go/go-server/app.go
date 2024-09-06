@@ -143,6 +143,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		onError = func(r *http.Request, t *TContext, err error) {}
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
 			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
@@ -184,6 +185,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	})
 
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
 			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
@@ -223,7 +225,7 @@ func handleError[TContext any](
 		return
 	}
 	w.WriteHeader(int(err.Code))
-	body, _ := ToJson(err, KeyCasingCamelCase)
+	body := err.ToJson()
 	w.Write(body)
 }
 
@@ -287,6 +289,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
 			handleError(false, w, r, nil, ctxErr.ErrorResponse(), app.Options.OnError)
@@ -308,8 +311,12 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 		}
 		switch rpcSchema.Http.Method {
 		case HttpMethodGet:
-			handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: "Get requests not yet supported"}, onError)
-			return
+			urlValues := r.URL.Query()
+			fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.Options.KeyCasing)
+			if fromUrlQueryErr != nil {
+				handleError(false, w, r, ctx, fromUrlQueryErr.ErrorResponse(), onError)
+				return
+			}
 		default:
 			b, bErr := io.ReadAll(r.Body)
 			if bErr != nil {

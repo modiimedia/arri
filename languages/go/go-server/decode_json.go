@@ -19,13 +19,13 @@ type ValidationError struct {
 }
 
 func (e ValidationError) Error() string {
-	return e.Message + " at \"" + e.InstancePath + "\""
+	return e.Message + " at " + e.InstancePath
 }
 
 func (e ValidationError) ErrorResponse() ErrorResponse {
 	return ErrorResponse{
 		Code:    400,
-		Message: e.Message + " at \"" + e.InstancePath + "\"",
+		Message: e.Message + " at " + e.InstancePath,
 		Data:    Some[any](e),
 		Stack:   None[[]string](),
 	}

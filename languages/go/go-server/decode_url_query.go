@@ -44,7 +44,6 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Val
 
 		}
 		urlValue := values.Get(key)
-
 		isOptional := isOptionalType(fieldType)
 		if isOptional {
 			ctx := ctx.copyWith(
@@ -58,6 +57,10 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Val
 				return err
 			}
 			continue
+		}
+		hasUrlValue := values.Has(key)
+		if !hasUrlValue {
+			return &ValidationError{Message: "missing required field", InstancePath: "/" + key, SchemaPath: "/properties/" + key}
 		}
 		ctx := ctx.copyWith(
 			None[uint32](),
