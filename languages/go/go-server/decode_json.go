@@ -13,7 +13,7 @@ import (
 )
 
 type ValidationError interface {
-	Error
+	RpcError
 	Message() string
 	InstancePath() string
 	SchemaPath() string

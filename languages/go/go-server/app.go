@@ -13,7 +13,7 @@ import (
 type App[TContext any] struct {
 	Mux                  *http.ServeMux
 	Port                 uint32
-	CreateContext        func(r *http.Request) (*TContext, Error)
+	CreateContext        func(r *http.Request) (*TContext, RpcError)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
 	Procedures           *[]__orderedMapEntry__[RpcDef]
@@ -101,13 +101,13 @@ type AppOptions[TContext any] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         func(*http.Request, TContext) Error
-	OnBeforeResponse  func(*http.Request, TContext, any) Error
-	OnAfterResponse   func(*http.Request, TContext, any) Error
+	OnRequest         func(*http.Request, *TContext) RpcError
+	OnBeforeResponse  func(*http.Request, *TContext, any) RpcError
+	OnAfterResponse   func(*http.Request, *TContext, any) RpcError
 	OnError           func(*http.Request, *TContext, error)
 }
 
-func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, Error)) App[TContext] {
+func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, RpcError)) App[TContext] {
 	app := App[TContext]{
 		Mux:                  mux,
 		CreateContext:        createContext,
@@ -122,19 +122,19 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	}
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t TContext) Error {
+		onRequest = func(r *http.Request, t *TContext) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.Options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t TContext, a any) Error {
+		onBeforeResponse = func(r *http.Request, t *TContext, a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.Options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t TContext, a any) Error {
+		onAfterResponse = func(r *http.Request, t *TContext, a any) RpcError {
 			return nil
 		}
 	}
@@ -149,7 +149,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
 			return
 		}
-		onRequestErr := onRequest(r, *ctx)
+		onRequestErr := onRequest(r, ctx)
 		if onRequestErr != nil {
 			handleError(false, w, r, ctx, onRequestErr.ErrorResponse(), onError)
 			return
@@ -170,14 +170,14 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 			Version:     &app.Options.AppVersion,
 			SchemaPath:  defPath,
 		}
-		onBeforeResponseErr := onBeforeResponse(r, *ctx, response)
+		onBeforeResponseErr := onBeforeResponse(r, ctx, response)
 		if onBeforeResponseErr != nil {
 			handleError[TContext](false, w, r, ctx, onBeforeResponseErr.ErrorResponse(), onError)
 			return
 		}
 		jsonResult, _ := ToJson(response, app.Options.KeyCasing)
 		w.Write(jsonResult)
-		onAfterResponseErr := onAfterResponse(r, *ctx, response)
+		onAfterResponseErr := onAfterResponse(r, ctx, response)
 		if onAfterResponseErr != nil {
 			handleError(true, w, r, ctx, onAfterResponseErr.ErrorResponse(), onError)
 			return
@@ -191,19 +191,19 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
 			return
 		}
-		onRequestError := onRequest(r, *ctx)
+		onRequestError := onRequest(r, ctx)
 		if onRequestError != nil {
 			handleError(false, w, r, ctx, onRequestError.ErrorResponse(), onError)
 		}
 		jsonResult, _ := ToJson(app.GetAppDefinition(), app.Options.KeyCasing)
-		beforeResponseErr := onBeforeResponse(r, *ctx, jsonResult)
+		beforeResponseErr := onBeforeResponse(r, ctx, jsonResult)
 		if beforeResponseErr != nil {
 			handleError(false, w, r, ctx, beforeResponseErr.ErrorResponse(), onError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
-		afterResponseErr := onAfterResponse(r, *ctx, jsonResult)
+		afterResponseErr := onAfterResponse(r, ctx, jsonResult)
 		if afterResponseErr != nil {
 			handleError(true, w, r, ctx, afterResponseErr.ErrorResponse(), onError)
 			return
@@ -236,7 +236,7 @@ type RpcOptions struct {
 	IsDeprecated bool
 }
 
-func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptions, handler func(TParams, TContext) (TResponse, Error)) {
+func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	rpcSchema.Http.Path = app.Options.RpcRoutePrefix + rpcSchema.Http.Path
@@ -266,19 +266,19 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t TContext) Error {
+		onRequest = func(r *http.Request, t *TContext) RpcError {
 			return nil
 		}
 	}
 	onBeforeResponse := app.Options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t TContext, a any) Error {
+		onBeforeResponse = func(r *http.Request, t *TContext, a any) RpcError {
 			return nil
 		}
 	}
 	onAfterResponse := app.Options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t TContext, a any) Error {
+		onAfterResponse = func(r *http.Request, t *TContext, a any) RpcError {
 			return nil
 		}
 	}
@@ -299,7 +299,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			handleError(false, w, r, ctx, ErrorResponse{Code: 404, Message: "Not found"}, onError)
 			return
 		}
-		onRequestErr := onRequest(r, *ctx)
+		onRequestErr := onRequest(r, ctx)
 		if onRequestErr != nil {
 			handleError(false, w, r, ctx, onRequestErr.ErrorResponse(), onError)
 			return
@@ -335,7 +335,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			handleError(false, w, r, ctx, payload, onError)
 			return
 		}
-		onBeforeResponseErr := onBeforeResponse(r, *ctx, "")
+		onBeforeResponseErr := onBeforeResponse(r, ctx, "")
 		if onBeforeResponseErr != nil {
 			handleError(false, w, r, ctx, onBeforeResponseErr.ErrorResponse(), onError)
 			return
@@ -347,18 +347,18 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			return
 		}
 		w.Write([]byte(body))
-		onAfterResponseErr := onAfterResponse(r, *ctx, "")
+		onAfterResponseErr := onAfterResponse(r, ctx, "")
 		if onAfterResponseErr != nil {
 			handleError(false, w, r, ctx, onAfterResponseErr.ErrorResponse(), onError)
 		}
 	})
 }
 
-func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TParams, TContext) (TResponse, Error)) {
+func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TParams, TContext) (TResponse, RpcError)) {
 	rpc(app, nil, handler)
 }
 
-func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], options RpcOptions, handler func(TParams, TContext) (TResponse, Error)) {
+func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
 	rpc(app, &options, handler)
 }
 

@@ -16,7 +16,7 @@ type MyCustomContext struct {
 	IsLoggedIn bool
 }
 
-func onRequest(r *http.Request, c MyCustomContext) arri.Error {
+func onRequest(r *http.Request, c *MyCustomContext) arri.RpcError {
 	fmt.Println("NEW REQUEST", r.URL.Path)
 	return nil
 }
@@ -38,7 +38,7 @@ func main() {
 		options,
 		// create the RPC context for each request
 		// this is generic so users can user whatever struct they want for their context
-		(func(r *http.Request) (*MyCustomContext, arri.Error) {
+		(func(r *http.Request) (*MyCustomContext, arri.RpcError) {
 			ctx := MyCustomContext{
 				ReqId:    uuid.New().String(),
 				ReqStart: time.Now(),
@@ -72,11 +72,11 @@ type User struct {
 	CreatedAt time.Time
 }
 
-func DeleteUser(params UserParams, context MyCustomContext) (*User, arri.Error) {
+func DeleteUser(params UserParams, context MyCustomContext) (*User, arri.RpcError) {
 	return &User{Id: params.UserId, Name: arri.Null[string]()}, nil
 }
 
-func GetUser(params UserParams, context MyCustomContext) (*User, arri.Error) {
+func GetUser(params UserParams, context MyCustomContext) (*User, arri.RpcError) {
 	return &User{
 		Id:        params.UserId,
 		Name:      arri.NotNull("John Doe"),
@@ -84,6 +84,6 @@ func GetUser(params UserParams, context MyCustomContext) (*User, arri.Error) {
 	}, nil
 }
 
-func UpdateUser(params User, context MyCustomContext) (*User, arri.Error) {
+func UpdateUser(params User, context MyCustomContext) (*User, arri.RpcError) {
 	return &params, nil
 }

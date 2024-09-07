@@ -1,10 +1,11 @@
 package arri
 
 import (
+	"fmt"
 	"strconv"
 )
 
-type Error interface {
+type RpcError interface {
 	error
 	ErrorResponse() ErrorResponse
 }
@@ -18,10 +19,6 @@ type ErrorResponse struct {
 
 func (e ErrorResponse) Error() string {
 	return e.Message
-}
-
-func (e ErrorResponse) ErrorResponse() ErrorResponse {
-	return e
 }
 
 func (e ErrorResponse) ToJson() []byte {
@@ -91,11 +88,56 @@ var statusMessages = map[uint32]string{
 	511: "Network authentication required",
 }
 
-func ErrorFromStatus(statusCode uint32) ErrorResponse {
-	msg, foundMsg := statusMessages[statusCode]
-	if foundMsg {
-		return ErrorResponse{Code: statusCode, Message: msg}
-	}
-	return ErrorResponse{Code: statusCode, Message: "Unknown error"}
+type errorInstance struct {
+	code    uint32
+	message string
+	data    Option[any]
+	stack   Option[[]string]
+}
 
+func (e errorInstance) Error() string {
+	return fmt.Sprintf("{code: %v, message: %v}", e.code, e.message)
+}
+
+func (e errorInstance) ErrorResponse() ErrorResponse {
+	return ErrorResponse{
+		Code:    e.code,
+		Message: e.message,
+		Data:    e.data,
+		Stack:   e.stack,
+	}
+}
+
+func Error(statusCode uint32, message string) errorInstance {
+	msg := message
+	if len(message) == 0 {
+		defaultMsg, foundDefaultMsg := statusMessages[statusCode]
+		if foundDefaultMsg {
+			msg = defaultMsg
+		} else {
+			msg = "Unknown error"
+		}
+	}
+	return errorInstance{
+		code:    statusCode,
+		message: msg,
+	}
+}
+
+func ErrorWithData(statusCode uint32, message string, data Option[any], stack Option[[]string]) errorInstance {
+	msg := message
+	if len(message) == 0 {
+		defaultMsg, foundDefaultMsg := statusMessages[statusCode]
+		if foundDefaultMsg {
+			msg = defaultMsg
+		} else {
+			msg = "Unknown error"
+		}
+	}
+	return errorInstance{
+		code:    statusCode,
+		message: msg,
+		data:    data,
+		stack:   stack,
+	}
 }
