@@ -16,14 +16,14 @@ type App[TContext any] struct {
 	CreateContext        func(r *http.Request) (*TContext, Error)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
-	Procedures           *[]__orderedMapEntry__[ARpcDef]
+	Procedures           *[]__orderedMapEntry__[RpcDef]
 	Definitions          *[]__orderedMapEntry__[TypeDef]
 }
 
-func (app *App[TContext]) GetAppDefinition() AAppDef {
-	return AAppDef{
+func (app *App[TContext]) GetAppDefinition() AppDef {
+	return AppDef{
 		SchemaVersion: "0.0.7",
-		Info: &AAppDefInfo{
+		Info: &AppDefInfo{
 			Name:        app.Options.AppName,
 			Description: app.Options.AppDescription,
 			Version:     app.Options.AppVersion,
@@ -56,7 +56,7 @@ func (app *App[TContext]) Run(options RunOptions) error {
 	return startServer(app, options)
 }
 
-func appDefToFile(appDef AAppDef, output string, keyCasing KeyCasing) error {
+func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
 	appDefJson, appDefJsonErr := ToJson(appDef, keyCasing)
 	if appDefJsonErr != nil {
 		return appDefJsonErr
@@ -113,7 +113,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		CreateContext:        createContext,
 		Options:              options,
 		InitializationErrors: []error{},
-		Procedures:           &[]__orderedMapEntry__[ARpcDef]{},
+		Procedures:           &[]__orderedMapEntry__[RpcDef]{},
 		Definitions:          &[]__orderedMapEntry__[TypeDef]{},
 	}
 	defPath := app.Options.RpcRoutePrefix + "/__definition"
@@ -263,7 +263,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 	responseSchema, _ := typeToTypeDef(response.Elem(), typeDefContext)
 	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
-	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[ARpcDef]{Key: rpcName, Value: *rpcSchema})
+	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
 		onRequest = func(r *http.Request, t TContext) Error {

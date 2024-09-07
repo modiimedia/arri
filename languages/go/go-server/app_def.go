@@ -9,22 +9,22 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type AAppDef struct {
+type AppDef struct {
 	SchemaVersion string                         `key:"schemaVersion" json:"schemaVersion" `
-	Info          *AAppDefInfo                   `key:"info" json:"info,omitempty" `
-	Procedures    []__orderedMapEntry__[ARpcDef] `key:"procedures" json:"procedures" `
+	Info          *AppDefInfo                    `key:"info" json:"info,omitempty" `
+	Procedures    []__orderedMapEntry__[RpcDef]  `key:"procedures" json:"procedures" `
 	Definitions   []__orderedMapEntry__[TypeDef] `key:"definitions" json:"definitions"`
 }
 
-type AAppDefInfo struct {
+type AppDefInfo struct {
 	Name        string `key:"name" json:"name,omitempty"`
 	Description string `key:"description" json:"description,omitempty"`
 	Version     string `key:"version" json:"version,omitempty"`
 }
 
-type ARpcDef struct {
+type RpcDef struct {
 	DiscriminatorKey `discriminatorKey:"transport"`
-	Http             *ArriHttpRpcDef `discriminator:"http"`
+	Http             *HttpRpcDef `discriminator:"http"`
 }
 
 const (
@@ -37,7 +37,7 @@ const (
 
 type HttpMethod = string
 
-type ArriHttpRpcDef struct {
+type HttpRpcDef struct {
 	Path          string     `key:"path"`
 	Method        HttpMethod `key:"method"`
 	IsEventStream *bool      `key:"isEventStream"`
@@ -54,7 +54,7 @@ type ArriHttpRpcOptions struct {
 	IsDeprecated bool
 }
 
-func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*ARpcDef, error) {
+func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	fnName := rpcNameFromFunctionName(GetFunctionName(value))
 	valueType := reflect.TypeOf(value)
 	valueKind := valueType.Kind()
@@ -79,8 +79,8 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*ARpcDef, error) {
 	if options.IsDeprecated {
 		isDeprecated = &options.IsDeprecated
 	}
-	return &ARpcDef{
-			Http: &ArriHttpRpcDef{
+	return &RpcDef{
+			Http: &HttpRpcDef{
 				Path:         path,
 				Method:       method,
 				Params:       &params,

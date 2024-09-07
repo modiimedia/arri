@@ -11,7 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *ValidationError {
+func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *validationError {
 	reflectValue := reflect.ValueOf(target).Elem()
 	ctx := ValidationContext{KeyCasing: keyCasing}
 	if reflectValue.Kind() != reflect.Struct {
@@ -60,7 +60,7 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Val
 		}
 		hasUrlValue := values.Has(key)
 		if !hasUrlValue {
-			return &ValidationError{Message: "missing required field", InstancePath: "/" + key, SchemaPath: "/properties/" + key}
+			return &validationError{message: "missing required field", instancePath: "/" + key, schemaPath: "/properties/" + key}
 		}
 		ctx := ctx.copyWith(
 			None[uint32](),
@@ -84,7 +84,7 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Val
 	return nil
 }
 
-func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
 	if value == "" {
 		return nil
 	}
@@ -98,7 +98,7 @@ func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *Vali
 	return nil
 }
 
-func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
 	if value == "null" || value == "NULL" || value == "Null" {
 		return nil
 	}
@@ -112,7 +112,7 @@ func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *Vali
 	return nil
 }
 
-func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
 	kind := target.Kind()
 	switch kind {
 	case reflect.Bool:
@@ -175,7 +175,7 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	return &err
 }
 
-func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
 	switch value {
 	case "true", "TRUE", "1":
 		target.SetBool(true)
@@ -188,7 +188,7 @@ func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	return &err
 }
 
-func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
 	for i := 0; i < len(context.EnumValues); i++ {
 		enumVal := context.EnumValues[i]
 		if enumVal == value {
@@ -200,7 +200,7 @@ func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	return &err
 }
 
-func intFromUrlQuery(value string, target *reflect.Value, context *ValidationContext, isUnsigned bool, bitSize int) *ValidationError {
+func intFromUrlQuery(value string, target *reflect.Value, context *ValidationContext, isUnsigned bool, bitSize int) *validationError {
 	if isUnsigned {
 		parsedVal, parsingErr := strconv.ParseUint(value, 10, bitSize)
 		if parsingErr != nil {
@@ -238,7 +238,7 @@ func intFromUrlQuery(value string, target *reflect.Value, context *ValidationCon
 	return nil
 }
 
-func timestampFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *ValidationError {
+func timestampFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
 	parsedValue, parsingErr := time.ParseInLocation(time.RFC3339, value, time.UTC)
 	if parsingErr != nil {
 		err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
