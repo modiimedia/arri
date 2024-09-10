@@ -372,3 +372,32 @@ func RegisterDef[TContent any](app *App[TContent], input any) {
 		Value: *def,
 	})
 }
+
+type Service struct {
+	Name          string
+	Procedures    map[string]RpcDef
+	Definitions   map[string]TypeDef
+	rawProcedures []any
+}
+
+func NewService(name string) Service {
+	return Service{
+		Name:          name,
+		Procedures:    map[string]RpcDef{},
+		Definitions:   map[string]TypeDef{},
+		rawProcedures: []any{},
+	}
+}
+
+func ServiceRpc[TParams, TResponse, TContext any](service *Service, handler func(TParams, TContext) (TResponse, RpcError)) {
+	if service.Procedures == nil {
+		service.Procedures = make(map[string]RpcDef)
+	}
+	def, defErr := ToRpcDef(handler, ArriHttpRpcOptions{})
+	if defErr != nil {
+		panic(defErr)
+	}
+	service.rawProcedures = append(service.rawProcedures, handler)
+	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	service.Procedures[rpcName] = *def
+}
