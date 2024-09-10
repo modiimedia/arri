@@ -38,13 +38,13 @@ const (
 type HttpMethod = string
 
 type HttpRpcDef struct {
-	Path          string     `key:"path"`
-	Method        HttpMethod `key:"method"`
-	IsEventStream *bool      `key:"isEventStream"`
-	Params        *string    `key:"params"`
-	Response      *string    `key:"response"`
-	Description   *string    `key:"description"`
-	IsDeprecated  *bool      `key:"isDeprecated"`
+	Path          string         `key:"path"`
+	Method        HttpMethod     `key:"method"`
+	IsEventStream Option[bool]   `key:"isEventStream"`
+	Params        Option[string] `key:"params"`
+	Response      Option[string] `key:"response"`
+	Description   Option[string] `key:"description"`
+	IsDeprecated  Option[bool]   `key:"isDeprecated"`
 }
 
 type ArriHttpRpcOptions struct {
@@ -61,8 +61,8 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	if valueKind != reflect.Func {
 		return nil, errors.ErrUnsupported
 	}
-	params := valueType.In(0).Name()
-	response := valueType.Out(0).Elem().Name()
+	params := Some(valueType.In(0).Name())
+	response := Some(valueType.Out(0).Elem().Name())
 	path := "/" + strcase.ToKebab(fnName)
 	if len(options.Path) > 0 {
 		path = options.Path
@@ -71,20 +71,20 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	if len(options.Method) > 0 {
 		method = options.Method
 	}
-	var description *string = nil
+	var description = None[string]()
 	if len(options.Description) > 0 {
-		description = &options.Description
+		description = Some(options.Description)
 	}
-	var isDeprecated *bool = nil
+	var isDeprecated = None[bool]()
 	if options.IsDeprecated {
-		isDeprecated = &options.IsDeprecated
+		isDeprecated = Some(options.IsDeprecated)
 	}
 	return &RpcDef{
 			Http: &HttpRpcDef{
 				Path:         path,
 				Method:       method,
-				Params:       &params,
-				Response:     &response,
+				Params:       params,
+				Response:     response,
 				Description:  description,
 				IsDeprecated: isDeprecated,
 			},

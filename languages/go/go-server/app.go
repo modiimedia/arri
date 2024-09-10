@@ -249,10 +249,10 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], options *RpcOptio
 			rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Path
 		}
 		if len(options.Description) > 0 {
-			rpcSchema.Http.Description = &options.Description
+			rpcSchema.Http.Description = Some(options.Description)
 		}
 		if options.IsDeprecated {
-			rpcSchema.Http.IsDeprecated = &options.IsDeprecated
+			rpcSchema.Http.IsDeprecated = Some(options.IsDeprecated)
 		}
 	}
 	params := reflect.TypeOf(handler).In(0)
@@ -362,7 +362,7 @@ func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], option
 	rpc(app, &options, handler)
 }
 
-func RegisterDef[TContent any](app *App[TContent], input any) {
+func RegisterDef[TContext any](app *App[TContext], input any) {
 	def, err := ToTypeDef(input, app.Options.KeyCasing)
 	if err != nil {
 		panic(err)
@@ -373,25 +373,29 @@ func RegisterDef[TContent any](app *App[TContent], input any) {
 	})
 }
 
+func RegisterService[TContext any](app *App[TContext], input Service) {
+
+}
+
 type Service struct {
 	Name          string
-	Procedures    map[string]RpcDef
-	Definitions   map[string]TypeDef
+	Procedures    []__orderedMapEntry__[RpcDef]
+	Definitions   []__orderedMapEntry__[TypeDef]
 	rawProcedures []any
 }
 
 func NewService(name string) Service {
 	return Service{
 		Name:          name,
-		Procedures:    map[string]RpcDef{},
-		Definitions:   map[string]TypeDef{},
+		Procedures:    []__orderedMapEntry__[RpcDef]{},
+		Definitions:   []__orderedMapEntry__[TypeDef]{},
 		rawProcedures: []any{},
 	}
 }
 
 func ServiceRpc[TParams, TResponse, TContext any](service *Service, handler func(TParams, TContext) (TResponse, RpcError)) {
 	if service.Procedures == nil {
-		service.Procedures = make(map[string]RpcDef)
+		service.Procedures = []__orderedMapEntry__[RpcDef]{}
 	}
 	def, defErr := ToRpcDef(handler, ArriHttpRpcOptions{})
 	if defErr != nil {
@@ -399,5 +403,36 @@ func ServiceRpc[TParams, TResponse, TContext any](service *Service, handler func
 	}
 	service.rawProcedures = append(service.rawProcedures, handler)
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
-	service.Procedures[rpcName] = *def
+	__updateAOrderedMap__(service.Procedures, __orderedMapEntry__[RpcDef]{
+		Key:   rpcName,
+		Value: *def,
+	})
+}
+
+func ServiceRpcWithOptions[TParams, TResponse, TContext any](service *Service, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
+	if service.Procedures == nil {
+		service.Procedures = []__orderedMapEntry__[RpcDef]{}
+	}
+	def, defErr := ToRpcDef(handler, ArriHttpRpcOptions{})
+	if defErr != nil {
+		panic(defErr)
+	}
+	if len(options.Method) > 0 {
+		def.Http.Method = strings.ToLower(options.Method)
+	}
+	if len(options.Path) > 0 {
+		def.Http.Path = options.Path
+	}
+	if len(options.Description) > 0 {
+		def.Http.Description = Some(options.Description)
+	}
+	if options.IsDeprecated {
+		def.Http.IsDeprecated = Some(true)
+	}
+	service.rawProcedures = append(service.rawProcedures, handler)
+	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	service.Procedures = __updateAOrderedMap__(service.Procedures, __orderedMapEntry__[RpcDef]{
+		Key:   rpcName,
+		Value: *def,
+	})
 }
