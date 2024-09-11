@@ -371,11 +371,11 @@ func RpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], option
 	rpc(app, None[string](), Some(options), handler)
 }
 
-func ServiceRpc[TParams, TResponse, TContext any](app *App[TContext], serviceName string, handler func(TParams, TContext) (TResponse, RpcError)) {
+func ScopedRpc[TParams, TResponse, TContext any](app *App[TContext], serviceName string, handler func(TParams, TContext) (TResponse, RpcError)) {
 	rpc(app, Some(serviceName), None[RpcOptions](), handler)
 }
 
-func ServiceRpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
+func ScopedRpcWithOptions[TParams, TResponse, TContext any](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
 	rpc(app, Some(serviceName), Some(options), handler)
 }
 
