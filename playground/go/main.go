@@ -47,21 +47,14 @@ func main() {
 		}),
 	)
 	// register an RPC
-	arri.RpcWithOptions(
+	arri.ServiceRpcWithOptions(
 		&app,
+		"users",
 		arri.RpcOptions{Method: arri.HttpMethodGet},
 		GetUser,
 	)
-	arri.Rpc(&app, DeleteUser)
-	// register an RPC with a custom HTTP method and path
-	arri.RpcWithOptions(
-		&app,
-		arri.RpcOptions{
-			Method: arri.HttpMethodPatch,
-			Path:   "/update-user",
-		},
-		UpdateUser,
-	)
+	arri.ServiceRpc(&app, "users", DeleteUser)
+	arri.ServiceRpc(&app, "users", UpdateUser)
 	appErr := app.Run(arri.RunOptions{})
 	if appErr != nil {
 		log.Fatal(appErr)

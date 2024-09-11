@@ -165,7 +165,7 @@ func orderedMapEntryToJson(input reflect.Value, target *[]byte, context _Encodin
 
 func listToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	slice := input.Slice(0, input.Len())
-	if strings.Contains(input.Type().Elem().Name(), "__aOrderedMapEntry__[") {
+	if strings.Contains(input.Type().Elem().Name(), "__orderedMapEntry__[") {
 		return orderedMapEntryToJson(input, target, context)
 	}
 	*target = append(*target, "["...)
@@ -269,7 +269,7 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 		}
 		isNullable := isNullableType(fieldType)
 		if isNullable {
-			*target = append(*target, "\""+key+"\":null"...)
+			*target = append(*target, "\""+key+"\":"...)
 			return nullableTypeToJson(field, target, ctx)
 		}
 		if numFields > 0 {
@@ -289,7 +289,7 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 func nullableTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
 	innerVal := extractNullableValue(&input)
 	if innerVal != nil {
-		return typeToJson(input, target, context)
+		return typeToJson(*innerVal, target, context)
 	}
 	*target = append(*target, "null"...)
 	return nil
@@ -297,12 +297,13 @@ func nullableTypeToJson(input reflect.Value, target *[]byte, context _EncodingCo
 
 func optionalTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext, keyName string, hasPreviousKeys bool) (didAdd bool, err error) {
 	innerVal := extractOptionalValue(&input)
+	fmt.Println("OPTIONAL VAL", innerVal)
 	if innerVal != nil {
 		if hasPreviousKeys {
 			*target = append(*target, ","...)
 		}
 		*target = append(*target, "\""+keyName+"\":"...)
-		return true, typeToJson(input, target, context)
+		return true, typeToJson(*innerVal, target, context)
 	}
 	return false, nil
 }

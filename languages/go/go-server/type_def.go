@@ -38,11 +38,11 @@ type TypeDef struct {
 	Nullable           Option[bool]                           `key:"nullable"`
 	Type               Option[Type]                           `key:"type"`
 	Enum               Option[[]string]                       `key:"enum"`
-	Elements           *TypeDef                               `key:"elements"`
+	Elements           *Option[TypeDef]                       `key:"elements"`
 	Properties         Option[[]__orderedMapEntry__[TypeDef]] `key:"properties"`
 	OptionalProperties Option[[]__orderedMapEntry__[TypeDef]] `key:"optionalProperties"`
 	Strict             Option[bool]                           `key:"strict"`
-	Values             *TypeDef                               `key:"values"`
+	Values             *Option[TypeDef]                       `key:"values"`
 	Discriminator      Option[string]                         `key:"discriminator"`
 	Mapping            Option[map[string]TypeDef]             `key:"mapping"`
 	Ref                Option[string]                         `key:"ref"`
@@ -476,7 +476,8 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, erro
 	if err != nil {
 		return nil, err
 	}
-	return &TypeDef{Elements: subTypeResult}, nil
+	r := Some(*subTypeResult)
+	return &TypeDef{Elements: &r}, nil
 }
 
 func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
@@ -507,5 +508,6 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error)
 	if err != nil {
 		return nil, err
 	}
-	return &TypeDef{Values: subTypeResult}, nil
+	r := Some(*subTypeResult)
+	return &TypeDef{Values: &r}, nil
 }

@@ -15,16 +15,20 @@ const goServer = defineServerConfig({
         const watcher = chokidar.watch(["**/*.go"], { ignoreInitial: true });
         let childProcess: ChildProcess | undefined;
         async function spawnProcess() {
-            execSync("go build -o .output/server", {
-                stdio: "inherit",
-            });
-            childProcess = spawn(
-                ".output/server",
-                ["--def-out=.output/__definition.json"],
-                {
+            try {
+                execSync("go build -o .output/server", {
                     stdio: "inherit",
-                },
-            );
+                });
+                childProcess = spawn(
+                    ".output/server",
+                    ["--def-out=.output/__definition.json"],
+                    {
+                        stdio: "inherit",
+                    },
+                );
+            } catch (err) {
+                logger.error(err);
+            }
         }
 
         async function closeChildProcess() {
@@ -46,6 +50,7 @@ const goServer = defineServerConfig({
                     return;
                 default: {
                     await closeChildProcess();
+                    childProcess = undefined;
                     spawnProcess();
                 }
             }

@@ -6,13 +6,16 @@ import (
 )
 
 func extractOptionalValue(input *reflect.Value) *reflect.Value {
-	if input.IsZero() {
-		return nil
-	}
 	kind := input.Kind()
 	if kind == reflect.Ptr {
+		if input.IsNil() {
+			return nil
+		}
 		el := input.Elem()
 		return &el
+	}
+	if input.IsZero() {
+		return nil
 	}
 	isSet := input.FieldByName("IsSet").Bool()
 	if !isSet {
@@ -23,7 +26,11 @@ func extractOptionalValue(input *reflect.Value) *reflect.Value {
 }
 
 func isOptionalType(input reflect.Type) bool {
-	return input.Kind() == reflect.Ptr || input.Kind() == reflect.Struct && strings.Contains(input.Name(), "Option[")
+	return (input.Kind() == reflect.Ptr &&
+		input.Kind() == reflect.Struct &&
+		strings.Contains(input.Name(), "Option[")) ||
+		input.Kind() == reflect.Struct &&
+			strings.Contains(input.Name(), "Option[")
 }
 
 func extractNullableValue(input *reflect.Value) *reflect.Value {
@@ -36,5 +43,6 @@ func extractNullableValue(input *reflect.Value) *reflect.Value {
 }
 
 func isNullableType(input reflect.Type) bool {
-	return input.Kind() == reflect.Struct && input != nil && strings.Contains(input.Name(), "Nullable[")
+	return (input.Kind() == reflect.Struct && input != nil && strings.Contains(input.Name(), "Nullable[")) ||
+		input.Kind() == reflect.Ptr && isNullableType(input.Elem())
 }
