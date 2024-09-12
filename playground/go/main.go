@@ -21,8 +21,9 @@ func onRequest(r *http.Request, c *MyCustomContext) arri.RpcError {
 	return nil
 }
 
+var mux = http.DefaultServeMux
+
 func main() {
-	mux := http.DefaultServeMux
 	options := arri.AppOptions[MyCustomContext]{
 		AppName:        "My Awesome App",
 		AppVersion:     "1",
@@ -47,12 +48,7 @@ func main() {
 		}),
 	)
 	// register an RPC
-	arri.ScopedRpcWithOptions(
-		&app,
-		"users",
-		arri.RpcOptions{Method: arri.HttpMethodGet},
-		GetUser,
-	)
+	arri.ScopedRpcWithOptions(&app, "users", arri.RpcOptions{Method: arri.HttpMethodGet}, GetUser)
 	arri.ScopedRpc(&app, "users", DeleteUser)
 	arri.ScopedRpc(&app, "users", UpdateUser)
 	appErr := app.Run(arri.RunOptions{})
