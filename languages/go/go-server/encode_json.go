@@ -256,6 +256,9 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 			}
 		}
 		ctx := context.copyWith(Some(context.CurrentDepth+1), Some(enumValues), Some(""), Some(""))
+		if numFields > 0 {
+			*target = append(*target, ","...)
+		}
 		isOptional := isOptionalType(fieldType)
 		if isOptional {
 			didAppend, err := optionalTypeToJson(field, target, ctx, key, numFields > 0)
@@ -270,10 +273,11 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 		isNullable := isNullableType(fieldType)
 		if isNullable {
 			*target = append(*target, "\""+key+"\":"...)
-			return nullableTypeToJson(field, target, ctx)
-		}
-		if numFields > 0 {
-			*target = append(*target, ","...)
+			err := nullableTypeToJson(field, target, ctx)
+			if err != nil {
+				return err
+			}
+			continue
 		}
 		*target = append(*target, "\""+key+"\":"...)
 		fieldErr := typeToJson(field, target, ctx)
@@ -297,7 +301,6 @@ func nullableTypeToJson(input reflect.Value, target *[]byte, context _EncodingCo
 
 func optionalTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext, keyName string, hasPreviousKeys bool) (didAdd bool, err error) {
 	innerVal := extractOptionalValue(&input)
-	fmt.Println("OPTIONAL VAL", innerVal)
 	if innerVal != nil {
 		if hasPreviousKeys {
 			*target = append(*target, ","...)

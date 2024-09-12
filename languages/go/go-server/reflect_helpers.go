@@ -27,8 +27,8 @@ func extractOptionalValue(input *reflect.Value) *reflect.Value {
 
 func isOptionalType(input reflect.Type) bool {
 	return (input.Kind() == reflect.Ptr &&
-		input.Kind() == reflect.Struct &&
-		strings.Contains(input.Name(), "Option[")) ||
+		input.Elem().Kind() == reflect.Struct &&
+		strings.Contains(input.Elem().Name(), "Option[")) ||
 		input.Kind() == reflect.Struct &&
 			strings.Contains(input.Name(), "Option[")
 }
