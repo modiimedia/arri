@@ -214,12 +214,6 @@ importers:
       arri:
         specifier: workspace:*
         version: link:../../tooling/cli
-      chokidar:
-        specifier: ^3.6.0
-        version: 3.6.0
-      consola:
-        specifier: ^3.2.3
-        version: 3.2.3
 
   playground/ts:
     dependencies:
