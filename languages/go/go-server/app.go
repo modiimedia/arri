@@ -23,15 +23,34 @@ type App[TContext any] struct {
 }
 
 func (app *App[TContext]) GetAppDefinition() AppDef {
+	info := None[AppDefInfo]()
+	name := None[string]()
+	description := None[string]()
+	version := None[string]()
+
+	if len(app.Options.AppName) > 0 {
+		name = Some(app.Options.AppName)
+	}
+	if len(app.Options.AppDescription) > 0 {
+		description = Some(app.Options.AppDescription)
+	}
+	if len(app.Options.AppVersion) > 0 {
+		version = Some(app.Options.AppVersion)
+	}
+
+	if name.IsSome() || description.IsSome() || version.IsSome() {
+		info = Some(AppDefInfo{
+			Name:        name,
+			Description: description,
+			Version:     version,
+		})
+	}
+
 	return AppDef{
 		SchemaVersion: "0.0.7",
-		Info: &AppDefInfo{
-			Name:        app.Options.AppName,
-			Description: app.Options.AppDescription,
-			Version:     app.Options.AppVersion,
-		},
-		Procedures:  *app.Procedures,
-		Definitions: *app.Definitions,
+		Info:          info,
+		Procedures:    *app.Procedures,
+		Definitions:   *app.Definitions,
 	}
 }
 

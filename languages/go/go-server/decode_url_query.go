@@ -13,9 +13,14 @@ import (
 
 func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *validationError {
 	reflectValue := reflect.ValueOf(target).Elem()
-	ctx := ValidationContext{KeyCasing: keyCasing}
+	errors := []validationErrorItem{}
+	ctx := ValidationContext{KeyCasing: keyCasing, Errors: &errors}
 	if reflectValue.Kind() != reflect.Struct {
-		err := NewValidationError("only structs can be decoded from url query params", ctx.InstancePath, ctx.SchemaPath)
+		err := newValidationError(
+			[]validationErrorItem{
+				newValidationErrorItem("only structs can be decoded from url query params", ctx.InstancePath, ctx.SchemaPath),
+			},
+		)
 		return &err
 	}
 	numFields := reflectValue.NumField()
@@ -52,15 +57,15 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *val
 				Some(ctx.InstancePath+"/"+key),
 				Some(ctx.SchemaPath+"/optionalProperties"),
 			)
-			err := optionalTypeFromUrlQuery(urlValue, &field, &ctx)
-			if err != nil {
-				return err
-			}
+			optionalTypeFromUrlQuery(urlValue, &field, &ctx)
 			continue
 		}
 		hasUrlValue := values.Has(key)
 		if !hasUrlValue {
-			return &validationError{message: "missing required field", instancePath: "/" + key, schemaPath: "/properties/" + key}
+			*ctx.Errors = append(*ctx.Errors,
+				newValidationErrorItem("missing required field", "/"+key, "/properties/"+key),
+			)
+			continue
 		}
 		ctx := ctx.copyWith(
 			None[uint32](),
@@ -70,49 +75,47 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *val
 		)
 		isNullable := isNullableType(fieldType)
 		if isNullable {
-			err := nullableTypeFromUrlQuery(urlValue, &field, &ctx)
-			if err != nil {
-				return err
-			}
+			nullableTypeFromUrlQuery(urlValue, &field, &ctx)
 			continue
 		}
-		err := typeFromUrlQuery(urlValue, &field, &ctx)
-		if err != nil {
-			return err
-		}
+		typeFromUrlQuery(urlValue, &field, &ctx)
+	}
+	if len(*ctx.Errors) > 0 {
+		err := newValidationError(*ctx.Errors)
+		return &err
 	}
 	return nil
 }
 
-func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
+func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
 	if value == "" {
-		return nil
+		return true
 	}
 	innerTarget := target.FieldByName("Value")
 	isSet := target.FieldByName("IsSet")
-	err := typeFromUrlQuery(value, &innerTarget, context)
-	if err != nil {
-		return err
+	success := typeFromUrlQuery(value, &innerTarget, context)
+	if !success {
+		return false
 	}
 	isSet.SetBool(true)
-	return nil
+	return true
 }
 
-func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
+func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
 	if value == "null" || value == "NULL" || value == "Null" {
-		return nil
+		return true
 	}
 	innerValue := target.FieldByName("Value")
 	isSet := target.FieldByName("IsSet")
-	err := typeFromUrlQuery(value, &innerValue, context)
-	if err != nil {
-		return err
+	success := typeFromUrlQuery(value, &innerValue, context)
+	if !success {
+		return false
 	}
 	isSet.SetBool(true)
-	return nil
+	return true
 }
 
-func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
+func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
 	kind := target.Kind()
 	switch kind {
 	case reflect.Bool:
@@ -122,23 +125,36 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 			return enumFromUrlQuery(value, target, context)
 		}
 		target.SetString(value)
-		return nil
+		return true
 	case reflect.Float32:
 		parsedVal, parsingErr := strconv.ParseFloat(value, 32)
 		if parsingErr != nil {
-			err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
-			return &err
+			*context.Errors = append(
+				*context.Errors,
+				newValidationErrorItem(
+					parsingErr.Error(),
+					context.InstancePath,
+					context.SchemaPath,
+				),
+			)
+			return false
 		}
 		target.Set(reflect.ValueOf(float32(parsedVal)))
-		return nil
+		return true
 	case reflect.Float64:
 		parsedVal, parsingErr := strconv.ParseFloat(value, 64)
 		if parsingErr != nil {
-			err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
-			return &err
+			*context.Errors = append(*context.Errors,
+				newValidationErrorItem(
+					parsingErr.Error(),
+					context.InstancePath,
+					context.SchemaPath,
+				),
+			)
+			return false
 		}
 		target.SetFloat(parsedVal)
-		return nil
+		return true
 	case reflect.Int8:
 		return intFromUrlQuery(value, target, context, false, 8)
 	case reflect.Uint8:
@@ -156,56 +172,105 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	case reflect.Uint64, reflect.Uint:
 		return intFromUrlQuery(value, target, context, true, 64)
 	case reflect.Array, reflect.Slice:
-		err := NewValidationError("decoding lists from url query strings is not supported", context.InstancePath, context.SchemaPath)
-		return &err
+		*context.Errors = append(
+			*context.Errors,
+			newValidationErrorItem(
+				"decoding lists from url query strings is not supported",
+				context.InstancePath,
+				context.SchemaPath,
+			),
+		)
+		return false
 	case reflect.Struct:
 		if target.Type().Name() == "Time" {
 			return timestampFromUrlQuery(value, target, context)
 		}
-		err := NewValidationError("decoding nested objects from url query strings is not supported", context.InstancePath, context.SchemaPath)
-		return &err
+		*context.Errors = append(
+			*context.Errors,
+			newValidationErrorItem(
+				"decoding nested objects from url query strings is not supported",
+				context.InstancePath,
+				context.SchemaPath,
+			),
+		)
+		return false
 	case reflect.Ptr:
 		subTarget := target.Elem()
 		return typeFromUrlQuery(value, &subTarget, context)
 	case reflect.Map:
-		err := NewValidationError("decoding nested objects from url query strings is not supported", context.InstancePath, context.SchemaPath)
-		return &err
+		*context.Errors = append(
+			*context.Errors,
+			newValidationErrorItem(
+				"decoding nested objects from url query strings is not supported",
+				context.InstancePath,
+				context.SchemaPath,
+			),
+		)
+		return false
 	}
-	err := NewValidationError("unsupported type", context.InstancePath, context.SchemaPath)
-	return &err
+	*context.Errors = append(
+		*context.Errors,
+		newValidationErrorItem(
+			"unsupported type",
+			context.InstancePath,
+			context.SchemaPath,
+		),
+	)
+	return false
 }
 
-func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
+func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
 	switch value {
 	case "true", "TRUE", "1":
 		target.SetBool(true)
-		return nil
+		return true
 	case "false", "FALSE", "0":
 		target.SetBool(false)
-		return nil
+		return true
 	}
-	err := NewValidationError("cannot convert \""+value+"\" to a boolean", context.InstancePath, context.SchemaPath)
-	return &err
+	*context.Errors = append(
+		*context.Errors,
+		newValidationErrorItem(
+			"cannot convert \""+value+"\" to a boolean",
+			context.InstancePath,
+			context.SchemaPath,
+		),
+	)
+	return false
 }
 
-func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
+func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
 	for i := 0; i < len(context.EnumValues); i++ {
 		enumVal := context.EnumValues[i]
 		if enumVal == value {
 			target.SetString(enumVal)
-			return nil
+			return true
 		}
 	}
-	err := NewValidationError(fmt.Sprintf("expected on of the following values %+v", context.EnumValues), context.InstancePath, context.SchemaPath)
-	return &err
+	*context.Errors = append(
+		*context.Errors,
+		newValidationErrorItem(
+			fmt.Sprintf("expected on of the following values %+v", context.EnumValues),
+			context.InstancePath,
+			context.SchemaPath,
+		),
+	)
+	return false
 }
 
-func intFromUrlQuery(value string, target *reflect.Value, context *ValidationContext, isUnsigned bool, bitSize int) *validationError {
+func intFromUrlQuery(value string, target *reflect.Value, context *ValidationContext, isUnsigned bool, bitSize int) bool {
 	if isUnsigned {
 		parsedVal, parsingErr := strconv.ParseUint(value, 10, bitSize)
 		if parsingErr != nil {
-			err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
-			return &err
+			*context.Errors = append(
+				*context.Errors,
+				newValidationErrorItem(
+					parsingErr.Error(),
+					context.InstancePath,
+					context.SchemaPath,
+				),
+			)
+			return false
 		}
 		switch bitSize {
 		case 8:
@@ -217,12 +282,19 @@ func intFromUrlQuery(value string, target *reflect.Value, context *ValidationCon
 		default:
 			target.SetUint(parsedVal)
 		}
-		return nil
+		return true
 	}
 	parsedVal, parsingErr := strconv.ParseInt(value, 10, bitSize)
 	if parsingErr != nil {
-		err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
-		return &err
+		*context.Errors = append(
+			*context.Errors,
+			newValidationErrorItem(
+				parsingErr.Error(),
+				context.InstancePath,
+				context.SchemaPath,
+			),
+		)
+		return false
 	}
 
 	switch bitSize {
@@ -235,15 +307,22 @@ func intFromUrlQuery(value string, target *reflect.Value, context *ValidationCon
 	default:
 		target.SetInt(parsedVal)
 	}
-	return nil
+	return true
 }
 
-func timestampFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) *validationError {
+func timestampFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
 	parsedValue, parsingErr := time.ParseInLocation(time.RFC3339, value, time.UTC)
 	if parsingErr != nil {
-		err := NewValidationError(parsingErr.Error(), context.InstancePath, context.SchemaPath)
-		return &err
+		*context.Errors = append(
+			*context.Errors,
+			newValidationErrorItem(
+				parsingErr.Error(),
+				context.InstancePath,
+				context.SchemaPath,
+			),
+		)
+		return false
 	}
 	target.Set(reflect.ValueOf(parsedValue))
-	return nil
+	return false
 }

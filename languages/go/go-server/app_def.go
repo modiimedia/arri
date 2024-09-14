@@ -11,15 +11,15 @@ import (
 
 type AppDef struct {
 	SchemaVersion string                         `key:"schemaVersion" json:"schemaVersion" `
-	Info          *AppDefInfo                    `key:"info" json:"info,omitempty" `
+	Info          Option[AppDefInfo]             `key:"info" json:"info,omitempty" `
 	Procedures    []__orderedMapEntry__[RpcDef]  `key:"procedures" json:"procedures" `
 	Definitions   []__orderedMapEntry__[TypeDef] `key:"definitions" json:"definitions"`
 }
 
 type AppDefInfo struct {
-	Name        string `key:"name" json:"name,omitempty"`
-	Description string `key:"description" json:"description,omitempty"`
-	Version     string `key:"version" json:"version,omitempty"`
+	Name        Option[string] `key:"name" json:"name,omitempty"`
+	Description Option[string] `key:"description" json:"description,omitempty"`
+	Version     Option[string] `key:"version" json:"version,omitempty"`
 }
 
 type RpcDef struct {
