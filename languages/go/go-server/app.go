@@ -250,7 +250,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 		panic(rpcError)
 	}
 	if options.IsSome() {
-		rpcSchema.Http.Method = options.Value.Method
+		rpcSchema.Http.Method = strings.ToLower(options.Value.Method)
 		if len(options.Value.Path) > 0 {
 			rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Value.Path
 		}
@@ -261,13 +261,29 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 			rpcSchema.Http.IsDeprecated = Some(options.Value.IsDeprecated)
 		}
 	}
-	params := reflect.TypeOf(handler).In(0)
-	typeDefContext := _NewTypeDefContext(app.Options.KeyCasing)
-	paramSchema, _ := typeToTypeDef(params, typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramSchema.Metadata.Unwrap().Id, Value: *paramSchema})
+	params := handlerType.In(0)
+	hasParams := params.Name() != "EmptyMessage"
+	if hasParams {
+		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
+		if paramsSchemaErr != nil {
+			panic(paramsSchemaErr)
+		}
+		rpcSchema.Http.Params = Some(paramsSchema.Metadata.Unwrap().Id)
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id, Value: *paramsSchema})
+
+	}
 	response := handlerType.Out(0)
-	responseSchema, _ := typeToTypeDef(response.Elem(), typeDefContext)
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
+	hasResponse := response.Elem().Name() != "EmptyMessage"
+	if hasResponse {
+		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+		responseSchema, responseSchemaErr := typeToTypeDef(response.Elem(), responseDefContext)
+		if responseSchemaErr != nil {
+			panic(responseSchemaErr)
+		}
+		rpcSchema.Http.Response = Some(responseSchema.Metadata.Unwrap().Id)
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
+	}
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	if serviceName.IsSome() {
 		rpcName = serviceName.Value + "." + rpcName
@@ -318,24 +334,26 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: "Error initializing empty params"}, onError)
 			return
 		}
-		switch rpcSchema.Http.Method {
-		case HttpMethodGet:
-			urlValues := r.URL.Query()
-			fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.Options.KeyCasing)
-			if fromUrlQueryErr != nil {
-				handleError(false, w, r, ctx, fromUrlQueryErr.ErrorResponse(), onError)
-				return
-			}
-		default:
-			b, bErr := io.ReadAll(r.Body)
-			if bErr != nil {
-				handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: bErr.Error()}, onError)
-				return
-			}
-			fromJsonErr := FromJson(b, &params, app.Options.KeyCasing)
-			if fromJsonErr != nil {
-				handleError(false, w, r, ctx, fromJsonErr.ErrorResponse(), onError)
-				return
+		if hasParams {
+			switch rpcSchema.Http.Method {
+			case HttpMethodGet:
+				urlValues := r.URL.Query()
+				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.Options.KeyCasing)
+				if fromUrlQueryErr != nil {
+					handleError(false, w, r, ctx, fromUrlQueryErr.ErrorResponse(), onError)
+					return
+				}
+			default:
+				b, bErr := io.ReadAll(r.Body)
+				if bErr != nil {
+					handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: bErr.Error()}, onError)
+					return
+				}
+				fromJsonErr := FromJson(b, &params, app.Options.KeyCasing)
+				if fromJsonErr != nil {
+					handleError(false, w, r, ctx, fromJsonErr.ErrorResponse(), onError)
+					return
+				}
 			}
 		}
 		response, responseErr := handler(params, *ctx)
@@ -350,10 +368,16 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 			return
 		}
 		w.WriteHeader(200)
-		body, bodyErr := ToJson(response, app.Options.KeyCasing)
-		if bodyErr != nil {
-			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: bodyErr.Error(), Data: Some[any](bodyErr)}, onError)
-			return
+		var body []byte
+		if hasResponse {
+			json, jsonErr := ToJson(response, app.Options.KeyCasing)
+			if jsonErr != nil {
+				handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: jsonErr.Error(), Data: Some[any](jsonErr)}, onError)
+				return
+			}
+			body = json
+		} else {
+			body = []byte{}
 		}
 		w.Write([]byte(body))
 		onAfterResponseErr := onAfterResponse(r, ctx, "")

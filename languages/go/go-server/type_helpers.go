@@ -141,3 +141,5 @@ func (s Nullable[T]) String() string {
 	}
 	return "Null"
 }
+
+type EmptyMessage struct{}
