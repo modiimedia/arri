@@ -233,6 +233,9 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 		field := input.Field(i)
 		fieldType := field.Type()
 		structField := input.Type().Field(i)
+		if !structField.IsExported() {
+			continue
+		}
 		key := structField.Tag.Get("key")
 		if len(key) == 0 {
 			switch context.KeyCasing {

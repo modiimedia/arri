@@ -25,26 +25,26 @@ func None[T any]() Option[T] {
 	return Option[T]{IsSet: false}
 }
 
-func (s *Option[T]) Unwrap() T {
-	if s == nil || !s.IsSet {
+func (s Option[T]) Unwrap() T {
+	if !s.IsSet {
 		panic("Cannot get from None type")
 	}
 	return s.Value
 }
 
-func (s *Option[T]) UnwrapOr(fallback T) T {
-	if s != nil && s.IsSet {
+func (s Option[T]) UnwrapOr(fallback T) T {
+	if s.IsSet {
 		return s.Value
 	}
 	return fallback
 }
 
-func (s *Option[T]) IsSome() bool {
-	return s != nil && s.IsSet
+func (s Option[T]) IsSome() bool {
+	return s.IsSet
 }
 
-func (s *Option[_]) IsNone() bool {
-	return s == nil || !s.IsSet
+func (s Option[_]) IsNone() bool {
+	return !s.IsSet
 }
 
 func (s Option[T]) MarshalJSON() ([]byte, error) {
@@ -93,19 +93,19 @@ func NotNull[T any](value T) Nullable[T] {
 	return Nullable[T]{Value: value, IsSet: true}
 }
 
-func (s *Nullable[_]) IsNull() bool {
-	return s != nil && !s.IsSet
+func (s Nullable[_]) IsNull() bool {
+	return !s.IsSet
 }
 
-func (s *Nullable[T]) Unwrap() T {
-	if s != nil && s.IsSet {
+func (s Nullable[T]) Unwrap() T {
+	if s.IsSet {
 		return s.Value
 	}
-	panic("cannot Get value isn't set")
+	panic("cannot Unwrap value isn't set")
 }
 
-func (s *Nullable[T]) UnwrapOr(other T) T {
-	if s != nil && s.IsSet {
+func (s Nullable[T]) UnwrapOr(other T) T {
+	if s.IsSet {
 		return s.Value
 	}
 	return other

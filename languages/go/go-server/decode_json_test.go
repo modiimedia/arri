@@ -56,6 +56,22 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 
 }
 
+type userWithPrivateFields struct {
+	Id      string
+	Name    string
+	isAdmin bool
+}
+
+var userWithPrivateFieldsInput = []byte(`{"id":"1","name":"John Doe","isAdmin":true}`)
+
+func TestDecodedPrivateFields(t *testing.T) {
+	target := userWithPrivateFields{}
+	err := arri.FromJson(userWithPrivateFieldsInput, &target, arri.KeyCasingCamelCase)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
 type benchUser struct {
 	Id       string              `json:"id"`
 	Name     arri.Option[string] `json:"name"`

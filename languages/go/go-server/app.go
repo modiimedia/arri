@@ -167,16 +167,16 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
-			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, ctxErr, onError)
 			return
 		}
 		onRequestErr := onRequest(r, ctx)
 		if onRequestErr != nil {
-			handleError(false, w, r, ctx, onRequestErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, onRequestErr, onError)
 			return
 		}
 		if r.URL.Path != "/" {
-			handleError(false, w, r, ctx, ErrorResponse{Code: 404, Message: "Not found"}, onError)
+			handleError(false, w, r, ctx, Error(404, "Not Round"), onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -193,14 +193,14 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		}
 		onBeforeResponseErr := onBeforeResponse(r, ctx, response)
 		if onBeforeResponseErr != nil {
-			handleError[TContext](false, w, r, ctx, onBeforeResponseErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, onBeforeResponseErr, onError)
 			return
 		}
 		jsonResult, _ := ToJson(response, app.Options.KeyCasing)
 		w.Write(jsonResult)
 		onAfterResponseErr := onAfterResponse(r, ctx, response)
 		if onAfterResponseErr != nil {
-			handleError(true, w, r, ctx, onAfterResponseErr.ErrorResponse(), onError)
+			handleError(true, w, r, ctx, onAfterResponseErr, onError)
 			return
 		}
 	})
@@ -209,24 +209,24 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
-			handleError(false, w, r, ctx, ctxErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, ctxErr, onError)
 			return
 		}
 		onRequestError := onRequest(r, ctx)
 		if onRequestError != nil {
-			handleError(false, w, r, ctx, onRequestError.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, onRequestError, onError)
 		}
 		jsonResult, _ := ToJson(app.GetAppDefinition(), app.Options.KeyCasing)
 		beforeResponseErr := onBeforeResponse(r, ctx, jsonResult)
 		if beforeResponseErr != nil {
-			handleError(false, w, r, ctx, beforeResponseErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, beforeResponseErr, onError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
 		afterResponseErr := onAfterResponse(r, ctx, jsonResult)
 		if afterResponseErr != nil {
-			handleError(true, w, r, ctx, afterResponseErr.ErrorResponse(), onError)
+			handleError(true, w, r, ctx, afterResponseErr, onError)
 			return
 		}
 	})
@@ -238,15 +238,15 @@ func handleError[TContext any](
 	w http.ResponseWriter,
 	r *http.Request,
 	context *TContext,
-	err ErrorResponse,
+	err RpcError,
 	onError func(*http.Request, *TContext, error),
 ) {
 	onError(r, context, err)
 	if responseSent {
 		return
 	}
-	w.WriteHeader(int(err.Code))
-	body := err.ToJson()
+	w.WriteHeader(int(err.Code()))
+	body := RpcErrorToJson(err)
 	w.Write(body)
 }
 
@@ -336,21 +336,21 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(r)
 		if ctxErr != nil {
-			handleError(false, w, r, nil, ctxErr.ErrorResponse(), app.Options.OnError)
+			handleError(false, w, r, nil, ctxErr, app.Options.OnError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, r, ctx, ErrorResponse{Code: 404, Message: "Not found"}, onError)
+			handleError(false, w, r, ctx, Error(404, "Not found"), onError)
 			return
 		}
 		onRequestErr := onRequest(r, ctx)
 		if onRequestErr != nil {
-			handleError(false, w, r, ctx, onRequestErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, onRequestErr, onError)
 			return
 		}
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: "Error initializing empty params"}, onError)
+			handleError(false, w, r, ctx, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
@@ -359,31 +359,31 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 				urlValues := r.URL.Query()
 				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.Options.KeyCasing)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, r, ctx, fromUrlQueryErr.ErrorResponse(), onError)
+					handleError(false, w, r, ctx, fromUrlQueryErr, onError)
 					return
 				}
 			default:
 				b, bErr := io.ReadAll(r.Body)
 				if bErr != nil {
-					handleError(false, w, r, ctx, ErrorResponse{Code: 400, Message: bErr.Error()}, onError)
+					handleError(false, w, r, ctx, Error(400, bErr.Error()), onError)
 					return
 				}
 				fromJsonErr := FromJson(b, &params, app.Options.KeyCasing)
 				if fromJsonErr != nil {
-					handleError(false, w, r, ctx, fromJsonErr.ErrorResponse(), onError)
+					handleError(false, w, r, ctx, fromJsonErr, onError)
 					return
 				}
 			}
 		}
 		response, responseErr := handler(params, *ctx)
 		if responseErr != nil {
-			payload := responseErr.ErrorResponse()
+			payload := responseErr
 			handleError(false, w, r, ctx, payload, onError)
 			return
 		}
 		onBeforeResponseErr := onBeforeResponse(r, ctx, "")
 		if onBeforeResponseErr != nil {
-			handleError(false, w, r, ctx, onBeforeResponseErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, onBeforeResponseErr, onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -391,7 +391,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 		if hasResponse {
 			json, jsonErr := ToJson(response, app.Options.KeyCasing)
 			if jsonErr != nil {
-				handleError(false, w, r, ctx, ErrorResponse{Code: 500, Message: jsonErr.Error(), Data: Some[any](jsonErr)}, onError)
+				handleError(false, w, r, ctx, ErrorWithData(500, jsonErr.Error(), Some[any](jsonErr)), onError)
 				return
 			}
 			body = json
@@ -401,7 +401,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 		w.Write([]byte(body))
 		onAfterResponseErr := onAfterResponse(r, ctx, "")
 		if onAfterResponseErr != nil {
-			handleError(false, w, r, ctx, onAfterResponseErr.ErrorResponse(), onError)
+			handleError(false, w, r, ctx, onAfterResponseErr, onError)
 		}
 	})
 }

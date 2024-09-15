@@ -37,6 +37,10 @@ func newValidationErrorItem(message string, instancePath string, schemaPath stri
 	}
 }
 
+func (e validationError) Code() uint32 {
+	return 400
+}
+
 func (e validationError) Error() string {
 	msg := "Invalid input. Affected properties ["
 
@@ -51,19 +55,8 @@ func (e validationError) Error() string {
 	return msg
 }
 
-func (e validationError) Message() string {
-	return e.Error()
-}
-
-func (e validationError) ErrorResponse() ErrorResponse {
-	data := map[string]any{}
-	data["errors"] = e.errors
-	return ErrorResponse{
-		Code:    400,
-		Message: e.Message(),
-		Data:    Some[any](data),
-		Stack:   None[[]string](),
-	}
+func (e validationError) Data() Option[any] {
+	return Some[any](e)
 }
 
 func newValidationError(errors []validationErrorItem) validationError {
@@ -566,6 +559,9 @@ func structFromJson(data *gjson.Result, target *reflect.Value, context *Validati
 		fieldType := field.Type()
 		fieldMeta := targetType.Field(i)
 		fieldName := fieldMeta.Name
+		if !fieldMeta.IsExported() {
+			continue
+		}
 		switch context.KeyCasing {
 		case KeyCasingCamelCase:
 			fieldName = strcase.ToLowerCamel(fieldName)
