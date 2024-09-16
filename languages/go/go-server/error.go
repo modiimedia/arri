@@ -34,7 +34,7 @@ func RpcErrorToJson(err RpcError) []byte {
 	output = append(output, ",\"message\":"...)
 	appendNormalizedString(&output, err.Error())
 	if err.Data().IsSome() {
-		dataResult, dataErr := ToJson(err.Data().Unwrap(), KeyCasingCamelCase)
+		dataResult, dataErr := EncodeJSON(err.Data().Unwrap(), KeyCasingCamelCase)
 		if dataErr == nil {
 			output = append(output, ",\"data\":"...)
 			output = append(output, dataResult...)

@@ -47,6 +47,10 @@ func (s Option[_]) IsNone() bool {
 	return !s.IsSet
 }
 
+func (s Option[T]) Foo() {
+	fmt.Println("FOO", s.Value)
+}
+
 func (s Option[T]) MarshalJSON() ([]byte, error) {
 	if !s.IsSet {
 		return []byte{}, nil

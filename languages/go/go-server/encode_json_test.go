@@ -37,7 +37,7 @@ func TestBasicJsonEncoding(t *testing.T) {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := arri.ToJson(basicJsonInput, arri.KeyCasingCamelCase)
+	json, err := arri.EncodeJSON(basicJsonInput, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -56,6 +56,6 @@ func BenchmarkStdJsonEncoding(b *testing.B) {
 
 func BenchmarkArriJsonEncoding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.ToJson(basicJsonInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(basicJsonInput, arri.KeyCasingCamelCase)
 	}
 }

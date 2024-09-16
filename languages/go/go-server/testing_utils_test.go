@@ -53,3 +53,47 @@ type discriminatorC struct {
 	Name string
 	Date time.Time
 }
+
+type objectWithOptionalFields struct {
+	String        arri.Option[string]
+	Boolean       arri.Option[bool]
+	Timestamp     arri.Option[time.Time]
+	Float32       arri.Option[float32]
+	Float64       arri.Option[float64]
+	Int8          arri.Option[int8]
+	Uint8         arri.Option[uint8]
+	Int16         arri.Option[int16]
+	Uint16        arri.Option[uint16]
+	Int32         arri.Option[int32]
+	Uint32        arri.Option[uint32]
+	Int64         arri.Option[int64]
+	Uint64        arri.Option[uint64]
+	Enum          arri.Option[string] `enum:"FOO,BAR,BAZ"`
+	Object        arri.Option[nestedObject]
+	Array         arri.Option[[]bool]
+	Record        arri.Option[map[string]bool]
+	Discriminator arri.Option[discriminator]
+	Any           arri.Option[any]
+}
+
+type objectWithNullableFields struct {
+	String        arri.Nullable[string]
+	Boolean       arri.Nullable[bool]
+	Timestamp     arri.Nullable[time.Time]
+	Float32       arri.Nullable[float32]
+	Float64       arri.Nullable[float64]
+	Int8          arri.Nullable[int8]
+	Uint8         arri.Nullable[uint8]
+	Int16         arri.Nullable[int16]
+	Uint16        arri.Nullable[uint16]
+	Int32         arri.Nullable[int32]
+	Uint32        arri.Nullable[uint32]
+	Int64         arri.Nullable[int64]
+	Uint64        arri.Nullable[uint64]
+	Enum          arri.Nullable[string] `enum:"FOO,BAR,BAZ"`
+	Object        arri.Nullable[nestedObject]
+	Array         arri.Nullable[[]bool]
+	Record        arri.Nullable[map[string]bool]
+	Discriminator arri.Nullable[discriminator]
+	Any           arri.Nullable[any]
+}

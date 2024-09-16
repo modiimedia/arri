@@ -16,7 +16,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func ToJson(input interface{}, keyCasing KeyCasing) ([]byte, error) {
+func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	buf := []byte{}
 	val := reflect.ValueOf(input)
 	err := typeToJson(

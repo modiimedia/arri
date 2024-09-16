@@ -324,5 +324,5 @@ func timestampFromUrlQuery(value string, target *reflect.Value, context *Validat
 		return false
 	}
 	target.Set(reflect.ValueOf(parsedValue))
-	return false
+	return true
 }

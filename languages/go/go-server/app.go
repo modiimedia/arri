@@ -78,7 +78,7 @@ func (app *App[TContext]) Run(options RunOptions) error {
 }
 
 func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
-	appDefJson, appDefJsonErr := ToJson(appDef, keyCasing)
+	appDefJson, appDefJsonErr := EncodeJSON(appDef, keyCasing)
 	if appDefJsonErr != nil {
 		return appDefJsonErr
 	}
@@ -196,7 +196,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 			handleError(false, w, r, ctx, onBeforeResponseErr, onError)
 			return
 		}
-		jsonResult, _ := ToJson(response, app.Options.KeyCasing)
+		jsonResult, _ := EncodeJSON(response, app.Options.KeyCasing)
 		w.Write(jsonResult)
 		onAfterResponseErr := onAfterResponse(r, ctx, response)
 		if onAfterResponseErr != nil {
@@ -216,7 +216,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 		if onRequestError != nil {
 			handleError(false, w, r, ctx, onRequestError, onError)
 		}
-		jsonResult, _ := ToJson(app.GetAppDefinition(), app.Options.KeyCasing)
+		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), app.Options.KeyCasing)
 		beforeResponseErr := onBeforeResponse(r, ctx, jsonResult)
 		if beforeResponseErr != nil {
 			handleError(false, w, r, ctx, beforeResponseErr, onError)
@@ -368,7 +368,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 					handleError(false, w, r, ctx, Error(400, bErr.Error()), onError)
 					return
 				}
-				fromJsonErr := FromJson(b, &params, app.Options.KeyCasing)
+				fromJsonErr := DecodeJSON(b, &params, app.Options.KeyCasing)
 				if fromJsonErr != nil {
 					handleError(false, w, r, ctx, fromJsonErr, onError)
 					return
@@ -389,7 +389,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 		w.WriteHeader(200)
 		var body []byte
 		if hasResponse {
-			json, jsonErr := ToJson(response, app.Options.KeyCasing)
+			json, jsonErr := EncodeJSON(response, app.Options.KeyCasing)
 			if jsonErr != nil {
 				handleError(false, w, r, ctx, ErrorWithData(500, jsonErr.Error(), Some[any](jsonErr)), onError)
 				return

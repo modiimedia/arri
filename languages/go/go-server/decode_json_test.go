@@ -44,7 +44,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		}},
 		Any: "hello world",
 	}
-	decodeErr := arri.FromJson(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
 	if decodeErr != nil {
 		t.Errorf(decodeErr.Error())
 		return
@@ -54,6 +54,72 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		return
 	}
 
+}
+
+func TestDecodeObjectWithOptionalFields(t *testing.T) {
+	noUndefinedInput, noUndefinedInputError := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
+	if noUndefinedInputError != nil {
+		t.Errorf(noUndefinedInputError.Error())
+		return
+	}
+	noUndefinedTarget := objectWithOptionalFields{}
+	noUndefinedExpectedResult := objectWithOptionalFields{
+		String:    arri.Some(""),
+		Boolean:   arri.Some(false),
+		Timestamp: arri.Some(testDate),
+		Float32:   arri.Some[float32](1.5),
+		Float64:   arri.Some(1.5),
+		Int8:      arri.Some[int8](1),
+		Uint8:     arri.Some[uint8](1),
+		Int16:     arri.Some[int16](10),
+		Uint16:    arri.Some[uint16](10),
+		Int32:     arri.Some[int32](100),
+		Uint32:    arri.Some[uint32](100),
+		Int64:     arri.Some[int64](1000),
+		Uint64:    arri.Some[uint64](1000),
+		Enum:      arri.Some("BAZ"),
+		Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
+		Array:     arri.Some([]bool{true, false, false}),
+		Record: arri.Some(map[string]bool{
+			"A": true,
+			"B": false,
+		}),
+		Discriminator: arri.Some(
+			discriminator{
+				C: &discriminatorC{
+					Id:   "",
+					Name: "",
+					Date: testDate,
+				},
+			},
+		),
+		Any: arri.Some[any]("hello world"),
+	}
+	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.KeyCasingCamelCase)
+	if noUndefinedDecodingErr != nil {
+		t.Errorf(noUndefinedDecodingErr.Error())
+		return
+	}
+	if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
+		t.Errorf("\n%+v\ndoes not equal\n%+v", noUndefinedTarget, noUndefinedExpectedResult)
+		return
+	}
+	allUndefinedInput, allUndefinedInputErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
+	if allUndefinedInputErr != nil {
+		t.Errorf(allUndefinedInputErr.Error())
+		return
+	}
+	allUndefinedTarget := objectWithOptionalFields{}
+	allUndefinedExpectedResult := objectWithOptionalFields{}
+	allUndefinedDecodingErr := arri.DecodeJSON(allUndefinedInput, &allUndefinedTarget, arri.KeyCasingCamelCase)
+	if allUndefinedDecodingErr != nil {
+		t.Errorf(allUndefinedDecodingErr.Error())
+		return
+	}
+	if !reflect.DeepEqual(allUndefinedTarget, allUndefinedExpectedResult) {
+		t.Errorf("\n%+v\ndoes not equal\n%+v", allUndefinedTarget, allUndefinedExpectedResult)
+		return
+	}
 }
 
 type userWithPrivateFields struct {
@@ -66,9 +132,12 @@ var userWithPrivateFieldsInput = []byte(`{"id":"1","name":"John Doe","isAdmin":t
 
 func TestDecodedPrivateFields(t *testing.T) {
 	target := userWithPrivateFields{}
-	err := arri.FromJson(userWithPrivateFieldsInput, &target, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(userWithPrivateFieldsInput, &target, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Fatalf(err.Error())
+	}
+	if target.isAdmin {
+		t.Fatalf("isAdmin should be false")
 	}
 }
 
@@ -89,7 +158,7 @@ var benchUserInput = []byte(`{"id":"1","email":"johndoe@gmail.com","isAdmin":tru
 func TestDecodeStdUser(t *testing.T) {
 	target := benchUser{}
 	json.Unmarshal(benchUserInput, &target)
-	err := arri.FromJson(benchUserInput, &target, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(benchUserInput, &target, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Errorf(err.Error())
 		return
@@ -105,7 +174,7 @@ func BenchmarkStdDecodeObjectWithEveryType(b *testing.B) {
 func BenchmarkArriDecodeObjectWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		target := objectWithEveryType{}
-		arri.FromJson(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -119,6 +188,6 @@ func BenchmarkStdDecodeUser(b *testing.B) {
 func BenchmarkArriDecodeUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		user := benchUser{}
-		arri.FromJson(benchUserInput, &user, arri.KeyCasingCamelCase)
+		arri.DecodeJSON(benchUserInput, &user, arri.KeyCasingCamelCase)
 	}
 }

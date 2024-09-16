@@ -18,7 +18,7 @@ type DefaultSseController[T any] struct {
 }
 
 func (controller *DefaultSseController[T]) Push(message T) RpcError {
-	body, bodyErr := ToJson(message, controller.keyCasing)
+	body, bodyErr := EncodeJSON(message, controller.keyCasing)
 	if bodyErr != nil {
 		return Error(500, bodyErr.Error())
 	}
