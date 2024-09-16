@@ -9,16 +9,83 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 	"unsafe"
 
+	goreflect "github.com/goccy/go-reflect"
 	"github.com/iancoleman/strcase"
 )
 
+var typeToEncoderMap sync.Map
+var bufpool = sync.Pool{
+	New: func() interface{} {
+		return &buffer{
+			b: make([]byte, 0, 1024),
+		}
+	},
+}
+
+type buffer struct {
+	b []byte
+}
+
+type encoder func(*buffer, unsafe.Pointer, *_EncodingContext) error
+
+func EncodeJSONCompiled(input interface{}, keyCasing KeyCasing) ([]byte, error) {
+	var numKeys uint32 = 0
+	ctx := _EncodingContext{
+		KeyCasing:    keyCasing,
+		MaxDepth:     10000,
+		CurrentDepth: 0,
+		EnumValues:   []string{},
+		NumKeys:      &numKeys,
+	}
+	// Technique 1.
+	// Get type information and pointer from interface{} value without allocation.
+	typ, ptr := goreflect.TypeAndPtrOf(input)
+	typeID := goreflect.TypeID(input)
+
+	// Technique 2.
+	// Reuse the buffer once allocated using sync.Pool
+	buf := bufpool.Get().(*buffer)
+	buf.b = buf.b[:0]
+	defer bufpool.Put(buf)
+
+	// Technique 3.
+	// builds a optimized path by typeID and caches it
+	if enc, ok := typeToEncoderMap.Load(typeID); ok {
+		if err := enc.(encoder)(buf, ptr, &ctx); err != nil {
+			return nil, err
+		}
+
+		// allocate a new buffer required length only
+		b := make([]byte, len(buf.b))
+		copy(b, buf.b)
+		return b, nil
+	}
+
+	// First time,
+	// builds a optimized path by type and caches it with typeID.
+	enc, err := compile(typ, &ctx)
+	if err != nil {
+		return nil, err
+	}
+	typeToEncoderMap.Store(typeID, enc)
+	if err := enc(buf, ptr, &ctx); err != nil {
+		return nil, err
+	}
+
+	// allocate a new buffer required length only
+	b := make([]byte, len(buf.b))
+	copy(b, buf.b)
+	return b, nil
+}
+
 func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
-	buf := []byte{}
 	val := reflect.ValueOf(input)
+	buf := []byte{}
 	err := typeToJson(
 		val,
 		&buf,
@@ -34,6 +101,122 @@ func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	return buf, nil
 }
 
+func compile(typ goreflect.Type, context *_EncodingContext) (encoder, error) {
+	switch typ.Kind() {
+	case reflect.Struct:
+		return compileStruct(typ, context)
+	case reflect.Int:
+		return compileInt(typ, context)
+	}
+	return nil, errors.New("unsupported type")
+}
+
+func compileStruct(typ goreflect.Type, context *_EncodingContext) (encoder, error) {
+	encoders := []encoder{}
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		var fieldName string
+		switch context.KeyCasing {
+		case KeyCasingCamelCase:
+			fieldName = strcase.ToLowerCamel(field.Name)
+		case KeyCasingPascalCase:
+			fieldName = strcase.ToCamel(field.Name)
+		case KeyCasingSnakeCase:
+			fieldName = strcase.ToSnake(field.Name)
+		default:
+			fieldName = strcase.ToLowerCamel(field.Name)
+		}
+		enc, err := compile(field.Type, context)
+		if err != nil {
+			return nil, err
+		}
+		offset := field.Offset
+		encoders = append(encoders, func(buf *buffer, p unsafe.Pointer, c *_EncodingContext) error {
+			if c.NumKeys != nil && *c.NumKeys > 0 {
+				buf.b = append(buf.b, ',')
+			}
+			buf.b = append(buf.b, "\""+fieldName+"\":"...)
+			return enc(buf, unsafe.Pointer(uintptr(p)+offset), c)
+		})
+	}
+	return func(buf *buffer, p unsafe.Pointer, c *_EncodingContext) error {
+		buf.b = append(buf.b, '{')
+		for _, enc := range encoders {
+			if err := enc(buf, p, c); err != nil {
+				return err
+			}
+		}
+		buf.b = append(buf.b, '}')
+		return nil
+	}, nil
+}
+
+func compileInt(typ goreflect.Type, context *_EncodingContext) (encoder, error) {
+	switch typ.Kind() {
+	case goreflect.Int:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*int)(p)
+			buf.b = append(buf.b, "\""+string(value)+"\""...)
+			return nil
+		}, nil
+	case goreflect.Uint:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*uint)(p)
+			buf.b = append(buf.b, "\""+string(value)+"\""...)
+			return nil
+		}, nil
+	case goreflect.Int8:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*int8)(p)
+			buf.b = append(buf.b, string(value)...)
+			return nil
+		}, nil
+	case goreflect.Uint8:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*uint8)(p)
+			buf.b = append(buf.b, string(value)...)
+			return nil
+		}, nil
+	case goreflect.Int16:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*int16)(p)
+			buf.b = append(buf.b, string(value)...)
+			return nil
+		}, nil
+	case goreflect.Uint16:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*uint16)(p)
+			buf.b = append(buf.b, string(value)...)
+			return nil
+		}, nil
+	case goreflect.Int32:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*int32)(p)
+			buf.b = append(buf.b, string(value)...)
+			return nil
+		}, nil
+	case goreflect.Uint32:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*uint32)(p)
+			buf.b = append(buf.b, string(value)...)
+			return nil
+		}, nil
+	case goreflect.Int64:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*int64)(p)
+			buf.b = append(buf.b, "\""+string(value)+"\""...)
+			return nil
+		}, nil
+	case goreflect.Uint64:
+		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
+			value := *(*uint64)(p)
+			buf.b = append(buf.b, "\""+string(value)+"\""...)
+			return nil
+		}, nil
+	}
+	return nil, errors.New("Unsupported Type")
+}
+
 type _EncodingContext struct {
 	MaxDepth           uint32
 	CurrentDepth       uint32
@@ -41,6 +224,7 @@ type _EncodingContext struct {
 	KeyCasing          KeyCasing
 	DiscriminatorKey   string
 	DiscriminatorValue string
+	NumKeys            *uint32
 }
 
 func (context _EncodingContext) copyWith(
