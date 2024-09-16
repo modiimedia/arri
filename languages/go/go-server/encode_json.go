@@ -9,79 +9,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 	"unicode/utf8"
 	"unsafe"
 
-	goreflect "github.com/goccy/go-reflect"
 	"github.com/iancoleman/strcase"
 )
-
-var typeToEncoderMap sync.Map
-var bufpool = sync.Pool{
-	New: func() interface{} {
-		return &buffer{
-			b: make([]byte, 0, 1024),
-		}
-	},
-}
-
-type buffer struct {
-	b []byte
-}
-
-type encoder func(*buffer, unsafe.Pointer, *_EncodingContext) error
-
-func EncodeJSONCompiled(input interface{}, keyCasing KeyCasing) ([]byte, error) {
-	var numKeys uint32 = 0
-	ctx := _EncodingContext{
-		KeyCasing:    keyCasing,
-		MaxDepth:     10000,
-		CurrentDepth: 0,
-		EnumValues:   []string{},
-		NumKeys:      &numKeys,
-	}
-	// Technique 1.
-	// Get type information and pointer from interface{} value without allocation.
-	typ, ptr := goreflect.TypeAndPtrOf(input)
-	typeID := goreflect.TypeID(input)
-
-	// Technique 2.
-	// Reuse the buffer once allocated using sync.Pool
-	buf := bufpool.Get().(*buffer)
-	buf.b = buf.b[:0]
-	defer bufpool.Put(buf)
-
-	// Technique 3.
-	// builds a optimized path by typeID and caches it
-	if enc, ok := typeToEncoderMap.Load(typeID); ok {
-		if err := enc.(encoder)(buf, ptr, &ctx); err != nil {
-			return nil, err
-		}
-
-		// allocate a new buffer required length only
-		b := make([]byte, len(buf.b))
-		copy(b, buf.b)
-		return b, nil
-	}
-
-	// First time,
-	// builds a optimized path by type and caches it with typeID.
-	enc, err := compile(typ, &ctx)
-	if err != nil {
-		return nil, err
-	}
-	typeToEncoderMap.Store(typeID, enc)
-	if err := enc(buf, ptr, &ctx); err != nil {
-		return nil, err
-	}
-
-	// allocate a new buffer required length only
-	b := make([]byte, len(buf.b))
-	copy(b, buf.b)
-	return b, nil
-}
 
 func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	val := reflect.ValueOf(input)
@@ -89,7 +22,7 @@ func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	err := typeToJson(
 		val,
 		&buf,
-		_EncodingContext{
+		EncodingContext{
 			KeyCasing:    keyCasing,
 			MaxDepth:     10000,
 			CurrentDepth: 0,
@@ -101,123 +34,7 @@ func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	return buf, nil
 }
 
-func compile(typ goreflect.Type, context *_EncodingContext) (encoder, error) {
-	switch typ.Kind() {
-	case reflect.Struct:
-		return compileStruct(typ, context)
-	case reflect.Int:
-		return compileInt(typ, context)
-	}
-	return nil, errors.New("unsupported type")
-}
-
-func compileStruct(typ goreflect.Type, context *_EncodingContext) (encoder, error) {
-	encoders := []encoder{}
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		var fieldName string
-		switch context.KeyCasing {
-		case KeyCasingCamelCase:
-			fieldName = strcase.ToLowerCamel(field.Name)
-		case KeyCasingPascalCase:
-			fieldName = strcase.ToCamel(field.Name)
-		case KeyCasingSnakeCase:
-			fieldName = strcase.ToSnake(field.Name)
-		default:
-			fieldName = strcase.ToLowerCamel(field.Name)
-		}
-		enc, err := compile(field.Type, context)
-		if err != nil {
-			return nil, err
-		}
-		offset := field.Offset
-		encoders = append(encoders, func(buf *buffer, p unsafe.Pointer, c *_EncodingContext) error {
-			if c.NumKeys != nil && *c.NumKeys > 0 {
-				buf.b = append(buf.b, ',')
-			}
-			buf.b = append(buf.b, "\""+fieldName+"\":"...)
-			return enc(buf, unsafe.Pointer(uintptr(p)+offset), c)
-		})
-	}
-	return func(buf *buffer, p unsafe.Pointer, c *_EncodingContext) error {
-		buf.b = append(buf.b, '{')
-		for _, enc := range encoders {
-			if err := enc(buf, p, c); err != nil {
-				return err
-			}
-		}
-		buf.b = append(buf.b, '}')
-		return nil
-	}, nil
-}
-
-func compileInt(typ goreflect.Type, context *_EncodingContext) (encoder, error) {
-	switch typ.Kind() {
-	case goreflect.Int:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*int)(p)
-			buf.b = append(buf.b, "\""+string(value)+"\""...)
-			return nil
-		}, nil
-	case goreflect.Uint:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*uint)(p)
-			buf.b = append(buf.b, "\""+string(value)+"\""...)
-			return nil
-		}, nil
-	case goreflect.Int8:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*int8)(p)
-			buf.b = append(buf.b, string(value)...)
-			return nil
-		}, nil
-	case goreflect.Uint8:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*uint8)(p)
-			buf.b = append(buf.b, string(value)...)
-			return nil
-		}, nil
-	case goreflect.Int16:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*int16)(p)
-			buf.b = append(buf.b, string(value)...)
-			return nil
-		}, nil
-	case goreflect.Uint16:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*uint16)(p)
-			buf.b = append(buf.b, string(value)...)
-			return nil
-		}, nil
-	case goreflect.Int32:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*int32)(p)
-			buf.b = append(buf.b, string(value)...)
-			return nil
-		}, nil
-	case goreflect.Uint32:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*uint32)(p)
-			buf.b = append(buf.b, string(value)...)
-			return nil
-		}, nil
-	case goreflect.Int64:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*int64)(p)
-			buf.b = append(buf.b, "\""+string(value)+"\""...)
-			return nil
-		}, nil
-	case goreflect.Uint64:
-		return func(buf *buffer, p unsafe.Pointer, context *_EncodingContext) error {
-			value := *(*uint64)(p)
-			buf.b = append(buf.b, "\""+string(value)+"\""...)
-			return nil
-		}, nil
-	}
-	return nil, errors.New("Unsupported Type")
-}
-
-type _EncodingContext struct {
+type EncodingContext struct {
 	MaxDepth           uint32
 	CurrentDepth       uint32
 	EnumValues         []string
@@ -227,17 +44,17 @@ type _EncodingContext struct {
 	NumKeys            *uint32
 }
 
-func (context _EncodingContext) copyWith(
+func (context EncodingContext) copyWith(
 	CurrentDepth Option[uint32],
 	EnumValues Option[[]string],
 	DiscriminatorKey Option[string],
 	DiscriminatorValue Option[string],
-) _EncodingContext {
+) EncodingContext {
 	currentDepth := CurrentDepth.UnwrapOr(context.CurrentDepth)
 	enumValues := EnumValues.UnwrapOr(context.EnumValues)
 	discriminatorKey := DiscriminatorKey.UnwrapOr(context.DiscriminatorKey)
 	discriminatorValue := DiscriminatorValue.UnwrapOr(context.DiscriminatorValue)
-	return _EncodingContext{
+	return EncodingContext{
 		MaxDepth:           context.MaxDepth,
 		CurrentDepth:       currentDepth,
 		EnumValues:         enumValues,
@@ -247,7 +64,7 @@ func (context _EncodingContext) copyWith(
 	}
 }
 
-func typeToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func typeToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	if context.CurrentDepth >= context.MaxDepth {
 		return fmt.Errorf("max depth of %+v reached", context.MaxDepth)
 	}
@@ -290,7 +107,7 @@ func typeToJson(input reflect.Value, target *[]byte, context _EncodingContext) e
 	return fmt.Errorf("unsupported Kind %s", kind)
 }
 
-func anyToJson(input reflect.Value, target *[]byte, _ _EncodingContext) error {
+func anyToJson(input reflect.Value, target *[]byte, _ EncodingContext) error {
 	result, err := json.Marshal(input.Interface())
 	if err != nil {
 		return err
@@ -299,7 +116,7 @@ func anyToJson(input reflect.Value, target *[]byte, _ _EncodingContext) error {
 	return nil
 }
 
-func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func mapToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	*target = append(*target, "{"...)
 	keys := input.MapKeys()
 	orderedKeys := []string{}
@@ -325,7 +142,7 @@ func mapToJson(input reflect.Value, target *[]byte, context _EncodingContext) er
 	return nil
 }
 
-func orderedMapEntryToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func orderedMapEntryToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	slice := input.Slice(0, input.Len())
 	*target = append(*target, "{"...)
 	seenKeys := map[string]bool{}
@@ -347,7 +164,7 @@ func orderedMapEntryToJson(input reflect.Value, target *[]byte, context _Encodin
 	return nil
 }
 
-func listToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func listToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	slice := input.Slice(0, input.Len())
 	if strings.Contains(input.Type().Elem().Name(), "__orderedMapEntry__[") {
 		return orderedMapEntryToJson(input, target, context)
@@ -402,7 +219,7 @@ func bigIntToJson(input reflect.Value, target *[]byte) error {
 	return fmt.Errorf("unsupported Kind %s", input.Kind())
 }
 
-func structToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func structToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	if IsDiscriminatorStruct(input.Type()) {
 		return discriminatorToJson(input, target, context)
 	}
@@ -478,7 +295,7 @@ func structToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 	return nil
 }
 
-func nullableTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func nullableTypeToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	innerVal := extractNullableValue(&input)
 	if innerVal != nil {
 		return typeToJson(*innerVal, target, context)
@@ -487,7 +304,7 @@ func nullableTypeToJson(input reflect.Value, target *[]byte, context _EncodingCo
 	return nil
 }
 
-func optionalTypeToJson(input reflect.Value, target *[]byte, context _EncodingContext, keyName string, hasPreviousKeys bool) (didAdd bool, err error) {
+func optionalTypeToJson(input reflect.Value, target *[]byte, context EncodingContext, keyName string, hasPreviousKeys bool) (didAdd bool, err error) {
 	innerVal := extractOptionalValue(&input)
 	if innerVal != nil {
 		if hasPreviousKeys {
@@ -499,7 +316,7 @@ func optionalTypeToJson(input reflect.Value, target *[]byte, context _EncodingCo
 	return false, nil
 }
 
-func discriminatorToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func discriminatorToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	discriminatorKey := "type"
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
@@ -533,7 +350,7 @@ func discriminatorToJson(input reflect.Value, target *[]byte, context _EncodingC
 	return fmt.Errorf("error serializing %s. at least one field must not be nil", input.Type().Name())
 }
 
-func stringToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func stringToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	if len(context.EnumValues) > 0 {
 		return enumToJson(input, target, context)
 	}
@@ -541,7 +358,7 @@ func stringToJson(input reflect.Value, target *[]byte, context _EncodingContext)
 	return nil
 }
 
-func enumToJson(input reflect.Value, target *[]byte, context _EncodingContext) error {
+func enumToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
 	if input.Kind() != reflect.String {
 		return fmt.Errorf("unsupported Kind %s", input.Kind())
 	}

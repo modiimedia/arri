@@ -31,6 +31,48 @@ var basicJsonInput = objectWithEveryType{
 	Any:           "hello world",
 }
 
+type userV2 struct {
+	Int8      int8
+	Uint8     uint8
+	Int16     int16
+	Uint16    uint16
+	Int32     int32
+	Uint32    uint32
+	Int64     int64
+	Uint64    uint64
+	Foo       int8
+	Bar       int8
+	Baz       int8
+	BazBaz    int8
+	BazBazBaz int8
+}
+
+var userV2Input userV2 = userV2{
+	Int8:   1,
+	Uint8:  1,
+	Int16:  10,
+	Uint16: 10,
+	Int32:  100,
+	Uint32: 100,
+	Int64:  1000,
+	Uint64: 1000,
+}
+
+func BenchmarkV2Encoding(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		arri.EncodeJSONCompiled(userV2Input, arri.KeyCasingCamelCase)
+	}
+}
+
+func BenchmarkStdEncodingAgainstV2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, err := json.Marshal(userV2Input)
+		if err != nil {
+			b.Fatalf(err.Error())
+		}
+	}
+}
+
 func TestBasicJsonEncoding(t *testing.T) {
 	reference, referenceErr := os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
 	if referenceErr != nil {
