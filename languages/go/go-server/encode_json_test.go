@@ -3,9 +3,11 @@ package arri_test
 import (
 	arri "arri/languages/go/go-server"
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 	"time"
+	"unsafe"
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
@@ -59,12 +61,24 @@ var userV2Input userV2 = userV2{
 }
 
 func BenchmarkV2Encoding(b *testing.B) {
+	e, err := arri.CompileJSONEncoder(userV2Input, arri.KeyCasingCamelCase)
+	if err != nil {
+		b.Fatalf(err.Error())
+	}
+	if e == nil {
+		b.Fatalf("Encoder is nil")
+	}
+	ptr := unsafe.Pointer(&userV2Input)
+	example, _ := e(ptr, arri.NewEncodingContext(arri.KeyCasingCamelCase))
+	fmt.Println("RESULT", string(example))
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSONCompiled(userV2Input, arri.KeyCasingCamelCase)
+		e(ptr, arri.NewEncodingContext(arri.KeyCasingCamelCase))
 	}
 }
 
 func BenchmarkStdEncodingAgainstV2(b *testing.B) {
+	result, _ := json.Marshal(userV2Input)
+	fmt.Println("RESULT", string(result))
 	for i := 0; i < b.N; i++ {
 		_, err := json.Marshal(userV2Input)
 		if err != nil {
