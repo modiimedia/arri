@@ -234,7 +234,7 @@ func structToJson(input reflect.Value, target *[]byte, context EncodingContext) 
 		field := input.Field(i)
 		fieldType := field.Type()
 		structField := input.Type().Field(i)
-		if !structField.IsExported() {
+		if !isPublicKey(structField.Name) {
 			continue
 		}
 		key := structField.Tag.Get("key")
@@ -260,7 +260,6 @@ func structToJson(input reflect.Value, target *[]byte, context EncodingContext) 
 			}
 		}
 		ctx := context.copyWith(Some(context.CurrentDepth+1), Some(enumValues), Some(""), Some(""))
-
 		isOptional := isOptionalType(fieldType)
 		if isOptional {
 			didAppend, err := optionalTypeToJson(field, target, ctx, key, numFields > 0)
@@ -1247,4 +1246,38 @@ var needEscapeNormalizeUTF8 = [256]bool{
 	0xfd: true,
 	0xfe: true,
 	0xff: true,
+}
+
+var publicKeyCharacters = map[byte]bool{
+	byte('A'): true,
+	byte('B'): true,
+	byte('C'): true,
+	byte('D'): true,
+	byte('E'): true,
+	byte('F'): true,
+	byte('G'): true,
+	byte('H'): true,
+	byte('I'): true,
+	byte('J'): true,
+	byte('K'): true,
+	byte('L'): true,
+	byte('M'): true,
+	byte('N'): true,
+	byte('O'): true,
+	byte('P'): true,
+	byte('Q'): true,
+	byte('R'): true,
+	byte('S'): true,
+	byte('T'): true,
+	byte('U'): true,
+	byte('V'): true,
+	byte('W'): true,
+	byte('X'): true,
+	byte('Y'): true,
+	byte('Z'): true,
+}
+
+func isPublicKey(key string) bool {
+	result, ok := publicKeyCharacters[key[0]]
+	return ok && result
 }

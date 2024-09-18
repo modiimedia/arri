@@ -33,42 +33,15 @@ var basicJsonInput = objectWithEveryType{
 	Any:           "hello world",
 }
 
-type userV2 struct {
-	Int8      int8
-	Uint8     uint8
-	Int16     int16
-	Uint16    uint16
-	Int32     int32
-	Uint32    uint32
-	Int64     int64
-	Uint64    uint64
-	Foo       int8
-	Bar       int8
-	Baz       int8
-	BazBaz    int8
-	BazBazBaz int8
-}
-
-var userV2Input userV2 = userV2{
-	Int8:   1,
-	Uint8:  1,
-	Int16:  10,
-	Uint16: 10,
-	Int32:  100,
-	Uint32: 100,
-	Int64:  1000,
-	Uint64: 1000,
-}
-
 func BenchmarkV2Encoding(b *testing.B) {
-	e, err := arri.CompileJSONEncoder(userV2Input, arri.KeyCasingCamelCase)
+	e, err := arri.CompileJSONEncoder(basicJsonInput, arri.KeyCasingCamelCase)
 	if err != nil {
 		b.Fatalf(err.Error())
 	}
 	if e == nil {
 		b.Fatalf("Encoder is nil")
 	}
-	ptr := unsafe.Pointer(&userV2Input)
+	ptr := unsafe.Pointer(&basicJsonInput)
 	example, _ := e(ptr, arri.NewEncodingContext(arri.KeyCasingCamelCase))
 	fmt.Println("RESULT", string(example))
 	for i := 0; i < b.N; i++ {
@@ -77,10 +50,8 @@ func BenchmarkV2Encoding(b *testing.B) {
 }
 
 func BenchmarkStdEncodingAgainstV2(b *testing.B) {
-	result, _ := json.Marshal(userV2Input)
-	fmt.Println("RESULT", string(result))
 	for i := 0; i < b.N; i++ {
-		_, err := json.Marshal(userV2Input)
+		_, err := json.Marshal(basicJsonInput)
 		if err != nil {
 			b.Fatalf(err.Error())
 		}
