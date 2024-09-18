@@ -255,14 +255,21 @@ func BenchmarkEncodeJsonRecursiveObjectStd(b *testing.B) {
 	}
 }
 
+var _benchUserEncodingInput = benchUser{
+	Id:      "1",
+	Name:    arri.Some("John Doe"),
+	Email:   "johndoe@gmail.com",
+	IsAdmin: false,
+}
+
 func BenchmarkEncodeJsonUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(benchUserInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(_benchUserEncodingInput, arri.KeyCasingCamelCase)
 	}
 }
 
 func BenchmarkEncodeJsonUserStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		json.Marshal(benchUserInput)
+		json.Marshal(_benchUserEncodingInput)
 	}
 }
