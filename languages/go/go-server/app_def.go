@@ -62,7 +62,11 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 		return nil, errors.ErrUnsupported
 	}
 	params := Some(valueType.In(0).Name())
-	response := Some(valueType.Out(0).Elem().Name())
+	rawResponse := valueType.Out(0)
+	if rawResponse.Kind() == reflect.Pointer {
+		rawResponse = rawResponse.Elem()
+	}
+	response := Some(rawResponse.Name())
 	path := "/" + strcase.ToKebab(fnName)
 	if len(options.Path) > 0 {
 		path = options.Path

@@ -261,7 +261,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	if serviceName.IsSome() {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName.Value) + rpcSchema.Http.Path
+		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName.Unwrap()) + rpcSchema.Http.Path
 	} else {
 		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + rpcSchema.Http.Path
 	}
@@ -269,15 +269,15 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 		panic(rpcError)
 	}
 	if options.IsSome() {
-		rpcSchema.Http.Method = strings.ToLower(options.Value.Method)
-		if len(options.Value.Path) > 0 {
-			rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Value.Path
+		rpcSchema.Http.Method = strings.ToLower(options.Unwrap().Method)
+		if len(options.Unwrap().Path) > 0 {
+			rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Unwrap().Path
 		}
-		if len(options.Value.Description) > 0 {
-			rpcSchema.Http.Description = Some(options.Value.Description)
+		if len(options.Unwrap().Description) > 0 {
+			rpcSchema.Http.Description = Some(options.Unwrap().Description)
 		}
-		if options.Value.IsDeprecated {
-			rpcSchema.Http.IsDeprecated = Some(options.Value.IsDeprecated)
+		if options.Unwrap().IsDeprecated {
+			rpcSchema.Http.IsDeprecated = Some(options.Unwrap().IsDeprecated)
 		}
 	}
 	params := handlerType.In(0)
@@ -293,10 +293,13 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 
 	}
 	response := handlerType.Out(0)
-	hasResponse := response.Elem().Name() != "EmptyMessage"
+	if response.Kind() == reflect.Ptr {
+		response = response.Elem()
+	}
+	hasResponse := response.Name() != "EmptyMessage"
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
-		responseSchema, responseSchemaErr := typeToTypeDef(response.Elem(), responseDefContext)
+		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
 		}
@@ -305,7 +308,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName Optio
 	}
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	if serviceName.IsSome() {
-		rpcName = serviceName.Value + "." + rpcName
+		rpcName = serviceName.Unwrap() + "." + rpcName
 	}
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest

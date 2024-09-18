@@ -15,14 +15,16 @@ type Option[T any] struct {
 }
 
 func Some[T any](value T) Option[T] {
-	return Option[T]{
+	result := Option[T]{
 		IsSet: true,
 		Value: value,
 	}
+	return result
 }
 
 func None[T any]() Option[T] {
-	return Option[T]{IsSet: false}
+	result := Option[T]{IsSet: false}
+	return result
 }
 
 func (s Option[T]) Unwrap() T {
@@ -47,12 +49,17 @@ func (s Option[_]) IsNone() bool {
 	return !s.IsSet
 }
 
-func (s Option[T]) Foo() {
-	fmt.Println("FOO", s.Value)
+func (o *Option[T]) Set(val T) {
+	o.Value = val
+	o.IsSet = true
+}
+
+func (o *Option[T]) Unset() {
+	o.IsSet = false
 }
 
 func (s Option[T]) MarshalJSON() ([]byte, error) {
-	if !s.IsSet {
+	if !s.IsNone() {
 		return []byte{}, nil
 	}
 	return json.Marshal(s.Value)
@@ -113,11 +120,19 @@ func (s Nullable[T]) UnwrapOr(other T) T {
 		return s.Value
 	}
 	return other
+}
 
+func (s *Nullable[T]) Set(value T) {
+	s.Value = value
+	s.IsSet = true
+}
+
+func (s *Nullable[T]) Unset() {
+	s.IsSet = false
 }
 
 func (s Nullable[T]) MarshalJSON() ([]byte, error) {
-	if s.IsSet {
+	if s.IsNull() {
 		return json.Marshal(s.Value)
 	}
 	return []byte("null"), nil
@@ -147,3 +162,52 @@ func (s Nullable[T]) String() string {
 }
 
 type EmptyMessage struct{}
+
+type Result[TVal any] struct {
+	value TVal
+	err   RpcError
+	isOk  bool
+}
+
+func Ok[TVal any](value TVal) Result[TVal] {
+	return Result[TVal]{
+		value: value,
+		isOk:  true,
+	}
+}
+
+func Err[TVal any](err RpcError) Result[TVal] {
+	return Result[TVal]{
+		err:  err,
+		isOk: false,
+	}
+}
+
+func (r Result[TVal]) IsOk() bool {
+	return r.isOk
+}
+
+func (r Result[TVal]) IsErr() bool {
+	return !r.isOk
+}
+
+func (r Result[TVal]) Unwrap() TVal {
+	if !r.isOk {
+		panic("unable to unwrap value from errored result")
+	}
+	return r.value
+}
+
+func (r Result[TVal]) UnwrapOr(fallback TVal) TVal {
+	if r.isOk {
+		return r.value
+	}
+	return fallback
+}
+
+func (r Result[TVal]) UnwrapErr() error {
+	if r.isOk {
+		panic("unable to unwrap err from okay result")
+	}
+	return r.err
+}

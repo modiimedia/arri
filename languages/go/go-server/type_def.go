@@ -38,11 +38,11 @@ type TypeDef struct {
 	Nullable           Option[bool]                           `key:"nullable"`
 	Type               Option[Type]                           `key:"type"`
 	Enum               Option[[]string]                       `key:"enum"`
-	Elements           *Option[TypeDef]                       `key:"elements"`
+	Elements           Option[*TypeDef]                       `key:"elements"`
 	Properties         Option[[]__orderedMapEntry__[TypeDef]] `key:"properties"`
 	OptionalProperties Option[[]__orderedMapEntry__[TypeDef]] `key:"optionalProperties"`
 	Strict             Option[bool]                           `key:"strict"`
-	Values             *Option[TypeDef]                       `key:"values"`
+	Values             Option[*TypeDef]                       `key:"values"`
 	Discriminator      Option[string]                         `key:"discriminator"`
 	Mapping            Option[map[string]TypeDef]             `key:"mapping"`
 	Ref                Option[string]                         `key:"ref"`
@@ -359,11 +359,20 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 			if fieldResult.Metadata.IsNone() {
 				fieldResult.Metadata = Some(TypeDefMetadata{})
 			}
+			desc := None[string]()
+			isDeprecated := None[bool]()
 			if len(description) > 0 {
-				fieldResult.Metadata.Value.Description = Some(description)
+				desc.Set(description)
 			}
 			if deprecated {
-				fieldResult.Metadata.Value.IsDeprecated = Some(deprecated)
+				isDeprecated.Set(deprecated)
+			}
+			if desc.IsSome() || isDeprecated.IsSome() {
+				fieldResult.Metadata.Set(TypeDefMetadata{
+					Id:           fieldResult.Metadata.Unwrap().Id,
+					Description:  desc,
+					IsDeprecated: isDeprecated,
+				})
 			}
 		}
 		if isOptional {
@@ -476,8 +485,8 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, erro
 	if err != nil {
 		return nil, err
 	}
-	r := Some(*subTypeResult)
-	return &TypeDef{Elements: &r}, nil
+	r := Some(subTypeResult)
+	return &TypeDef{Elements: r}, nil
 }
 
 func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
@@ -508,6 +517,6 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error)
 	if err != nil {
 		return nil, err
 	}
-	r := Some(*subTypeResult)
-	return &TypeDef{Values: &r}, nil
+	r := Some(subTypeResult)
+	return &TypeDef{Values: r}, nil
 }

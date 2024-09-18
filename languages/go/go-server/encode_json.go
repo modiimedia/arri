@@ -9,366 +9,601 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 	"unsafe"
-
-	"github.com/iancoleman/strcase"
 )
 
+type createEncoderCtx struct {
+	keyCasing          KeyCasing
+	enumValues         []string
+	maxDepth           uint32
+	currentDepth       uint32
+	instancePath       string
+	schemaPath         string
+	discriminatorKey   string
+	discriminatorValue string
+	parentStructs      map[string]bool
+}
+
+func newCreateEncoderCtx(keyCasing KeyCasing) *createEncoderCtx {
+	return &createEncoderCtx{
+		keyCasing:          keyCasing,
+		enumValues:         []string{},
+		maxDepth:           10000,
+		currentDepth:       0,
+		instancePath:       "",
+		schemaPath:         "",
+		discriminatorKey:   "",
+		discriminatorValue: "",
+		parentStructs:      map[string]bool{},
+	}
+}
+
+func (c createEncoderCtx) copyWith(
+	currentDepth Option[uint32],
+	enumValues Option[[]string],
+	instancePath Option[string],
+	schemaPath Option[string],
+	discriminatorKey Option[string],
+	discriminatorValue Option[string],
+) createEncoderCtx {
+	return createEncoderCtx{
+		keyCasing:          c.keyCasing,
+		maxDepth:           c.maxDepth,
+		currentDepth:       currentDepth.UnwrapOr(c.currentDepth),
+		enumValues:         enumValues.UnwrapOr(c.enumValues),
+		instancePath:       instancePath.UnwrapOr(c.instancePath),
+		schemaPath:         schemaPath.UnwrapOr(c.schemaPath),
+		discriminatorKey:   discriminatorKey.UnwrapOr(c.discriminatorKey),
+		discriminatorValue: discriminatorValue.UnwrapOr(c.discriminatorValue),
+	}
+}
+
+type encodingCtx struct {
+	buffer       []byte
+	instancePath string
+	schemaPath   string
+	currentDepth uint32
+	hasKeys      bool
+}
+
+func newEncodingCtx() *encodingCtx {
+	return &encodingCtx{
+		buffer:       []byte{},
+		instancePath: "",
+		schemaPath:   "",
+		hasKeys:      false,
+	}
+}
+
+var jsonEncoderCache sync.Map = sync.Map{} // map[reflect.Type]jsonEncoder
+
+type jsonEncoder = func(val reflect.Value, context *encodingCtx) error
+
 func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
+	ctx := newCreateEncoderCtx(keyCasing)
 	val := reflect.ValueOf(input)
-	buf := []byte{}
-	err := typeToJson(
-		val,
-		&buf,
-		EncodingContext{
-			KeyCasing:    keyCasing,
-			MaxDepth:     10000,
-			CurrentDepth: 0,
-		},
-	)
+	typ := val.Type()
+	encoder, encoderErr := typeEncoder(typ, ctx)
+	if encoderErr != nil {
+		return nil, encoderErr
+	}
+	if encoder == nil {
+		return nil, fmt.Errorf("Error creating encoder")
+	}
+	encodingCtx := newEncodingCtx()
+	err := encoder(val, encodingCtx)
 	if err != nil {
 		return nil, err
 	}
-	return buf, nil
+	return encodingCtx.buffer, nil
 }
 
-type EncodingContext struct {
-	MaxDepth           uint32
-	CurrentDepth       uint32
-	EnumValues         []string
-	KeyCasing          KeyCasing
-	DiscriminatorKey   string
-	DiscriminatorValue string
-	NumKeys            *uint32
-}
-
-func (context EncodingContext) copyWith(
-	CurrentDepth Option[uint32],
-	EnumValues Option[[]string],
-	DiscriminatorKey Option[string],
-	DiscriminatorValue Option[string],
-) EncodingContext {
-	currentDepth := CurrentDepth.UnwrapOr(context.CurrentDepth)
-	enumValues := EnumValues.UnwrapOr(context.EnumValues)
-	discriminatorKey := DiscriminatorKey.UnwrapOr(context.DiscriminatorKey)
-	discriminatorValue := DiscriminatorValue.UnwrapOr(context.DiscriminatorValue)
-	return EncodingContext{
-		MaxDepth:           context.MaxDepth,
-		CurrentDepth:       currentDepth,
-		EnumValues:         enumValues,
-		KeyCasing:          context.KeyCasing,
-		DiscriminatorKey:   discriminatorKey,
-		DiscriminatorValue: discriminatorValue,
+func typeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	if fi, ok := jsonEncoderCache.Load(t); ok {
+		return fi.(jsonEncoder), nil
 	}
+	encoderFn, encoderFnErr := newTypeEncoder(t, context)
+	if encoderFnErr != nil {
+		return nil, encoderFnErr
+	}
+	jsonEncoderCache.Store(t, encoderFn)
+	return encoderFn, nil
 }
 
-func typeToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	if context.CurrentDepth >= context.MaxDepth {
-		return fmt.Errorf("max depth of %+v reached", context.MaxDepth)
-	}
-	kind := input.Kind()
-	switch kind {
-	case reflect.Bool:
-		return boolToJson(input, target)
+func newTypeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	switch t.Kind() {
 	case reflect.String:
-		return stringToJson(input, target, context)
-	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Float32, reflect.Float64:
-		return numberToJson(input, target)
-	case reflect.Int, reflect.Uint, reflect.Int64, reflect.Uint64:
-		return bigIntToJson(input, target)
-	case reflect.Struct:
-		if input.Type().Name() == "Time" {
-			return timestampToJson(input, target)
+		if len(context.enumValues) > 0 {
+			return newEnumEncoder(t, context)
 		}
-		return structToJson(input, target, context)
+		return stringEncoder, nil
+	case reflect.Bool:
+		return boolEncoder, nil
+	case reflect.Float32:
+		return float32Encoder, nil
+	case reflect.Float64:
+		return float64Encoder, nil
+	case reflect.Int8, reflect.Int16, reflect.Int32:
+		return smallIntEncoder, nil
+	case reflect.Int64, reflect.Int:
+		return largeIntEncoder, nil
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		return smallUintEncoder, nil
+	case reflect.Uint64, reflect.Uint:
+		return largeUintEncoder, nil
+	case reflect.Struct:
+		if t.Name() == "Time" {
+			return timestampEncoder, nil
+		}
+		if isOptional(t) {
+			return newOptionEncoder(t, context)
+		}
+		if isNullable(t) {
+			return newNullableEncoder(t, context)
+		}
+		if isDiscriminatorStruct(t) {
+			return newDiscriminatorEncoder(t, context)
+		}
+		return newStructEncoder(t, context)
 	case reflect.Array, reflect.Slice:
-		return listToJson(input, target, context)
+		return newArrayEncoder(t, context)
+	case reflect.Map:
+		return newMapEncoder(t, context)
 	case reflect.Ptr, reflect.UnsafePointer:
-		if input.IsNil() {
-			*target = append(*target, "null"...)
+		return newPtrEncoder(t, context)
+	}
+	return func(val reflect.Value, context *encodingCtx) error {
+		result, err := json.Marshal(val.Interface())
+		if err != nil {
+			return err
+		}
+		context.buffer = append(context.buffer, result...)
+		return nil
+	}, nil
+}
+
+func newPtrEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	innerT := t.Elem()
+	innerEncoder, innerEncoderErr := typeEncoder(innerT, context)
+	if innerEncoderErr != nil {
+		return nil, innerEncoderErr
+	}
+	if innerEncoder == nil {
+		return nil, nil
+	}
+	return func(val reflect.Value, context *encodingCtx) error {
+		if val.IsNil() {
+			context.buffer = append(context.buffer, "null"...)
 			return nil
 		}
-		el := input.Elem()
-		return typeToJson(el, target, context)
-	case reflect.Map:
-		return mapToJson(input, target, context)
-	case reflect.Interface:
-		inner := input.Elem()
-		if inner.Kind() == reflect.Invalid {
-			return anyToJson(input, target, context)
-		}
-		return typeToJson(inner, target, context)
-	case reflect.Invalid:
-		return anyToJson(input, target, context)
-	}
-
-	return fmt.Errorf("unsupported Kind %s", kind)
+		return innerEncoder(val.Elem(), context)
+	}, nil
 }
 
-func anyToJson(input reflect.Value, target *[]byte, _ EncodingContext) error {
-	result, err := json.Marshal(input.Interface())
+func stringEncoder(val reflect.Value, context *encodingCtx) error {
+	appendNormalizedString(&context.buffer, val.String())
+	return nil
+}
+
+func boolEncoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = strconv.AppendBool(context.buffer, val.Bool())
+	return nil
+}
+
+func timestampEncoder(val reflect.Value, context *encodingCtx) error {
+	output := val.Interface().(time.Time).Format("2006-01-02T15:04:05.000Z")
+	context.buffer = appendString(context.buffer, output, false)
+	return nil
+}
+
+func float32Encoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = append(context.buffer, strconv.FormatFloat(val.Float(), 'f', -1, 64)...)
+	return nil
+}
+
+func float64Encoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = append(context.buffer, strconv.FormatFloat(val.Float(), 'f', -1, 64)...)
+	return nil
+}
+
+func smallIntEncoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = strconv.AppendInt(context.buffer, val.Int(), 10)
+	return nil
+}
+
+func largeIntEncoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = append(context.buffer, '"')
+	context.buffer = append(context.buffer, fmt.Sprint(val.Int())...)
+	context.buffer = append(context.buffer, '"')
+	return nil
+}
+
+func smallUintEncoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = strconv.AppendUint(context.buffer, val.Uint(), 10)
+	return nil
+}
+
+func largeUintEncoder(val reflect.Value, context *encodingCtx) error {
+	context.buffer = append(context.buffer, '"')
+	context.buffer = append(context.buffer, fmt.Sprint(val.Uint())...)
+	context.buffer = append(context.buffer, '"')
+	return nil
+}
+
+func newEnumEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	enumVals := context.enumValues
+	return func(val reflect.Value, context *encodingCtx) error {
+		strVal := val.String()
+		for _, v := range enumVals {
+			if v == strVal {
+				context.buffer = append(context.buffer, '"')
+				context.buffer = append(context.buffer, strVal...)
+				context.buffer = append(context.buffer, '"')
+				return nil
+			}
+		}
+		return fmt.Errorf("error at %v expected one of the following enum values %+v", context.instancePath, enumVals)
+	}, nil
+}
+
+func newArrayEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	if strings.HasPrefix(t.Elem().Name(), "__orderedMapEntry__[") {
+		return newOrderedMapEntryToJsonEncoder(t, context)
+	}
+	instancePath := context.instancePath
+	schemaPath := context.schemaPath
+	context.currentDepth++
+	context.instancePath = context.instancePath + "/[element]"
+	context.schemaPath = context.instancePath + "/elements"
+	subType := t.Elem()
+	subTypeEncoder, err := typeEncoder(subType, context)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	*target = append(*target, result...)
-	return nil
-}
-
-func mapToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	*target = append(*target, "{"...)
-	keys := input.MapKeys()
-	orderedKeys := []string{}
-	for i := 0; i < len(keys); i++ {
-		key := keys[i]
-		orderedKeys = append(orderedKeys, key.String())
+	if subTypeEncoder == nil {
+		return nil, fmt.Errorf("unable to make element encoder")
 	}
-	sort.Strings(orderedKeys)
-	ctx := context.copyWith(Some(context.CurrentDepth+1), Some([]string{}), Some(""), Some(""))
-	for i := 0; i < len(orderedKeys); i++ {
-		if i != 0 {
-			*target = append(*target, ","...)
+	context.currentDepth--
+	context.instancePath = instancePath
+	context.schemaPath = schemaPath
+	return func(val reflect.Value, context *encodingCtx) error {
+		slice := val.Slice(0, val.Len())
+		context.currentDepth++
+		context.buffer = append(context.buffer, '[')
+		for i := 0; i < slice.Len(); i++ {
+			if i > 0 {
+				context.buffer = append(context.buffer, ',')
+			}
+			subTypeEncoder(slice.Index(i), context)
 		}
-		key := orderedKeys[i]
-		*target = append(*target, "\""+key+"\":"...)
-		value := input.MapIndex(reflect.ValueOf(key))
-		fieldError := typeToJson(value, target, ctx)
-		if fieldError != nil {
-			return fieldError
-		}
-	}
-	*target = append(*target, "}"...)
-	return nil
-}
-
-func orderedMapEntryToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	slice := input.Slice(0, input.Len())
-	*target = append(*target, "{"...)
-	seenKeys := map[string]bool{}
-	for i := 0; i < slice.Len(); i++ {
-		if i > 0 {
-			*target = append(*target, ","...)
-		}
-		entry := slice.Index(i)
-		key := entry.FieldByName("Key").String()
-		hasSeenKey, keyExists := seenKeys[key]
-		if keyExists && hasSeenKey {
-			return fmt.Errorf("duplicate key \"" + key + "\"")
-		}
-		value := entry.FieldByName("Value")
-		*target = append(*target, "\""+key+"\":"...)
-		typeToJson(value, target, context)
-	}
-	*target = append(*target, "}"...)
-	return nil
-}
-
-func listToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	slice := input.Slice(0, input.Len())
-	if strings.Contains(input.Type().Elem().Name(), "__orderedMapEntry__[") {
-		return orderedMapEntryToJson(input, target, context)
-	}
-	*target = append(*target, "["...)
-	for i := 0; i < slice.Len(); i++ {
-		if i > 0 {
-			*target = append(*target, ","...)
-		}
-		element := slice.Index(i)
-		typeToJson(element, target, context)
-	}
-	*target = append(*target, "]"...)
-	return nil
-}
-
-func timestampToJson(input reflect.Value, target *[]byte) error {
-	timeValue, _ := input.Interface().(time.Time)
-	*target = append(*target, "\""+timeValue.Format("2006-01-02T15:04:05.000Z")+"\""...)
-	return nil
-}
-
-func boolToJson(input reflect.Value, target *[]byte) error {
-	*target = strconv.AppendBool(*target, input.Bool())
-	return nil
-}
-
-func numberToJson(input reflect.Value, target *[]byte) error {
-	switch input.Kind() {
-	case reflect.Int8, reflect.Int16, reflect.Int32:
-		*target = strconv.AppendInt(*target, input.Int(), 10)
+		context.buffer = append(context.buffer, ']')
+		context.currentDepth--
 		return nil
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		*target = strconv.AppendUint(*target, input.Uint(), 10)
-		return nil
-	case reflect.Float32, reflect.Float64:
-		*target = append(*target, strconv.FormatFloat(input.Float(), 'f', -1, 64)...)
-		return nil
-	}
-	return fmt.Errorf("unsupported Kind %s", input.Kind())
+	}, nil
 }
 
-func bigIntToJson(input reflect.Value, target *[]byte) error {
-	switch input.Kind() {
-	case reflect.Int, reflect.Int64:
-		*target = append(*target, "\""+fmt.Sprint(input.Int())+"\""...)
-		return nil
-	case reflect.Uint, reflect.Uint64:
-		*target = append(*target, "\""+fmt.Sprint(input.Uint())+"\""...)
-		return nil
-	}
-	return fmt.Errorf("unsupported Kind %s", input.Kind())
+type structField struct {
+	fieldIndex int
+	encoder    jsonEncoder
 }
 
-func structToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	if IsDiscriminatorStruct(input.Type()) {
-		return discriminatorToJson(input, target, context)
+func newStructEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	isRecursiveLoop, hasRecursiveLoopKey := context.parentStructs[t.Name()]
+	if hasRecursiveLoopKey && isRecursiveLoop {
+		return func(val reflect.Value, context *encodingCtx) error {
+			if fi, ok := jsonEncoderCache.Load(t); ok {
+				return fi.(jsonEncoder)(val, context)
+			}
+			return fmt.Errorf("unabled to initialize encoder")
+		}, nil
 	}
-	*target = append(*target, "{"...)
-	numFields := 0
-	if len(context.DiscriminatorKey) > 0 && len(context.DiscriminatorValue) > 0 {
-		s := "\"" + context.DiscriminatorKey + "\":\"" + context.DiscriminatorValue + "\""
-		*target = append(*target, s...)
-		numFields++
-	}
-	for i := 0; i < input.NumField(); i++ {
-		field := input.Field(i)
-		fieldType := field.Type()
-		structField := input.Type().Field(i)
-		if !isPublicKey(structField.Name) {
+	fields := []structField{}
+	instancePath := context.instancePath
+	context.parentStructs[t.Name()] = true
+	schemaPath := context.schemaPath
+	discriminatorKey := context.discriminatorKey
+	discriminatorValue := context.discriminatorValue
+	context.discriminatorKey = ""
+	context.discriminatorValue = ""
+	isDiscriminatorSubType := len(discriminatorKey) > 0
+	context.currentDepth++
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if !field.IsExported() {
 			continue
 		}
-		key := structField.Tag.Get("key")
-		if len(key) == 0 {
-			switch context.KeyCasing {
-			case KeyCasingCamelCase:
-				key = strcase.ToLowerCamel(structField.Name)
-			case KeyCasingSnakeCase:
-				key = strcase.ToSnake(structField.Name)
-			case KeyCasingPascalCase:
-				key = strcase.ToCamel(structField.Name)
-			default:
-				key = strcase.ToLowerCamel(structField.Name)
-			}
-		}
-		enumTag := structField.Tag.Get("enum")
-		enumValues := []string{}
-		if len(enumTag) > 0 {
-			vals := strings.Split(enumTag, ",")
-			for i := 0; i < len(vals); i++ {
-				val := strings.TrimSpace(vals[i])
-				enumValues = append(enumValues, val)
-			}
-		}
-		ctx := context.copyWith(Some(context.CurrentDepth+1), Some(enumValues), Some(""), Some(""))
-		isOptional := isOptionalType(fieldType)
-		if isOptional {
-			didAppend, err := optionalTypeToJson(field, target, ctx, key, numFields > 0)
+		fieldName := getSerialKey(&field, context.keyCasing)
+		context.instancePath = context.instancePath + "/" + fieldName
+		if isOptional(field.Type) {
+			context.schemaPath = "/optionalProperties/" + fieldName
+			e, err := typeEncoder(field.Type, context)
 			if err != nil {
+				return nil, err
+			}
+			if e == nil {
+				continue
+			}
+			fields = append(
+				fields,
+				structField{
+					fieldIndex: i,
+					encoder: func(val reflect.Value, context *encodingCtx) error {
+						if !isOptionalSome(&val) {
+							return nil
+						}
+						if context.hasKeys {
+							context.buffer = append(context.buffer, ',')
+						}
+						context.buffer = append(context.buffer, "\""+fieldName+"\":"...)
+						err := e(val, context)
+						if err == nil && !context.hasKeys {
+							context.hasKeys = true
+						}
+						return err
+					},
+				},
+			)
+			continue
+		}
+		context.schemaPath = context.schemaPath + "/properties/" + fieldName
+		e, err := typeEncoder(field.Type, context)
+		if err != nil {
+			return nil, err
+		}
+		if e == nil {
+			continue
+		}
+		fields = append(
+			fields,
+			structField{fieldIndex: i, encoder: func(val reflect.Value, context *encodingCtx) error {
+				if context.hasKeys {
+					context.buffer = append(context.buffer, ',')
+				}
+				context.buffer = append(context.buffer, "\""+fieldName+"\":"...)
+				err := e(val, context)
+				if err == nil && !context.hasKeys {
+					context.hasKeys = true
+				}
 				return err
-			}
-			if didAppend {
-				numFields++
-			}
-			continue
-		}
-		if numFields > 0 {
-			*target = append(*target, ","...)
-		}
-		isNullable := isNullableType(fieldType)
-		if isNullable {
-			*target = append(*target, "\""+key+"\":"...)
-			err := nullableTypeToJson(field, target, ctx)
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		*target = append(*target, "\""+key+"\":"...)
-		fieldErr := typeToJson(field, target, ctx)
-		if fieldErr != nil {
-			return fieldErr
-		}
-		numFields++
-	}
-	*target = append(*target, "}"...)
-	return nil
-}
-
-func nullableTypeToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	innerVal := extractNullableValue(&input)
-	if innerVal != nil {
-		return typeToJson(*innerVal, target, context)
-	}
-	*target = append(*target, "null"...)
-	return nil
-}
-
-func optionalTypeToJson(input reflect.Value, target *[]byte, context EncodingContext, keyName string, hasPreviousKeys bool) (didAdd bool, err error) {
-	innerVal := extractOptionalValue(&input)
-	if innerVal != nil {
-		if hasPreviousKeys {
-			*target = append(*target, ","...)
-		}
-		*target = append(*target, "\""+keyName+"\":"...)
-		return true, typeToJson(*innerVal, target, context)
-	}
-	return false, nil
-}
-
-func discriminatorToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	discriminatorKey := "type"
-	for i := 0; i < input.NumField(); i++ {
-		field := input.Field(i)
-		fieldType := input.Type().Field(i)
-		if i == 0 && fieldType.Name == "DiscriminatorKey" {
-			discriminatorKeyTag := fieldType.Tag.Get("discriminatorKey")
-			if len(discriminatorKeyTag) > 0 {
-				discriminatorKey = strings.TrimSpace(discriminatorKeyTag)
-			}
-			continue
-		}
-		discriminatorValue := fieldType.Tag.Get("discriminator")
-		if len(discriminatorValue) == 0 {
-			return errors.New("all discriminator subtypes must have the \"discriminator\" tag")
-		}
-		if field.IsNil() {
-			continue
-		}
-		subType := field.Elem()
-		return structToJson(
-			subType,
-			target,
-			context.copyWith(
-				None[uint32](),
-				None[[]string](),
-				Some(discriminatorKey),
-				Some(discriminatorValue),
-			),
+			},
+			},
 		)
 	}
-	return fmt.Errorf("error serializing %s. at least one field must not be nil", input.Type().Name())
+	context.currentDepth--
+	context.instancePath = instancePath
+	context.schemaPath = schemaPath
+	delete(context.parentStructs, t.Name())
+	return func(val reflect.Value, context *encodingCtx) error {
+		context.buffer = append(context.buffer, '{')
+		context.hasKeys = isDiscriminatorSubType
+		if isDiscriminatorSubType {
+			context.buffer = append(context.buffer, "\""+discriminatorKey+"\":\""+discriminatorValue+"\""...)
+		}
+		context.currentDepth++
+		for _, field := range fields {
+			err := field.encoder(val.Field(field.fieldIndex), context)
+			if err != nil {
+				return err
+			}
+		}
+		context.currentDepth--
+		context.buffer = append(context.buffer, '}')
+		return nil
+	}, nil
 }
 
-func stringToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	if len(context.EnumValues) > 0 {
-		return enumToJson(input, target, context)
-	}
-	appendNormalizedString(target, input.String())
-	return nil
-}
-
-func enumToJson(input reflect.Value, target *[]byte, context EncodingContext) error {
-	if input.Kind() != reflect.String {
-		return fmt.Errorf("unsupported Kind %s", input.Kind())
-	}
-	val := input.String()
-	for i := 0; i < len(context.EnumValues); i++ {
-		if val == context.EnumValues[i] {
-			*target = append(*target, "\""+val+"\""...)
-			return nil
+func isDiscriminatorStruct(t reflect.Type) bool {
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if field.Type.Name() == "DiscriminatorKey" {
+			continue
+		}
+		if field.Type.Kind() != reflect.Ptr {
+			return false
+		}
+		if field.Type.Elem().Kind() != reflect.Struct {
+			return false
+		}
+		if len(field.Tag.Get("discriminator")) == 0 {
+			return false
 		}
 	}
-	return fmt.Errorf("expected one of the following values: %+v instead got %s", context.EnumValues, input.String())
+	return true
+}
+
+func newDiscriminatorEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	isRecursiveLoop, hasRecursiveLoopKey := context.parentStructs[t.Name()]
+	if hasRecursiveLoopKey && isRecursiveLoop {
+		return func(val reflect.Value, context *encodingCtx) error {
+			if fi, ok := jsonEncoderCache.Load(t); ok {
+				return fi.(jsonEncoder)(val, context)
+			}
+			return fmt.Errorf("unabled to initialize encoder")
+		}, nil
+	}
+	discriminatorKey := "type"
+	schemaPath := context.schemaPath
+	targetFields := []int{}
+	encoders := map[int]jsonEncoder{}
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		discriminatorKeyTag := field.Tag.Get("discriminatorKey")
+		if len(discriminatorKeyTag) > 0 {
+			discriminatorKey = discriminatorKeyTag
+			continue
+		}
+		discriminatorValue := field.Tag.Get("discriminator")
+		context.schemaPath = schemaPath + "/mapping/" + discriminatorValue
+		context.discriminatorKey = discriminatorKey
+		context.discriminatorValue = discriminatorValue
+		innerEncoder, err := typeEncoder(field.Type.Elem(), context)
+		if err != nil {
+			return nil, err
+		}
+		if innerEncoder == nil {
+			continue
+		}
+		encoders[i] = innerEncoder
+		targetFields = append(targetFields, i)
+	}
+	context.schemaPath = schemaPath
+	context.discriminatorKey = ""
+	context.discriminatorValue = ""
+	return func(val reflect.Value, context *encodingCtx) error {
+		for i := 0; i < len(targetFields); i++ {
+			fieldIndex := targetFields[i]
+			field := val.Field(fieldIndex)
+			if field.IsNil() {
+				continue
+			}
+			return encoders[fieldIndex](field.Elem(), context)
+		}
+		return fmt.Errorf("error encoding at %v. all discriminator subtypes are nil", context.instancePath)
+	}, nil
+}
+
+func isOptional(t reflect.Type) bool {
+	return strings.HasPrefix(t.Name(), "Option[") || strings.HasPrefix(t.Name(), "*Option[")
+}
+
+func isOptionalSome(value *reflect.Value) bool {
+	target := value
+	if target.Kind() == reflect.Ptr {
+		if target.IsNil() {
+			return false
+		}
+	}
+	isSome := target.Field(1)
+	return isSome.Bool()
+}
+
+func newOptionEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	innerValue := t.Field(0)
+	innerValueEncoder, innerValueEncoderError := typeEncoder(innerValue.Type, context)
+	if innerValueEncoderError != nil {
+		return nil, innerValueEncoderError
+	}
+	if innerValueEncoder == nil {
+		return nil, nil
+	}
+	return func(val reflect.Value, context *encodingCtx) error {
+		unwrapped := val.Field(0)
+		return innerValueEncoder(unwrapped, context)
+	}, nil
+}
+
+func isNullable(t reflect.Type) bool {
+	return strings.HasPrefix(t.Name(), "Nullable[") || strings.HasPrefix(t.Name(), "*Nullable[")
+}
+
+func isNullableNull(val reflect.Value) bool {
+	target := val
+	if target.Kind() == reflect.Ptr {
+		if target.IsNil() {
+			return true
+		}
+		target = val.Elem()
+	}
+	isSet := target.Field(1)
+	return !isSet.Bool()
+}
+
+func newNullableEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	innerVal := t.Field(0)
+	innerValEncoder, innerValEncoderErr := typeEncoder(innerVal.Type, context)
+	if innerValEncoderErr != nil {
+		return nil, innerValEncoderErr
+	}
+	if innerValEncoder == nil {
+		return nil, nil
+	}
+	return func(val reflect.Value, context *encodingCtx) error {
+		if isNullableNull(val) {
+			context.buffer = append(context.buffer, "null"...)
+			return nil
+		}
+		return innerValEncoder(val.Field(0), context)
+	}, nil
+}
+
+func newMapEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	instancePath := context.instancePath
+	schemaPath := context.schemaPath
+	innerT := t.Elem()
+	context.instancePath = instancePath + "/[key]"
+	context.schemaPath = schemaPath + "/values"
+	innerEncoder, innerEncoderErr := typeEncoder(innerT, context)
+	if innerEncoderErr != nil {
+		return nil, innerEncoderErr
+	}
+	if innerEncoder == nil {
+		return nil, nil
+	}
+	return func(val reflect.Value, context *encodingCtx) error {
+		instancePath := context.instancePath
+		context.buffer = append(context.buffer, '{')
+		keys := map[string]reflect.Value{}
+		keyVals := []string{}
+		for _, key := range val.MapKeys() {
+			keyName := key.String()
+			keys[keyName] = key
+			keyVals = append(keyVals, keyName)
+		}
+		sort.Strings(keyVals)
+		for i, keyName := range keyVals {
+			key := keys[keyName]
+			context.instancePath = context.instancePath + "/" + key.String()
+			if i > 0 {
+				context.buffer = append(context.buffer, ',')
+			}
+			context.buffer = append(context.buffer, "\""+key.String()+"\":"...)
+			err := innerEncoder(val.MapIndex(key), context)
+			if err != nil {
+				return err
+			}
+		}
+		context.buffer = append(context.buffer, '}')
+		context.instancePath = instancePath
+		return nil
+	}, nil
+}
+
+func newOrderedMapEntryToJsonEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+	subType, subTypeExists := t.Elem().FieldByName("Value")
+	if !subTypeExists {
+		return nil, errors.New("value doesn't exit")
+	}
+	subEncoder, subEncoderErr := typeEncoder(subType.Type, context)
+	if subEncoderErr != nil {
+		return nil, subEncoderErr
+	}
+	if subEncoder == nil {
+		return nil, nil
+	}
+	return func(val reflect.Value, context *encodingCtx) error {
+		slice := val.Slice(0, val.Len())
+		context.buffer = append(context.buffer, "{"...)
+		seenKeys := map[string]bool{}
+		for i := 0; i < slice.Len(); i++ {
+			if i > 0 {
+				context.buffer = append(context.buffer, ","...)
+			}
+			entry := slice.Index(i)
+			key := entry.FieldByName("Key").String()
+			hasSeenKey, keyExists := seenKeys[key]
+			if keyExists && hasSeenKey {
+				return fmt.Errorf("duplicate key \"" + key + "\"")
+			}
+			value := entry.FieldByName("Value")
+			context.buffer = append(context.buffer, "\""+key+"\":"...)
+			subEncoder(value, context)
+		}
+		context.buffer = append(context.buffer, "}"...)
+		return nil
+	}, nil
 }
 
 const (

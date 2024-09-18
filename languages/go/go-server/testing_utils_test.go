@@ -97,3 +97,8 @@ type objectWithNullableFields struct {
 	Discriminator arri.Nullable[discriminator]
 	Any           arri.Nullable[any]
 }
+
+type recursiveObject struct {
+	Left  arri.Nullable[*recursiveObject]
+	Right arri.Nullable[*recursiveObject]
+}

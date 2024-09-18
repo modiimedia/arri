@@ -42,14 +42,14 @@ type SayHelloResponse struct {
 	Message string
 }
 
-func SayHello(params SayHelloParams, context AppContext) (*SayHelloResponse, arri.RpcError) {
-	return &SayHelloResponse{Message: "Hello " + params.FirstName + " " + params.LastName}, nil
+func SayHello(params SayHelloParams, context AppContext) (SayHelloResponse, arri.RpcError) {
+	return SayHelloResponse{Message: "Hello " + params.FirstName + " " + params.LastName}, nil
 }
 
 type SayGoodbyeResponse struct {
 	Message string
 }
 
-func SayGoodbye(_ arri.EmptyMessage, context AppContext) (*SayGoodbyeResponse, arri.RpcError) {
-	return &SayGoodbyeResponse{Message: "Goodbye"}, nil
+func SayGoodbye(_ arri.EmptyMessage, context AppContext) (SayGoodbyeResponse, arri.RpcError) {
+	return SayGoodbyeResponse{}, nil
 }
