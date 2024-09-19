@@ -15,7 +15,7 @@ import (
 	"unsafe"
 )
 
-type createEncoderCtx struct {
+type compileEncoderCtx struct {
 	keyCasing          KeyCasing
 	enumValues         []string
 	maxDepth           uint32
@@ -27,8 +27,8 @@ type createEncoderCtx struct {
 	parentStructs      map[string]bool
 }
 
-func newCreateEncoderCtx(keyCasing KeyCasing) *createEncoderCtx {
-	return &createEncoderCtx{
+func newCompileEncoderCtx(keyCasing KeyCasing) *compileEncoderCtx {
+	return &compileEncoderCtx{
 		keyCasing:          keyCasing,
 		enumValues:         []string{},
 		maxDepth:           10000,
@@ -41,15 +41,15 @@ func newCreateEncoderCtx(keyCasing KeyCasing) *createEncoderCtx {
 	}
 }
 
-func (c createEncoderCtx) copyWith(
+func (c compileEncoderCtx) copyWith(
 	currentDepth Option[uint32],
 	enumValues Option[[]string],
 	instancePath Option[string],
 	schemaPath Option[string],
 	discriminatorKey Option[string],
 	discriminatorValue Option[string],
-) createEncoderCtx {
-	return createEncoderCtx{
+) compileEncoderCtx {
+	return compileEncoderCtx{
 		keyCasing:          c.keyCasing,
 		maxDepth:           c.maxDepth,
 		currentDepth:       currentDepth.UnwrapOr(c.currentDepth),
@@ -83,7 +83,7 @@ var jsonEncoderCache sync.Map = sync.Map{} // map[reflect.Type]jsonEncoder
 type jsonEncoder = func(val reflect.Value, context *encodingCtx) error
 
 func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
-	ctx := newCreateEncoderCtx(keyCasing)
+	ctx := newCompileEncoderCtx(keyCasing)
 	val := reflect.ValueOf(input)
 	typ := val.Type()
 	encoder, encoderErr := typeEncoder(typ, ctx)
@@ -101,7 +101,7 @@ func EncodeJSON(input interface{}, keyCasing KeyCasing) ([]byte, error) {
 	return encodingCtx.buffer, nil
 }
 
-func typeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func typeEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	if fi, ok := jsonEncoderCache.Load(t); ok {
 		return fi.(jsonEncoder), nil
 	}
@@ -113,7 +113,7 @@ func typeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error)
 	return encoderFn, nil
 }
 
-func newTypeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newTypeEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	switch t.Kind() {
 	case reflect.String:
 		if len(context.enumValues) > 0 {
@@ -165,7 +165,7 @@ func newTypeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, err
 	}, nil
 }
 
-func newPtrEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newPtrEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	innerT := t.Elem()
 	innerEncoder, innerEncoderErr := typeEncoder(innerT, context)
 	if innerEncoderErr != nil {
@@ -233,7 +233,7 @@ func largeUintEncoder(val reflect.Value, context *encodingCtx) error {
 	return nil
 }
 
-func newEnumEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newEnumEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	enumVals := context.enumValues
 	return func(val reflect.Value, context *encodingCtx) error {
 		strVal := val.String()
@@ -249,7 +249,7 @@ func newEnumEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, err
 	}, nil
 }
 
-func newArrayEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newArrayEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	if strings.HasPrefix(t.Elem().Name(), "__orderedMapEntry__[") {
 		return newOrderedMapEntryToJsonEncoder(t, context)
 	}
@@ -290,7 +290,7 @@ type structField struct {
 	encoder    jsonEncoder
 }
 
-func newStructEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newStructEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	isRecursiveLoop, hasRecursiveLoopKey := context.parentStructs[t.Name()]
 	if hasRecursiveLoopKey && isRecursiveLoop {
 		return func(val reflect.Value, context *encodingCtx) error {
@@ -414,7 +414,7 @@ func isDiscriminatorStruct(t reflect.Type) bool {
 	return true
 }
 
-func newDiscriminatorEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newDiscriminatorEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	isRecursiveLoop, hasRecursiveLoopKey := context.parentStructs[t.Name()]
 	if hasRecursiveLoopKey && isRecursiveLoop {
 		return func(val reflect.Value, context *encodingCtx) error {
@@ -465,7 +465,7 @@ func newDiscriminatorEncoder(t reflect.Type, context *createEncoderCtx) (jsonEnc
 	}, nil
 }
 
-func newOptionEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newOptionEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	innerValue := t.Field(0)
 	innerValueEncoder, innerValueEncoderError := typeEncoder(innerValue.Type, context)
 	if innerValueEncoderError != nil {
@@ -480,7 +480,7 @@ func newOptionEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, e
 	}, nil
 }
 
-func newNullableEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newNullableEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	innerVal := t.Field(0)
 	innerValEncoder, innerValEncoderErr := typeEncoder(innerVal.Type, context)
 	if innerValEncoderErr != nil {
@@ -498,7 +498,7 @@ func newNullableEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder,
 	}, nil
 }
 
-func newMapEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newMapEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	instancePath := context.instancePath
 	schemaPath := context.schemaPath
 	innerT := t.Elem()
@@ -540,7 +540,7 @@ func newMapEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, erro
 	}, nil
 }
 
-func newOrderedMapEntryToJsonEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
+func newOrderedMapEntryToJsonEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
 	subType, subTypeExists := t.Elem().FieldByName("Value")
 	if !subTypeExists {
 		return nil, errors.New("value doesn't exit")
