@@ -3,7 +3,6 @@ package arri_test
 import (
 	arri "arri/languages/go/go-server"
 	"encoding/json"
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -96,16 +95,28 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 }
 
 func TestEncodeJsonWithOptionalFields(t *testing.T) {
-	reference, referenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
-	if referenceErr != nil {
-		t.Fatalf(referenceErr.Error())
+	noUndefReference, noUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
+	if noUndefReferenceErr != nil {
+		t.Fatalf(noUndefReferenceErr.Error())
 	}
-	result, err := arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
-	if err != nil {
-		t.Fatalf(err.Error())
+	noUndefResult, noUndefResultErr := arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
+	if noUndefResultErr != nil {
+		t.Fatalf(noUndefResultErr.Error())
 	}
-	if !reflect.DeepEqual(result, reference) {
-		t.Fatal("\n", string(result), "\nis not equal to\n", string(reference))
+	if !reflect.DeepEqual(noUndefResult, noUndefReference) {
+		t.Fatal("\n", string(noUndefResult), "\nis not equal to\n", string(noUndefReference))
+	}
+	allUndefInput := objectWithOptionalFields{}
+	allUndefReference, allUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
+	if noUndefReferenceErr != nil {
+		t.Fatalf(allUndefReferenceErr.Error())
+	}
+	allUndefResult, allUndefResultErr := arri.EncodeJSON(allUndefInput, arri.KeyCasingCamelCase)
+	if allUndefResultErr != nil {
+		t.Fatalf(allUndefResultErr.Error())
+	}
+	if !reflect.DeepEqual(allUndefResult, allUndefReference) {
+		t.Fatal("\n", string(allUndefResult), "\nis not equal to\n", string(allUndefReference))
 	}
 }
 
@@ -245,8 +256,6 @@ func TestEncodeJsonRecursiveObject(t *testing.T) {
 }
 
 func BenchmarkEncodeJsonRecursiveObject(b *testing.B) {
-	result, _ := arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
-	fmt.Println("RESULT", string(result))
 	for i := 0; i < b.N; i++ {
 		arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
 	}
@@ -258,12 +267,64 @@ func BenchmarkEncodeJsonRecursiveObjectStd(b *testing.B) {
 	}
 }
 
-var _benchUserEncodingInput = benchUser{
-	Id:      "1",
-	Role:    "STANDARD",
-	Name:    arri.Some("John Doe"),
-	Email:   "johndoe@gmail.com",
-	IsAdmin: false,
+type bUser struct {
+	Id                  int32
+	Role                string `enum:"standard,admin,moderator"`
+	Name                string
+	Email               arri.Nullable[string]
+	CreatedAt           int32
+	UpdatedAt           int32
+	Settings            arri.Option[bUserSettings]
+	RecentNotifications []bUserNotification
+}
+
+type bUserSettings struct {
+	PreferredTheme     string `enum:"light,dark,system"`
+	AllowNotifications bool
+}
+
+type bUserNotification struct {
+	PostLike    *bUserNotificationPostLike    `discriminator:"POST_LIKE"`
+	PostComment *bUserNotificationPostComment `discriminator:"POST_COMMENT"`
+}
+
+type bUserNotificationPostLike struct {
+	UserId string
+	PostId string
+}
+
+type bUserNotificationPostComment struct {
+	UserId      string
+	PostId      string
+	CommentText string
+}
+
+var _benchUserEncodingInput = bUser{
+	Id:        12345,
+	Role:      "moderator",
+	Name:      "John Doe",
+	Email:     arri.Null[string](),
+	CreatedAt: 0,
+	UpdatedAt: 0,
+	Settings: arri.Some(bUserSettings{
+		PreferredTheme:     "system",
+		AllowNotifications: true,
+	}),
+	RecentNotifications: []bUserNotification{
+		{
+			PostLike: &bUserNotificationPostLike{
+				PostId: "1",
+				UserId: "1",
+			},
+		},
+		{
+			PostComment: &bUserNotificationPostComment{
+				PostId:      "1",
+				UserId:      "1",
+				CommentText: "",
+			},
+		},
+	},
 }
 
 func BenchmarkEncodeJsonUser(b *testing.B) {
