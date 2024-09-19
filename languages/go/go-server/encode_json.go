@@ -138,10 +138,10 @@ func newTypeEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, err
 		if t.Name() == "Time" {
 			return timestampEncoder, nil
 		}
-		if isOptional(t) {
+		if isOptionalType(t) {
 			return newOptionEncoder(t, context)
 		}
-		if isNullable(t) {
+		if isNullableType(t) {
 			return newNullableEncoder(t, context)
 		}
 		if isDiscriminatorStruct(t) {
@@ -317,7 +317,7 @@ func newStructEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, e
 		}
 		fieldName := getSerialKey(&field, context.keyCasing)
 		context.instancePath = context.instancePath + "/" + fieldName
-		if isOptional(field.Type) {
+		if isOptionalType(field.Type) {
 			context.schemaPath = "/optionalProperties/" + fieldName
 			e, err := typeEncoder(field.Type, context)
 			if err != nil {
@@ -331,7 +331,7 @@ func newStructEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, e
 				structField{
 					fieldIndex: i,
 					encoder: func(val reflect.Value, context *encodingCtx) error {
-						if !isOptionalSome(&val) {
+						if !optionalHasValue(&val) {
 							return nil
 						}
 						if context.hasKeys {
@@ -465,21 +465,6 @@ func newDiscriminatorEncoder(t reflect.Type, context *createEncoderCtx) (jsonEnc
 	}, nil
 }
 
-func isOptional(t reflect.Type) bool {
-	return strings.HasPrefix(t.Name(), "Option[") || strings.HasPrefix(t.Name(), "*Option[")
-}
-
-func isOptionalSome(value *reflect.Value) bool {
-	target := value
-	if target.Kind() == reflect.Ptr {
-		if target.IsNil() {
-			return false
-		}
-	}
-	isSome := target.Field(1)
-	return isSome.Bool()
-}
-
 func newOptionEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
 	innerValue := t.Field(0)
 	innerValueEncoder, innerValueEncoderError := typeEncoder(innerValue.Type, context)
@@ -495,22 +480,6 @@ func newOptionEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, e
 	}, nil
 }
 
-func isNullable(t reflect.Type) bool {
-	return strings.HasPrefix(t.Name(), "Nullable[") || strings.HasPrefix(t.Name(), "*Nullable[")
-}
-
-func isNullableNull(val reflect.Value) bool {
-	target := val
-	if target.Kind() == reflect.Ptr {
-		if target.IsNil() {
-			return true
-		}
-		target = val.Elem()
-	}
-	isSet := target.Field(1)
-	return !isSet.Bool()
-}
-
 func newNullableEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder, error) {
 	innerVal := t.Field(0)
 	innerValEncoder, innerValEncoderErr := typeEncoder(innerVal.Type, context)
@@ -521,7 +490,7 @@ func newNullableEncoder(t reflect.Type, context *createEncoderCtx) (jsonEncoder,
 		return nil, nil
 	}
 	return func(val reflect.Value, context *encodingCtx) error {
-		if isNullableNull(val) {
+		if !nullableHasValue(&val) {
 			context.buffer = append(context.buffer, "null"...)
 			return nil
 		}

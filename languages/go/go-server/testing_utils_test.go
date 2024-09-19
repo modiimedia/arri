@@ -99,6 +99,6 @@ type objectWithNullableFields struct {
 }
 
 type recursiveObject struct {
-	Left  arri.Nullable[*recursiveObject]
-	Right arri.Nullable[*recursiveObject]
+	Left  *recursiveObject
+	Right *recursiveObject
 }

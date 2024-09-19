@@ -146,6 +146,7 @@ type benchUser struct {
 	Name     arri.Option[string] `json:"name"`
 	Email    string              `json:"email"`
 	IsAdmin  bool                `json:"isAdmin"`
+	Role     string              `enum:"STANDARD,ADMIN"`
 	Metadata struct {
 		Foo string `json:"foo"`
 		Bar bool   `json:"bar"`
@@ -153,7 +154,7 @@ type benchUser struct {
 	} `json:"metadata"`
 }
 
-var benchUserInput = []byte(`{"id":"1","email":"johndoe@gmail.com","isAdmin":true,"metadata":{"foo":"FOO","bar":true,"baz":"BAZ"}}`)
+var benchUserInput = []byte(`{"id":"1","role":"ADMIN","email":"johndoe@gmail.com","isAdmin":true,"metadata":{"foo":"FOO","bar":true,"baz":"BAZ"}}`)
 
 func TestDecodeStdUser(t *testing.T) {
 	target := benchUser{}

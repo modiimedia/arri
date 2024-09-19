@@ -7,51 +7,46 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func extractOptionalValue(input *reflect.Value) *reflect.Value {
-	kind := input.Kind()
-	if kind == reflect.Ptr {
-		if input.IsNil() {
-			return nil
-		}
-		el := input.Elem()
-		return &el
-	}
-	if input.IsZero() {
-		return nil
-	}
-	isSetResults := input.MethodByName("IsSome").Call([]reflect.Value{})
-	if !isSetResults[0].Bool() {
-		return nil
-	}
-	return &input.MethodByName("Unwrap").Call([]reflect.Value{})[0]
-}
-
 func isOptionalType(input reflect.Type) bool {
 	t := input
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
-	if t.Kind() == reflect.Struct {
-		_, methodExists := t.MethodByName("IsSome")
-		if methodExists {
-			return true
-		}
-	}
-	return false
+	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Option[")
 }
 
-func extractNullableValue(input *reflect.Value) *reflect.Value {
-	isSet := input.FieldByName("IsSet").Bool()
-	if !isSet {
-		return nil
+func optionalHasValue(value *reflect.Value) bool {
+	target := value
+	if target.Kind() == reflect.Ptr {
+		if target.IsNil() {
+			return false
+		}
+		el := value.Elem()
+		target = &el
 	}
-	value := input.FieldByName("Value")
-	return &value
+	isSome := target.Field(1)
+	return isSome.Bool()
 }
 
 func isNullableType(input reflect.Type) bool {
-	return (input.Kind() == reflect.Struct && input != nil && strings.Contains(input.Name(), "Nullable[")) ||
-		input.Kind() == reflect.Ptr && isNullableType(input.Elem())
+	t := input
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Nullable[")
+}
+
+func nullableHasValue(val *reflect.Value) bool {
+	target := val
+	if target.Kind() == reflect.Ptr {
+		if target.IsNil() {
+			return false
+		}
+		el := val.Elem()
+		target = &el
+	}
+	isSet := target.Field(1)
+	return isSet.Bool()
 }
 
 func getSerialKey(field *reflect.StructField, keyCasing KeyCasing) string {

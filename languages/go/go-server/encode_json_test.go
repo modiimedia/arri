@@ -3,6 +3,7 @@ package arri_test
 import (
 	arri "arri/languages/go/go-server"
 	"encoding/json"
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -218,14 +219,14 @@ func BenchmarkEncodeJsonWithNullableFieldsStd(b *testing.B) {
 }
 
 var _recursiveObjectInput = recursiveObject{
-	Left: arri.NotNull(&recursiveObject{
-		Left: arri.NotNull(&recursiveObject{
-			Left:  arri.Null[*recursiveObject](),
-			Right: arri.NotNull(&recursiveObject{}),
-		}),
-		Right: arri.Null[*recursiveObject](),
-	}),
-	Right: arri.NotNull(&recursiveObject{}),
+	Left: &recursiveObject{
+		Left: &recursiveObject{
+			Left:  nil,
+			Right: &recursiveObject{},
+		},
+		Right: nil,
+	},
+	Right: &recursiveObject{},
 }
 
 func TestEncodeJsonRecursiveObject(t *testing.T) {
@@ -244,6 +245,8 @@ func TestEncodeJsonRecursiveObject(t *testing.T) {
 }
 
 func BenchmarkEncodeJsonRecursiveObject(b *testing.B) {
+	result, _ := arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
+	fmt.Println("RESULT", string(result))
 	for i := 0; i < b.N; i++ {
 		arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
 	}
@@ -257,6 +260,7 @@ func BenchmarkEncodeJsonRecursiveObjectStd(b *testing.B) {
 
 var _benchUserEncodingInput = benchUser{
 	Id:      "1",
+	Role:    "STANDARD",
 	Name:    arri.Some("John Doe"),
 	Email:   "johndoe@gmail.com",
 	IsAdmin: false,
