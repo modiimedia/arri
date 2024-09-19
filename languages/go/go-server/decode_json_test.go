@@ -1,11 +1,12 @@
 package arri_test
 
 import (
-	arri "arri/languages/go/go-server"
 	"encoding/json"
 	"os"
 	"reflect"
 	"testing"
+
+	arri "arrirpc.com/arri"
 )
 
 var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")

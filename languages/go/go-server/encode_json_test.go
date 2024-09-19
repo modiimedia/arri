@@ -1,12 +1,13 @@
 package arri_test
 
 import (
-	arri "arri/languages/go/go-server"
 	"encoding/json"
 	"os"
 	"reflect"
 	"testing"
 	"time"
+
+	arri "arrirpc.com/arri"
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)

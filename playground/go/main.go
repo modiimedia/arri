@@ -1,9 +1,10 @@
 package main
 
 import (
-	arri "arri/languages/go/go-server"
 	"log"
 	"net/http"
+
+	arri "arrirpc.com/arri"
 )
 
 // extend this with custom properties
@@ -12,44 +13,46 @@ type AppContext struct{}
 var mux = http.DefaultServeMux
 
 func main() {
-	options := arri.AppOptions[AppContext]{
-		RpcRoutePrefix: "/procedures",
-	}
 	app := arri.NewApp(
 		mux,
-		options,
+		arri.AppOptions[AppContext]{
+			RpcRoutePrefix: "/procedures",
+		},
 		(func(r *http.Request) (*AppContext, arri.RpcError) {
 			ctx := AppContext{}
 			return &ctx, nil
 		}),
 	)
 	// register an RPC
-	arri.RpcWithOptions(&app, arri.RpcOptions{Method: arri.HttpMethodGet}, SayHello)
-	arri.Rpc(&app, SayGoodbye)
+	arri.Rpc(
+		&app,
+		SayHello,
+		arri.RpcOptions{
+			// manually specify the http method
+			Method: arri.HttpMethodGet,
+		},
+	)
+	arri.Rpc(&app, SayGoodbye, arri.RpcOptions{})
 
-	appErr := app.Run(arri.RunOptions{})
+	appErr := app.Run(arri.RunOptions{Port: 3000})
 	if appErr != nil {
 		log.Fatal(appErr)
 		return
 	}
 }
 
-type SayHelloParams struct {
-	FirstName string
-	LastName  string
+type GreetingParams struct {
+	Name     string
+	LastName arri.Option[string]
 }
-type SayHelloResponse struct {
+type GreetingResponse struct {
 	Message string
 }
 
-func SayHello(params SayHelloParams, context AppContext) (SayHelloResponse, arri.RpcError) {
-	return SayHelloResponse{Message: "Hello " + params.FirstName + " " + params.LastName}, nil
+func SayHello(params GreetingParams, context AppContext) (GreetingResponse, arri.RpcError) {
+	return GreetingResponse{Message: "Hello " + params.Name}, nil
 }
 
-type SayGoodbyeResponse struct {
-	Message string
-}
-
-func SayGoodbye(_ arri.EmptyMessage, context AppContext) (SayGoodbyeResponse, arri.RpcError) {
-	return SayGoodbyeResponse{}, nil
+func SayGoodbye(params GreetingParams, context AppContext) (GreetingResponse, arri.RpcError) {
+	return GreetingResponse{Message: "Goodbye " + params.Name}, nil
 }

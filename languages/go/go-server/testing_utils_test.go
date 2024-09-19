@@ -1,8 +1,9 @@
 package arri_test
 
 import (
-	arri "arri/languages/go/go-server"
 	"time"
+
+	arri "arrirpc.com/arri"
 )
 
 type nestedObject struct {

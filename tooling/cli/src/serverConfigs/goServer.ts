@@ -41,6 +41,15 @@ export function goServer(options: GoServerOptions = {}) {
                             cwd: options.cwd,
                         },
                     );
+                    childProcess.on("error", (_) => {
+                        childProcess?.kill("SIGTERM");
+                        childProcess?.removeAllListeners();
+                        childProcess = undefined;
+                    });
+                    childProcess.on("close", (_) => {
+                        childProcess?.removeAllListeners();
+                        childProcess = undefined;
+                    });
                 } catch (err) {
                     logger.error(err);
                 }
@@ -65,6 +74,7 @@ export function goServer(options: GoServerOptions = {}) {
                         return;
                     default: {
                         await closeChildProcess();
+                        childProcess?.removeAllListeners();
                         childProcess = undefined;
                         spawnProcess();
                     }

@@ -50,6 +50,7 @@
     "scule",
     "serde",
     "struct",
+    "structs",
     "typebox",
     "typeof",
     "uncrypto",

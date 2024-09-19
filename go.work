@@ -1,0 +1,4 @@
+go 1.22.5
+
+use ./languages/go/go-server
+use ./playground/go

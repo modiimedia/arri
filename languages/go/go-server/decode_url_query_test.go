@@ -1,10 +1,11 @@
 package arri_test
 
 import (
-	arri "arri/languages/go/go-server"
 	"reflect"
 	"testing"
 	"time"
+
+	arri "arrirpc.com/arri"
 )
 
 type queryResultWithEveryType struct {

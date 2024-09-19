@@ -1,8 +1,9 @@
 package arri_test
 
 import (
-	arri "arri/languages/go/go-server"
 	"testing"
+
+	arri "arrirpc.com/arri"
 )
 
 func BenchmarkToTypeDef(b *testing.B) {
