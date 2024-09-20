@@ -42,8 +42,7 @@ func main() {
 }
 
 type GreetingParams struct {
-	Name     string
-	LastName arri.Option[string]
+	Name string
 }
 type GreetingResponse struct {
 	Message string
