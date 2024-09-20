@@ -243,30 +243,36 @@ importers:
         specifier: ^1.3.5
         version: 1.3.5
 
-  tests/server:
+  tests/servers/go:
+    devDependencies:
+      arri:
+        specifier: workspace:*
+        version: link:../../../tooling/cli
+
+  tests/servers/ts:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../tooling/schema
+        version: link:../../../tooling/schema
       '@sinclair/typebox':
         specifier: ^0.33.9
         version: 0.33.9
       arri:
         specifier: workspace:*
-        version: link:../../tooling/cli
+        version: link:../../../tooling/cli
     devDependencies:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
-        version: link:../../tooling/codegen-utils
+        version: link:../../../tooling/codegen-utils
       '@arrirpc/eslint-plugin':
         specifier: workspace:*
-        version: link:../../tooling/eslint-plugin
+        version: link:../../../tooling/eslint-plugin
       '@arrirpc/server':
         specifier: workspace:*
-        version: link:../../languages/ts/ts-server
+        version: link:../../../languages/ts/ts-server
       '@arrirpc/typebox-adapter':
         specifier: workspace:*
-        version: link:../../tooling/schema-typebox-adapter
+        version: link:../../../tooling/schema-typebox-adapter
       '@faker-js/faker':
         specifier: ^9.0.0
         version: 9.0.0

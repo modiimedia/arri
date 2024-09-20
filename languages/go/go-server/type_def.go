@@ -28,7 +28,7 @@ const (
 type Type = string
 
 type TypeDefMetadata struct {
-	Id           string         `key:"id"`
+	Id           Option[string] `key:"id"`
 	Description  Option[string] `key:"description"`
 	IsDeprecated Option[bool]   `key:"isDeprecated"`
 }
@@ -160,6 +160,7 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error
 		reflect.Int32,
 		reflect.Int64,
 		reflect.Uint,
+		reflect.Uint8,
 		reflect.Uint16,
 		reflect.Uint32,
 		reflect.Uint64:
@@ -231,7 +232,7 @@ func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*TypeD
 		if context.EnumValues.IsSome() {
 			metadata := None[TypeDefMetadata]()
 			if context.EnumName.IsSome() {
-				metadata = Some(TypeDefMetadata{Id: context.EnumName.Unwrap()})
+				metadata = Some(TypeDefMetadata{Id: Some(context.EnumName.Unwrap())})
 			}
 			return &TypeDef{
 				Enum:     context.EnumValues,
@@ -259,15 +260,33 @@ func IsDiscriminatorStruct(input reflect.Type) bool {
 	return false
 }
 
+func nameFromInstancePath(instancePath string) string {
+	fmt.Println("INSTANCe_PATH", instancePath)
+	parts := strings.Split(instancePath, "/")
+
+	return strcase.ToCamel(strings.Join(parts, "_"))
+}
+
 func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	structName := input.Name()
-	for i := 0; i < len(context.ParentStructs); i++ {
-		name := context.ParentStructs[i]
-		if name == structName {
-			return &TypeDef{Ref: Some(structName)}, nil
-		}
+	typeId := Some(structName)
+	isAnonymous := len(input.PkgPath()) == 0 || strings.ContainsAny(structName, " []")
+	if isAnonymous {
+		typeId = None[string]()
 	}
-	context.ParentStructs = append(context.ParentStructs, structName)
+	if len(context.ParentStructs) == 0 && isAnonymous {
+		return nil, fmt.Errorf("root level type definitions cannot be anonymous structs")
+	}
+	if typeId.IsSome() {
+		for i := 0; i < len(context.ParentStructs); i++ {
+			name := context.ParentStructs[i]
+			if name == typeId.Unwrap() {
+				return &TypeDef{Ref: typeId}, nil
+			}
+		}
+		context.ParentStructs = append(context.ParentStructs, typeId.Unwrap())
+
+	}
 	kind := input.Kind()
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
@@ -275,14 +294,13 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 	if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
-
 	requiredFields := []__orderedMapEntry__[TypeDef]{}
 	optionalFields := []__orderedMapEntry__[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
 		if isDiscriminator {
-			return taggedUnionToTypeDef(structName, input, context)
+			return taggedUnionToTypeDef(typeId, input, context)
 		}
 		key := field.Tag.Get("key")
 		if len(key) == 0 {
@@ -336,8 +354,12 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 		if isOptional2 {
 			fieldType = extractOptionalType(fieldType)
 		}
-
-		instancePath := "/" + structName + "/" + key
+		var instancePath string
+		if isAnonymous {
+			instancePath = context.InstancePath + "/" + key
+		} else {
+			instancePath = "/" + typeId.Unwrap() + "/" + key
+		}
 		schemaPath := context.SchemaPath + "/properties/" + key
 		newDepth := context.CurrentDepth + 1
 		fieldResult, fieldError := typeToTypeDef(
@@ -387,12 +409,12 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 			Properties:         Some(requiredFields),
 			OptionalProperties: Some(optionalFields),
 			Nullable:           context.IsNullable,
-			Metadata:           Some(TypeDefMetadata{Id: structName})}, nil
+			Metadata:           Some(TypeDefMetadata{Id: typeId})}, nil
 	}
 	return &TypeDef{
 		Properties: Some(requiredFields),
 		Nullable:   context.IsNullable,
-		Metadata:   Some(TypeDefMetadata{Id: structName}),
+		Metadata:   Some(TypeDefMetadata{Id: typeId}),
 	}, nil
 }
 
@@ -410,7 +432,7 @@ func extractNullableType(input reflect.Type) reflect.Type {
 	return field.Type
 }
 
-func taggedUnionToTypeDef(name string, input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func taggedUnionToTypeDef(name Option[string], input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported

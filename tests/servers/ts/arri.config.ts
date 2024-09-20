@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import path from "path";
 
 const prettierConfig = JSON.parse(
-    readFileSync(path.resolve(__dirname, "../../.prettierrc"), {
+    readFileSync(path.resolve(__dirname, "../../../.prettierrc"), {
         encoding: "utf-8",
     }),
 );
@@ -19,7 +19,7 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/ts/testClient.rpc.ts",
+                "../../clients/ts/testClient.rpc.ts",
             ),
             prettierOptions: prettierConfig,
         }),
@@ -27,28 +27,28 @@ export default defineConfig({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/dart/lib/test_client.rpc.dart",
+                "../../clients/dart/lib/test_client.rpc.dart",
             ),
         }),
         generators.kotlinClient({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
+                "../../clients/kotlin/src/main/kotlin/TestClient.rpc.kt",
             ),
         }),
         generators.rustClient({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/rust/src/test_client.g.rs",
+                "../../clients/rust/src/test_client.g.rs",
             ),
         }),
         generators.swiftClient({
             clientName: "TestClient",
             outputFile: path.resolve(
                 __dirname,
-                "../clients/swift/Sources/TestClient.g.swift",
+                "../../clients/swift/Sources/TestClient.g.swift",
             ),
         }),
     ],

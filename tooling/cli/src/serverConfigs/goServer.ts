@@ -89,11 +89,16 @@ export function goServer(options: GoServerOptions = {}) {
             let defFileCache = "";
             let hasRunGenerators = false;
             async function handleAppDef() {
-                const defFile = fs.readFileSync(
-                    `${resolvedOutDir}/__definition.json`,
-                    "utf8",
-                );
-                if (defFile == defFileCache) {
+                let defFile = "";
+                try {
+                    defFile = fs.readFileSync(
+                        `${resolvedOutDir}/__definition.json`,
+                        "utf8",
+                    );
+                } catch (_) {
+                    return;
+                }
+                if (!defFile || defFile == defFileCache) {
                     return;
                 }
                 const startTime = new Date();
@@ -120,9 +125,8 @@ export function goServer(options: GoServerOptions = {}) {
                     cwd: options.cwd,
                 },
             );
-            appDefWatcher.on("change", () => {
-                handleAppDef();
-            });
+            appDefWatcher.on("add", () => handleAppDef());
+            appDefWatcher.on("change", () => handleAppDef());
         },
         buildFn: async (_, generators) => {
             if (!fs.existsSync(outDir)) {

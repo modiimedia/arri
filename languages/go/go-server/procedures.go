@@ -41,6 +41,9 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName strin
 		rpcSchema.Http.IsDeprecated = Some(options.IsDeprecated)
 	}
 	params := handlerType.In(0)
+	if params.Kind() != reflect.Struct {
+		panic("rpc params must be a struct. pointers and other types are not allowed.")
+	}
 	hasParams := params.Name() != "EmptyMessage"
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
@@ -48,23 +51,28 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName strin
 		if paramsSchemaErr != nil {
 			panic(paramsSchemaErr)
 		}
-		rpcSchema.Http.Params = Some(paramsSchema.Metadata.Unwrap().Id)
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id, Value: *paramsSchema})
-
+		if paramsSchema.Metadata.IsNone() {
+			panic("Procedures cannot accept anonymous structs")
+		}
+		rpcSchema.Http.Params = paramsSchema.Metadata.Unwrap().Id
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
 	}
 	response := handlerType.Out(0)
 	if response.Kind() == reflect.Ptr {
 		response = response.Elem()
 	}
-	hasResponse := response.Name() != "EmptyMessage"
+	hasResponse := !(response.Name() == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
 		}
-		rpcSchema.Http.Response = Some(responseSchema.Metadata.Unwrap().Id)
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id, Value: *responseSchema})
+		if responseSchema.Metadata.IsNone() {
+			panic("Procedures cannot return anonymous structs")
+		}
+		rpcSchema.Http.Response = responseSchema.Metadata.Unwrap().Id
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
 	}
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	if len(serviceName) > 0 {
@@ -93,7 +101,6 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName strin
 	if onError == nil {
 		onError = func(r *http.Request, t *TContext, err error) {}
 	}
-
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")

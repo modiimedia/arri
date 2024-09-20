@@ -1,13 +1,13 @@
 {
-  "name": "test-server",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tests/test-server",
+  "name": "test-server-ts",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/servers/ts",
   "targets": {
     "dev": {
       "executor": "nx:run-commands",
       "options": {
         "command": "./node_modules/.bin/arri dev",
-        "cwd": "tests/server"
+        "cwd": "tests/servers/ts"
       }
     },
     "build-server": {
@@ -16,7 +16,7 @@
       "outputs": ["{projectRoot}/.arri", "{projectRoot}/.output"],
       "options": {
         "command": "./node_modules/.bin/arri build",
-        "cwd": "tests/server"
+        "cwd": "tests/servers/ts"
       },
       "cache": false
     },
@@ -25,7 +25,7 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "command": "eslint .",
-        "cwd": "tests/server"
+        "cwd": "tests/servers/ts"
       }
     },
 
@@ -34,14 +34,14 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "node .output/server.mjs --host",
-        "cwd": "tests/server"
+        "cwd": "tests/servers/ts"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "tests/server"
+        "cwd": "tests/servers/ts"
       }
     }
   }

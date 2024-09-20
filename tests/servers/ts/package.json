@@ -1,6 +1,7 @@
 {
-  "name": "test-server",
+  "name": "test-server-ts",
   "type": "module",
+  "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
     "@sinclair/typebox": "^0.33.9",

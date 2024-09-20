@@ -9,7 +9,6 @@ import (
 
 type App[TContext any] struct {
 	Mux                  *http.ServeMux
-	Port                 uint32
 	CreateContext        func(r *http.Request) (*TContext, RpcError)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
@@ -84,18 +83,35 @@ func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
 	return nil
 }
 
+func printServerStartMessages[TContext any](app *App[TContext], port uint32, isHttps bool) {
+	protocol := "http"
+	if isHttps {
+		protocol = "https"
+	}
+	baseUrl := fmt.Sprintf("%v://localhost:%v", protocol, port)
+	fmt.Printf("Starting server at %v\n", baseUrl)
+	if len(app.Options.RpcRoutePrefix) > 0 {
+		fmt.Printf("Procedures path: %v%v\n", baseUrl, app.Options.RpcRoutePrefix)
+	}
+	defPath := app.Options.RpcDefinitionPath
+	if len(defPath) == 0 {
+		defPath = "/__definition"
+	}
+	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.Options.RpcRoutePrefix+defPath)
+}
+
 func startServer[TContext any](app *App[TContext], options RunOptions) error {
-	port := app.Port
+	port := options.Port
 	if port == 0 {
 		port = 3000
 	}
 	keyFile := options.KeyFile
 	certFile := options.CertFile
 	if len(keyFile) > 0 && len(certFile) > 0 {
-		fmt.Printf("Starting server at https://localhost:%v\n", port)
+		printServerStartMessages(app, port, true)
 		return http.ListenAndServeTLS(fmt.Sprintf(":%v", port), certFile, keyFile, app.Mux)
 	}
-	fmt.Printf("Starting server at http://localhost:%v\n", port)
+	printServerStartMessages(app, port, false)
 	return http.ListenAndServe(fmt.Sprintf(":%v", port), app.Mux)
 }
 
@@ -259,8 +275,11 @@ func RegisterDef[TContext any](app *App[TContext], input any) {
 	if err != nil {
 		panic(err)
 	}
+	if def.Metadata.IsNone() || def.Metadata.Unwrap().Id.IsNone() {
+		panic("cannot register anonymous structs as a definition")
+	}
 	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{
-		Key:   def.Metadata.Unwrap().Id,
+		Key:   def.Metadata.Unwrap().Id.Unwrap(),
 		Value: *def,
 	})
 }
