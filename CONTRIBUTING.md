@@ -33,6 +33,7 @@ To be able to build and run everything you currently need:
 
 -   [The Dart SDK](https://dart.dev/get-dart) for Dart
 -   [The Rust compiler & Cargo](https://www.rust-lang.org/learn/get-started) for Rust
+-   [The Go compiler](https://go.dev/doc/install) for Go
 -   [The Swift compiler](https://www.swift.org/documentation/swift-compiler/) for Swift
 
 ## Building and Running Tests
@@ -104,7 +105,7 @@ There are many cases where you might want to run integration tests against a sin
 pnpm build
 
 # start the test server
-pnpm nx dev test-server
+pnpm nx dev test-server-ts
 ```
 
 Next you need to start the integration tests for the specific client you want to test.
@@ -119,8 +120,12 @@ That's it.
 
 The playground directory is used to experiment with random stuff. You can start the playground dev server like so:
 
-```ts
-pnpm nx dev playground
+```bash
+# spin up the typescript server playground
+pnpm nx dev ts-playground
+
+# spin up the go server playground
+pnpm nx dev go-playground
 ```
 
 Just don't commit any changes made in the playground directory.
