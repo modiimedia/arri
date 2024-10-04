@@ -34,7 +34,7 @@
     "@arrirpc/schema": "workspace:*",
     "@joshmossas/listhen": "^1.11.1",
     "@joshmossas/ofetch": "^1.3.5",
-    "c12": "^1.11.2",
+    "c12": "^2.0.0",
     "chokidar": "^3.6.0",
     "citty": "^0.1.6",
     "consola": "^3.2.3",

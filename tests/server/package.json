@@ -16,7 +16,7 @@
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
-    "@faker-js/faker": "^9.0.0",
+    "@faker-js/faker": "^9.0.3",
     "arri": "workspace:*"
   }
 }
