@@ -163,7 +163,7 @@ When it comes to data integrity the server should be deemed as the authority. Th
 
 ## Additional Requirements for Official Client Generators
 
-_If you have any additional questions or concerns regarding the instructions below, please reach out on [discord](https://discord.gg/3pdbYGDa)_
+_If you have any additional questions or concerns regarding the instructions below, please reach out on [discord](https://discord.gg/5m23HEQss7)_
 
 Maintaining high quality first party clients is a very high priority for Arri RPC. This is important to distinguish us from other projects where the clients sometimes do not maintain the same level of quality. In order to facilitate this Arri, has a number of test files and integration tests to test our generated clients in a variety of scenarios. All official clients need to have tests setup to pass these scenarios. Additionally we should try to minimize the number of dependencies needed by official clients.
 

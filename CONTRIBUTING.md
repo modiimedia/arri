@@ -2,7 +2,7 @@
 
 I'm really excited that you are interested in contributing to Arri RPC. This guide is designed to help you get your environment setup and give a general overview of the codebase.
 
-If you need any additional guidance, feel free to pop into the Arri RPC [discord](https://discord.gg/3pdbYGDa).
+If you need any additional guidance, feel free to pop into the Arri RPC [discord](https://discord.gg/5m23HEQss7).
 
 ## Table of Contents
 
@@ -166,7 +166,7 @@ For a more complete guide on creating a code generator see [here](/docs/creating
 
 -   Run `pnpm format` before submitting
 -   PRs should address primarily a single concern. Example: Do not open a PR that fixes 3 unrelated bugs.
--   Before adding features or submitting a large PR please open up an issue or start a discussion on [discord](https://discord.gg/3pdbYGDa).
+-   Before adding features or submitting a large PR please open up an issue or start a discussion on [discord](https://discord.gg/5m23HEQss7).
 -   Provide a good PR description as a record of what change is being made and why it was made. Link to a GitHub issue if it exists.
 
 ## Obtaining Commit Access

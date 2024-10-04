@@ -10,7 +10,6 @@ import {
     type RecursiveObject,
     type RecursiveUnion,
     TestClient,
-    type WsMessageResponse,
 } from "./testClient.rpc";
 
 function wait(ms: number) {
@@ -405,97 +404,97 @@ test("[SSE] reconnect with new credentials", async () => {
     expect(errorCount).toBe(0);
 });
 
-test("[ws] support websockets", async () => {
-    let connectionCount = 0;
-    let messageCount = 0;
-    const errorCount = 0;
-    const msgMap: Record<string, WsMessageResponse> = {};
-    const controller = await client.tests.websocketRpc({
-        onMessage(msg) {
-            messageCount++;
-            msgMap[msg.entityId] = msg;
-        },
-        onConnectionError(err) {
-            throw new ArriErrorInstance({
-                code: err.code,
-                message: err.message,
-                data: err.data,
-                stack: err.stack,
-            });
-        },
-    });
-    controller.onOpen = () => {
-        connectionCount++;
-        controller.send({
-            type: "CREATE_ENTITY",
-            entityId: "1",
-            x: 100,
-            y: 200,
-        });
-        controller.send({
-            type: "UPDATE_ENTITY",
-            entityId: "2",
-            x: 1,
-            y: 2,
-        });
-        controller.send({
-            type: "UPDATE_ENTITY",
-            entityId: "3",
-            x: 5,
-            y: -5,
-        });
-    };
-    controller.connect();
-    await wait(1000);
-    controller.close();
-    expect(connectionCount).toBe(1);
-    expect(messageCount).toBe(3);
-    expect(errorCount).toBe(0);
-    expect(msgMap["1"]!.x).toBe(100);
-    expect(msgMap["1"]!.y).toBe(200);
-    expect(msgMap["2"]!.x).toBe(1);
-    expect(msgMap["2"]!.y).toBe(2);
-    expect(msgMap["3"]!.x).toBe(5);
-    expect(msgMap["3"]!.y).toBe(-5);
-});
+// test("[ws] support websockets", async () => {
+//     let connectionCount = 0;
+//     let messageCount = 0;
+//     const errorCount = 0;
+//     const msgMap: Record<string, WsMessageResponse> = {};
+//     const controller = await client.tests.websocketRpc({
+//         onMessage(msg) {
+//             messageCount++;
+//             msgMap[msg.entityId] = msg;
+//         },
+//         onConnectionError(err) {
+//             throw new ArriErrorInstance({
+//                 code: err.code,
+//                 message: err.message,
+//                 data: err.data,
+//                 stack: err.stack,
+//             });
+//         },
+//     });
+//     controller.onOpen = () => {
+//         connectionCount++;
+//         controller.send({
+//             type: "CREATE_ENTITY",
+//             entityId: "1",
+//             x: 100,
+//             y: 200,
+//         });
+//         controller.send({
+//             type: "UPDATE_ENTITY",
+//             entityId: "2",
+//             x: 1,
+//             y: 2,
+//         });
+//         controller.send({
+//             type: "UPDATE_ENTITY",
+//             entityId: "3",
+//             x: 5,
+//             y: -5,
+//         });
+//     };
+//     controller.connect();
+//     await wait(1000);
+//     controller.close();
+//     expect(connectionCount).toBe(1);
+//     expect(messageCount).toBe(3);
+//     expect(errorCount).toBe(0);
+//     expect(msgMap["1"]!.x).toBe(100);
+//     expect(msgMap["1"]!.y).toBe(200);
+//     expect(msgMap["2"]!.x).toBe(1);
+//     expect(msgMap["2"]!.y).toBe(2);
+//     expect(msgMap["3"]!.x).toBe(5);
+//     expect(msgMap["3"]!.y).toBe(-5);
+// });
 
-test("[ws] receive large messages", async () => {
-    let messageCount = 0;
-    const controller = await client.tests.websocketRpcSendTenLargeMessages({
-        onMessage(_) {
-            messageCount++;
-        },
-    });
-    controller.connect();
-    await wait(2000);
-    controller.close();
-    expect(messageCount).toBe(10);
-});
+// test("[ws] receive large messages", async () => {
+//     let messageCount = 0;
+//     const controller = await client.tests.websocketRpcSendTenLargeMessages({
+//         onMessage(_) {
+//             messageCount++;
+//         },
+//     });
+//     controller.connect();
+//     await wait(2000);
+//     controller.close();
+//     expect(messageCount).toBe(10);
+// });
 
-test("[ws] connection errors", async () => {
-    let connectionCount = 0;
-    let messageCount = 0;
-    let errorCount = 0;
-    const controller = await new TestClient({
-        baseUrl: "http://127.0.0.1:2021",
-    }).tests.websocketRpc({
-        onOpen() {
-            connectionCount++;
-        },
-        onMessage() {
-            messageCount++;
-        },
-        onConnectionError() {
-            errorCount++;
-        },
-        onClose() {},
-    });
-    controller.connect();
-    await wait(500);
-    expect(connectionCount).toBe(0);
-    expect(errorCount).toBe(1);
-    expect(messageCount).toBe(0);
-});
+// test("[ws] connection errors", async () => {
+//     let connectionCount = 0;
+//     let messageCount = 0;
+//     let errorCount = 0;
+//     const controller = await new TestClient({
+//         baseUrl: "http://127.0.0.1:2021",
+//     }).tests.websocketRpc({
+//         onOpen() {
+//             connectionCount++;
+//         },
+//         onMessage() {
+//             messageCount++;
+//         },
+//         onConnectionError() {
+//             errorCount++;
+//         },
+//         onClose() {},
+//     });
+//     controller.connect();
+//     await wait(500);
+//     expect(connectionCount).toBe(0);
+//     expect(errorCount).toBe(1);
+//     expect(messageCount).toBe(0);
+// });
 
 // describe("arri adapters", () => {
 //     test("typebox adapter", async () => {

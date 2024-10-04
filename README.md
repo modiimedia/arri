@@ -2,7 +2,7 @@ _**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
 # Arri RPC
 
-[![Discord](https://img.shields.io/discord/1272569268869005322?logo=discord&logoColor=white&logoSize=)](https://discord.gg/3pdbYGDa)
+[![Discord](https://img.shields.io/discord/1272569268869005322?logo=discord&logoColor=white&logoSize=)](https://discord.gg/5m23HEQss7)
 
 Arri RPC is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
@@ -192,4 +192,4 @@ JSON app definitions are something that would normally be automatically generate
 
 Contributions are welcome!
 
-Please read the [contribution guide](/CONTRIBUTING.md) which will guide you through the entire workflow of how to build the source code, how to run the tests, and how to contribute changes to the Arri RPC codebase. Also feel free to reach out on [discord](https://discord.gg/3pdbYGDa) if you have any other additional questions.
+Please read the [contribution guide](/CONTRIBUTING.md) which will guide you through the entire workflow of how to build the source code, how to run the tests, and how to contribute changes to the Arri RPC codebase. Also feel free to reach out on [discord](https://discord.gg/5m23HEQss7) if you have any other additional questions.
