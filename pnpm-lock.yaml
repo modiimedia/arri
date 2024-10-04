@@ -209,8 +209,8 @@ importers:
   playground/go:
     devDependencies:
       '@types/node':
-        specifier: 22.5.0
-        version: 22.5.0
+        specifier: 22.7.4
+        version: 22.7.4
       arri:
         specifier: workspace:*
         version: link:../../tooling/cli
@@ -225,8 +225,8 @@ importers:
         version: link:../../languages/ts/ts-server
     devDependencies:
       '@types/node':
-        specifier: 22.5.0
-        version: 22.5.0
+        specifier: 22.7.4
+        version: 22.7.4
       arri:
         specifier: workspace:*
         version: link:../../tooling/cli
