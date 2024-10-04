@@ -1,6 +1,6 @@
 {
   "name": "@arrirpc/codegen-ts",
-  "version": "0.61.2",
+  "version": "0.62.0",
   "type": "module",
   "license": "MIT",
   "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
