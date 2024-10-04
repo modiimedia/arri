@@ -1,6 +1,5 @@
 import { type WsRpcDefinition } from "@arrirpc/codegen-utils";
 import {
-    a,
     type ASchema,
     type CompiledValidator,
     type InferType,
@@ -69,7 +68,7 @@ export class WsPeer<TResponse> {
     constructor(peer: Peer, opts: WsPeerOpts<TResponse>) {
         this._peer = peer;
         this._validator = opts.validator;
-        this.url = peer.url;
+        this.url = peer.websocket.url ?? "";
         this.context = opts.context;
     }
 
@@ -118,10 +117,6 @@ export class WsPeer<TResponse> {
         const payload = this._validator.serialize(message);
         this._peer.publish(channel, payload);
     }
-
-    readyState() {
-        return this._peer.readyState;
-    }
 }
 
 export interface WebSocketRpcHandler<TParams, TResponse> {
@@ -153,67 +148,67 @@ export function defineWebsocketRpc<
 export function registerWebsocketRpc(
     router: Router,
     path: string,
-    rpc: NamedWebsocketRpc<any, any>,
+    _rpc: NamedWebsocketRpc<any, any>,
 ) {
-    let responseValidator: undefined | ReturnType<typeof a.compile>;
-    let paramValidator: undefined | ReturnType<typeof a.compile>;
-    try {
-        responseValidator = rpc.response ? a.compile(rpc.response) : undefined;
-    } catch (err) {
-        console.error("ERROR COMPILING VALIDATOR", err);
-    }
-    try {
-        paramValidator = rpc.params ? a.compile(rpc.params) : undefined;
-    } catch (err) {
-        console.error("ERROR COMPILING PARAMS", err);
-    }
+    // let responseValidator: undefined | ReturnType<typeof a.compile>;
+    // let paramValidator: undefined | ReturnType<typeof a.compile>;
+    // try {
+    //     responseValidator = rpc.response ? a.compile(rpc.response) : undefined;
+    // } catch (err) {
+    //     console.error("ERROR COMPILING VALIDATOR", err);
+    // }
+    // try {
+    //     paramValidator = rpc.params ? a.compile(rpc.params) : undefined;
+    // } catch (err) {
+    //     console.error("ERROR COMPILING PARAMS", err);
+    // }
 
-    const rpcHandler =
-        typeof rpc.handler === "function" ? rpc.handler() : rpc.handler;
+    // const rpcHandler =
+    //     typeof rpc.handler === "function" ? rpc.handler() : rpc.handler;
 
     const handler = defineWebSocketHandler({
         upgrade(_req) {},
-        open(peer) {
-            const urlParts = peer.url.split("?");
-            const context: WsPeerContext = {
-                rpcName: rpc.name,
-                clientAddress: peer.addr,
-            };
-            if (urlParts.length > 1) {
-                urlParts.shift();
-                const queryStr = new URLSearchParams(urlParts.join("?"));
-                const query: Record<string, string> = {};
-                for (const [key, val] of queryStr.entries()) {
-                    query[key] = val;
-                }
-                context.queryParams = query;
-            }
-            const wsPeer = new WsPeer(peer, {
-                validator: responseValidator,
-                context,
-            });
-            peer.ctx.__wsPeer = wsPeer;
-            rpcHandler.onOpen(peer.ctx.__wsPeer as WsPeer<any>);
+        open(_) {
+            // const urlParts = peer.websocket.url?.split("?") ?? [];
+            // const context: WsPeerContext = {
+            //     rpcName: rpc.name,
+            //     clientAddress: peer.remoteAddress,
+            // };
+            // if (urlParts.length > 1) {
+            //     urlParts.shift();
+            //     const queryStr = new URLSearchParams(urlParts.join("?"));
+            //     const query: Record<string, string> = {};
+            //     for (const [key, val] of queryStr.entries()) {
+            //         query[key] = val;
+            //     }
+            //     context.queryParams = query;
+            // }
+            // const wsPeer = new WsPeer(peer, {
+            //     validator: responseValidator,
+            //     context,
+            // });
+            // peer.__wsPeer = wsPeer;
+            // rpcHandler.onOpen(peer.ctx.__wsPeer as WsPeer<any>);
         },
-        message(peer, message) {
-            if (!paramValidator) {
-                return;
-            }
-            const data = paramValidator.safeParse(message.text());
-            if (!data.success) {
-                const errorResponse: ArriServerErrorResponse = {
-                    code: 400,
-                    message: data.error.message,
-                    data: data.error.errors,
-                    stack: data.error.stack?.split("\n"),
-                };
-                (peer.ctx.__wsPeer as WsPeer<any>).sendError(errorResponse);
-                return;
-            }
-            rpcHandler.onMessage(peer.ctx.__wsPeer as WsPeer<any>, data.value);
+        message(_, __) {
+            // if (!paramValidator) {
+            //     return;
+            // }
+            // const data = paramValidator.safeParse(message.text());
+            // if (!data.success) {
+            //     const errorResponse: ArriServerErrorResponse = {
+            //         code: 400,
+            //         message: data.error.message,
+            //         data: data.error.errors,
+            //         stack: data.error.stack?.split("\n"),
+            //     };
+            //     (peer.ctx.__wsPeer as WsPeer<any>).sendError(errorResponse);
+            //     return;
+            // }
+            // rpcHandler.onMessage(peer.ctx.__wsPeer as WsPeer<any>, data.value);
         },
-        close(peer, details) {
-            rpcHandler.onClose(peer.ctx.__wsPeer as WsPeer<any>, details);
+        close(_, __) {
+            // rpcHandler.onClose(peer.ctx.__wsPeer as WsPeer<any>, details);
         },
     });
 

@@ -3,9 +3,16 @@
   "version": "0.61.1",
   "type": "module",
   "license": "MIT",
-  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
-  "bin": { "arri": "./dist/cli.mjs" },
-  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bin": {
+    "arri": "./dist/cli.mjs"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -14,7 +21,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@arrirpc/codegen-dart": "workspace:*",
     "@arrirpc/codegen-kotlin": "workspace:*",
@@ -23,7 +32,7 @@
     "@arrirpc/codegen-ts": "workspace:*",
     "@arrirpc/codegen-utils": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "@joshmossas/listhen": "^1.10.1",
+    "@joshmossas/listhen": "^1.11.1",
     "@joshmossas/ofetch": "^1.3.5",
     "c12": "^1.11.2",
     "chokidar": "^3.6.0",
@@ -31,12 +40,14 @@
     "consola": "^3.2.3",
     "degit": "^2.8.4",
     "enquirer": "^2.4.1",
-    "esbuild": "^0.23.1",
+    "esbuild": "^0.24.0",
     "esbuild-plugin-replace": "^1.4.0",
     "globby": "^14.0.2",
-    "h3": "^1.12.0",
+    "h3": "^1.13.0",
     "pathe": "^1.1.2",
     "prettier": "^3.3.3"
   },
-  "devDependencies": { "@types/degit": "^2.8.6" }
+  "devDependencies": {
+    "@types/degit": "^2.8.6"
+  }
 }
