@@ -88,7 +88,7 @@ export function createDartClient(
         generatedTypes: [],
         instancePath: "",
         schemaPath: "",
-        clientVersion: def.info?.version,
+        clientVersion: def.info?.version ?? "",
     };
     const services = unflattenProcedures(def.procedures);
     const subServices: { key: string; name: string }[] = [];
@@ -121,6 +121,7 @@ export function createDartClient(
                 generatedTypes: context.generatedTypes,
                 instancePath: key,
                 schemaPath: `procedures.${key}`,
+                clientVersion: context.clientVersion,
             });
             if (rpc) {
                 rpcParts.push(rpc);
@@ -136,6 +137,7 @@ export function createDartClient(
             clientName: context.clientName,
             modelPrefix: context.modelPrefix,
             generatedTypes: context.generatedTypes,
+            clientVersion: context.clientVersion,
             instancePath: `/${key}`,
             schemaPath: `/${key}`,
         });

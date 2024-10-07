@@ -144,6 +144,7 @@ export function dartServiceFromSchema(
                 generatedTypes: context.generatedTypes,
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
+                clientVersion: context.clientVersion,
             });
             if (subSchemaResult) {
                 subServiceParts.push(subSchemaResult);
@@ -164,6 +165,7 @@ export function dartServiceFromSchema(
                 generatedTypes: context.generatedTypes,
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
+                clientVersion: context.clientVersion,
             });
             if (subSchemaResult) {
                 rpcParts.push(subSchemaResult);
@@ -177,7 +179,7 @@ export function dartServiceFromSchema(
     return `class ${serviceName}{
   final http.Client? _httpClient;
   final String _baseUrl;
-  final String _clientVersion = "${context.clientVersion ?? ""}";
+  final String _clientVersion = "${context.clientVersion}";
   late final FutureOr<Map<String, String>> Function()? _headers;
   ${serviceName}({
     http.Client? httpClient,
