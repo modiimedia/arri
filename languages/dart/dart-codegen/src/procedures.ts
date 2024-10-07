@@ -144,7 +144,6 @@ export function dartServiceFromSchema(
                 generatedTypes: context.generatedTypes,
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
-                clientVersion: context.clientVersion,
             });
             if (subSchemaResult) {
                 subServiceParts.push(subSchemaResult);
@@ -165,7 +164,6 @@ export function dartServiceFromSchema(
                 generatedTypes: context.generatedTypes,
                 instancePath: `${context.instancePath}.${key}`,
                 schemaPath: `${context.schemaPath}.${key}`,
-                clientVersion: context.clientVersion,
             });
             if (subSchemaResult) {
                 rpcParts.push(subSchemaResult);
