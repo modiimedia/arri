@@ -2,13 +2,8 @@
   "name": "@arrirpc/codegen-rust",
   "type": "module",
   "license": "MIT",
-  "author": {
-    "name": "joshmossas",
-    "url": "https://github.com/joshmossas"
-  },
-  "bugs": {
-    "url": "https://github.com/modiimedia/arri/issues"
-  },
+  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
+  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -17,13 +12,11 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "dependencies": {
     "@arrirpc/codegen-utils": "workspace:*",
     "pathe": "^1.1.2"
   },
   "devDependencies": {},
-  "version": "0.62.0"
+  "version": "0.63.0"
 }
