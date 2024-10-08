@@ -1,6 +1,6 @@
 import { a, ValidationError } from "@arrirpc/schema";
-import { ofetch } from "@joshmossas/ofetch";
 import { createConsola } from "consola";
+import { ofetch } from "ofetch";
 import path from "pathe";
 
 export const logger = createConsola().withTag("arri");
