@@ -4,6 +4,6 @@
   "dependencies": {
     "@arrirpc/client": "workspace:*",
     "@arrirpc/schema": "workspace:*",
-    "@joshmossas/ofetch": "^1.3.5"
+    "@joshmossas/ofetch": "^1.4.0"
   }
 }
