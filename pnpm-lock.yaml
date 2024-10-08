@@ -135,8 +135,8 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/schema
       event-source-plus:
-        specifier: ^0.1.5
-        version: 0.1.5
+        specifier: ^0.1.6
+        version: 0.1.6
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
@@ -1361,9 +1361,6 @@ packages:
   '@types/node@20.12.14':
     resolution: {integrity: sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg==}
 
-  '@types/node@22.7.4':
-    resolution: {integrity: sha512-y+NPi1rFzDs1NdQHHToqeiX2TIS79SWEAw9GYhkkx8bD0ChpfqC+n2j5OXOCpzfojBEBt6DnEnnG9MY0zk1XLg==}
-
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
 
@@ -2076,8 +2073,8 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
-  event-source-plus@0.1.5:
-    resolution: {integrity: sha512-ncAATArpgyQ5cBXmBay5kc/TR5MwMpwfo1QMr5XTdpeL3SoFKJd1KfAvuTNfnpTp2RJRbpNm9NO9MwBj1OYQew==}
+  event-source-plus@0.1.6:
+    resolution: {integrity: sha512-3x7B/ZrQzrkNRUVsMZ0FbTFy4fFrgtJNaOHeR6Q+nX5L2hB7B7VKv+XA4EOCu12YCLXf1g/iZYvXtDSdxbwLWA==}
 
   event-stream@3.3.4:
     resolution: {integrity: sha512-QHpkERcGsR0T7Qm3HNJSyXKEEj8AHNxkY3PK8TS2KJvQ7NiSHe3DDpwVKKtoYprL/AreyzFBeIkBIWChAqn60g==}
@@ -4363,10 +4360,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.7.4':
-    dependencies:
-      undici-types: 6.19.8
-
   '@types/node@22.7.5':
     dependencies:
       undici-types: 6.19.8
@@ -4381,7 +4374,7 @@ snapshots:
 
   '@types/ws@8.5.12':
     dependencies:
-      '@types/node': 22.7.4
+      '@types/node': 22.7.5
 
   '@typescript-eslint/eslint-plugin@8.8.1(@typescript-eslint/parser@8.8.1(eslint@9.12.0(jiti@2.3.3))(typescript@5.5.4))(eslint@9.12.0(jiti@2.3.3))(typescript@5.5.4)':
     dependencies:
@@ -5262,7 +5255,7 @@ snapshots:
 
   esutils@2.0.3: {}
 
-  event-source-plus@0.1.5:
+  event-source-plus@0.1.6:
     dependencies:
       ofetch: 1.4.1
 
