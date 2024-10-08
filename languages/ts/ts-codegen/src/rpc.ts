@@ -43,50 +43,37 @@ export function httpRpcFromDefinition(
             description: def.description,
             isDeprecated: def.isDeprecated,
         })}    ${key}(${params ? `params: ${params},` : ""} options: SseOptions<${response ?? "undefined"}> = {}): EventSourceController {
-        try {
-            return arriSseRequest<${response ?? "undefined"}, ${params ?? "undefined"}>(
-                {
-                    url: \`\${this._baseUrl}${def.path}\`,
-                    method: "${def.method.toLowerCase()}",
-                    headers: this._headers,
-                    ${params ? "params: params," : ""}
-                    responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
-                    responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
-                    serializer: ${params ? `$$${params}.${serializerMethod}` : "() => {}"},
-                    clientVersion: "${context.versionNumber}",
-                },
-                options,
-                this._onError,
-            );
-        } catch(err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriSseRequest<${response ?? "undefined"}, ${params ?? "undefined"}>(
+            {
+                url: \`\${this._baseUrl}${def.path}\`,
+                method: "${def.method.toLowerCase()}",
+                headers: this._headers,
+                onError: this._onError,
+                ${params ? "params: params," : ""}
+                responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
+                responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
+                serializer: ${params ? `$$${params}.${serializerMethod}` : "() => {}"},
+                clientVersion: "${context.versionNumber}",
+            },
+            options,
+        );
     }`;
     }
     return `${getJsDocComment({
         description: def.description,
         isDeprecated: def.isDeprecated,
     })}    async ${key}(${params ? `params: ${params}` : ""}): Promise<${response ?? "undefined"}> {
-        try {
-            return arriRequest<${response ?? "undefined"}, ${params ?? "undefined"}>({
-                url: \`\${this._baseUrl}${def.path}\`,
-                method: "${def.method.toLowerCase()}",
-                headers: this._headers,
-                ${params ? "params: params," : ""}
-                responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
-                responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
-                serializer: ${params ? `$$${params}.${serializerMethod}` : "() => {}"},
-                clientVersion: "${context.versionNumber}",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<${response ?? "undefined"}, ${params ?? "undefined"}>({
+            url: \`\${this._baseUrl}${def.path}\`,
+            method: "${def.method.toLowerCase()}",
+            headers: this._headers,
+            onError: this._onError,
+            ${params ? "params: params," : ""}
+            responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
+            responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
+            serializer: ${params ? `$$${params}.${serializerMethod}` : "() => {}"},
+            clientVersion: "${context.versionNumber}",
+        });
     }`;
 }
 
@@ -106,26 +93,19 @@ export function wsRpcFromDefinition(
         description: def.description,
         isDeprecated: def.isDeprecated,
     })}    async ${key}(options: WsOptions<${response ?? "undefined"}> = {}): Promise<WsController<${params ?? "undefined"},${response ?? "undefined"}>> {
-        try {
-            return arriWsRequest<${params ?? "undefined"}, ${response ?? "undefined"}>({
-                url: \`\${this._baseUrl}${def.path}\`,
-                headers: this._headers,
-                responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
-                responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
-                serializer: ${params ? `$$${params}.toJsonString` : "() => {}"},
-                onOpen: options.onOpen,
-                onClose: options.onClose,
-                onError: options.onError,
-                onConnectionError: options.onConnectionError,
-                onMessage: options.onMessage,
-                clientVersion: "${context.versionNumber}",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriWsRequest<${params ?? "undefined"}, ${response ?? "undefined"}>({
+            url: \`\${this._baseUrl}${def.path}\`,
+            headers: this._headers,
+            responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
+            responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
+            serializer: ${params ? `$$${params}.toJsonString` : "() => {}"},
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: "${context.versionNumber}",
+        });
     }`;
 }
 

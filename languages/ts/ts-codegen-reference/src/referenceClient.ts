@@ -52,23 +52,17 @@ export class ExampleClient {
     }
 
     async sendObject(params: NestedObject): Promise<NestedObject> {
-        try {
-            return arriRequest<NestedObject, NestedObject>({
-                url: `${this._baseUrl}/send-object`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$NestedObject.fromJson,
-                responseFromString: $$NestedObject.fromJsonString,
-                serializer: $$NestedObject.toJsonString,
-                clientVersion: "20",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<NestedObject, NestedObject>({
+            url: `${this._baseUrl}/send-object`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$NestedObject.fromJson,
+            responseFromString: $$NestedObject.fromJsonString,
+            serializer: $$NestedObject.toJsonString,
+            clientVersion: "20",
+        });
     }
 }
 
@@ -93,46 +87,34 @@ export class ExampleClientBooksService {
      * Get a book
      */
     async getBook(params: BookParams): Promise<Book> {
-        try {
-            return arriRequest<Book, BookParams>({
-                url: `${this._baseUrl}/books/get-book`,
-                method: "get",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$BookParams.toUrlQueryString,
-                clientVersion: "20",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<Book, BookParams>({
+            url: `${this._baseUrl}/books/get-book`,
+            method: "get",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$Book.fromJson,
+            responseFromString: $$Book.fromJsonString,
+            serializer: $$BookParams.toUrlQueryString,
+            clientVersion: "20",
+        });
     }
     /**
      * Create a book
      * @deprecated
      */
     async createBook(params: Book): Promise<Book> {
-        try {
-            return arriRequest<Book, Book>({
-                url: `${this._baseUrl}/books/create-book`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$Book.toJsonString,
-                clientVersion: "20",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<Book, Book>({
+            url: `${this._baseUrl}/books/create-book`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$Book.fromJson,
+            responseFromString: $$Book.fromJsonString,
+            serializer: $$Book.toJsonString,
+            clientVersion: "20",
+        });
     }
     /**
      * @deprecated
@@ -141,51 +123,37 @@ export class ExampleClientBooksService {
         params: BookParams,
         options: SseOptions<Book> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<Book, BookParams>(
-                {
-                    url: `${this._baseUrl}/books/watch-book`,
-                    method: "get",
-                    headers: this._headers,
-                    params: params,
-                    responseFromJson: $$Book.fromJson,
-                    responseFromString: $$Book.fromJsonString,
-                    serializer: $$BookParams.toUrlQueryString,
-                    clientVersion: "20",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriSseRequest<Book, BookParams>(
+            {
+                url: `${this._baseUrl}/books/watch-book`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$Book.fromJson,
+                responseFromString: $$Book.fromJsonString,
+                serializer: $$BookParams.toUrlQueryString,
+                clientVersion: "20",
+            },
+            options,
+        );
     }
     async createConnection(
         options: WsOptions<Book> = {},
     ): Promise<WsController<BookParams, Book>> {
-        try {
-            return arriWsRequest<BookParams, Book>({
-                url: `${this._baseUrl}/books/create-connection`,
-                headers: this._headers,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$BookParams.toJsonString,
-                onOpen: options.onOpen,
-                onClose: options.onClose,
-                onError: options.onError,
-                onConnectionError: options.onConnectionError,
-                onMessage: options.onMessage,
-                clientVersion: "20",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriWsRequest<BookParams, Book>({
+            url: `${this._baseUrl}/books/create-connection`,
+            headers: this._headers,
+            responseFromJson: $$Book.fromJson,
+            responseFromString: $$Book.fromJsonString,
+            serializer: $$BookParams.toJsonString,
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: "20",
+        });
     }
 }
 

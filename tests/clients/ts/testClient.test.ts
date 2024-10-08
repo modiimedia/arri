@@ -283,6 +283,23 @@ test("can send/receive recursive unions", async () => {
     expect(result).toStrictEqual(payload);
 });
 
+test("onError hook fires properly", async () => {
+    let onErrorFired = false;
+    const customClient = new TestClient({
+        baseUrl,
+        onError(err) {
+            onErrorFired = true;
+            expect(err instanceof ArriErrorInstance).toBe(true);
+        },
+    });
+    try {
+        await customClient.tests.sendObject(input);
+    } catch (_) {
+        // do nothing
+    }
+    expect(onErrorFired).toBe(true);
+});
+
 test("[SSE] supports server sent events", async () => {
     let wasConnected = false;
     let receivedMessageCount = 0;

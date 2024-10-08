@@ -72,259 +72,184 @@ export class TestClientTestsService {
         this._onError = options.onError;
     }
     async emptyParamsGetRequest(): Promise<DefaultPayload> {
-        try {
-            return arriRequest<DefaultPayload, undefined>({
-                url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
-                method: "get",
-                headers: this._headers,
+        return arriRequest<DefaultPayload, undefined>({
+            url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
+            method: "get",
+            headers: this._headers,
+            onError: this._onError,
 
-                responseFromJson: $$DefaultPayload.fromJson,
-                responseFromString: $$DefaultPayload.fromJsonString,
-                serializer: () => {},
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+            responseFromJson: $$DefaultPayload.fromJson,
+            responseFromString: $$DefaultPayload.fromJsonString,
+            serializer: () => {},
+            clientVersion: "10",
+        });
     }
     async emptyParamsPostRequest(): Promise<DefaultPayload> {
-        try {
-            return arriRequest<DefaultPayload, undefined>({
-                url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
-                method: "post",
-                headers: this._headers,
+        return arriRequest<DefaultPayload, undefined>({
+            url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
 
-                responseFromJson: $$DefaultPayload.fromJson,
-                responseFromString: $$DefaultPayload.fromJsonString,
-                serializer: () => {},
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+            responseFromJson: $$DefaultPayload.fromJson,
+            responseFromString: $$DefaultPayload.fromJsonString,
+            serializer: () => {},
+            clientVersion: "10",
+        });
     }
     async emptyResponseGetRequest(params: DefaultPayload): Promise<undefined> {
-        try {
-            return arriRequest<undefined, DefaultPayload>({
-                url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
-                method: "get",
-                headers: this._headers,
-                params: params,
-                responseFromJson: () => {},
-                responseFromString: () => {},
-                serializer: $$DefaultPayload.toUrlQueryString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<undefined, DefaultPayload>({
+            url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
+            method: "get",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: () => {},
+            responseFromString: () => {},
+            serializer: $$DefaultPayload.toUrlQueryString,
+            clientVersion: "10",
+        });
     }
     async emptyResponsePostRequest(params: DefaultPayload): Promise<undefined> {
-        try {
-            return arriRequest<undefined, DefaultPayload>({
-                url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: () => {},
-                responseFromString: () => {},
-                serializer: $$DefaultPayload.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<undefined, DefaultPayload>({
+            url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: () => {},
+            responseFromString: () => {},
+            serializer: $$DefaultPayload.toJsonString,
+            clientVersion: "10",
+        });
     }
     /**
      * If the target language supports it. Generated code should mark this procedure as deprecated.
      * @deprecated
      */
     async deprecatedRpc(params: DeprecatedRpcParams): Promise<undefined> {
-        try {
-            return arriRequest<undefined, DeprecatedRpcParams>({
-                url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: () => {},
-                responseFromString: () => {},
-                serializer: $$DeprecatedRpcParams.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<undefined, DeprecatedRpcParams>({
+            url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: () => {},
+            responseFromString: () => {},
+            serializer: $$DeprecatedRpcParams.toJsonString,
+            clientVersion: "10",
+        });
     }
     async sendError(params: SendErrorParams): Promise<undefined> {
-        try {
-            return arriRequest<undefined, SendErrorParams>({
-                url: `${this._baseUrl}/rpcs/tests/send-error`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: () => {},
-                responseFromString: () => {},
-                serializer: $$SendErrorParams.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<undefined, SendErrorParams>({
+            url: `${this._baseUrl}/rpcs/tests/send-error`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: () => {},
+            responseFromString: () => {},
+            serializer: $$SendErrorParams.toJsonString,
+            clientVersion: "10",
+        });
     }
     async sendObject(
         params: ObjectWithEveryType,
     ): Promise<ObjectWithEveryType> {
-        try {
-            return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
-                url: `${this._baseUrl}/rpcs/tests/send-object`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$ObjectWithEveryType.fromJson,
-                responseFromString: $$ObjectWithEveryType.fromJsonString,
-                serializer: $$ObjectWithEveryType.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<ObjectWithEveryType, ObjectWithEveryType>({
+            url: `${this._baseUrl}/rpcs/tests/send-object`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$ObjectWithEveryType.fromJson,
+            responseFromString: $$ObjectWithEveryType.fromJsonString,
+            serializer: $$ObjectWithEveryType.toJsonString,
+            clientVersion: "10",
+        });
     }
     async sendObjectWithNullableFields(
         params: ObjectWithEveryNullableType,
     ): Promise<ObjectWithEveryNullableType> {
-        try {
-            return arriRequest<
-                ObjectWithEveryNullableType,
-                ObjectWithEveryNullableType
-            >({
-                url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$ObjectWithEveryNullableType.fromJson,
-                responseFromString:
-                    $$ObjectWithEveryNullableType.fromJsonString,
-                serializer: $$ObjectWithEveryNullableType.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<
+            ObjectWithEveryNullableType,
+            ObjectWithEveryNullableType
+        >({
+            url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$ObjectWithEveryNullableType.fromJson,
+            responseFromString: $$ObjectWithEveryNullableType.fromJsonString,
+            serializer: $$ObjectWithEveryNullableType.toJsonString,
+            clientVersion: "10",
+        });
     }
     async sendPartialObject(
         params: ObjectWithEveryOptionalType,
     ): Promise<ObjectWithEveryOptionalType> {
-        try {
-            return arriRequest<
-                ObjectWithEveryOptionalType,
-                ObjectWithEveryOptionalType
-            >({
-                url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$ObjectWithEveryOptionalType.fromJson,
-                responseFromString:
-                    $$ObjectWithEveryOptionalType.fromJsonString,
-                serializer: $$ObjectWithEveryOptionalType.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<
+            ObjectWithEveryOptionalType,
+            ObjectWithEveryOptionalType
+        >({
+            url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$ObjectWithEveryOptionalType.fromJson,
+            responseFromString: $$ObjectWithEveryOptionalType.fromJsonString,
+            serializer: $$ObjectWithEveryOptionalType.toJsonString,
+            clientVersion: "10",
+        });
     }
     async sendRecursiveObject(
         params: RecursiveObject,
     ): Promise<RecursiveObject> {
-        try {
-            return arriRequest<RecursiveObject, RecursiveObject>({
-                url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$RecursiveObject.fromJson,
-                responseFromString: $$RecursiveObject.fromJsonString,
-                serializer: $$RecursiveObject.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<RecursiveObject, RecursiveObject>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$RecursiveObject.fromJson,
+            responseFromString: $$RecursiveObject.fromJsonString,
+            serializer: $$RecursiveObject.toJsonString,
+            clientVersion: "10",
+        });
     }
     async sendRecursiveUnion(params: RecursiveUnion): Promise<RecursiveUnion> {
-        try {
-            return arriRequest<RecursiveUnion, RecursiveUnion>({
-                url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
-                method: "post",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$RecursiveUnion.fromJson,
-                responseFromString: $$RecursiveUnion.fromJsonString,
-                serializer: $$RecursiveUnion.toJsonString,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriRequest<RecursiveUnion, RecursiveUnion>({
+            url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
+            method: "post",
+            headers: this._headers,
+            onError: this._onError,
+            params: params,
+            responseFromJson: $$RecursiveUnion.fromJson,
+            responseFromString: $$RecursiveUnion.fromJsonString,
+            serializer: $$RecursiveUnion.toJsonString,
+            clientVersion: "10",
+        });
     }
     streamAutoReconnect(
         params: AutoReconnectParams,
         options: SseOptions<AutoReconnectResponse> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
-                {
-                    url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
-                    method: "get",
-                    headers: this._headers,
-                    params: params,
-                    responseFromJson: $$AutoReconnectResponse.fromJson,
-                    responseFromString: $$AutoReconnectResponse.fromJsonString,
-                    serializer: $$AutoReconnectParams.toUrlQueryString,
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriSseRequest<AutoReconnectResponse, AutoReconnectParams>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$AutoReconnectResponse.fromJson,
+                responseFromString: $$AutoReconnectResponse.fromJsonString,
+                serializer: $$AutoReconnectParams.toUrlQueryString,
+                clientVersion: "10",
+            },
+            options,
+        );
     }
     /**
      * This route will always return an error. The client should automatically retry with exponential backoff.
@@ -333,33 +258,24 @@ export class TestClientTestsService {
         params: StreamConnectionErrorTestParams,
         options: SseOptions<StreamConnectionErrorTestResponse> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<
-                StreamConnectionErrorTestResponse,
-                StreamConnectionErrorTestParams
-            >(
-                {
-                    url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
-                    method: "get",
-                    headers: this._headers,
-                    params: params,
-                    responseFromJson:
-                        $$StreamConnectionErrorTestResponse.fromJson,
-                    responseFromString:
-                        $$StreamConnectionErrorTestResponse.fromJsonString,
-                    serializer:
-                        $$StreamConnectionErrorTestParams.toUrlQueryString,
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriSseRequest<
+            StreamConnectionErrorTestResponse,
+            StreamConnectionErrorTestParams
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$StreamConnectionErrorTestResponse.fromJson,
+                responseFromString:
+                    $$StreamConnectionErrorTestResponse.fromJsonString,
+                serializer: $$StreamConnectionErrorTestParams.toUrlQueryString,
+                clientVersion: "10",
+            },
+            options,
+        );
     }
     /**
      * Test to ensure that the client can handle receiving streams of large objects. When objects are large messages will sometimes get sent in chunks. Meaning you have to handle receiving a partial message
@@ -367,84 +283,62 @@ export class TestClientTestsService {
     streamLargeObjects(
         options: SseOptions<StreamLargeObjectsResponse> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<StreamLargeObjectsResponse, undefined>(
-                {
-                    url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
-                    method: "get",
-                    headers: this._headers,
+        return arriSseRequest<StreamLargeObjectsResponse, undefined>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
 
-                    responseFromJson: $$StreamLargeObjectsResponse.fromJson,
-                    responseFromString:
-                        $$StreamLargeObjectsResponse.fromJsonString,
-                    serializer: () => {},
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+                responseFromJson: $$StreamLargeObjectsResponse.fromJson,
+                responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
+                serializer: () => {},
+                clientVersion: "10",
+            },
+            options,
+        );
     }
     streamMessages(
         params: ChatMessageParams,
         options: SseOptions<ChatMessage> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<ChatMessage, ChatMessageParams>(
-                {
-                    url: `${this._baseUrl}/rpcs/tests/stream-messages`,
-                    method: "get",
-                    headers: this._headers,
-                    params: params,
-                    responseFromJson: $$ChatMessage.fromJson,
-                    responseFromString: $$ChatMessage.fromJsonString,
-                    serializer: $$ChatMessageParams.toUrlQueryString,
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriSseRequest<ChatMessage, ChatMessageParams>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-messages`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$ChatMessage.fromJson,
+                responseFromString: $$ChatMessage.fromJsonString,
+                serializer: $$ChatMessageParams.toUrlQueryString,
+                clientVersion: "10",
+            },
+            options,
+        );
     }
     streamRetryWithNewCredentials(
         options: SseOptions<TestsStreamRetryWithNewCredentialsResponse> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<
-                TestsStreamRetryWithNewCredentialsResponse,
-                undefined
-            >(
-                {
-                    url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
-                    method: "get",
-                    headers: this._headers,
+        return arriSseRequest<
+            TestsStreamRetryWithNewCredentialsResponse,
+            undefined
+        >(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
 
-                    responseFromJson:
-                        $$TestsStreamRetryWithNewCredentialsResponse.fromJson,
-                    responseFromString:
-                        $$TestsStreamRetryWithNewCredentialsResponse.fromJsonString,
-                    serializer: () => {},
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+                responseFromJson:
+                    $$TestsStreamRetryWithNewCredentialsResponse.fromJson,
+                responseFromString:
+                    $$TestsStreamRetryWithNewCredentialsResponse.fromJsonString,
+                serializer: () => {},
+                clientVersion: "10",
+            },
+            options,
+        );
     }
     /**
      * When the client receives the 'done' event, it should close the connection and NOT reconnect
@@ -452,75 +346,54 @@ export class TestClientTestsService {
     streamTenEventsThenEnd(
         options: SseOptions<ChatMessage> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<ChatMessage, undefined>(
-                {
-                    url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
-                    method: "get",
-                    headers: this._headers,
+        return arriSseRequest<ChatMessage, undefined>(
+            {
+                url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
 
-                    responseFromJson: $$ChatMessage.fromJson,
-                    responseFromString: $$ChatMessage.fromJsonString,
-                    serializer: () => {},
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+                responseFromJson: $$ChatMessage.fromJson,
+                responseFromString: $$ChatMessage.fromJsonString,
+                serializer: () => {},
+                clientVersion: "10",
+            },
+            options,
+        );
     }
     async websocketRpc(
         options: WsOptions<WsMessageResponse> = {},
     ): Promise<WsController<WsMessageParams, WsMessageResponse>> {
-        try {
-            return arriWsRequest<WsMessageParams, WsMessageResponse>({
-                url: `${this._baseUrl}/rpcs/tests/websocket-rpc`,
-                headers: this._headers,
-                responseFromJson: $$WsMessageResponse.fromJson,
-                responseFromString: $$WsMessageResponse.fromJsonString,
-                serializer: $$WsMessageParams.toJsonString,
-                onOpen: options.onOpen,
-                onClose: options.onClose,
-                onError: options.onError,
-                onConnectionError: options.onConnectionError,
-                onMessage: options.onMessage,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriWsRequest<WsMessageParams, WsMessageResponse>({
+            url: `${this._baseUrl}/rpcs/tests/websocket-rpc`,
+            headers: this._headers,
+            responseFromJson: $$WsMessageResponse.fromJson,
+            responseFromString: $$WsMessageResponse.fromJsonString,
+            serializer: $$WsMessageParams.toJsonString,
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: "10",
+        });
     }
     async websocketRpcSendTenLargeMessages(
         options: WsOptions<StreamLargeObjectsResponse> = {},
     ): Promise<WsController<undefined, StreamLargeObjectsResponse>> {
-        try {
-            return arriWsRequest<undefined, StreamLargeObjectsResponse>({
-                url: `${this._baseUrl}/rpcs/tests/websocket-rpc-send-ten-large-messages`,
-                headers: this._headers,
-                responseFromJson: $$StreamLargeObjectsResponse.fromJson,
-                responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
-                serializer: () => {},
-                onOpen: options.onOpen,
-                onClose: options.onClose,
-                onError: options.onError,
-                onConnectionError: options.onConnectionError,
-                onMessage: options.onMessage,
-                clientVersion: "10",
-            });
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriWsRequest<undefined, StreamLargeObjectsResponse>({
+            url: `${this._baseUrl}/rpcs/tests/websocket-rpc-send-ten-large-messages`,
+            headers: this._headers,
+            responseFromJson: $$StreamLargeObjectsResponse.fromJson,
+            responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
+            serializer: () => {},
+            onOpen: options.onOpen,
+            onClose: options.onClose,
+            onError: options.onError,
+            onConnectionError: options.onConnectionError,
+            onMessage: options.onMessage,
+            clientVersion: "10",
+        });
     }
 }
 
@@ -546,27 +419,20 @@ export class TestClientUsersService {
         params: UsersWatchUserParams,
         options: SseOptions<UsersWatchUserResponse> = {},
     ): EventSourceController {
-        try {
-            return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
-                {
-                    url: `${this._baseUrl}/rpcs/users/watch-user`,
-                    method: "get",
-                    headers: this._headers,
-                    params: params,
-                    responseFromJson: $$UsersWatchUserResponse.fromJson,
-                    responseFromString: $$UsersWatchUserResponse.fromJsonString,
-                    serializer: $$UsersWatchUserParams.toUrlQueryString,
-                    clientVersion: "10",
-                },
-                options,
-                this._onError,
-            );
-        } catch (err) {
-            if (this._onError) {
-                this._onError(err);
-            }
-            throw err;
-        }
+        return arriSseRequest<UsersWatchUserResponse, UsersWatchUserParams>(
+            {
+                url: `${this._baseUrl}/rpcs/users/watch-user`,
+                method: "get",
+                headers: this._headers,
+                onError: this._onError,
+                params: params,
+                responseFromJson: $$UsersWatchUserResponse.fromJson,
+                responseFromString: $$UsersWatchUserResponse.fromJsonString,
+                serializer: $$UsersWatchUserParams.toUrlQueryString,
+                clientVersion: "10",
+            },
+            options,
+        );
     }
 }
 
