@@ -95,6 +95,9 @@ export function arriSseRequest<
             options.onRequest?.(context);
         },
         onRequestError(context) {
+            if (opts.onError) {
+                opts.onError(context.error);
+            }
             options.onRequestError?.({
                 ...context,
                 error: new ArriErrorInstance({
@@ -108,6 +111,9 @@ export function arriSseRequest<
             options.onResponse?.(context);
         },
         async onResponseError(context) {
+            if (opts.onError) {
+                opts.onError(context.error);
+            }
             if (!options.onResponseError) {
                 return;
             }

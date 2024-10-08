@@ -71,15 +71,18 @@ export function tsServiceFromDefinition(
         content: `export class ${serviceName} {
     private readonly _baseUrl: string;
     private readonly _headers: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void; 
 ${subServices.map((service) => `    ${service.key}: ${service.name};`).join("\n")}
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
 ${subServices.map((service) => `        this.${service.key} = new ${service.name}(options);`).join("\n")}
     }
 ${rpcParts.map((rpc) => `    ${rpc}`).join("\n")}

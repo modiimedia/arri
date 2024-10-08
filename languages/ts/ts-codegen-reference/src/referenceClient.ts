@@ -36,15 +36,18 @@ export class ExampleClient {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
     books: ExampleClientBooksService;
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
         this.books = new ExampleClientBooksService(options);
     }
 
@@ -53,6 +56,7 @@ export class ExampleClient {
             url: `${this._baseUrl}/send-object`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$NestedObject.fromJson,
             responseFromString: $$NestedObject.fromJsonString,
@@ -67,14 +71,17 @@ export class ExampleClientBooksService {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
     }
     /**
      * Get a book
@@ -84,6 +91,7 @@ export class ExampleClientBooksService {
             url: `${this._baseUrl}/books/get-book`,
             method: "get",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$Book.fromJson,
             responseFromString: $$Book.fromJsonString,
@@ -100,6 +108,7 @@ export class ExampleClientBooksService {
             url: `${this._baseUrl}/books/create-book`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$Book.fromJson,
             responseFromString: $$Book.fromJsonString,
@@ -119,6 +128,7 @@ export class ExampleClientBooksService {
                 url: `${this._baseUrl}/books/watch-book`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
                 params: params,
                 responseFromJson: $$Book.fromJson,
                 responseFromString: $$Book.fromJsonString,

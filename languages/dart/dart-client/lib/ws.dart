@@ -10,6 +10,7 @@ Future<ArriWebsocketController<TServerMessage, TClientMessage>>
   FutureOr<Map<String, String>> Function()? headers,
   required TServerMessage Function(String msg) parser,
   required String Function(TClientMessage msg) serializer,
+  Function(Object)? onError,
   String? clientVersion,
 }) async {
   var finalUrl =

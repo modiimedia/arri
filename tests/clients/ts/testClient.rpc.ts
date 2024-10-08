@@ -35,16 +35,19 @@ export class TestClient {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
     tests: TestClientTestsService;
     users: TestClientUsersService;
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
         this.tests = new TestClientTestsService(options);
         this.users = new TestClientUsersService(options);
     }
@@ -55,21 +58,25 @@ export class TestClientTestsService {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
 
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
     }
     async emptyParamsGetRequest(): Promise<DefaultPayload> {
         return arriRequest<DefaultPayload, undefined>({
             url: `${this._baseUrl}/rpcs/tests/empty-params-get-request`,
             method: "get",
             headers: this._headers,
+            onError: this._onError,
 
             responseFromJson: $$DefaultPayload.fromJson,
             responseFromString: $$DefaultPayload.fromJsonString,
@@ -82,6 +89,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/empty-params-post-request`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
 
             responseFromJson: $$DefaultPayload.fromJson,
             responseFromString: $$DefaultPayload.fromJsonString,
@@ -94,6 +102,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/empty-response-get-request`,
             method: "get",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
@@ -106,6 +115,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/empty-response-post-request`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
@@ -122,6 +132,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/deprecated-rpc`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
@@ -134,6 +145,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/send-error`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: () => {},
             responseFromString: () => {},
@@ -148,6 +160,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/send-object`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$ObjectWithEveryType.fromJson,
             responseFromString: $$ObjectWithEveryType.fromJsonString,
@@ -165,6 +178,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/send-object-with-nullable-fields`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$ObjectWithEveryNullableType.fromJson,
             responseFromString: $$ObjectWithEveryNullableType.fromJsonString,
@@ -182,6 +196,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/send-partial-object`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$ObjectWithEveryOptionalType.fromJson,
             responseFromString: $$ObjectWithEveryOptionalType.fromJsonString,
@@ -196,6 +211,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/send-recursive-object`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$RecursiveObject.fromJson,
             responseFromString: $$RecursiveObject.fromJsonString,
@@ -208,6 +224,7 @@ export class TestClientTestsService {
             url: `${this._baseUrl}/rpcs/tests/send-recursive-union`,
             method: "post",
             headers: this._headers,
+            onError: this._onError,
             params: params,
             responseFromJson: $$RecursiveUnion.fromJson,
             responseFromString: $$RecursiveUnion.fromJsonString,
@@ -224,6 +241,7 @@ export class TestClientTestsService {
                 url: `${this._baseUrl}/rpcs/tests/stream-auto-reconnect`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
                 params: params,
                 responseFromJson: $$AutoReconnectResponse.fromJson,
                 responseFromString: $$AutoReconnectResponse.fromJsonString,
@@ -248,6 +266,7 @@ export class TestClientTestsService {
                 url: `${this._baseUrl}/rpcs/tests/stream-connection-error-test`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
                 params: params,
                 responseFromJson: $$StreamConnectionErrorTestResponse.fromJson,
                 responseFromString:
@@ -269,6 +288,7 @@ export class TestClientTestsService {
                 url: `${this._baseUrl}/rpcs/tests/stream-large-objects`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
 
                 responseFromJson: $$StreamLargeObjectsResponse.fromJson,
                 responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
@@ -287,6 +307,7 @@ export class TestClientTestsService {
                 url: `${this._baseUrl}/rpcs/tests/stream-messages`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
                 params: params,
                 responseFromJson: $$ChatMessage.fromJson,
                 responseFromString: $$ChatMessage.fromJsonString,
@@ -307,6 +328,7 @@ export class TestClientTestsService {
                 url: `${this._baseUrl}/rpcs/tests/stream-retry-with-new-credentials`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
 
                 responseFromJson:
                     $$TestsStreamRetryWithNewCredentialsResponse.fromJson,
@@ -329,6 +351,7 @@ export class TestClientTestsService {
                 url: `${this._baseUrl}/rpcs/tests/stream-ten-events-then-end`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
 
                 responseFromJson: $$ChatMessage.fromJson,
                 responseFromString: $$ChatMessage.fromJsonString,
@@ -379,15 +402,18 @@ export class TestClientUsersService {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
 
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
     }
     watchUser(
         params: UsersWatchUserParams,
@@ -398,6 +424,7 @@ export class TestClientUsersService {
                 url: `${this._baseUrl}/rpcs/users/watch-user`,
                 method: "get",
                 headers: this._headers,
+                onError: this._onError,
                 params: params,
                 responseFromJson: $$UsersWatchUserResponse.fromJson,
                 responseFromString: $$UsersWatchUserResponse.fromJsonString,

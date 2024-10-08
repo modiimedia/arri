@@ -126,21 +126,31 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
   FutureOr<Map<String, String>> Function()? headers,
+  Function(Object)? onError,
   String? clientVersion,
   required T Function(String) parser,
 }) async {
-  final result = await arriRequest(
-    url,
-    httpClient: httpClient,
-    method: method,
-    params: params,
-    headers: headers,
-    clientVersion: clientVersion,
-  );
-  if (result.statusCode >= 200 && result.statusCode <= 299) {
-    return parser(utf8.decode(result.bodyBytes));
+  final http.Response result;
+
+  try {
+    result = await arriRequest(
+      url,
+      httpClient: httpClient,
+      method: method,
+      params: params,
+      headers: headers,
+      clientVersion: clientVersion,
+    );
+    if (result.statusCode >= 200 && result.statusCode <= 299) {
+      return parser(utf8.decode(result.bodyBytes));
+    }
+  } catch (err) {
+    onError?.call(err);
+    rethrow;
   }
-  throw ArriError.fromResponse(result);
+  final err = ArriError.fromResponse(result);
+  onError?.call(err);
+  throw err;
 }
 
 /// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result

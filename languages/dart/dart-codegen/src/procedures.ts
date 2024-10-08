@@ -74,7 +74,16 @@ export function dartHttpRpcFromSchema(
                 onMessage: onMessage,
                 onOpen: onOpen,
                 onClose: onClose,
-                onError: onError,
+                onError: onError != null && _onError != null
+                    ? (err, es) {
+                        _onError?.call(onError);
+                        return onError(err, es);
+                    }
+                    : onError != null
+                        ? onError
+                        : _onError != null
+                            ? (err, _) => _onError?.call(err)
+                            : null,
             );
         }`;
     }
@@ -87,6 +96,7 @@ export function dartHttpRpcFromSchema(
             clientVersion: _clientVersion,
             ${paramsType ? "params: params.toJson()," : ""}
             parser: (body) ${schema.response ? `=> ${responseType}.fromJsonString(body)` : "{}"},
+            onError: _onError,
         );
     }`;
 }
@@ -120,6 +130,7 @@ export function dartWsRpcFromSchema(
             clientVersion: _clientVersion,
             parser: (msg) ${responseType ? `=> ${responseType}.fromJsonString(msg)` : "{}"},
             serializer: (msg) ${paramsType ? "=> msg.toJsonString()" : '=> ""'},
+            onError: _onError,
         );
     }`;
 }
@@ -180,14 +191,17 @@ export function dartServiceFromSchema(
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "${context.clientVersion}";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   ${serviceName}({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   }) : _httpClient = httpClient,
        _baseUrl = baseUrl,
-       _headers = headers;
+       _headers = headers,
+       _onError = onError;
 
   ${rpcParts.join("\n\n")}
 
@@ -197,6 +211,7 @@ export function dartServiceFromSchema(
           baseUrl: _baseUrl,
           headers: _headers,
           httpClient: _httpClient,
+          onError: _onError,
         );`,
       )
       .join("\n\n")}
