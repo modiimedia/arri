@@ -277,6 +277,21 @@ Future<void> main() async {
         equals(true));
   });
 
+  test("onError hook fires", () async {
+    bool onErrFired = false;
+    final customClient = TestClient(
+      baseUrl: baseUrl,
+      onError: (err) {
+        onErrFired = true;
+        expect(err is ArriError, equals(true));
+      },
+    );
+    try {
+      await customClient.tests.sendObject(input);
+    } catch (_) {}
+    expect(onErrFired, equals(true));
+  });
+
   test("[SSE] supports server sent events", () async {
     int messageCount = 0;
     final eventSource = client.tests.streamMessages(

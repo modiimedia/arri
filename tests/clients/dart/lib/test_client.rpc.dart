@@ -9,25 +9,30 @@ class TestClient {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "10";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   TestClient({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
-        _headers = headers;
+        _headers = headers,
+        _onError = onError;
 
   TestClientTestsService get tests => TestClientTestsService(
         baseUrl: _baseUrl,
         headers: _headers,
         httpClient: _httpClient,
+        onError: _onError,
       );
 
   TestClientUsersService get users => TestClientUsersService(
         baseUrl: _baseUrl,
         headers: _headers,
         httpClient: _httpClient,
+        onError: _onError,
       );
 }
 
@@ -35,14 +40,17 @@ class TestClientTestsService {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "10";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   TestClientTestsService({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
-        _headers = headers;
+        _headers = headers,
+        _onError = onError;
 
   Future<DefaultPayload> emptyParamsGetRequest() async {
     return parsedArriRequest(
@@ -52,6 +60,7 @@ class TestClientTestsService {
       headers: _headers,
       clientVersion: _clientVersion,
       parser: (body) => DefaultPayload.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -63,6 +72,7 @@ class TestClientTestsService {
       headers: _headers,
       clientVersion: _clientVersion,
       parser: (body) => DefaultPayload.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -75,6 +85,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) {},
+      onError: _onError,
     );
   }
 
@@ -87,6 +98,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) {},
+      onError: _onError,
     );
   }
 
@@ -101,6 +113,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) {},
+      onError: _onError,
     );
   }
 
@@ -113,6 +126,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) {},
+      onError: _onError,
     );
   }
 
@@ -125,6 +139,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => ObjectWithEveryType.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -138,6 +153,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => ObjectWithEveryNullableType.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -151,6 +167,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => ObjectWithEveryOptionalType.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -163,6 +180,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => RecursiveObject.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -175,6 +193,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => RecursiveUnion.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -208,7 +227,16 @@ class TestClientTestsService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -244,7 +272,16 @@ class TestClientTestsService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -277,7 +314,16 @@ class TestClientTestsService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -309,7 +355,16 @@ class TestClientTestsService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -345,7 +400,16 @@ class TestClientTestsService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -376,7 +440,16 @@ class TestClientTestsService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -388,6 +461,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       parser: (msg) => WsMessageResponse.fromJsonString(msg),
       serializer: (msg) => msg.toJsonString(),
+      onError: _onError,
     );
   }
 
@@ -399,6 +473,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       parser: (msg) => StreamLargeObjectsResponse.fromJsonString(msg),
       serializer: (msg) => "",
+      onError: _onError,
     );
   }
 }
@@ -407,14 +482,17 @@ class TestClientUsersService {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "10";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   TestClientUsersService({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
-        _headers = headers;
+        _headers = headers,
+        _onError = onError;
 
   EventSource<UsersWatchUserResponse> watchUser(
     UsersWatchUserParams params, {
@@ -446,7 +524,16 @@ class TestClientUsersService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 }
