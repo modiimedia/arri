@@ -42,6 +42,7 @@ export function arriSseRequest<
 >(
     opts: ArriRequestOpts<TType, TParams>,
     options: SseOptions<TType>,
+    rootOnError?: (err: unknown) => void,
 ): EventSourceController {
     let url = opts.url;
     let body: undefined | string;
@@ -95,6 +96,9 @@ export function arriSseRequest<
             options.onRequest?.(context);
         },
         onRequestError(context) {
+            if (rootOnError) {
+                rootOnError(context.error);
+            }
             options.onRequestError?.({
                 ...context,
                 error: new ArriErrorInstance({
@@ -108,6 +112,9 @@ export function arriSseRequest<
             options.onResponse?.(context);
         },
         async onResponseError(context) {
+            if (rootOnError) {
+                rootOnError(context.error);
+            }
             if (!options.onResponseError) {
                 return;
             }

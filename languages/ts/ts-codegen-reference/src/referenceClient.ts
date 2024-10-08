@@ -36,29 +36,39 @@ export class ExampleClient {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
     books: ExampleClientBooksService;
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
         this.books = new ExampleClientBooksService(options);
     }
 
     async sendObject(params: NestedObject): Promise<NestedObject> {
-        return arriRequest<NestedObject, NestedObject>({
-            url: `${this._baseUrl}/send-object`,
-            method: "post",
-            headers: this._headers,
-            params: params,
-            responseFromJson: $$NestedObject.fromJson,
-            responseFromString: $$NestedObject.fromJsonString,
-            serializer: $$NestedObject.toJsonString,
-            clientVersion: "20",
-        });
+        try {
+            return arriRequest<NestedObject, NestedObject>({
+                url: `${this._baseUrl}/send-object`,
+                method: "post",
+                headers: this._headers,
+                params: params,
+                responseFromJson: $$NestedObject.fromJson,
+                responseFromString: $$NestedObject.fromJsonString,
+                serializer: $$NestedObject.toJsonString,
+                clientVersion: "20",
+            });
+        } catch (err) {
+            if (this._onError) {
+                this._onError(err);
+            }
+            throw err;
+        }
     }
 }
 
@@ -67,45 +77,62 @@ export class ExampleClientBooksService {
     private readonly _headers:
         | HeaderMap
         | (() => HeaderMap | Promise<HeaderMap>);
+    private readonly _onError?: (err: unknown) => void;
     constructor(
         options: {
             baseUrl?: string;
             headers?: HeaderMap | (() => HeaderMap | Promise<HeaderMap>);
+            onError?: (err: unknown) => void;
         } = {},
     ) {
         this._baseUrl = options.baseUrl ?? "";
         this._headers = options.headers ?? {};
+        this._onError = options.onError;
     }
     /**
      * Get a book
      */
     async getBook(params: BookParams): Promise<Book> {
-        return arriRequest<Book, BookParams>({
-            url: `${this._baseUrl}/books/get-book`,
-            method: "get",
-            headers: this._headers,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toUrlQueryString,
-            clientVersion: "20",
-        });
+        try {
+            return arriRequest<Book, BookParams>({
+                url: `${this._baseUrl}/books/get-book`,
+                method: "get",
+                headers: this._headers,
+                params: params,
+                responseFromJson: $$Book.fromJson,
+                responseFromString: $$Book.fromJsonString,
+                serializer: $$BookParams.toUrlQueryString,
+                clientVersion: "20",
+            });
+        } catch (err) {
+            if (this._onError) {
+                this._onError(err);
+            }
+            throw err;
+        }
     }
     /**
      * Create a book
      * @deprecated
      */
     async createBook(params: Book): Promise<Book> {
-        return arriRequest<Book, Book>({
-            url: `${this._baseUrl}/books/create-book`,
-            method: "post",
-            headers: this._headers,
-            params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$Book.toJsonString,
-            clientVersion: "20",
-        });
+        try {
+            return arriRequest<Book, Book>({
+                url: `${this._baseUrl}/books/create-book`,
+                method: "post",
+                headers: this._headers,
+                params: params,
+                responseFromJson: $$Book.fromJson,
+                responseFromString: $$Book.fromJsonString,
+                serializer: $$Book.toJsonString,
+                clientVersion: "20",
+            });
+        } catch (err) {
+            if (this._onError) {
+                this._onError(err);
+            }
+            throw err;
+        }
     }
     /**
      * @deprecated
@@ -114,36 +141,51 @@ export class ExampleClientBooksService {
         params: BookParams,
         options: SseOptions<Book> = {},
     ): EventSourceController {
-        return arriSseRequest<Book, BookParams>(
-            {
-                url: `${this._baseUrl}/books/watch-book`,
-                method: "get",
-                headers: this._headers,
-                params: params,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$BookParams.toUrlQueryString,
-                clientVersion: "20",
-            },
-            options,
-        );
+        try {
+            return arriSseRequest<Book, BookParams>(
+                {
+                    url: `${this._baseUrl}/books/watch-book`,
+                    method: "get",
+                    headers: this._headers,
+                    params: params,
+                    responseFromJson: $$Book.fromJson,
+                    responseFromString: $$Book.fromJsonString,
+                    serializer: $$BookParams.toUrlQueryString,
+                    clientVersion: "20",
+                },
+                options,
+                this._onError,
+            );
+        } catch (err) {
+            if (this._onError) {
+                this._onError(err);
+            }
+            throw err;
+        }
     }
     async createConnection(
         options: WsOptions<Book> = {},
     ): Promise<WsController<BookParams, Book>> {
-        return arriWsRequest<BookParams, Book>({
-            url: `${this._baseUrl}/books/create-connection`,
-            headers: this._headers,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: "20",
-        });
+        try {
+            return arriWsRequest<BookParams, Book>({
+                url: `${this._baseUrl}/books/create-connection`,
+                headers: this._headers,
+                responseFromJson: $$Book.fromJson,
+                responseFromString: $$Book.fromJsonString,
+                serializer: $$BookParams.toJsonString,
+                onOpen: options.onOpen,
+                onClose: options.onClose,
+                onError: options.onError,
+                onConnectionError: options.onConnectionError,
+                onMessage: options.onMessage,
+                clientVersion: "20",
+            });
+        } catch (err) {
+            if (this._onError) {
+                this._onError(err);
+            }
+            throw err;
+        }
     }
 }
 
