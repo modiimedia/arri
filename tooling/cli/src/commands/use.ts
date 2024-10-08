@@ -1,8 +1,8 @@
 import { a } from "@arrirpc/schema";
-import { ofetch } from "@joshmossas/ofetch";
 import { defineCommand } from "citty";
 import consola from "consola";
 import { readFile, writeFile } from "fs/promises";
+import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { getArriPackageMetadata } from "../common";
