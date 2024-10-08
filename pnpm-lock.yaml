@@ -134,12 +134,12 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../../../tooling/schema
-      '@joshmossas/ofetch':
-        specifier: ^1.4.0
-        version: 1.4.0
       event-source-plus:
         specifier: ^0.1.5
         version: 0.1.5
+      ofetch:
+        specifier: ^1.4.1
+        version: 1.4.1
       ws:
         specifier: ^8.18.0
         version: 8.18.0
@@ -227,9 +227,9 @@ importers:
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../../../tooling/schema
-      '@joshmossas/ofetch':
-        specifier: ^1.4.0
-        version: 1.4.0
+      ofetch:
+        specifier: ^1.4.1
+        version: 1.4.1
 
   tests/server:
     dependencies:
@@ -285,15 +285,12 @@ importers:
       '@joshmossas/listhen':
         specifier: ^1.11.1
         version: 1.11.1
-      '@joshmossas/ofetch':
-        specifier: ^1.4.0
-        version: 1.4.0
       c12:
         specifier: ^2.0.1
         version: 2.0.1(magicast@0.3.5)
       chokidar:
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^4.0.1
+        version: 4.0.1
       citty:
         specifier: ^0.1.6
         version: 0.1.6
@@ -318,6 +315,9 @@ importers:
       h3:
         specifier: ^1.13.0
         version: 1.13.0
+      ofetch:
+        specifier: ^1.4.1
+        version: 1.4.1
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
@@ -995,9 +995,6 @@ packages:
     resolution: {integrity: sha512-NlGdVMsm73/Nm4FraloJNqtlAMtf6PNXXx9Nujx3m2F8GS6kU04xNXwS/kMzxTPFpD7F842Iwab9VFgpm46iYQ==}
     hasBin: true
 
-  '@joshmossas/ofetch@1.4.0':
-    resolution: {integrity: sha512-3xaPxmYCG2QA5irWGrtBhiEeDN7e8v9lBGLxGi+e5JwNp/cnTUKu0PF+nHD6Fc0bOa0V8If/ASkMDFEcuNc/GA==}
-
   '@jridgewell/gen-mapping@0.3.5':
     resolution: {integrity: sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==}
     engines: {node: '>=6.0.0'}
@@ -1557,10 +1554,6 @@ packages:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
 
-  anymatch@3.1.3:
-    resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
-    engines: {node: '>= 8'}
-
   arg@5.0.2:
     resolution: {integrity: sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==}
 
@@ -1615,10 +1608,6 @@ packages:
   benny@3.7.1:
     resolution: {integrity: sha512-USzYxODdVfOS7JuQq/L0naxB788dWCiUgUTxvN+WLPt/JfcDURNNj8kN/N+uK6PDvuR67/9/55cVKGPleFQINA==}
     engines: {node: '>=12'}
-
-  binary-extensions@2.3.0:
-    resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
-    engines: {node: '>=8'}
 
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
@@ -1705,10 +1694,6 @@ packages:
   check-more-types@2.24.0:
     resolution: {integrity: sha512-Pj779qHxV2tuapviy1bSZNEL1maXr13bPYpsvSDB68HlYcYuhlDrmGd63i0JHMCLKzc7rUSNIrpdJlhVlNwrxA==}
     engines: {node: '>= 0.8.0'}
-
-  chokidar@3.6.0:
-    resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
-    engines: {node: '>= 8.10.0'}
 
   chokidar@4.0.1:
     resolution: {integrity: sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==}
@@ -2366,10 +2351,6 @@ packages:
   is-arrayish@0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
 
-  is-binary-path@2.1.0:
-    resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
-    engines: {node: '>=8'}
-
   is-core-module@2.15.1:
     resolution: {integrity: sha512-z0vtXSwucUJtANQWldhbtbt7BnL0vxiFjIdDLAatwhDYty2bad6s+rijD6Ri4YuYJubLzIJLUidCh09e1djEVQ==}
     engines: {node: '>= 0.4'}
@@ -2752,10 +2733,6 @@ packages:
   node-releases@2.0.18:
     resolution: {integrity: sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==}
 
-  normalize-path@3.0.0:
-    resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
-    engines: {node: '>=0.10.0'}
-
   normalize-range@0.1.2:
     resolution: {integrity: sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==}
     engines: {node: '>=0.10.0'}
@@ -2788,8 +2765,8 @@ packages:
     engines: {node: ^14.16.0 || >=16.10.0}
     hasBin: true
 
-  ofetch@1.4.0:
-    resolution: {integrity: sha512-MuHgsEhU6zGeX+EMh+8mSMrYTnsqJQQrpM00Q6QHMKNqQ0bKy0B43tk8tL1wg+CnsSTy1kg4Ir2T5Ig6rD+dfQ==}
+  ofetch@1.4.1:
+    resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
 
   ohash@1.1.4:
     resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
@@ -4120,12 +4097,6 @@ snapshots:
       untun: 0.1.3
       uqr: 0.1.2
 
-  '@joshmossas/ofetch@1.4.0':
-    dependencies:
-      destr: 2.0.3
-      node-fetch-native: 1.6.4
-      ufo: 1.5.4
-
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
       '@jridgewell/set-array': 1.2.1
@@ -4647,11 +4618,6 @@ snapshots:
 
   ansi-styles@6.2.1: {}
 
-  anymatch@3.1.3:
-    dependencies:
-      normalize-path: 3.0.0
-      picomatch: 2.3.1
-
   arg@5.0.2: {}
 
   argparse@1.0.10:
@@ -4710,8 +4676,6 @@ snapshots:
       json2csv: 5.0.7
       kleur: 4.1.5
       log-update: 4.0.0
-
-  binary-extensions@2.3.0: {}
 
   bl@4.1.0:
     dependencies:
@@ -4813,18 +4777,6 @@ snapshots:
   check-error@2.1.1: {}
 
   check-more-types@2.24.0: {}
-
-  chokidar@3.6.0:
-    dependencies:
-      anymatch: 3.1.3
-      braces: 3.0.3
-      glob-parent: 5.1.2
-      is-binary-path: 2.1.0
-      is-glob: 4.0.3
-      normalize-path: 3.0.0
-      readdirp: 3.6.0
-    optionalDependencies:
-      fsevents: 2.3.3
 
   chokidar@4.0.1:
     dependencies:
@@ -5312,7 +5264,7 @@ snapshots:
 
   event-source-plus@0.1.5:
     dependencies:
-      ofetch: 1.4.0
+      ofetch: 1.4.1
 
   event-stream@3.3.4:
     dependencies:
@@ -5604,10 +5556,6 @@ snapshots:
   iron-webcrypto@1.2.1: {}
 
   is-arrayish@0.2.1: {}
-
-  is-binary-path@2.1.0:
-    dependencies:
-      binary-extensions: 2.3.0
 
   is-core-module@2.15.1:
     dependencies:
@@ -5938,8 +5886,6 @@ snapshots:
 
   node-releases@2.0.18: {}
 
-  normalize-path@3.0.0: {}
-
   normalize-range@0.1.2: {}
 
   npm-run-path@4.0.1:
@@ -6011,7 +5957,7 @@ snapshots:
       pkg-types: 1.2.1
       ufo: 1.5.4
 
-  ofetch@1.4.0:
+  ofetch@1.4.1:
     dependencies:
       destr: 2.0.3
       node-fetch-native: 1.6.4

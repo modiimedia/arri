@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@joshmossas/ofetch": "^1.4.0",
+    "ofetch": "^1.4.1",
     "event-source-plus": "^0.1.5",
     "ws": "^8.18.0"
   },
