@@ -17,7 +17,7 @@ type RpcOptions struct {
 	IsDeprecated bool
 }
 
-func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
+func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	if len(serviceName) > 0 {
@@ -104,7 +104,7 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName strin
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		ctx, ctxErr := app.CreateContext(r)
+		ctx, ctxErr := app.CreateContext(w, r)
 		if ctxErr != nil {
 			handleError(false, w, r, nil, ctxErr, app.Options.OnError)
 			return
@@ -176,10 +176,10 @@ func rpc[TParams, TResponse, TContext any](app *App[TContext], serviceName strin
 	})
 }
 
-func Rpc[TParams, TResponse, TContext any](app *App[TContext], handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {
+func Rpc[TParams, TResponse any, TContext Context](app *App[TContext], handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, "", options, handler)
 }
 
-func ScopedRpc[TParams, TResponse, TContext any](app *App[TContext], serviceName string, handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {
+func ScopedRpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
 }

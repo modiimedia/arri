@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-type App[TContext any] struct {
+type App[TContext Context] struct {
 	Mux                  *http.ServeMux
-	CreateContext        func(r *http.Request) (*TContext, RpcError)
+	CreateContext        func(w http.ResponseWriter, r *http.Request) (*TContext, RpcError)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
 	Procedures           *[]__orderedMapEntry__[RpcDef]
@@ -83,7 +83,7 @@ func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
 	return nil
 }
 
-func printServerStartMessages[TContext any](app *App[TContext], port uint32, isHttps bool) {
+func printServerStartMessages[TContext Context](app *App[TContext], port uint32, isHttps bool) {
 	protocol := "http"
 	if isHttps {
 		protocol = "https"
@@ -100,7 +100,7 @@ func printServerStartMessages[TContext any](app *App[TContext], port uint32, isH
 	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.Options.RpcRoutePrefix+defPath)
 }
 
-func startServer[TContext any](app *App[TContext], options RunOptions) error {
+func startServer[TContext Context](app *App[TContext], options RunOptions) error {
 	port := options.Port
 	if port == 0 {
 		port = 3000
@@ -121,7 +121,7 @@ type RunOptions struct {
 	KeyFile  string
 }
 
-type AppOptions[TContext any] struct {
+type AppOptions[TContext Context] struct {
 	AppName string
 	// The current app version. Generated clients will send this in the "client-version" header
 	AppVersion string
@@ -139,7 +139,7 @@ type AppOptions[TContext any] struct {
 	OnError           func(*http.Request, *TContext, error)
 }
 
-func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], createContext func(r *http.Request) (*TContext, RpcError)) App[TContext] {
+func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], createContext func(w http.ResponseWriter, r *http.Request) (*TContext, RpcError)) App[TContext] {
 	app := App[TContext]{
 		Mux:                  mux,
 		CreateContext:        createContext,
@@ -176,7 +176,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		ctx, ctxErr := app.CreateContext(r)
+		ctx, ctxErr := app.CreateContext(w, r)
 		if ctxErr != nil {
 			handleError(false, w, r, ctx, ctxErr, onError)
 			return
@@ -227,7 +227,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		ctx, ctxErr := app.CreateContext(r)
+		ctx, ctxErr := app.CreateContext(w, r)
 		if ctxErr != nil {
 			handleError(false, w, r, ctx, ctxErr, onError)
 			return
@@ -253,7 +253,7 @@ func NewApp[TContext any](mux *http.ServeMux, options AppOptions[TContext], crea
 	return app
 }
 
-func handleError[TContext any](
+func handleError[TContext Context](
 	responseSent bool,
 	w http.ResponseWriter,
 	r *http.Request,
@@ -270,7 +270,7 @@ func handleError[TContext any](
 	w.Write(body)
 }
 
-func RegisterDef[TContext any](app *App[TContext], input any) {
+func RegisterDef[TContext Context](app *App[TContext], input any) {
 	def, err := ToTypeDef(input, app.Options.KeyCasing)
 	if err != nil {
 		panic(err)
