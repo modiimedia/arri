@@ -8,24 +8,21 @@ import (
 )
 
 // extend this with custom properties
-type AppContext struct {
-	w http.ResponseWriter
-	r *http.Request
+type RpcContext struct {
+	writer  http.ResponseWriter
+	request *http.Request
 }
 
-func (c AppContext) Request() *http.Request {
-	return c.r
+func (c RpcContext) Request() *http.Request {
+	return c.request
 }
 
-func (c AppContext) Writer() http.ResponseWriter {
-	return c.w
+func (c RpcContext) Writer() http.ResponseWriter {
+	return c.writer
 }
 
-func CreateAppContext(w http.ResponseWriter, r *http.Request) (*AppContext, arri.RpcError) {
-	ctx := AppContext{
-		w: w,
-		r: r,
-	}
+func CreateAppContext(w http.ResponseWriter, r *http.Request) (*RpcContext, arri.RpcError) {
+	ctx := RpcContext{writer: w, request: r}
 	return &ctx, nil
 }
 
@@ -34,7 +31,7 @@ var mux = http.DefaultServeMux
 func main() {
 	app := arri.NewApp(
 		mux,
-		arri.AppOptions[AppContext]{
+		arri.AppOptions[RpcContext]{
 			RpcRoutePrefix: "/procedures",
 		},
 		CreateAppContext,
@@ -65,14 +62,14 @@ type GreetingResponse struct {
 	Message string
 }
 
-func SayHello(params GreetingParams, ctx AppContext) (GreetingResponse, arri.RpcError) {
+func SayHello(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
 	return GreetingResponse{Message: "Hello " + params.Name}, nil
 }
 
-func DoSomething(params GreetingParams, ctx AppContext) (GreetingResponse, arri.RpcError) {
+func DoSomething(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
 	return GreetingResponse{}, nil
 }
 
-func SayGoodbye(params GreetingParams, ctx AppContext) (GreetingResponse, arri.RpcError) {
+func SayGoodbye(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
 	return GreetingResponse{Message: "Goodbye " + params.Name}, nil
 }
