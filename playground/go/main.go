@@ -40,13 +40,10 @@ func main() {
 	arri.Rpc(
 		&app,
 		SayHello,
-		arri.RpcOptions{
-			// manually specify the http method
-			Method: arri.HttpMethodGet,
-		},
+		arri.RpcOptions{Method: arri.HttpMethodGet}, // manually specify the http method
+
 	)
 	arri.Rpc(&app, SayGoodbye, arri.RpcOptions{})
-	arri.Rpc(&app, DoSomething, arri.RpcOptions{})
 
 	appErr := app.Run(arri.RunOptions{Port: 3000})
 	if appErr != nil {
@@ -64,10 +61,6 @@ type GreetingResponse struct {
 
 func SayHello(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
 	return GreetingResponse{Message: "Hello " + params.Name}, nil
-}
-
-func DoSomething(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
-	return GreetingResponse{}, nil
 }
 
 func SayGoodbye(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {

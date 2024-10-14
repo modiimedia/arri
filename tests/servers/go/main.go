@@ -10,6 +10,16 @@ import (
 
 type AppContext struct {
 	XTestHeader string
+	request     *http.Request
+	writer      http.ResponseWriter
+}
+
+func (c AppContext) Request() *http.Request {
+	return c.request
+}
+
+func (c AppContext) Writer() http.ResponseWriter {
+	return c.writer
 }
 
 func main() {
@@ -34,8 +44,12 @@ func main() {
 				return nil
 			},
 		},
-		func(r *http.Request) (*AppContext, arri.RpcError) {
-			return &AppContext{XTestHeader: r.Header.Get("x-test-header")}, nil
+		func(w http.ResponseWriter, r *http.Request) (*AppContext, arri.RpcError) {
+			return &AppContext{
+				request:     r,
+				writer:      w,
+				XTestHeader: r.Header.Get("x-test-header"),
+			}, nil
 		},
 	)
 	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})

@@ -61,18 +61,6 @@ export class Client {
       clientVersion: "",
     });
   }
-  async DoSomething(params: GreetingParams): Promise<GreetingResponse> {
-    return arriRequest<GreetingResponse, GreetingParams>({
-      url: `${this._baseUrl}/procedures/do-something`,
-      method: "post",
-      headers: this._headers,
-      params: params,
-      responseFromJson: $$GreetingResponse.fromJson,
-      responseFromString: $$GreetingResponse.fromJsonString,
-      serializer: $$GreetingParams.toJsonString,
-      clientVersion: "",
-    });
-  }
 }
 
 export interface GreetingParams {
