@@ -481,10 +481,39 @@ export function recordTemplate(
         const key = ${keysVarName}[i];
         const innerVal = ${input.val}[key];
         if(i !== 0) {
-            ${input.targetVal} += \`,"\${key}":\`;
-        } else {
-            ${input.targetVal} += \`"\${key}":\`;
+            ${input.targetVal} += ",";
         }
+        if (key.length < 42) {
+            let __result__ = "";
+            let __last__ = -1;
+            let __point__ = 255;
+            let __finished__ = false;
+            for (let i = 0; i < key.length; i++) {
+                __point__ = key.charCodeAt(i);
+                if (__point__ < 32 || (__point__ >= 0xd800 && __point__ <= 0xdfff)) {
+                    ${input.targetVal} += JSON.stringify(key);
+                    __finished__ = true;
+                    break;
+                }
+                if (__point__ === 0x22 || __point__ === 0x5c) {
+                    __last__ === -1 && (__last__ = 0);
+                    __result__ += key.slice(__last__, i) + '\\\\';
+                    __last__ = i;
+                }
+            }
+            if(!__finished__) {
+                if (__last__ === -1) {
+                    ${input.targetVal} += \`"\${key}"\`;
+                } else {
+                    ${input.targetVal} += \`"\${__result__}\${key.slice(__last__)}"\`;
+                }
+            }
+        } else if (key.length < 5000 && !STR_ESCAPE.test(key)) {
+            ${input.targetVal} += \`"\${key}"\`;
+        } else {
+            ${input.targetVal} += JSON.stringify(key);
+        }
+        ${input.targetVal} += ":";
         ${innerTemplate}
     }`);
     templateParts.push(`${input.targetVal} += '}';`);

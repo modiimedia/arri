@@ -1001,7 +1001,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             if (_recordPropertyCount !== 0) {
                 json += ",";
             }
-            json += `"${_key}":`;
+            json += `${serializeString(_key)}:`;
             json += `"${_value}"`;
             _recordPropertyCount++;
         }
@@ -2140,7 +2140,7 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
-                    json += `"${_key}":`;
+                    json += `${serializeString(_key)}:`;
                     if (typeof _value === "bigint") {
                         json += `"${_value}"`;
                     } else {
@@ -3458,7 +3458,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
-                    json += `"${_key}":`;
+                    json += `${serializeString(_key)}:`;
                     json += `"${_value}"`;
                     _recordPropertyCount++;
                 }
@@ -6275,7 +6275,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 if (_bookmarksPropertyCount !== 0) {
                     json += ",";
                 }
-                json += `"${_key}":`;
+                json += `${serializeString(_key)}:`;
                 json +=
                     $$UsersWatchUserResponseBookmarksvalue.toJsonString(_value);
                 _bookmarksPropertyCount++;
@@ -6289,7 +6289,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 if (_metadataPropertyCount !== 0) {
                     json += ",";
                 }
-                json += `"${_key}":`;
+                json += `${serializeString(_key)}:`;
                 json += JSON.stringify(_value);
                 _metadataPropertyCount++;
             }

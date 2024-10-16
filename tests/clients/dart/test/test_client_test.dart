@@ -71,6 +71,7 @@ Future<void> main() async {
       record: {
         "A": BigInt.from(1),
         "B": BigInt.from(0),
+        "\"C\"\t": BigInt.from(1),
       },
       discriminator: ObjectWithEveryTypeDiscriminatorA(title: "Hello World"),
       nestedObject: ObjectWithEveryTypeNestedObject(

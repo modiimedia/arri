@@ -50,7 +50,7 @@ export function kotlinMapFromSchema(
                         if (__index != 0) {
                             ${target} += ","
                         }
-                        ${target} += "\\"\${__entry.key}\\":"
+                        ${target} += "\${buildString { printQuoted(__entry.key) }}:"
                         ${subType.toJson("__entry.value", target)}
                     }
                     ${target} += "}"
@@ -61,7 +61,7 @@ export function kotlinMapFromSchema(
                 if (__index != 0) {
                     ${target} += ","
                 }
-                ${target} += "\\"\${__entry.key}\\":"
+                ${target} += "\${buildString { printQuoted(__entry.key) }}:"
                 ${subType.toJson("__entry.value", target)}
             }
             ${target} += "}"`;

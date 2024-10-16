@@ -705,7 +705,7 @@ public struct ObjectWithEveryType: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += "\"\(__value)\""
             }
             __json += "}"
@@ -1642,7 +1642,7 @@ if self.record != nil {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         if __value != nil {
                     __json += "\"\(__value!)\""
                 } else {
@@ -2852,7 +2852,7 @@ __numKeys += 1
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += "\"\(__value)\""
             }
             __json += "}"            
@@ -5509,7 +5509,7 @@ public struct UsersWatchUserResponse: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += __value.toJSONString()
             }
             __json += "}"
@@ -5519,7 +5519,7 @@ public struct UsersWatchUserResponse: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += serializeAny(input: __value)
             }
             __json += "}"

@@ -64,7 +64,7 @@ fun main() {
                 )
             )
         ),
-        record = mutableMapOf(Pair("01", 1UL), Pair("02", 0UL)),
+        record = mutableMapOf(Pair("01", 1UL), Pair("02", 0UL), Pair("\"03\"\t", 1UL)),
         nestedObject = ObjectWithEveryTypeNestedObject(
             id = "d1", timestamp = targetDate, data = ObjectWithEveryTypeNestedObjectData(
                 id = "d2", timestamp = targetDate, data = ObjectWithEveryTypeNestedObjectDataData(

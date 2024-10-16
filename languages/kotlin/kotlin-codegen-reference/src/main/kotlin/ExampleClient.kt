@@ -553,7 +553,7 @@ data class ObjectWithEveryType(
             if (__index != 0) {
                 output += ","
             }
-            output += "\"${__entry.key}\":"
+            output += "${buildString { printQuoted(__entry.key) }}:"
             output += __entry.value
         }
         output += "}"
@@ -1173,7 +1173,7 @@ data class ObjectWithOptionalFields(
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += __entry.value
             }
             output += "}"
@@ -1497,7 +1497,7 @@ data class ObjectWithNullableFields(
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += __entry.value
             }
             output += "}"
