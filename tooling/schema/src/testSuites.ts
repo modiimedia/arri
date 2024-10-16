@@ -543,7 +543,7 @@ export const validationTestSuites: Record<
     },
     "record with boolean values": {
         schema: a.record(a.boolean()),
-        goodInputs: [{ a: true, b: false }, {}],
+        goodInputs: [{ a: true, b: false, [`"C"`]: true }, {}],
         badInputs: [{ a: true, b: true, c: "true" }, { a: "null" }, null],
     },
     "record with objects": {
@@ -1327,6 +1327,16 @@ Sed in commodo libero. Vestibulum sit amet convallis libero. Aenean tincidunt so
         inputs: [
             {
                 description: "hello \u00ff",
+            },
+        ],
+    },
+    "record with quoted keys": {
+        schema: a.record(a.boolean()),
+        inputs: [
+            {
+                A: true,
+                '"B"': false,
+                "\tC": true,
             },
         ],
     },

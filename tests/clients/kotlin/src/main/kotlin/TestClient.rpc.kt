@@ -908,7 +908,7 @@ output += "{"
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += "\"${__entry.value}\""
             }
             output += "}"
@@ -1840,7 +1840,7 @@ if (record == null) {
                         if (__index != 0) {
                             output += ","
                         }
-                        output += "\"${__entry.key}\":"
+                        output += "${buildString { printQuoted(__entry.key) }}:"
                         output += when (__entry.value) {
                     is ULong -> "\"${__entry.value}\""
                     else -> "null"
@@ -2899,7 +2899,7 @@ if (record != null) {
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += "\"${__entry.value}\""
             }
             output += "}"
@@ -5512,7 +5512,7 @@ output += "{"
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += __entry.value.toJson()
             }
             output += "}"
@@ -5522,7 +5522,7 @@ output += "{"
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += JsonInstance.encodeToString(__entry.value)
             }
             output += "}"

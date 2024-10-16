@@ -98,6 +98,7 @@ const input: ObjectWithEveryType = {
     record: {
         A: BigInt("1"),
         B: BigInt("0"),
+        '"C"\t': BigInt("4"),
     },
     discriminator: {
         type: "B",

@@ -969,7 +969,7 @@ impl ArriModel for ObjectWithEveryType {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
             _json_output_.push_str(format!("\"{}\"", _value_).as_str());
         }
         _json_output_.push('}');
@@ -1964,7 +1964,7 @@ impl ArriModel for ObjectWithEveryNullableType {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
                     match _value_ {
                         Some(value_val) => {
                             _json_output_.push_str(format!("\"{}\"", value_val).as_str());
@@ -3365,7 +3365,7 @@ impl ArriModel for ObjectWithEveryOptionalType {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
                     _json_output_.push_str(format!("\"{}\"", _value_).as_str());
                 }
                 _json_output_.push('}');
@@ -5514,7 +5514,7 @@ impl ArriModel for UsersWatchUserResponse {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
             _json_output_.push_str(_value_.to_json_string().as_str());
         }
         _json_output_.push('}');
@@ -5524,7 +5524,7 @@ impl ArriModel for UsersWatchUserResponse {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
             _json_output_.push_str(
                 serde_json::to_string(_value_)
                     .unwrap_or("null".to_string())

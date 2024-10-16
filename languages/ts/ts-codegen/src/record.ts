@@ -55,7 +55,7 @@ export function tsRecordFromSchema(
                         if (${countVal} !== 0) {
                             ${target} += ',';
                         }
-                        ${target} += \`"\${_key}":\`;
+                        ${target} += \`\${serializeString(_key)}:\`;
                         ${innerType.toJsonTemplate("_value", target, "_key")}
                         ${countVal}++;
                     }
@@ -70,7 +70,7 @@ export function tsRecordFromSchema(
                 if (${countVal} !== 0) {
                     ${target} += ',';
                 }
-                ${target} += \`"\${_key}":\`;
+                ${target} += \`\${serializeString(_key)}:\`;
                 ${innerType.toJsonTemplate("_value", target, "_key")};
                 ${countVal}++;
             }

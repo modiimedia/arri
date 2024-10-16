@@ -1,6 +1,7 @@
 import { AppDefinition, normalizeWhitespace } from "@arrirpc/codegen-utils";
 import fs from "fs";
 import path from "path";
+import { expect, test } from "vitest";
 
 import { createTypescriptClient } from "./_index";
 

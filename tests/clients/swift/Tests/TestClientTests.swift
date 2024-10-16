@@ -43,7 +43,7 @@ final class TestSwiftClientTests: XCTestCase {
                 boolean: true,
                 timestamp: testDate
             ),
-            record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0)),
+            record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0), ("\"C\"\t", 0)),
             discriminator: ObjectWithEveryTypeDiscriminator.b(
                 ObjectWithEveryTypeDiscriminatorB(
                     title: "this is a title",

@@ -683,7 +683,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             if (_recordPropertyCount !== 0) {
                 json += ",";
             }
-            json += `"${_key}":`;
+            json += `${serializeString(_key)}:`;
             json += `${_value}`;
             _recordPropertyCount++;
         }
@@ -1455,7 +1455,7 @@ export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFi
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
-                    json += `"${_key}":`;
+                    json += `${serializeString(_key)}:`;
                     json += `${_value}`;
                     _recordPropertyCount++;
                 }
@@ -1933,7 +1933,7 @@ export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFi
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
-                    json += `"${_key}":`;
+                    json += `${serializeString(_key)}:`;
                     json += `${_value}`;
                     _recordPropertyCount++;
                 }

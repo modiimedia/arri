@@ -595,7 +595,7 @@ impl ArriModel for ObjectWithEveryType {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
             _json_output_.push_str(_value_.to_string().as_str());
         }
         _json_output_.push('}');
@@ -1247,7 +1247,7 @@ impl ArriModel for ObjectWithOptionalFields {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
                     _json_output_.push_str(_value_.to_string().as_str());
                 }
                 _json_output_.push('}');
@@ -1796,7 +1796,7 @@ impl ArriModel for ObjectWithNullableFields {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
                     _json_output_.push_str(_value_.to_string().as_str());
                 }
                 _json_output_.push('}');
