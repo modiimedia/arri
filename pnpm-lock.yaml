@@ -206,18 +206,30 @@ importers:
         specifier: ^1.1.30
         version: 1.1.30
 
-  playground:
+  playground/go:
+    devDependencies:
+      '@types/node':
+        specifier: 22.7.4
+        version: 22.7.4
+      arri:
+        specifier: workspace:*
+        version: link:../../tooling/cli
+
+  playground/ts:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../tooling/schema
+        version: link:../../tooling/schema
       '@arrirpc/server':
         specifier: workspace:*
-        version: link:../languages/ts/ts-server
+        version: link:../../languages/ts/ts-server
     devDependencies:
+      '@types/node':
+        specifier: 22.7.4
+        version: 22.7.4
       arri:
         specifier: workspace:*
-        version: link:../tooling/cli
+        version: link:../../tooling/cli
 
   tests/clients/ts:
     dependencies:
@@ -231,30 +243,36 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
 
-  tests/server:
+  tests/servers/go:
+    devDependencies:
+      arri:
+        specifier: workspace:*
+        version: link:../../../tooling/cli
+
+  tests/servers/ts:
     dependencies:
       '@arrirpc/schema':
         specifier: workspace:*
-        version: link:../../tooling/schema
+        version: link:../../../tooling/schema
       '@sinclair/typebox':
         specifier: ^0.33.16
         version: 0.33.16
       arri:
         specifier: workspace:*
-        version: link:../../tooling/cli
+        version: link:../../../tooling/cli
     devDependencies:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
-        version: link:../../tooling/codegen-utils
+        version: link:../../../tooling/codegen-utils
       '@arrirpc/eslint-plugin':
         specifier: workspace:*
-        version: link:../../tooling/eslint-plugin
+        version: link:../../../tooling/eslint-plugin
       '@arrirpc/server':
         specifier: workspace:*
-        version: link:../../languages/ts/ts-server
+        version: link:../../../languages/ts/ts-server
       '@arrirpc/typebox-adapter':
         specifier: workspace:*
-        version: link:../../tooling/schema-typebox-adapter
+        version: link:../../../tooling/schema-typebox-adapter
       '@faker-js/faker':
         specifier: ^9.0.3
         version: 9.0.3
@@ -1360,6 +1378,9 @@ packages:
 
   '@types/node@20.12.14':
     resolution: {integrity: sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg==}
+
+  '@types/node@22.7.4':
+    resolution: {integrity: sha512-y+NPi1rFzDs1NdQHHToqeiX2TIS79SWEAw9GYhkkx8bD0ChpfqC+n2j5OXOCpzfojBEBt6DnEnnG9MY0zk1XLg==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -4359,6 +4380,10 @@ snapshots:
   '@types/node@20.12.14':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/node@22.7.4':
+    dependencies:
+      undici-types: 6.19.8
 
   '@types/node@22.7.5':
     dependencies:

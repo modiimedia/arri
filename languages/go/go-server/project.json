@@ -1,0 +1,24 @@
+{
+  "name": "go-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/go/go-server",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/**/*.go"],
+      "options": {
+        "command": "go test",
+        "cwd": "languages/go/go-server"
+      }
+    },
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/**/*.go"],
+      "options": {
+        "command": "go test -bench=.",
+        "cwd": "languages/go/go-server"
+      }
+    }
+  }
+}
