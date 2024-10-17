@@ -58,6 +58,7 @@ mod tests {
         let mut record = BTreeMap::<String, u64>::new();
         record.insert("A".to_string(), 1);
         record.insert("B".to_string(), 0);
+        record.insert("\"C\"\t".to_string(), 1);
         let mut input = ObjectWithEveryType {
             any: serde_json::Value::String("hello world".to_string()),
             boolean: true,

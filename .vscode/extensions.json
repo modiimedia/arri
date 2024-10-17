@@ -7,6 +7,7 @@
     "dart-code.dart-code",
     "dart-code.flutter",
     "rust-lang.rust-analyzer",
-    "tamasfe.even-better-toml"
+    "tamasfe.even-better-toml",
+    "vadimcn.vscode-lldb"
   ]
 }

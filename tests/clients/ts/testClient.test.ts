@@ -1,6 +1,6 @@
 import { ArriErrorInstance } from "@arrirpc/client";
-import { ofetch } from "@joshmossas/ofetch";
 import { randomUUID } from "crypto";
+import { ofetch } from "ofetch";
 import { expect, test } from "vitest";
 
 import {
@@ -98,6 +98,7 @@ const input: ObjectWithEveryType = {
     record: {
         A: BigInt("1"),
         B: BigInt("0"),
+        '"C"\t': BigInt("4"),
     },
     discriminator: {
         type: "B",

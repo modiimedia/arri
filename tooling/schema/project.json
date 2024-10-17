@@ -9,7 +9,7 @@
       "outputs": ["{projectRoot}/benchmark/dist"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "jiti buildBenchmarks.ts && jiti benchmark/dist/_index.js",
+        "command": "jiti buildBenchmarks.ts && node benchmark/dist/_index.cjs",
         "cwd": "tooling/schema"
       }
     },

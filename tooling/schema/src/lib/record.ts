@@ -63,7 +63,7 @@ export function record<TInnerSchema extends ASchema<any>>(
                     for (const key of Object.keys(input)) {
                         const val = input[key];
                         strParts.push(
-                            `"${key}":${schema.metadata[
+                            `${JSON.stringify(key)}:${schema.metadata[
                                 SCHEMA_METADATA
                             ].serialize(val, {
                                 instancePath: `${context.instancePath}/${key}`,

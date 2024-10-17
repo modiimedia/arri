@@ -29,7 +29,13 @@ test("Type Inference", () => {
 describe("Parsing", () => {
     it("accepts good input", () => {
         expect(a.safeParse(NumberRecordSchema, { "1": 1, "2": 2 }).success);
-        expect(a.safeParse(StringRecordSchema, { "1": "1", "2": "2" }).success);
+        expect(
+            a.safeParse(StringRecordSchema, {
+                "1": "1",
+                "2": "2",
+                [`A song titled "Song"`]: `A song titled "Song"`,
+            }).success,
+        );
         expect(
             a.safeParse(ObjectRecordSchema, {
                 a: { id: "12345", type: "notification" },

@@ -11,7 +11,7 @@ try {
 
 buildSync({
     entryPoints: ["benchmark/src/_index.ts"],
-    outdir: "benchmark/dist",
+    outfile: "benchmark/dist/_index.cjs",
     target: "node20",
     platform: "node",
     bundle: true,

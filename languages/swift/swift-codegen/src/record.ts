@@ -57,7 +57,7 @@ ${mainContent}
                 if __index > 0 {
                     ${target} += ","
                 }
-                ${target} += "\\"\\(__key)\\":"
+                ${target} += "\\(serializeString(input: __key)):"
                 ${subType.toJsonTemplate("__value", target)}
             }
             ${target} += "}"`;
