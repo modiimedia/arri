@@ -22,8 +22,22 @@ export function goServer(options: GoServerOptions = {}) {
             if (!fs.existsSync(resolvedOutDir)) {
                 fs.mkdirSync(resolvedOutDir);
             }
-            const watcher = chokidar.watch(["**/*.go"], {
+            const ignoredDirs = ["node_modules", ".arri", ".output"];
+            const watcher = chokidar.watch(".", {
                 ignoreInitial: true,
+                ignored: (path, stats) => {
+                    if (stats?.isFile() == true && !path.endsWith(".go")) {
+                        return true;
+                    }
+                    if (stats?.isDirectory()) {
+                        for (const dir of ignoredDirs) {
+                            if (path.includes(dir)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                },
                 cwd: options.cwd,
             });
             let childProcess: ChildProcess | undefined;
