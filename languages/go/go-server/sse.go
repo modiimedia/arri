@@ -198,6 +198,10 @@ func EventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 	eventStreamRpc(app, "", options, handler)
 }
 
+func ScopedEventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext], scope string, handler func(TParams, SseController[TResponse], TContext) RpcError, options RpcOptions) {
+	eventStreamRpc(app, scope, options, handler)
+}
+
 func getHooks[TContext Context](app *App[TContext]) (func(*http.Request, *TContext) RpcError, func(*http.Request, *TContext, any) RpcError, func(*http.Request, *TContext, any) RpcError, func(*http.Request, *TContext, error)) {
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {

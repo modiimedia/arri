@@ -62,6 +62,7 @@ func main() {
 	arri.ScopedRpc(&app, "tests", SendPartialObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveUnion, arri.RpcOptions{})
+	arri.ScopedEventStreamRpc(&app, "tests", StreamMessages, arri.RpcOptions{Method: arri.HttpMethodGet})
 
 	app.Run(arri.RunOptions{Port: 2020})
 }
@@ -292,4 +293,51 @@ type RecursiveUnion struct {
 
 func SendRecursiveUnion(params RecursiveUnion, _ AppContext) (RecursiveUnion, arri.RpcError) {
 	return params, nil
+}
+
+type ChatMessageParams struct {
+	ChannelId string
+}
+
+type ChatMessage struct {
+	arri.DiscriminatorKey `discriminatorKey:"messageType"`
+	*ChatMessageText      `discriminator:"TEXT"`
+	*ChatMessageImage     `discriminator:"IMAGE"`
+	*ChatMessageUrl       `discriminator:"URL"`
+}
+
+type ChatMessageText struct {
+	Id        string
+	ChannelId string
+	UserId    string
+	Date      time.Time
+	Text      string
+}
+
+type ChatMessageImage struct {
+	Id        string
+	ChannelId string
+	UserId    string
+	Date      time.Time
+	Image     string
+}
+
+type ChatMessageUrl struct {
+	Id        string
+	ChannelId string
+	UserId    string
+	Date      time.Time
+	Url       string
+}
+
+func StreamMessages(params ChatMessageParams, controller arri.SseController[ChatMessage], context AppContext) arri.RpcError {
+	t := time.NewTicker(time.Millisecond)
+	for {
+		select {
+		case <-t.C:
+			controller.Push(ChatMessage{ChatMessageText: &ChatMessageText{}})
+		case <-controller.Done():
+			return nil
+		}
+	}
 }
