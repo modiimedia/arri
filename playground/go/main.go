@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
-	arri "arrirpc.com/arri"
+	"arrirpc.com/arri"
 )
 
 // extend this with custom properties
@@ -41,11 +43,11 @@ func main() {
 		&app,
 		SayHello,
 		arri.RpcOptions{Method: arri.HttpMethodGet}, // manually specify the http method
-
 	)
 	arri.Rpc(&app, SayGoodbye, arri.RpcOptions{})
-
+	arri.EventStreamRpc(&app, WatchUser, arri.RpcOptions{Method: arri.HttpMethodGet})
 	appErr := app.Run(arri.RunOptions{Port: 3000})
+
 	if appErr != nil {
 		log.Fatal(appErr)
 		return
@@ -65,4 +67,38 @@ func SayHello(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.Rpc
 
 func SayGoodbye(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
 	return GreetingResponse{Message: "Goodbye " + params.Name}, nil
+}
+
+type WatchUserParams struct {
+	UserId string
+}
+
+type User struct {
+	Id        string
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func WatchUser(
+	params WatchUserParams,
+	controller arri.SseController[User],
+	context RpcContext,
+) arri.RpcError {
+	t := time.NewTicker(1 * time.Second)
+	controller.Push(User{Id: params.UserId})
+	msgCount := 0
+	for {
+		select {
+		case <-controller.Done():
+			fmt.Println("connection has been closed")
+			return nil
+		case <-t.C:
+			controller.Push(User{Id: params.UserId})
+			msgCount++
+			if msgCount >= 10 {
+				controller.Close()
+			}
+		}
+	}
 }

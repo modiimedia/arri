@@ -106,7 +106,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		w.Header().Add("Content-Type", "application/json")
 		ctx, ctxErr := app.CreateContext(w, r)
 		if ctxErr != nil {
-			handleError(false, w, r, nil, ctxErr, app.Options.OnError)
+			handleError(false, w, r, nil, ctxErr, onError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {

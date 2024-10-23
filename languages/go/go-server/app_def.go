@@ -48,10 +48,11 @@ type HttpRpcDef struct {
 }
 
 type ArriHttpRpcOptions struct {
-	Path         string
-	Method       HttpMethod
-	Description  string
-	IsDeprecated bool
+	Path          string
+	Method        HttpMethod
+	Description   string
+	IsDeprecated  bool
+	IsEventStream bool
 }
 
 func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
@@ -80,7 +81,7 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	}
 	method := HttpMethodPost
 	if len(options.Method) > 0 {
-		method = options.Method
+		method = strings.ToLower(options.Method)
 	}
 	var description = None[string]()
 	if len(options.Description) > 0 {
@@ -90,14 +91,19 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	if options.IsDeprecated {
 		isDeprecated = Some(options.IsDeprecated)
 	}
+	var isEventStream = None[bool]()
+	if options.IsEventStream {
+		isEventStream = Some(options.IsEventStream)
+	}
 	return &RpcDef{
 			Http: &HttpRpcDef{
-				Path:         path,
-				Method:       method,
-				Params:       params,
-				Response:     response,
-				Description:  description,
-				IsDeprecated: isDeprecated,
+				Path:          path,
+				Method:        method,
+				Params:        params,
+				Response:      response,
+				Description:   description,
+				IsEventStream: isEventStream,
+				IsDeprecated:  isDeprecated,
 			},
 		},
 		nil

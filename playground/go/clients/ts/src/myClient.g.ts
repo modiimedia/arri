@@ -7,6 +7,8 @@ import {
   ArriEnumValidator,
   ArriModelValidator,
   arriRequest,
+  arriSseRequest,
+  type EventSourceController,
   INT8_MAX,
   INT8_MIN,
   INT16_MAX,
@@ -17,6 +19,7 @@ import {
   INT64_MIN,
   isObject,
   serializeString,
+  type SseOptions,
   UINT8_MAX,
   UINT16_MAX,
   UINT32_MAX,
@@ -60,6 +63,24 @@ export class Client {
       serializer: $$GreetingParams.toJsonString,
       clientVersion: "",
     });
+  }
+  WatchUser(
+    params: WatchUserParams,
+    options: SseOptions<User> = {},
+  ): EventSourceController {
+    return arriSseRequest<User, WatchUserParams>(
+      {
+        url: `${this._baseUrl}/procedures/watch-user`,
+        method: "get",
+        headers: this._headers,
+        params: params,
+        responseFromJson: $$User.fromJson,
+        responseFromString: $$User.fromJsonString,
+        serializer: $$WatchUserParams.toUrlQueryString,
+        clientVersion: "",
+      },
+      options,
+    );
   }
 }
 
@@ -139,6 +160,132 @@ export const $$GreetingResponse: ArriModelValidator<GreetingResponse> = {
   toUrlQueryString(input): string {
     const queryParts: string[] = [];
     queryParts.push(`message=${input.message}`);
+    return queryParts.join("&");
+  },
+};
+
+export interface WatchUserParams {
+  userId: string;
+}
+export const $$WatchUserParams: ArriModelValidator<WatchUserParams> = {
+  new(): WatchUserParams {
+    return {
+      userId: "",
+    };
+  },
+  validate(input): input is WatchUserParams {
+    return isObject(input) && typeof input.userId === "string";
+  },
+  fromJson(input): WatchUserParams {
+    let _userId: string;
+    if (typeof input.userId === "string") {
+      _userId = input.userId;
+    } else {
+      _userId = "";
+    }
+    return {
+      userId: _userId,
+    };
+  },
+  fromJsonString(input): WatchUserParams {
+    return $$WatchUserParams.fromJson(JSON.parse(input));
+  },
+  toJsonString(input): string {
+    let json = "{";
+    json += '"userId":';
+    json += serializeString(input.userId);
+    json += "}";
+    return json;
+  },
+  toUrlQueryString(input): string {
+    const queryParts: string[] = [];
+    queryParts.push(`userId=${input.userId}`);
+    return queryParts.join("&");
+  },
+};
+
+export interface User {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export const $$User: ArriModelValidator<User> = {
+  new(): User {
+    return {
+      id: "",
+      name: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  },
+  validate(input): input is User {
+    return (
+      isObject(input) &&
+      typeof input.id === "string" &&
+      typeof input.name === "string" &&
+      input.createdAt instanceof Date &&
+      input.updatedAt instanceof Date
+    );
+  },
+  fromJson(input): User {
+    let _id: string;
+    if (typeof input.id === "string") {
+      _id = input.id;
+    } else {
+      _id = "";
+    }
+    let _name: string;
+    if (typeof input.name === "string") {
+      _name = input.name;
+    } else {
+      _name = "";
+    }
+    let _createdAt: Date;
+    if (typeof input.createdAt === "string") {
+      _createdAt = new Date(input.createdAt);
+    } else if (input.createdAt instanceof Date) {
+      _createdAt = input.createdAt;
+    } else {
+      _createdAt = new Date();
+    }
+    let _updatedAt: Date;
+    if (typeof input.updatedAt === "string") {
+      _updatedAt = new Date(input.updatedAt);
+    } else if (input.updatedAt instanceof Date) {
+      _updatedAt = input.updatedAt;
+    } else {
+      _updatedAt = new Date();
+    }
+    return {
+      id: _id,
+      name: _name,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+    };
+  },
+  fromJsonString(input): User {
+    return $$User.fromJson(JSON.parse(input));
+  },
+  toJsonString(input): string {
+    let json = "{";
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"createdAt":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"updatedAt":';
+    json += `"${input.updatedAt.toISOString()}"`;
+    json += "}";
+    return json;
+  },
+  toUrlQueryString(input): string {
+    const queryParts: string[] = [];
+    queryParts.push(`id=${input.id}`);
+    queryParts.push(`name=${input.name}`);
+    queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
+    queryParts.push(`updatedAt=${input.updatedAt.toISOString()}`);
     return queryParts.join("&");
   },
 };
