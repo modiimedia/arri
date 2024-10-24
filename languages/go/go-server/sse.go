@@ -52,6 +52,7 @@ func (controller *defaultSseController[T]) startStream() {
 	controller.headersSent = true
 	controller.pingTicker = time.NewTicker(time.Second * 10)
 	go func() {
+		defer controller.pingTicker.Stop()
 		for {
 			select {
 			case <-controller.pingTicker.C:

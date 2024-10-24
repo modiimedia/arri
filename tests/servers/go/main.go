@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"time"
@@ -293,6 +294,39 @@ type RecursiveUnion struct {
 
 func SendRecursiveUnion(params RecursiveUnion, _ AppContext) (RecursiveUnion, arri.RpcError) {
 	return params, nil
+}
+
+type AutoReconnectParams struct {
+	MessageCount uint8
+}
+
+type AutoReconnectResponse struct {
+	Count   uint8
+	Message string
+}
+
+func StreamAutoReconnect(params AutoReconnectParams, controller arri.SseController[AutoReconnectResponse], ctx AppContext) arri.RpcError {
+	t := time.NewTicker(time.Millisecond)
+	_, cancel := context.WithCancel(ctx.request.Context())
+	defer t.Stop()
+	var msgCount uint8 = 0
+	for {
+		select {
+		case <-t.C:
+			msgCount++
+			controller.Push(AutoReconnectResponse{Count: msgCount, Message: "Hello World " + string(msgCount)})
+			if msgCount == params.MessageCount {
+				cancel()
+				return nil
+			}
+			if msgCount > params.MessageCount {
+				panic("Request was not properly cancelled")
+			}
+		case <-controller.Done():
+			return nil
+		}
+
+	}
 }
 
 type ChatMessageParams struct {

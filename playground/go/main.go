@@ -28,6 +28,7 @@ type Message struct {
 func WatchMessages(params WatchMessagesParams, controller arri.SseController[Message], context arri.DefaultContext) arri.RpcError {
 	// create ticker that fires each second
 	t := time.NewTicker(time.Second)
+	defer t.Stop()
 	msgCount := 0
 	for {
 		select {
@@ -40,8 +41,6 @@ func WatchMessages(params WatchMessagesParams, controller arri.SseController[Mes
 				CreatedAt: time.Now(),
 			})
 		case <-controller.Done():
-			// cleanup when the connection is closed
-			t.Stop()
 			return nil
 		}
 	}
