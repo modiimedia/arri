@@ -2,103 +2,47 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"arrirpc.com/arri"
+	"github.com/google/uuid"
 )
 
-// extend this with custom properties
-type RpcContext struct {
-	writer  http.ResponseWriter
-	request *http.Request
-}
-
-func (c RpcContext) Request() *http.Request {
-	return c.request
-}
-
-func (c RpcContext) Writer() http.ResponseWriter {
-	return c.writer
-}
-
-func CreateAppContext(w http.ResponseWriter, r *http.Request) (*RpcContext, arri.RpcError) {
-	ctx := RpcContext{writer: w, request: r}
-	return &ctx, nil
-}
-
-var mux = http.DefaultServeMux
-
 func main() {
-	app := arri.NewApp(
-		mux,
-		arri.AppOptions[RpcContext]{
-			RpcRoutePrefix: "/procedures",
-		},
-		CreateAppContext,
-	)
-	// register an RPC
-	arri.Rpc(
-		&app,
-		SayHello,
-		arri.RpcOptions{Method: arri.HttpMethodGet}, // manually specify the http method
-	)
-	arri.Rpc(&app, SayGoodbye, arri.RpcOptions{})
-	arri.EventStreamRpc(&app, WatchUser, arri.RpcOptions{Method: arri.HttpMethodGet})
-	appErr := app.Run(arri.RunOptions{Port: 3000})
-
-	if appErr != nil {
-		log.Fatal(appErr)
-		return
-	}
+	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultContext]{}, arri.CreateDefaultContext)
+	arri.EventStreamRpc(&app, WatchMessages, arri.RpcOptions{})
+	app.Run(arri.RunOptions{})
 }
 
-type GreetingParams struct {
-	Name string
-}
-type GreetingResponse struct {
-	Message string
+type WatchMessagesParams struct {
+	ChannelId string
 }
 
-func SayHello(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
-	return GreetingResponse{Message: "Hello " + params.Name}, nil
-}
-
-func SayGoodbye(params GreetingParams, ctx RpcContext) (GreetingResponse, arri.RpcError) {
-	return GreetingResponse{Message: "Goodbye " + params.Name}, nil
-}
-
-type WatchUserParams struct {
-	UserId string
-}
-
-type User struct {
+type Message struct {
 	Id        string
-	Name      string
+	Text      string
 	CreatedAt time.Time
-	UpdatedAt time.Time
 }
 
-func WatchUser(
-	params WatchUserParams,
-	controller arri.SseController[User],
-	context RpcContext,
-) arri.RpcError {
-	t := time.NewTicker(1 * time.Second)
-	controller.Push(User{Id: params.UserId})
+func WatchMessages(params WatchMessagesParams, controller arri.SseController[Message], context arri.DefaultContext) arri.RpcError {
+	// create ticker that fires each second
+	t := time.NewTicker(time.Second)
 	msgCount := 0
 	for {
 		select {
-		case <-controller.Done():
-			fmt.Println("connection has been closed")
-			return nil
 		case <-t.C:
-			controller.Push(User{Id: params.UserId})
+			// send a message to the client every tick
 			msgCount++
-			if msgCount >= 10 {
-				controller.Close()
-			}
+			controller.Push(Message{
+				Id:        uuid.NewString(),
+				Text:      "hello world " + fmt.Sprint(msgCount),
+				CreatedAt: time.Now(),
+			})
+		case <-controller.Done():
+			// cleanup when the connection is closed
+			t.Stop()
+			return nil
 		}
 	}
 }

@@ -40,43 +40,19 @@ export class Client {
     this._baseUrl = options.baseUrl ?? "";
     this._headers = options.headers ?? {};
   }
-  async SayHello(params: GreetingParams): Promise<GreetingResponse> {
-    return arriRequest<GreetingResponse, GreetingParams>({
-      url: `${this._baseUrl}/procedures/say-hello`,
-      method: "get",
-      headers: this._headers,
-      params: params,
-      responseFromJson: $$GreetingResponse.fromJson,
-      responseFromString: $$GreetingResponse.fromJsonString,
-      serializer: $$GreetingParams.toUrlQueryString,
-      clientVersion: "",
-    });
-  }
-  async SayGoodbye(params: GreetingParams): Promise<GreetingResponse> {
-    return arriRequest<GreetingResponse, GreetingParams>({
-      url: `${this._baseUrl}/procedures/say-goodbye`,
-      method: "post",
-      headers: this._headers,
-      params: params,
-      responseFromJson: $$GreetingResponse.fromJson,
-      responseFromString: $$GreetingResponse.fromJsonString,
-      serializer: $$GreetingParams.toJsonString,
-      clientVersion: "",
-    });
-  }
-  WatchUser(
-    params: WatchUserParams,
-    options: SseOptions<User> = {},
+  WatchMessages(
+    params: WatchMessagesParams,
+    options: SseOptions<Message> = {},
   ): EventSourceController {
-    return arriSseRequest<User, WatchUserParams>(
+    return arriSseRequest<Message, WatchMessagesParams>(
       {
-        url: `${this._baseUrl}/procedures/watch-user`,
-        method: "get",
+        url: `${this._baseUrl}/watch-messages`,
+        method: "post",
         headers: this._headers,
         params: params,
-        responseFromJson: $$User.fromJson,
-        responseFromString: $$User.fromJsonString,
-        serializer: $$WatchUserParams.toUrlQueryString,
+        responseFromJson: $$Message.fromJson,
+        responseFromString: $$Message.fromJsonString,
+        serializer: $$WatchMessagesParams.toJsonString,
         clientVersion: "",
       },
       options,
@@ -84,162 +60,79 @@ export class Client {
   }
 }
 
-export interface GreetingParams {
-  name: string;
+export interface WatchMessagesParams {
+  channelId: string;
 }
-export const $$GreetingParams: ArriModelValidator<GreetingParams> = {
-  new(): GreetingParams {
+export const $$WatchMessagesParams: ArriModelValidator<WatchMessagesParams> = {
+  new(): WatchMessagesParams {
     return {
-      name: "",
+      channelId: "",
     };
   },
-  validate(input): input is GreetingParams {
-    return isObject(input) && typeof input.name === "string";
+  validate(input): input is WatchMessagesParams {
+    return isObject(input) && typeof input.channelId === "string";
   },
-  fromJson(input): GreetingParams {
-    let _name: string;
-    if (typeof input.name === "string") {
-      _name = input.name;
+  fromJson(input): WatchMessagesParams {
+    let _channelId: string;
+    if (typeof input.channelId === "string") {
+      _channelId = input.channelId;
     } else {
-      _name = "";
+      _channelId = "";
     }
     return {
-      name: _name,
+      channelId: _channelId,
     };
   },
-  fromJsonString(input): GreetingParams {
-    return $$GreetingParams.fromJson(JSON.parse(input));
+  fromJsonString(input): WatchMessagesParams {
+    return $$WatchMessagesParams.fromJson(JSON.parse(input));
   },
   toJsonString(input): string {
     let json = "{";
-    json += '"name":';
-    json += serializeString(input.name);
+    json += '"channelId":';
+    json += serializeString(input.channelId);
     json += "}";
     return json;
   },
   toUrlQueryString(input): string {
     const queryParts: string[] = [];
-    queryParts.push(`name=${input.name}`);
+    queryParts.push(`channelId=${input.channelId}`);
     return queryParts.join("&");
   },
 };
 
-export interface GreetingResponse {
-  message: string;
-}
-export const $$GreetingResponse: ArriModelValidator<GreetingResponse> = {
-  new(): GreetingResponse {
-    return {
-      message: "",
-    };
-  },
-  validate(input): input is GreetingResponse {
-    return isObject(input) && typeof input.message === "string";
-  },
-  fromJson(input): GreetingResponse {
-    let _message: string;
-    if (typeof input.message === "string") {
-      _message = input.message;
-    } else {
-      _message = "";
-    }
-    return {
-      message: _message,
-    };
-  },
-  fromJsonString(input): GreetingResponse {
-    return $$GreetingResponse.fromJson(JSON.parse(input));
-  },
-  toJsonString(input): string {
-    let json = "{";
-    json += '"message":';
-    json += serializeString(input.message);
-    json += "}";
-    return json;
-  },
-  toUrlQueryString(input): string {
-    const queryParts: string[] = [];
-    queryParts.push(`message=${input.message}`);
-    return queryParts.join("&");
-  },
-};
-
-export interface WatchUserParams {
-  userId: string;
-}
-export const $$WatchUserParams: ArriModelValidator<WatchUserParams> = {
-  new(): WatchUserParams {
-    return {
-      userId: "",
-    };
-  },
-  validate(input): input is WatchUserParams {
-    return isObject(input) && typeof input.userId === "string";
-  },
-  fromJson(input): WatchUserParams {
-    let _userId: string;
-    if (typeof input.userId === "string") {
-      _userId = input.userId;
-    } else {
-      _userId = "";
-    }
-    return {
-      userId: _userId,
-    };
-  },
-  fromJsonString(input): WatchUserParams {
-    return $$WatchUserParams.fromJson(JSON.parse(input));
-  },
-  toJsonString(input): string {
-    let json = "{";
-    json += '"userId":';
-    json += serializeString(input.userId);
-    json += "}";
-    return json;
-  },
-  toUrlQueryString(input): string {
-    const queryParts: string[] = [];
-    queryParts.push(`userId=${input.userId}`);
-    return queryParts.join("&");
-  },
-};
-
-export interface User {
+export interface Message {
   id: string;
-  name: string;
+  text: string;
   createdAt: Date;
-  updatedAt: Date;
 }
-export const $$User: ArriModelValidator<User> = {
-  new(): User {
+export const $$Message: ArriModelValidator<Message> = {
+  new(): Message {
     return {
       id: "",
-      name: "",
+      text: "",
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
   },
-  validate(input): input is User {
+  validate(input): input is Message {
     return (
       isObject(input) &&
       typeof input.id === "string" &&
-      typeof input.name === "string" &&
-      input.createdAt instanceof Date &&
-      input.updatedAt instanceof Date
+      typeof input.text === "string" &&
+      input.createdAt instanceof Date
     );
   },
-  fromJson(input): User {
+  fromJson(input): Message {
     let _id: string;
     if (typeof input.id === "string") {
       _id = input.id;
     } else {
       _id = "";
     }
-    let _name: string;
-    if (typeof input.name === "string") {
-      _name = input.name;
+    let _text: string;
+    if (typeof input.text === "string") {
+      _text = input.text;
     } else {
-      _name = "";
+      _text = "";
     }
     let _createdAt: Date;
     if (typeof input.createdAt === "string") {
@@ -249,43 +142,31 @@ export const $$User: ArriModelValidator<User> = {
     } else {
       _createdAt = new Date();
     }
-    let _updatedAt: Date;
-    if (typeof input.updatedAt === "string") {
-      _updatedAt = new Date(input.updatedAt);
-    } else if (input.updatedAt instanceof Date) {
-      _updatedAt = input.updatedAt;
-    } else {
-      _updatedAt = new Date();
-    }
     return {
       id: _id,
-      name: _name,
+      text: _text,
       createdAt: _createdAt,
-      updatedAt: _updatedAt,
     };
   },
-  fromJsonString(input): User {
-    return $$User.fromJson(JSON.parse(input));
+  fromJsonString(input): Message {
+    return $$Message.fromJson(JSON.parse(input));
   },
   toJsonString(input): string {
     let json = "{";
     json += '"id":';
     json += serializeString(input.id);
-    json += ',"name":';
-    json += serializeString(input.name);
+    json += ',"text":';
+    json += serializeString(input.text);
     json += ',"createdAt":';
     json += `"${input.createdAt.toISOString()}"`;
-    json += ',"updatedAt":';
-    json += `"${input.updatedAt.toISOString()}"`;
     json += "}";
     return json;
   },
   toUrlQueryString(input): string {
     const queryParts: string[] = [];
     queryParts.push(`id=${input.id}`);
-    queryParts.push(`name=${input.name}`);
+    queryParts.push(`text=${input.text}`);
     queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
-    queryParts.push(`updatedAt=${input.updatedAt.toISOString()}`);
     return queryParts.join("&");
   },
 };

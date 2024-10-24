@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/iancoleman/strcase"
 )
@@ -25,6 +26,7 @@ type defaultSseController[T any] struct {
 	keyCasing          KeyCasing
 	cancelFunc         context.CancelFunc
 	context            context.Context
+	pingTicker         *time.Ticker
 }
 
 func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *defaultSseController[T] {
@@ -48,6 +50,17 @@ func (controller *defaultSseController[T]) startStream() {
 	controller.writer.Header().Set("Connection", "keep-alive")
 	controller.writer.WriteHeader(200)
 	controller.headersSent = true
+	controller.pingTicker = time.NewTicker(time.Second * 10)
+	go func() {
+		for {
+			select {
+			case <-controller.pingTicker.C:
+				fmt.Fprintf(controller.writer, "event: ping\ndata:\n\n")
+			case <-controller.Done():
+				return
+			}
+		}
+	}()
 }
 
 func (controller *defaultSseController[T]) Push(message T) RpcError {
