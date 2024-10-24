@@ -11,6 +11,7 @@ import (
 
 func main() {
 	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultContext]{}, arri.CreateDefaultContext)
+	// register the EventStreamRpc handler
 	arri.EventStreamRpc(&app, WatchMessages, arri.RpcOptions{})
 	app.Run(arri.RunOptions{})
 }
