@@ -55,7 +55,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			panic("Procedures cannot accept anonymous structs")
 		}
 		rpcSchema.Http.Params = paramsSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
 	}
 	response := handlerType.Out(0)
 	if response.Kind() == reflect.Ptr {
@@ -72,13 +72,13 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			panic("Procedures cannot return anonymous structs")
 		}
 		rpcSchema.Http.Response = responseSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
 	}
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	if len(serviceName) > 0 {
 		rpcName = serviceName + "." + rpcName
 	}
-	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[RpcDef]{Key: rpcName, Value: *rpcSchema})
+	*app.Procedures = __updateAOrderedMap__(*app.Procedures, OrderedMapEntry[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
 		onRequest = func(r *http.Request, t *TContext) RpcError {

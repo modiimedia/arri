@@ -250,7 +250,7 @@ func newEnumEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, er
 }
 
 func newArrayEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
-	if strings.HasPrefix(t.Elem().Name(), "__orderedMapEntry__[") {
+	if strings.HasPrefix(t.Elem().Name(), "OrderedMapEntry[") {
 		return newOrderedMapEntryToJsonEncoder(t, context)
 	}
 	instancePath := context.instancePath

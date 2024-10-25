@@ -12,8 +12,8 @@ type App[TContext Context] struct {
 	CreateContext        func(w http.ResponseWriter, r *http.Request) (*TContext, RpcError)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
-	Procedures           *[]__orderedMapEntry__[RpcDef]
-	Definitions          *[]__orderedMapEntry__[TypeDef]
+	Procedures           *[]OrderedMapEntry[RpcDef]
+	Definitions          *[]OrderedMapEntry[TypeDef]
 }
 
 func (app *App[TContext]) GetAppDefinition() AppDef {
@@ -145,8 +145,8 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 		CreateContext:        createContext,
 		Options:              options,
 		InitializationErrors: []error{},
-		Procedures:           &[]__orderedMapEntry__[RpcDef]{},
-		Definitions:          &[]__orderedMapEntry__[TypeDef]{},
+		Procedures:           &[]OrderedMapEntry[RpcDef]{},
+		Definitions:          &[]OrderedMapEntry[TypeDef]{},
 	}
 	defPath := app.Options.RpcRoutePrefix + "/__definition"
 	if len(app.Options.RpcDefinitionPath) > 0 {
@@ -278,7 +278,7 @@ func RegisterDef[TContext Context](app *App[TContext], input any) {
 	if def.Metadata.IsNone() || def.Metadata.Unwrap().Id.IsNone() {
 		panic("cannot register anonymous structs as a definition")
 	}
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{
+	*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{
 		Key:   def.Metadata.Unwrap().Id.Unwrap(),
 		Value: *def,
 	})

@@ -14,7 +14,7 @@ import (
 
 type SseController[T any] interface {
 	Push(T) RpcError
-	Close()
+	Close(notifyClient bool)
 	Done() <-chan struct{}
 }
 
@@ -77,12 +77,14 @@ func (controller *defaultSseController[T]) Push(message T) RpcError {
 	return nil
 }
 
-func (controller *defaultSseController[T]) Close() {
+func (controller *defaultSseController[T]) Close(notifyClient bool) {
 	if !controller.headersSent {
 		controller.startStream()
 	}
-	fmt.Fprint(controller.writer, "event: done\ndata: done\n\n")
-	controller.responseController.Flush()
+	if notifyClient {
+		fmt.Fprint(controller.writer, "event: done\ndata: done\n\n")
+		controller.responseController.Flush()
+	}
 	controller.cancelFunc()
 }
 
@@ -127,7 +129,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			panic("Procedures cannot accept anonymous structs")
 		}
 		rpcSchema.Http.Params = paramsSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
 	}
 	response := reflect.TypeFor[TResponse]()
 	if response.Kind() == reflect.Ptr {
@@ -144,13 +146,13 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			panic("Procedures cannot return anonymous structs")
 		}
 		rpcSchema.Http.Response = responseSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, __orderedMapEntry__[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
 	}
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
 	if len(serviceName) > 0 {
 		rpcName = serviceName + "." + rpcName
 	}
-	*app.Procedures = __updateAOrderedMap__(*app.Procedures, __orderedMapEntry__[RpcDef]{Key: rpcName, Value: *rpcSchema})
+	*app.Procedures = __updateAOrderedMap__(*app.Procedures, OrderedMapEntry[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {

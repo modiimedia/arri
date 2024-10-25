@@ -11,7 +11,7 @@ import (
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
-var basicJsonInput = objectWithEveryType{
+var objectWithEveryTypeInput = objectWithEveryType{
 	String:        "",
 	Boolean:       false,
 	Timestamp:     testDate,
@@ -39,7 +39,7 @@ func TestEncodeJson(t *testing.T) {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := arri.EncodeJSON(basicJsonInput, arri.KeyCasingCamelCase)
+	json, err := arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -52,13 +52,13 @@ func TestEncodeJson(t *testing.T) {
 
 func BenchmarkEncodeJson(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(basicJsonInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
 	}
 }
 
 func BenchmarkEncodeJsonStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		json.Marshal(basicJsonInput)
+		json.Marshal(objectWithEveryTypeInput)
 	}
 }
 

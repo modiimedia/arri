@@ -34,26 +34,26 @@ type TypeDefMetadata struct {
 }
 
 type TypeDef struct {
-	Metadata           Option[TypeDefMetadata]                `key:"metadata" `
-	Nullable           Option[bool]                           `key:"nullable"`
-	Type               Option[Type]                           `key:"type"`
-	Enum               Option[[]string]                       `key:"enum"`
-	Elements           Option[*TypeDef]                       `key:"elements"`
-	Properties         Option[[]__orderedMapEntry__[TypeDef]] `key:"properties"`
-	OptionalProperties Option[[]__orderedMapEntry__[TypeDef]] `key:"optionalProperties"`
-	Strict             Option[bool]                           `key:"strict"`
-	Values             Option[*TypeDef]                       `key:"values"`
-	Discriminator      Option[string]                         `key:"discriminator"`
-	Mapping            Option[map[string]TypeDef]             `key:"mapping"`
-	Ref                Option[string]                         `key:"ref"`
+	Metadata           Option[TypeDefMetadata]            `key:"metadata" `
+	Nullable           Option[bool]                       `key:"nullable"`
+	Type               Option[Type]                       `key:"type"`
+	Enum               Option[[]string]                   `key:"enum"`
+	Elements           Option[*TypeDef]                   `key:"elements"`
+	Properties         Option[[]OrderedMapEntry[TypeDef]] `key:"properties"`
+	OptionalProperties Option[[]OrderedMapEntry[TypeDef]] `key:"optionalProperties"`
+	Strict             Option[bool]                       `key:"strict"`
+	Values             Option[*TypeDef]                   `key:"values"`
+	Discriminator      Option[string]                     `key:"discriminator"`
+	Mapping            Option[map[string]TypeDef]         `key:"mapping"`
+	Ref                Option[string]                     `key:"ref"`
 }
 
-type __orderedMapEntry__[T interface{}] struct {
+type OrderedMapEntry[T interface{}] struct {
 	Key   string
 	Value T
 }
 
-func __updateAOrderedMap__[T interface{}](state []__orderedMapEntry__[T], newValue __orderedMapEntry__[T]) []__orderedMapEntry__[T] {
+func __updateAOrderedMap__[T interface{}](state []OrderedMapEntry[T], newValue OrderedMapEntry[T]) []OrderedMapEntry[T] {
 	var targetIndex *int = nil
 	for i := 0; i < len(state); i++ {
 		value := state[i]
@@ -78,7 +78,7 @@ const (
 
 type KeyCasing = string
 
-type _TypeDefContext struct {
+type typeDefContext struct {
 	KeyCasing     KeyCasing
 	MaxDepth      uint32
 	CurrentDepth  uint32
@@ -90,7 +90,7 @@ type _TypeDefContext struct {
 	EnumValues    Option[[]string]
 }
 
-func _NewTypeDefContext(keyCasing KeyCasing) _TypeDefContext {
+func _NewTypeDefContext(keyCasing KeyCasing) typeDefContext {
 	casing := KeyCasingCamelCase
 	switch keyCasing {
 	case KeyCasingCamelCase, KeyCasingSnakeCase, KeyCasingPascalCase:
@@ -98,7 +98,7 @@ func _NewTypeDefContext(keyCasing KeyCasing) _TypeDefContext {
 	case "":
 		casing = keyCasing
 	}
-	return _TypeDefContext{
+	return typeDefContext{
 		KeyCasing:    casing,
 		MaxDepth:     1000,
 		InstancePath: "",
@@ -109,7 +109,7 @@ func _NewTypeDefContext(keyCasing KeyCasing) _TypeDefContext {
 
 }
 
-func (context _TypeDefContext) copyWith(
+func (context typeDefContext) copyWith(
 	CurrentDepth Option[uint32],
 	ParentStructs Option[[]string],
 	InstancePath Option[string],
@@ -117,26 +117,18 @@ func (context _TypeDefContext) copyWith(
 	IsNullable Option[Option[bool]],
 	EnumValues Option[Option[[]string]],
 	EnumName Option[Option[string]],
-) _TypeDefContext {
-	depth := CurrentDepth.UnwrapOr(context.CurrentDepth)
-	structs := ParentStructs.UnwrapOr(context.ParentStructs)
-	instancePath := InstancePath.UnwrapOr(context.InstancePath)
-	schemaPath := SchemaPath.UnwrapOr(context.SchemaPath)
-	isNullable := IsNullable.UnwrapOr(context.IsNullable)
-	enumValues := EnumValues.UnwrapOr(context.EnumValues)
-	enumName := EnumName.UnwrapOr(context.EnumName)
-	return _TypeDefContext{
+) typeDefContext {
+	return typeDefContext{
 		KeyCasing:     context.KeyCasing,
 		MaxDepth:      context.MaxDepth,
-		CurrentDepth:  depth,
-		ParentStructs: structs,
-		InstancePath:  instancePath,
-		SchemaPath:    schemaPath,
-		IsNullable:    isNullable,
-		EnumValues:    enumValues,
-		EnumName:      enumName,
+		CurrentDepth:  CurrentDepth.UnwrapOr(context.CurrentDepth),
+		ParentStructs: ParentStructs.UnwrapOr(context.ParentStructs),
+		InstancePath:  InstancePath.UnwrapOr(context.InstancePath),
+		SchemaPath:    SchemaPath.UnwrapOr(context.SchemaPath),
+		IsNullable:    IsNullable.UnwrapOr(context.IsNullable),
+		EnumValues:    EnumValues.UnwrapOr(context.EnumValues),
+		EnumName:      EnumName.UnwrapOr(context.EnumName),
 	}
-
 }
 
 func ToTypeDef(input interface{}, keyCasing KeyCasing) (*TypeDef, error) {
@@ -144,7 +136,7 @@ func ToTypeDef(input interface{}, keyCasing KeyCasing) (*TypeDef, error) {
 	return typeToTypeDef(reflect.TypeOf(input), context)
 }
 
-func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
 	if context.CurrentDepth >= context.MaxDepth {
 		return nil, fmt.Errorf("error at %s. max depth of %+v reached", context.InstancePath, context.MaxDepth)
 	}
@@ -174,6 +166,20 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error
 		reflect.Slice:
 		return arrayToTypeDef(input, context)
 	case reflect.Struct:
+		if isNullableType(input) {
+			subType := extractNullableType(input)
+			return typeToTypeDef(
+				subType,
+				context.copyWith(None[uint32](),
+					None[[]string](),
+					None[string](),
+					None[string](),
+					Some(Some(true)),
+					None[Option[[]string]](),
+					None[Option[string]](),
+				),
+			)
+		}
 		if input.Name() == "Time" {
 			t := Timestamp
 			return &TypeDef{Type: Some(t), Nullable: context.IsNullable}, nil
@@ -186,7 +192,7 @@ func typeToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error
 	}
 }
 
-func primitiveTypeToTypeDef(value reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func primitiveTypeToTypeDef(value reflect.Type, context typeDefContext) (*TypeDef, error) {
 	kind := value.Kind()
 	switch kind {
 	case reflect.Bool:
@@ -261,22 +267,20 @@ func IsDiscriminatorStruct(input reflect.Type) bool {
 }
 
 func nameFromInstancePath(instancePath string) string {
-	fmt.Println("INSTANCe_PATH", instancePath)
 	parts := strings.Split(instancePath, "/")
-
 	return strcase.ToCamel(strings.Join(parts, "_"))
 }
 
-func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func structToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
 	structName := input.Name()
 	typeId := Some(structName)
 	isAnonymous := len(input.PkgPath()) == 0 || strings.ContainsAny(structName, " []")
 	if isAnonymous {
 		typeId = None[string]()
 	}
-	if len(context.ParentStructs) == 0 && isAnonymous {
-		return nil, fmt.Errorf("root level type definitions cannot be anonymous structs")
-	}
+	// if len(context.ParentStructs) == 0 && isAnonymous {
+	// 	return nil, fmt.Errorf("root level type definitions cannot be anonymous structs")
+	// }
 	if typeId.IsSome() {
 		for i := 0; i < len(context.ParentStructs); i++ {
 			name := context.ParentStructs[i]
@@ -294,8 +298,8 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 	if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
-	requiredFields := []__orderedMapEntry__[TypeDef]{}
-	optionalFields := []__orderedMapEntry__[TypeDef]{}
+	requiredFields := []OrderedMapEntry[TypeDef]{}
+	optionalFields := []OrderedMapEntry[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
@@ -345,15 +349,6 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 		if isOptional {
 			fieldType = extractOptionalType(fieldType)
 		}
-		isNullable := None[Option[bool]]()
-		if isNullableType(fieldType) {
-			isNullable = Some(Some(true))
-			fieldType = extractNullableType(fieldType)
-		}
-		isOptional2 := isOptionalType(fieldType)
-		if isOptional2 {
-			fieldType = extractOptionalType(fieldType)
-		}
 		var instancePath string
 		if isAnonymous {
 			instancePath = context.InstancePath + "/" + key
@@ -369,7 +364,7 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 				None[[]string](),
 				Some(instancePath),
 				Some(schemaPath),
-				isNullable,
+				None[Option[bool]](),
 				enumValues,
 				enumName,
 			),
@@ -398,9 +393,9 @@ func structToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, err
 			}
 		}
 		if isOptional {
-			optionalFields = __updateAOrderedMap__(optionalFields, __orderedMapEntry__[TypeDef]{Key: key, Value: *fieldResult})
+			optionalFields = __updateAOrderedMap__(optionalFields, OrderedMapEntry[TypeDef]{Key: key, Value: *fieldResult})
 		} else {
-			requiredFields = __updateAOrderedMap__(requiredFields, __orderedMapEntry__[TypeDef]{Key: key, Value: *fieldResult})
+			requiredFields = __updateAOrderedMap__(requiredFields, OrderedMapEntry[TypeDef]{Key: key, Value: *fieldResult})
 
 		}
 	}
@@ -432,7 +427,7 @@ func extractNullableType(input reflect.Type) reflect.Type {
 	return field.Type
 }
 
-func taggedUnionToTypeDef(name Option[string], input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
@@ -483,7 +478,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context _Type
 	return &TypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(TypeDefMetadata{Id: name})}, nil
 }
 
-func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func arrayToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Array && kind != reflect.Slice {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Array' or 'reflect.Slice'. got '%s'", context.InstancePath, kind)
@@ -491,7 +486,6 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, erro
 	subType := input.Elem()
 	instancePath := context.InstancePath + "/[element]"
 	schemaPath := context.SchemaPath + "/elements"
-	nullable := false
 	subTypeResult, err := typeToTypeDef(
 		subType,
 		context.copyWith(
@@ -499,7 +493,7 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, erro
 			None[[]string](),
 			Some(instancePath),
 			Some(schemaPath),
-			Some(Some(nullable)),
+			Some(None[bool]()),
 			None[Option[[]string]](),
 			None[Option[string]](),
 		),
@@ -508,10 +502,10 @@ func arrayToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, erro
 		return nil, err
 	}
 	r := Some(subTypeResult)
-	return &TypeDef{Elements: r}, nil
+	return &TypeDef{Elements: r, Nullable: context.IsNullable}, nil
 }
 
-func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error) {
+func mapToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Map {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Map'. got '%s'", context.InstancePath, kind)
@@ -523,7 +517,10 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error)
 	}
 	instancePath := context.InstancePath + "/[key]"
 	schemaPath := context.SchemaPath + "/values"
-	nullable := subType.Kind() == reflect.Ptr
+	nullable := None[bool]()
+	if subType.Kind() == reflect.Ptr {
+		nullable = Some(true)
+	}
 	depth := context.CurrentDepth + 1
 	subTypeResult, err := typeToTypeDef(
 		subType, context.copyWith(
@@ -531,7 +528,7 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error)
 			None[[]string](),
 			Some(instancePath),
 			Some(schemaPath),
-			Some(Some(nullable)),
+			Some(nullable),
 			None[Option[[]string]](),
 			None[Option[string]](),
 		),
@@ -540,5 +537,5 @@ func mapToTypeDef(input reflect.Type, context _TypeDefContext) (*TypeDef, error)
 		return nil, err
 	}
 	r := Some(subTypeResult)
-	return &TypeDef{Values: r}, nil
+	return &TypeDef{Values: r, Nullable: context.IsNullable}, nil
 }

@@ -10,10 +10,10 @@ import (
 )
 
 type AppDef struct {
-	SchemaVersion string                         `key:"schemaVersion" json:"schemaVersion" `
-	Info          Option[AppDefInfo]             `key:"info" json:"info,omitempty" `
-	Procedures    []__orderedMapEntry__[RpcDef]  `key:"procedures" json:"procedures" `
-	Definitions   []__orderedMapEntry__[TypeDef] `key:"definitions" json:"definitions"`
+	SchemaVersion string                     `key:"schemaVersion" json:"schemaVersion" `
+	Info          Option[AppDefInfo]         `key:"info" json:"info,omitempty" `
+	Procedures    []OrderedMapEntry[RpcDef]  `key:"procedures" json:"procedures" `
+	Definitions   []OrderedMapEntry[TypeDef] `key:"definitions" json:"definitions"`
 }
 
 type AppDefInfo struct {
@@ -130,5 +130,5 @@ func rpcNameFromFunctionName(name string) string {
 			}
 		}
 	}
-	return fnName
+	return strcase.ToLowerCamel(fnName)
 }
