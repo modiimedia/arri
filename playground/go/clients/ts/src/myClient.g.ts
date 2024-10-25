@@ -40,7 +40,7 @@ export class Client {
     this._baseUrl = options.baseUrl ?? "";
     this._headers = options.headers ?? {};
   }
-  WatchMessages(
+  watchMessages(
     params: WatchMessagesParams,
     options: SseOptions<Message> = {},
   ): EventSourceController {
@@ -167,6 +167,110 @@ export const $$Message: ArriModelValidator<Message> = {
     queryParts.push(`id=${input.id}`);
     queryParts.push(`text=${input.text}`);
     queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
+    return queryParts.join("&");
+  },
+};
+
+export interface User {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  email?: string;
+}
+export const $$User: ArriModelValidator<User> = {
+  new(): User {
+    return {
+      id: "",
+      name: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  },
+  validate(input): input is User {
+    return (
+      isObject(input) &&
+      typeof input.id === "string" &&
+      typeof input.name === "string" &&
+      input.createdAt instanceof Date &&
+      input.updatedAt instanceof Date &&
+      (typeof input.email === "string" || typeof input.email === "undefined")
+    );
+  },
+  fromJson(input): User {
+    let _id: string;
+    if (typeof input.id === "string") {
+      _id = input.id;
+    } else {
+      _id = "";
+    }
+    let _name: string;
+    if (typeof input.name === "string") {
+      _name = input.name;
+    } else {
+      _name = "";
+    }
+    let _createdAt: Date;
+    if (typeof input.createdAt === "string") {
+      _createdAt = new Date(input.createdAt);
+    } else if (input.createdAt instanceof Date) {
+      _createdAt = input.createdAt;
+    } else {
+      _createdAt = new Date();
+    }
+    let _updatedAt: Date;
+    if (typeof input.updatedAt === "string") {
+      _updatedAt = new Date(input.updatedAt);
+    } else if (input.updatedAt instanceof Date) {
+      _updatedAt = input.updatedAt;
+    } else {
+      _updatedAt = new Date();
+    }
+    let _email: string | undefined;
+    if (typeof input.email !== "undefined") {
+      if (typeof input.email === "string") {
+        _email = input.email;
+      } else {
+        _email = "";
+      }
+    }
+    return {
+      id: _id,
+      name: _name,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      email: _email,
+    };
+  },
+  fromJsonString(input): User {
+    return $$User.fromJson(JSON.parse(input));
+  },
+  toJsonString(input): string {
+    let json = "{";
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"createdAt":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"updatedAt":';
+    json += `"${input.updatedAt.toISOString()}"`;
+    if (typeof input.email !== "undefined") {
+      json += `,"email":`;
+      json += serializeString(input.email);
+    }
+    json += "}";
+    return json;
+  },
+  toUrlQueryString(input): string {
+    const queryParts: string[] = [];
+    queryParts.push(`id=${input.id}`);
+    queryParts.push(`name=${input.name}`);
+    queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
+    queryParts.push(`updatedAt=${input.updatedAt.toISOString()}`);
+    if (typeof input.email !== "undefined") {
+      queryParts.push(`email=${input.email}`);
+    }
     return queryParts.join("&");
   },
 };
