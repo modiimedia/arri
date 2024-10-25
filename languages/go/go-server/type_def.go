@@ -44,7 +44,7 @@ type TypeDef struct {
 	Strict             Option[bool]                       `key:"strict"`
 	Values             Option[*TypeDef]                   `key:"values"`
 	Discriminator      Option[string]                     `key:"discriminator"`
-	Mapping            Option[map[string]TypeDef]         `key:"mapping"`
+	Mapping            Option[[]OrderedMapEntry[TypeDef]] `key:"mapping"`
 	Ref                Option[string]                     `key:"ref"`
 }
 
@@ -158,7 +158,9 @@ func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error)
 		reflect.Uint64:
 		return primitiveTypeToTypeDef(input, context)
 	case reflect.Ptr:
-		return typeToTypeDef(input.Elem(), context)
+		newContext := context
+		newContext.IsNullable = Some(true)
+		return typeToTypeDef(input.Elem(), newContext)
 	case reflect.Map:
 		return mapToTypeDef(input, context)
 	case
@@ -285,7 +287,7 @@ func structToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, erro
 		for i := 0; i < len(context.ParentStructs); i++ {
 			name := context.ParentStructs[i]
 			if name == typeId.Unwrap() {
-				return &TypeDef{Ref: typeId}, nil
+				return &TypeDef{Ref: typeId, Nullable: context.IsNullable}, nil
 			}
 		}
 		context.ParentStructs = append(context.ParentStructs, typeId.Unwrap())
@@ -364,7 +366,7 @@ func structToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, erro
 				None[[]string](),
 				Some(instancePath),
 				Some(schemaPath),
-				None[Option[bool]](),
+				Some(None[bool]()),
 				enumValues,
 				enumName,
 			),
@@ -436,7 +438,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 	discriminatorKey := "type"
-	mapping := make(map[string]TypeDef)
+	mapping := []OrderedMapEntry[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		// we only accept "DiscriminatorKey" if it's the first key in the struct
@@ -457,6 +459,11 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 		if IsDiscriminatorStruct(field.Type.Elem()) {
 			return nil, errors.New("the direct child of a discriminator struct cannot be another discriminator struct")
 		}
+		description := None[string]()
+		descriptionTag := field.Tag.Get("description")
+		if len(descriptionTag) > 0 {
+			description = Some(descriptionTag)
+		}
 		schemaPath := context.SchemaPath + "/mapping/" + discriminatorValue
 		fieldResult, fieldError := structToTypeDef(
 			field.Type.Elem(),
@@ -465,7 +472,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 				None[[]string](),
 				None[string](),
 				Some(schemaPath),
-				None[Option[bool]](),
+				Some(None[bool]()),
 				None[Option[[]string]](),
 				None[Option[string]](),
 			),
@@ -473,7 +480,19 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 		if fieldError != nil {
 			return nil, fieldError
 		}
-		mapping[discriminatorValue] = *fieldResult
+		if description.IsSome() {
+			meta := fieldResult.Metadata
+			if meta.IsNone() {
+				meta = Some(TypeDefMetadata{Description: description})
+			} else {
+				meta.Value.Description = description
+			}
+			fieldResult.Metadata = meta
+		}
+		mapping = __updateAOrderedMap__(mapping, OrderedMapEntry[TypeDef]{
+			Key:   discriminatorValue,
+			Value: *fieldResult,
+		})
 	}
 	return &TypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(TypeDefMetadata{Id: name})}, nil
 }
