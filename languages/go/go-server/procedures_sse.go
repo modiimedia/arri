@@ -103,6 +103,10 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			Method:        options.Method,
 		},
 	)
+	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	if len(serviceName) > 0 {
+		rpcName = serviceName + "." + rpcName
+	}
 	if rpcError != nil {
 		panic(rpcError)
 	}
@@ -118,7 +122,8 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 	if params.Kind() != reflect.Struct {
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
-	hasParams := !(params.Name() == "EmptyMessage" && params.PkgPath() == "arrirpc.com/arri")
+	paramName := getModelName(rpcName, params.Name(), "Params")
+	hasParams := !(paramName == "EmptyMessage" && params.PkgPath() == "arrirpc.com/arri")
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
@@ -128,14 +133,15 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Http.Params = paramsSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
+		rpcSchema.Http.Params = Some(paramName)
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramName, Value: *paramsSchema})
 	}
 	response := reflect.TypeFor[TResponse]()
 	if response.Kind() == reflect.Ptr {
 		response = response.Elem()
 	}
-	hasResponse := !(response.Name() == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
+	responseName := getModelName(rpcName, response.Name(), "Response")
+	hasResponse := !(responseName == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
@@ -145,13 +151,10 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		if responseSchema.Metadata.IsNone() {
 			panic("Procedures cannot return anonymous structs")
 		}
-		rpcSchema.Http.Response = responseSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
+		rpcSchema.Http.Response = Some(responseName)
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseName, Value: *responseSchema})
 	}
-	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
-	if len(serviceName) > 0 {
-		rpcName = serviceName + "." + rpcName
-	}
+
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, OrderedMapEntry[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())

@@ -76,8 +76,17 @@ export function getTsTypeName(schema: Schema, context: CodegenContext): string {
         );
         return validVarName(name);
     }
-    const name = pascalCase(context.instancePath.split("/").join("_"), {
-        normalize: true,
-    });
+    const name = pascalCase(
+        context.instancePath
+            .split("/")
+            .join("_")
+            .split("[")
+            .join("_")
+            .split("]")
+            .join("_"),
+        {
+            normalize: true,
+        },
+    );
     return validVarName(name);
 }

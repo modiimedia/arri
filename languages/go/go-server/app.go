@@ -270,13 +270,24 @@ func handleError[TContext Context](
 	w.Write(body)
 }
 
-func RegisterDef[TContext Context](app *App[TContext], input any) {
+type DefOptions struct {
+	IsDeprecated bool
+	Description  string
+}
+
+func RegisterDef[TContext Context](app *App[TContext], input any, options DefOptions) {
 	def, err := ToTypeDef(input, app.Options.KeyCasing)
 	if err != nil {
 		panic(err)
 	}
 	if def.Metadata.IsNone() || def.Metadata.Unwrap().Id.IsNone() {
 		panic("cannot register anonymous structs as a definition")
+	}
+	if options.IsDeprecated {
+		def.Metadata.Value.IsDeprecated = Some(options.IsDeprecated)
+	}
+	if len(options.Description) > 0 {
+		def.Metadata.Value.Description = Some(options.Description)
 	}
 	*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{
 		Key:   def.Metadata.Unwrap().Id.Unwrap(),

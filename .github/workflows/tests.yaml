@@ -77,6 +77,7 @@ jobs:
       - run: pnpm nx affected -t pub -- get # install dart dependencies for affected projects
       - run: pnpm run build
       - run: pnpm nx affected -t test
+      - run: pnpm server-output-test
   integration-tests-ts-server:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest

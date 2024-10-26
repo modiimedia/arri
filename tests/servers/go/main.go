@@ -59,7 +59,7 @@ func main() {
 			}, nil
 		},
 	)
-	arri.RegisterDef(&app, ManuallyAddedModel{})
+	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.DefOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
 	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyResponseGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
@@ -68,6 +68,7 @@ func main() {
 		IsDeprecated: true,
 		Description:  "If the target language supports it. Generated code should mark this procedure as deprecated.",
 	})
+	arri.RegisterDef(&app, DeprecatedRpcParams{}, arri.DefOptions{IsDeprecated: true})
 	arri.ScopedRpc(&app, "tests", SendError, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithNullableFields, arri.RpcOptions{})
@@ -89,7 +90,7 @@ type ManuallyAddedModel struct {
 }
 
 type DeprecatedRpcParams struct {
-	DeprecatedField string `deprecated:"true"`
+	DeprecatedField string `arri:"deprecated"`
 }
 
 func DeprecatedRpc(_ DeprecatedRpcParams, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
