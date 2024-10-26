@@ -28,7 +28,7 @@
     "lint:skip-cache": "nx run-many -t lint --skip-nx-cache",
     "lint:fix:skip-cache": "nx-run-many -t lint --skip-nx-cache",
     "integration-tests": "jiti internal/scripts/run-integration-tests.ts",
-    "server-output-test": "jiti tests/servers/server-output-test.ts",
+    "server-output-test": "jiti tests/server-output-test.ts",
     "scaffold": "jiti internal/scripts/scaffold-package.ts",
     "postversion": "jiti internal/scripts/version-sync.ts",
     "gen-test-utils": "jiti internal/scripts/generate-test-utils.ts",
