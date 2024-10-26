@@ -323,7 +323,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriErrorInstance | undefined;
-    const controller = await client.tests.streamTenEventsThenEnd({
+    const controller = client.tests.streamTenEventsThenEnd({
         onMessage(_) {
             messageCount++;
         },
@@ -337,7 +337,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
             timesConnected++;
         },
     });
-    await wait(500);
+    await wait(1000);
     expect(errorReceived).toBe(undefined);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);

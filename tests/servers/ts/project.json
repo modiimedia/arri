@@ -20,6 +20,12 @@
       },
       "cache": false
     },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tests/servers/ts/.output/server.mjs --host"
+      }
+    },
     "lint": {
       "executor": "nx:run-commands",
       "outputs": ["{options.outputFile}"],

@@ -27,6 +27,10 @@ func (c AppContext) Writer() http.ResponseWriter {
 
 func main() {
 	mux := http.DefaultServeMux
+	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte("ok"))
+	})
 	mux.HandleFunc("/routes/hello-world", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Write([]byte("hello world"))
