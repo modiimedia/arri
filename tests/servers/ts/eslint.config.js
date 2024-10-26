@@ -1,5 +1,5 @@
 import arri from "@arrirpc/eslint-plugin";
-import rootConfig from "../../eslint.config.js";
+import rootConfig from "../../../eslint.config.js";
 
 const config = [...rootConfig];
 config.push({

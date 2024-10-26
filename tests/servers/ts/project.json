@@ -30,7 +30,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "command": "eslint .",
+        "command": "pnpm eslint .",
         "cwd": "tests/servers/ts"
       }
     },
