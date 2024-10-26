@@ -20,6 +20,10 @@ type RpcOptions struct {
 func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
+	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	if len(serviceName) > 0 {
+		rpcName = serviceName + "." + rpcName
+	}
 	if len(serviceName) > 0 {
 		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
 	} else {
@@ -44,7 +48,8 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 	if params.Kind() != reflect.Struct {
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
-	hasParams := params.Name() != "EmptyMessage"
+	paramsName := getModelName(rpcName, params.Name(), "Params")
+	hasParams := paramsName != "EmptyMessage"
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
@@ -54,14 +59,15 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Http.Params = paramsSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramsSchema.Metadata.Unwrap().Id.Unwrap(), Value: *paramsSchema})
+		rpcSchema.Http.Params = Some(paramsName)
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramsName, Value: *paramsSchema})
 	}
 	response := handlerType.Out(0)
 	if response.Kind() == reflect.Ptr {
 		response = response.Elem()
 	}
-	hasResponse := !(response.Name() == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
+	responseName := getModelName(rpcName, response.Name(), "Response")
+	hasResponse := !(responseName == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
@@ -71,12 +77,8 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		if responseSchema.Metadata.IsNone() {
 			panic("Procedures cannot return anonymous structs")
 		}
-		rpcSchema.Http.Response = responseSchema.Metadata.Unwrap().Id
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseSchema.Metadata.Unwrap().Id.Unwrap(), Value: *responseSchema})
-	}
-	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
-	if len(serviceName) > 0 {
-		rpcName = serviceName + "." + rpcName
+		rpcSchema.Http.Response = Some(responseName)
+		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseName, Value: *responseSchema})
 	}
 	*app.Procedures = __updateAOrderedMap__(*app.Procedures, OrderedMapEntry[RpcDef]{Key: rpcName, Value: *rpcSchema})
 	onRequest := app.Options.OnRequest
@@ -174,6 +176,13 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			handleError(false, w, r, ctx, onAfterResponseErr, onError)
 		}
 	})
+}
+
+func getModelName(rpcName string, modelName string, fallbackSuffix string) string {
+	if len(modelName) == 0 {
+		return strcase.ToCamel(strings.Join(strings.Split(rpcName, "."), "_") + "_" + fallbackSuffix)
+	}
+	return modelName
 }
 
 func Rpc[TParams, TResponse any, TContext Context](app *App[TContext], handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {

@@ -494,7 +494,12 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 			Value: *fieldResult,
 		})
 	}
-	return &TypeDef{Discriminator: Some(discriminatorKey), Mapping: Some(mapping), Metadata: Some(TypeDefMetadata{Id: name})}, nil
+	return &TypeDef{
+		Discriminator: Some(discriminatorKey),
+		Mapping:       Some(mapping),
+		Nullable:      context.IsNullable,
+		Metadata:      Some(TypeDefMetadata{Id: name}),
+	}, nil
 }
 
 func arrayToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {

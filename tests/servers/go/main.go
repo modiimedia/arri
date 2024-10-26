@@ -60,6 +60,10 @@ func main() {
 	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyResponseGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
 	arri.ScopedRpc(&app, "tests", EmptyResponsePostRequest, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", DeprecatedRpc, arri.RpcOptions{
+		IsDeprecated: true,
+		Description:  "If the target language supports it. Generated code should mark this procedure as deprecated.",
+	})
 	arri.ScopedRpc(&app, "tests", SendError, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithNullableFields, arri.RpcOptions{})
@@ -80,7 +84,11 @@ type ManuallyAddedModel struct {
 	Hello string
 }
 
-func DeprecatedRpc(_ arri.EmptyMessage, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
+type DeprecatedRpcParams struct {
+	DeprecatedField string `deprecated:"true"`
+}
+
+func DeprecatedRpc(_ DeprecatedRpcParams, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
@@ -193,11 +201,11 @@ type ObjectWithEveryNullableType struct {
 	Discriminator arri.Nullable[struct {
 		A *struct {
 			Title arri.Nullable[string]
-		} `discriminator:"B"`
+		} `discriminator:"A"`
 		B *struct {
 			Title       arri.Nullable[string]
 			Description arri.Nullable[string]
-		} `discriminator:"A"`
+		} `discriminator:"B"`
 	}]
 	NestedObject arri.Nullable[struct {
 		Id        arri.Nullable[string]
@@ -516,7 +524,7 @@ type UsersWatchUserResponse struct {
 	CreatedAt           time.Time
 	NumFollowers        int32
 	Settings            UserSettings
-	RecentNotifications []UsersWatchUserResponseRecentNotificationselement
+	RecentNotifications []UsersWatchUserResponseRecentNotificationsElement
 	Bookmarks           map[string]struct {
 		PostId string
 		UserId string
@@ -534,7 +542,7 @@ type UserPhoto struct {
 	Nanoseconds uint64 `description:"When the photo was last updated in nanoseconds"`
 }
 
-type UsersWatchUserResponseRecentNotificationselement struct {
+type UsersWatchUserResponseRecentNotificationsElement struct {
 	arri.DiscriminatorKey `discriminatorKey:"notificationType"`
 	PostLike              *struct {
 		PostId string
