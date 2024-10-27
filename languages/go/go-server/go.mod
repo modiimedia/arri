@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/iancoleman/strcase v0.3.0
-	github.com/tidwall/gjson v1.17.3
+	github.com/tidwall/gjson v1.18.0
 )
 
 require (
