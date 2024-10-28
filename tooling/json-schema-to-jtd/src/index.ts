@@ -223,6 +223,7 @@ export function jsonSchemaRefToJtdRef(
     let subSchema = context.rootSchema ?? {};
     for (const part of parts) {
         if (part === "#") continue;
+        if (!subSchema[part]) return {};
         subSchema = subSchema[part];
     }
     const r = context.parentRefs;
