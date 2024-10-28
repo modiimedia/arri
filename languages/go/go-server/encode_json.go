@@ -291,18 +291,23 @@ type structField struct {
 }
 
 func newStructEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, error) {
-	isRecursiveLoop, hasRecursiveLoopKey := context.parentStructs[t.Name()]
-	if hasRecursiveLoopKey && isRecursiveLoop {
-		return func(val reflect.Value, context *encodingCtx) error {
-			if fi, ok := jsonEncoderCache.Load(t); ok {
-				return fi.(jsonEncoder)(val, context)
-			}
-			return fmt.Errorf("unabled to initialize encoder")
-		}, nil
+	structName := t.Name()
+	if len(structName) > 0 {
+		isRecursiveLoop, hasRecursiveLoopKey := context.parentStructs[structName]
+		if hasRecursiveLoopKey && isRecursiveLoop {
+			return func(val reflect.Value, context *encodingCtx) error {
+				if fi, ok := jsonEncoderCache.Load(t); ok {
+					return fi.(jsonEncoder)(val, context)
+				}
+				return fmt.Errorf("unable to initialize encoder")
+			}, nil
+		}
 	}
 	fields := []structField{}
 	instancePath := context.instancePath
-	context.parentStructs[t.Name()] = true
+	if len(structName) > 0 {
+		context.parentStructs[structName] = true
+	}
 	schemaPath := context.schemaPath
 	discriminatorKey := context.discriminatorKey
 	discriminatorValue := context.discriminatorValue
@@ -375,7 +380,9 @@ func newStructEncoder(t reflect.Type, context *compileEncoderCtx) (jsonEncoder, 
 	context.currentDepth--
 	context.instancePath = instancePath
 	context.schemaPath = schemaPath
-	delete(context.parentStructs, t.Name())
+	if len(structName) > 0 {
+		delete(context.parentStructs, structName)
+	}
 	return func(val reflect.Value, context *encodingCtx) error {
 		context.buffer = append(context.buffer, '{')
 		context.hasKeys = isDiscriminatorSubType
