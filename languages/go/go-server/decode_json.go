@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	arri_json "arrirpc.com/arri/json"
 	"github.com/iancoleman/strcase"
 	"github.com/tidwall/gjson"
 )
@@ -23,17 +24,21 @@ type validationError struct {
 	errors []validationErrorItem
 }
 
+func (e validationError) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
+	return arri_json.Encode(e.errors, keyCasing)
+}
+
 type validationErrorItem struct {
-	message      string
-	instancePath string
-	schemaPath   string
+	Message      string
+	InstancePath string
+	SchemaPath   string
 }
 
 func newValidationErrorItem(message string, instancePath string, schemaPath string) validationErrorItem {
 	return validationErrorItem{
-		message:      message,
-		instancePath: instancePath,
-		schemaPath:   schemaPath,
+		Message:      message,
+		InstancePath: instancePath,
+		SchemaPath:   schemaPath,
 	}
 }
 
@@ -49,7 +54,7 @@ func (e validationError) Error() string {
 			msg += ", "
 		}
 		err := e.errors[i]
-		msg += err.instancePath
+		msg += err.InstancePath
 	}
 	msg += "]"
 	return msg
@@ -98,7 +103,7 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *validationError 
 		KeyCasing: keyCasing,
 		Errors:    &errors,
 	}
-	typeFomJSON(&parsedResult, &value, &context)
+	typeFromJSON(&parsedResult, &value, &context)
 	if len(*context.Errors) > 0 {
 		err := newValidationError(*context.Errors)
 		return &err
@@ -106,7 +111,7 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *validationError 
 	return nil
 }
 
-func typeFomJSON(data *gjson.Result, target *reflect.Value, context *ValidationContext) bool {
+func typeFromJSON(data *gjson.Result, target *reflect.Value, context *ValidationContext) bool {
 	if context.CurrentDepth > context.MaxDepth {
 		*context.Errors = append(
 			*context.Errors,
@@ -157,7 +162,7 @@ func typeFomJSON(data *gjson.Result, target *reflect.Value, context *ValidationC
 			return true
 		}
 		elem := target.Elem()
-		return typeFomJSON(data, &elem, context)
+		return typeFromJSON(data, &elem, context)
 	case reflect.Slice:
 		return arrayFromJSON(data, target, context)
 	case reflect.Map:
@@ -167,7 +172,7 @@ func typeFomJSON(data *gjson.Result, target *reflect.Value, context *ValidationC
 		if subType.Kind() == reflect.Invalid {
 			return anyFromJSON(data, target, context)
 		}
-		return typeFomJSON(data, &subType, context)
+		return typeFromJSON(data, &subType, context)
 	}
 	*context.Errors = append(
 		*context.Errors,
@@ -503,7 +508,7 @@ func arrayFromJSON(data *gjson.Result, target *reflect.Value, context *Validatio
 		element := json[i]
 		subTarget := target.Index(i)
 		ctx := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), Some(context.InstancePath+"/"+fmt.Sprint(i)), Some(context.SchemaPath+"/elements"))
-		success := typeFomJSON(&element, &subTarget, &ctx)
+		success := typeFromJSON(&element, &subTarget, &ctx)
 		if !success {
 			hasErr = true
 			continue
@@ -534,7 +539,7 @@ func mapFromJSON(data *gjson.Result, target *reflect.Value, context *ValidationC
 		v := reflect.New(target.Type().Elem())
 		innerTarget := v
 		innerContext := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), Some(context.InstancePath+"/"+key), Some(context.SchemaPath+"/values"))
-		success := typeFomJSON(&value, &innerTarget, &innerContext)
+		success := typeFromJSON(&value, &innerTarget, &innerContext)
 		if !success {
 			hasError = true
 			continue
@@ -611,7 +616,7 @@ func structFromJSON(data *gjson.Result, target *reflect.Value, context *Validati
 			}
 			continue
 		}
-		success := typeFomJSON(&jsonResult, &field, &ctx)
+		success := typeFromJSON(&jsonResult, &field, &ctx)
 		if !success {
 			hasErr = true
 		}
@@ -630,7 +635,8 @@ func anyFromJSON(data *gjson.Result, target *reflect.Value, context *ValidationC
 		target.Set(reflect.ValueOf(data.Num))
 	default:
 		bytes := []byte(data.Raw)
-		err := json.Unmarshal(bytes, target.Interface())
+		innerTarget := target.Interface()
+		err := json.Unmarshal(bytes, &innerTarget)
 		if err != nil {
 			*context.Errors = append(*context.Errors,
 				newValidationErrorItem(
@@ -641,6 +647,7 @@ func anyFromJSON(data *gjson.Result, target *reflect.Value, context *ValidationC
 			)
 			return false
 		}
+		target.Set(reflect.ValueOf(innerTarget))
 	}
 	return true
 }
@@ -698,7 +705,7 @@ func discriminatorStructFromJson(data *gjson.Result, target *reflect.Value, cont
 		}
 		innerTarget := reflect.New(field.Type().Elem())
 		ctx := context.copyWith(Some(context.CurrentDepth+1), None[[]string](), None[string](), Some(context.SchemaPath+"/mapping/"+discriminatorValue))
-		typeFomJSON(data, &innerTarget, &ctx)
+		typeFromJSON(data, &innerTarget, &ctx)
 		field.Set(innerTarget)
 		return true
 	}
@@ -719,7 +726,7 @@ func optionFromJson(data *gjson.Result, target *reflect.Value, context *Validati
 	}
 	val := target.FieldByName("Value")
 	isSet := target.FieldByName("IsSet")
-	success := typeFomJSON(data, &val, context)
+	success := typeFromJSON(data, &val, context)
 	if !success {
 		return false
 	}
@@ -733,7 +740,7 @@ func nullableFromJson(data *gjson.Result, target *reflect.Value, context *Valida
 	}
 	val := target.FieldByName("Value")
 	isSet := target.FieldByName("IsSet")
-	success := typeFomJSON(data, &val, context)
+	success := typeFromJSON(data, &val, context)
 	if !success {
 		return false
 	}

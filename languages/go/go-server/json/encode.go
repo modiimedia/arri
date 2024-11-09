@@ -12,7 +12,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type ArriJsonEncodable interface {
+type JsonEncoder interface {
 	EncodeJSON(keyCasing string) ([]byte, error)
 }
 
@@ -50,10 +50,6 @@ func Encode(input any, keyCasing string) ([]byte, error) {
 }
 
 func encodeValue(v reflect.Value, c *encodingCtx) error {
-	// if v.IsNil() {
-	// 	c.buffer = append(c.buffer, "null"...)
-	// 	return nil
-	// }
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
@@ -75,8 +71,8 @@ func encodeValue(v reflect.Value, c *encodingCtx) error {
 		return encodeUint64(v, c)
 	case reflect.Struct:
 		t := v.Type()
-		if t.Implements(reflect.TypeFor[ArriJsonEncodable]()) {
-			result, err := v.Interface().(ArriJsonEncodable).EncodeJSON(c.keyCasing)
+		if t.Implements(reflect.TypeFor[JsonEncoder]()) {
+			result, err := v.Interface().(JsonEncoder).EncodeJSON(c.keyCasing)
 			if err != nil {
 				return err
 			}

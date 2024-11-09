@@ -97,7 +97,7 @@ type objectWithNullableFields struct {
 	Enum          arri.Nullable[string] `enum:"FOO,BAR,BAZ"`
 	Object        arri.Nullable[nestedObject]
 	Array         arri.Nullable[[]bool]
-	Record        arri.Nullable[map[string]bool]
+	Record        arri.Nullable[arri.OrderedMap[bool]]
 	Discriminator arri.Nullable[discriminator]
 	Any           arri.Nullable[any]
 }

@@ -134,100 +134,69 @@ func BenchmarkEncodeJsonWithOptionalFieldsStd(b *testing.B) {
 	}
 }
 
-var _objectWithNullableFieldsNoNullInput = objectWithNullableFields{
-	String:    arri.NotNull(""),
-	Boolean:   arri.NotNull(true),
-	Timestamp: arri.NotNull(testDate),
-	Float32:   arri.NotNull[float32](1.5),
-	Float64:   arri.NotNull(1.5),
-	Int8:      arri.NotNull[int8](1),
-	Uint8:     arri.NotNull[uint8](1),
-	Int16:     arri.NotNull[int16](10),
-	Uint16:    arri.NotNull[uint16](10),
-	Int32:     arri.NotNull[int32](100),
-	Uint32:    arri.NotNull[uint32](100),
-	Int64:     arri.NotNull[int64](1000),
-	Uint64:    arri.NotNull[uint64](1000),
-	Enum:      arri.NotNull("BAZ"),
-	Object:    arri.NotNull(nestedObject{Id: "", Content: ""}),
-	Array:     arri.NotNull([]bool{true, false, false}),
-	Record: arri.NotNull(map[string]bool{
-		"A": true,
-		"B": false,
-	}),
-	Discriminator: arri.NotNull(
-		discriminator{
-			C: &discriminatorC{
-				Id:   "",
-				Name: "",
-				Date: testDate,
-			},
-		},
-	),
-	Any: arri.NotNull[any](
-		struct {
-			Message string `json:"message"`
-		}{
-			Message: "hello world",
-		},
-	),
-}
-var _objectWithNullableFieldsAllNullInput = objectWithNullableFields{
-	String:        arri.Null[string](),
-	Boolean:       arri.Null[bool](),
-	Timestamp:     arri.Null[time.Time](),
-	Float32:       arri.Null[float32](),
-	Float64:       arri.Null[float64](),
-	Int8:          arri.Null[int8](),
-	Uint8:         arri.Null[uint8](),
-	Int16:         arri.Null[int16](),
-	Uint16:        arri.Null[uint16](),
-	Int32:         arri.Null[int32](),
-	Uint32:        arri.Null[uint32](),
-	Int64:         arri.Null[int64](),
-	Uint64:        arri.Null[uint64](),
-	Enum:          arri.Null[string](),
-	Object:        arri.Null[nestedObject](),
-	Array:         arri.Null[[]bool](),
-	Record:        arri.Null[map[string]bool](),
-	Discriminator: arri.Null[discriminator](),
-	Any:           arri.Null[any](),
+var objectWithNullableFieldsAllNullInput = objectWithNullableFields{}
+var objectWithNullableFieldsNoNullInput = objectWithNullableFields{
+	String:        arri.NotNull(""),
+	Boolean:       arri.NotNull(true),
+	Timestamp:     arri.NotNull(testDate),
+	Float32:       arri.NotNull[float32](1.5),
+	Float64:       arri.NotNull(1.5),
+	Int8:          arri.NotNull[int8](1),
+	Uint8:         arri.NotNull[uint8](1),
+	Int16:         arri.NotNull[int16](10),
+	Uint16:        arri.NotNull[uint16](10),
+	Int32:         arri.NotNull[int32](100),
+	Uint32:        arri.NotNull[uint32](100),
+	Int64:         arri.NotNull[int64](1000),
+	Uint64:        arri.NotNull[uint64](1000),
+	Enum:          arri.NotNull("BAZ"),
+	Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
+	Array:         arri.NotNull([]bool{true, false, false}),
+	Record:        arri.NotNull(arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false))),
+	Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
+	Any:           arri.NotNull[any](struct{ Message string }{Message: "hello world"}),
 }
 
 func TestEncodeJsonWithNullableFields(t *testing.T) {
-	reference, referenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
-	if referenceErr != nil {
-		t.Fatalf(referenceErr.Error())
-	}
-	result, err := arri_json.Encode(_objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	if !reflect.DeepEqual(result, reference) {
-		t.Fatal("\n", string(result), "\nis not equal to\n", string(reference))
-	}
 	allNullReference, allNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
 	if allNullReferenceErr != nil {
-		t.Fatalf(allNullReferenceErr.Error())
+		t.Fatal(allNullReferenceErr)
+		return
 	}
-	allNullResult, allNullErr := arri_json.Encode(_objectWithNullableFieldsAllNullInput, arri.KeyCasingCamelCase)
+	allNullResult, allNullErr := arri_json.Encode(objectWithNullableFieldsAllNullInput, arri.KeyCasingCamelCase)
 	if allNullErr != nil {
-		t.Fatalf(allNullErr.Error())
+		t.Fatal(allNullErr)
+		return
 	}
-	if !reflect.DeepEqual(allNullResult, allNullReference) {
-		t.Fatal("\n", string(allNullResult), "\nis not equal to\n", string(allNullReference))
+	if string(allNullReference) != string(allNullResult) {
+		t.Fatal(deepEqualErrString(string(allNullResult), string(allNullReference)))
+		return
+	}
+	noNullReference, noNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
+	if noNullReferenceErr != nil {
+		t.Fatal(noNullReferenceErr)
+		return
+	}
+	noNullResult, noNullErr := arri_json.Encode(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+	if noNullErr != nil {
+		t.Fatal(noNullErr)
+		return
+	}
+	if string(noNullResult) != string(noNullReference) {
+		t.Fatal(deepEqualErrString(string(noNullResult), string(noNullReference)))
+		return
 	}
 }
 
 func BenchmarkEncodeJsonWithNullableFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Encode(_objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+		arri_json.Encode(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
 	}
 }
 
 func BenchmarkEncodeJsonWithNullableFieldsStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		json.Marshal(_objectWithNullableFieldsNoNullInput)
+		json.Marshal(objectWithNullableFieldsNoNullInput)
 	}
 }
 

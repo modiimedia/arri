@@ -3,6 +3,7 @@ package arri
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	arri_json "arrirpc.com/arri/json"
 )
@@ -265,4 +266,13 @@ func (m OrderedMap[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 	}
 	result = append(result, '}')
 	return result, nil
+}
+
+func (m OrderedMap[T]) ToTypeDef(keyCasing KeyCasing) (*TypeDef, error) {
+	subDef, subDefErr := TypeToTypeDef(reflect.TypeFor[T](), keyCasing)
+	if subDefErr != nil {
+		return nil, subDefErr
+	}
+	result := TypeDef{Values: Some(subDef)}
+	return &result, nil
 }

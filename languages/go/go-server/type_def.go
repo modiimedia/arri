@@ -25,6 +25,10 @@ const (
 	Uint64    = "uint64"
 )
 
+type TypeDefiner interface {
+	ToTypeDef(KeyCasing) (*TypeDef, error)
+}
+
 type Type = string
 
 type TypeDefMetadata struct {
@@ -114,6 +118,11 @@ func ToTypeDef(input interface{}, keyCasing KeyCasing) (*TypeDef, error) {
 	return typeToTypeDef(reflect.TypeOf(input), context)
 }
 
+func TypeToTypeDef(input reflect.Type, keyCasing KeyCasing) (*TypeDef, error) {
+	context := _NewTypeDefContext(keyCasing)
+	return typeToTypeDef(input, context)
+}
+
 func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
 	if context.CurrentDepth >= context.MaxDepth {
 		return nil, fmt.Errorf("error at %s. max depth of %+v reached", context.InstancePath, context.MaxDepth)
@@ -146,6 +155,9 @@ func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error)
 		reflect.Slice:
 		return arrayToTypeDef(input, context)
 	case reflect.Struct:
+		if input.Implements(reflect.TypeFor[TypeDefiner]()) {
+			return reflect.New(input).Interface().(TypeDefiner).ToTypeDef(context.InstancePath)
+		}
 		if isNullableType(input) {
 			subType := extractNullableType(input)
 			return typeToTypeDef(

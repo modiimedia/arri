@@ -371,26 +371,10 @@ function viteConfigTemplate(
     for (let i = 0; i < depth; i++) {
         prefix += "../";
     }
-    return `import viteTsConfigPaths from "vite-tsconfig-paths";
-import { defineConfig } from "vitest/config";
+    return `import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     cacheDir: "${prefix}node_modules/.vite/${projectLocation}",
-
-    plugins: [
-        viteTsConfigPaths({
-            root: "${prefix}",
-        }),
-    ],
-
-    // Uncomment this if you are using workers.
-    // worker: {
-    //  plugins: [
-    //    viteTsConfigPaths({
-    //      root: '${prefix}',
-    //    }),
-    //  ],
-    // },
 
     test: {
         globals: true,

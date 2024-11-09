@@ -2,11 +2,13 @@ package arri_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
 
 	arri "arrirpc.com/arri"
+	arri_json "arrirpc.com/arri/json"
 )
 
 var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
@@ -192,4 +194,38 @@ func BenchmarkArriDecodeUser(b *testing.B) {
 		user := benchUser{}
 		arri.DecodeJSON(benchUserInput, &user, arri.KeyCasingCamelCase)
 	}
+}
+
+func TestDecodeRecursiveObject(t *testing.T) {
+	expectedResult := recursiveObject{
+		Left: &recursiveObject{
+			Left: &recursiveObject{
+				Left: nil,
+				Right: &recursiveObject{
+					Left:  nil,
+					Right: nil,
+				},
+			},
+			Right: nil,
+		},
+		Right: &recursiveObject{},
+	}
+	input, inputErr := os.ReadFile("../../../tests/test-files/RecursiveObject.json")
+	if inputErr != nil {
+		t.Fatal(inputErr)
+		return
+	}
+	result := recursiveObject{}
+	resultErr := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	if resultErr != nil {
+		errMsg, _ := arri_json.Encode(resultErr, arri.KeyCasingCamelCase)
+		fmt.Println(string(errMsg))
+		t.Fatal(resultErr)
+		return
+	}
+	if !reflect.DeepEqual(result, expectedResult) {
+		t.Fatal(deepEqualErrString(result, expectedResult))
+		return
+	}
+
 }
