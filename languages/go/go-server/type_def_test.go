@@ -58,35 +58,24 @@ func TestArrayToTypeDef(t *testing.T) {
 }
 
 func TestDiscriminatorToTypeDef(t *testing.T) {
+
 	expectedResult := &arri.TypeDef{
 		Metadata:      arri.Some(arri.TypeDefMetadata{}),
 		Discriminator: arri.Some("type"),
-		Mapping: arri.Some([]arri.OrderedMapEntry[arri.TypeDef]{
-			{
-				Value: arri.TypeDef{
-					Metadata: arri.Some(arri.TypeDefMetadata{}),
-					Properties: arri.Some([]arri.OrderedMapEntry[arri.TypeDef]{
-						{
-							Value: arri.TypeDef{Type: arri.Some(arri.String)},
-							Key:   "foo",
-						},
-					}),
-				},
-				Key: "A",
-			},
-			{
-				Value: arri.TypeDef{
-					Metadata: arri.Some(arri.TypeDefMetadata{}),
-					Properties: arri.Some([]arri.OrderedMapEntry[arri.TypeDef]{
-						{
-							Value: arri.TypeDef{Type: arri.Some(arri.String)},
-							Key:   "bar",
-						},
-					}),
-				},
-				Key: "B",
-			},
-		}),
+		Mapping: arri.Some(arri.OrderedMapWithData[arri.TypeDef](
+			arri.Pair("A", arri.TypeDef{
+				Metadata: arri.Some(arri.TypeDefMetadata{}),
+				Properties: arri.Some(arri.OrderedMapWithData[arri.TypeDef](
+					arri.Pair("foo", arri.TypeDef{Type: arri.Some(arri.String)}),
+				)),
+			}),
+			arri.Pair("B", arri.TypeDef{
+				Metadata: arri.Some(arri.TypeDefMetadata{}),
+				Properties: arri.Some(arri.OrderedMapWithData[arri.TypeDef](
+					arri.Pair("bar", arri.TypeDef{Type: arri.Some(arri.String)}),
+				)),
+			}),
+		)),
 	}
 	result, resultErr := arri.ToTypeDef(struct {
 		A *struct{ Foo string } `discriminator:"A"`

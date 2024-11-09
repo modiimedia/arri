@@ -10,10 +10,10 @@ import (
 )
 
 type AppDef struct {
-	SchemaVersion string                     `key:"schemaVersion" json:"schemaVersion" `
-	Info          Option[AppDefInfo]         `key:"info" json:"info,omitempty" `
-	Procedures    []OrderedMapEntry[RpcDef]  `key:"procedures" json:"procedures" `
-	Definitions   []OrderedMapEntry[TypeDef] `key:"definitions" json:"definitions"`
+	SchemaVersion string              `key:"schemaVersion" json:"schemaVersion" `
+	Info          Option[AppDefInfo]  `key:"info" json:"info,omitempty" `
+	Procedures    OrderedMap[RpcDef]  `key:"procedures" json:"procedures" `
+	Definitions   OrderedMap[TypeDef] `key:"definitions" json:"definitions"`
 }
 
 type AppDefInfo struct {

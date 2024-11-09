@@ -34,40 +34,18 @@ type TypeDefMetadata struct {
 }
 
 type TypeDef struct {
-	Metadata           Option[TypeDefMetadata]            `key:"metadata" `
-	Nullable           Option[bool]                       `key:"nullable"`
-	Type               Option[Type]                       `key:"type"`
-	Enum               Option[[]string]                   `key:"enum"`
-	Elements           Option[*TypeDef]                   `key:"elements"`
-	Properties         Option[[]OrderedMapEntry[TypeDef]] `key:"properties"`
-	OptionalProperties Option[[]OrderedMapEntry[TypeDef]] `key:"optionalProperties"`
-	Strict             Option[bool]                       `key:"strict"`
-	Values             Option[*TypeDef]                   `key:"values"`
-	Discriminator      Option[string]                     `key:"discriminator"`
-	Mapping            Option[[]OrderedMapEntry[TypeDef]] `key:"mapping"`
-	Ref                Option[string]                     `key:"ref"`
-}
-
-type OrderedMapEntry[T interface{}] struct {
-	Key   string
-	Value T
-}
-
-func __updateAOrderedMap__[T interface{}](state []OrderedMapEntry[T], newValue OrderedMapEntry[T]) []OrderedMapEntry[T] {
-	var targetIndex *int = nil
-	for i := 0; i < len(state); i++ {
-		value := state[i]
-		if value.Key == newValue.Key {
-			targetIndex = &i
-			break
-		}
-	}
-	if targetIndex != nil {
-		state[*targetIndex] = newValue
-		return state
-	}
-	state = append(state, newValue)
-	return state
+	Metadata           Option[TypeDefMetadata]     `key:"metadata" `
+	Nullable           Option[bool]                `key:"nullable"`
+	Type               Option[Type]                `key:"type"`
+	Enum               Option[[]string]            `key:"enum"`
+	Elements           Option[*TypeDef]            `key:"elements"`
+	Properties         Option[OrderedMap[TypeDef]] `key:"properties"`
+	OptionalProperties Option[OrderedMap[TypeDef]] `key:"optionalProperties"`
+	Strict             Option[bool]                `key:"strict"`
+	Values             Option[*TypeDef]            `key:"values"`
+	Discriminator      Option[string]              `key:"discriminator"`
+	Mapping            Option[OrderedMap[TypeDef]] `key:"mapping"`
+	Ref                Option[string]              `key:"ref"`
 }
 
 const (
@@ -300,8 +278,8 @@ func structToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, erro
 	if input.NumField() == 0 && input.Name() != "DiscriminatorKey" {
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
-	requiredFields := []OrderedMapEntry[TypeDef]{}
-	optionalFields := []OrderedMapEntry[TypeDef]{}
+	requiredFields := OrderedMap[TypeDef]{}
+	optionalFields := OrderedMap[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		isDiscriminator := len(field.Tag.Get("discriminator")) > 0 || field.Type.Name() == "DiscriminatorKey"
@@ -395,13 +373,12 @@ func structToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, erro
 			}
 		}
 		if isOptional {
-			optionalFields = __updateAOrderedMap__(optionalFields, OrderedMapEntry[TypeDef]{Key: key, Value: *fieldResult})
+			optionalFields.Set(key, *fieldResult)
 		} else {
-			requiredFields = __updateAOrderedMap__(requiredFields, OrderedMapEntry[TypeDef]{Key: key, Value: *fieldResult})
-
+			requiredFields.Set(key, *fieldResult)
 		}
 	}
-	if len(optionalFields) > 0 {
+	if optionalFields.Len() > 0 {
 		return &TypeDef{
 			Properties:         Some(requiredFields),
 			OptionalProperties: Some(optionalFields),
@@ -438,7 +415,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 		return nil, errors.New("cannot create schema for an empty struct")
 	}
 	discriminatorKey := "type"
-	mapping := []OrderedMapEntry[TypeDef]{}
+	mapping := OrderedMap[TypeDef]{}
 	for i := 0; i < input.NumField(); i++ {
 		field := input.Field(i)
 		// we only accept "DiscriminatorKey" if it's the first key in the struct
@@ -489,10 +466,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 			}
 			fieldResult.Metadata = meta
 		}
-		mapping = __updateAOrderedMap__(mapping, OrderedMapEntry[TypeDef]{
-			Key:   discriminatorValue,
-			Value: *fieldResult,
-		})
+		mapping.Set(discriminatorValue, *fieldResult)
 	}
 	return &TypeDef{
 		Discriminator: Some(discriminatorKey),

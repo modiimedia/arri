@@ -148,3 +148,121 @@ func (s Nullable[T]) String() string {
 }
 
 type EmptyMessage struct{}
+
+/// PAIR
+
+type pair[a, b any] struct {
+	Left  a
+	Right b
+}
+
+func Pair[a, b any](left a, right b) pair[a, b] {
+	return pair[a, b]{
+		Left:  left,
+		Right: right,
+	}
+}
+
+/// ORDERED MAP
+
+type OrderedMap[T interface{}] struct {
+	keys   []string
+	values []T
+}
+
+func (m *OrderedMap[T]) Add(items ...pair[string, T]) {
+	for i := 0; i < len(items); i++ {
+		pair := items[i]
+		m.Set(pair.Left, pair.Right)
+	}
+}
+
+func OrderedMapWithData[T any](items ...pair[string, T]) OrderedMap[T] {
+	result := OrderedMap[T]{}
+	result.Add(items...)
+	return result
+}
+
+func (m *OrderedMap[T]) Set(key string, value T) {
+	if m.values == nil {
+		m.values = []T{}
+		m.keys = []string{}
+	}
+	var targetIndex *int = nil
+	for i := 0; i < len(m.keys); i++ {
+		el := m.keys[i]
+		if el == key {
+			targetIndex = &i
+			break
+		}
+	}
+	if targetIndex != nil {
+		m.values[*targetIndex] = value
+		return
+	}
+	m.values = append(m.values, value)
+	m.keys = append(m.keys, key)
+}
+
+func (m *OrderedMap[T]) Get(key string) *T {
+	var targetIndex *int = nil
+	for i := 0; i < len(m.keys); i++ {
+		if m.keys[i] == key {
+			targetIndex = &i
+			break
+		}
+	}
+	if targetIndex != nil {
+		return &m.values[*targetIndex]
+	}
+	return nil
+}
+
+func (m OrderedMap[T]) Len() int {
+	if m.keys == nil {
+		return 0
+	}
+	return len(m.keys)
+}
+
+func (m OrderedMap[T]) MarshalJSON() ([]byte, error) {
+	result := []byte{}
+	result = append(result, '{')
+	for i := 0; i < len(m.keys); i++ {
+		key := m.keys[i]
+		value := m.values[i]
+		if i > 0 {
+			result = append(result, ',')
+		}
+		arri_json.AppendNormalizedString(&result, key)
+		result = append(result, ':')
+		innerResult, innerResultErr := json.Marshal(value)
+		if innerResultErr != nil {
+			return nil, innerResultErr
+		}
+		result = append(result, innerResult...)
+	}
+	result = append(result, '}')
+	return result, nil
+}
+
+func (m OrderedMap[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
+	result := []byte{}
+	result = append(result, '{')
+	for i := 0; i < len(m.keys); i++ {
+		key := m.keys[i]
+		value := m.values[i]
+		if i > 0 {
+			result = append(result, ',')
+		}
+		arri_json.AppendNormalizedString(&result, key)
+		result = append(result, ':')
+		innerResult, innerResultErr := arri_json.Encode(value, keyCasing)
+		if innerResultErr != nil {
+			return nil, innerResultErr
+		}
+		result = append(result, innerResult...)
+	}
+	result = append(result, '}')
+	return result, nil
+}

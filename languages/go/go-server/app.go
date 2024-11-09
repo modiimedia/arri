@@ -14,8 +14,8 @@ type App[TContext Context] struct {
 	CreateContext        func(w http.ResponseWriter, r *http.Request) (*TContext, RpcError)
 	InitializationErrors []error
 	Options              AppOptions[TContext]
-	Procedures           *[]OrderedMapEntry[RpcDef]
-	Definitions          *[]OrderedMapEntry[TypeDef]
+	Procedures           *OrderedMap[RpcDef]
+	Definitions          *OrderedMap[TypeDef]
 }
 
 func (app *App[TContext]) GetAppDefinition() AppDef {
@@ -147,8 +147,8 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 		CreateContext:        createContext,
 		Options:              options,
 		InitializationErrors: []error{},
-		Procedures:           &[]OrderedMapEntry[RpcDef]{},
-		Definitions:          &[]OrderedMapEntry[TypeDef]{},
+		Procedures:           &OrderedMap[RpcDef]{},
+		Definitions:          &OrderedMap[TypeDef]{},
 	}
 	defPath := app.Options.RpcRoutePrefix + "/__definition"
 	if len(app.Options.RpcDefinitionPath) > 0 {
@@ -291,8 +291,5 @@ func RegisterDef[TContext Context](app *App[TContext], input any, options DefOpt
 	if len(options.Description) > 0 {
 		def.Metadata.Value.Description = Some(options.Description)
 	}
-	*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{
-		Key:   def.Metadata.Unwrap().Id.Unwrap(),
-		Value: *def,
-	})
+	app.Definitions.Set(def.Metadata.Unwrap().Id.Unwrap(), *def)
 }

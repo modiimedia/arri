@@ -135,7 +135,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			panic("Procedures cannot accept anonymous structs")
 		}
 		rpcSchema.Http.Params = Some(paramName)
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramName, Value: *paramsSchema})
+		app.Definitions.Set(paramName, *paramsSchema)
 	}
 	response := reflect.TypeFor[TResponse]()
 	if response.Kind() == reflect.Ptr {
@@ -153,10 +153,9 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			panic("Procedures cannot return anonymous structs")
 		}
 		rpcSchema.Http.Response = Some(responseName)
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseName, Value: *responseSchema})
+		app.Definitions.Set(responseName, *responseSchema)
 	}
-
-	*app.Procedures = __updateAOrderedMap__(*app.Procedures, OrderedMapEntry[RpcDef]{Key: rpcName, Value: *rpcSchema})
+	app.Procedures.Set(rpcName, *rpcSchema)
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {

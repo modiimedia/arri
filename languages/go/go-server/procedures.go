@@ -61,7 +61,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			panic("Procedures cannot accept anonymous structs")
 		}
 		rpcSchema.Http.Params = Some(paramsName)
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: paramsName, Value: *paramsSchema})
+		app.Definitions.Set(paramsName, *paramsSchema)
 	}
 	response := handlerType.Out(0)
 	if response.Kind() == reflect.Ptr {
@@ -79,9 +79,9 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			panic("Procedures cannot return anonymous structs")
 		}
 		rpcSchema.Http.Response = Some(responseName)
-		*app.Definitions = __updateAOrderedMap__(*app.Definitions, OrderedMapEntry[TypeDef]{Key: responseName, Value: *responseSchema})
+		app.Definitions.Set(responseName, *responseSchema)
 	}
-	*app.Procedures = __updateAOrderedMap__(*app.Procedures, OrderedMapEntry[RpcDef]{Key: rpcName, Value: *rpcSchema})
+	app.Procedures.Set(rpcName, *rpcSchema)
 	onRequest := app.Options.OnRequest
 	if onRequest == nil {
 		onRequest = func(r *http.Request, t *TContext) RpcError {
