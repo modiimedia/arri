@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	arri_json "arrirpc.com/arri/json"
 	"github.com/iancoleman/strcase"
 )
 
@@ -68,7 +69,7 @@ func (controller *defaultSseController[T]) Push(message T) RpcError {
 	if !controller.headersSent {
 		controller.startStream()
 	}
-	body, bodyErr := EncodeJSON(message, controller.keyCasing)
+	body, bodyErr := arri_json.Encode(message, controller.keyCasing)
 	if bodyErr != nil {
 		return Error(500, bodyErr.Error())
 	}

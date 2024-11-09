@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	arri_json "arrirpc.com/arri/json"
 )
 
 type App[TContext Context] struct {
@@ -72,7 +74,7 @@ func (app *App[TContext]) Run(options RunOptions) error {
 }
 
 func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
-	appDefJson, appDefJsonErr := EncodeJSON(appDef, keyCasing)
+	appDefJson, appDefJsonErr := arri_json.Encode(appDef, keyCasing)
 	if appDefJsonErr != nil {
 		return appDefJsonErr
 	}
@@ -216,7 +218,7 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 			handleError(false, w, r, ctx, onBeforeResponseErr, onError)
 			return
 		}
-		jsonResult, _ := EncodeJSON(response, app.Options.KeyCasing)
+		jsonResult, _ := arri_json.Encode(response, app.Options.KeyCasing)
 		w.Write(jsonResult)
 		onAfterResponseErr := onAfterResponse(r, ctx, response)
 		if onAfterResponseErr != nil {
@@ -236,7 +238,7 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 		if onRequestError != nil {
 			handleError(false, w, r, ctx, onRequestError, onError)
 		}
-		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), app.Options.KeyCasing)
+		jsonResult, _ := arri_json.Encode(app.GetAppDefinition(), app.Options.KeyCasing)
 		beforeResponseErr := onBeforeResponse(r, ctx, jsonResult)
 		if beforeResponseErr != nil {
 			handleError(false, w, r, ctx, beforeResponseErr, onError)

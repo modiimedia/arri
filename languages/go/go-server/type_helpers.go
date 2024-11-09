@@ -3,6 +3,8 @@ package arri
 import (
 	"encoding/json"
 	"fmt"
+
+	arri_json "arrirpc.com/arri/json"
 )
 
 type DiscriminatorKey struct{}
@@ -56,29 +58,6 @@ func (o *Option[T]) Set(val T) {
 
 func (o *Option[T]) Unset() {
 	o.IsSet = false
-}
-
-func (s Option[T]) MarshalJSON() ([]byte, error) {
-	if !s.IsNone() {
-		return []byte{}, nil
-	}
-	return json.Marshal(s.Value)
-}
-
-func (s *Option[T]) UnmarshalJSON(data []byte) error {
-	if s == nil {
-		s = &Option[T]{}
-	}
-	if string(data) == "" {
-		s.IsSet = false
-		return nil
-	}
-	err := json.Unmarshal(data, &s.Value)
-	if err != nil {
-		return err
-	}
-	s.IsSet = true
-	return nil
 }
 
 func (s Option[T]) String() string {
@@ -152,6 +131,13 @@ func (s *Nullable[T]) UnmarshalJSON(data []byte) error {
 	}
 	s.IsSet = true
 	return nil
+}
+
+func (s Nullable[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
+	if s.IsNull() {
+		return []byte("null"), nil
+	}
+	return arri_json.Encode(s.Value, keyCasing)
 }
 
 func (s Nullable[T]) String() string {

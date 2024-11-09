@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	arri_json "arrirpc.com/arri/json"
 	"github.com/iancoleman/strcase"
 )
 
@@ -161,7 +162,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		w.WriteHeader(200)
 		var body []byte
 		if hasResponse {
-			json, jsonErr := EncodeJSON(response, app.Options.KeyCasing)
+			json, jsonErr := arri_json.Encode(response, app.Options.KeyCasing)
 			if jsonErr != nil {
 				handleError(false, w, r, ctx, ErrorWithData(500, jsonErr.Error(), Some[any](jsonErr)), onError)
 				return
