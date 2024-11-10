@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-
-	"github.com/tidwall/gjson"
 )
 
 type DiscriminatorKey struct{}
@@ -69,14 +67,18 @@ func (s Option[T]) String() string {
 	}
 }
 
-func (s Option[T]) DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
-	if data.Type != gjson.JSON {
-		err := newValidationErrorItem("expected object got", context.InstancePath, context.SchemaPath)
-		*context.Errors = append(*context.Errors, err)
-		return false
-	}
-	return false
-}
+// func (s Option[T]) DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+// 	fmt.Println("DECODING JSON")
+// 	if !data.Exists() || data.Type == gjson.Null {
+// 		return true
+// 	}
+// 	ok := typeFromJSON(data, target.Field(0), context)
+// 	if ok {
+// 		target.Field(1).SetBool(true)
+// 		return true
+// 	}
+// 	return false
+// }
 
 //// Nullable Types ////
 

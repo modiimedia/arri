@@ -103,7 +103,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
-		t.Errorf("\n%+v\ndoes not equal\n%+v", noUndefinedTarget, noUndefinedExpectedResult)
+		t.Errorf(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
 		return
 	}
 	allUndefinedInput, allUndefinedInputErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
@@ -119,7 +119,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(allUndefinedTarget, allUndefinedExpectedResult) {
-		t.Errorf("\n%+v\ndoes not equal\n%+v", allUndefinedTarget, allUndefinedExpectedResult)
+		t.Errorf(deepEqualErrString(allUndefinedTarget, allUndefinedExpectedResult))
 		return
 	}
 }
