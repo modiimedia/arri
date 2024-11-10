@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"arrirpc.com/arri"
 	"github.com/google/uuid"
+	"github.com/modiimedia/arri"
 	"gopkg.in/loremipsum.v1"
 )
 

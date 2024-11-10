@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"arrirpc.com/arri"
+	"github.com/modiimedia/arri"
 )
 
 func main() {

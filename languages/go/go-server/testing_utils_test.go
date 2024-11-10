@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	arri "arrirpc.com/arri"
+	arri "github.com/modiimedia/arri"
 )
 
 type nestedObject struct {

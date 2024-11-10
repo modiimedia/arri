@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	arri "arrirpc.com/arri"
+	arri "github.com/modiimedia/arri"
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)

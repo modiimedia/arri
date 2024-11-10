@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	arri "arrirpc.com/arri"
+	arri "github.com/modiimedia/arri"
 )
 
 type queryResultWithEveryType struct {

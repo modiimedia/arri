@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	arri "arrirpc.com/arri"
+	arri "github.com/modiimedia/arri"
 )
 
 var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")

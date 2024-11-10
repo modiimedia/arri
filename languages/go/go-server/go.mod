@@ -1,4 +1,4 @@
-module arrirpc.com/arri
+module github.com/modiimedia/arri
 
 go 1.22.5
 
