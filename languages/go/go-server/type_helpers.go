@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	arri_json "arrirpc.com/arri/json"
+	"github.com/tidwall/gjson"
 )
 
 type DiscriminatorKey struct{}
@@ -67,6 +68,15 @@ func (s Option[T]) String() string {
 	} else {
 		return "None"
 	}
+}
+
+func (s Option[T]) DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+	if data.Type != gjson.JSON {
+		err := newValidationErrorItem("expected object got", context.InstancePath, context.SchemaPath)
+		*context.Errors = append(*context.Errors, err)
+		return false
+	}
+	return false
 }
 
 //// Nullable Types ////

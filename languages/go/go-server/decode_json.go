@@ -13,6 +13,10 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+type JsonDecoder interface {
+	DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool
+}
+
 type DecodingError interface {
 	RpcError
 	Message() string
@@ -156,18 +160,16 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 		if target.Type().Name() == "Time" {
 			return timestampFromJSON(data, target, context)
 		}
+		if target.Type().Implements(reflect.TypeFor[JsonDecoder]()) {
+			return target.Interface().(JsonDecoder).DecodeJSON(data, target, context)
+		}
 		return structFromJSON(data, target, context)
 	case reflect.Slice, reflect.Array:
 		return arrayFromJSON(data, target, context)
 	case reflect.Map:
 		return mapFromJSON(data, target, context)
 	case reflect.Ptr:
-		if target.IsNil() {
-			return true
-		}
-		elem := target.Elem()
-		fmt.Println("ELEM", target.Elem())
-		return typeFromJSON(data, elem, context)
+		return pointerFromJSON(data, target, context)
 	case reflect.Interface:
 		subType := target.Elem()
 		if subType.Kind() == reflect.Invalid {
@@ -186,8 +188,20 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	return false
 }
 
-func enumFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+func pointerFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+	switch data.Type {
+	case gjson.Null:
+		return true
+	}
+	if target.IsNil() {
+		el := reflect.New(target.Type().Elem())
+		target.Set(el)
+	}
+	el := target.Elem()
+	return typeFromJSON(data, el, context)
+}
 
+func enumFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
 	if data.Type != gjson.String {
 		*context.Errors = append(
 			*context.Errors,
@@ -490,6 +504,7 @@ func boolFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 }
 
 func arrayFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+	target.SetZero()
 	if !data.IsArray() {
 		*context.Errors = append(*context.Errors,
 			newValidationErrorItem(
@@ -520,6 +535,7 @@ func arrayFromJSON(data *gjson.Result, target reflect.Value, context *Validation
 }
 
 func mapFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+	target.SetZero()
 	if !data.IsObject() {
 		*context.Errors = append(
 			*context.Errors,
