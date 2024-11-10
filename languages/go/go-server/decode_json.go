@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	arri_json "arrirpc.com/arri/json"
 	"github.com/iancoleman/strcase"
 	"github.com/tidwall/gjson"
 )
@@ -29,7 +28,7 @@ type validationError struct {
 }
 
 func (e validationError) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
-	return arri_json.Encode(e.errors, keyCasing)
+	return EncodeJSON(e.errors, keyCasing)
 }
 
 type validationErrorItem struct {

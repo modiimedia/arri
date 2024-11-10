@@ -1,4 +1,4 @@
-package arri_json
+package arri
 
 import (
 	"encoding/json"
@@ -6,17 +6,14 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
-
-	"github.com/iancoleman/strcase"
 )
 
 type JsonEncoder interface {
 	EncodeJSON(keyCasing string) ([]byte, error)
 }
 
-type encodingCtx struct {
+type jsonEncodingCtx struct {
 	keyCasing          string
 	buffer             []byte
 	instancePath       string
@@ -28,8 +25,8 @@ type encodingCtx struct {
 	discriminatorValue string
 }
 
-func newEncodingCtx(keyCasing string) *encodingCtx {
-	return &encodingCtx{
+func newJsonEncodingCtx(keyCasing string) *jsonEncodingCtx {
+	return &jsonEncodingCtx{
 		keyCasing:    keyCasing,
 		buffer:       []byte{},
 		instancePath: "",
@@ -39,36 +36,36 @@ func newEncodingCtx(keyCasing string) *encodingCtx {
 	}
 }
 
-func Encode(input any, keyCasing string) ([]byte, error) {
-	ctx := newEncodingCtx(keyCasing)
+func EncodeJSON(input any, keyCasing string) ([]byte, error) {
+	ctx := newJsonEncodingCtx(keyCasing)
 	value := reflect.ValueOf(input)
-	err := encodeValue(value, ctx)
+	err := encodeValueToJSON(value, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return ctx.buffer, nil
 }
 
-func encodeValue(v reflect.Value, c *encodingCtx) error {
+func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
 		if c.enumValues != nil && len(c.enumValues) > 0 {
-			return encodeEnum(v, c)
+			return encodeEnumToJSON(v, c)
 		}
-		return encodeString(v, c)
+		return encodeStringToJSON(v, c)
 	case reflect.Bool:
-		return encodeBool(v, c)
+		return encodeBoolToJSON(v, c)
 	case reflect.Float32, reflect.Float64:
-		return encodeFloat(v, c)
+		return encodeFloatToJSON(v, c)
 	case reflect.Int8, reflect.Int16, reflect.Int32:
-		return encodeSmallInt(v, c)
+		return encodeSmallIntToJSON(v, c)
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return encodeSmallUint(v, c)
+		return encodeSmallUintToJSON(v, c)
 	case reflect.Int64, reflect.Int:
-		return encodeInt64(v, c)
+		return encodeInt64ToJSON(v, c)
 	case reflect.Uint64, reflect.Uint:
-		return encodeUint64(v, c)
+		return encodeUint64ToJSON(v, c)
 	case reflect.Struct:
 		t := v.Type()
 		if t.Implements(reflect.TypeFor[JsonEncoder]()) {
@@ -80,23 +77,23 @@ func encodeValue(v reflect.Value, c *encodingCtx) error {
 			return nil
 		}
 		if t.Name() == "Time" {
-			return encodeTimestamp(v, c)
+			return encodeTimestampToJSON(v, c)
 		}
 		if isDiscriminatorStruct(t) {
-			return encodeDiscriminator(v, c)
+			return encodeDiscriminatorToJSON(v, c)
 		}
-		return encodeStruct(v, c)
+		return encodeStructToJSON(v, c)
 	case reflect.Array, reflect.Slice:
-		return encodeArray(v, c)
+		return encodeArrayToJSON(v, c)
 	case reflect.Map:
-		return encodeMap(v, c)
+		return encodeMapToJSON(v, c)
 	case reflect.Ptr, reflect.UnsafePointer:
-		return encodePointer(v, c)
+		return encodePointerToJSON(v, c)
 	}
-	return encodeInterface(v, c)
+	return encodeInterfaceToJSON(v, c)
 }
 
-func encodeInterface(v reflect.Value, c *encodingCtx) error {
+func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	if !v.IsValid() {
 		c.buffer = append(c.buffer, "null"...)
 		return nil
@@ -113,52 +110,52 @@ func encodeInterface(v reflect.Value, c *encodingCtx) error {
 	return nil
 }
 
-func encodeString(v reflect.Value, c *encodingCtx) error {
+func encodeStringToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	AppendNormalizedString(&c.buffer, v.String())
 	return nil
 }
 
-func encodeBool(v reflect.Value, c *encodingCtx) error {
+func encodeBoolToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	c.buffer = strconv.AppendBool(c.buffer, v.Bool())
 	return nil
 }
 
-func encodeFloat(v reflect.Value, c *encodingCtx) error {
+func encodeFloatToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	c.buffer = append(c.buffer, strconv.FormatFloat(v.Float(), 'f', -1, 64)...)
 	return nil
 }
 
-func encodeSmallInt(v reflect.Value, c *encodingCtx) error {
+func encodeSmallIntToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	c.buffer = strconv.AppendInt(c.buffer, v.Int(), 10)
 	return nil
 }
 
-func encodeSmallUint(v reflect.Value, c *encodingCtx) error {
+func encodeSmallUintToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	c.buffer = strconv.AppendUint(c.buffer, v.Uint(), 10)
 	return nil
 }
 
-func encodeInt64(v reflect.Value, c *encodingCtx) error {
+func encodeInt64ToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	c.buffer = append(c.buffer, '"')
 	c.buffer = append(c.buffer, fmt.Sprint(v.Int())...)
 	c.buffer = append(c.buffer, '"')
 	return nil
 }
 
-func encodeUint64(v reflect.Value, c *encodingCtx) error {
+func encodeUint64ToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	c.buffer = append(c.buffer, '"')
 	c.buffer = append(c.buffer, fmt.Sprint(v.Uint())...)
 	c.buffer = append(c.buffer, '"')
 	return nil
 }
 
-func encodeTimestamp(v reflect.Value, c *encodingCtx) error {
+func encodeTimestampToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	output := v.Interface().(time.Time).Format("2006-01-02T15:04:05.000Z")
 	c.buffer = appendString(c.buffer, output, false)
 	return nil
 }
 
-func encodeEnum(v reflect.Value, c *encodingCtx) error {
+func encodeEnumToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	strVal := v.String()
 	enumVals := c.enumValues
 	for _, v := range enumVals {
@@ -172,7 +169,7 @@ func encodeEnum(v reflect.Value, c *encodingCtx) error {
 	return fmt.Errorf("error at %v expected one of the following enum values %+v", c.instancePath, enumVals)
 }
 
-func encodeStruct(v reflect.Value, c *encodingCtx) error {
+func encodeStructToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	t := v.Type()
 	discriminatorKey := c.discriminatorKey
 	discriminatorValue := c.discriminatorValue
@@ -206,7 +203,7 @@ func encodeStruct(v reflect.Value, c *encodingCtx) error {
 				c.buffer = append(c.buffer, ',')
 			}
 			c.buffer = append(c.buffer, "\""+fieldName+"\":"...)
-			err := encodeValue(fieldValue.Field(0), c)
+			err := encodeValueToJSON(fieldValue.Field(0), c)
 			if err != nil {
 				return err
 			}
@@ -219,7 +216,7 @@ func encodeStruct(v reflect.Value, c *encodingCtx) error {
 			c.buffer = append(c.buffer, ',')
 		}
 		c.buffer = append(c.buffer, "\""+fieldName+"\":"...)
-		err := encodeValue(fieldValue, c)
+		err := encodeValueToJSON(fieldValue, c)
 		if err != nil {
 			return nil
 		}
@@ -231,43 +228,6 @@ func encodeStruct(v reflect.Value, c *encodingCtx) error {
 	c.hasKeys = false
 	c.currentDepth--
 	return nil
-}
-
-func getSerialKey(field *reflect.StructField, keyCasing string) string {
-	keyTag := field.Tag.Get("key")
-	if len(keyTag) > 0 {
-		return keyTag
-	}
-	switch keyCasing {
-	case "CAMEL_CASE":
-		return strcase.ToLowerCamel(field.Name)
-	case "PASCAL_CASE":
-		return field.Name
-	case "SNAKE_CASE":
-		return strcase.ToSnake(field.Name)
-	}
-	return strcase.ToLowerCamel(field.Name)
-}
-
-func isOptionalType(input reflect.Type) bool {
-	t := input
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Option[")
-}
-
-func optionalHasValue(value *reflect.Value) bool {
-	target := value
-	if target.Kind() == reflect.Ptr {
-		if target.IsNil() {
-			return false
-		}
-		el := value.Elem()
-		target = &el
-	}
-	isSome := target.Field(1)
-	return isSome.Bool()
 }
 
 func isDiscriminatorStruct(t reflect.Type) bool {
@@ -289,7 +249,7 @@ func isDiscriminatorStruct(t reflect.Type) bool {
 	return true
 }
 
-func encodeDiscriminator(v reflect.Value, c *encodingCtx) error {
+func encodeDiscriminatorToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	t := v.Type()
 	discriminatorKey := "type"
 	schemaPath := c.schemaPath
@@ -313,7 +273,7 @@ func encodeDiscriminator(v reflect.Value, c *encodingCtx) error {
 		if fieldValue.IsNil() {
 			continue
 		}
-		err := encodeValue(fieldValue, c)
+		err := encodeValueToJSON(fieldValue, c)
 		if err != nil {
 			return err
 		}
@@ -327,7 +287,7 @@ func encodeDiscriminator(v reflect.Value, c *encodingCtx) error {
 	return fmt.Errorf("all discriminator subtypes are nil")
 }
 
-func encodeArray(v reflect.Value, c *encodingCtx) error {
+func encodeArrayToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	instancePath := c.instancePath
 	schemaPath := c.schemaPath
 	c.currentDepth++
@@ -343,7 +303,7 @@ func encodeArray(v reflect.Value, c *encodingCtx) error {
 		}
 		c.instancePath = instancePath + "/" + fmt.Sprint(i)
 		c.schemaPath = schemaPath + "/elements"
-		err := encodeValue(slice.Index(i), c)
+		err := encodeValueToJSON(slice.Index(i), c)
 		if err != nil {
 			return err
 		}
@@ -355,7 +315,7 @@ func encodeArray(v reflect.Value, c *encodingCtx) error {
 	return nil
 }
 
-func encodeMap(v reflect.Value, c *encodingCtx) error {
+func encodeMapToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	instancePath := c.instancePath
 	schemaPath := c.schemaPath
 	c.schemaPath = schemaPath + "/values"
@@ -380,7 +340,7 @@ func encodeMap(v reflect.Value, c *encodingCtx) error {
 		}
 		AppendNormalizedString(&c.buffer, keyName)
 		c.buffer = append(c.buffer, ':')
-		err := encodeValue(v.MapIndex(key), c)
+		err := encodeValueToJSON(v.MapIndex(key), c)
 		if err != nil {
 			return err
 		}
@@ -392,11 +352,11 @@ func encodeMap(v reflect.Value, c *encodingCtx) error {
 	return nil
 }
 
-func encodePointer(v reflect.Value, c *encodingCtx) error {
+func encodePointerToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	if v.IsNil() {
 		c.buffer = append(c.buffer, "null"...)
 		return nil
 	}
 	innerV := v.Elem()
-	return encodeValue(innerV, c)
+	return encodeValueToJSON(innerV, c)
 }

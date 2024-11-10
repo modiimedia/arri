@@ -2,8 +2,6 @@ package arri
 
 import (
 	"strconv"
-
-	arri_json "arrirpc.com/arri/json"
 )
 
 type RpcError interface {
@@ -34,9 +32,9 @@ func RpcErrorToJson(err RpcError) []byte {
 	output := []byte{}
 	output = append(output, "{\"code\":"+strconv.FormatUint(uint64(err.Code()), 10)...)
 	output = append(output, ",\"message\":"...)
-	arri_json.AppendNormalizedString(&output, err.Error())
+	AppendNormalizedString(&output, err.Error())
 	if err.Data().IsSome() {
-		dataResult, dataErr := arri_json.Encode(err.Data().Unwrap(), KeyCasingCamelCase)
+		dataResult, dataErr := EncodeJSON(err.Data().Unwrap(), KeyCasingCamelCase)
 		if dataErr == nil {
 			output = append(output, ",\"data\":"...)
 			output = append(output, dataResult...)

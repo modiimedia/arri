@@ -1,4 +1,4 @@
-package arri_json
+package arri
 
 import (
 	"math/bits"

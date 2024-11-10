@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	arri "arrirpc.com/arri"
-	arri_json "arrirpc.com/arri/json"
 )
 
 var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
@@ -218,7 +217,7 @@ func TestDecodeRecursiveObject(t *testing.T) {
 	result := recursiveObject{}
 	resultErr := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
 	if resultErr != nil {
-		errMsg, _ := arri_json.Encode(resultErr, arri.KeyCasingCamelCase)
+		errMsg, _ := arri.EncodeJSON(resultErr, arri.KeyCasingCamelCase)
 		fmt.Println(string(errMsg))
 		t.Fatal(resultErr)
 		return

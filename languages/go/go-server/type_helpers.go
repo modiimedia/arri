@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	arri_json "arrirpc.com/arri/json"
 	"github.com/tidwall/gjson"
 )
 
@@ -148,7 +147,7 @@ func (s Nullable[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 	if s.IsNull() {
 		return []byte("null"), nil
 	}
-	return arri_json.Encode(s.Value, keyCasing)
+	return EncodeJSON(s.Value, keyCasing)
 }
 
 func (s Nullable[T]) String() string {
@@ -245,7 +244,7 @@ func (m OrderedMap[T]) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			result = append(result, ',')
 		}
-		arri_json.AppendNormalizedString(&result, key)
+		AppendNormalizedString(&result, key)
 		result = append(result, ':')
 		innerResult, innerResultErr := json.Marshal(value)
 		if innerResultErr != nil {
@@ -266,9 +265,9 @@ func (m OrderedMap[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 		if i > 0 {
 			result = append(result, ',')
 		}
-		arri_json.AppendNormalizedString(&result, key)
+		AppendNormalizedString(&result, key)
 		result = append(result, ':')
-		innerResult, innerResultErr := arri_json.Encode(value, keyCasing)
+		innerResult, innerResultErr := EncodeJSON(value, keyCasing)
 		if innerResultErr != nil {
 			return nil, innerResultErr
 		}

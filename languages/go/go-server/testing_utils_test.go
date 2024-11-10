@@ -6,7 +6,6 @@ import (
 	"time"
 
 	arri "arrirpc.com/arri"
-	arri_json "arrirpc.com/arri/json"
 )
 
 type nestedObject struct {
@@ -110,8 +109,8 @@ type recursiveObject struct {
 func deepEqualErrString(result any, expectedResult any) string {
 	t := reflect.TypeOf(result)
 	if t.Kind() == reflect.Struct || (t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct) {
-		resultOutput, resultErr := arri_json.Encode(result, arri.KeyCasingCamelCase)
-		expectedResultOutput, expectedResultErr := arri_json.Encode(expectedResult, arri.KeyCasingCamelCase)
+		resultOutput, resultErr := arri.EncodeJSON(result, arri.KeyCasingCamelCase)
+		expectedResultOutput, expectedResultErr := arri.EncodeJSON(expectedResult, arri.KeyCasingCamelCase)
 		if resultErr == nil && expectedResultErr == nil {
 			return "\n" + string(resultOutput) + "\nis not equal to\n" + string(expectedResultOutput)
 		}

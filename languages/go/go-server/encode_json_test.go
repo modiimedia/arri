@@ -8,7 +8,6 @@ import (
 	"time"
 
 	arri "arrirpc.com/arri"
-	arri_json "arrirpc.com/arri/json"
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
@@ -40,7 +39,7 @@ func TestEncodeJson(t *testing.T) {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := arri_json.Encode(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+	json, err := arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -53,7 +52,7 @@ func TestEncodeJson(t *testing.T) {
 
 func BenchmarkEncodeJson(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Encode(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -101,7 +100,7 @@ func TestEncodeJsonWithOptionalFields(t *testing.T) {
 	if noUndefReferenceErr != nil {
 		t.Fatalf(noUndefReferenceErr.Error())
 	}
-	noUndefResult, noUndefResultErr := arri_json.Encode(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
+	noUndefResult, noUndefResultErr := arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
 	if noUndefResultErr != nil {
 		t.Fatalf(noUndefResultErr.Error())
 	}
@@ -113,7 +112,7 @@ func TestEncodeJsonWithOptionalFields(t *testing.T) {
 	if noUndefReferenceErr != nil {
 		t.Fatalf(allUndefReferenceErr.Error())
 	}
-	allUndefResult, allUndefResultErr := arri_json.Encode(allUndefInput, arri.KeyCasingCamelCase)
+	allUndefResult, allUndefResultErr := arri.EncodeJSON(allUndefInput, arri.KeyCasingCamelCase)
 	if allUndefResultErr != nil {
 		t.Fatalf(allUndefResultErr.Error())
 	}
@@ -124,7 +123,7 @@ func TestEncodeJsonWithOptionalFields(t *testing.T) {
 
 func BenchmarkEncodeJsonWithOptionalFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Encode(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -163,7 +162,7 @@ func TestEncodeJsonWithNullableFields(t *testing.T) {
 		t.Fatal(allNullReferenceErr)
 		return
 	}
-	allNullResult, allNullErr := arri_json.Encode(objectWithNullableFieldsAllNullInput, arri.KeyCasingCamelCase)
+	allNullResult, allNullErr := arri.EncodeJSON(objectWithNullableFieldsAllNullInput, arri.KeyCasingCamelCase)
 	if allNullErr != nil {
 		t.Fatal(allNullErr)
 		return
@@ -177,7 +176,7 @@ func TestEncodeJsonWithNullableFields(t *testing.T) {
 		t.Fatal(noNullReferenceErr)
 		return
 	}
-	noNullResult, noNullErr := arri_json.Encode(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+	noNullResult, noNullErr := arri.EncodeJSON(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
 	if noNullErr != nil {
 		t.Fatal(noNullErr)
 		return
@@ -190,7 +189,7 @@ func TestEncodeJsonWithNullableFields(t *testing.T) {
 
 func BenchmarkEncodeJsonWithNullableFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Encode(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -217,7 +216,7 @@ func TestEncodeJsonRecursiveObject(t *testing.T) {
 		t.Errorf(referenceErr.Error())
 	}
 
-	result, err := arri_json.Encode(_recursiveObjectInput, arri.KeyCasingCamelCase)
+	result, err := arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -228,7 +227,7 @@ func TestEncodeJsonRecursiveObject(t *testing.T) {
 
 func BenchmarkEncodeJsonRecursiveObject(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Encode(_recursiveObjectInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -300,7 +299,7 @@ var _benchUserEncodingInput = bUser{
 
 func BenchmarkEncodeJsonUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri_json.Encode(_benchUserEncodingInput, arri.KeyCasingCamelCase)
+		arri.EncodeJSON(_benchUserEncodingInput, arri.KeyCasingCamelCase)
 	}
 }
 
