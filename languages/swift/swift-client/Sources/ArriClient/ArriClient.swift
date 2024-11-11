@@ -274,7 +274,7 @@ public struct DefaultRequestDelegate: ArriRequestDelegate {
     }
     public func handleHTTPEventStreamRequest(request: ArriHTTPRequest) async throws -> ArriSSEResponse {
         let httpRequest = self.prepareHttpRequest(request: request)
-        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .seconds(5))
+        let response = try await HTTPClient.shared.execute(httpRequest, timeout: .minutes(10))
         if response.status.code >= 200 && response.status.code < 300 && response.headers["Content-Type"].contains("text/event-stream") {
             return .ok(ArriHTTPResponse(
                 statusCode: UInt32(response.status.code),

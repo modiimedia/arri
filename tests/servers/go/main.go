@@ -385,7 +385,8 @@ func StreamLargeObjects(params arri.EmptyMessage, controller arri.SseController[
 	for {
 		select {
 		case <-t.C:
-			controller.Push(randomLargeObjectResponse())
+			payload := randomLargeObjectResponse()
+			controller.Push(payload)
 		case <-controller.Done():
 			return nil
 		}
