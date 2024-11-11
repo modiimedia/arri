@@ -576,10 +576,14 @@ func mapFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 	return !hasError
 }
 
-func structFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+func structFromJSON(data *gjson.Result, target reflect.Value, c *ValidationContext) bool {
+	if !data.IsObject() {
+		*c.Errors = append(*c.Errors, newValidationErrorItem("expected object", c.InstancePath, c.SchemaPath))
+		return false
+	}
 	targetType := target.Type()
 	if IsDiscriminatorStruct(targetType) {
-		return discriminatorStructFromJson(data, target, context)
+		return discriminatorStructFromJson(data, target, c)
 	}
 	hasErr := false
 	for i := 0; i < target.NumField(); i++ {
@@ -590,7 +594,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, context *Validatio
 		if !fieldMeta.IsExported() {
 			continue
 		}
-		switch context.KeyCasing {
+		switch c.KeyCasing {
 		case KeyCasingCamelCase:
 			fieldName = strcase.ToLowerCamel(fieldName)
 		case KeyCasingPascalCase:
@@ -613,11 +617,11 @@ func structFromJSON(data *gjson.Result, target reflect.Value, context *Validatio
 		}
 		isOptional := isOptionalType(fieldType)
 		if isOptional {
-			ctx := context.copyWith(
-				Some(context.CurrentDepth+1),
+			ctx := c.copyWith(
+				Some(c.CurrentDepth+1),
 				enumValues,
-				Some(context.InstancePath+"/"+fieldName),
-				Some(context.SchemaPath+"/optionalProperties/"+fieldName),
+				Some(c.InstancePath+"/"+fieldName),
+				Some(c.SchemaPath+"/optionalProperties/"+fieldName),
 			)
 			success := optionFromJson(&jsonResult, field, &ctx)
 			if !success {
@@ -625,11 +629,11 @@ func structFromJSON(data *gjson.Result, target reflect.Value, context *Validatio
 			}
 			continue
 		}
-		ctx := context.copyWith(
-			Some(context.CurrentDepth+1),
+		ctx := c.copyWith(
+			Some(c.CurrentDepth+1),
 			enumValues,
-			Some(context.InstancePath+"/"+fieldName),
-			Some(context.SchemaPath+"/properties/"+fieldName),
+			Some(c.InstancePath+"/"+fieldName),
+			Some(c.SchemaPath+"/properties/"+fieldName),
 		)
 		isNullable := isNullableType(fieldType)
 		if isNullable {
@@ -758,7 +762,10 @@ func optionFromJson(data *gjson.Result, target reflect.Value, context *Validatio
 }
 
 func nullableFromJson(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
-	if data.Type == gjson.Null || !data.Exists() {
+	if !data.Exists() {
+		return false
+	}
+	if data.Type == gjson.Null {
 		return true
 	}
 	val := target.FieldByName("Value")

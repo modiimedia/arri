@@ -41,6 +41,7 @@ func main() {
 			AppVersion:     "10",
 			RpcRoutePrefix: "/rpcs",
 			OnRequest: func(r *http.Request, ac *AppContext) arri.RpcError {
+				ac.Writer().Header().Set("Access-Control-Allow-Origin", "*")
 				if len(ac.XTestHeader) == 0 &&
 					r.URL.Path != "/" &&
 					r.URL.Path != "/status" &&
@@ -455,7 +456,9 @@ func StreamMessages(params ChatMessageParams, controller arri.SseController[Chat
 	for {
 		select {
 		case <-t.C:
-			controller.Push(ChatMessage{ChatMessageText: &ChatMessageText{}})
+			controller.Push(ChatMessage{ChatMessageText: &ChatMessageText{
+				ChannelId: params.ChannelId,
+			}})
 		case <-controller.Done():
 			return nil
 		}

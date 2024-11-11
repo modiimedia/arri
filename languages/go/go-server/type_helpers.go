@@ -69,21 +69,6 @@ func (s Option[T]) String() string {
 	}
 }
 
-// func (s Option[T]) DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
-// 	fmt.Println("DECODING JSON")
-// 	if !data.Exists() || data.Type == gjson.Null {
-// 		return true
-// 	}
-// 	ok := typeFromJSON(data, target.Field(0), context)
-// 	if ok {
-// 		target.Field(1).SetBool(true)
-// 		return true
-// 	}
-// 	return false
-// }
-
-//// Nullable Types ////
-
 type Nullable[T any] struct {
 	Value T
 	IsSet bool

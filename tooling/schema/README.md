@@ -117,10 +117,10 @@ export default defineRpc({
 
 ### Primitives
 
-| Arri Schema   | Typescript | Json Type Definition  |
+| Arri Schema   | Typescript | Arri Type Definition  |
 | ------------- | ---------- | --------------------- |
 | a.any()       | any        | {}                    |
-| a.string()    | string     | { "type": "string" }  |
+| a.string()    | string     | {"type": "string" }   |
 | a.boolean()   | boolean    | {"type": "boolean"}   |
 | a.timestamp() | Date       | {"type": "timestamp"} |
 | a.float32()   | number     | {"type": "float32"}   |

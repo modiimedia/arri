@@ -16,6 +16,7 @@ type SseController[T any] interface {
 	Push(T) RpcError
 	Close(notifyClient bool)
 	Done() <-chan struct{}
+	SetPingInterval(time.Duration) // How often to send a "ping" event. Default is 10 seconds.
 }
 
 type defaultSseController[T any] struct {
@@ -27,6 +28,7 @@ type defaultSseController[T any] struct {
 	cancelFunc         context.CancelFunc
 	context            context.Context
 	pingTicker         *time.Ticker
+	pingDuration       time.Duration
 }
 
 func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyCasing KeyCasing) *defaultSseController[T] {
@@ -39,24 +41,37 @@ func newDefaultSseController[T any](w http.ResponseWriter, r *http.Request, keyC
 		keyCasing:          keyCasing,
 		cancelFunc:         cancelFunc,
 		context:            ctx,
+		pingDuration:       time.Second * 10,
 	}
 	return &controller
 }
 
+func isHttp2(r *http.Request) bool {
+	return len(r.Header.Get(":path")) > 0 || len(r.Header.Get(":method")) > 0
+}
+
 func (controller *defaultSseController[T]) startStream() {
-	controller.writer.Header().Set("Access-Control-Expose-Headers", "Content-Type")
 	controller.writer.Header().Set("Content-Type", "text/event-stream")
-	controller.writer.Header().Set("Cache-Control", "no-cache")
-	controller.writer.Header().Set("Connection", "keep-alive")
+	controller.writer.Header().Set("Cache-Control", "private, no-cache, no-store, no-transform, must-revalidate, max-age=0")
+
+	// prevent nginx from buffering the response
+	controller.writer.Header().Set("x-accel-buffering", "no")
+
+	if !isHttp2(controller.request) {
+		controller.writer.Header().Set("Connection", "keep-alive")
+		controller.writer.Header().Set("Transfer-Encoding", "chunked")
+	}
+
 	controller.writer.WriteHeader(200)
 	controller.headersSent = true
-	controller.pingTicker = time.NewTicker(time.Second * 10)
+	controller.pingTicker = time.NewTicker(controller.pingDuration)
 	go func() {
 		defer controller.pingTicker.Stop()
 		for {
 			select {
 			case <-controller.pingTicker.C:
 				fmt.Fprintf(controller.writer, "event: ping\ndata:\n\n")
+				controller.responseController.Flush()
 			case <-controller.Done():
 				return
 			}
@@ -90,6 +105,10 @@ func (controller *defaultSseController[T]) Close(notifyClient bool) {
 
 func (controller *defaultSseController[T]) Done() <-chan struct{} {
 	return controller.context.Done()
+}
+
+func (controller *defaultSseController[T]) SetPingInterval(duration time.Duration) {
+	controller.pingDuration = duration
 }
 
 func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, SseController[TResponse], TContext) RpcError) {
