@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"github.com/tidwall/gjson"
 )
 
 type DiscriminatorKey struct{}
@@ -277,6 +279,56 @@ func (m OrderedMap[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 	}
 	result = append(result, '}')
 	return result, nil
+}
+
+func (m OrderedMap[T]) String() string {
+	result := "OrderedMap["
+	for i := 0; i < len(m.keys); i++ {
+		if i > 0 {
+			result += " "
+		}
+		key := m.keys[i]
+		val := m.values[i]
+		result += key
+		result += ":"
+		result += fmt.Sprintf("%+v", val)
+	}
+	result += "]"
+	return result
+}
+
+func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+	switch data.Type {
+	case gjson.Null, gjson.False, gjson.String, gjson.Number:
+		*context.Errors = append(*context.Errors, newValidationErrorItem("expected object", context.InstancePath, context.SchemaPath))
+		return false
+	}
+	valuesResult := []T{}
+	keysResult := []string{}
+	gjsonMap := data.Map()
+	instancePath := context.InstancePath
+	schemaPath := context.SchemaPath
+	context.SchemaPath = context.SchemaPath + "/values"
+	context.CurrentDepth++
+	for key, value := range gjsonMap {
+		valueTarget := reflect.New(reflect.TypeFor[T]())
+		context.InstancePath = instancePath + "/" + key
+		valueResult := typeFromJSON(&value, valueTarget, context)
+		if !valueResult {
+			return false
+		}
+		valuesResult = append(valuesResult, *valueTarget.Interface().(*T))
+		keysResult = append(keysResult, key)
+	}
+	context.InstancePath = instancePath
+	context.SchemaPath = schemaPath
+	context.CurrentDepth--
+	result := OrderedMap[T]{
+		keys:   keysResult,
+		values: valuesResult,
+	}
+	target.Set(reflect.ValueOf(result))
+	return true
 }
 
 func (m OrderedMap[T]) ToTypeDef(keyCasing KeyCasing) (*TypeDef, error) {

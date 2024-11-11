@@ -39,17 +39,17 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Path
 	}
 	if len(options.Description) > 0 {
-		rpcSchema.Http.Description = Some(options.Description)
+		rpcSchema.Http.Description.Set(options.Description)
 	}
 	if options.IsDeprecated {
-		rpcSchema.Http.IsDeprecated = Some(options.IsDeprecated)
+		rpcSchema.Http.IsDeprecated.Set(options.IsDeprecated)
 	}
 	params := handlerType.In(0)
 	if params.Kind() != reflect.Struct {
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
 	paramsName := getModelName(rpcName, params.Name(), "Params")
-	hasParams := paramsName != "EmptyMessage"
+	hasParams := !isEmptyMessage(params)
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
@@ -59,15 +59,17 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Http.Params = Some(paramsName)
+		rpcSchema.Http.Params.Set(paramsName)
 		app.Definitions.Set(paramsName, *paramsSchema)
+	} else {
+		rpcSchema.Http.Params.Unset()
 	}
 	response := handlerType.Out(0)
 	if response.Kind() == reflect.Ptr {
 		response = response.Elem()
 	}
 	responseName := getModelName(rpcName, response.Name(), "Response")
-	hasResponse := !(responseName == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
+	hasResponse := !isEmptyMessage(response)
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
@@ -77,8 +79,10 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		if responseSchema.Metadata.IsNone() {
 			panic("Procedures cannot return anonymous structs")
 		}
-		rpcSchema.Http.Response = Some(responseName)
+		rpcSchema.Http.Response.Set(responseName)
 		app.Definitions.Set(responseName, *responseSchema)
+	} else {
+		rpcSchema.Http.Response.Unset()
 	}
 	app.Procedures.Set(rpcName, *rpcSchema)
 	onRequest := app.Options.OnRequest

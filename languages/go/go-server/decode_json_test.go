@@ -124,6 +124,70 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 	}
 }
 
+func TestDecodeObjectWithNullableFieldsAllNull(t *testing.T) {
+	input, inputErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
+	if inputErr != nil {
+		t.Errorf(inputErr.Error())
+		return
+	}
+	result := objectWithNullableFields{}
+	expectedResult := objectWithNullableFields{}
+	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	if !reflect.DeepEqual(result, expectedResult) {
+		t.Errorf(deepEqualErrString(result, expectedResult))
+		return
+	}
+}
+
+func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
+	input, inputErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
+	if inputErr != nil {
+		t.Errorf(inputErr.Error())
+		return
+	}
+	result := objectWithNullableFields{}
+	expectedResult := objectWithNullableFields{
+		String:        arri.NotNull(""),
+		Boolean:       arri.NotNull(true),
+		Timestamp:     arri.NotNull(testDate),
+		Float32:       arri.NotNull[float32](1.5),
+		Float64:       arri.NotNull(1.5),
+		Int8:          arri.NotNull[int8](1),
+		Uint8:         arri.NotNull[uint8](1),
+		Int16:         arri.NotNull[int16](10),
+		Uint16:        arri.NotNull[uint16](10),
+		Int32:         arri.NotNull[int32](100),
+		Uint32:        arri.NotNull[uint32](100),
+		Int64:         arri.NotNull[int64](1000),
+		Uint64:        arri.NotNull[uint64](1000),
+		Enum:          arri.NotNull("BAZ"),
+		Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
+		Array:         arri.NotNull([]bool{true, false, false}),
+		Record:        arri.NotNull(arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false))),
+		Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
+		Any: arri.NotNull[any](map[string]any{
+			"message": "hello world",
+		}),
+	}
+	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	if !reflect.DeepEqual(result, expectedResult) {
+		fmt.Println("RESULT_ANY", reflect.TypeOf(result.Any.Value))
+		fmt.Printf("RESULT:\n%+v\n\n", result)
+		fmt.Printf("EXPECTED:\n%+v\n\n", expectedResult)
+		t.Errorf(deepEqualErrString(result, expectedResult))
+		return
+	}
+
+}
+
 type userWithPrivateFields struct {
 	Id      string
 	Name    string

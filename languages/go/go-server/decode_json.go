@@ -156,11 +156,18 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	case reflect.Bool:
 		return boolFromJSON(data, target, context)
 	case reflect.Struct:
-		if target.Type().Name() == "Time" {
+		t := target.Type()
+		if t.Name() == "Time" {
 			return timestampFromJSON(data, target, context)
 		}
-		if target.Type().Implements(reflect.TypeFor[JsonDecoder]()) {
+		if t.Implements(reflect.TypeFor[JsonDecoder]()) {
 			return target.Interface().(JsonDecoder).DecodeJSON(data, target, context)
+		}
+		if isOptionalType(t) {
+			return optionFromJson(data, target, context)
+		}
+		if isNullableType(t) {
+			return nullableFromJson(data, target, context)
 		}
 		return structFromJSON(data, target, context)
 	case reflect.Slice, reflect.Array:
@@ -751,8 +758,8 @@ func optionFromJson(data *gjson.Result, target reflect.Value, context *Validatio
 }
 
 func nullableFromJson(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
-	if data.Type == gjson.Null {
-		return false
+	if data.Type == gjson.Null || !data.Exists() {
+		return true
 	}
 	val := target.FieldByName("Value")
 	isSet := target.FieldByName("IsSet")

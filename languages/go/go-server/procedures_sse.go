@@ -123,7 +123,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
 	paramName := getModelName(rpcName, params.Name(), "Params")
-	hasParams := !(paramName == "EmptyMessage" && params.PkgPath() == "arrirpc.com/arri")
+	hasParams := !(paramName == "EmptyMessage" && params.PkgPath() == "github.com/modiimedia/arri")
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
@@ -133,15 +133,17 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
 		}
-		rpcSchema.Http.Params = Some(paramName)
+		rpcSchema.Http.Params.Set(paramName)
 		app.Definitions.Set(paramName, *paramsSchema)
+	} else {
+		rpcSchema.Http.Params.Unset()
 	}
 	response := reflect.TypeFor[TResponse]()
 	if response.Kind() == reflect.Ptr {
 		response = response.Elem()
 	}
 	responseName := getModelName(rpcName, response.Name(), "Response")
-	hasResponse := !(responseName == "EmptyMessage" && response.PkgPath() == "arrirpc.com/arri")
+	hasResponse := !(responseName == "EmptyMessage" && response.PkgPath() == "github.com/modiimedia/arri")
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
@@ -151,8 +153,10 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		if responseSchema.Metadata.IsNone() {
 			panic("Procedures cannot return anonymous structs")
 		}
-		rpcSchema.Http.Response = Some(responseName)
+		rpcSchema.Http.Response.Set(responseName)
 		app.Definitions.Set(responseName, *responseSchema)
+	} else {
+		rpcSchema.Http.Response.Unset()
 	}
 	app.Procedures.Set(rpcName, *rpcSchema)
 	onRequest, _, onAfterResponse, onError := getHooks(app)

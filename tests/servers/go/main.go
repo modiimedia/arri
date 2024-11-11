@@ -504,7 +504,9 @@ func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.SseController[C
 		select {
 		case <-t.C:
 			msgCount++
-			controller.Push(ChatMessage{})
+			controller.Push(ChatMessage{
+				ChatMessageText: &ChatMessageText{},
+			})
 			if msgCount > 10 {
 				panic("Message count exceeded 10. This means the ticker was not properly cleaned up.")
 			}
