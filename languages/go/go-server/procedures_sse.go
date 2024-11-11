@@ -63,6 +63,8 @@ func (controller *defaultSseController[T]) startStream() {
 	}
 
 	controller.writer.WriteHeader(200)
+	controller.responseController.EnableFullDuplex()
+	controller.responseController.Flush()
 	controller.headersSent = true
 	controller.pingTicker = time.NewTicker(controller.pingDuration)
 	go func() {
