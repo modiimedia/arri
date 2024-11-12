@@ -129,49 +129,49 @@ jobs:
       - run: pnpm run build
       - run: pnpm i -r
       - run: pnpm run integration-tests --server ts --affected
-  # integration-tests-go-server:
-  #   if: github.event.pull_request.draft == false
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: read
-  #     actions: write
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         lfs: true
-  #         fetch-depth: 0
-  #     - name: Install Dart
-  #       uses: dart-lang/setup-dart@v1
-  #       with:
-  #         sdk: 3.4.4
-  #     - name: Install Rust
-  #       uses: dtolnay/rust-toolchain@stable
-  #     - name: Setup Gradle
-  #       uses: gradle/actions/setup-gradle@v3
-  #     - name: Setup Golang
-  #       uses: actions/setup-go@v5
-  #     - name: Setup pnpm
-  #       uses: pnpm/action-setup@v2
-  #       with:
-  #         version: 9.6.0
-  #     - name: Setup Swift
-  #       # uses: swift-actions/setup-swift@v2
-  #       uses: redsun82/setup-swift@b2b6f77ab14f6a9b136b520dc53ec8eca27d2b99 # temporary work around for https://github.com/swift-actions/setup-swift/issues/591
-  #       with:
-  #         swift-version: "5.10"
-  #     - name: Install Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: "20.x"
-  #         cache: pnpm
-  #     - name: Install Node Dependencies
-  #       run: pnpm i -r --frozen-lockfile
-  #     - name: Set NX Shas
-  #       uses: nrwl/nx-set-shas@v4
-  #       with:
-  #         main-branch-name: master
-  #     - name: Install dart dependencies
-  #       run: pnpm nx run-many -t pub -- get # install dart dependencies in all dart projects
-  #     - run: pnpm run build
-  #     - run: pnpm i -r
-  #     - run: pnpm run integration-tests --server go --affected
+  integration-tests-go-server:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - name: Install Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.4.4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Setup Golang
+        uses: actions/setup-go@v5
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.6.0
+      - name: Setup Swift
+        # uses: swift-actions/setup-swift@v2
+        uses: redsun82/setup-swift@b2b6f77ab14f6a9b136b520dc53ec8eca27d2b99 # temporary work around for https://github.com/swift-actions/setup-swift/issues/591
+        with:
+          swift-version: "5.10"
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: pnpm
+      - name: Install Node Dependencies
+        run: pnpm i -r --frozen-lockfile
+      - name: Set NX Shas
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: master
+      - name: Install dart dependencies
+        run: pnpm nx run-many -t pub -- get # install dart dependencies in all dart projects
+      - run: pnpm run build
+      - run: pnpm i -r
+      - run: pnpm run integration-tests --server go --affected
