@@ -156,7 +156,9 @@ async function initGoApp(dir: string, force: boolean) {
     await degit.clone(dir);
     await cleanPackageJsonAndPnpmLockFiles(dir);
     logger.success(`Project created in ${dir}!`);
-    logger.info(`To get started:\n- cd ${dir}\n- pnpm install\n- pnpm run dev`);
+    logger.info(
+        `To get started:\n- cd ${dir}\n- go mod tidy\n- pnpm install\n- pnpm run dev`,
+    );
 }
 
 async function cleanPackageJsonAndPnpmLockFiles(dir: string) {
