@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
 func main() {

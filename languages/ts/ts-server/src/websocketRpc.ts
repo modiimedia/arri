@@ -7,7 +7,7 @@ import {
 import { type Peer, type WSError } from "crossws";
 import { defineWebSocketHandler, type Router } from "h3";
 
-import { type ArriServerErrorResponse } from "./errors";
+import { type arriErrorResponse } from "./errors";
 import {
     getRpcParamName,
     getRpcResponseName,
@@ -83,7 +83,7 @@ export class WsPeer<TResponse> {
         return this._peer.send(`event: message\ndata: ${payload}`);
     }
 
-    sendError(err: ArriServerErrorResponse) {
+    sendError(err: arriErrorResponse) {
         return this._peer.send(`event: error\ndata: ${JSON.stringify(err)}`);
     }
 
@@ -104,7 +104,7 @@ export class WsPeer<TResponse> {
             return;
         }
         if (!this._validator.validate(message)) {
-            const err: ArriServerErrorResponse = {
+            const err: arriErrorResponse = {
                 code: 500,
                 message: `Error serializing message on server. The payload doesn't match the specified schema.`,
                 data: {
@@ -196,7 +196,7 @@ export function registerWebsocketRpc(
             // }
             // const data = paramValidator.safeParse(message.text());
             // if (!data.success) {
-            //     const errorResponse: ArriServerErrorResponse = {
+            //     const errorResponse: arriErrorResponse = {
             //         code: 400,
             //         message: data.error.message,
             //         data: data.error.errors,

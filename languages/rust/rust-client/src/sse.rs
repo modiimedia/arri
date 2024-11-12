@@ -5,7 +5,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use crate::{ArriModel, ArriRequestErrorMethods, ArriServerError};
+use crate::{ArriModel, ArriRequestErrorMethods, arriError};
 
 pub struct ArriParsedSseRequestOptions<'a> {
     pub client: &'a reqwest::Client,
@@ -21,7 +21,7 @@ pub struct ArriParsedSseRequestOptions<'a> {
 
 pub enum SseEvent<T> {
     Message(T),
-    Error(ArriServerError),
+    Error(arriError),
     Open,
     Close,
 }
@@ -204,7 +204,7 @@ impl<'a> EventSource<'a> {
         }
 
         if !response.is_ok() {
-            on_event(SseEvent::Error(ArriServerError::new()), &mut controller);
+            on_event(SseEvent::Error(arriError::new()), &mut controller);
             if controller.is_aborted {
                 return SseAction::Abort;
             }
@@ -219,7 +219,7 @@ impl<'a> EventSource<'a> {
         if status < 200 || status >= 300 {
             let body = ok_response.text().await.unwrap_or_default();
             on_event(
-                SseEvent::Error(ArriServerError::from_response_data(status, body)),
+                SseEvent::Error(arriError::from_response_data(status, body)),
                 &mut controller,
             );
             if controller.is_aborted {

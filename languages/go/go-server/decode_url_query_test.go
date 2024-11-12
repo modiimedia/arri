@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	arri "arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
 type queryResultWithEveryType struct {

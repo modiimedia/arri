@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 
 	"github.com/google/uuid"
 	"gopkg.in/loremipsum.v1"

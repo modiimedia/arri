@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	arri "arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
 func TestStringToTypeDef(t *testing.T) {

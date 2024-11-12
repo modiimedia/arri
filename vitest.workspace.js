@@ -13,5 +13,5 @@ export default defineWorkspace([
     "./tooling/jtd-utils/vite.config.ts",
     "./tooling/schema/vite.config.ts",
     "./tooling/schema-typebox-adapter/vite.config.ts",
-    "./tests/clients/client-typescript/vite.config.ts",
+    "./tests/clients/ts/vite.config.ts",
 ]);

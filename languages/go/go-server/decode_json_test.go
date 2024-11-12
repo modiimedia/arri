@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	arri "arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
 var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
