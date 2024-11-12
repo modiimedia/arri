@@ -6,6 +6,7 @@
     deprecated
 )]
 use arri_client::{
+    arriError,
     chrono::{DateTime, FixedOffset},
     parsed_arri_request,
     reqwest::{self, Request},
@@ -13,7 +14,7 @@ use arri_client::{
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel, InternalArriClientConfig,
+    EmptyArriModel, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
 
@@ -60,7 +61,7 @@ impl ArriClientService for TestClientTestsService {
 }
 
 impl TestClientTestsService {
-    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriServerError> {
+    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -77,7 +78,7 @@ impl TestClientTestsService {
         )
         .await
     }
-    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriServerError> {
+    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -97,7 +98,7 @@ impl TestClientTestsService {
     pub async fn empty_response_get_request(
         &self,
         params: DefaultPayload,
-    ) -> Result<(), ArriServerError> {
+    ) -> Result<(), arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -117,7 +118,7 @@ impl TestClientTestsService {
     pub async fn empty_response_post_request(
         &self,
         params: DefaultPayload,
-    ) -> Result<(), ArriServerError> {
+    ) -> Result<(), arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -136,7 +137,7 @@ impl TestClientTestsService {
     }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     #[deprecated]
-    pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), ArriServerError> {
+    pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -150,7 +151,7 @@ impl TestClientTestsService {
         )
         .await
     }
-    pub async fn send_error(&self, params: SendErrorParams) -> Result<(), ArriServerError> {
+    pub async fn send_error(&self, params: SendErrorParams) -> Result<(), arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -167,7 +168,7 @@ impl TestClientTestsService {
     pub async fn send_object(
         &self,
         params: ObjectWithEveryType,
-    ) -> Result<ObjectWithEveryType, ArriServerError> {
+    ) -> Result<ObjectWithEveryType, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -184,7 +185,7 @@ impl TestClientTestsService {
     pub async fn send_object_with_nullable_fields(
         &self,
         params: ObjectWithEveryNullableType,
-    ) -> Result<ObjectWithEveryNullableType, ArriServerError> {
+    ) -> Result<ObjectWithEveryNullableType, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -204,7 +205,7 @@ impl TestClientTestsService {
     pub async fn send_partial_object(
         &self,
         params: ObjectWithEveryOptionalType,
-    ) -> Result<ObjectWithEveryOptionalType, ArriServerError> {
+    ) -> Result<ObjectWithEveryOptionalType, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -221,7 +222,7 @@ impl TestClientTestsService {
     pub async fn send_recursive_object(
         &self,
         params: RecursiveObject,
-    ) -> Result<RecursiveObject, ArriServerError> {
+    ) -> Result<RecursiveObject, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -241,7 +242,7 @@ impl TestClientTestsService {
     pub async fn send_recursive_union(
         &self,
         params: RecursiveUnion,
-    ) -> Result<RecursiveUnion, ArriServerError> {
+    ) -> Result<RecursiveUnion, arriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,

@@ -1,4 +1,4 @@
-package arri
+package go_server
 
 import (
 	"encoding/json"

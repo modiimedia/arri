@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	arri "arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
 type nestedObject struct {

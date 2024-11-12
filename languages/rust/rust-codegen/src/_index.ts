@@ -172,7 +172,7 @@ use arri_client::{
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel, InternalArriClientConfig,
+    arriError, EmptyArriModel, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
 

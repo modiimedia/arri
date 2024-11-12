@@ -6,6 +6,7 @@ Go implementation of [Arri RPC](/README.md). It uses the `net/http` package from
 
 -   [Quickstart](#quickstart)
 -   [Basic Example](#basic-example)
+-   [Manual Setup](#manual-setup)
 -   [Creating HTTP Procedures](#creating-http-procedures)
 -   [Creating Event Stream Procedures](#creating-event-stream-procedures)
 -   [Defining Messages](#defining-messages)
@@ -21,6 +22,8 @@ Go implementation of [Arri RPC](/README.md). It uses the `net/http` package from
 
 ## Quickstart
 
+The Arri CLI comes with an initialization script that will scaffold a basic go server for Arri RPC.
+
 ```bash
 # npm
 npx arri init [project-name]
@@ -33,6 +36,18 @@ pnpm dlx arri init [project-name]
 cd [project-name]
 pnpm install
 pnpm run dev
+```
+
+Follow the prompts and be sure to select go as your language of choice:
+
+```terminal
+What kind of project do you want to initialize?
+-> application
+   generator plugin
+
+What language do you want to use?
+   typescript
+-> go
 ```
 
 ## Basic Example

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	arri "arri"
+	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
