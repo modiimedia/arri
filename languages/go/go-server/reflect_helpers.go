@@ -7,10 +7,9 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func isOptionalType(input reflect.Type) bool {
-	t := input
+func isOptionalType(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
+		return isOptionalType(t.Elem())
 	}
 	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Option[")
 }
@@ -28,10 +27,9 @@ func optionalHasValue(value *reflect.Value) bool {
 	return isSome.Bool()
 }
 
-func isNullableType(input reflect.Type) bool {
-	t := input
+func isNullableType(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
+		return isNullableType(t.Elem())
 	}
 	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Nullable[")
 }
