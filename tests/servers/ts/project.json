@@ -1,0 +1,54 @@
+{
+  "name": "test-server-ts",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/servers/ts",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./node_modules/.bin/arri dev",
+        "cwd": "tests/servers/ts"
+      }
+    },
+    "build-server": {
+      "dependsOn": ["^build"],
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/.arri", "{projectRoot}/.output"],
+      "options": {
+        "command": "./node_modules/.bin/arri build",
+        "cwd": "tests/servers/ts"
+      },
+      "cache": false
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tests/servers/ts/.output/server.mjs --host"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "command": "pnpm eslint .",
+        "cwd": "tests/servers/ts"
+      }
+    },
+
+    "serve": {
+      "dependsOn": ["build-server"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node .output/server.mjs --host",
+        "cwd": "tests/servers/ts"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "tests/servers/ts"
+      }
+    }
+  }
+}

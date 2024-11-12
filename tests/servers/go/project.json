@@ -1,0 +1,29 @@
+{
+  "name": "test-server-go",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/servers/go",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./node_modules/.bin/arri dev",
+        "cwd": "tests/servers/go"
+      }
+    },
+    "build-server": {
+      "dependsOn": ["^build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./node_modules/.bin/arri build",
+        "cwd": "tests/servers/go"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./.output/server",
+        "cwd": "tests/servers/go"
+      }
+    }
+  }
+}

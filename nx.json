@@ -53,5 +53,5 @@
       "cache": true
     }
   },
-  "useLegacyCache": true
+  "useLegacyCache": false
 }

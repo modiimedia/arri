@@ -44,11 +44,13 @@ export class ArriErrorInstance extends Error implements ArriError {
     }
 
     toJSON() {
-        const stack = this.serverStack ?? this.stack;
+        // const stack = this.serverStack ?? this.stack;
         return {
             code: this.code,
             message: this._internalMessage,
-            stack: stack?.split("\n").map((l) => l.trim()),
+            // stack:
+            //     typeof stack?.split === "function" &&
+            //     stack?.split("\n").map((l) => l.trim()),
             data: this.data,
         };
     }
