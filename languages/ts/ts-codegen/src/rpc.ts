@@ -16,6 +16,8 @@ export function tsRpcFromDefinition(
     def: RpcDefinition,
     context: CodegenContext,
 ): string {
+    const customFn = context.rpcGenerators[def.transport];
+    if (customFn) return customFn(def, context);
     switch (def.transport) {
         case "http":
             return httpRpcFromDefinition(def, context);
