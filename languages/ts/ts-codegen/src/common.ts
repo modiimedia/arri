@@ -1,9 +1,12 @@
 import {
     pascalCase,
     removeDisallowedChars,
+    RpcDefinition,
     Schema,
     stringStartsWithNumber,
 } from "@arrirpc/codegen-utils";
+
+import { RpcGeneratorFunction } from "./rpc";
 
 export interface TsProperty {
     typeName: string;
@@ -33,6 +36,7 @@ export interface CodegenContext {
         sse: boolean;
         ws: boolean;
     };
+    rpcGenerators: Record<RpcDefinition["transport"], RpcGeneratorFunction>;
 }
 
 export function getJsDocComment(metadata: Schema["metadata"]) {

@@ -18,6 +18,7 @@ export function tsArrayFromSchema(
         discriminatorValue: "",
         versionNumber: context.versionNumber,
         usedFeatures: context.usedFeatures,
+        rpcGenerators: context.rpcGenerators,
     });
     const typeName = `(${innerType.typeName})[]`;
     const defaultValue = schema.nullable ? "null" : "[]";
