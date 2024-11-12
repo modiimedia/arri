@@ -8,6 +8,7 @@ import {
     isSchemaFormRef,
     isSchemaFormType,
     isSchemaFormValues,
+    RpcDefinition,
     type Schema,
     unflattenProcedures,
 } from "@arrirpc/codegen-utils";
@@ -30,6 +31,7 @@ import {
 } from "./primitives";
 import { tsRecordFromSchema } from "./record";
 import { tsRefFromSchema } from "./ref";
+import { RpcGeneratorFunction } from "./rpc";
 import { tsServiceFromDefinition } from "./service";
 
 export interface TypescriptGeneratorOptions {
@@ -37,6 +39,10 @@ export interface TypescriptGeneratorOptions {
     outputFile: string;
     typePrefix?: string;
     prettierOptions?: Omit<prettier.Config, "parser">;
+    /**
+     * Override the default functions used for creating procedures
+     */
+    rpcGenerators?: Record<RpcDefinition["transport"], RpcGeneratorFunction>;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
@@ -79,6 +85,7 @@ export async function createTypescriptClient(
             sse: false,
             ws: false,
         },
+        rpcGenerators: options.rpcGenerators ?? ({} as any),
     };
     const serviceDefinitions = unflattenProcedures(def.procedures);
     const mainService = tsServiceFromDefinition(serviceDefinitions, context);
@@ -95,6 +102,7 @@ export async function createTypescriptClient(
             discriminatorValue: "",
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
+            rpcGenerators: context.rpcGenerators,
         });
         if (result.content) {
             types.push(result.content);
