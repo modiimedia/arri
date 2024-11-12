@@ -292,3 +292,17 @@ func TestDecodeRecursiveObject(t *testing.T) {
 	}
 
 }
+
+func TestDecodeNothing(t *testing.T) {
+	result := struct {
+		String  string
+		Float32 float32
+	}{}
+	err := arri.DecodeJSON([]byte{}, &result, arri.KeyCasingCamelCase)
+	if err == nil {
+		t.Errorf("Should return an error")
+		return
+	}
+	e, _ := err.EncodeJSON(arri.KeyCasingCamelCase)
+	fmt.Println(string(e), err)
+}

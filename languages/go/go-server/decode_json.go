@@ -58,6 +58,9 @@ func (e validationError) Error() string {
 		}
 		err := e.errors[i]
 		msg += err.InstancePath
+		if err.InstancePath == "" && err.SchemaPath == "" {
+			return err.Message
+		}
 	}
 	msg += "]"
 	return msg
@@ -100,6 +103,14 @@ func (c ValidationContext) copyWith(CurrentDepth Option[uint32], EnumValues Opti
 func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *validationError {
 	parsedResult := gjson.ParseBytes(data)
 	value := reflect.ValueOf(&v)
+	if !parsedResult.Exists() {
+		t := value.Type()
+		if isNullableType(t) || isOptionalType(t) {
+			return nil
+		}
+		err := newValidationError([]validationErrorItem{newValidationErrorItem("expected JSON input but received nothing", "", "")})
+		return &err
+	}
 	errors := []validationErrorItem{}
 	context := ValidationContext{
 		MaxDepth:  10000,
