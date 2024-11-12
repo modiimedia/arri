@@ -1,6 +1,7 @@
 import fs, { readFileSync, rmSync, writeFileSync } from "node:fs";
 
 import { kebabCase } from "@arrirpc/codegen-utils";
+import { a } from "@arrirpc/schema";
 import { defineCommand } from "citty";
 import Degit from "degit";
 import enquirer from "enquirer";
@@ -8,6 +9,17 @@ import path from "pathe";
 import prettier from "prettier";
 
 import { logger } from "../common";
+
+const Language = a.enumerator(["typescript", "go"]);
+type Language = a.infer<typeof Language>;
+
+const CliArgs = a.object({
+    dir: a.string(),
+    force: a.optional(a.boolean()),
+    type: a.optional(a.enumerator(["app", "plugin"])),
+    language: a.optional(Language),
+});
+type CliArgs = a.infer<typeof CliArgs>;
 
 export default defineCommand({
     meta: {
@@ -31,20 +43,15 @@ export default defineCommand({
             type: "string",
             description: `"app" | "plugin"`,
         },
+        language: {
+            type: "string",
+            alias: ["lang", "l"],
+            default: `"typescript" | "go"`,
+        },
     },
     async run(context) {
-        let type: "app" | "plugin" | undefined;
-        switch (context.args.type?.toLowerCase()) {
-            case "app":
-                type = "app";
-                break;
-            case "plugin":
-                type = "plugin";
-                break;
-            default:
-                break;
-        }
-        if (!type) {
+        const args = a.parse(CliArgs, context.args);
+        if (!args.type) {
             const { projectType } = await enquirer.prompt<{
                 projectType: "application" | "generator plugin";
             }>([
@@ -57,10 +64,10 @@ export default defineCommand({
             ]);
             switch (projectType) {
                 case "application":
-                    type = "app";
+                    args.type = "app";
                     break;
                 case "generator plugin":
-                    type = "plugin";
+                    args.type = "plugin";
                     break;
                 default:
                     throw new Error(
@@ -68,11 +75,23 @@ export default defineCommand({
                     );
             }
         }
+        if (!args.language) {
+            const { language } = await enquirer.prompt<{
+                language: "typescript" | "go";
+            }>([
+                {
+                    type: "select",
+                    name: "language",
+                    message: "What language do you want to use?",
+                    choices: ["typescript", "go"],
+                },
+            ]);
+            args.language = language;
+        }
         const dir = path.resolve(context.args.dir);
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
-
         const dirFiles = fs.readdirSync(dir);
         if (dirFiles.length && !context.args.force) {
             logger.error(
@@ -80,22 +99,33 @@ export default defineCommand({
             );
             process.exit(1);
         }
-        switch (type) {
+        switch (args.type) {
             case "app":
-                await initApp(context.args.dir, context.args.force);
+                await initApp(args.dir, args.language, args.force ?? false);
                 break;
             case "plugin":
-                await initPlugin(context.args.dir, context.args.force);
+                await initPlugin(args.dir, args.force ?? false);
                 break;
             default:
-                logger.error(`Unknown app type: '${type as any}'"`);
+                logger.error(`Unknown app type: '${args.type as any}'"`);
                 break;
         }
         process.exit(0);
     },
 });
 
-async function initApp(dir: string, force: boolean) {
+async function initApp(dir: string, language: Language, force: boolean) {
+    switch (language) {
+        case "typescript":
+            return initTypescriptApp(dir, force);
+        case "go":
+            return initGoApp(dir, force);
+        default:
+            language satisfies never;
+    }
+}
+
+async function initTypescriptApp(dir: string, force: boolean) {
     const { eslint } = await enquirer.prompt<{ eslint: boolean }>([
         {
             name: "eslint",
@@ -116,6 +146,20 @@ async function initApp(dir: string, force: boolean) {
         force,
     });
     await degit.clone(dir);
+    await cleanPackageJsonAndPnpmLockFiles(dir);
+    logger.success(`Project initialized in ${dir}!`);
+    logger.info(`To get started:\n- cd ${dir}\n- pnpm install\n- pnpm run dev`);
+}
+
+async function initGoApp(dir: string, force: boolean) {
+    const degit = Degit("modiimedia/arri-starters/app-starter-go", { force });
+    await degit.clone(dir);
+    await cleanPackageJsonAndPnpmLockFiles(dir);
+    logger.success(`Project created in ${dir}!`);
+    logger.info(`To get started:\n- cd ${dir}\n- pnpm install\n- pnpm run dev`);
+}
+
+async function cleanPackageJsonAndPnpmLockFiles(dir: string) {
     rmSync(path.resolve(dir, "pnpm-lock.yaml"));
     const packageJson = JSON.parse(
         readFileSync(path.resolve(dir, "package.json"), {
@@ -140,8 +184,6 @@ async function initApp(dir: string, force: boolean) {
             trailingComma: "all",
         }),
     );
-    logger.success(`Project initialized in ${dir}!`);
-    logger.info(`To get started:\n- cd ${dir}\n- pnpm install\n- pnpm run dev`);
 }
 
 async function initPlugin(dir: string, force: boolean) {
