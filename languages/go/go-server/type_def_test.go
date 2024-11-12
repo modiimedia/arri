@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	arri "github.com/modiimedia/arri"
+	arri "arri"
 )
 
 func TestStringToTypeDef(t *testing.T) {

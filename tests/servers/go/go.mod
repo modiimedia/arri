@@ -1,4 +1,4 @@
-module arrirpc.com/go-test-server
+module github.com/modiimedia/arri-go-test-server
 
 go 1.22.5
 

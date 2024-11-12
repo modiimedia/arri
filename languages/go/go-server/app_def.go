@@ -64,7 +64,8 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	}
 	rawParams := valueType.In(0)
 	params := Some(rawParams.Name())
-	if rawParams.Name() == "EmptyMessage" && rawParams.PkgPath() == "arrirpc.com/arri" {
+	hasParam := !isEmptyMessage(rawParams)
+	if !hasParam {
 		params = None[string]()
 	}
 	rawResponse := valueType.Out(0)
@@ -72,7 +73,8 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 		rawResponse = rawResponse.Elem()
 	}
 	response := Some(rawResponse.Name())
-	if rawResponse.Name() == "EmptyMessage" && rawResponse.PkgPath() == "arrirpc.com/arri" {
+	hasResponse := !isEmptyMessage(rawResponse)
+	if !hasResponse {
 		response = None[string]()
 	}
 	path := "/" + strcase.ToKebab(fnName)

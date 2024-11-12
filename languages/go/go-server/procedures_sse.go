@@ -144,7 +144,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
 	paramName := getModelName(rpcName, params.Name(), "Params")
-	hasParams := !(paramName == "EmptyMessage" && params.PkgPath() == "github.com/modiimedia/arri")
+	hasParams := !isEmptyMessage(params)
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
@@ -164,7 +164,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		response = response.Elem()
 	}
 	responseName := getModelName(rpcName, response.Name(), "Response")
-	hasResponse := !(responseName == "EmptyMessage" && response.PkgPath() == "github.com/modiimedia/arri")
+	hasResponse := !isEmptyMessage(response)
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)

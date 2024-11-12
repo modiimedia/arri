@@ -66,5 +66,5 @@ func getSerialKey(field *reflect.StructField, keyCasing KeyCasing) string {
 }
 
 func isEmptyMessage(t reflect.Type) bool {
-	return t.Name() == "EmptyMessage" && t.PkgPath() == "github.com/modiimedia/arri"
+	return t.Name() == "EmptyMessage" && strings.Contains(t.PkgPath(), "arri")
 }

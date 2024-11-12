@@ -1,4 +1,4 @@
-module arrirpc.com/go-playground
+module arri-go-playground
 
 go 1.22.5
 
