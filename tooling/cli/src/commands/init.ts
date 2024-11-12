@@ -46,10 +46,11 @@ export default defineCommand({
         language: {
             type: "string",
             alias: ["lang", "l"],
-            default: `"typescript" | "go"`,
+            description: `"typescript" | "go"`,
         },
     },
     async run(context) {
+        console.log(context.args);
         const args = a.parse(CliArgs, context.args);
         if (!args.type) {
             const { projectType } = await enquirer.prompt<{
@@ -122,6 +123,7 @@ async function initApp(dir: string, language: Language, force: boolean) {
             return initGoApp(dir, force);
         default:
             language satisfies never;
+            throw new Error(`Unknown language ${language}`);
     }
 }
 
@@ -157,7 +159,7 @@ async function initGoApp(dir: string, force: boolean) {
     await cleanPackageJsonAndPnpmLockFiles(dir);
     logger.success(`Project created in ${dir}!`);
     logger.info(
-        `To get started:\n- cd ${dir}\n- go mod tidy\n- pnpm install\n- pnpm run dev`,
+        `To get started:\n- cd ${dir}\n- go get\n- go mod tidy\n- pnpm install / npm install\n- pnpm run dev / npm install`,
     );
 }
 
@@ -169,6 +171,9 @@ async function cleanPackageJsonAndPnpmLockFiles(dir: string) {
         }),
     );
     packageJson.name = kebabCase(dir);
+    if (packageJson.name.startsWith("-")) {
+        packageJson.name = packageJson.name.replace("-", "");
+    }
     packageJson.description = "An RPC server created with Arri RPC";
     packageJson.private = true;
     delete packageJson.license;
