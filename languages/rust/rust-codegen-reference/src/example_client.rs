@@ -6,14 +6,13 @@
     deprecated
 )]
 use arri_client::{
-    arriError,
     chrono::{DateTime, FixedOffset},
     parsed_arri_request,
     reqwest::{self, Request},
     serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
+    ArriClientConfig, ArriClientService, ArriEnum, ArriError, ArriModel, ArriParsedRequestOptions,
     EmptyArriModel, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
@@ -40,7 +39,7 @@ impl ArriClientService for ExampleClient {
 }
 
 impl ExampleClient {
-    pub async fn send_object(&self, params: NestedObject) -> Result<NestedObject, arriError> {
+    pub async fn send_object(&self, params: NestedObject) -> Result<NestedObject, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -76,7 +75,7 @@ impl ArriClientService for ExampleClientBooksService {
 
 impl ExampleClientBooksService {
     /// Get a book
-    pub async fn get_book(&self, params: BookParams) -> Result<Book, arriError> {
+    pub async fn get_book(&self, params: BookParams) -> Result<Book, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -93,7 +92,7 @@ impl ExampleClientBooksService {
 
     /// Create a book
     #[deprecated]
-    pub async fn create_book(&self, params: Book) -> Result<Book, arriError> {
+    pub async fn create_book(&self, params: Book) -> Result<Book, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,

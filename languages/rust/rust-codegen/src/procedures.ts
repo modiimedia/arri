@@ -78,7 +78,7 @@ export function rustHttpRpcFromSchema(
     return `${leading}pub async fn ${functionName}(
         &self,
         ${params ? `params: ${context.typeNamePrefix}${params},` : ""}
-    ) -> Result<${context.typeNamePrefix}${response ?? "()"}, arriError> {
+    ) -> Result<${context.typeNamePrefix}${response ?? "()"}, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
