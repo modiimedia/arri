@@ -5,10 +5,17 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
-  "author": { "name": "joshmossas", "url": "https://github.com/joshmossas" },
-  "bugs": { "url": "https://github.com/modiimedia/arri/issues" },
+  "author": {
+    "name": "joshmossas",
+    "url": "https://github.com/joshmossas"
+  },
+  "bugs": {
+    "url": "https://github.com/modiimedia/arri/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/modiimedia/arri.git",
@@ -16,9 +23,11 @@
   },
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "event-source-plus": "^0.1.7",
+    "event-source-plus": "^0.1.8",
     "ofetch": "^1.4.1",
     "ws": "^8.18.0"
   },
-  "devDependencies": { "@types/ws": "^8.5.12" }
+  "devDependencies": {
+    "@types/ws": "^8.5.13"
+  }
 }

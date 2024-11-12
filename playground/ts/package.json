@@ -10,7 +10,7 @@
     "@arrirpc/server": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "22.7.9",
+    "@types/node": "22.9.0",
     "arri": "workspace:*"
   },
   "private": true
