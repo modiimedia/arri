@@ -85,7 +85,7 @@ export async function createTypescriptClient(
             sse: false,
             ws: false,
         },
-        rpcGenerators: options.rpcGenerators ?? ({} as any),
+        rpcGenerators: options.rpcGenerators ?? {},
     };
     const serviceDefinitions = unflattenProcedures(def.procedures);
     const mainService = tsServiceFromDefinition(serviceDefinitions, context);
