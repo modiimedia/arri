@@ -50,7 +50,6 @@ export default defineCommand({
         },
     },
     async run(context) {
-        console.log(context.args);
         const args = a.parse(CliArgs, context.args);
         if (!args.type) {
             const { projectType } = await enquirer.prompt<{
