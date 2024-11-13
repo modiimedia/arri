@@ -33,7 +33,7 @@
         "{projectRoot}/src",
         "{workspaceRoot}/languages/dart/dart-codegen-reference/lib/reference_client.dart"
       ],
-      "outputs": ["{workspaceRoot}/languages/dart/dart-codegen"],
+      "outputs": ["{workspaceRoot}/languages/dart/dart-codegen/.temp"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/dart/dart-codegen"

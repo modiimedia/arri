@@ -20,7 +20,6 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/languages/ts/ts-server"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/ts/ts-server"

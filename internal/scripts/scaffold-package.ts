@@ -265,7 +265,7 @@ function projectJsonTemplate(
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/${packageLocation}"],
+      "inputs": ["{projectRoot}/src"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "${packageLocation}"

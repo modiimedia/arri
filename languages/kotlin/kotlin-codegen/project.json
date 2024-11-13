@@ -32,7 +32,7 @@
         "{workspaceRoot}/languages/kotlin/kotlin-codegen/src",
         "{workspaceRoot}/languages/kotlin/kotlin-codegen-reference/src"
       ],
-      "outputs": ["{workspaceRoot}/languages/kotlin/kotlin-codegen"],
+      "outputs": ["{workspaceRoot}/languages/kotlin/kotlin-codegen/.temp"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/kotlin/kotlin-codegen"
