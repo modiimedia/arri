@@ -1,6 +1,6 @@
-module github.com/modiimedia/arri-go-test-server
+module arri_go_test_server
 
-go 1.22.5
+go 1.23.3
 
 require (
 	github.com/google/uuid v1.6.0
