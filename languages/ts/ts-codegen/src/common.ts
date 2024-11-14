@@ -5,7 +5,7 @@ import {
     stringStartsWithNumber,
 } from "@arrirpc/codegen-utils";
 
-import { RpcGeneratorFunction } from "./rpc";
+import { RpcGenerator } from "./rpc";
 
 export interface TsProperty {
     typeName: string;
@@ -35,7 +35,7 @@ export interface CodegenContext {
         sse: boolean;
         ws: boolean;
     };
-    rpcGenerators: Record<string, RpcGeneratorFunction>;
+    rpcGenerators: Record<string, RpcGenerator>;
 }
 
 export function getJsDocComment(metadata: Schema["metadata"]) {
