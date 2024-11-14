@@ -42,7 +42,7 @@ export function isJsonSchemaScalarType(
     if (!("type" in input)) {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     return JsonSchemaScalarTypeValues.includes(input.type as any);
 }
 
@@ -56,7 +56,7 @@ export function isJsonSchemaNullType(input: any): input is JsonSchemaNullType {
     if (!("type" in input)) {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     return JsonSchemaNullTypeValues.includes(input.type);
 }
 
@@ -144,4 +144,13 @@ export function isJsonSchemaEnum(input: any): input is JsonSchemaEnum {
         }
     }
     return true;
+}
+export interface JsonSchemaRef extends JsonSchemaTypeBase {
+    $ref: string;
+}
+export function isJsonSchemaRef(input: unknown): input is JsonSchemaRef {
+    if (typeof input !== "object" || !input) {
+        return false;
+    }
+    return "$ref" in input && typeof input.$ref === "string";
 }
