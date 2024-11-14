@@ -63,11 +63,11 @@ export interface KotlinClientOptions {
 export const kotlinClientGenerator = defineGeneratorPlugin(
     (options: KotlinClientOptions) => {
         return {
-            generator(def) {
+            options,
+            run(def) {
                 const client = kotlinClientFromAppDefinition(def, options);
                 fs.writeFileSync(options.outputFile, client);
             },
-            options,
         };
     },
 );

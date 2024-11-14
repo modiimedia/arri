@@ -232,7 +232,7 @@ export function normalizeWhitespace(input: string) {
 }
 
 export interface Generator<TOptions extends Record<string, any> | undefined> {
-    generator: (def: AppDefinition, isDevServer?: boolean) => any;
+    run: (def: AppDefinition, isDevServer?: boolean) => any;
     options: TOptions;
 }
 

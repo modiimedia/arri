@@ -55,7 +55,8 @@ export interface DartClientGeneratorOptions {
 export const dartClientGenerator = defineGeneratorPlugin(
     (options: DartClientGeneratorOptions) => {
         return {
-            async generator(def) {
+            options,
+            async run(def) {
                 if (!options.outputFile) {
                     throw new Error(
                         'Missing "outputFile" cannot generate dart code',
@@ -72,7 +73,6 @@ export const dartClientGenerator = defineGeneratorPlugin(
                     console.error(err);
                 }
             },
-            options,
         };
     },
 );

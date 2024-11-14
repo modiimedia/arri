@@ -126,7 +126,7 @@ export function goServer(options: GoServerOptions = {}) {
                 defFileCache = defFile;
                 const appDef = JSON.parse(defFile);
                 await Promise.allSettled(
-                    generators.map((gen) => gen.generator(appDef, true)),
+                    generators.map((generator) => generator.run(appDef, true)),
                 );
                 logger.success(
                     `Ran ${generators.length} generator(s) in ${new Date().getTime() - startTime.getTime()}ms`,
@@ -167,7 +167,7 @@ export function goServer(options: GoServerOptions = {}) {
                 fs.readFileSync(`${resolvedOutDir}/__definition.json`, "utf8"),
             );
             await Promise.all(
-                generators.map((gen) => gen.generator(appDef, false)),
+                generators.map((generator) => generator.run(appDef, false)),
             );
             logger.success(
                 `Ran ${generators.length} generator(s) in ${new Date().getTime() - startTime.getTime()}ms`,
