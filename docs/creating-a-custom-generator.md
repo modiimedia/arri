@@ -30,7 +30,7 @@ export interface MyPluginOptions {
 export default defineGeneratorPlugin((options: MyPluginOptions) => {
     return {
         options,
-        generator: async (appDef, isDevServer) => {
+        run: async (appDef, isDevServer) => {
             // generate something using the app definition and the specified options
         },
     };

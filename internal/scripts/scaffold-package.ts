@@ -107,10 +107,10 @@ export interface MyGeneratorOptions {
 export const myGenerator = defineGeneratorPlugin(
     (options: MyGeneratorOptions) => {
         return {
-            generator(appDef, isDevServer) {
+            options,
+            run(appDef, isDevServer) {
                 // todo: use the app definition to output some code
             },
-            options,
         };
     },
 );

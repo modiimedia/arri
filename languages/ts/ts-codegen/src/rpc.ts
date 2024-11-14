@@ -7,10 +7,14 @@ import {
 
 import { CodegenContext, getJsDocComment, validVarName } from "./common";
 
-export type RpcGeneratorFunction = (
+export type RpcGenerator = (
     def: RpcDefinition,
     context: CodegenContext,
 ) => string;
+
+export function defineRpcGenerator(fn: RpcGenerator): RpcGenerator {
+    return fn;
+}
 
 export function tsRpcFromDefinition(
     def: RpcDefinition,

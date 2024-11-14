@@ -40,11 +40,11 @@ export interface SwiftClientGeneratorOptions {
 export const swiftClientGenerator = defineGeneratorPlugin(
     (options: SwiftClientGeneratorOptions) => {
         return {
-            async generator(def, _isDevServer) {
+            options,
+            async run(def, _isDevServer) {
                 const content = createSwiftClient(def, options);
                 fs.writeFileSync(options.outputFile, content, "utf8");
             },
-            options,
         };
     },
 );

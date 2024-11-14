@@ -205,7 +205,7 @@ export async function startBuild(
             const startTime = new Date().getTime();
             logger.log(`Generating ${clientCount} client(s)...`);
             await Promise.all(
-                generators.map((plugin) => plugin.generator(def)) ?? [],
+                generators.map((generator) => generator.run(def)) ?? [],
             );
             logger.log(
                 `${clientCount} client(s) generated in ${new Date().getTime() - startTime}ms`,
@@ -546,7 +546,7 @@ async function generateClientsFromDefinition(
     try {
         const clientCount = generators.length;
         await Promise.allSettled(
-            generators.map((generator) => generator.generator(appDef, true)),
+            generators.map((generator) => generator.run(appDef, true)),
         );
         logger.success(
             `Generated ${clientCount} client${clientCount === 1 ? "" : "s"} in ${new Date().getTime() - startTime}ms`,
