@@ -58,7 +58,8 @@ export interface RustClientGeneratorOptions {
 export const rustClientGenerator = defineGeneratorPlugin(
     (options: RustClientGeneratorOptions) => {
         return {
-            generator(def) {
+            options,
+            run(def) {
                 const context: GeneratorContext = {
                     clientVersion: def.info?.version ?? "",
                     clientName: options.clientName ?? "Client",
@@ -83,7 +84,6 @@ export const rustClientGenerator = defineGeneratorPlugin(
                     }
                 }
             },
-            options,
         };
     },
 );

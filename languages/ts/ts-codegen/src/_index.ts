@@ -31,8 +31,11 @@ import {
 } from "./primitives";
 import { tsRecordFromSchema } from "./record";
 import { tsRefFromSchema } from "./ref";
-import { RpcGeneratorFunction } from "./rpc";
+import { RpcGenerator } from "./rpc";
 import { tsServiceFromDefinition } from "./service";
+
+export * from "./common";
+export * from "./rpc";
 
 export interface TypescriptGeneratorOptions {
     clientName: string;
@@ -42,12 +45,12 @@ export interface TypescriptGeneratorOptions {
     /**
      * Override the default functions used for creating procedures
      */
-    rpcGenerators?: Record<RpcDefinition["transport"], RpcGeneratorFunction>;
+    rpcGenerators?: Record<RpcDefinition["transport"], RpcGenerator>;
 }
 
 export const typescriptClientGenerator = defineGeneratorPlugin(
     (options: TypescriptGeneratorOptions) => ({
-        generator: async (def) => {
+        run: async (def) => {
             if (!options.clientName) {
                 throw new Error("Name is requires");
             }
