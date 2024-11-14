@@ -1,9 +1,10 @@
 {
-  "name": "test-server",
+  "name": "test-server-ts",
   "type": "module",
+  "private": true,
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "@sinclair/typebox": "^0.33.17",
+    "@sinclair/typebox": "^0.33.22",
     "arri": "workspace:*"
   },
   "scripts": {
@@ -16,7 +17,7 @@
     "@arrirpc/schema": "workspace:*",
     "@arrirpc/server": "workspace:*",
     "@arrirpc/typebox-adapter": "workspace:*",
-    "@faker-js/faker": "^9.0.3",
+    "@faker-js/faker": "^9.2.0",
     "arri": "workspace:*"
   }
 }

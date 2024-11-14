@@ -54,7 +54,7 @@ pub struct ArriParsedRequestOptions<'a> {
 }
 
 #[derive(Debug)]
-pub struct ArriServerError {
+pub struct ArriError {
     pub code: u16,
     pub message: String,
     pub stack: Option<String>,
@@ -65,7 +65,7 @@ trait ArriRequestErrorMethods {
     fn from_response_data(status: u16, body: String) -> Self;
 }
 
-impl ArriRequestErrorMethods for ArriServerError {
+impl ArriRequestErrorMethods for ArriError {
     fn from_response_data(status: u16, body: String) -> Self {
         let mut err = Self::from_json_string(body.to_owned());
         if err.code == 0 {
@@ -78,7 +78,7 @@ impl ArriRequestErrorMethods for ArriServerError {
     }
 }
 
-impl ArriModel for ArriServerError {
+impl ArriModel for ArriError {
     fn new() -> Self {
         Self {
             code: 0,
@@ -192,7 +192,7 @@ impl ArriModel for ArriServerError {
 pub async fn arri_request<'a>(
     opts: ArriRequestOptions<'a>,
     params: Option<impl ArriModel>,
-) -> Result<reqwest::Response, ArriServerError> {
+) -> Result<reqwest::Response, ArriError> {
     let response: Result<reqwest::Response, reqwest::Error>;
     let mut headers: HashMap<&str, String> = HashMap::new();
     {
@@ -302,7 +302,7 @@ pub async fn arri_request<'a>(
     match response {
         Ok(res) => return Ok(res),
         Err(err) => {
-            return Err(ArriServerError {
+            return Err(ArriError {
                 code: err.status().unwrap_or(StatusCode::default()).as_u16(),
                 message: format!("Error requesting \"{}\"", opts.url),
                 stack: None,
@@ -357,7 +357,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
     opts: ArriParsedRequestOptions<'a>,
     params: Option<impl ArriModel>,
     parser: fn(body: String) -> TResponse,
-) -> Result<TResponse, ArriServerError> {
+) -> Result<TResponse, ArriError> {
     let result = arri_request(
         ArriRequestOptions {
             method: opts.method,
@@ -376,7 +376,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
     let status = response.status().as_u16();
     let body: Result<String, reqwest::Error> = response.text().await;
     if status >= 300 || status < 200 {
-        return Err(ArriServerError::from_response_data(
+        return Err(ArriError::from_response_data(
             status,
             body.unwrap_or_default(),
         ));
@@ -384,7 +384,7 @@ pub async fn parsed_arri_request<'a, TResponse>(
     match body {
         Ok(text) => return Ok(parser(text)),
         Err(err) => {
-            return Err(ArriServerError {
+            return Err(ArriError {
                 code: status,
                 message: "Expected server to return plaintext".to_string(),
                 stack: None,

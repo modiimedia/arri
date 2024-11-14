@@ -1,14 +1,13 @@
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     cacheDir: "../../../node_modules/.vite/test-client-ts",
 
-    plugins: [
-        viteTsConfigPaths({
-            root: "../../../",
-        }) as any,
-    ],
+    // plugins: [
+    //     viteTsConfigPaths({
+    //         root: "../../../",
+    //     }),
+    // ],
 
     // Uncomment this if you are using workers.
     // worker: {
@@ -28,9 +27,9 @@ export default defineConfig({
         },
         globals: true,
         reporters: ["default"],
-        cache: {
-            dir: "../../../node_modules/.vitest",
-        },
+        // cache: {
+        //     dir: "../../../node_modules/.vitest",
+        // },
         environment: "node",
         include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     },

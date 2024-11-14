@@ -1,4 +1,5 @@
 import {
+    Schema,
     type SchemaFormDiscriminator,
     type SchemaFormProperties,
 } from "jtd-utils";
@@ -43,7 +44,7 @@ export interface AppDefinition {
         url: string;
     };
     procedures: Record<string, RpcDefinition<string>>;
-    definitions: Record<string, SchemaFormProperties | SchemaFormDiscriminator>;
+    definitions: Record<string, Schema>;
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {

@@ -1,14 +1,13 @@
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     cacheDir: "../../node_modules/.vite/@arrirpc/codegen-utils",
 
-    plugins: [
-        viteTsConfigPaths({
-            root: "../../",
-        }),
-    ],
+    // plugins: [
+    //     viteTsConfigPaths({
+    //         root: "../../",
+    //     }),
+    // ],
 
     // Uncomment this if you are using workers.
     // worker: {

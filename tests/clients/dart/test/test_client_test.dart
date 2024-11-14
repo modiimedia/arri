@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -371,27 +372,30 @@ Future<void> main() async {
     expect(messageCount > 10, equals(true));
     expect(errorCount, equals(0));
   });
-  test("[SSE] can handle receiving large messages", () async {
-    var openCount = 0;
-    var msgCount = 0;
-    var errorCount = 0;
-    final eventSource = client.tests.streamLargeObjects(
-      onOpen: (_, __) {
+  test(
+    "[SSE] can handle receiving large messages",
+    () async {
+      var openCount = 0;
+      var msgCount = 0;
+      var errorCount = 0;
+      final completer = Completer();
+      client.tests.streamLargeObjects(onOpen: (_, __) {
         openCount++;
-      },
-      onMessage: (data, _) {
+      }, onMessage: (data, controller) {
         msgCount++;
-      },
-      onError: (_, __) {
+        if (msgCount > 2) controller.close();
+      }, onError: (_, __) {
         errorCount++;
-      },
-    );
-    await Future.delayed(Duration(milliseconds: 1000));
-    eventSource.close();
-    expect(openCount, equals(1));
-    expect(msgCount > 2, equals(true));
-    expect(errorCount, equals(0));
-  });
+      }, onClose: (_) {
+        completer.complete();
+      });
+      await completer.future;
+      expect(openCount, equals(1));
+      expect(msgCount > 2, equals(true));
+      expect(errorCount, equals(0));
+    },
+    timeout: Timeout(Duration(seconds: 10)),
+  );
 
   test("[SSE] auto-retry when initial connection fails", () async {
     var openCount = 0;

@@ -1,14 +1,13 @@
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     cacheDir: "../../../node_modules/.vite/arri-codegen-dart",
 
-    plugins: [
-        viteTsConfigPaths({
-            root: "../../../",
-        }) as any,
-    ],
+    // plugins: [
+    //     viteTsConfigPaths({
+    //         root: "../../../",
+    //     }) as any,
+    // ],
 
     // Uncomment this if you are using workers.
     // worker: {

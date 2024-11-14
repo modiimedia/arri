@@ -29,7 +29,6 @@ export default defineEventStreamRpc({
     async handler({ stream }) {
         stream.send();
         await stream.push(randomLargeObjectResponse());
-
         const interval = setInterval(async () => {
             await stream.push(randomLargeObjectResponse());
         });

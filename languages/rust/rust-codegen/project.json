@@ -39,7 +39,7 @@
         "{projectRoot}/src",
         "{workspaceRoot}/languages/rust/rust-codegen-reference/src/example_client.rs"
       ],
-      "outputs": ["{workspaceRoot}/languages/rust/rust-codegen"],
+      "outputs": ["{workspaceRoot}/languages/rust/rust-codegen/.temp"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/rust/rust-codegen"

@@ -39,7 +39,7 @@
         "{projectRoot}/src",
         "{workspaceRoot}/languages/swift/swift-codegen-reference/Sources/SwiftCodegenReference"
       ],
-      "outputs": ["{workspaceRoot}/languages/swift/swift-codegen"],
+      "outputs": ["{workspaceRoot}/languages/swift/swift-codegen/.temp"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
         "cwd": "languages/swift/swift-codegen"

@@ -6,7 +6,7 @@ _**WARNING: Breaking changes are likely to happen until v1.0 is released**_
 
 Arri RPC is a code-first RPC framework. Type-safe clients get generated directly from your server code meaning you never need to manually write another client again.
 
-Go [here](/languages/ts/ts-server/README.md) to get started with a Typescript server. More server implementations to come.
+Click [here](#server-implementations) to get started with your backend language of choice.
 
 https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 
@@ -21,12 +21,13 @@ https://github.com/user-attachments/assets/15cf68a4-871e-4e7d-b5fc-25dcd1760fc1
 ## Server Implementations
 
 -   [Typescript](/languages/ts/ts-server/README.md)
+-   [Go (Experimental)](/languages/go/go-server/README.md)
 
-When I have time I would like to add more languages to this list. Currently I have the following languages on my shortlist for potential server implementations:
+I'm currently finishing up the Go server implementation. After that is stable I have the following languages on my shortlist for the next potential server implementation:
 
--   go
 -   rust
 -   dart
+-   zig
 
 See this [guide](/docs/implementing-an-arri-server.md) for information on how to implement your own Arri server
 
@@ -34,19 +35,21 @@ See this [guide](/docs/implementing-an-arri-server.md) for information on how to
 
 Below are the language client generators that are planned to have first party support. This chart tracks the current progress on implementations for these clients. For those interested in creating their own generators, see [this guide](/docs/creating-a-custom-generator.md).
 
-| Language                                            | HTTP | SSE |
-| --------------------------------------------------- | ---- | --- |
-| [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅  |
-| [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅  |
-| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅  |
-| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅  |
-| [Swift](languages/swift/swift-codegen/README.md)    | ✅   | ✅  |
-| Go                                                  |      |     |
-| Python                                              |      |     |
+| Language                                            | HTTP | SSE    |
+| --------------------------------------------------- | ---- | ------ |
+| [Typescript](languages/ts/ts-codegen/README.md)     | ✅   | ✅     |
+| [Dart](languages/dart/dart-codegen/README.md)       | ✅   | ✅     |
+| [Rust](languages/rust/rust-codegen/README.md)       | ✅   | ✅     |
+| [Kotlin](languages/kotlin/kotlin-codegen/README.md) | ✅   | ✅\*\* |
+| [Swift](languages/swift/swift-codegen/README.md)    | ✅   | ✅\*\* |
+| Go                                                  |      |        |
+| Python                                              |      |        |
 
 ✅ completed
 
 🚧 in progress
+
+\*\* SSE for Kotlin and Swift are working but they still have some rough edges
 
 ## Other Tooling
 

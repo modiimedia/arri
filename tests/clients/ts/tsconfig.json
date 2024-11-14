@@ -8,8 +8,5 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "types": ["vitest"]
-  },
-  "files": [],
-  "include": [],
-  "references": []
+  }
 }

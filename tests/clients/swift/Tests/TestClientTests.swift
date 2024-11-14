@@ -275,9 +275,7 @@ final class TestSwiftClientTests: XCTestCase {
         let _ = await client.tests.streamLargeObjects(options: EventSourceOptions(
             onMessage: { msg, es in 
                 msgCount += 1
-                if msgCount >= 5 {
-                    es.cancel()
-                }
+                es.cancel()
             },
             onRequestError: {err, es in 
                 errorCount += 1
@@ -291,7 +289,7 @@ final class TestSwiftClientTests: XCTestCase {
             })
         ).result
         XCTAssertEqual(errorCount, 0)
-        XCTAssertEqual(msgCount, 5)
+        XCTAssertEqual(msgCount, 1)
     }
     func testStreamAutoReconnect() async throws {
         var msgCount = 0

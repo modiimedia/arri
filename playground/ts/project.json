@@ -1,24 +1,25 @@
 {
-  "name": "playground",
+  "name": "ts-playground",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
         "command": "arri build",
-        "cwd": "playground"
+        "cwd": "playground/ts"
       }
     },
     "dev": {
       "executor": "nx:run-commands",
       "options": {
         "command": "arri dev",
-        "cwd": "playground"
+        "cwd": "playground/ts"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint playground"
+        "command": "pnpm eslint playground/ts"
       }
     }
   }

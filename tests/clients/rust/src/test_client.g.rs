@@ -12,8 +12,8 @@ use arri_client::{
     serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel, InternalArriClientConfig,
+    ArriClientConfig, ArriClientService, ArriEnum, ArriError, ArriModel, ArriParsedRequestOptions,
+    EmptyArriModel, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
 
@@ -60,7 +60,7 @@ impl ArriClientService for TestClientTestsService {
 }
 
 impl TestClientTestsService {
-    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriServerError> {
+    pub async fn empty_params_get_request(&self) -> Result<DefaultPayload, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -77,7 +77,7 @@ impl TestClientTestsService {
         )
         .await
     }
-    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriServerError> {
+    pub async fn empty_params_post_request(&self) -> Result<DefaultPayload, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -97,7 +97,7 @@ impl TestClientTestsService {
     pub async fn empty_response_get_request(
         &self,
         params: DefaultPayload,
-    ) -> Result<(), ArriServerError> {
+    ) -> Result<(), ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -117,7 +117,7 @@ impl TestClientTestsService {
     pub async fn empty_response_post_request(
         &self,
         params: DefaultPayload,
-    ) -> Result<(), ArriServerError> {
+    ) -> Result<(), ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -136,7 +136,7 @@ impl TestClientTestsService {
     }
     /// If the target language supports it. Generated code should mark this procedure as deprecated.
     #[deprecated]
-    pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), ArriServerError> {
+    pub async fn deprecated_rpc(&self, params: DeprecatedRpcParams) -> Result<(), ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -150,7 +150,7 @@ impl TestClientTestsService {
         )
         .await
     }
-    pub async fn send_error(&self, params: SendErrorParams) -> Result<(), ArriServerError> {
+    pub async fn send_error(&self, params: SendErrorParams) -> Result<(), ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -167,7 +167,7 @@ impl TestClientTestsService {
     pub async fn send_object(
         &self,
         params: ObjectWithEveryType,
-    ) -> Result<ObjectWithEveryType, ArriServerError> {
+    ) -> Result<ObjectWithEveryType, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -184,7 +184,7 @@ impl TestClientTestsService {
     pub async fn send_object_with_nullable_fields(
         &self,
         params: ObjectWithEveryNullableType,
-    ) -> Result<ObjectWithEveryNullableType, ArriServerError> {
+    ) -> Result<ObjectWithEveryNullableType, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -204,7 +204,7 @@ impl TestClientTestsService {
     pub async fn send_partial_object(
         &self,
         params: ObjectWithEveryOptionalType,
-    ) -> Result<ObjectWithEveryOptionalType, ArriServerError> {
+    ) -> Result<ObjectWithEveryOptionalType, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -221,7 +221,7 @@ impl TestClientTestsService {
     pub async fn send_recursive_object(
         &self,
         params: RecursiveObject,
-    ) -> Result<RecursiveObject, ArriServerError> {
+    ) -> Result<RecursiveObject, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -241,7 +241,7 @@ impl TestClientTestsService {
     pub async fn send_recursive_union(
         &self,
         params: RecursiveUnion,
-    ) -> Result<RecursiveUnion, ArriServerError> {
+    ) -> Result<RecursiveUnion, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -5005,257 +5005,6 @@ impl ArriModel for TestsStreamRetryWithNewCredentialsResponse {
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
         _query_parts_.push(format!("message={}", &self.message));
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum WsMessageParams {
-    CreateEntity { entity_id: String, x: f64, y: f64 },
-    UpdateEntity { entity_id: String, x: f64, y: f64 },
-    Disconnect { reason: String },
-}
-
-impl ArriModel for WsMessageParams {
-    fn new() -> Self {
-        Self::CreateEntity {
-            entity_id: "".to_string(),
-            x: 0.0,
-            y: 0.0,
-        }
-    }
-
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let r#type = match _val_.get("type") {
-                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                match r#type.as_str() {
-                    "CREATE_ENTITY" => {
-                        let entity_id = match _val_.get("entityId") {
-                            Some(serde_json::Value::String(entity_id_val)) => {
-                                entity_id_val.to_owned()
-                            }
-                            _ => "".to_string(),
-                        };
-                        let x = match _val_.get("x") {
-                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        let y = match _val_.get("y") {
-                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        Self::CreateEntity { entity_id, x, y }
-                    }
-                    "UPDATE_ENTITY" => {
-                        let entity_id = match _val_.get("entityId") {
-                            Some(serde_json::Value::String(entity_id_val)) => {
-                                entity_id_val.to_owned()
-                            }
-                            _ => "".to_string(),
-                        };
-                        let x = match _val_.get("x") {
-                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        let y = match _val_.get("y") {
-                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        Self::UpdateEntity { entity_id, x, y }
-                    }
-                    "DISCONNECT" => {
-                        let reason = match _val_.get("reason") {
-                            Some(serde_json::Value::String(reason_val)) => reason_val.to_owned(),
-                            _ => "".to_string(),
-                        };
-                        Self::Disconnect { reason }
-                    }
-                    _ => Self::new(),
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        match &self {
-            Self::CreateEntity { entity_id, x, y } => {
-                _json_output_.push_str("\"type\":\"CREATE_ENTITY\"");
-                _json_output_.push_str(",\"entityId\":");
-                _json_output_.push_str(serialize_string(entity_id).as_str());
-                _json_output_.push_str(",\"x\":");
-                _json_output_.push_str(x.to_string().as_str());
-                _json_output_.push_str(",\"y\":");
-                _json_output_.push_str(y.to_string().as_str());
-            }
-            Self::UpdateEntity { entity_id, x, y } => {
-                _json_output_.push_str("\"type\":\"UPDATE_ENTITY\"");
-                _json_output_.push_str(",\"entityId\":");
-                _json_output_.push_str(serialize_string(entity_id).as_str());
-                _json_output_.push_str(",\"x\":");
-                _json_output_.push_str(x.to_string().as_str());
-                _json_output_.push_str(",\"y\":");
-                _json_output_.push_str(y.to_string().as_str());
-            }
-            Self::Disconnect { reason } => {
-                _json_output_.push_str("\"type\":\"DISCONNECT\"");
-                _json_output_.push_str(",\"reason\":");
-                _json_output_.push_str(serialize_string(reason).as_str());
-            }
-        }
-        _json_output_.push('}');
-        _json_output_
-    }
-
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self {
-            Self::CreateEntity { entity_id, x, y } => {
-                _query_parts_.push(format!("type=CREATE_ENTITY"));
-                _query_parts_.push(format!("entityId={}", entity_id));
-                _query_parts_.push(format!("x={}", x));
-                _query_parts_.push(format!("y={}", y));
-            }
-            Self::UpdateEntity { entity_id, x, y } => {
-                _query_parts_.push(format!("type=UPDATE_ENTITY"));
-                _query_parts_.push(format!("entityId={}", entity_id));
-                _query_parts_.push(format!("x={}", x));
-                _query_parts_.push(format!("y={}", y));
-            }
-            Self::Disconnect { reason } => {
-                _query_parts_.push(format!("type=DISCONNECT"));
-                _query_parts_.push(format!("reason={}", reason));
-            }
-        }
-        _query_parts_.join("&")
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum WsMessageResponse {
-    EntityCreated { entity_id: String, x: f64, y: f64 },
-    EntityUpdated { entity_id: String, x: f64, y: f64 },
-}
-
-impl ArriModel for WsMessageResponse {
-    fn new() -> Self {
-        Self::EntityCreated {
-            entity_id: "".to_string(),
-            x: 0.0,
-            y: 0.0,
-        }
-    }
-
-    fn from_json(input: serde_json::Value) -> Self {
-        match input {
-            serde_json::Value::Object(_val_) => {
-                let r#type = match _val_.get("type") {
-                    Some(serde_json::Value::String(r#type_val)) => r#type_val.to_owned(),
-                    _ => "".to_string(),
-                };
-                match r#type.as_str() {
-                    "ENTITY_CREATED" => {
-                        let entity_id = match _val_.get("entityId") {
-                            Some(serde_json::Value::String(entity_id_val)) => {
-                                entity_id_val.to_owned()
-                            }
-                            _ => "".to_string(),
-                        };
-                        let x = match _val_.get("x") {
-                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        let y = match _val_.get("y") {
-                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        Self::EntityCreated { entity_id, x, y }
-                    }
-                    "ENTITY_UPDATED" => {
-                        let entity_id = match _val_.get("entityId") {
-                            Some(serde_json::Value::String(entity_id_val)) => {
-                                entity_id_val.to_owned()
-                            }
-                            _ => "".to_string(),
-                        };
-                        let x = match _val_.get("x") {
-                            Some(serde_json::Value::Number(x_val)) => x_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        let y = match _val_.get("y") {
-                            Some(serde_json::Value::Number(y_val)) => y_val.as_f64().unwrap_or(0.0),
-                            _ => 0.0,
-                        };
-                        Self::EntityUpdated { entity_id, x, y }
-                    }
-                    _ => Self::new(),
-                }
-            }
-            _ => Self::new(),
-        }
-    }
-
-    fn from_json_string(input: String) -> Self {
-        match serde_json::from_str(input.as_str()) {
-            Ok(val) => Self::from_json(val),
-            _ => Self::new(),
-        }
-    }
-
-    fn to_json_string(&self) -> String {
-        let mut _json_output_ = "{".to_string();
-        match &self {
-            Self::EntityCreated { entity_id, x, y } => {
-                _json_output_.push_str("\"type\":\"ENTITY_CREATED\"");
-                _json_output_.push_str(",\"entityId\":");
-                _json_output_.push_str(serialize_string(entity_id).as_str());
-                _json_output_.push_str(",\"x\":");
-                _json_output_.push_str(x.to_string().as_str());
-                _json_output_.push_str(",\"y\":");
-                _json_output_.push_str(y.to_string().as_str());
-            }
-            Self::EntityUpdated { entity_id, x, y } => {
-                _json_output_.push_str("\"type\":\"ENTITY_UPDATED\"");
-                _json_output_.push_str(",\"entityId\":");
-                _json_output_.push_str(serialize_string(entity_id).as_str());
-                _json_output_.push_str(",\"x\":");
-                _json_output_.push_str(x.to_string().as_str());
-                _json_output_.push_str(",\"y\":");
-                _json_output_.push_str(y.to_string().as_str());
-            }
-        }
-        _json_output_.push('}');
-        _json_output_
-    }
-
-    fn to_query_params_string(&self) -> String {
-        let mut _query_parts_: Vec<String> = Vec::new();
-        match &self {
-            Self::EntityCreated { entity_id, x, y } => {
-                _query_parts_.push(format!("type=ENTITY_CREATED"));
-                _query_parts_.push(format!("entityId={}", entity_id));
-                _query_parts_.push(format!("x={}", x));
-                _query_parts_.push(format!("y={}", y));
-            }
-            Self::EntityUpdated { entity_id, x, y } => {
-                _query_parts_.push(format!("type=ENTITY_UPDATED"));
-                _query_parts_.push(format!("entityId={}", entity_id));
-                _query_parts_.push(format!("x={}", x));
-                _query_parts_.push(format!("y={}", y));
-            }
-        }
         _query_parts_.join("&")
     }
 }

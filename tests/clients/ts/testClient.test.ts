@@ -1,6 +1,6 @@
 import { ArriErrorInstance } from "@arrirpc/client";
 import { randomUUID } from "crypto";
-import { ofetch } from "ofetch";
+import { FetchError, ofetch } from "ofetch";
 import { expect, test } from "vitest";
 
 import {
@@ -127,6 +127,26 @@ const input: ObjectWithEveryType = {
 test("can send/receive object every field type", async () => {
     const result = await client.tests.sendObject(input);
     expect(result).toStrictEqual(input);
+});
+test("returns error if sending nothing when RPC expects body", async () => {
+    try {
+        await ofetch(`${baseUrl}/rpcs/tests/send-object`, {
+            method: "post",
+            headers,
+        });
+        // should never reach this
+        expect(false).toBe(true);
+    } catch (err) {
+        expect(err instanceof FetchError).toBe(true);
+        if (err instanceof FetchError) {
+            expect(err.statusCode).toBe(400);
+            expect(err.data?.code).toBe(400);
+            expect(
+                typeof err.data.message === "string" &&
+                    err.data.message.length > 0,
+            ).toBe(true);
+        }
+    }
 });
 test("unauthenticated RPC request returns a 401 error", async () => {
     try {
@@ -323,7 +343,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
     let timesConnected = 0;
     let messageCount = 0;
     let errorReceived: ArriErrorInstance | undefined;
-    const controller = await client.tests.streamTenEventsThenEnd({
+    const controller = client.tests.streamTenEventsThenEnd({
         onMessage(_) {
             messageCount++;
         },
@@ -337,7 +357,7 @@ test("[SSE] closes connection when receiving 'done' event", async () => {
             timesConnected++;
         },
     });
-    await wait(500);
+    await wait(1000);
     expect(errorReceived).toBe(undefined);
     expect(controller.signal.aborted).toBe(true);
     expect(timesConnected).toBe(1);

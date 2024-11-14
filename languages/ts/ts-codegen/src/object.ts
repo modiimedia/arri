@@ -97,6 +97,7 @@ export function tsObjectFromSchema(
             discriminatorValue: "",
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
+            rpcGenerators: context.rpcGenerators,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key));
@@ -139,6 +140,7 @@ export function tsObjectFromSchema(
             discriminatorValue: "",
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
+            rpcGenerators: context.rpcGenerators,
         });
         if (prop.content) subContentParts.push(prop.content);
         const fieldName = validVarName(camelCase(key));

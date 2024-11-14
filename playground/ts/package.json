@@ -1,5 +1,5 @@
 {
-  "name": "playground",
+  "name": "ts-playground",
   "version": "1.0.0",
   "type": "module",
   "description": "An RPC server created with Arri RPC",
@@ -10,6 +10,7 @@
     "@arrirpc/server": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "22.9.0",
     "arri": "workspace:*"
   },
   "private": true
