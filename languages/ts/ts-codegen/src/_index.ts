@@ -34,8 +34,8 @@ import { tsRefFromSchema } from "./ref";
 import { RpcGenerator } from "./rpc";
 import { tsServiceFromDefinition } from "./service";
 
-export { CodegenContext } from "./common";
-export { defineRpcGenerator, RpcGenerator } from "./rpc";
+export * from "./common";
+export * from "./rpc";
 
 export interface TypescriptGeneratorOptions {
     clientName: string;
