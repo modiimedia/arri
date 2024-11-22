@@ -3,6 +3,7 @@ import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonPrimitive
 import java.time.Instant
+import java.util.*
 
 fun main() {
     val httpClient = HttpClient() {
@@ -82,6 +83,35 @@ fun main() {
         val result = client.tests.sendObject(objectInput)
         expect(tag, result, objectInput)
         expect(tag, result.string, "hello world")
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE OBJECT WITH SNAKE_CASE KEYS"
+        val input = ObjectWithSnakeCaseKeys(
+            createdAt = targetDate,
+            displayName = "john doe",
+            phoneNumber = null,
+            emailAddress = "johndoe@gmail.com",
+            isAdmin = null
+        )
+        val result = client.tests.sendObjectWithSnakeCaseKeys(input)
+        expect(tag, result, input)
+    }
+
+    runBlocking {
+        val tag = "SEND/RECEIVE OBJECT WITH PASCAL CASE KEYS"
+        var input = ObjectWithPascalCaseKeys(
+            createdAt = targetDate,
+            displayName = "john doe",
+            phoneNumber = "211-211-2111",
+            emailAddress = null,
+            isAdmin = true
+        )
+        val result = client.tests.sendObjectWithPascalCaseKeys(input)
+        expect(tag, result, input)
+        input = input.copy(isAdmin = null)
+        val result2 = client.tests.sendObjectWithPascalCaseKeys(input)
+        expect(tag, result2, input)
     }
 
     runBlocking {
@@ -434,7 +464,7 @@ fun testSseReconnectsWithNewCredentials(httpClient: HttpClient, baseUrl: String)
             httpClient = httpClient,
             baseUrl = baseUrl,
             headers = {
-                val newHeader = "kt_${java.util.UUID.randomUUID().toString()}"
+                val newHeader = "kt_${UUID.randomUUID().toString()}"
                 headers.add(newHeader)
                 mutableMapOf(Pair("x-test-header", newHeader))
             }
