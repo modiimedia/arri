@@ -605,14 +605,19 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *ValidationConte
 		if !fieldMeta.IsExported() {
 			continue
 		}
-		switch c.KeyCasing {
-		case KeyCasingCamelCase:
-			fieldName = strcase.ToLowerCamel(fieldName)
-		case KeyCasingPascalCase:
-		case KeyCasingSnakeCase:
-			fieldName = strcase.ToSnake(fieldName)
-		default:
-			fieldName = strcase.ToLowerCamel(fieldName)
+		keyTag := fieldMeta.Tag.Get("key")
+		if len(keyTag) > 0 {
+			fieldName = keyTag
+		} else {
+			switch c.KeyCasing {
+			case KeyCasingCamelCase:
+				fieldName = strcase.ToLowerCamel(fieldName)
+			case KeyCasingPascalCase:
+			case KeyCasingSnakeCase:
+				fieldName = strcase.ToSnake(fieldName)
+			default:
+				fieldName = strcase.ToLowerCamel(fieldName)
+			}
 		}
 		jsonResult := data.Get(fieldName)
 		enumValues := None[[]string]()

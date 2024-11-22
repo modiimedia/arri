@@ -74,6 +74,8 @@ func main() {
 	arri.ScopedRpc(&app, "tests", SendError, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendObjectWithNullableFields, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendObjectWithPascalCaseKeys, arri.RpcOptions{})
+	arri.ScopedRpc(&app, "tests", SendObjectWithSnakeCaseKeys, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendPartialObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveObject, arri.RpcOptions{})
 	arri.ScopedRpc(&app, "tests", SendRecursiveUnion, arri.RpcOptions{})
@@ -233,6 +235,30 @@ type ObjectWithEveryNullableType struct {
 }
 
 func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ AppContext) (ObjectWithEveryNullableType, arri.RpcError) {
+	return params, nil
+}
+
+type ObjectWithPascalCaseKeys struct {
+	CreatedAt    time.Time             `key:"CreatedAt"`
+	DisplayName  string                `key:"DisplayName"`
+	EmailAddress arri.Option[string]   `key:"EmailAddress"`
+	PhoneNumber  arri.Nullable[string] `key:"PhoneNumber"`
+	IsAdmin      arri.Option[bool]     `key:"IsAdmin"`
+}
+
+func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ AppContext) (ObjectWithPascalCaseKeys, arri.RpcError) {
+	return params, nil
+}
+
+type ObjectWithSnakeCaseKeys struct {
+	CreatedAt    time.Time             `key:"created_at"`
+	DisplayName  string                `key:"display_name"`
+	EmailAddress arri.Option[string]   `key:"email_address"`
+	PhoneNumber  arri.Nullable[string] `key:"phone_number"`
+	IsAdmin      arri.Option[bool]     `key:"is_admin"`
+}
+
+func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ AppContext) (ObjectWithSnakeCaseKeys, arri.RpcError) {
 	return params, nil
 }
 
