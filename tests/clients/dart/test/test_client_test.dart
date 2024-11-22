@@ -102,6 +102,31 @@ Future<void> main() async {
     expect(result2, equals(input2));
     expect(input == input2, equals(false));
   });
+  test("can send/receive objects with snake_case keys", () async {
+    final payload = ObjectWithSnakeCaseKeys(
+      createdAt: targetDate,
+      displayName: "testing 123",
+      phoneNumber: "211-211-2111",
+      emailAddress: "johndoe@gmail",
+    );
+    final result = await client.tests.sendObjectWithSnakeCaseKeys(payload);
+    expect(result, equals(payload));
+  });
+  test("can send/receive objects with PascalCase keys", () async {
+    final payload = ObjectWithPascalCaseKeys(
+      createdAt: targetDate,
+      displayName: "testing 123",
+      phoneNumber: null,
+    );
+    final result = await client.tests.sendObjectWithPascalCaseKeys(payload);
+    expect(result, equals(payload));
+    final payload2 = payload.copyWith(
+      phoneNumber: () => "2112112111",
+      emailAddress: () => "johndoe@gmail.com",
+    );
+    final result2 = await client.tests.sendObjectWithPascalCaseKeys(payload2);
+    expect(result2, equals(payload2));
+  });
   test("supports injecting custom http clients", () async {
     final result = await clientWCustomHttpClient.tests.sendObject(input);
     expect(result.array.length, equals(input.array.length));
