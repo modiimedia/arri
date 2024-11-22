@@ -201,6 +201,46 @@ impl TestClientTestsService {
         )
         .await
     }
+    pub async fn send_object_with_pascal_case_keys(
+        &self,
+        params: ObjectWithPascalCaseKeys,
+    ) -> Result<ObjectWithPascalCaseKeys, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-object-with-pascal-case-keys",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return ObjectWithPascalCaseKeys::from_json_string(body),
+        )
+        .await
+    }
+    pub async fn send_object_with_snake_case_keys(
+        &self,
+        params: ObjectWithSnakeCaseKeys,
+    ) -> Result<ObjectWithSnakeCaseKeys, ArriError> {
+        parsed_arri_request(
+            ArriParsedRequestOptions {
+                http_client: &self._config.http_client,
+                url: format!(
+                    "{}/rpcs/tests/send-object-with-snake-case-keys",
+                    &self._config.base_url
+                ),
+                method: reqwest::Method::POST,
+                headers: self._config.headers.clone(),
+                client_version: "10".to_string(),
+            },
+            Some(params),
+            |body| return ObjectWithSnakeCaseKeys::from_json_string(body),
+        )
+        .await
+    }
     pub async fn send_partial_object(
         &self,
         params: ObjectWithEveryOptionalType,
@@ -2857,6 +2897,270 @@ impl ArriModel for ObjectWithEveryNullableTypeNestedArrayElementElement {
             _ => {
                 _query_parts_.push("timestamp=null".to_string());
             }
+        };
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithPascalCaseKeys {
+    pub created_at: DateTime<FixedOffset>,
+    pub display_name: String,
+    pub phone_number: Option<String>,
+    pub email_address: Option<String>,
+    pub is_admin: Option<bool>,
+}
+
+impl ArriModel for ObjectWithPascalCaseKeys {
+    fn new() -> Self {
+        Self {
+            created_at: DateTime::default(),
+            display_name: "".to_string(),
+            phone_number: None,
+            email_address: None,
+            is_admin: None,
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let created_at = match _val_.get("CreatedAt") {
+                    Some(serde_json::Value::String(created_at_val)) => {
+                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
+                            .unwrap_or(DateTime::default())
+                    }
+                    _ => DateTime::default(),
+                };
+                let display_name = match _val_.get("DisplayName") {
+                    Some(serde_json::Value::String(display_name_val)) => {
+                        display_name_val.to_owned()
+                    }
+                    _ => "".to_string(),
+                };
+                let phone_number = match _val_.get("PhoneNumber") {
+                    Some(serde_json::Value::String(phone_number_val)) => {
+                        Some(phone_number_val.to_owned())
+                    }
+                    _ => None,
+                };
+                let email_address = match _val_.get("EmailAddress") {
+                    Some(serde_json::Value::String(email_address_val)) => {
+                        Some(email_address_val.to_owned())
+                    }
+                    _ => None,
+                };
+                let is_admin = match _val_.get("IsAdmin") {
+                    Some(serde_json::Value::Bool(is_admin_val)) => Some(is_admin_val.to_owned()),
+                    _ => None,
+                };
+                Self {
+                    created_at,
+                    display_name,
+                    phone_number,
+                    email_address,
+                    is_admin,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"CreatedAt\":");
+        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
+        _json_output_.push_str(",\"DisplayName\":");
+        _json_output_.push_str(serialize_string(&self.display_name).as_str());
+        _json_output_.push_str(",\"PhoneNumber\":");
+        match &self.phone_number {
+            Some(phone_number_val) => {
+                _json_output_.push_str(serialize_string(phone_number_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        match &self.email_address {
+            Some(email_address_val) => {
+                _json_output_.push_str(",\"EmailAddress\":");
+                _json_output_.push_str(serialize_string(email_address_val).as_str())
+            }
+            _ => {}
+        };
+        match &self.is_admin {
+            Some(is_admin_val) => {
+                _json_output_.push_str(",\"IsAdmin\":");
+                _json_output_.push_str(is_admin_val.to_string().as_str())
+            }
+            _ => {}
+        };
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!(
+            "CreatedAt={}",
+            serialize_date_time(&self.created_at, false)
+        ));
+        _query_parts_.push(format!("DisplayName={}", &self.display_name));
+        match &self.phone_number {
+            Some(phone_number_val) => {
+                _query_parts_.push(format!("PhoneNumber={}", phone_number_val));
+            }
+            _ => {
+                _query_parts_.push("PhoneNumber=null".to_string());
+            }
+        };
+        match &self.email_address {
+            Some(email_address_val) => {
+                _query_parts_.push(format!("EmailAddress={}", email_address_val));
+            }
+            _ => {}
+        };
+        match &self.is_admin {
+            Some(is_admin_val) => {
+                _query_parts_.push(format!("IsAdmin={}", is_admin_val));
+            }
+            _ => {}
+        };
+        _query_parts_.join("&")
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ObjectWithSnakeCaseKeys {
+    pub created_at: DateTime<FixedOffset>,
+    pub display_name: String,
+    pub phone_number: Option<String>,
+    pub email_address: Option<String>,
+    pub is_admin: Option<bool>,
+}
+
+impl ArriModel for ObjectWithSnakeCaseKeys {
+    fn new() -> Self {
+        Self {
+            created_at: DateTime::default(),
+            display_name: "".to_string(),
+            phone_number: None,
+            email_address: None,
+            is_admin: None,
+        }
+    }
+    fn from_json(input: serde_json::Value) -> Self {
+        match input {
+            serde_json::Value::Object(_val_) => {
+                let created_at = match _val_.get("created_at") {
+                    Some(serde_json::Value::String(created_at_val)) => {
+                        DateTime::<FixedOffset>::parse_from_rfc3339(created_at_val)
+                            .unwrap_or(DateTime::default())
+                    }
+                    _ => DateTime::default(),
+                };
+                let display_name = match _val_.get("display_name") {
+                    Some(serde_json::Value::String(display_name_val)) => {
+                        display_name_val.to_owned()
+                    }
+                    _ => "".to_string(),
+                };
+                let phone_number = match _val_.get("phone_number") {
+                    Some(serde_json::Value::String(phone_number_val)) => {
+                        Some(phone_number_val.to_owned())
+                    }
+                    _ => None,
+                };
+                let email_address = match _val_.get("email_address") {
+                    Some(serde_json::Value::String(email_address_val)) => {
+                        Some(email_address_val.to_owned())
+                    }
+                    _ => None,
+                };
+                let is_admin = match _val_.get("is_admin") {
+                    Some(serde_json::Value::Bool(is_admin_val)) => Some(is_admin_val.to_owned()),
+                    _ => None,
+                };
+                Self {
+                    created_at,
+                    display_name,
+                    phone_number,
+                    email_address,
+                    is_admin,
+                }
+            }
+            _ => Self::new(),
+        }
+    }
+    fn from_json_string(input: String) -> Self {
+        match serde_json::from_str(input.as_str()) {
+            Ok(val) => Self::from_json(val),
+            _ => Self::new(),
+        }
+    }
+    fn to_json_string(&self) -> String {
+        let mut _json_output_ = "{".to_string();
+
+        _json_output_.push_str("\"created_at\":");
+        _json_output_.push_str(serialize_date_time(&self.created_at, true).as_str());
+        _json_output_.push_str(",\"display_name\":");
+        _json_output_.push_str(serialize_string(&self.display_name).as_str());
+        _json_output_.push_str(",\"phone_number\":");
+        match &self.phone_number {
+            Some(phone_number_val) => {
+                _json_output_.push_str(serialize_string(phone_number_val).as_str());
+            }
+            _ => {
+                _json_output_.push_str("null");
+            }
+        };
+        match &self.email_address {
+            Some(email_address_val) => {
+                _json_output_.push_str(",\"email_address\":");
+                _json_output_.push_str(serialize_string(email_address_val).as_str())
+            }
+            _ => {}
+        };
+        match &self.is_admin {
+            Some(is_admin_val) => {
+                _json_output_.push_str(",\"is_admin\":");
+                _json_output_.push_str(is_admin_val.to_string().as_str())
+            }
+            _ => {}
+        };
+        _json_output_.push('}');
+        _json_output_
+    }
+    fn to_query_params_string(&self) -> String {
+        let mut _query_parts_: Vec<String> = Vec::new();
+        _query_parts_.push(format!(
+            "created_at={}",
+            serialize_date_time(&self.created_at, false)
+        ));
+        _query_parts_.push(format!("display_name={}", &self.display_name));
+        match &self.phone_number {
+            Some(phone_number_val) => {
+                _query_parts_.push(format!("phone_number={}", phone_number_val));
+            }
+            _ => {
+                _query_parts_.push("phone_number=null".to_string());
+            }
+        };
+        match &self.email_address {
+            Some(email_address_val) => {
+                _query_parts_.push(format!("email_address={}", email_address_val));
+            }
+            _ => {}
+        };
+        match &self.is_admin {
+            Some(is_admin_val) => {
+                _query_parts_.push(format!("is_admin={}", is_admin_val));
+            }
+            _ => {}
         };
         _query_parts_.join("&")
     }

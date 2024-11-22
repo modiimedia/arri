@@ -137,6 +137,28 @@ public class TestClientTestsService {
         )
         return result
     }
+    public func sendObjectWithPascalCaseKeys(_ params: ObjectWithPascalCaseKeys) async throws -> ObjectWithPascalCaseKeys {
+        let result: ObjectWithPascalCaseKeys = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-object-with-pascal-case-keys",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params
+        )
+        return result
+    }
+    public func sendObjectWithSnakeCaseKeys(_ params: ObjectWithSnakeCaseKeys) async throws -> ObjectWithSnakeCaseKeys {
+        let result: ObjectWithSnakeCaseKeys = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-object-with-snake-case-keys",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params
+        )
+        return result
+    }
     public func sendPartialObject(_ params: ObjectWithEveryOptionalType) async throws -> ObjectWithEveryOptionalType {
         let result: ObjectWithEveryOptionalType = try await parsedArriHttpRequest(
             delegate: self.delegate,
@@ -2516,6 +2538,218 @@ public struct ObjectWithEveryNullableTypeNestedArrayElementElement: ArriClientMo
         return ObjectWithEveryNullableTypeNestedArrayElementElement(
             id: self.id,
             timestamp: self.timestamp
+        )
+    }
+    
+}
+    
+
+public struct ObjectWithPascalCaseKeys: ArriClientModel {
+    public var createdAt: Date = Date()
+    public var displayName: String = ""
+    public var phoneNumber: String?
+    public var emailAddress: String?
+    public var isAdmin: Bool?
+    public init(
+        createdAt: Date,
+        displayName: String,
+        phoneNumber: String?,
+        emailAddress: String?,
+        isAdmin: Bool?
+    ) {
+            self.createdAt = createdAt
+            self.displayName = displayName
+            self.phoneNumber = phoneNumber
+            self.emailAddress = emailAddress
+            self.isAdmin = isAdmin
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.createdAt = parseDate(json["CreatedAt"].string ?? "") ?? Date()
+        self.displayName = json["DisplayName"].string ?? ""
+        if json["PhoneNumber"].string != nil {
+            self.phoneNumber = json["PhoneNumber"].string
+        }
+        if json["EmailAddress"].exists() {
+            self.emailAddress = json["EmailAddress"].string    
+        }
+        if json["IsAdmin"].exists() {
+                    self.isAdmin = json["IsAdmin"].bool
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"CreatedAt\":"
+        __json += serializeDate(self.createdAt)
+        __json += ",\"DisplayName\":"
+        __json += serializeString(input: self.displayName)
+        __json += ",\"PhoneNumber\":"
+        if self.phoneNumber != nil {
+                    __json += serializeString(input: self.phoneNumber!)
+                } else {
+                    __json += "null" 
+                }
+        if self.emailAddress != nil {
+                    __json += ",\"EmailAddress\":"
+        __json += serializeString(input: self.emailAddress!)
+        }
+        if self.isAdmin != nil {
+                    __json += ",\"IsAdmin\":"
+__json += "\(self.isAdmin!)"
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "CreatedAt", value: serializeDate(self.createdAt, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "DisplayName", value: self.displayName))
+        if self.phoneNumber != nil {
+                    __queryParts.append(URLQueryItem(name: "PhoneNumber", value: self.phoneNumber!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "PhoneNumber", value: "null")) 
+                }
+        if self.emailAddress != nil {
+                    __queryParts.append(URLQueryItem(name: "EmailAddress", value: self.emailAddress!))
+                }
+        if self.isAdmin != nil {
+                    __queryParts.append(URLQueryItem(name: "IsAdmin", value: "\(self.isAdmin!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithPascalCaseKeys {
+
+        return ObjectWithPascalCaseKeys(
+            createdAt: self.createdAt,
+            displayName: self.displayName,
+            phoneNumber: self.phoneNumber,
+            emailAddress: self.emailAddress,
+            isAdmin: self.isAdmin
+        )
+    }
+    
+}
+    
+
+public struct ObjectWithSnakeCaseKeys: ArriClientModel {
+    public var createdAt: Date = Date()
+    public var displayName: String = ""
+    public var phoneNumber: String?
+    public var emailAddress: String?
+    public var isAdmin: Bool?
+    public init(
+        createdAt: Date,
+        displayName: String,
+        phoneNumber: String?,
+        emailAddress: String?,
+        isAdmin: Bool?
+    ) {
+            self.createdAt = createdAt
+            self.displayName = displayName
+            self.phoneNumber = phoneNumber
+            self.emailAddress = emailAddress
+            self.isAdmin = isAdmin
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.createdAt = parseDate(json["created_at"].string ?? "") ?? Date()
+        self.displayName = json["display_name"].string ?? ""
+        if json["phone_number"].string != nil {
+            self.phoneNumber = json["phone_number"].string
+        }
+        if json["email_address"].exists() {
+            self.emailAddress = json["email_address"].string    
+        }
+        if json["is_admin"].exists() {
+                    self.isAdmin = json["is_admin"].bool
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"created_at\":"
+        __json += serializeDate(self.createdAt)
+        __json += ",\"display_name\":"
+        __json += serializeString(input: self.displayName)
+        __json += ",\"phone_number\":"
+        if self.phoneNumber != nil {
+                    __json += serializeString(input: self.phoneNumber!)
+                } else {
+                    __json += "null" 
+                }
+        if self.emailAddress != nil {
+                    __json += ",\"email_address\":"
+        __json += serializeString(input: self.emailAddress!)
+        }
+        if self.isAdmin != nil {
+                    __json += ",\"is_admin\":"
+__json += "\(self.isAdmin!)"
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "created_at", value: serializeDate(self.createdAt, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "display_name", value: self.displayName))
+        if self.phoneNumber != nil {
+                    __queryParts.append(URLQueryItem(name: "phone_number", value: self.phoneNumber!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "phone_number", value: "null")) 
+                }
+        if self.emailAddress != nil {
+                    __queryParts.append(URLQueryItem(name: "email_address", value: self.emailAddress!))
+                }
+        if self.isAdmin != nil {
+                    __queryParts.append(URLQueryItem(name: "is_admin", value: "\(self.isAdmin!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithSnakeCaseKeys {
+
+        return ObjectWithSnakeCaseKeys(
+            createdAt: self.createdAt,
+            displayName: self.displayName,
+            phoneNumber: self.phoneNumber,
+            emailAddress: self.emailAddress,
+            isAdmin: self.isAdmin
         )
     }
     

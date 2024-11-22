@@ -169,6 +169,34 @@ export class TestClientTestsService {
             clientVersion: "10",
         });
     }
+    async sendObjectWithPascalCaseKeys(
+        params: ObjectWithPascalCaseKeys,
+    ): Promise<ObjectWithPascalCaseKeys> {
+        return arriRequest<ObjectWithPascalCaseKeys, ObjectWithPascalCaseKeys>({
+            url: `${this._baseUrl}/rpcs/tests/send-object-with-pascal-case-keys`,
+            method: "post",
+            headers: this._headers,
+            params: params,
+            responseFromJson: $$ObjectWithPascalCaseKeys.fromJson,
+            responseFromString: $$ObjectWithPascalCaseKeys.fromJsonString,
+            serializer: $$ObjectWithPascalCaseKeys.toJsonString,
+            clientVersion: "10",
+        });
+    }
+    async sendObjectWithSnakeCaseKeys(
+        params: ObjectWithSnakeCaseKeys,
+    ): Promise<ObjectWithSnakeCaseKeys> {
+        return arriRequest<ObjectWithSnakeCaseKeys, ObjectWithSnakeCaseKeys>({
+            url: `${this._baseUrl}/rpcs/tests/send-object-with-snake-case-keys`,
+            method: "post",
+            headers: this._headers,
+            params: params,
+            responseFromJson: $$ObjectWithSnakeCaseKeys.fromJson,
+            responseFromString: $$ObjectWithSnakeCaseKeys.fromJsonString,
+            serializer: $$ObjectWithSnakeCaseKeys.toJsonString,
+            clientVersion: "10",
+        });
+    }
     async sendPartialObject(
         params: ObjectWithEveryOptionalType,
     ): Promise<ObjectWithEveryOptionalType> {
@@ -2872,6 +2900,236 @@ export const $$ObjectWithEveryNullableTypeNestedArrayElementElement: ArriModelVa
             const queryParts: string[] = [];
             queryParts.push(`id=${input.id}`);
             queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
+            return queryParts.join("&");
+        },
+    };
+
+export interface ObjectWithPascalCaseKeys {
+    createdAt: Date;
+    displayName: string;
+    phoneNumber: string | null;
+    emailAddress?: string;
+    isAdmin?: boolean;
+}
+export const $$ObjectWithPascalCaseKeys: ArriModelValidator<ObjectWithPascalCaseKeys> =
+    {
+        new(): ObjectWithPascalCaseKeys {
+            return {
+                createdAt: new Date(),
+                displayName: "",
+                phoneNumber: null,
+            };
+        },
+        validate(input): input is ObjectWithPascalCaseKeys {
+            return (
+                isObject(input) &&
+                input.createdAt instanceof Date &&
+                typeof input.displayName === "string" &&
+                (typeof input.phoneNumber === "string" ||
+                    input.phoneNumber === null) &&
+                (typeof input.emailAddress === "string" ||
+                    typeof input.emailAddress === "undefined") &&
+                (typeof input.isAdmin === "boolean" ||
+                    typeof input.isAdmin === "undefined")
+            );
+        },
+        fromJson(input): ObjectWithPascalCaseKeys {
+            let _CreatedAt: Date;
+            if (typeof input.CreatedAt === "string") {
+                _CreatedAt = new Date(input.CreatedAt);
+            } else if (input.CreatedAt instanceof Date) {
+                _CreatedAt = input.CreatedAt;
+            } else {
+                _CreatedAt = new Date();
+            }
+            let _DisplayName: string;
+            if (typeof input.DisplayName === "string") {
+                _DisplayName = input.DisplayName;
+            } else {
+                _DisplayName = "";
+            }
+            let _PhoneNumber: string | null;
+            if (typeof input.PhoneNumber === "string") {
+                _PhoneNumber = input.PhoneNumber;
+            } else {
+                _PhoneNumber = null;
+            }
+            let _EmailAddress: string | undefined;
+            if (typeof input.EmailAddress !== "undefined") {
+                if (typeof input.EmailAddress === "string") {
+                    _EmailAddress = input.EmailAddress;
+                } else {
+                    _EmailAddress = "";
+                }
+            }
+            let _IsAdmin: boolean | undefined;
+            if (typeof input.IsAdmin !== "undefined") {
+                if (typeof input.IsAdmin === "boolean") {
+                    _IsAdmin = input.IsAdmin;
+                } else {
+                    _IsAdmin = false;
+                }
+            }
+            return {
+                createdAt: _CreatedAt,
+                displayName: _DisplayName,
+                phoneNumber: _PhoneNumber,
+                emailAddress: _EmailAddress,
+                isAdmin: _IsAdmin,
+            };
+        },
+        fromJsonString(input): ObjectWithPascalCaseKeys {
+            return $$ObjectWithPascalCaseKeys.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = "{";
+            json += '"CreatedAt":';
+            json += `"${input.createdAt.toISOString()}"`;
+            json += ',"DisplayName":';
+            json += serializeString(input.displayName);
+            json += ',"PhoneNumber":';
+            if (typeof input.phoneNumber === "string") {
+                json += serializeString(input.phoneNumber);
+            } else {
+                json += "null";
+            }
+            if (typeof input.emailAddress !== "undefined") {
+                json += `,"EmailAddress":`;
+                json += serializeString(input.emailAddress);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                json += `,"IsAdmin":`;
+                json += `${input.isAdmin}`;
+            }
+            json += "}";
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`CreatedAt=${input.createdAt.toISOString()}`);
+            queryParts.push(`DisplayName=${input.displayName}`);
+            queryParts.push(`PhoneNumber=${input.phoneNumber}`);
+            if (typeof input.emailAddress !== "undefined") {
+                queryParts.push(`EmailAddress=${input.emailAddress}`);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                queryParts.push(`IsAdmin=${input.isAdmin}`);
+            }
+            return queryParts.join("&");
+        },
+    };
+
+export interface ObjectWithSnakeCaseKeys {
+    createdAt: Date;
+    displayName: string;
+    phoneNumber: string | null;
+    emailAddress?: string;
+    isAdmin?: boolean;
+}
+export const $$ObjectWithSnakeCaseKeys: ArriModelValidator<ObjectWithSnakeCaseKeys> =
+    {
+        new(): ObjectWithSnakeCaseKeys {
+            return {
+                createdAt: new Date(),
+                displayName: "",
+                phoneNumber: null,
+            };
+        },
+        validate(input): input is ObjectWithSnakeCaseKeys {
+            return (
+                isObject(input) &&
+                input.createdAt instanceof Date &&
+                typeof input.displayName === "string" &&
+                (typeof input.phoneNumber === "string" ||
+                    input.phoneNumber === null) &&
+                (typeof input.emailAddress === "string" ||
+                    typeof input.emailAddress === "undefined") &&
+                (typeof input.isAdmin === "boolean" ||
+                    typeof input.isAdmin === "undefined")
+            );
+        },
+        fromJson(input): ObjectWithSnakeCaseKeys {
+            let _created_at: Date;
+            if (typeof input.created_at === "string") {
+                _created_at = new Date(input.created_at);
+            } else if (input.created_at instanceof Date) {
+                _created_at = input.created_at;
+            } else {
+                _created_at = new Date();
+            }
+            let _display_name: string;
+            if (typeof input.display_name === "string") {
+                _display_name = input.display_name;
+            } else {
+                _display_name = "";
+            }
+            let _phone_number: string | null;
+            if (typeof input.phone_number === "string") {
+                _phone_number = input.phone_number;
+            } else {
+                _phone_number = null;
+            }
+            let _email_address: string | undefined;
+            if (typeof input.email_address !== "undefined") {
+                if (typeof input.email_address === "string") {
+                    _email_address = input.email_address;
+                } else {
+                    _email_address = "";
+                }
+            }
+            let _is_admin: boolean | undefined;
+            if (typeof input.is_admin !== "undefined") {
+                if (typeof input.is_admin === "boolean") {
+                    _is_admin = input.is_admin;
+                } else {
+                    _is_admin = false;
+                }
+            }
+            return {
+                createdAt: _created_at,
+                displayName: _display_name,
+                phoneNumber: _phone_number,
+                emailAddress: _email_address,
+                isAdmin: _is_admin,
+            };
+        },
+        fromJsonString(input): ObjectWithSnakeCaseKeys {
+            return $$ObjectWithSnakeCaseKeys.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = "{";
+            json += '"created_at":';
+            json += `"${input.createdAt.toISOString()}"`;
+            json += ',"display_name":';
+            json += serializeString(input.displayName);
+            json += ',"phone_number":';
+            if (typeof input.phoneNumber === "string") {
+                json += serializeString(input.phoneNumber);
+            } else {
+                json += "null";
+            }
+            if (typeof input.emailAddress !== "undefined") {
+                json += `,"email_address":`;
+                json += serializeString(input.emailAddress);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                json += `,"is_admin":`;
+                json += `${input.isAdmin}`;
+            }
+            json += "}";
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`created_at=${input.createdAt.toISOString()}`);
+            queryParts.push(`display_name=${input.displayName}`);
+            queryParts.push(`phone_number=${input.phoneNumber}`);
+            if (typeof input.emailAddress !== "undefined") {
+                queryParts.push(`email_address=${input.emailAddress}`);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                queryParts.push(`is_admin=${input.isAdmin}`);
+            }
             return queryParts.join("&");
         },
     };
