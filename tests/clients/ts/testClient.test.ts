@@ -7,6 +7,8 @@ import {
     type ObjectWithEveryNullableType,
     type ObjectWithEveryOptionalType,
     type ObjectWithEveryType,
+    ObjectWithPascalCaseKeys,
+    ObjectWithSnakeCaseKeys,
     type RecursiveObject,
     type RecursiveUnion,
     TestClient,
@@ -127,6 +129,28 @@ const input: ObjectWithEveryType = {
 test("can send/receive object every field type", async () => {
     const result = await client.tests.sendObject(input);
     expect(result).toStrictEqual(input);
+});
+test("can send/receive object with transformed keys", async () => {
+    const snakeCasePayload: ObjectWithSnakeCaseKeys = {
+        createdAt: new Date(),
+        displayName: "john doe",
+        emailAddress: "johndoe@gmail.com",
+        phoneNumber: null,
+        isAdmin: false,
+    };
+    const snakeCaseResult =
+        await client.tests.sendObjectWithSnakeCaseKeys(snakeCasePayload);
+    expect(snakeCaseResult).toStrictEqual(snakeCasePayload);
+    const pascalCasePayload: ObjectWithPascalCaseKeys = {
+        createdAt: new Date(),
+        emailAddress: undefined,
+        isAdmin: undefined,
+        displayName: "john doe",
+        phoneNumber: "2112112111",
+    };
+    const pascalCaseResult =
+        await client.tests.sendObjectWithPascalCaseKeys(pascalCasePayload);
+    expect(pascalCaseResult).toStrictEqual(pascalCasePayload);
 });
 test("returns error if sending nothing when RPC expects body", async () => {
     try {

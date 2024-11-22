@@ -141,6 +141,32 @@ class TestClientTestsService {
     );
   }
 
+  Future<ObjectWithPascalCaseKeys> sendObjectWithPascalCaseKeys(
+      ObjectWithPascalCaseKeys params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => ObjectWithPascalCaseKeys.fromJsonString(body),
+    );
+  }
+
+  Future<ObjectWithSnakeCaseKeys> sendObjectWithSnakeCaseKeys(
+      ObjectWithSnakeCaseKeys params) async {
+    return parsedArriRequest(
+      "$_baseUrl/rpcs/tests/send-object-with-snake-case-keys",
+      method: HttpMethod.post,
+      httpClient: _httpClient,
+      headers: _headers,
+      clientVersion: _clientVersion,
+      params: params.toJson(),
+      parser: (body) => ObjectWithSnakeCaseKeys.fromJsonString(body),
+    );
+  }
+
   Future<ObjectWithEveryOptionalType> sendPartialObject(
       ObjectWithEveryOptionalType params) async {
     return parsedArriRequest(
@@ -2731,6 +2757,230 @@ class ObjectWithEveryNullableTypeNestedArrayElementElement
   @override
   String toString() {
     return "ObjectWithEveryNullableTypeNestedArrayElementElement ${toJsonString()}";
+  }
+}
+
+class ObjectWithPascalCaseKeys implements ArriModel {
+  final DateTime createdAt;
+  final String displayName;
+  final String? phoneNumber;
+  final String? emailAddress;
+  final bool? isAdmin;
+  const ObjectWithPascalCaseKeys({
+    required this.createdAt,
+    required this.displayName,
+    required this.phoneNumber,
+    this.emailAddress,
+    this.isAdmin,
+  });
+
+  factory ObjectWithPascalCaseKeys.empty() {
+    return ObjectWithPascalCaseKeys(
+      createdAt: DateTime.now(),
+      displayName: "",
+      phoneNumber: null,
+    );
+  }
+
+  factory ObjectWithPascalCaseKeys.fromJson(Map<String, dynamic> _input_) {
+    final createdAt = dateTimeFromDynamic(_input_["CreatedAt"], DateTime.now());
+    final displayName = typeFromDynamic<String>(_input_["DisplayName"], "");
+    final phoneNumber = nullableTypeFromDynamic<String>(_input_["PhoneNumber"]);
+    final emailAddress =
+        nullableTypeFromDynamic<String>(_input_["EmailAddress"]);
+    final isAdmin = nullableTypeFromDynamic<bool>(_input_["IsAdmin"]);
+    return ObjectWithPascalCaseKeys(
+      createdAt: createdAt,
+      displayName: displayName,
+      phoneNumber: phoneNumber,
+      emailAddress: emailAddress,
+      isAdmin: isAdmin,
+    );
+  }
+
+  factory ObjectWithPascalCaseKeys.fromJsonString(String input) {
+    return ObjectWithPascalCaseKeys.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "CreatedAt": createdAt.toUtc().toIso8601String(),
+      "DisplayName": displayName,
+      "PhoneNumber": phoneNumber,
+    };
+    if (emailAddress != null) _output_["EmailAddress"] = emailAddress;
+    if (isAdmin != null) _output_["IsAdmin"] = isAdmin;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("CreatedAt=${createdAt.toUtc().toIso8601String()}");
+    _queryParts_.add("DisplayName=$displayName");
+    _queryParts_.add("PhoneNumber=$phoneNumber");
+    if (emailAddress != null) _queryParts_.add("EmailAddress=$emailAddress");
+    if (isAdmin != null) _queryParts_.add("IsAdmin=$isAdmin");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  ObjectWithPascalCaseKeys copyWith({
+    DateTime? createdAt,
+    String? displayName,
+    String? Function()? phoneNumber,
+    String? Function()? emailAddress,
+    bool? Function()? isAdmin,
+  }) {
+    return ObjectWithPascalCaseKeys(
+      createdAt: createdAt ?? this.createdAt,
+      displayName: displayName ?? this.displayName,
+      phoneNumber: phoneNumber != null ? phoneNumber() : this.phoneNumber,
+      emailAddress: emailAddress != null ? emailAddress() : this.emailAddress,
+      isAdmin: isAdmin != null ? isAdmin() : this.isAdmin,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        createdAt,
+        displayName,
+        phoneNumber,
+        emailAddress,
+        isAdmin,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ObjectWithPascalCaseKeys &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ObjectWithPascalCaseKeys ${toJsonString()}";
+  }
+}
+
+class ObjectWithSnakeCaseKeys implements ArriModel {
+  final DateTime createdAt;
+  final String displayName;
+  final String? phoneNumber;
+  final String? emailAddress;
+  final bool? isAdmin;
+  const ObjectWithSnakeCaseKeys({
+    required this.createdAt,
+    required this.displayName,
+    required this.phoneNumber,
+    this.emailAddress,
+    this.isAdmin,
+  });
+
+  factory ObjectWithSnakeCaseKeys.empty() {
+    return ObjectWithSnakeCaseKeys(
+      createdAt: DateTime.now(),
+      displayName: "",
+      phoneNumber: null,
+    );
+  }
+
+  factory ObjectWithSnakeCaseKeys.fromJson(Map<String, dynamic> _input_) {
+    final createdAt =
+        dateTimeFromDynamic(_input_["created_at"], DateTime.now());
+    final displayName = typeFromDynamic<String>(_input_["display_name"], "");
+    final phoneNumber =
+        nullableTypeFromDynamic<String>(_input_["phone_number"]);
+    final emailAddress =
+        nullableTypeFromDynamic<String>(_input_["email_address"]);
+    final isAdmin = nullableTypeFromDynamic<bool>(_input_["is_admin"]);
+    return ObjectWithSnakeCaseKeys(
+      createdAt: createdAt,
+      displayName: displayName,
+      phoneNumber: phoneNumber,
+      emailAddress: emailAddress,
+      isAdmin: isAdmin,
+    );
+  }
+
+  factory ObjectWithSnakeCaseKeys.fromJsonString(String input) {
+    return ObjectWithSnakeCaseKeys.fromJson(json.decode(input));
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final _output_ = <String, dynamic>{
+      "created_at": createdAt.toUtc().toIso8601String(),
+      "display_name": displayName,
+      "phone_number": phoneNumber,
+    };
+    if (emailAddress != null) _output_["email_address"] = emailAddress;
+    if (isAdmin != null) _output_["is_admin"] = isAdmin;
+    return _output_;
+  }
+
+  @override
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  @override
+  String toUrlQueryParams() {
+    final _queryParts_ = <String>[];
+    _queryParts_.add("created_at=${createdAt.toUtc().toIso8601String()}");
+    _queryParts_.add("display_name=$displayName");
+    _queryParts_.add("phone_number=$phoneNumber");
+    if (emailAddress != null) _queryParts_.add("email_address=$emailAddress");
+    if (isAdmin != null) _queryParts_.add("is_admin=$isAdmin");
+    return _queryParts_.join("&");
+  }
+
+  @override
+  ObjectWithSnakeCaseKeys copyWith({
+    DateTime? createdAt,
+    String? displayName,
+    String? Function()? phoneNumber,
+    String? Function()? emailAddress,
+    bool? Function()? isAdmin,
+  }) {
+    return ObjectWithSnakeCaseKeys(
+      createdAt: createdAt ?? this.createdAt,
+      displayName: displayName ?? this.displayName,
+      phoneNumber: phoneNumber != null ? phoneNumber() : this.phoneNumber,
+      emailAddress: emailAddress != null ? emailAddress() : this.emailAddress,
+      isAdmin: isAdmin != null ? isAdmin() : this.isAdmin,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        createdAt,
+        displayName,
+        phoneNumber,
+        emailAddress,
+        isAdmin,
+      ];
+
+  @override
+  bool operator ==(Object other) {
+    return other is ObjectWithSnakeCaseKeys &&
+        listsAreEqual(props, other.props);
+  }
+
+  @override
+  int get hashCode => listToHashCode(props);
+
+  @override
+  String toString() {
+    return "ObjectWithSnakeCaseKeys ${toJsonString()}";
   }
 }
 
