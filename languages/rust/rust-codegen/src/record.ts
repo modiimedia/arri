@@ -67,7 +67,7 @@ export default function rustRecordFromSchema(
                 if _index_ != 0 {
                     ${target}.push(',');
                 }
-                ${target}.push_str(format!("\\"{}\\":", _key_).as_str());
+                ${target}.push_str(format!("{}:", serialize_string(_key_)).as_str());
                 match _value_ {
                     Some(value_val) => {
                         ${innerType.toJsonTemplate("value_val", target)};
@@ -84,7 +84,7 @@ export default function rustRecordFromSchema(
                 if _index_ != 0 {
                     ${target}.push(',');
                 }
-                ${target}.push_str(format!("\\"{}\\":", _key_).as_str());
+                ${target}.push_str(format!("{}:", serialize_string(_key_)).as_str());
                 ${innerType.toJsonTemplate(`_value_`, target)};
             }
             ${target}.push('}')`;

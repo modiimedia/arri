@@ -1,6 +1,13 @@
 {
   "configurations": [
     {
+      "name": "Debug Go Server [TEMP]",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/languages/go/go-server"
+    },
+    {
       "name": "Debug Test Server",
       "request": "launch",
       "runtimeExecutable": "pnpm",

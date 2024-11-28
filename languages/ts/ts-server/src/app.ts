@@ -20,7 +20,7 @@ import {
 } from "h3";
 
 import { RequestHookContext } from "./context";
-import { type ArriServerError, defineError, handleH3Error } from "./errors";
+import { type arriError, defineError, handleH3Error } from "./errors";
 import { isEventStreamRpc, registerEventStreamRpc } from "./eventStreamRpc";
 import { type Middleware, MiddlewareEvent } from "./middleware";
 import { type ArriRoute, registerRoute } from "./route";
@@ -284,7 +284,7 @@ export interface ArriOptions {
     onAfterResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onBeforeResponse?: (event: RequestHookEvent) => void | Promise<void>;
     onError?: (
-        error: ArriServerError,
+        error: arriError,
         event: RequestHookEvent,
     ) => void | Promise<void>;
 }

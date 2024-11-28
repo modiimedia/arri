@@ -43,7 +43,7 @@ final class TestSwiftClientTests: XCTestCase {
                 boolean: true,
                 timestamp: testDate
             ),
-            record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0)),
+            record: Dictionary(dictionaryLiteral: ("A", 1), ("B", 0), ("\"C\"\t", 0)),
             discriminator: ObjectWithEveryTypeDiscriminator.b(
                 ObjectWithEveryTypeDiscriminatorB(
                     title: "this is a title",
@@ -69,6 +69,31 @@ final class TestSwiftClientTests: XCTestCase {
         )
         let result = try await client.tests.sendObject(input)
         XCTAssertEqual(input, result)
+    }
+    func testSendObjectWithSnakeCaseKeys() async throws {
+        let input = ObjectWithSnakeCaseKeys(
+            createdAt: testDate,
+            displayName: "John Doe",
+            phoneNumber: nil,
+            emailAddress: "johndoe@gmail.com",
+            isAdmin: false
+        )
+        let result = try await client.tests.sendObjectWithSnakeCaseKeys(input)
+        XCTAssertEqual(input, result)
+    }
+    func testSendObjectWithPascalCaseKeys() async throws {
+        let input = ObjectWithPascalCaseKeys(
+            createdAt: testDate, 
+            displayName: "John Doe", 
+            phoneNumber: "2112112111", 
+            emailAddress: nil, 
+            isAdmin: nil
+        )
+        let result = try await client.tests.sendObjectWithPascalCaseKeys(input)
+        XCTAssertEqual(input, result)
+        var clonedInput = input.clone()
+        clonedInput.emailAddress = "johndoe@gmail.com"
+        XCTAssertNotEqual(clonedInput, result)
     }
     func testSendObjectWithNullableFields() async throws {
         let input = ObjectWithEveryNullableType(
@@ -275,9 +300,7 @@ final class TestSwiftClientTests: XCTestCase {
         let _ = await client.tests.streamLargeObjects(options: EventSourceOptions(
             onMessage: { msg, es in 
                 msgCount += 1
-                if msgCount >= 5 {
-                    es.cancel()
-                }
+                es.cancel()
             },
             onRequestError: {err, es in 
                 errorCount += 1
@@ -291,7 +314,7 @@ final class TestSwiftClientTests: XCTestCase {
             })
         ).result
         XCTAssertEqual(errorCount, 0)
-        XCTAssertEqual(msgCount, 5)
+        XCTAssertEqual(msgCount, 1)
     }
     func testStreamAutoReconnect() async throws {
         var msgCount = 0

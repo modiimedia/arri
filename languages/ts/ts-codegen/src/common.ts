@@ -5,6 +5,8 @@ import {
     stringStartsWithNumber,
 } from "@arrirpc/codegen-utils";
 
+import { RpcGenerator } from "./rpc";
+
 export interface TsProperty {
     typeName: string;
     defaultValue: string;
@@ -33,6 +35,7 @@ export interface CodegenContext {
         sse: boolean;
         ws: boolean;
     };
+    rpcGenerators: Record<string, RpcGenerator>;
 }
 
 export function getJsDocComment(metadata: Schema["metadata"]) {
@@ -76,8 +79,17 @@ export function getTsTypeName(schema: Schema, context: CodegenContext): string {
         );
         return validVarName(name);
     }
-    const name = pascalCase(context.instancePath.split("/").join("_"), {
-        normalize: true,
-    });
+    const name = pascalCase(
+        context.instancePath
+            .split("/")
+            .join("_")
+            .split("[")
+            .join("_")
+            .split("]")
+            .join("_"),
+        {
+            normalize: true,
+        },
+    );
     return validVarName(name);
 }

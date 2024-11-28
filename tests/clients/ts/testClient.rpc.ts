@@ -8,7 +8,6 @@ import {
     ArriModelValidator,
     arriRequest,
     arriSseRequest,
-    arriWsRequest,
     type EventSourceController,
     INT8_MAX,
     INT8_MIN,
@@ -25,8 +24,6 @@ import {
     UINT16_MAX,
     UINT32_MAX,
     UINT64_MAX,
-    type WsController,
-    type WsOptions,
 } from "@arrirpc/client";
 
 type HeaderMap = Record<string, string | undefined>;
@@ -183,6 +180,34 @@ export class TestClientTestsService {
             responseFromJson: $$ObjectWithEveryNullableType.fromJson,
             responseFromString: $$ObjectWithEveryNullableType.fromJsonString,
             serializer: $$ObjectWithEveryNullableType.toJsonString,
+            clientVersion: "10",
+        });
+    }
+    async sendObjectWithPascalCaseKeys(
+        params: ObjectWithPascalCaseKeys,
+    ): Promise<ObjectWithPascalCaseKeys> {
+        return arriRequest<ObjectWithPascalCaseKeys, ObjectWithPascalCaseKeys>({
+            url: `${this._baseUrl}/rpcs/tests/send-object-with-pascal-case-keys`,
+            method: "post",
+            headers: this._headers,
+            params: params,
+            responseFromJson: $$ObjectWithPascalCaseKeys.fromJson,
+            responseFromString: $$ObjectWithPascalCaseKeys.fromJsonString,
+            serializer: $$ObjectWithPascalCaseKeys.toJsonString,
+            clientVersion: "10",
+        });
+    }
+    async sendObjectWithSnakeCaseKeys(
+        params: ObjectWithSnakeCaseKeys,
+    ): Promise<ObjectWithSnakeCaseKeys> {
+        return arriRequest<ObjectWithSnakeCaseKeys, ObjectWithSnakeCaseKeys>({
+            url: `${this._baseUrl}/rpcs/tests/send-object-with-snake-case-keys`,
+            method: "post",
+            headers: this._headers,
+            params: params,
+            responseFromJson: $$ObjectWithSnakeCaseKeys.fromJson,
+            responseFromString: $$ObjectWithSnakeCaseKeys.fromJsonString,
+            serializer: $$ObjectWithSnakeCaseKeys.toJsonString,
             clientVersion: "10",
         });
     }
@@ -360,40 +385,6 @@ export class TestClientTestsService {
             },
             options,
         );
-    }
-    async websocketRpc(
-        options: WsOptions<WsMessageResponse> = {},
-    ): Promise<WsController<WsMessageParams, WsMessageResponse>> {
-        return arriWsRequest<WsMessageParams, WsMessageResponse>({
-            url: `${this._baseUrl}/rpcs/tests/websocket-rpc`,
-            headers: this._headers,
-            responseFromJson: $$WsMessageResponse.fromJson,
-            responseFromString: $$WsMessageResponse.fromJsonString,
-            serializer: $$WsMessageParams.toJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: "10",
-        });
-    }
-    async websocketRpcSendTenLargeMessages(
-        options: WsOptions<StreamLargeObjectsResponse> = {},
-    ): Promise<WsController<undefined, StreamLargeObjectsResponse>> {
-        return arriWsRequest<undefined, StreamLargeObjectsResponse>({
-            url: `${this._baseUrl}/rpcs/tests/websocket-rpc-send-ten-large-messages`,
-            headers: this._headers,
-            responseFromJson: $$StreamLargeObjectsResponse.fromJson,
-            responseFromString: $$StreamLargeObjectsResponse.fromJsonString,
-            serializer: () => {},
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: "10",
-        });
     }
 }
 
@@ -647,7 +638,7 @@ export interface ObjectWithEveryType {
     record: Record<string, bigint>;
     discriminator: ObjectWithEveryTypeDiscriminator;
     nestedObject: ObjectWithEveryTypeNestedObject;
-    nestedArray: ObjectWithEveryTypeNestedArrayelementelement[][];
+    nestedArray: ObjectWithEveryTypeNestedArrayElementElement[][];
 }
 export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
     new(): ObjectWithEveryType {
@@ -732,7 +723,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
                 (_element) =>
                     Array.isArray(_element) &&
                     _element.every((_element) =>
-                        $$ObjectWithEveryTypeNestedArrayelementelement.validate(
+                        $$ObjectWithEveryTypeNestedArrayElementElement.validate(
                             _element,
                         ),
                     ),
@@ -924,23 +915,23 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
         } else {
             _nestedObject = $$ObjectWithEveryTypeNestedObject.new();
         }
-        let _nestedArray: ObjectWithEveryTypeNestedArrayelementelement[][];
+        let _nestedArray: ObjectWithEveryTypeNestedArrayElementElement[][];
         if (Array.isArray(input.nestedArray)) {
             _nestedArray = [];
             for (const _nestedArrayEl of input.nestedArray) {
-                let _nestedArrayElValue: ObjectWithEveryTypeNestedArrayelementelement[];
+                let _nestedArrayElValue: ObjectWithEveryTypeNestedArrayElementElement[];
                 if (Array.isArray(_nestedArrayEl)) {
                     _nestedArrayElValue = [];
                     for (const _nestedArrayElValueEl of _nestedArrayEl) {
-                        let _nestedArrayElValueElValue: ObjectWithEveryTypeNestedArrayelementelement;
+                        let _nestedArrayElValueElValue: ObjectWithEveryTypeNestedArrayElementElement;
                         if (isObject(_nestedArrayElValueEl)) {
                             _nestedArrayElValueElValue =
-                                $$ObjectWithEveryTypeNestedArrayelementelement.fromJson(
+                                $$ObjectWithEveryTypeNestedArrayElementElement.fromJson(
                                     _nestedArrayElValueEl,
                                 );
                         } else {
                             _nestedArrayElValueElValue =
-                                $$ObjectWithEveryTypeNestedArrayelementelement.new();
+                                $$ObjectWithEveryTypeNestedArrayElementElement.new();
                         }
                         _nestedArrayElValue.push(_nestedArrayElValueElValue);
                     }
@@ -1028,7 +1019,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
             if (_recordPropertyCount !== 0) {
                 json += ",";
             }
-            json += `"${_key}":`;
+            json += `${serializeString(_key)}:`;
             json += `"${_value}"`;
             _recordPropertyCount++;
         }
@@ -1052,7 +1043,7 @@ export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
                 if (i !== 0) json += ",";
                 const _inputNestedArrayElEl = _inputNestedArrayEl[i];
                 json +=
-                    $$ObjectWithEveryTypeNestedArrayelementelement.toJsonString(
+                    $$ObjectWithEveryTypeNestedArrayElementElement.toJsonString(
                         _inputNestedArrayElEl,
                     );
             }
@@ -1620,26 +1611,26 @@ export const $$ObjectWithEveryTypeNestedObjectDataData: ArriModelValidator<Objec
         },
     };
 
-export interface ObjectWithEveryTypeNestedArrayelementelement {
+export interface ObjectWithEveryTypeNestedArrayElementElement {
     id: string;
     timestamp: Date;
 }
-export const $$ObjectWithEveryTypeNestedArrayelementelement: ArriModelValidator<ObjectWithEveryTypeNestedArrayelementelement> =
+export const $$ObjectWithEveryTypeNestedArrayElementElement: ArriModelValidator<ObjectWithEveryTypeNestedArrayElementElement> =
     {
-        new(): ObjectWithEveryTypeNestedArrayelementelement {
+        new(): ObjectWithEveryTypeNestedArrayElementElement {
             return {
                 id: "",
                 timestamp: new Date(),
             };
         },
-        validate(input): input is ObjectWithEveryTypeNestedArrayelementelement {
+        validate(input): input is ObjectWithEveryTypeNestedArrayElementElement {
             return (
                 isObject(input) &&
                 typeof input.id === "string" &&
                 input.timestamp instanceof Date
             );
         },
-        fromJson(input): ObjectWithEveryTypeNestedArrayelementelement {
+        fromJson(input): ObjectWithEveryTypeNestedArrayElementElement {
             let _id: string;
             if (typeof input.id === "string") {
                 _id = input.id;
@@ -1659,8 +1650,8 @@ export const $$ObjectWithEveryTypeNestedArrayelementelement: ArriModelValidator<
                 timestamp: _timestamp,
             };
         },
-        fromJsonString(input): ObjectWithEveryTypeNestedArrayelementelement {
-            return $$ObjectWithEveryTypeNestedArrayelementelement.fromJson(
+        fromJsonString(input): ObjectWithEveryTypeNestedArrayElementElement {
+            return $$ObjectWithEveryTypeNestedArrayElementElement.fromJson(
                 JSON.parse(input),
             );
         },
@@ -1704,7 +1695,7 @@ export interface ObjectWithEveryNullableType {
     nestedObject: ObjectWithEveryNullableTypeNestedObject | null;
     nestedArray:
         | (
-              | (ObjectWithEveryNullableTypeNestedArrayelementelement | null)[]
+              | (ObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
               | null
           )[]
         | null;
@@ -1819,7 +1810,7 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                             (Array.isArray(_element) &&
                                 _element.every(
                                     (_element) =>
-                                        $$ObjectWithEveryNullableTypeNestedArrayelementelement.validate(
+                                        $$ObjectWithEveryNullableTypeNestedArrayElementElement.validate(
                                             _element,
                                         ) || _element === null,
                                 )) ||
@@ -2026,7 +2017,7 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
             }
             let _nestedArray:
                 | (
-                      | (ObjectWithEveryNullableTypeNestedArrayelementelement | null)[]
+                      | (ObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
                       | null
                   )[]
                 | null;
@@ -2034,15 +2025,15 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                 _nestedArray = [];
                 for (const _nestedArrayEl of input.nestedArray) {
                     let _nestedArrayElValue:
-                        | (ObjectWithEveryNullableTypeNestedArrayelementelement | null)[]
+                        | (ObjectWithEveryNullableTypeNestedArrayElementElement | null)[]
                         | null;
                     if (Array.isArray(_nestedArrayEl)) {
                         _nestedArrayElValue = [];
                         for (const _nestedArrayElValueEl of _nestedArrayEl) {
-                            let _nestedArrayElValueElValue: ObjectWithEveryNullableTypeNestedArrayelementelement | null;
+                            let _nestedArrayElValueElValue: ObjectWithEveryNullableTypeNestedArrayElementElement | null;
                             if (isObject(_nestedArrayElValueEl)) {
                                 _nestedArrayElValueElValue =
-                                    $$ObjectWithEveryNullableTypeNestedArrayelementelement.fromJson(
+                                    $$ObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
                                         _nestedArrayElValueEl,
                                     );
                             } else {
@@ -2167,7 +2158,7 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
-                    json += `"${_key}":`;
+                    json += `${serializeString(_key)}:`;
                     if (typeof _value === "bigint") {
                         json += `"${_value}"`;
                     } else {
@@ -2209,7 +2200,7 @@ export const $$ObjectWithEveryNullableType: ArriModelValidator<ObjectWithEveryNu
                                 _inputNestedArrayEl[i];
                             if (_inputNestedArrayElEl !== null) {
                                 json +=
-                                    $$ObjectWithEveryNullableTypeNestedArrayelementelement.toJsonString(
+                                    $$ObjectWithEveryNullableTypeNestedArrayElementElement.toJsonString(
                                         _inputNestedArrayElEl,
                                     );
                             } else {
@@ -2867,13 +2858,13 @@ export const $$ObjectWithEveryNullableTypeNestedObjectDataData: ArriModelValidat
         },
     };
 
-export interface ObjectWithEveryNullableTypeNestedArrayelementelement {
+export interface ObjectWithEveryNullableTypeNestedArrayElementElement {
     id: string | null;
     timestamp: Date | null;
 }
-export const $$ObjectWithEveryNullableTypeNestedArrayelementelement: ArriModelValidator<ObjectWithEveryNullableTypeNestedArrayelementelement> =
+export const $$ObjectWithEveryNullableTypeNestedArrayElementElement: ArriModelValidator<ObjectWithEveryNullableTypeNestedArrayElementElement> =
     {
-        new(): ObjectWithEveryNullableTypeNestedArrayelementelement {
+        new(): ObjectWithEveryNullableTypeNestedArrayElementElement {
             return {
                 id: null,
                 timestamp: null,
@@ -2881,14 +2872,14 @@ export const $$ObjectWithEveryNullableTypeNestedArrayelementelement: ArriModelVa
         },
         validate(
             input,
-        ): input is ObjectWithEveryNullableTypeNestedArrayelementelement {
+        ): input is ObjectWithEveryNullableTypeNestedArrayElementElement {
             return (
                 isObject(input) &&
                 (typeof input.id === "string" || input.id === null) &&
                 (input.timestamp instanceof Date || input.timestamp === null)
             );
         },
-        fromJson(input): ObjectWithEveryNullableTypeNestedArrayelementelement {
+        fromJson(input): ObjectWithEveryNullableTypeNestedArrayElementElement {
             let _id: string | null;
             if (typeof input.id === "string") {
                 _id = input.id;
@@ -2910,8 +2901,8 @@ export const $$ObjectWithEveryNullableTypeNestedArrayelementelement: ArriModelVa
         },
         fromJsonString(
             input,
-        ): ObjectWithEveryNullableTypeNestedArrayelementelement {
-            return $$ObjectWithEveryNullableTypeNestedArrayelementelement.fromJson(
+        ): ObjectWithEveryNullableTypeNestedArrayElementElement {
+            return $$ObjectWithEveryNullableTypeNestedArrayElementElement.fromJson(
                 JSON.parse(input),
             );
         },
@@ -2940,6 +2931,236 @@ export const $$ObjectWithEveryNullableTypeNestedArrayelementelement: ArriModelVa
         },
     };
 
+export interface ObjectWithPascalCaseKeys {
+    createdAt: Date;
+    displayName: string;
+    phoneNumber: string | null;
+    emailAddress?: string;
+    isAdmin?: boolean;
+}
+export const $$ObjectWithPascalCaseKeys: ArriModelValidator<ObjectWithPascalCaseKeys> =
+    {
+        new(): ObjectWithPascalCaseKeys {
+            return {
+                createdAt: new Date(),
+                displayName: "",
+                phoneNumber: null,
+            };
+        },
+        validate(input): input is ObjectWithPascalCaseKeys {
+            return (
+                isObject(input) &&
+                input.createdAt instanceof Date &&
+                typeof input.displayName === "string" &&
+                (typeof input.phoneNumber === "string" ||
+                    input.phoneNumber === null) &&
+                (typeof input.emailAddress === "string" ||
+                    typeof input.emailAddress === "undefined") &&
+                (typeof input.isAdmin === "boolean" ||
+                    typeof input.isAdmin === "undefined")
+            );
+        },
+        fromJson(input): ObjectWithPascalCaseKeys {
+            let _CreatedAt: Date;
+            if (typeof input.CreatedAt === "string") {
+                _CreatedAt = new Date(input.CreatedAt);
+            } else if (input.CreatedAt instanceof Date) {
+                _CreatedAt = input.CreatedAt;
+            } else {
+                _CreatedAt = new Date();
+            }
+            let _DisplayName: string;
+            if (typeof input.DisplayName === "string") {
+                _DisplayName = input.DisplayName;
+            } else {
+                _DisplayName = "";
+            }
+            let _PhoneNumber: string | null;
+            if (typeof input.PhoneNumber === "string") {
+                _PhoneNumber = input.PhoneNumber;
+            } else {
+                _PhoneNumber = null;
+            }
+            let _EmailAddress: string | undefined;
+            if (typeof input.EmailAddress !== "undefined") {
+                if (typeof input.EmailAddress === "string") {
+                    _EmailAddress = input.EmailAddress;
+                } else {
+                    _EmailAddress = "";
+                }
+            }
+            let _IsAdmin: boolean | undefined;
+            if (typeof input.IsAdmin !== "undefined") {
+                if (typeof input.IsAdmin === "boolean") {
+                    _IsAdmin = input.IsAdmin;
+                } else {
+                    _IsAdmin = false;
+                }
+            }
+            return {
+                createdAt: _CreatedAt,
+                displayName: _DisplayName,
+                phoneNumber: _PhoneNumber,
+                emailAddress: _EmailAddress,
+                isAdmin: _IsAdmin,
+            };
+        },
+        fromJsonString(input): ObjectWithPascalCaseKeys {
+            return $$ObjectWithPascalCaseKeys.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = "{";
+            json += '"CreatedAt":';
+            json += `"${input.createdAt.toISOString()}"`;
+            json += ',"DisplayName":';
+            json += serializeString(input.displayName);
+            json += ',"PhoneNumber":';
+            if (typeof input.phoneNumber === "string") {
+                json += serializeString(input.phoneNumber);
+            } else {
+                json += "null";
+            }
+            if (typeof input.emailAddress !== "undefined") {
+                json += `,"EmailAddress":`;
+                json += serializeString(input.emailAddress);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                json += `,"IsAdmin":`;
+                json += `${input.isAdmin}`;
+            }
+            json += "}";
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`CreatedAt=${input.createdAt.toISOString()}`);
+            queryParts.push(`DisplayName=${input.displayName}`);
+            queryParts.push(`PhoneNumber=${input.phoneNumber}`);
+            if (typeof input.emailAddress !== "undefined") {
+                queryParts.push(`EmailAddress=${input.emailAddress}`);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                queryParts.push(`IsAdmin=${input.isAdmin}`);
+            }
+            return queryParts.join("&");
+        },
+    };
+
+export interface ObjectWithSnakeCaseKeys {
+    createdAt: Date;
+    displayName: string;
+    phoneNumber: string | null;
+    emailAddress?: string;
+    isAdmin?: boolean;
+}
+export const $$ObjectWithSnakeCaseKeys: ArriModelValidator<ObjectWithSnakeCaseKeys> =
+    {
+        new(): ObjectWithSnakeCaseKeys {
+            return {
+                createdAt: new Date(),
+                displayName: "",
+                phoneNumber: null,
+            };
+        },
+        validate(input): input is ObjectWithSnakeCaseKeys {
+            return (
+                isObject(input) &&
+                input.createdAt instanceof Date &&
+                typeof input.displayName === "string" &&
+                (typeof input.phoneNumber === "string" ||
+                    input.phoneNumber === null) &&
+                (typeof input.emailAddress === "string" ||
+                    typeof input.emailAddress === "undefined") &&
+                (typeof input.isAdmin === "boolean" ||
+                    typeof input.isAdmin === "undefined")
+            );
+        },
+        fromJson(input): ObjectWithSnakeCaseKeys {
+            let _created_at: Date;
+            if (typeof input.created_at === "string") {
+                _created_at = new Date(input.created_at);
+            } else if (input.created_at instanceof Date) {
+                _created_at = input.created_at;
+            } else {
+                _created_at = new Date();
+            }
+            let _display_name: string;
+            if (typeof input.display_name === "string") {
+                _display_name = input.display_name;
+            } else {
+                _display_name = "";
+            }
+            let _phone_number: string | null;
+            if (typeof input.phone_number === "string") {
+                _phone_number = input.phone_number;
+            } else {
+                _phone_number = null;
+            }
+            let _email_address: string | undefined;
+            if (typeof input.email_address !== "undefined") {
+                if (typeof input.email_address === "string") {
+                    _email_address = input.email_address;
+                } else {
+                    _email_address = "";
+                }
+            }
+            let _is_admin: boolean | undefined;
+            if (typeof input.is_admin !== "undefined") {
+                if (typeof input.is_admin === "boolean") {
+                    _is_admin = input.is_admin;
+                } else {
+                    _is_admin = false;
+                }
+            }
+            return {
+                createdAt: _created_at,
+                displayName: _display_name,
+                phoneNumber: _phone_number,
+                emailAddress: _email_address,
+                isAdmin: _is_admin,
+            };
+        },
+        fromJsonString(input): ObjectWithSnakeCaseKeys {
+            return $$ObjectWithSnakeCaseKeys.fromJson(JSON.parse(input));
+        },
+        toJsonString(input): string {
+            let json = "{";
+            json += '"created_at":';
+            json += `"${input.createdAt.toISOString()}"`;
+            json += ',"display_name":';
+            json += serializeString(input.displayName);
+            json += ',"phone_number":';
+            if (typeof input.phoneNumber === "string") {
+                json += serializeString(input.phoneNumber);
+            } else {
+                json += "null";
+            }
+            if (typeof input.emailAddress !== "undefined") {
+                json += `,"email_address":`;
+                json += serializeString(input.emailAddress);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                json += `,"is_admin":`;
+                json += `${input.isAdmin}`;
+            }
+            json += "}";
+            return json;
+        },
+        toUrlQueryString(input): string {
+            const queryParts: string[] = [];
+            queryParts.push(`created_at=${input.createdAt.toISOString()}`);
+            queryParts.push(`display_name=${input.displayName}`);
+            queryParts.push(`phone_number=${input.phoneNumber}`);
+            if (typeof input.emailAddress !== "undefined") {
+                queryParts.push(`email_address=${input.emailAddress}`);
+            }
+            if (typeof input.isAdmin !== "undefined") {
+                queryParts.push(`is_admin=${input.isAdmin}`);
+            }
+            return queryParts.join("&");
+        },
+    };
+
 export interface ObjectWithEveryOptionalType {
     any?: any;
     boolean?: boolean;
@@ -2961,7 +3182,7 @@ export interface ObjectWithEveryOptionalType {
     record?: Record<string, bigint>;
     discriminator?: ObjectWithEveryOptionalTypeDiscriminator;
     nestedObject?: ObjectWithEveryOptionalTypeNestedObject;
-    nestedArray?: ObjectWithEveryOptionalTypeNestedArrayelementelement[][];
+    nestedArray?: ObjectWithEveryOptionalTypeNestedArrayElementElement[][];
 }
 export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOptionalType> =
     {
@@ -3052,7 +3273,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                         (_element) =>
                             Array.isArray(_element) &&
                             _element.every((_element) =>
-                                $$ObjectWithEveryOptionalTypeNestedArrayelementelement.validate(
+                                $$ObjectWithEveryOptionalTypeNestedArrayElementElement.validate(
                                     _element,
                                 ),
                             ),
@@ -3303,25 +3524,25 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                 }
             }
             let _nestedArray:
-                | ObjectWithEveryOptionalTypeNestedArrayelementelement[][]
+                | ObjectWithEveryOptionalTypeNestedArrayElementElement[][]
                 | undefined;
             if (typeof input.nestedArray !== "undefined") {
                 if (Array.isArray(input.nestedArray)) {
                     _nestedArray = [];
                     for (const _nestedArrayEl of input.nestedArray) {
-                        let _nestedArrayElValue: ObjectWithEveryOptionalTypeNestedArrayelementelement[];
+                        let _nestedArrayElValue: ObjectWithEveryOptionalTypeNestedArrayElementElement[];
                         if (Array.isArray(_nestedArrayEl)) {
                             _nestedArrayElValue = [];
                             for (const _nestedArrayElValueEl of _nestedArrayEl) {
-                                let _nestedArrayElValueElValue: ObjectWithEveryOptionalTypeNestedArrayelementelement;
+                                let _nestedArrayElValueElValue: ObjectWithEveryOptionalTypeNestedArrayElementElement;
                                 if (isObject(_nestedArrayElValueEl)) {
                                     _nestedArrayElValueElValue =
-                                        $$ObjectWithEveryOptionalTypeNestedArrayelementelement.fromJson(
+                                        $$ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
                                             _nestedArrayElValueEl,
                                         );
                                 } else {
                                     _nestedArrayElValueElValue =
-                                        $$ObjectWithEveryOptionalTypeNestedArrayelementelement.new();
+                                        $$ObjectWithEveryOptionalTypeNestedArrayElementElement.new();
                                 }
                                 _nestedArrayElValue.push(
                                     _nestedArrayElValueElValue,
@@ -3485,7 +3706,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                     if (_recordPropertyCount !== 0) {
                         json += ",";
                     }
-                    json += `"${_key}":`;
+                    json += `${serializeString(_key)}:`;
                     json += `"${_value}"`;
                     _recordPropertyCount++;
                 }
@@ -3521,7 +3742,7 @@ export const $$ObjectWithEveryOptionalType: ArriModelValidator<ObjectWithEveryOp
                         if (i !== 0) json += ",";
                         const _inputNestedArrayElEl = _inputNestedArrayEl[i];
                         json +=
-                            $$ObjectWithEveryOptionalTypeNestedArrayelementelement.toJsonString(
+                            $$ObjectWithEveryOptionalTypeNestedArrayElementElement.toJsonString(
                                 _inputNestedArrayElEl,
                             );
                     }
@@ -4157,13 +4378,13 @@ export const $$ObjectWithEveryOptionalTypeNestedObjectDataData: ArriModelValidat
         },
     };
 
-export interface ObjectWithEveryOptionalTypeNestedArrayelementelement {
+export interface ObjectWithEveryOptionalTypeNestedArrayElementElement {
     id: string;
     timestamp: Date;
 }
-export const $$ObjectWithEveryOptionalTypeNestedArrayelementelement: ArriModelValidator<ObjectWithEveryOptionalTypeNestedArrayelementelement> =
+export const $$ObjectWithEveryOptionalTypeNestedArrayElementElement: ArriModelValidator<ObjectWithEveryOptionalTypeNestedArrayElementElement> =
     {
-        new(): ObjectWithEveryOptionalTypeNestedArrayelementelement {
+        new(): ObjectWithEveryOptionalTypeNestedArrayElementElement {
             return {
                 id: "",
                 timestamp: new Date(),
@@ -4171,14 +4392,14 @@ export const $$ObjectWithEveryOptionalTypeNestedArrayelementelement: ArriModelVa
         },
         validate(
             input,
-        ): input is ObjectWithEveryOptionalTypeNestedArrayelementelement {
+        ): input is ObjectWithEveryOptionalTypeNestedArrayElementElement {
             return (
                 isObject(input) &&
                 typeof input.id === "string" &&
                 input.timestamp instanceof Date
             );
         },
-        fromJson(input): ObjectWithEveryOptionalTypeNestedArrayelementelement {
+        fromJson(input): ObjectWithEveryOptionalTypeNestedArrayElementElement {
             let _id: string;
             if (typeof input.id === "string") {
                 _id = input.id;
@@ -4200,8 +4421,8 @@ export const $$ObjectWithEveryOptionalTypeNestedArrayelementelement: ArriModelVa
         },
         fromJsonString(
             input,
-        ): ObjectWithEveryOptionalTypeNestedArrayelementelement {
-            return $$ObjectWithEveryOptionalTypeNestedArrayelementelement.fromJson(
+        ): ObjectWithEveryOptionalTypeNestedArrayElementElement {
+            return $$ObjectWithEveryOptionalTypeNestedArrayElementElement.fromJson(
                 JSON.parse(input),
             );
         },
@@ -4910,7 +5131,7 @@ export const $$StreamConnectionErrorTestResponse: ArriModelValidator<StreamConne
 
 export interface StreamLargeObjectsResponse {
     numbers: number[];
-    objects: StreamLargeObjectsResponseObjectselement[];
+    objects: StreamLargeObjectsResponseObjectsElement[];
 }
 export const $$StreamLargeObjectsResponse: ArriModelValidator<StreamLargeObjectsResponse> =
     {
@@ -4929,7 +5150,7 @@ export const $$StreamLargeObjectsResponse: ArriModelValidator<StreamLargeObjects
                 ) &&
                 Array.isArray(input.objects) &&
                 input.objects.every((_element) =>
-                    $$StreamLargeObjectsResponseObjectselement.validate(
+                    $$StreamLargeObjectsResponseObjectsElement.validate(
                         _element,
                     ),
                 )
@@ -4951,19 +5172,19 @@ export const $$StreamLargeObjectsResponse: ArriModelValidator<StreamLargeObjects
             } else {
                 _numbers = [];
             }
-            let _objects: StreamLargeObjectsResponseObjectselement[];
+            let _objects: StreamLargeObjectsResponseObjectsElement[];
             if (Array.isArray(input.objects)) {
                 _objects = [];
                 for (const _objectsEl of input.objects) {
-                    let _objectsElValue: StreamLargeObjectsResponseObjectselement;
+                    let _objectsElValue: StreamLargeObjectsResponseObjectsElement;
                     if (isObject(_objectsEl)) {
                         _objectsElValue =
-                            $$StreamLargeObjectsResponseObjectselement.fromJson(
+                            $$StreamLargeObjectsResponseObjectsElement.fromJson(
                                 _objectsEl,
                             );
                     } else {
                         _objectsElValue =
-                            $$StreamLargeObjectsResponseObjectselement.new();
+                            $$StreamLargeObjectsResponseObjectsElement.new();
                     }
                     _objects.push(_objectsElValue);
                 }
@@ -4994,7 +5215,7 @@ export const $$StreamLargeObjectsResponse: ArriModelValidator<StreamLargeObjects
                 if (i !== 0) json += ",";
                 const _inputObjectsEl = input.objects[i];
                 json +=
-                    $$StreamLargeObjectsResponseObjectselement.toJsonString(
+                    $$StreamLargeObjectsResponseObjectsElement.toJsonString(
                         _inputObjectsEl,
                     );
             }
@@ -5014,21 +5235,21 @@ export const $$StreamLargeObjectsResponse: ArriModelValidator<StreamLargeObjects
         },
     };
 
-export interface StreamLargeObjectsResponseObjectselement {
+export interface StreamLargeObjectsResponseObjectsElement {
     id: string;
     name: string;
     email: string;
 }
-export const $$StreamLargeObjectsResponseObjectselement: ArriModelValidator<StreamLargeObjectsResponseObjectselement> =
+export const $$StreamLargeObjectsResponseObjectsElement: ArriModelValidator<StreamLargeObjectsResponseObjectsElement> =
     {
-        new(): StreamLargeObjectsResponseObjectselement {
+        new(): StreamLargeObjectsResponseObjectsElement {
             return {
                 id: "",
                 name: "",
                 email: "",
             };
         },
-        validate(input): input is StreamLargeObjectsResponseObjectselement {
+        validate(input): input is StreamLargeObjectsResponseObjectsElement {
             return (
                 isObject(input) &&
                 typeof input.id === "string" &&
@@ -5036,7 +5257,7 @@ export const $$StreamLargeObjectsResponseObjectselement: ArriModelValidator<Stre
                 typeof input.email === "string"
             );
         },
-        fromJson(input): StreamLargeObjectsResponseObjectselement {
+        fromJson(input): StreamLargeObjectsResponseObjectsElement {
             let _id: string;
             if (typeof input.id === "string") {
                 _id = input.id;
@@ -5061,8 +5282,8 @@ export const $$StreamLargeObjectsResponseObjectselement: ArriModelValidator<Stre
                 email: _email,
             };
         },
-        fromJsonString(input): StreamLargeObjectsResponseObjectselement {
-            return $$StreamLargeObjectsResponseObjectselement.fromJson(
+        fromJsonString(input): StreamLargeObjectsResponseObjectsElement {
+            return $$StreamLargeObjectsResponseObjectsElement.fromJson(
                 JSON.parse(input),
             );
         },
@@ -5546,488 +5767,6 @@ export const $$TestsStreamRetryWithNewCredentialsResponse: ArriModelValidator<Te
         },
     };
 
-export type WsMessageParams =
-    | WsMessageParamsCreateEntity
-    | WsMessageParamsUpdateEntity
-    | WsMessageParamsDisconnect;
-export const $$WsMessageParams: ArriModelValidator<WsMessageParams> = {
-    new(): WsMessageParams {
-        return $$WsMessageParamsCreateEntity.new();
-    },
-    validate(input): input is WsMessageParams {
-        if (!isObject(input)) {
-            return false;
-        }
-        if (typeof input.type !== "string") {
-            return false;
-        }
-        switch (input.type) {
-            case "CREATE_ENTITY":
-                return $$WsMessageParamsCreateEntity.validate(input);
-            case "UPDATE_ENTITY":
-                return $$WsMessageParamsUpdateEntity.validate(input);
-            case "DISCONNECT":
-                return $$WsMessageParamsDisconnect.validate(input);
-            default:
-                return false;
-        }
-    },
-    fromJson(input): WsMessageParams {
-        switch (input.type) {
-            case "CREATE_ENTITY":
-                return $$WsMessageParamsCreateEntity.fromJson(input);
-            case "UPDATE_ENTITY":
-                return $$WsMessageParamsUpdateEntity.fromJson(input);
-            case "DISCONNECT":
-                return $$WsMessageParamsDisconnect.fromJson(input);
-            default:
-                return $$WsMessageParamsCreateEntity.new();
-        }
-    },
-    fromJsonString(input): WsMessageParams {
-        return $$WsMessageParams.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        switch (input.type) {
-            case "CREATE_ENTITY":
-                return $$WsMessageParamsCreateEntity.toJsonString(input);
-            case "UPDATE_ENTITY":
-                return $$WsMessageParamsUpdateEntity.toJsonString(input);
-            case "DISCONNECT":
-                return $$WsMessageParamsDisconnect.toJsonString(input);
-            default:
-                throw new Error(`Unhandled case "${(input as any).type}"`);
-        }
-    },
-    toUrlQueryString(input): string {
-        switch (input.type) {
-            case "CREATE_ENTITY":
-                return $$WsMessageParamsCreateEntity.toUrlQueryString(input);
-            case "UPDATE_ENTITY":
-                return $$WsMessageParamsUpdateEntity.toUrlQueryString(input);
-            case "DISCONNECT":
-                return $$WsMessageParamsDisconnect.toUrlQueryString(input);
-            default:
-                throw new Error("Unhandled case");
-        }
-    },
-};
-export interface WsMessageParamsCreateEntity {
-    type: "CREATE_ENTITY";
-    entityId: string;
-    x: number;
-    y: number;
-}
-const $$WsMessageParamsCreateEntity: ArriModelValidator<WsMessageParamsCreateEntity> =
-    {
-        new(): WsMessageParamsCreateEntity {
-            return {
-                type: "CREATE_ENTITY",
-                entityId: "",
-                x: 0,
-                y: 0,
-            };
-        },
-        validate(input): input is WsMessageParamsCreateEntity {
-            return (
-                isObject(input) &&
-                input.type === "CREATE_ENTITY" &&
-                typeof input.entityId === "string" &&
-                typeof input.x === "number" &&
-                typeof input.y === "number"
-            );
-        },
-        fromJson(input): WsMessageParamsCreateEntity {
-            const _type = "CREATE_ENTITY";
-            let _entityId: string;
-            if (typeof input.entityId === "string") {
-                _entityId = input.entityId;
-            } else {
-                _entityId = "";
-            }
-            let _x: number;
-            if (typeof input.x === "number") {
-                _x = input.x;
-            } else {
-                _x = 0;
-            }
-            let _y: number;
-            if (typeof input.y === "number") {
-                _y = input.y;
-            } else {
-                _y = 0;
-            }
-            return {
-                type: _type,
-                entityId: _entityId,
-                x: _x,
-                y: _y,
-            };
-        },
-        fromJsonString(input): WsMessageParamsCreateEntity {
-            return $$WsMessageParamsCreateEntity.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = "{";
-            json += '"type":"CREATE_ENTITY"';
-            json += ',"entityId":';
-            json += serializeString(input.entityId);
-            json += ',"x":';
-            json += `${input.x}`;
-            json += ',"y":';
-            json += `${input.y}`;
-            json += "}";
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push("type=CREATE_ENTITY");
-            queryParts.push(`entityId=${input.entityId}`);
-            queryParts.push(`x=${input.x}`);
-            queryParts.push(`y=${input.y}`);
-            return queryParts.join("&");
-        },
-    };
-
-export interface WsMessageParamsUpdateEntity {
-    type: "UPDATE_ENTITY";
-    entityId: string;
-    x: number;
-    y: number;
-}
-const $$WsMessageParamsUpdateEntity: ArriModelValidator<WsMessageParamsUpdateEntity> =
-    {
-        new(): WsMessageParamsUpdateEntity {
-            return {
-                type: "UPDATE_ENTITY",
-                entityId: "",
-                x: 0,
-                y: 0,
-            };
-        },
-        validate(input): input is WsMessageParamsUpdateEntity {
-            return (
-                isObject(input) &&
-                input.type === "UPDATE_ENTITY" &&
-                typeof input.entityId === "string" &&
-                typeof input.x === "number" &&
-                typeof input.y === "number"
-            );
-        },
-        fromJson(input): WsMessageParamsUpdateEntity {
-            const _type = "UPDATE_ENTITY";
-            let _entityId: string;
-            if (typeof input.entityId === "string") {
-                _entityId = input.entityId;
-            } else {
-                _entityId = "";
-            }
-            let _x: number;
-            if (typeof input.x === "number") {
-                _x = input.x;
-            } else {
-                _x = 0;
-            }
-            let _y: number;
-            if (typeof input.y === "number") {
-                _y = input.y;
-            } else {
-                _y = 0;
-            }
-            return {
-                type: _type,
-                entityId: _entityId,
-                x: _x,
-                y: _y,
-            };
-        },
-        fromJsonString(input): WsMessageParamsUpdateEntity {
-            return $$WsMessageParamsUpdateEntity.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = "{";
-            json += '"type":"UPDATE_ENTITY"';
-            json += ',"entityId":';
-            json += serializeString(input.entityId);
-            json += ',"x":';
-            json += `${input.x}`;
-            json += ',"y":';
-            json += `${input.y}`;
-            json += "}";
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push("type=UPDATE_ENTITY");
-            queryParts.push(`entityId=${input.entityId}`);
-            queryParts.push(`x=${input.x}`);
-            queryParts.push(`y=${input.y}`);
-            return queryParts.join("&");
-        },
-    };
-
-export interface WsMessageParamsDisconnect {
-    type: "DISCONNECT";
-    reason: string;
-}
-const $$WsMessageParamsDisconnect: ArriModelValidator<WsMessageParamsDisconnect> =
-    {
-        new(): WsMessageParamsDisconnect {
-            return {
-                type: "DISCONNECT",
-                reason: "",
-            };
-        },
-        validate(input): input is WsMessageParamsDisconnect {
-            return (
-                isObject(input) &&
-                input.type === "DISCONNECT" &&
-                typeof input.reason === "string"
-            );
-        },
-        fromJson(input): WsMessageParamsDisconnect {
-            const _type = "DISCONNECT";
-            let _reason: string;
-            if (typeof input.reason === "string") {
-                _reason = input.reason;
-            } else {
-                _reason = "";
-            }
-            return {
-                type: _type,
-                reason: _reason,
-            };
-        },
-        fromJsonString(input): WsMessageParamsDisconnect {
-            return $$WsMessageParamsDisconnect.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = "{";
-            json += '"type":"DISCONNECT"';
-            json += ',"reason":';
-            json += serializeString(input.reason);
-            json += "}";
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push("type=DISCONNECT");
-            queryParts.push(`reason=${input.reason}`);
-            return queryParts.join("&");
-        },
-    };
-
-export type WsMessageResponse =
-    | WsMessageResponseEntityCreated
-    | WsMessageResponseEntityUpdated;
-export const $$WsMessageResponse: ArriModelValidator<WsMessageResponse> = {
-    new(): WsMessageResponse {
-        return $$WsMessageResponseEntityCreated.new();
-    },
-    validate(input): input is WsMessageResponse {
-        if (!isObject(input)) {
-            return false;
-        }
-        if (typeof input.type !== "string") {
-            return false;
-        }
-        switch (input.type) {
-            case "ENTITY_CREATED":
-                return $$WsMessageResponseEntityCreated.validate(input);
-            case "ENTITY_UPDATED":
-                return $$WsMessageResponseEntityUpdated.validate(input);
-            default:
-                return false;
-        }
-    },
-    fromJson(input): WsMessageResponse {
-        switch (input.type) {
-            case "ENTITY_CREATED":
-                return $$WsMessageResponseEntityCreated.fromJson(input);
-            case "ENTITY_UPDATED":
-                return $$WsMessageResponseEntityUpdated.fromJson(input);
-            default:
-                return $$WsMessageResponseEntityCreated.new();
-        }
-    },
-    fromJsonString(input): WsMessageResponse {
-        return $$WsMessageResponse.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        switch (input.type) {
-            case "ENTITY_CREATED":
-                return $$WsMessageResponseEntityCreated.toJsonString(input);
-            case "ENTITY_UPDATED":
-                return $$WsMessageResponseEntityUpdated.toJsonString(input);
-            default:
-                throw new Error(`Unhandled case "${(input as any).type}"`);
-        }
-    },
-    toUrlQueryString(input): string {
-        switch (input.type) {
-            case "ENTITY_CREATED":
-                return $$WsMessageResponseEntityCreated.toUrlQueryString(input);
-            case "ENTITY_UPDATED":
-                return $$WsMessageResponseEntityUpdated.toUrlQueryString(input);
-            default:
-                throw new Error("Unhandled case");
-        }
-    },
-};
-export interface WsMessageResponseEntityCreated {
-    type: "ENTITY_CREATED";
-    entityId: string;
-    x: number;
-    y: number;
-}
-const $$WsMessageResponseEntityCreated: ArriModelValidator<WsMessageResponseEntityCreated> =
-    {
-        new(): WsMessageResponseEntityCreated {
-            return {
-                type: "ENTITY_CREATED",
-                entityId: "",
-                x: 0,
-                y: 0,
-            };
-        },
-        validate(input): input is WsMessageResponseEntityCreated {
-            return (
-                isObject(input) &&
-                input.type === "ENTITY_CREATED" &&
-                typeof input.entityId === "string" &&
-                typeof input.x === "number" &&
-                typeof input.y === "number"
-            );
-        },
-        fromJson(input): WsMessageResponseEntityCreated {
-            const _type = "ENTITY_CREATED";
-            let _entityId: string;
-            if (typeof input.entityId === "string") {
-                _entityId = input.entityId;
-            } else {
-                _entityId = "";
-            }
-            let _x: number;
-            if (typeof input.x === "number") {
-                _x = input.x;
-            } else {
-                _x = 0;
-            }
-            let _y: number;
-            if (typeof input.y === "number") {
-                _y = input.y;
-            } else {
-                _y = 0;
-            }
-            return {
-                type: _type,
-                entityId: _entityId,
-                x: _x,
-                y: _y,
-            };
-        },
-        fromJsonString(input): WsMessageResponseEntityCreated {
-            return $$WsMessageResponseEntityCreated.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = "{";
-            json += '"type":"ENTITY_CREATED"';
-            json += ',"entityId":';
-            json += serializeString(input.entityId);
-            json += ',"x":';
-            json += `${input.x}`;
-            json += ',"y":';
-            json += `${input.y}`;
-            json += "}";
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push("type=ENTITY_CREATED");
-            queryParts.push(`entityId=${input.entityId}`);
-            queryParts.push(`x=${input.x}`);
-            queryParts.push(`y=${input.y}`);
-            return queryParts.join("&");
-        },
-    };
-
-export interface WsMessageResponseEntityUpdated {
-    type: "ENTITY_UPDATED";
-    entityId: string;
-    x: number;
-    y: number;
-}
-const $$WsMessageResponseEntityUpdated: ArriModelValidator<WsMessageResponseEntityUpdated> =
-    {
-        new(): WsMessageResponseEntityUpdated {
-            return {
-                type: "ENTITY_UPDATED",
-                entityId: "",
-                x: 0,
-                y: 0,
-            };
-        },
-        validate(input): input is WsMessageResponseEntityUpdated {
-            return (
-                isObject(input) &&
-                input.type === "ENTITY_UPDATED" &&
-                typeof input.entityId === "string" &&
-                typeof input.x === "number" &&
-                typeof input.y === "number"
-            );
-        },
-        fromJson(input): WsMessageResponseEntityUpdated {
-            const _type = "ENTITY_UPDATED";
-            let _entityId: string;
-            if (typeof input.entityId === "string") {
-                _entityId = input.entityId;
-            } else {
-                _entityId = "";
-            }
-            let _x: number;
-            if (typeof input.x === "number") {
-                _x = input.x;
-            } else {
-                _x = 0;
-            }
-            let _y: number;
-            if (typeof input.y === "number") {
-                _y = input.y;
-            } else {
-                _y = 0;
-            }
-            return {
-                type: _type,
-                entityId: _entityId,
-                x: _x,
-                y: _y,
-            };
-        },
-        fromJsonString(input): WsMessageResponseEntityUpdated {
-            return $$WsMessageResponseEntityUpdated.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = "{";
-            json += '"type":"ENTITY_UPDATED"';
-            json += ',"entityId":';
-            json += serializeString(input.entityId);
-            json += ',"x":';
-            json += `${input.x}`;
-            json += ',"y":';
-            json += `${input.y}`;
-            json += "}";
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push("type=ENTITY_UPDATED");
-            queryParts.push(`entityId=${input.entityId}`);
-            queryParts.push(`x=${input.x}`);
-            queryParts.push(`y=${input.y}`);
-            return queryParts.join("&");
-        },
-    };
-
 export interface UsersWatchUserParams {
     userId: string;
 }
@@ -6079,8 +5818,8 @@ export interface UsersWatchUserResponse {
     createdAt: Date;
     numFollowers: number;
     settings: UserSettings;
-    recentNotifications: UsersWatchUserResponseRecentNotificationselement[];
-    bookmarks: Record<string, UsersWatchUserResponseBookmarksvalue>;
+    recentNotifications: UsersWatchUserResponseRecentNotificationsElement[];
+    bookmarks: Record<string, UsersWatchUserResponseBookmarksValue>;
     metadata: Record<string, any>;
     randomList: any[];
     bio?: string;
@@ -6115,13 +5854,13 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 $$UserSettings.validate(input.settings) &&
                 Array.isArray(input.recentNotifications) &&
                 input.recentNotifications.every((_element) =>
-                    $$UsersWatchUserResponseRecentNotificationselement.validate(
+                    $$UsersWatchUserResponseRecentNotificationsElement.validate(
                         _element,
                     ),
                 ) &&
                 isObject(input.bookmarks) &&
                 Object.values(input.bookmarks).every((_value) =>
-                    $$UsersWatchUserResponseBookmarksvalue.validate(_value),
+                    $$UsersWatchUserResponseBookmarksValue.validate(_value),
                 ) &&
                 isObject(input.metadata) &&
                 Object.values(input.metadata).every((_value) => true) &&
@@ -6177,19 +5916,19 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
             } else {
                 _settings = $$UserSettings.new();
             }
-            let _recentNotifications: UsersWatchUserResponseRecentNotificationselement[];
+            let _recentNotifications: UsersWatchUserResponseRecentNotificationsElement[];
             if (Array.isArray(input.recentNotifications)) {
                 _recentNotifications = [];
                 for (const _recentNotificationsEl of input.recentNotifications) {
-                    let _recentNotificationsElValue: UsersWatchUserResponseRecentNotificationselement;
+                    let _recentNotificationsElValue: UsersWatchUserResponseRecentNotificationsElement;
                     if (isObject(_recentNotificationsEl)) {
                         _recentNotificationsElValue =
-                            $$UsersWatchUserResponseRecentNotificationselement.fromJson(
+                            $$UsersWatchUserResponseRecentNotificationsElement.fromJson(
                                 _recentNotificationsEl,
                             );
                     } else {
                         _recentNotificationsElValue =
-                            $$UsersWatchUserResponseRecentNotificationselement.new();
+                            $$UsersWatchUserResponseRecentNotificationsElement.new();
                     }
                     _recentNotifications.push(_recentNotificationsElValue);
                 }
@@ -6198,20 +5937,20 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
             }
             let _bookmarks: Record<
                 string,
-                UsersWatchUserResponseBookmarksvalue
+                UsersWatchUserResponseBookmarksValue
             >;
             if (isObject(input.bookmarks)) {
                 _bookmarks = {};
                 for (const [_key, _value] of Object.entries(input.bookmarks)) {
-                    let _bookmarksValue: UsersWatchUserResponseBookmarksvalue;
+                    let _bookmarksValue: UsersWatchUserResponseBookmarksValue;
                     if (isObject(_value)) {
                         _bookmarksValue =
-                            $$UsersWatchUserResponseBookmarksvalue.fromJson(
+                            $$UsersWatchUserResponseBookmarksValue.fromJson(
                                 _value,
                             );
                     } else {
                         _bookmarksValue =
-                            $$UsersWatchUserResponseBookmarksvalue.new();
+                            $$UsersWatchUserResponseBookmarksValue.new();
                     }
                     _bookmarks[_key] = _bookmarksValue;
                 }
@@ -6290,7 +6029,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 const _inputRecentNotificationsEl =
                     input.recentNotifications[i];
                 json +=
-                    $$UsersWatchUserResponseRecentNotificationselement.toJsonString(
+                    $$UsersWatchUserResponseRecentNotificationsElement.toJsonString(
                         _inputRecentNotificationsEl,
                     );
             }
@@ -6302,9 +6041,9 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 if (_bookmarksPropertyCount !== 0) {
                     json += ",";
                 }
-                json += `"${_key}":`;
+                json += `${serializeString(_key)}:`;
                 json +=
-                    $$UsersWatchUserResponseBookmarksvalue.toJsonString(_value);
+                    $$UsersWatchUserResponseBookmarksValue.toJsonString(_value);
                 _bookmarksPropertyCount++;
             }
             json += "}";
@@ -6316,7 +6055,7 @@ export const $$UsersWatchUserResponse: ArriModelValidator<UsersWatchUserResponse
                 if (_metadataPropertyCount !== 0) {
                     json += ",";
                 }
-                json += `"${_key}":`;
+                json += `${serializeString(_key)}:`;
                 json += JSON.stringify(_value);
                 _metadataPropertyCount++;
             }
@@ -6619,17 +6358,17 @@ export const $$UserSettingsPreferredTheme: ArriEnumValidator<UserSettingsPreferr
         },
     };
 
-export type UsersWatchUserResponseRecentNotificationselement =
-    | UsersWatchUserResponseRecentNotificationselementPostLike
-    | UsersWatchUserResponseRecentNotificationselementPostComment;
-export const $$UsersWatchUserResponseRecentNotificationselement: ArriModelValidator<UsersWatchUserResponseRecentNotificationselement> =
+export type UsersWatchUserResponseRecentNotificationsElement =
+    | UsersWatchUserResponseRecentNotificationsElementPostLike
+    | UsersWatchUserResponseRecentNotificationsElementPostComment;
+export const $$UsersWatchUserResponseRecentNotificationsElement: ArriModelValidator<UsersWatchUserResponseRecentNotificationsElement> =
     {
-        new(): UsersWatchUserResponseRecentNotificationselement {
-            return $$UsersWatchUserResponseRecentNotificationselementPostLike.new();
+        new(): UsersWatchUserResponseRecentNotificationsElement {
+            return $$UsersWatchUserResponseRecentNotificationsElementPostLike.new();
         },
         validate(
             input,
-        ): input is UsersWatchUserResponseRecentNotificationselement {
+        ): input is UsersWatchUserResponseRecentNotificationsElement {
             if (!isObject(input)) {
                 return false;
             }
@@ -6638,46 +6377,46 @@ export const $$UsersWatchUserResponseRecentNotificationselement: ArriModelValida
             }
             switch (input.notificationType) {
                 case "POST_LIKE":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostLike.validate(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostLike.validate(
                         input,
                     );
                 case "POST_COMMENT":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostComment.validate(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostComment.validate(
                         input,
                     );
                 default:
                     return false;
             }
         },
-        fromJson(input): UsersWatchUserResponseRecentNotificationselement {
+        fromJson(input): UsersWatchUserResponseRecentNotificationsElement {
             switch (input.notificationType) {
                 case "POST_LIKE":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostLike.fromJson(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
                         input,
                     );
                 case "POST_COMMENT":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostComment.fromJson(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
                         input,
                     );
                 default:
-                    return $$UsersWatchUserResponseRecentNotificationselementPostLike.new();
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostLike.new();
             }
         },
         fromJsonString(
             input,
-        ): UsersWatchUserResponseRecentNotificationselement {
-            return $$UsersWatchUserResponseRecentNotificationselement.fromJson(
+        ): UsersWatchUserResponseRecentNotificationsElement {
+            return $$UsersWatchUserResponseRecentNotificationsElement.fromJson(
                 JSON.parse(input),
             );
         },
         toJsonString(input): string {
             switch (input.notificationType) {
                 case "POST_LIKE":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostLike.toJsonString(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostLike.toJsonString(
                         input,
                     );
                 case "POST_COMMENT":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostComment.toJsonString(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostComment.toJsonString(
                         input,
                     );
                 default:
@@ -6689,11 +6428,11 @@ export const $$UsersWatchUserResponseRecentNotificationselement: ArriModelValida
         toUrlQueryString(input): string {
             switch (input.notificationType) {
                 case "POST_LIKE":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostLike.toUrlQueryString(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostLike.toUrlQueryString(
                         input,
                     );
                 case "POST_COMMENT":
-                    return $$UsersWatchUserResponseRecentNotificationselementPostComment.toUrlQueryString(
+                    return $$UsersWatchUserResponseRecentNotificationsElementPostComment.toUrlQueryString(
                         input,
                     );
                 default:
@@ -6701,14 +6440,14 @@ export const $$UsersWatchUserResponseRecentNotificationselement: ArriModelValida
             }
         },
     };
-export interface UsersWatchUserResponseRecentNotificationselementPostLike {
+export interface UsersWatchUserResponseRecentNotificationsElementPostLike {
     notificationType: "POST_LIKE";
     postId: string;
     userId: string;
 }
-const $$UsersWatchUserResponseRecentNotificationselementPostLike: ArriModelValidator<UsersWatchUserResponseRecentNotificationselementPostLike> =
+const $$UsersWatchUserResponseRecentNotificationsElementPostLike: ArriModelValidator<UsersWatchUserResponseRecentNotificationsElementPostLike> =
     {
-        new(): UsersWatchUserResponseRecentNotificationselementPostLike {
+        new(): UsersWatchUserResponseRecentNotificationsElementPostLike {
             return {
                 notificationType: "POST_LIKE",
                 postId: "",
@@ -6717,7 +6456,7 @@ const $$UsersWatchUserResponseRecentNotificationselementPostLike: ArriModelValid
         },
         validate(
             input,
-        ): input is UsersWatchUserResponseRecentNotificationselementPostLike {
+        ): input is UsersWatchUserResponseRecentNotificationsElementPostLike {
             return (
                 isObject(input) &&
                 input.notificationType === "POST_LIKE" &&
@@ -6727,7 +6466,7 @@ const $$UsersWatchUserResponseRecentNotificationselementPostLike: ArriModelValid
         },
         fromJson(
             input,
-        ): UsersWatchUserResponseRecentNotificationselementPostLike {
+        ): UsersWatchUserResponseRecentNotificationsElementPostLike {
             const _notificationType = "POST_LIKE";
             let _postId: string;
             if (typeof input.postId === "string") {
@@ -6749,8 +6488,8 @@ const $$UsersWatchUserResponseRecentNotificationselementPostLike: ArriModelValid
         },
         fromJsonString(
             input,
-        ): UsersWatchUserResponseRecentNotificationselementPostLike {
-            return $$UsersWatchUserResponseRecentNotificationselementPostLike.fromJson(
+        ): UsersWatchUserResponseRecentNotificationsElementPostLike {
+            return $$UsersWatchUserResponseRecentNotificationsElementPostLike.fromJson(
                 JSON.parse(input),
             );
         },
@@ -6773,15 +6512,15 @@ const $$UsersWatchUserResponseRecentNotificationselementPostLike: ArriModelValid
         },
     };
 
-export interface UsersWatchUserResponseRecentNotificationselementPostComment {
+export interface UsersWatchUserResponseRecentNotificationsElementPostComment {
     notificationType: "POST_COMMENT";
     postId: string;
     userId: string;
     commentText: string;
 }
-const $$UsersWatchUserResponseRecentNotificationselementPostComment: ArriModelValidator<UsersWatchUserResponseRecentNotificationselementPostComment> =
+const $$UsersWatchUserResponseRecentNotificationsElementPostComment: ArriModelValidator<UsersWatchUserResponseRecentNotificationsElementPostComment> =
     {
-        new(): UsersWatchUserResponseRecentNotificationselementPostComment {
+        new(): UsersWatchUserResponseRecentNotificationsElementPostComment {
             return {
                 notificationType: "POST_COMMENT",
                 postId: "",
@@ -6791,7 +6530,7 @@ const $$UsersWatchUserResponseRecentNotificationselementPostComment: ArriModelVa
         },
         validate(
             input,
-        ): input is UsersWatchUserResponseRecentNotificationselementPostComment {
+        ): input is UsersWatchUserResponseRecentNotificationsElementPostComment {
             return (
                 isObject(input) &&
                 input.notificationType === "POST_COMMENT" &&
@@ -6802,7 +6541,7 @@ const $$UsersWatchUserResponseRecentNotificationselementPostComment: ArriModelVa
         },
         fromJson(
             input,
-        ): UsersWatchUserResponseRecentNotificationselementPostComment {
+        ): UsersWatchUserResponseRecentNotificationsElementPostComment {
             const _notificationType = "POST_COMMENT";
             let _postId: string;
             if (typeof input.postId === "string") {
@@ -6831,8 +6570,8 @@ const $$UsersWatchUserResponseRecentNotificationselementPostComment: ArriModelVa
         },
         fromJsonString(
             input,
-        ): UsersWatchUserResponseRecentNotificationselementPostComment {
-            return $$UsersWatchUserResponseRecentNotificationselementPostComment.fromJson(
+        ): UsersWatchUserResponseRecentNotificationsElementPostComment {
+            return $$UsersWatchUserResponseRecentNotificationsElementPostComment.fromJson(
                 JSON.parse(input),
             );
         },
@@ -6858,26 +6597,26 @@ const $$UsersWatchUserResponseRecentNotificationselementPostComment: ArriModelVa
         },
     };
 
-export interface UsersWatchUserResponseBookmarksvalue {
+export interface UsersWatchUserResponseBookmarksValue {
     postId: string;
     userId: string;
 }
-export const $$UsersWatchUserResponseBookmarksvalue: ArriModelValidator<UsersWatchUserResponseBookmarksvalue> =
+export const $$UsersWatchUserResponseBookmarksValue: ArriModelValidator<UsersWatchUserResponseBookmarksValue> =
     {
-        new(): UsersWatchUserResponseBookmarksvalue {
+        new(): UsersWatchUserResponseBookmarksValue {
             return {
                 postId: "",
                 userId: "",
             };
         },
-        validate(input): input is UsersWatchUserResponseBookmarksvalue {
+        validate(input): input is UsersWatchUserResponseBookmarksValue {
             return (
                 isObject(input) &&
                 typeof input.postId === "string" &&
                 typeof input.userId === "string"
             );
         },
-        fromJson(input): UsersWatchUserResponseBookmarksvalue {
+        fromJson(input): UsersWatchUserResponseBookmarksValue {
             let _postId: string;
             if (typeof input.postId === "string") {
                 _postId = input.postId;
@@ -6895,8 +6634,8 @@ export const $$UsersWatchUserResponseBookmarksvalue: ArriModelValidator<UsersWat
                 userId: _userId,
             };
         },
-        fromJsonString(input): UsersWatchUserResponseBookmarksvalue {
-            return $$UsersWatchUserResponseBookmarksvalue.fromJson(
+        fromJsonString(input): UsersWatchUserResponseBookmarksValue {
+            return $$UsersWatchUserResponseBookmarksValue.fromJson(
                 JSON.parse(input),
             );
         },

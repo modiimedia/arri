@@ -7,10 +7,21 @@ import {
 
 import { CodegenContext, getJsDocComment, validVarName } from "./common";
 
+export type RpcGenerator = (
+    def: RpcDefinition,
+    context: CodegenContext,
+) => string;
+
+export function defineRpcGenerator(fn: RpcGenerator): RpcGenerator {
+    return fn;
+}
+
 export function tsRpcFromDefinition(
     def: RpcDefinition,
     context: CodegenContext,
 ): string {
+    const customFn = context.rpcGenerators[def.transport];
+    if (customFn) return customFn(def, context);
     switch (def.transport) {
         case "http":
             return httpRpcFromDefinition(def, context);

@@ -440,7 +440,7 @@ public struct ObjectWithEveryType: ArriClientModel {
             if __index > 0 {
                 __json += ","
             }
-            __json += "\"\(__key)\":"
+            __json += "\(serializeString(input: __key)):"
             __json += "\(__value)"
         }
         __json += "}"
@@ -1094,7 +1094,7 @@ public struct ObjectWithOptionalFields: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                 __json += "\(__value)"
             }
             __json += "}"
@@ -1471,7 +1471,7 @@ public struct ObjectWithNullableFields: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                 __json += "\(__value)"
             }
             __json += "}"

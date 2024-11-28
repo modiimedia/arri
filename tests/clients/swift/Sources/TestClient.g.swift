@@ -137,6 +137,28 @@ public class TestClientTestsService {
         )
         return result
     }
+    public func sendObjectWithPascalCaseKeys(_ params: ObjectWithPascalCaseKeys) async throws -> ObjectWithPascalCaseKeys {
+        let result: ObjectWithPascalCaseKeys = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-object-with-pascal-case-keys",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params
+        )
+        return result
+    }
+    public func sendObjectWithSnakeCaseKeys(_ params: ObjectWithSnakeCaseKeys) async throws -> ObjectWithSnakeCaseKeys {
+        let result: ObjectWithSnakeCaseKeys = try await parsedArriHttpRequest(
+            delegate: self.delegate,
+            url: "\(self.baseURL)/rpcs/tests/send-object-with-snake-case-keys",
+            method: "POST",
+            headers: self.headers,
+            clientVersion: "10",
+            params: params
+        )
+        return result
+    }
     public func sendPartialObject(_ params: ObjectWithEveryOptionalType) async throws -> ObjectWithEveryOptionalType {
         let result: ObjectWithEveryOptionalType = try await parsedArriHttpRequest(
             delegate: self.delegate,
@@ -262,12 +284,6 @@ public class TestClientTestsService {
             await eventSource.sendRequest()
         }
         return task
-    }
-    public func websocketRpc(_ params: WsMessageParams) async throws -> WsMessageResponse {
-        throw ArriRequestError.notImplemented
-    }
-    public func websocketRpcSendTenLargeMessages() async throws -> StreamLargeObjectsResponse {
-        throw ArriRequestError.notImplemented
     }
         
 }
@@ -705,7 +721,7 @@ public struct ObjectWithEveryType: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += "\"\(__value)\""
             }
             __json += "}"
@@ -1642,7 +1658,7 @@ if self.record != nil {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         if __value != nil {
                     __json += "\"\(__value!)\""
                 } else {
@@ -2528,6 +2544,218 @@ public struct ObjectWithEveryNullableTypeNestedArrayElementElement: ArriClientMo
 }
     
 
+public struct ObjectWithPascalCaseKeys: ArriClientModel {
+    public var createdAt: Date = Date()
+    public var displayName: String = ""
+    public var phoneNumber: String?
+    public var emailAddress: String?
+    public var isAdmin: Bool?
+    public init(
+        createdAt: Date,
+        displayName: String,
+        phoneNumber: String?,
+        emailAddress: String?,
+        isAdmin: Bool?
+    ) {
+            self.createdAt = createdAt
+            self.displayName = displayName
+            self.phoneNumber = phoneNumber
+            self.emailAddress = emailAddress
+            self.isAdmin = isAdmin
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.createdAt = parseDate(json["CreatedAt"].string ?? "") ?? Date()
+        self.displayName = json["DisplayName"].string ?? ""
+        if json["PhoneNumber"].string != nil {
+            self.phoneNumber = json["PhoneNumber"].string
+        }
+        if json["EmailAddress"].exists() {
+            self.emailAddress = json["EmailAddress"].string    
+        }
+        if json["IsAdmin"].exists() {
+                    self.isAdmin = json["IsAdmin"].bool
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"CreatedAt\":"
+        __json += serializeDate(self.createdAt)
+        __json += ",\"DisplayName\":"
+        __json += serializeString(input: self.displayName)
+        __json += ",\"PhoneNumber\":"
+        if self.phoneNumber != nil {
+                    __json += serializeString(input: self.phoneNumber!)
+                } else {
+                    __json += "null" 
+                }
+        if self.emailAddress != nil {
+                    __json += ",\"EmailAddress\":"
+        __json += serializeString(input: self.emailAddress!)
+        }
+        if self.isAdmin != nil {
+                    __json += ",\"IsAdmin\":"
+__json += "\(self.isAdmin!)"
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "CreatedAt", value: serializeDate(self.createdAt, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "DisplayName", value: self.displayName))
+        if self.phoneNumber != nil {
+                    __queryParts.append(URLQueryItem(name: "PhoneNumber", value: self.phoneNumber!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "PhoneNumber", value: "null")) 
+                }
+        if self.emailAddress != nil {
+                    __queryParts.append(URLQueryItem(name: "EmailAddress", value: self.emailAddress!))
+                }
+        if self.isAdmin != nil {
+                    __queryParts.append(URLQueryItem(name: "IsAdmin", value: "\(self.isAdmin!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithPascalCaseKeys {
+
+        return ObjectWithPascalCaseKeys(
+            createdAt: self.createdAt,
+            displayName: self.displayName,
+            phoneNumber: self.phoneNumber,
+            emailAddress: self.emailAddress,
+            isAdmin: self.isAdmin
+        )
+    }
+    
+}
+    
+
+public struct ObjectWithSnakeCaseKeys: ArriClientModel {
+    public var createdAt: Date = Date()
+    public var displayName: String = ""
+    public var phoneNumber: String?
+    public var emailAddress: String?
+    public var isAdmin: Bool?
+    public init(
+        createdAt: Date,
+        displayName: String,
+        phoneNumber: String?,
+        emailAddress: String?,
+        isAdmin: Bool?
+    ) {
+            self.createdAt = createdAt
+            self.displayName = displayName
+            self.phoneNumber = phoneNumber
+            self.emailAddress = emailAddress
+            self.isAdmin = isAdmin
+    }
+    public init() {}
+    public init(json: JSON) {
+        self.createdAt = parseDate(json["created_at"].string ?? "") ?? Date()
+        self.displayName = json["display_name"].string ?? ""
+        if json["phone_number"].string != nil {
+            self.phoneNumber = json["phone_number"].string
+        }
+        if json["email_address"].exists() {
+            self.emailAddress = json["email_address"].string    
+        }
+        if json["is_admin"].exists() {
+                    self.isAdmin = json["is_admin"].bool
+                }
+    }
+    public init(JSONData: Data) {
+        do {
+            let json = try JSON(data: JSONData)
+            self.init(json: json)
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public init(JSONString: String) {
+        do {
+            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
+            self.init(json: json) 
+        } catch {
+            print("[WARNING] Error parsing JSON: \(error)")
+            self.init()
+        }
+    }
+    public func toJSONString() -> String {
+        var __json = "{"
+
+        __json += "\"created_at\":"
+        __json += serializeDate(self.createdAt)
+        __json += ",\"display_name\":"
+        __json += serializeString(input: self.displayName)
+        __json += ",\"phone_number\":"
+        if self.phoneNumber != nil {
+                    __json += serializeString(input: self.phoneNumber!)
+                } else {
+                    __json += "null" 
+                }
+        if self.emailAddress != nil {
+                    __json += ",\"email_address\":"
+        __json += serializeString(input: self.emailAddress!)
+        }
+        if self.isAdmin != nil {
+                    __json += ",\"is_admin\":"
+__json += "\(self.isAdmin!)"
+        }
+        __json += "}"
+        return __json
+    }
+    public func toURLQueryParts() -> [URLQueryItem] {
+        var __queryParts: [URLQueryItem] = []
+        __queryParts.append(URLQueryItem(name: "created_at", value: serializeDate(self.createdAt, withQuotes: false)))
+        __queryParts.append(URLQueryItem(name: "display_name", value: self.displayName))
+        if self.phoneNumber != nil {
+                    __queryParts.append(URLQueryItem(name: "phone_number", value: self.phoneNumber!))
+                } else {
+                    __queryParts.append(URLQueryItem(name: "phone_number", value: "null")) 
+                }
+        if self.emailAddress != nil {
+                    __queryParts.append(URLQueryItem(name: "email_address", value: self.emailAddress!))
+                }
+        if self.isAdmin != nil {
+                    __queryParts.append(URLQueryItem(name: "is_admin", value: "\(self.isAdmin!)"))
+                }
+        return __queryParts
+    }
+    public func clone() -> ObjectWithSnakeCaseKeys {
+
+        return ObjectWithSnakeCaseKeys(
+            createdAt: self.createdAt,
+            displayName: self.displayName,
+            phoneNumber: self.phoneNumber,
+            emailAddress: self.emailAddress,
+            isAdmin: self.isAdmin
+        )
+    }
+    
+}
+    
+
 public struct ObjectWithEveryOptionalType: ArriClientModel {
     public var any: JSON?
     public var boolean: Bool?
@@ -2852,7 +3080,7 @@ __numKeys += 1
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += "\"\(__value)\""
             }
             __json += "}"            
@@ -4852,483 +5080,6 @@ public struct TestsStreamRetryWithNewCredentialsResponse: ArriClientModel {
 }
     
 
-public enum WsMessageParams: ArriClientModel {
-    case createEntity(WsMessageParamsCreateEntity)
-    case updateEntity(WsMessageParamsUpdateEntity)
-    case disconnect(WsMessageParamsDisconnect)
-    public init() {
-        self = .createEntity(WsMessageParamsCreateEntity())
-    }
-    public init(json: JSON) {
-        let discriminator = json["type"].string ?? ""
-        switch (discriminator) {
-            case "CREATE_ENTITY":
-                self = .createEntity(WsMessageParamsCreateEntity(json: json))
-                break
-            case "UPDATE_ENTITY":
-                self = .updateEntity(WsMessageParamsUpdateEntity(json: json))
-                break
-            case "DISCONNECT":
-                self = .disconnect(WsMessageParamsDisconnect(json: json))
-                break
-            default:
-                self = .createEntity(WsMessageParamsCreateEntity())
-                break
-        }
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        switch(self) {
-            case .createEntity(let __innerVal):
-                return __innerVal.toJSONString()
-            case .updateEntity(let __innerVal):
-                return __innerVal.toJSONString()
-            case .disconnect(let __innerVal):
-                return __innerVal.toJSONString()
-        }
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        switch(self) {
-            case .createEntity(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .updateEntity(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .disconnect(let __innerVal):
-                return __innerVal.toURLQueryParts()
-        }
-    }
-    public func clone() -> WsMessageParams {
-        switch(self) {
-            case .createEntity(let __innerVal):
-                return .createEntity(__innerVal.clone())
-            case .updateEntity(let __innerVal):
-                return .updateEntity(__innerVal.clone())
-            case .disconnect(let __innerVal):
-                return .disconnect(__innerVal.clone())
-        }
-    }
-}
-    
-public struct WsMessageParamsCreateEntity: ArriClientModel {
-    let type: String = "CREATE_ENTITY"
-    public var entityId: String = ""
-    public var x: Float64 = 0.0
-    public var y: Float64 = 0.0
-    public init(
-        entityId: String,
-        x: Float64,
-        y: Float64
-    ) {
-            self.entityId = entityId
-            self.x = x
-            self.y = y
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.entityId = json["entityId"].string ?? ""
-        self.x = json["x"].double ?? 0.0
-        self.y = json["y"].double ?? 0.0
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"CREATE_ENTITY\""
-        __json += ",\"entityId\":"
-        __json += serializeString(input: self.entityId)
-        __json += ",\"x\":"
-        __json += "\(self.x)"
-        __json += ",\"y\":"
-        __json += "\(self.y)"
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "CREATE_ENTITY"))
-        __queryParts.append(URLQueryItem(name: "entityId", value: self.entityId))
-        __queryParts.append(URLQueryItem(name: "x", value: "\(self.x)"))
-        __queryParts.append(URLQueryItem(name: "y", value: "\(self.y)"))
-        return __queryParts
-    }
-    public func clone() -> WsMessageParamsCreateEntity {
-
-        return WsMessageParamsCreateEntity(
-            entityId: self.entityId,
-            x: self.x,
-            y: self.y
-        )
-    }
-    
-}
-    
-
-public struct WsMessageParamsUpdateEntity: ArriClientModel {
-    let type: String = "UPDATE_ENTITY"
-    public var entityId: String = ""
-    public var x: Float64 = 0.0
-    public var y: Float64 = 0.0
-    public init(
-        entityId: String,
-        x: Float64,
-        y: Float64
-    ) {
-            self.entityId = entityId
-            self.x = x
-            self.y = y
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.entityId = json["entityId"].string ?? ""
-        self.x = json["x"].double ?? 0.0
-        self.y = json["y"].double ?? 0.0
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"UPDATE_ENTITY\""
-        __json += ",\"entityId\":"
-        __json += serializeString(input: self.entityId)
-        __json += ",\"x\":"
-        __json += "\(self.x)"
-        __json += ",\"y\":"
-        __json += "\(self.y)"
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "UPDATE_ENTITY"))
-        __queryParts.append(URLQueryItem(name: "entityId", value: self.entityId))
-        __queryParts.append(URLQueryItem(name: "x", value: "\(self.x)"))
-        __queryParts.append(URLQueryItem(name: "y", value: "\(self.y)"))
-        return __queryParts
-    }
-    public func clone() -> WsMessageParamsUpdateEntity {
-
-        return WsMessageParamsUpdateEntity(
-            entityId: self.entityId,
-            x: self.x,
-            y: self.y
-        )
-    }
-    
-}
-    
-
-public struct WsMessageParamsDisconnect: ArriClientModel {
-    let type: String = "DISCONNECT"
-    public var reason: String = ""
-    public init(
-        reason: String
-    ) {
-            self.reason = reason
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.reason = json["reason"].string ?? ""
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"DISCONNECT\""
-        __json += ",\"reason\":"
-        __json += serializeString(input: self.reason)
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "DISCONNECT"))
-        __queryParts.append(URLQueryItem(name: "reason", value: self.reason))
-        return __queryParts
-    }
-    public func clone() -> WsMessageParamsDisconnect {
-
-        return WsMessageParamsDisconnect(
-            reason: self.reason
-        )
-    }
-    
-}
-    
-
-public enum WsMessageResponse: ArriClientModel {
-    case entityCreated(WsMessageResponseEntityCreated)
-    case entityUpdated(WsMessageResponseEntityUpdated)
-    public init() {
-        self = .entityCreated(WsMessageResponseEntityCreated())
-    }
-    public init(json: JSON) {
-        let discriminator = json["type"].string ?? ""
-        switch (discriminator) {
-            case "ENTITY_CREATED":
-                self = .entityCreated(WsMessageResponseEntityCreated(json: json))
-                break
-            case "ENTITY_UPDATED":
-                self = .entityUpdated(WsMessageResponseEntityUpdated(json: json))
-                break
-            default:
-                self = .entityCreated(WsMessageResponseEntityCreated())
-                break
-        }
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        switch(self) {
-            case .entityCreated(let __innerVal):
-                return __innerVal.toJSONString()
-            case .entityUpdated(let __innerVal):
-                return __innerVal.toJSONString()
-        }
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        switch(self) {
-            case .entityCreated(let __innerVal):
-                return __innerVal.toURLQueryParts()
-            case .entityUpdated(let __innerVal):
-                return __innerVal.toURLQueryParts()
-        }
-    }
-    public func clone() -> WsMessageResponse {
-        switch(self) {
-            case .entityCreated(let __innerVal):
-                return .entityCreated(__innerVal.clone())
-            case .entityUpdated(let __innerVal):
-                return .entityUpdated(__innerVal.clone())
-        }
-    }
-}
-    
-public struct WsMessageResponseEntityCreated: ArriClientModel {
-    let type: String = "ENTITY_CREATED"
-    public var entityId: String = ""
-    public var x: Float64 = 0.0
-    public var y: Float64 = 0.0
-    public init(
-        entityId: String,
-        x: Float64,
-        y: Float64
-    ) {
-            self.entityId = entityId
-            self.x = x
-            self.y = y
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.entityId = json["entityId"].string ?? ""
-        self.x = json["x"].double ?? 0.0
-        self.y = json["y"].double ?? 0.0
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"ENTITY_CREATED\""
-        __json += ",\"entityId\":"
-        __json += serializeString(input: self.entityId)
-        __json += ",\"x\":"
-        __json += "\(self.x)"
-        __json += ",\"y\":"
-        __json += "\(self.y)"
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "ENTITY_CREATED"))
-        __queryParts.append(URLQueryItem(name: "entityId", value: self.entityId))
-        __queryParts.append(URLQueryItem(name: "x", value: "\(self.x)"))
-        __queryParts.append(URLQueryItem(name: "y", value: "\(self.y)"))
-        return __queryParts
-    }
-    public func clone() -> WsMessageResponseEntityCreated {
-
-        return WsMessageResponseEntityCreated(
-            entityId: self.entityId,
-            x: self.x,
-            y: self.y
-        )
-    }
-    
-}
-    
-
-public struct WsMessageResponseEntityUpdated: ArriClientModel {
-    let type: String = "ENTITY_UPDATED"
-    public var entityId: String = ""
-    public var x: Float64 = 0.0
-    public var y: Float64 = 0.0
-    public init(
-        entityId: String,
-        x: Float64,
-        y: Float64
-    ) {
-            self.entityId = entityId
-            self.x = x
-            self.y = y
-    }
-    public init() {}
-    public init(json: JSON) {
-        self.entityId = json["entityId"].string ?? ""
-        self.x = json["x"].double ?? 0.0
-        self.y = json["y"].double ?? 0.0
-    }
-    public init(JSONData: Data) {
-        do {
-            let json = try JSON(data: JSONData)
-            self.init(json: json)
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public init(JSONString: String) {
-        do {
-            let json = try JSON(data: JSONString.data(using: .utf8) ?? Data())
-            self.init(json: json) 
-        } catch {
-            print("[WARNING] Error parsing JSON: \(error)")
-            self.init()
-        }
-    }
-    public func toJSONString() -> String {
-        var __json = "{"
-
-        __json += "\"type\":\"ENTITY_UPDATED\""
-        __json += ",\"entityId\":"
-        __json += serializeString(input: self.entityId)
-        __json += ",\"x\":"
-        __json += "\(self.x)"
-        __json += ",\"y\":"
-        __json += "\(self.y)"
-        __json += "}"
-        return __json
-    }
-    public func toURLQueryParts() -> [URLQueryItem] {
-        var __queryParts: [URLQueryItem] = []
-        __queryParts.append(URLQueryItem(name: "type", value: "ENTITY_UPDATED"))
-        __queryParts.append(URLQueryItem(name: "entityId", value: self.entityId))
-        __queryParts.append(URLQueryItem(name: "x", value: "\(self.x)"))
-        __queryParts.append(URLQueryItem(name: "y", value: "\(self.y)"))
-        return __queryParts
-    }
-    public func clone() -> WsMessageResponseEntityUpdated {
-
-        return WsMessageResponseEntityUpdated(
-            entityId: self.entityId,
-            x: self.x,
-            y: self.y
-        )
-    }
-    
-}
-    
-
 public struct UsersWatchUserParams: ArriClientModel {
     public var userId: String = ""
     public init(
@@ -5509,7 +5260,7 @@ public struct UsersWatchUserResponse: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += __value.toJSONString()
             }
             __json += "}"
@@ -5519,7 +5270,7 @@ public struct UsersWatchUserResponse: ArriClientModel {
                 if __index > 0 {
                     __json += ","
                 }
-                __json += "\"\(__key)\":"
+                __json += "\(serializeString(input: __key)):"
                         __json += serializeAny(input: __value)
             }
             __json += "}"

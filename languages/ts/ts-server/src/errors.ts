@@ -11,7 +11,7 @@ import {
 
 import { type ArriOptions } from "./app";
 
-export class ArriServerError extends Error {
+export class arriError extends Error {
     code: number;
     data?: any;
     constructor(err: {
@@ -29,7 +29,7 @@ export class ArriServerError extends Error {
     }
 }
 
-export const ArriServerErrorResponse = a.object({
+export const arriErrorResponse = a.object({
     code: a.int16(),
     message: a.string(),
     stack: a.optional(a.array(a.string())),
@@ -41,14 +41,14 @@ export const ArriServerErrorResponse = a.object({
     data?: any;
 }>;
 
-export type ArriServerErrorResponse = a.infer<typeof ArriServerErrorResponse>;
+export type arriErrorResponse = a.infer<typeof arriErrorResponse>;
 
 export function defineError(
     statusCode: StatusCode,
-    input: Partial<Omit<ArriServerErrorResponse, "code" | "stack">> = {},
-): ArriServerError {
+    input: Partial<Omit<arriErrorResponse, "code" | "stack">> = {},
+): arriError {
     const defaultVals = errorResponseDefaults[statusCode];
-    return new ArriServerError({
+    return new arriError({
         code: statusCode,
         message:
             input.message ??
@@ -238,25 +238,25 @@ export async function handleH3Error(
     onError: ArriOptions["onError"],
     debug: boolean,
 ) {
-    let arriErr: ArriServerError | undefined;
-    if (err instanceof ArriServerError) {
+    let arriErr: arriError | undefined;
+    if (err instanceof arriError) {
         arriErr = err;
     } else if (isError(err)) {
-        arriErr = new ArriServerError({
+        arriErr = new arriError({
             code: err.statusCode,
             message: err.message,
             stack: err.stack,
             data: err.data,
         });
     } else if (err instanceof Error) {
-        arriErr = new ArriServerError({
+        arriErr = new arriError({
             code: 500,
             message: err.message,
             data: err,
             stack: err.stack,
         });
     } else {
-        arriErr = new ArriServerError({
+        arriErr = new arriError({
             code: 500,
             message: `An unknown error occurred`,
             data: err,
@@ -275,12 +275,8 @@ export async function handleH3Error(
     return sendArriError(event, arriErr, debug);
 }
 
-async function sendArriError(
-    event: H3Event,
-    error: ArriServerError,
-    debug: boolean,
-) {
-    const payload: ArriServerErrorResponse = {
+async function sendArriError(event: H3Event, error: arriError, debug: boolean) {
+    const payload: arriErrorResponse = {
         code: error.code,
         message: error.message,
         data: error.data,

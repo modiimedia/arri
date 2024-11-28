@@ -97,9 +97,10 @@ export function tsObjectFromSchema(
             discriminatorValue: "",
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
+            rpcGenerators: context.rpcGenerators,
         });
         if (prop.content) subContentParts.push(prop.content);
-        const fieldName = validVarName(camelCase(key));
+        const fieldName = validVarName(camelCase(key, { normalize: true }));
         fieldParts.push(
             `${getJsDocComment(subSchema.metadata)}${fieldName}: ${prop.typeName},`,
         );
@@ -139,9 +140,10 @@ export function tsObjectFromSchema(
             discriminatorValue: "",
             versionNumber: context.versionNumber,
             usedFeatures: context.usedFeatures,
+            rpcGenerators: context.rpcGenerators,
         });
         if (prop.content) subContentParts.push(prop.content);
-        const fieldName = validVarName(camelCase(key));
+        const fieldName = validVarName(camelCase(key, { normalize: true }));
         fieldParts.push(
             `${getJsDocComment(subSchema.metadata)}${fieldName}?: ${prop.typeName},`,
         );
@@ -151,15 +153,15 @@ export function tsObjectFromSchema(
             ${prop.fromJsonTemplate(`input.${key}`, tempKey)}
         }`);
         if (hasKey) {
-            toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+            toJsonParts.push(`if (typeof input.${fieldName} !== 'undefined') {
                 json += \`,"${key}":\`;
-                ${prop.toJsonTemplate(`input.${key}`, "json", key)}
+                ${prop.toJsonTemplate(`input.${fieldName}`, "json", key)}
             }`);
         } else {
-            toJsonParts.push(`if (typeof input.${key} !== 'undefined') {
+            toJsonParts.push(`if (typeof input.${fieldName} !== 'undefined') {
             if (_hasKey) json += ',';
             json += '"${key}":';
-            ${prop.toJsonTemplate(`input.${key}`, "json", key)}
+            ${prop.toJsonTemplate(`input.${fieldName}`, "json", key)}
             _hasKey = true;
         }`);
         }

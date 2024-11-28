@@ -12,8 +12,8 @@ use arri_client::{
     serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
-    ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel, InternalArriClientConfig,
+    ArriClientConfig, ArriClientService, ArriEnum, ArriError, ArriModel, ArriParsedRequestOptions,
+    EmptyArriModel, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
 
@@ -39,7 +39,7 @@ impl ArriClientService for ExampleClient {
 }
 
 impl ExampleClient {
-    pub async fn send_object(&self, params: NestedObject) -> Result<NestedObject, ArriServerError> {
+    pub async fn send_object(&self, params: NestedObject) -> Result<NestedObject, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -75,7 +75,7 @@ impl ArriClientService for ExampleClientBooksService {
 
 impl ExampleClientBooksService {
     /// Get a book
-    pub async fn get_book(&self, params: BookParams) -> Result<Book, ArriServerError> {
+    pub async fn get_book(&self, params: BookParams) -> Result<Book, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -92,7 +92,7 @@ impl ExampleClientBooksService {
 
     /// Create a book
     #[deprecated]
-    pub async fn create_book(&self, params: Book) -> Result<Book, ArriServerError> {
+    pub async fn create_book(&self, params: Book) -> Result<Book, ArriError> {
         parsed_arri_request(
             ArriParsedRequestOptions {
                 http_client: &self._config.http_client,
@@ -595,7 +595,7 @@ impl ArriModel for ObjectWithEveryType {
             if _index_ != 0 {
                 _json_output_.push(',');
             }
-            _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+            _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
             _json_output_.push_str(_value_.to_string().as_str());
         }
         _json_output_.push('}');
@@ -1247,7 +1247,7 @@ impl ArriModel for ObjectWithOptionalFields {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
                     _json_output_.push_str(_value_.to_string().as_str());
                 }
                 _json_output_.push('}');
@@ -1796,7 +1796,7 @@ impl ArriModel for ObjectWithNullableFields {
                     if _index_ != 0 {
                         _json_output_.push(',');
                     }
-                    _json_output_.push_str(format!("\"{}\":", _key_).as_str());
+                    _json_output_.push_str(format!("{}:", serialize_string(_key_)).as_str());
                     _json_output_.push_str(_value_.to_string().as_str());
                 }
                 _json_output_.push('}');

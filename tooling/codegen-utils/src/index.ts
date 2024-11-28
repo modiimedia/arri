@@ -1,4 +1,5 @@
 import {
+    Schema,
     type SchemaFormDiscriminator,
     type SchemaFormProperties,
 } from "jtd-utils";
@@ -43,7 +44,7 @@ export interface AppDefinition {
         url: string;
     };
     procedures: Record<string, RpcDefinition<string>>;
-    definitions: Record<string, SchemaFormProperties | SchemaFormDiscriminator>;
+    definitions: Record<string, Schema>;
 }
 
 export function isAppDefinition(input: unknown): input is AppDefinition {
@@ -231,7 +232,7 @@ export function normalizeWhitespace(input: string) {
 }
 
 export interface Generator<TOptions extends Record<string, any> | undefined> {
-    generator: (def: AppDefinition, isDevServer?: boolean) => any;
+    run: (def: AppDefinition, isDevServer?: boolean) => any;
     options: TOptions;
 }
 

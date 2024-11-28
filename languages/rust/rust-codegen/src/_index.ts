@@ -58,7 +58,8 @@ export interface RustClientGeneratorOptions {
 export const rustClientGenerator = defineGeneratorPlugin(
     (options: RustClientGeneratorOptions) => {
         return {
-            generator(def) {
+            options,
+            run(def) {
                 const context: GeneratorContext = {
                     clientVersion: def.info?.version ?? "",
                     clientName: options.clientName ?? "Client",
@@ -83,7 +84,6 @@ export const rustClientGenerator = defineGeneratorPlugin(
                     }
                 }
             },
-            options,
         };
     },
 );
@@ -92,7 +92,6 @@ export function createRustClient(
     def: AppDefinition,
     context: Omit<GeneratorContext, "clientVersion">,
 ): string {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const services = unflattenProcedures(def.procedures);
     const rpcParts: string[] = [];
     const subServices: { name: string; key: string }[] = [];
@@ -172,7 +171,7 @@ use arri_client::{
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
     utils::{serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
-    ArriServerError, EmptyArriModel, InternalArriClientConfig,
+    ArriError, EmptyArriModel, InternalArriClientConfig,
 };
 use std::collections::{BTreeMap, HashMap};
 

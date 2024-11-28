@@ -30,6 +30,7 @@ export function tsServiceFromDefinition(
                 discriminatorValue: "",
                 versionNumber: context.versionNumber,
                 usedFeatures: context.usedFeatures,
+                rpcGenerators: context.rpcGenerators,
             });
             if (subService.content) {
                 subServices.push(subService);
@@ -48,6 +49,7 @@ export function tsServiceFromDefinition(
                 discriminatorValue: "",
                 versionNumber: context.versionNumber,
                 usedFeatures: context.usedFeatures,
+                rpcGenerators: context.rpcGenerators,
             });
             if (rpc) {
                 rpcParts.push(rpc);

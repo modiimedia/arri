@@ -18,8 +18,8 @@ mod tests {
     };
 
     use crate::test_client::{
-        AutoReconnectParams, ChatMessageParams, StreamConnectionErrorTestParams,
-        StreamLargeObjectsResponse,
+        self, AutoReconnectParams, ChatMessageParams, ObjectWithPascalCaseKeys,
+        ObjectWithSnakeCaseKeys, StreamConnectionErrorTestParams, StreamLargeObjectsResponse,
     };
     #[allow(deprecated)]
     use crate::test_client::{
@@ -58,6 +58,7 @@ mod tests {
         let mut record = BTreeMap::<String, u64>::new();
         record.insert("A".to_string(), 1);
         record.insert("B".to_string(), 0);
+        record.insert("\"C\"\t".to_string(), 1);
         let mut input = ObjectWithEveryType {
             any: serde_json::Value::String("hello world".to_string()),
             boolean: true,
@@ -115,6 +116,52 @@ mod tests {
         assert_eq!(result.as_ref().unwrap(), &input.clone());
         input.nested_object.data.data.id = "different value".to_string();
         assert_ne!(result.as_ref().unwrap(), &input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_objects_with_snake_case_keys() {
+        let client = TestClient::create(get_config(headers()));
+        let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
+        let mut input = ObjectWithSnakeCaseKeys {
+            created_at: target_date.fixed_offset(),
+            display_name: "John Doe".to_string(),
+            phone_number: None,
+            email_address: Some("johndoe@gmail.com".to_string()),
+            is_admin: Some(true),
+        };
+        let result = client
+            .tests
+            .send_object_with_snake_case_keys(input.clone())
+            .await;
+        assert_eq!(result.as_ref().unwrap(), &input.clone());
+        input.display_name = "something else".to_string();
+        assert_ne!(result.as_ref().unwrap(), &input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_objects_with_pascal_case_keys() {
+        let client = TestClient::create(get_config(headers()));
+        let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
+        let mut input = ObjectWithPascalCaseKeys {
+            created_at: target_date.fixed_offset(),
+            display_name: "John Doe".to_string(),
+            phone_number: None,
+            email_address: Some("johndoe@gmail.com".to_string()),
+            is_admin: Some(true),
+        };
+        let result = client
+            .tests
+            .send_object_with_pascal_case_keys(input.clone())
+            .await;
+        assert_eq!(result.as_ref().unwrap(), &input.clone());
+        input.display_name = "something else".to_string();
+        input.email_address = None;
+        assert_ne!(result.as_ref().unwrap(), &input);
+        let result2 = client
+            .tests
+            .send_object_with_pascal_case_keys(input.clone())
+            .await;
+        assert_eq!(result2.as_ref().unwrap(), &input);
     }
 
     #[tokio::test]

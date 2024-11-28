@@ -207,6 +207,50 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
         throw TestClientError.fromJson(response.bodyAsText())
     }
 
+    suspend fun sendObjectWithPascalCaseKeys(params: ObjectWithPascalCaseKeys): ObjectWithPascalCaseKeys {
+        val response = __prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers?.invoke(),
+        ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+        if (response.status.value in 200..299) {
+            return ObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
+        }
+        throw TestClientError.fromJson(response.bodyAsText())
+    }
+
+    suspend fun sendObjectWithSnakeCaseKeys(params: ObjectWithSnakeCaseKeys): ObjectWithSnakeCaseKeys {
+        val response = __prepareRequest(
+            client = httpClient,
+            url = "$baseUrl/rpcs/tests/send-object-with-snake-case-keys",
+            method = HttpMethod.Post,
+            params = params,
+            headers = headers?.invoke(),
+        ).execute()
+        if (response.headers["Content-Type"] != "application/json") {
+            throw TestClientError(
+                code = 0,
+                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                data = JsonPrimitive(response.bodyAsText()),
+                stack = null,
+            )
+        }
+        if (response.status.value in 200..299) {
+            return ObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
+        }
+        throw TestClientError.fromJson(response.bodyAsText())
+    }
+
     suspend fun sendPartialObject(params: ObjectWithEveryOptionalType): ObjectWithEveryOptionalType {
         val response = __prepareRequest(
             client = httpClient,
@@ -908,7 +952,7 @@ output += "{"
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += "\"${__entry.value}\""
             }
             output += "}"
@@ -1840,7 +1884,7 @@ if (record == null) {
                         if (__index != 0) {
                             output += ","
                         }
-                        output += "\"${__entry.key}\":"
+                        output += "${buildString { printQuoted(__entry.key) }}:"
                         output += when (__entry.value) {
                     is ULong -> "\"${__entry.value}\""
                     else -> "null"
@@ -2740,6 +2784,218 @@ val timestamp: Instant? = when (__input.jsonObject["timestamp"]) {
 
 
 
+data class ObjectWithPascalCaseKeys(
+    val createdAt: Instant,
+    val displayName: String,
+    val phoneNumber: String?,
+    val emailAddress: String? = null,
+    val isAdmin: Boolean? = null,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"CreatedAt\":"
+output += "\"${timestampFormatter.format(createdAt)}\""
+output += ",\"DisplayName\":"
+output += buildString { printQuoted(displayName) }
+output += ",\"PhoneNumber\":"
+output += when (phoneNumber) {
+                    is String -> buildString { printQuoted(phoneNumber) }
+                    else -> "null"
+                }
+if (emailAddress != null) {
+                output += ",\"EmailAddress\":"
+                output += buildString { printQuoted(emailAddress) }
+            }
+if (isAdmin != null) {
+                output += ",\"IsAdmin\":"
+                output += isAdmin
+            }
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add(
+                "CreatedAt=${
+                    timestampFormatter.format(createdAt)
+                }"
+        )
+queryParts.add("DisplayName=$displayName")
+queryParts.add("PhoneNumber=$phoneNumber")
+if (emailAddress != null) {
+            queryParts.add("EmailAddress=$emailAddress")
+        }
+if (isAdmin != null) {
+            queryParts.add("IsAdmin=$isAdmin")
+        }
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithPascalCaseKeys> {
+        @JvmStatic
+        override fun new(): ObjectWithPascalCaseKeys {
+            return ObjectWithPascalCaseKeys(
+                createdAt = Instant.now(),
+                displayName = "",
+                phoneNumber = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithPascalCaseKeys {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithPascalCaseKeys {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithPascalCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithPascalCaseKeys.")
+                return new()
+            }
+val createdAt: Instant = when (__input.jsonObject["CreatedAt"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["CreatedAt"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["CreatedAt"]!!.jsonPrimitive.content)
+                    else
+                        Instant.now()
+                else -> Instant.now()
+            }
+val displayName: String = when (__input.jsonObject["DisplayName"]) {
+                is JsonPrimitive -> __input.jsonObject["DisplayName"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+val phoneNumber: String? = when (__input.jsonObject["PhoneNumber"]) {
+                    is JsonPrimitive -> __input.jsonObject["PhoneNumber"]!!.jsonPrimitive.contentOrNull
+                    else -> null
+                }
+val emailAddress: String? = when (__input.jsonObject["EmailAddress"]) {
+                    is JsonPrimitive -> __input.jsonObject["EmailAddress"]!!.jsonPrimitive.contentOrNull
+                    else -> null
+                }
+val isAdmin: Boolean? = when (__input.jsonObject["IsAdmin"]) {
+                    is JsonPrimitive -> __input.jsonObject["IsAdmin"]!!.jsonPrimitive.booleanOrNull
+                    else -> null
+                }
+            return ObjectWithPascalCaseKeys(
+                createdAt,
+                displayName,
+                phoneNumber,
+                emailAddress,
+                isAdmin,
+            )
+        }
+    }
+}
+
+
+
+data class ObjectWithSnakeCaseKeys(
+    val createdAt: Instant,
+    val displayName: String,
+    val phoneNumber: String?,
+    val emailAddress: String? = null,
+    val isAdmin: Boolean? = null,
+) : TestClientModel {
+    override fun toJson(): String {
+var output = "{"
+output += "\"created_at\":"
+output += "\"${timestampFormatter.format(createdAt)}\""
+output += ",\"display_name\":"
+output += buildString { printQuoted(displayName) }
+output += ",\"phone_number\":"
+output += when (phoneNumber) {
+                    is String -> buildString { printQuoted(phoneNumber) }
+                    else -> "null"
+                }
+if (emailAddress != null) {
+                output += ",\"email_address\":"
+                output += buildString { printQuoted(emailAddress) }
+            }
+if (isAdmin != null) {
+                output += ",\"is_admin\":"
+                output += isAdmin
+            }
+output += "}"
+return output    
+    }
+
+    override fun toUrlQueryParams(): String {
+val queryParts = mutableListOf<String>()
+queryParts.add(
+                "created_at=${
+                    timestampFormatter.format(createdAt)
+                }"
+        )
+queryParts.add("display_name=$displayName")
+queryParts.add("phone_number=$phoneNumber")
+if (emailAddress != null) {
+            queryParts.add("email_address=$emailAddress")
+        }
+if (isAdmin != null) {
+            queryParts.add("is_admin=$isAdmin")
+        }
+return queryParts.joinToString("&")
+    }
+
+    companion object Factory : TestClientModelFactory<ObjectWithSnakeCaseKeys> {
+        @JvmStatic
+        override fun new(): ObjectWithSnakeCaseKeys {
+            return ObjectWithSnakeCaseKeys(
+                createdAt = Instant.now(),
+                displayName = "",
+                phoneNumber = null,
+            )
+        }
+
+        @JvmStatic
+        override fun fromJson(input: String): ObjectWithSnakeCaseKeys {
+            return fromJsonElement(JsonInstance.parseToJsonElement(input))
+        }
+
+        @JvmStatic
+        override fun fromJsonElement(__input: JsonElement, instancePath: String): ObjectWithSnakeCaseKeys {
+            if (__input !is JsonObject) {
+                __logError("[WARNING] ObjectWithSnakeCaseKeys.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty ObjectWithSnakeCaseKeys.")
+                return new()
+            }
+val createdAt: Instant = when (__input.jsonObject["created_at"]) {
+                is JsonPrimitive ->
+                    if (__input.jsonObject["created_at"]!!.jsonPrimitive.isString)
+                        Instant.parse(__input.jsonObject["created_at"]!!.jsonPrimitive.content)
+                    else
+                        Instant.now()
+                else -> Instant.now()
+            }
+val displayName: String = when (__input.jsonObject["display_name"]) {
+                is JsonPrimitive -> __input.jsonObject["display_name"]!!.jsonPrimitive.contentOrNull ?: ""
+                else -> ""
+            }
+val phoneNumber: String? = when (__input.jsonObject["phone_number"]) {
+                    is JsonPrimitive -> __input.jsonObject["phone_number"]!!.jsonPrimitive.contentOrNull
+                    else -> null
+                }
+val emailAddress: String? = when (__input.jsonObject["email_address"]) {
+                    is JsonPrimitive -> __input.jsonObject["email_address"]!!.jsonPrimitive.contentOrNull
+                    else -> null
+                }
+val isAdmin: Boolean? = when (__input.jsonObject["is_admin"]) {
+                    is JsonPrimitive -> __input.jsonObject["is_admin"]!!.jsonPrimitive.booleanOrNull
+                    else -> null
+                }
+            return ObjectWithSnakeCaseKeys(
+                createdAt,
+                displayName,
+                phoneNumber,
+                emailAddress,
+                isAdmin,
+            )
+        }
+    }
+}
+
+
+
 data class ObjectWithEveryOptionalType(
     val any: JsonElement? = null,
     val boolean: Boolean? = null,
@@ -2899,7 +3155,7 @@ if (record != null) {
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += "\"${__entry.value}\""
             }
             output += "}"
@@ -5006,418 +5262,6 @@ val message: String = when (__input.jsonObject["message"]) {
 
 
 
-sealed interface WsMessageParams : TestClientModel {
-    val type: String
-
-    companion object Factory : TestClientModelFactory<WsMessageParams> {
-        @JvmStatic
-        override fun new(): WsMessageParams {
-            return WsMessageParamsCreateEntity.new()
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageParams {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageParams {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageParams.")
-                return new()
-            }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "CREATE_ENTITY" -> WsMessageParamsCreateEntity.fromJsonElement(__input, instancePath)
-"UPDATE_ENTITY" -> WsMessageParamsUpdateEntity.fromJsonElement(__input, instancePath)
-"DISCONNECT" -> WsMessageParamsDisconnect.fromJsonElement(__input, instancePath)
-                    else -> new()
-                }
-
-                else -> new()
-            }
-        }
-    }
-}
-
-data class WsMessageParamsCreateEntity(
-    val entityId: String,
-    val x: Double,
-    val y: Double,
-) : WsMessageParams {
-    override val type get() = "CREATE_ENTITY"
-
-    override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"CREATE_ENTITY\""
-output += ",\"entityId\":"
-output += buildString { printQuoted(entityId) }
-output += ",\"x\":"
-output += x
-output += ",\"y\":"
-output += y
-output += "}"
-return output    
-    }
-
-    override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=CREATE_ENTITY")
-queryParts.add("entityId=$entityId")
-queryParts.add("x=$x")
-queryParts.add("y=$y")
-return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientModelFactory<WsMessageParamsCreateEntity> {
-        @JvmStatic
-        override fun new(): WsMessageParamsCreateEntity {
-            return WsMessageParamsCreateEntity(
-                entityId = "",
-                x = 0.0,
-                y = 0.0,
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageParamsCreateEntity {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageParamsCreateEntity {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] WsMessageParamsCreateEntity.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageParamsCreateEntity.")
-                return new()
-            }
-val entityId: String = when (__input.jsonObject["entityId"]) {
-                is JsonPrimitive -> __input.jsonObject["entityId"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-val x: Double = when (__input.jsonObject["x"]) {
-                is JsonPrimitive -> __input.jsonObject["x"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-val y: Double = when (__input.jsonObject["y"]) {
-                is JsonPrimitive -> __input.jsonObject["y"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-            return WsMessageParamsCreateEntity(
-                entityId,
-                x,
-                y,
-            )
-        }
-    }
-}
-
-
-
-data class WsMessageParamsUpdateEntity(
-    val entityId: String,
-    val x: Double,
-    val y: Double,
-) : WsMessageParams {
-    override val type get() = "UPDATE_ENTITY"
-
-    override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"UPDATE_ENTITY\""
-output += ",\"entityId\":"
-output += buildString { printQuoted(entityId) }
-output += ",\"x\":"
-output += x
-output += ",\"y\":"
-output += y
-output += "}"
-return output    
-    }
-
-    override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=UPDATE_ENTITY")
-queryParts.add("entityId=$entityId")
-queryParts.add("x=$x")
-queryParts.add("y=$y")
-return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientModelFactory<WsMessageParamsUpdateEntity> {
-        @JvmStatic
-        override fun new(): WsMessageParamsUpdateEntity {
-            return WsMessageParamsUpdateEntity(
-                entityId = "",
-                x = 0.0,
-                y = 0.0,
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageParamsUpdateEntity {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageParamsUpdateEntity {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] WsMessageParamsUpdateEntity.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageParamsUpdateEntity.")
-                return new()
-            }
-val entityId: String = when (__input.jsonObject["entityId"]) {
-                is JsonPrimitive -> __input.jsonObject["entityId"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-val x: Double = when (__input.jsonObject["x"]) {
-                is JsonPrimitive -> __input.jsonObject["x"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-val y: Double = when (__input.jsonObject["y"]) {
-                is JsonPrimitive -> __input.jsonObject["y"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-            return WsMessageParamsUpdateEntity(
-                entityId,
-                x,
-                y,
-            )
-        }
-    }
-}
-
-
-
-data class WsMessageParamsDisconnect(
-    val reason: String,
-) : WsMessageParams {
-    override val type get() = "DISCONNECT"
-
-    override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"DISCONNECT\""
-output += ",\"reason\":"
-output += buildString { printQuoted(reason) }
-output += "}"
-return output    
-    }
-
-    override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=DISCONNECT")
-queryParts.add("reason=$reason")
-return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientModelFactory<WsMessageParamsDisconnect> {
-        @JvmStatic
-        override fun new(): WsMessageParamsDisconnect {
-            return WsMessageParamsDisconnect(
-                reason = "",
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageParamsDisconnect {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageParamsDisconnect {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] WsMessageParamsDisconnect.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageParamsDisconnect.")
-                return new()
-            }
-val reason: String = when (__input.jsonObject["reason"]) {
-                is JsonPrimitive -> __input.jsonObject["reason"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-            return WsMessageParamsDisconnect(
-                reason,
-            )
-        }
-    }
-}
-
-
-
-sealed interface WsMessageResponse : TestClientModel {
-    val type: String
-
-    companion object Factory : TestClientModelFactory<WsMessageResponse> {
-        @JvmStatic
-        override fun new(): WsMessageResponse {
-            return WsMessageResponseEntityCreated.new()
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageResponse {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageResponse {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] Discriminator.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageResponse.")
-                return new()
-            }
-            return when (__input.jsonObject["type"]) {
-                is JsonPrimitive -> when (__input.jsonObject["type"]!!.jsonPrimitive.contentOrNull) {
-                    "ENTITY_CREATED" -> WsMessageResponseEntityCreated.fromJsonElement(__input, instancePath)
-"ENTITY_UPDATED" -> WsMessageResponseEntityUpdated.fromJsonElement(__input, instancePath)
-                    else -> new()
-                }
-
-                else -> new()
-            }
-        }
-    }
-}
-
-data class WsMessageResponseEntityCreated(
-    val entityId: String,
-    val x: Double,
-    val y: Double,
-) : WsMessageResponse {
-    override val type get() = "ENTITY_CREATED"
-
-    override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"ENTITY_CREATED\""
-output += ",\"entityId\":"
-output += buildString { printQuoted(entityId) }
-output += ",\"x\":"
-output += x
-output += ",\"y\":"
-output += y
-output += "}"
-return output    
-    }
-
-    override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=ENTITY_CREATED")
-queryParts.add("entityId=$entityId")
-queryParts.add("x=$x")
-queryParts.add("y=$y")
-return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientModelFactory<WsMessageResponseEntityCreated> {
-        @JvmStatic
-        override fun new(): WsMessageResponseEntityCreated {
-            return WsMessageResponseEntityCreated(
-                entityId = "",
-                x = 0.0,
-                y = 0.0,
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageResponseEntityCreated {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageResponseEntityCreated {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] WsMessageResponseEntityCreated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageResponseEntityCreated.")
-                return new()
-            }
-val entityId: String = when (__input.jsonObject["entityId"]) {
-                is JsonPrimitive -> __input.jsonObject["entityId"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-val x: Double = when (__input.jsonObject["x"]) {
-                is JsonPrimitive -> __input.jsonObject["x"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-val y: Double = when (__input.jsonObject["y"]) {
-                is JsonPrimitive -> __input.jsonObject["y"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-            return WsMessageResponseEntityCreated(
-                entityId,
-                x,
-                y,
-            )
-        }
-    }
-}
-
-
-
-data class WsMessageResponseEntityUpdated(
-    val entityId: String,
-    val x: Double,
-    val y: Double,
-) : WsMessageResponse {
-    override val type get() = "ENTITY_UPDATED"
-
-    override fun toJson(): String {
-var output = "{"
-output += "\"type\":\"ENTITY_UPDATED\""
-output += ",\"entityId\":"
-output += buildString { printQuoted(entityId) }
-output += ",\"x\":"
-output += x
-output += ",\"y\":"
-output += y
-output += "}"
-return output    
-    }
-
-    override fun toUrlQueryParams(): String {
-val queryParts = mutableListOf<String>()
-queryParts.add("type=ENTITY_UPDATED")
-queryParts.add("entityId=$entityId")
-queryParts.add("x=$x")
-queryParts.add("y=$y")
-return queryParts.joinToString("&")
-    }
-
-    companion object Factory : TestClientModelFactory<WsMessageResponseEntityUpdated> {
-        @JvmStatic
-        override fun new(): WsMessageResponseEntityUpdated {
-            return WsMessageResponseEntityUpdated(
-                entityId = "",
-                x = 0.0,
-                y = 0.0,
-            )
-        }
-
-        @JvmStatic
-        override fun fromJson(input: String): WsMessageResponseEntityUpdated {
-            return fromJsonElement(JsonInstance.parseToJsonElement(input))
-        }
-
-        @JvmStatic
-        override fun fromJsonElement(__input: JsonElement, instancePath: String): WsMessageResponseEntityUpdated {
-            if (__input !is JsonObject) {
-                __logError("[WARNING] WsMessageResponseEntityUpdated.fromJsonElement() expected kotlinx.serialization.json.JsonObject at $instancePath. Got ${__input.javaClass}. Initializing empty WsMessageResponseEntityUpdated.")
-                return new()
-            }
-val entityId: String = when (__input.jsonObject["entityId"]) {
-                is JsonPrimitive -> __input.jsonObject["entityId"]!!.jsonPrimitive.contentOrNull ?: ""
-                else -> ""
-            }
-val x: Double = when (__input.jsonObject["x"]) {
-                is JsonPrimitive -> __input.jsonObject["x"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-val y: Double = when (__input.jsonObject["y"]) {
-                is JsonPrimitive -> __input.jsonObject["y"]!!.jsonPrimitive.doubleOrNull ?: 0.0
-                else -> 0.0
-            }
-            return WsMessageResponseEntityUpdated(
-                entityId,
-                x,
-                y,
-            )
-        }
-    }
-}
-
-
-
 data class UsersWatchUserParams(
     val userId: String,
 ) : TestClientModel {
@@ -5512,7 +5356,7 @@ output += "{"
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += __entry.value.toJson()
             }
             output += "}"
@@ -5522,7 +5366,7 @@ output += "{"
                 if (__index != 0) {
                     output += ","
                 }
-                output += "\"${__entry.key}\":"
+                output += "${buildString { printQuoted(__entry.key) }}:"
                 output += JsonInstance.encodeToString(__entry.value)
             }
             output += "}"
