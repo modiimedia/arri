@@ -99,7 +99,7 @@ jobs:
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: 3.4.4
+          sdk: 3.5.4
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Setup Gradle
@@ -143,7 +143,7 @@ jobs:
       - name: Install Dart
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: 3.4.4
+          sdk: 3.5.4
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Setup Gradle
