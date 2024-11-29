@@ -61,9 +61,13 @@ then add `ArriClient` as a dependency to your target
 let client = MyClient(
     baseURL: "https://example.com",
     delegate: DefaultRequestDelegate(),
-    headers {
+    headers: {
         var headers: Dictionary<String, String> = Dictionary()
         return headers
+    },
+    // optional
+    onError: { err in
+        // do something
     }
 )
 
@@ -156,14 +160,14 @@ await task.result
 
 #### Available Event Source Options
 
--   `onMessage` - Closure that fires whenever a "message" event is received from the server. This is the only required option.
--   `onRequest` - Closure that fires when a request has been created but has not been executed yet.
--   `onRequestError` - Closure that fires when there was an error in creating the request (i.e. a malformed URL), or if we were unable to connect to the server. (i.e a `connectionRefused` error)
--   `onResponse` - Closure that fires when we receive a response from the server
--   `onResponseError` - Closure that fires when the server has not responded with status code from `200` - `299` or the `Content-Type` header does not contain `text/event-stream`
--   `onClose` - Closure that fires when the EventSource is closed. (This will only fire if the EventSource was already able successfully receive a response from the server.)
--   `maxRetryCount` - Limit the number of times that the EventSource tries to reconnect to the server. When set to `nil` it will retry indefinitely. (Default is `nil`)
--   `maxRetryInterval` - Set the max delay time between retries in milliseconds. Default is `30000`.
+- `onMessage` - Closure that fires whenever a "message" event is received from the server. This is the only required option.
+- `onRequest` - Closure that fires when a request has been created but has not been executed yet.
+- `onRequestError` - Closure that fires when there was an error in creating the request (i.e. a malformed URL), or if we were unable to connect to the server. (i.e a `connectionRefused` error)
+- `onResponse` - Closure that fires when we receive a response from the server
+- `onResponseError` - Closure that fires when the server has not responded with status code from `200` - `299` or the `Content-Type` header does not contain `text/event-stream`
+- `onClose` - Closure that fires when the EventSource is closed. (This will only fire if the EventSource was already able successfully receive a response from the server.)
+- `maxRetryCount` - Limit the number of times that the EventSource tries to reconnect to the server. When set to `nil` it will retry indefinitely. (Default is `nil`)
+- `maxRetryInterval` - Set the max delay time between retries in milliseconds. Default is `30000`.
 
 ## Additional Notes
 

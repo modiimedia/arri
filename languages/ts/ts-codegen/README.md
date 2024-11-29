@@ -53,6 +53,10 @@ const client = new MyClient({
             Authorization: "<some-token>",
         };
     },
+    // optional
+    onError: (err) => {
+        // do something
+    },
 });
 
 await client.myProcedure();

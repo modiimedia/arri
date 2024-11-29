@@ -37,33 +37,40 @@ class ExampleClient(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun sendObject(params: NestedObject): NestedObject {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/send-object",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
-            throw ExampleClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/send-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw ExampleClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return NestedObject.fromJson(response.bodyAsText())
+            }
+            throw ExampleClientError.fromJson(response.bodyAsText())
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        if (response.status.value in 200..299) {
-            return NestedObject.fromJson(response.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
     val books: ExampleClientBooksService = ExampleClientBooksService(
         httpClient = httpClient,
         baseUrl = baseUrl,
         headers = headers,
+        onError = onError,
     )
 }
 
@@ -71,30 +78,37 @@ class ExampleClientBooksService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     /**
      * Get a book
      */
     suspend fun getBook(params: BookParams): Book {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/books/get-book",
-            method = HttpMethod.Get,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
-            throw ExampleClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/books/get-book",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw ExampleClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return Book.fromJson(response.bodyAsText())
+            }
+            throw ExampleClientError.fromJson(response.bodyAsText())
+
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        if (response.status.value in 200..299) {
-            return Book.fromJson(response.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
     /**
@@ -102,25 +116,31 @@ class ExampleClientBooksService(
      */
     @Deprecated(message = "This method was marked as deprecated by the server")
     suspend fun createBook(params: Book): Book {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/books/create-book",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
-            throw ExampleClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/books/create-book",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw ExampleClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return Book.fromJson(response.bodyAsText())
+            }
+            throw ExampleClientError.fromJson(response.bodyAsText())
+
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        if (response.status.value in 200..299) {
-            return Book.fromJson(response.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
     @Deprecated(message = "This method was marked as deprecated by the server")
@@ -147,6 +167,7 @@ class ExampleClientBooksService(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
+            onError = onError,
             onRequestError = onRequestError,
             onResponseError = onResponseError,
             onData = { str ->
@@ -1977,8 +1998,9 @@ private suspend fun __handleSseRequest(
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onRequestError: ((error: Exception) -> Unit) = {},
-    onResponseError: ((error: ExampleClientError) -> Unit) = {},
+    onError: ((err: Exception) -> Unit) = {},
+    onRequestError: ((err: Exception) -> Unit) = {},
+    onResponseError: ((err: ExampleClientError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
@@ -2013,18 +2035,18 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        onResponseError(
-                            ExampleClientError.fromJson(httpResponse.bodyAsText())
-                        )
+                        val err = ExampleClientError.fromJson(httpResponse.bodyAsText())
+                        onError(err)
+                        onResponseError(err)
                     } else {
-                        onResponseError(
-                            ExampleClientError(
-                                code = httpResponse.status.value,
-                                errorMessage = httpResponse.status.description,
-                                data = JsonPrimitive(httpResponse.bodyAsText()),
-                                stack = null,
-                            )
+                        val err = ExampleClientError(
+                            code = httpResponse.status.value,
+                            errorMessage = httpResponse.status.description,
+                            data = JsonPrimitive(httpResponse.bodyAsText()),
+                            stack = null,
                         )
+                        onError(err)
+                        onResponseError(err)
                     }
                 } catch (e: CancellationException) {
                     onClose()
@@ -2044,19 +2066,21 @@ private suspend fun __handleSseRequest(
                     onOpen = onOpen,
                     onClose = onClose,
                     onData = onData,
+                    onError = onError,
+                    onRequestError = onRequestError,
                     onResponseError = onResponseError,
                 )
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    onResponseError(
-                        ExampleClientError(
-                            code = 0,
-                            errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
-                            data = JsonPrimitive(httpResponse.bodyAsText()),
-                            stack = null,
-                        )
+                    val err = ExampleClientError(
+                        code = 0,
+                        errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
+                        data = JsonPrimitive(httpResponse.bodyAsText()),
+                        stack = null,
                     )
+                    onError(err)
+                    onResponseError(err)
                 } catch (e: CancellationException) {
                     httpResponse.cancel()
                     return@execute
@@ -2074,6 +2098,8 @@ private suspend fun __handleSseRequest(
                     onOpen = onOpen,
                     onClose = onClose,
                     onData = onData,
+                    onError = onError,
+                    onRequestError = onRequestError,
                     onResponseError = onResponseError,
                 )
             }
@@ -2125,10 +2151,13 @@ private suspend fun __handleSseRequest(
                 onOpen = onOpen,
                 onClose = onClose,
                 onData = onData,
+                onError = onError,
+                onRequestError = onRequestError,
                 onResponseError = onResponseError,
             )
         }
     } catch (e: java.net.ConnectException) {
+        onError(e)
         onRequestError(e)
         return __handleSseRequest(
             httpClient = httpClient,
@@ -2143,9 +2172,12 @@ private suspend fun __handleSseRequest(
             onOpen = onOpen,
             onClose = onClose,
             onData = onData,
+            onError = onError,
+            onRequestError = onRequestError,
             onResponseError = onResponseError,
         )
     } catch (e: Exception) {
+        onError(e)
         onRequestError(e)
         return __handleSseRequest(
             httpClient = httpClient,
@@ -2160,6 +2192,8 @@ private suspend fun __handleSseRequest(
             onOpen = onOpen,
             onClose = onClose,
             onData = onData,
+            onError = onError,
+            onRequestError = onRequestError,
             onResponseError = onResponseError,
         )
     }

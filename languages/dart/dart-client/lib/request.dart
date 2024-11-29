@@ -126,26 +126,36 @@ Future<T> parsedArriRequest<T, E extends Exception>(
   HttpMethod method = HttpMethod.post,
   Map<String, dynamic>? params,
   FutureOr<Map<String, String>> Function()? headers,
+  Function(Object)? onError,
   String? clientVersion,
   required T Function(String) parser,
 }) async {
-  final result = await arriRequest(
-    url,
-    httpClient: httpClient,
-    method: method,
-    params: params,
-    headers: headers,
-    clientVersion: clientVersion,
-  );
-  if (result.statusCode >= 200 && result.statusCode <= 299) {
-    return parser(utf8.decode(result.bodyBytes));
+  final http.Response result;
+
+  try {
+    result = await arriRequest(
+      url,
+      httpClient: httpClient,
+      method: method,
+      params: params,
+      headers: headers,
+      clientVersion: clientVersion,
+    );
+    if (result.statusCode >= 200 && result.statusCode <= 299) {
+      return parser(utf8.decode(result.bodyBytes));
+    }
+  } catch (err) {
+    onError?.call(err);
+    rethrow;
   }
-  throw ArriError.fromResponse(result);
+  final err = ArriError.fromResponse(result);
+  onError?.call(err);
+  throw err;
 }
 
 /// Perform a raw HTTP request to an Arri RPC server. This function does not thrown an error. Instead it returns a request result
 /// in which both value and the error can be null.
-Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
+Future<ArriResult<T>> parsedArriRequestSafe<T>(
   String url, {
   http.Client? httpClient,
   HttpMethod httpMethod = HttpMethod.get,
@@ -164,22 +174,65 @@ Future<ArriRequestResult<T>> parsedArriRequestSafe<T>(
       method: httpMethod,
       httpClient: httpClient,
     );
-    return ArriRequestResult(value: result);
+    return ArriResultOk(result);
   } catch (err) {
-    return ArriRequestResult(error: err is ArriError ? err : null);
+    return ArriResultErr(
+      err is ArriError
+          ? err
+          : ArriError(
+              code: 0,
+              message: err.toString(),
+              data: err,
+            ),
+    );
   }
 }
 
-/// Container for holding a request result or a request error
-class ArriRequestResult<T> {
-  final T? value;
-  final ArriError? error;
-  const ArriRequestResult({this.value, this.error});
+/// Container for holding a request data or a request error
+sealed class ArriResult<T> {
+  bool get isOk;
+  bool get isErr;
+  T? get unwrap;
+  T unwrapOr(T fallback);
+  ArriError? get unwrapErr;
 }
 
-/// Abstract endpoint to use as a base for generated client route enums
-abstract class ArriEndpoint {
-  final String path;
-  final HttpMethod method;
-  const ArriEndpoint({required this.path, required this.method});
+class ArriResultOk<T> implements ArriResult<T> {
+  final T _data;
+  const ArriResultOk(this._data);
+
+  @override
+  bool get isOk => true;
+
+  @override
+  bool get isErr => false;
+
+  @override
+  T get unwrap => _data;
+
+  @override
+  T unwrapOr(T fallback) => _data;
+
+  @override
+  ArriError? get unwrapErr => null;
+}
+
+class ArriResultErr<T> implements ArriResult<T> {
+  final ArriError _err;
+  const ArriResultErr(this._err);
+
+  @override
+  bool get isErr => true;
+
+  @override
+  bool get isOk => false;
+
+  @override
+  T? get unwrap => null;
+
+  @override
+  ArriError get unwrapErr => _err;
+
+  @override
+  T unwrapOr(T fallback) => fallback;
 }

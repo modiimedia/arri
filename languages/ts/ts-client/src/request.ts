@@ -15,6 +15,7 @@ export interface ArriRequestOpts<
     params?: TParams;
     responseFromJson: (input: Record<string, unknown>) => TType;
     responseFromString: (input: string) => TType;
+    onError?: (err: unknown) => void;
     serializer: (
         input: TParams,
     ) => TParams extends undefined ? undefined : string;
@@ -54,10 +55,11 @@ export async function arriRequest<
         return opts.responseFromJson(result);
     } catch (err) {
         const error = err as any as FetchError;
+        let arriError: ArriErrorInstance;
         if (isArriError(error.data)) {
-            throw new ArriErrorInstance(error.data);
+            arriError = new ArriErrorInstance(error.data);
         } else {
-            throw new ArriErrorInstance({
+            arriError = new ArriErrorInstance({
                 code: error.statusCode ?? 500,
                 message:
                     error.statusMessage ??
@@ -67,6 +69,8 @@ export async function arriRequest<
                 stack: error.stack,
             });
         }
+        if (opts.onError) opts.onError(arriError);
+        throw arriError;
     }
 }
 

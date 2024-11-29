@@ -75,7 +75,8 @@ export function swiftHttpProcedureFromSchema(
             method: "${schema.method.toUpperCase()}",
             headers: self.headers,
             clientVersion: "${context.clientVersion}",
-            ${params ? `params: params` : "params: EmptyArriModel()"}
+            ${params ? `params: params` : "params: EmptyArriModel()"},
+            onError: onError
         )
         ${response ? `return result` : ""}
     }`;
@@ -175,21 +176,25 @@ public class ${serviceName} {
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void
 ${services.map((service) => `    public let ${service.key}: ${service.typeName}`).join("\n")}
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
     ) {
         self.baseURL = baseURL
         self.delegate = delegate
         self.headers = headers
+        self.onError = onError
 ${services
     .map(
         (service) => `        self.${service.key} = ${service.typeName}(
             baseURL: baseURL,
             delegate: delegate,
-            headers: headers
+            headers: headers,
+            onError: onError
         )`,
     )
     .join("\n")}    

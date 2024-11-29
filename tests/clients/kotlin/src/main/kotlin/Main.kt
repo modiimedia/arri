@@ -17,11 +17,7 @@ fun main() {
             mutableMapOf(Pair("x-test-header", "12345"))
         }
     )
-    val unauthenticatedClient = TestClient(
-        httpClient = httpClient,
-        baseUrl = "http://localhost:2020",
-        null
-    )
+
     val targetDate = Instant.parse("2002-02-02T08:02:00.000Z")
 
     runBlocking {
@@ -115,6 +111,15 @@ fun main() {
     }
 
     runBlocking {
+        var didCallOnErr = false
+        val unauthenticatedClient = TestClient(
+            httpClient = httpClient,
+            baseUrl = "http://localhost:2020",
+            null,
+            onError = { _ ->
+                didCallOnErr = true
+            }
+        )
         val tag = "UNAUTHENTICATED REQUEST RETURNS ERROR"
         try {
             unauthenticatedClient.tests.sendObject(objectInput)
@@ -125,6 +130,7 @@ fun main() {
             // this should never be reached
             expect(tag, input = false, result = true)
         }
+        expect(tag, input = didCallOnErr, result = true)
     }
 
     runBlocking {

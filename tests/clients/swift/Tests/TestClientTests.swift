@@ -3,6 +3,7 @@ import ArriClient
 @testable import TestClientSwift
 
 final class TestSwiftClientTests: XCTestCase {
+    let baseUrl = "http://localhost:2020"
     let client = TestClient(
         baseURL: "http://localhost:2020",
         delegate: DefaultRequestDelegate(),
@@ -12,13 +13,7 @@ final class TestSwiftClientTests: XCTestCase {
             return headers
         }
     )
-    let unauthenticatedClient = TestClient(
-        baseURL: "http://localhost:2020",
-        delegate: DefaultRequestDelegate(),
-        headers: {
-            return Dictionary()
-        }
-    )
+    
     let testDate = Date(timeIntervalSince1970: 500000)
     func testSendObject() async throws {
         let input = ObjectWithEveryType(
@@ -180,6 +175,17 @@ final class TestSwiftClientTests: XCTestCase {
     }
 
     func testSendUnauthenticatedRequest() async {
+        var firedOnError = false
+        let unauthenticatedClient = TestClient(
+            baseURL: baseUrl,
+            delegate: DefaultRequestDelegate(),
+            headers: {
+                return Dictionary()
+            },
+            onError: { _ in 
+                firedOnError = true
+            }
+        )
         var didError = false
         do {
             let _ = try await unauthenticatedClient.tests.sendObject(ObjectWithEveryType())
@@ -192,6 +198,7 @@ final class TestSwiftClientTests: XCTestCase {
             }
         }
         XCTAssert(didError)
+        XCTAssert(firedOnError)
     }
 
     func testRpcWithNoParams() async throws {

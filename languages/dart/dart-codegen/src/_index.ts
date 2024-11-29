@@ -167,14 +167,17 @@ class ${clientName} {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "${context.clientVersion ?? ""}";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   ${clientName}({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   }) : _httpClient = httpClient,
        _baseUrl = baseUrl,
-       _headers = headers;
+       _headers = headers,
+       _onError = onError;
   
   ${rpcParts.join("\n\n")}
 
@@ -184,6 +187,7 @@ ${subServices
           baseUrl: _baseUrl,
           headers: _headers,
           httpClient: _httpClient,
+          onError: _onError,
         );`,
     )
     .join("\n\n")}

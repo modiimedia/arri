@@ -87,7 +87,6 @@ export async function arriWsRequest<
     } catch (err) {
         console.error(err);
         if (opts.onConnectionError) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             opts.onConnectionError(err as any);
         }
         return arriWsRequest(opts, retryCount + 1);

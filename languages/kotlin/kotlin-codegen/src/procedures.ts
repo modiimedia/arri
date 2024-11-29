@@ -76,6 +76,7 @@ export function kotlinHttpRpcFromSchema(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -94,18 +95,23 @@ export function kotlinHttpRpcFromSchema(
             )
         }`;
     return `${codeComment}suspend fun ${name}(${params ? `params: ${params}` : ""}): ${response ?? "Unit"} {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl${schema.path}",
-            method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
-            params = ${params ? "params" : null},
-            headers = headers?.invoke(),
-        ).execute()
-        ${response ? headingCheck : ""}
-        if (response.status.value in 200..299) {
-            return ${response ? `${response}.fromJson(response.bodyAsText())` : ""}
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl${schema.path}",
+                method = HttpMethod.${pascalCase(schema.method, { normalize: true })},
+                params = ${params ? "params" : null},
+                headers = headers?.invoke(),
+            ).execute()
+            ${response ? headingCheck : ""}
+            if (response.status.value in 200..299) {
+                return ${response ? `${response}.fromJson(response.bodyAsText())` : ""}
+            }
+            throw ${context.clientName}Error.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw ${context.clientName}Error.fromJson(response.bodyAsText())
     }`;
 }
 
@@ -140,6 +146,7 @@ export function kotlinServiceFromSchema(
                 httpClient = httpClient,
                 baseUrl = baseUrl,
                 headers = headers,
+                onError = onError,
             )`);
             if (subService.content) {
                 subServiceParts.push(subService.content);
@@ -163,6 +170,7 @@ export function kotlinServiceFromSchema(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     ${procedureParts.join("\n\n    ")}
 }

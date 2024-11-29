@@ -59,6 +59,7 @@ export function httpRpcFromDefinition(
                 url: \`\${this._baseUrl}${def.path}\`,
                 method: "${def.method.toLowerCase()}",
                 headers: this._headers,
+                onError: this._onError,
                 ${params ? "params: params," : ""}
                 responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
                 responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},
@@ -66,7 +67,7 @@ export function httpRpcFromDefinition(
                 clientVersion: "${context.versionNumber}",
             },
             options,
-        )
+        );
     }`;
     }
     return `${getJsDocComment({
@@ -77,6 +78,7 @@ export function httpRpcFromDefinition(
             url: \`\${this._baseUrl}${def.path}\`,
             method: "${def.method.toLowerCase()}",
             headers: this._headers,
+            onError: this._onError,
             ${params ? "params: params," : ""}
             responseFromJson: ${response ? `$$${response}.fromJson` : "() => {}"},
             responseFromString: ${response ? `$$${response}.fromJsonString` : "() => {}"},

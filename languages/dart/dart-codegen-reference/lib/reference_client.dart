@@ -9,14 +9,17 @@ class ExampleClient {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "20";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   ExampleClient({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
-        _headers = headers;
+        _headers = headers,
+        _onError = onError;
 
   Future<NestedObject> sendObject(NestedObject params) async {
     return parsedArriRequest(
@@ -27,6 +30,7 @@ class ExampleClient {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => NestedObject.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -34,6 +38,7 @@ class ExampleClient {
         baseUrl: _baseUrl,
         headers: _headers,
         httpClient: _httpClient,
+        onError: _onError,
       );
 }
 
@@ -41,14 +46,17 @@ class ExampleClientBooksService {
   final http.Client? _httpClient;
   final String _baseUrl;
   final String _clientVersion = "20";
-  late final FutureOr<Map<String, String>> Function()? _headers;
+  final FutureOr<Map<String, String>> Function()? _headers;
+  final Function(Object)? _onError;
   ExampleClientBooksService({
     http.Client? httpClient,
     required String baseUrl,
     FutureOr<Map<String, String>> Function()? headers,
+    Function(Object)? onError,
   })  : _httpClient = httpClient,
         _baseUrl = baseUrl,
-        _headers = headers;
+        _headers = headers,
+        _onError = onError;
 
   /// Get a book
   Future<Book> getBook(BookParams params) async {
@@ -60,6 +68,7 @@ class ExampleClientBooksService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -74,6 +83,7 @@ class ExampleClientBooksService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => Book.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -103,7 +113,16 @@ class ExampleClientBooksService {
       onMessage: onMessage,
       onOpen: onOpen,
       onClose: onClose,
-      onError: onError,
+      onError: onError != null && _onError != null
+          ? (err, es) {
+              _onError?.call(onError);
+              return onError(err, es);
+            }
+          : onError != null
+              ? onError
+              : _onError != null
+                  ? (err, _) => _onError?.call(err)
+                  : null,
     );
   }
 
@@ -114,6 +133,7 @@ class ExampleClientBooksService {
       clientVersion: _clientVersion,
       parser: (msg) => Book.fromJsonString(msg),
       serializer: (msg) => msg.toJsonString(),
+      onError: _onError,
     );
   }
 }

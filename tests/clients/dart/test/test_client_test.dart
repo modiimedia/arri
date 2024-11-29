@@ -13,7 +13,6 @@ const baseUrl = "http://127.0.0.1:2020";
 Future<void> main() async {
   final client =
       TestClient(baseUrl: baseUrl, headers: () => {"x-test-header": 'test'});
-  final unauthenticatedClient = TestClient(baseUrl: "http://127.0.0.1:2020");
   final httpClient =
       HttpClient(context: SecurityContext(withTrustedRoots: true));
   final ioClient = IOClient(httpClient);
@@ -147,6 +146,13 @@ Future<void> main() async {
     expect(result.uint64, equals(input.uint64));
   });
   test("unauthenticated RPC requests return a 401 error", () async {
+    bool firedOnErr = false;
+    final unauthenticatedClient = TestClient(
+      baseUrl: baseUrl,
+      onError: (_) {
+        firedOnErr = true;
+      },
+    );
     try {
       await unauthenticatedClient.tests.sendObject(input);
       expect(false, equals(true));
@@ -157,6 +163,7 @@ Future<void> main() async {
       }
       expect(false, equals(true));
     }
+    expect(firedOnErr, equals(true));
   });
   test("can send/receive objects with partial fields", () async {
     final input = ObjectWithEveryOptionalType(
@@ -302,6 +309,21 @@ Future<void> main() async {
     expect((result as RecursiveUnionChildren).data.length, equals(2));
     expect((result.data[0] as RecursiveUnionChild).data is RecursiveUnionText,
         equals(true));
+  });
+
+  test("onError hook fires", () async {
+    bool onErrFired = false;
+    final customClient = TestClient(
+      baseUrl: baseUrl,
+      onError: (err) {
+        onErrFired = true;
+        expect(err is ArriError, equals(true));
+      },
+    );
+    try {
+      await customClient.tests.sendObject(input);
+    } catch (_) {}
+    expect(onErrFired, equals(true));
   });
 
   test("[SSE] supports server sent events", () async {
