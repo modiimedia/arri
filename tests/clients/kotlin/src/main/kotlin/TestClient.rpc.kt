@@ -36,17 +36,20 @@ class TestClient(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     val tests: TestClientTestsService = TestClientTestsService(
                 httpClient = httpClient,
                 baseUrl = baseUrl,
                 headers = headers,
+                onError = onError,
             )
 
     val users: TestClientUsersService = TestClientUsersService(
                 httpClient = httpClient,
                 baseUrl = baseUrl,
                 headers = headers,
+                onError = onError,
             )
 }
 
@@ -54,16 +57,18 @@ class TestClientTestsService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun emptyParamsGetRequest(): DefaultPayload {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/empty-params-get-request",
-            method = HttpMethod.Get,
-            params = null,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-params-get-request",
+                method = HttpMethod.Get,
+                params = null,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -71,21 +76,26 @@ class TestClientTestsService(
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return DefaultPayload.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return DefaultPayload.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun emptyParamsPostRequest(): DefaultPayload {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/empty-params-post-request",
-            method = HttpMethod.Post,
-            params = null,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-params-post-request",
+                method = HttpMethod.Post,
+                params = null,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -93,40 +103,54 @@ class TestClientTestsService(
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return DefaultPayload.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return DefaultPayload.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun emptyResponseGetRequest(params: DefaultPayload): Unit {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/empty-response-get-request",
-            method = HttpMethod.Get,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        
-        if (response.status.value in 200..299) {
-            return 
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-response-get-request",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun emptyResponsePostRequest(params: DefaultPayload): Unit {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/empty-response-post-request",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        
-        if (response.status.value in 200..299) {
-            return 
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/empty-response-post-request",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     /**
@@ -134,44 +158,55 @@ class TestClientTestsService(
 */
 @Deprecated(message = "This method was marked as deprecated by the server")
 suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/deprecated-rpc",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        
-        if (response.status.value in 200..299) {
-            return 
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/deprecated-rpc",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendError(params: SendErrorParams): Unit {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-error",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        
-        if (response.status.value in 200..299) {
-            return 
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-error",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            
+            if (response.status.value in 200..299) {
+                return 
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendObject(params: ObjectWithEveryType): ObjectWithEveryType {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-object",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -179,21 +214,26 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return ObjectWithEveryType.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return ObjectWithEveryType.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendObjectWithNullableFields(params: ObjectWithEveryNullableType): ObjectWithEveryNullableType {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-object-with-nullable-fields",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-nullable-fields",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -201,21 +241,26 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return ObjectWithEveryNullableType.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return ObjectWithEveryNullableType.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendObjectWithPascalCaseKeys(params: ObjectWithPascalCaseKeys): ObjectWithPascalCaseKeys {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-pascal-case-keys",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -223,21 +268,26 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return ObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return ObjectWithPascalCaseKeys.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendObjectWithSnakeCaseKeys(params: ObjectWithSnakeCaseKeys): ObjectWithSnakeCaseKeys {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-object-with-snake-case-keys",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-object-with-snake-case-keys",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -245,21 +295,26 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return ObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return ObjectWithSnakeCaseKeys.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendPartialObject(params: ObjectWithEveryOptionalType): ObjectWithEveryOptionalType {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-partial-object",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-partial-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -267,21 +322,26 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return ObjectWithEveryOptionalType.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return ObjectWithEveryOptionalType.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendRecursiveObject(params: RecursiveObject): RecursiveObject {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-recursive-object",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-recursive-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -289,21 +349,26 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return RecursiveObject.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return RecursiveObject.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun sendRecursiveUnion(params: RecursiveUnion): RecursiveUnion {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/rpcs/tests/send-recursive-union",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/rpcs/tests/send-recursive-union",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
             throw TestClientError(
                 code = 0,
                 errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
@@ -311,10 +376,14 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 stack = null,
             )
         }
-        if (response.status.value in 200..299) {
-            return RecursiveUnion.fromJson(response.bodyAsText())
+            if (response.status.value in 200..299) {
+                return RecursiveUnion.fromJson(response.bodyAsText())
+            }
+            throw TestClientError.fromJson(response.bodyAsText())    
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        throw TestClientError.fromJson(response.bodyAsText())
     }
 
     suspend fun streamAutoReconnect(
@@ -340,6 +409,7 @@ suspend fun deprecatedRpc(params: DeprecatedRpcParams): Unit {
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -375,6 +445,7 @@ suspend fun streamConnectionErrorTest(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -410,6 +481,7 @@ suspend fun streamLargeObjects(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -442,6 +514,7 @@ suspend fun streamLargeObjects(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -474,6 +547,7 @@ suspend fun streamLargeObjects(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -509,6 +583,7 @@ suspend fun streamTenEventsThenEnd(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -525,6 +600,7 @@ class TestClientUsersService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun watchUser(
             params: UsersWatchUserParams,
@@ -549,6 +625,7 @@ class TestClientUsersService(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
@@ -6214,8 +6291,9 @@ private suspend fun __handleSseRequest(
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onRequestError: ((error: Exception) -> Unit) = {},
-    onResponseError: ((error: TestClientError) -> Unit) = {},
+    onError: ((err: Exception) -> Unit) = {},
+    onRequestError: ((err: Exception) -> Unit) = {},
+    onResponseError: ((err: TestClientError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
@@ -6250,18 +6328,18 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        onResponseError(
-                            TestClientError.fromJson(httpResponse.bodyAsText())
-                        )
+                        val err = TestClientError.fromJson(httpResponse.bodyAsText()) 
+                        onError(err)
+                        onResponseError(err)
                     } else {
-                        onResponseError(
-                            TestClientError(
-                                code = httpResponse.status.value,
-                                errorMessage = httpResponse.status.description,
-                                data = JsonPrimitive(httpResponse.bodyAsText()),
-                                stack = null,
-                            )
+                        val err = TestClientError(
+                            code = httpResponse.status.value,
+                            errorMessage = httpResponse.status.description,
+                            data = JsonPrimitive(httpResponse.bodyAsText()),
+                            stack = null,
                         )
+                        onError(err)
+                        onResponseError(err)
                     }
                 } catch (e: CancellationException) {
                     onClose()
@@ -6281,19 +6359,21 @@ private suspend fun __handleSseRequest(
                     onOpen = onOpen,
                     onClose = onClose,
                     onData = onData,
+                    onError = onError,
+                    onRequestError = onRequestError,
                     onResponseError = onResponseError,
                 )
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    onResponseError(
-                        TestClientError(
-                            code = 0,
-                            errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
-                            data = JsonPrimitive(httpResponse.bodyAsText()),
-                            stack = null,
-                        )
+                    val err = TestClientError(
+                        code = 0,
+                        errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
+                        data = JsonPrimitive(httpResponse.bodyAsText()),
+                        stack = null,
                     )
+                    onError(err)
+                    onResponseError(err)
                 } catch (e: CancellationException) {
                     httpResponse.cancel()
                     return@execute
@@ -6311,6 +6391,8 @@ private suspend fun __handleSseRequest(
                     onOpen = onOpen,
                     onClose = onClose,
                     onData = onData,
+                    onError = onError,
+                    onRequestError = onRequestError,
                     onResponseError = onResponseError,
                 )
             }
@@ -6362,10 +6444,13 @@ private suspend fun __handleSseRequest(
                 onOpen = onOpen,
                 onClose = onClose,
                 onData = onData,
+                onError = onError,
+                onRequestError = onRequestError,
                 onResponseError = onResponseError,
             )
         }
     } catch (e: java.net.ConnectException) {
+        onError(e)
         onRequestError(e)
         return __handleSseRequest(
             httpClient = httpClient,
@@ -6380,9 +6465,12 @@ private suspend fun __handleSseRequest(
             onOpen = onOpen,
             onClose = onClose,
             onData = onData,
+            onError = onError,
+            onRequestError = onRequestError,
             onResponseError = onResponseError,
         )
     } catch (e: Exception) {
+        onError(e)
         onRequestError(e)
         return __handleSseRequest(
             httpClient = httpClient,
@@ -6397,6 +6485,8 @@ private suspend fun __handleSseRequest(
             onOpen = onOpen,
             onClose = onClose,
             onData = onData,
+            onError = onError,
+            onRequestError = onRequestError,
             onResponseError = onResponseError,
         )
     }

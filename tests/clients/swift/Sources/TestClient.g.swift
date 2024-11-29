@@ -6,25 +6,30 @@ public class TestClient {
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void
     public let tests: TestClientTestsService
     public let users: TestClientUsersService
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
     ) {
         self.baseURL = baseURL
         self.delegate = delegate
         self.headers = headers
+        self.onError = onError
         self.tests = TestClientTestsService(
             baseURL: baseURL,
             delegate: delegate,
-            headers: headers
+            headers: headers,
+            onError: onError
         )
         self.users = TestClientUsersService(
             baseURL: baseURL,
             delegate: delegate,
-            headers: headers
+            headers: headers,
+            onError: onError
         )    
     }
 
@@ -36,15 +41,18 @@ public class TestClientTestsService {
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void
 
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
     ) {
         self.baseURL = baseURL
         self.delegate = delegate
         self.headers = headers
+        self.onError = onError
     
     }
     public func emptyParamsGetRequest() async throws -> DefaultPayload {
@@ -54,7 +62,8 @@ public class TestClientTestsService {
             method: "GET",
             headers: self.headers,
             clientVersion: "10",
-            params: EmptyArriModel()
+            params: EmptyArriModel(),
+            onError: onError
         )
         return result
     }
@@ -65,7 +74,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: EmptyArriModel()
+            params: EmptyArriModel(),
+            onError: onError
         )
         return result
     }
@@ -76,7 +86,8 @@ public class TestClientTestsService {
             method: "GET",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         
     }
@@ -87,7 +98,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         
     }
@@ -100,7 +112,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         
     }
@@ -111,7 +124,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         
     }
@@ -122,7 +136,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -133,7 +148,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -144,7 +160,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -155,7 +172,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -166,7 +184,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -177,7 +196,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -188,7 +208,8 @@ public class TestClientTestsService {
             method: "POST",
             headers: self.headers,
             clientVersion: "10",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -294,15 +315,18 @@ public class TestClientUsersService {
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void
 
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
     ) {
         self.baseURL = baseURL
         self.delegate = delegate
         self.headers = headers
+        self.onError = onError
     
     }
     public func watchUser(_ params: UsersWatchUserParams, options: EventSourceOptions<UsersWatchUserResponse>) -> Task<(), Never> {

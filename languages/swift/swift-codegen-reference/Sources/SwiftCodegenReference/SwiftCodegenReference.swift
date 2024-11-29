@@ -6,20 +6,24 @@ public class ExampleClient {
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void 
     public let books: ExampleClientBooksService
 
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
     ) {
         self.baseURL = baseURL
         self.delegate = delegate
         self.headers = headers
+        self.onError = onError
         self.books = ExampleClientBooksService(
             baseURL: baseURL,
             delegate: delegate,
-            headers: headers
+            headers: headers,
+            onError: onError
         )
     }
 
@@ -30,7 +34,8 @@ public class ExampleClient {
             method: "POST",
             headers: self.headers,
             clientVersion: "20",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -41,15 +46,18 @@ public class ExampleClientBooksService {
     let baseURL: String
     let delegate: ArriRequestDelegate
     let headers: () -> Dictionary<String, String>
+    let onError: (Error) -> Void
 
     public init(
         baseURL: String,
         delegate: ArriRequestDelegate,
-        headers: @escaping () -> Dictionary<String, String>
+        headers: @escaping () -> Dictionary<String, String>,
+        onError: @escaping ((Error) -> Void) = { _ -> Void in }
     ) {
         self.baseURL = baseURL
         self.delegate = delegate
         self.headers = headers
+        self.onError = onError
     }
     /// Get a book
     public func getBook(_ params: BookParams) async throws -> Book {
@@ -59,7 +67,8 @@ public class ExampleClientBooksService {
             method: "GET",
             headers: self.headers,
             clientVersion: "20",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }
@@ -72,7 +81,8 @@ public class ExampleClientBooksService {
             method: "POST",
             headers: self.headers,
             clientVersion: "20",
-            params: params
+            params: params,
+            onError: onError
         )
         return result
     }

@@ -18,44 +18,50 @@ public func parsedArriHttpRequest<TParams: ArriClientModel, TResponse: ArriClien
     headers: () -> Dictionary<String, String>,
     clientVersion: String,
     params: TParams,
-    timeoutSeconds: Int64 = 60
+    timeoutSeconds: Int64 = 60,
+    onError: (Error) -> Void
 ) async throws -> TResponse {
-    var parsedURL = URLComponents(string: url)
-    if parsedURL == nil {
-        throw ArriRequestError.invalidUrl
+    do {
+        var parsedURL = URLComponents(string: url)
+        if parsedURL == nil {
+            throw ArriRequestError.invalidUrl
+        }
+        var finalHeaders = headers()
+        if !clientVersion.isEmpty {
+            finalHeaders["client-version"] = clientVersion
+        }
+        var finalBody: String?
+        switch method {
+            case "GET":
+                if !(params is EmptyArriModel) {
+                    parsedURL!.queryItems = params.toURLQueryParts()
+                }
+                break;
+            default:
+                if !(params is EmptyArriModel) {
+                    finalHeaders["Content-Type"] = "application/json"
+                    finalBody = params.toJSONString()
+                }
+                break;
+        }
+        let request = ArriHTTPRequest(url: parsedURL!.url!, method: method, headers: finalHeaders, body: finalBody)
+        let response = try await delegate.handleHTTPRequest(request: request)
+        if response.statusCode >= 200 && response.statusCode < 300 {
+            let result = TResponse.init(JSONData: response.body ?? Data())
+            return result
+        }
+        var error = ArriResponseError(JSONData: response.body ?? Data())
+        if error.code == 0 {
+            error.code = response.statusCode
+        }
+        if error.message.isEmpty {
+            error.message = response.statusMessage ?? "Unknown error"
+        }
+        throw error
+    } catch (let e) {
+        onError(e)
+        throw e
     }
-    var finalHeaders = headers()
-    if !clientVersion.isEmpty {
-        finalHeaders["client-version"] = clientVersion
-    }
-    var finalBody: String?
-    switch method {
-        case "GET":
-            if !(params is EmptyArriModel) {
-                parsedURL!.queryItems = params.toURLQueryParts()
-            }
-            break;
-        default:
-            if !(params is EmptyArriModel) {
-                finalHeaders["Content-Type"] = "application/json"
-                finalBody = params.toJSONString()
-            }
-            break;
-    }
-    let request = ArriHTTPRequest(url: parsedURL!.url!, method: method, headers: finalHeaders, body: finalBody)
-    let response = try await delegate.handleHTTPRequest(request: request)
-    if response.statusCode >= 200 && response.statusCode < 300 {
-        let result = TResponse.init(JSONData: response.body ?? Data())
-        return result
-    }
-    var error = ArriResponseError(JSONData: response.body ?? Data())
-    if error.code == 0 {
-        error.code = response.statusCode
-    }
-    if error.message.isEmpty {
-        error.message = response.statusMessage ?? "Unknown error"
-    }
-    throw error
 }
 
 public enum ArriRequestError: Error {

@@ -167,6 +167,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => ObjectWithPascalCaseKeys.fromJsonString(body),
+      onError: _onError,
     );
   }
 
@@ -180,6 +181,7 @@ class TestClientTestsService {
       clientVersion: _clientVersion,
       params: params.toJson(),
       parser: (body) => ObjectWithSnakeCaseKeys.fromJsonString(body),
+      onError: _onError,
     );
   }
 
