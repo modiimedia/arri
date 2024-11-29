@@ -69,28 +69,37 @@ final service = MyClientUsersService(
 );
 ```
 
+#### Client / Service Options
+
+| name       | Type                                        | description                                                   |
+| ---------- | ------------------------------------------- | ------------------------------------------------------------- |
+| httpClient | `http.Client`                               | Use this to pass in a custom `http.Client` instance           |
+| baseUrl    | `String`                                    | The base url for the backend server                           |
+| headers    | `FutureOr<Map<String, String>> Function()?` | A function that returns a Map of headers                      |
+| onError    | `Function(Object)?`                         | A hook that fires whenever any error is thrown by the client. |
+
 ### Using Arri Models
 
 All generated models will be immutable. They will have access to the following features:
 
 **Methods**:
 
--   `Map<String, dynamic> toJson()`
--   `String toJsonString()`
--   `String toUrlQueryParams()`
--   `copyWith()`
+- `Map<String, dynamic> toJson()`
+- `String toJsonString()`
+- `String toUrlQueryParams()`
+- `copyWith()`
 
 **Factory Methods**:
 
--   `empty()`
--   `fromJson(Map<String, dynamic> input)`
--   `fromJsonString(String input)`
+- `empty()`
+- `fromJson(Map<String, dynamic> input)`
+- `fromJsonString(String input)`
 
 **Overrides**:
 
--   `==` operator (allows for deep equality checking)
--   `hashMap` (allows for deep equality checking)
--   `toString` (will print out all properties and values instead of `Instance of X`)
+- `==` operator (allows for deep equality checking)
+- `hashMap` (allows for deep equality checking)
+- `toString` (will print out all properties and values instead of `Instance of X`)
 
 This library was generated with [Nx](https://nx.dev).
 

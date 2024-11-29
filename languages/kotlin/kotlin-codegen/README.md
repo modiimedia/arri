@@ -30,8 +30,8 @@ export default defineConfig({
 
 The generated code relies on the following dependencies:
 
--   [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
--   [ktor client](https://ktor.io/docs/client-dependencies.html)
+- [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
+- [ktor client](https://ktor.io/docs/client-dependencies.html)
 
 ## Using the Generated Code
 
@@ -71,6 +71,15 @@ val service = MyClientUsersService(
         }
     )
 ```
+
+#### Client / Service Options
+
+| Name               | Type                                   | Description                                                      |
+| ------------------ | -------------------------------------- | ---------------------------------------------------------------- |
+| httpClient         | `HttpClient`                           | An instance of ktor HttpClient                                   |
+| baseUrl            | `String`                               | The base URL of the API server                                   |
+| headers            | `(() -> MutableMap<String, String>?)?` | A function that returns a map of http headers                    |
+| onError (Optional) | `((err: Exception) -> Unit)`           | A hook that fires whenever any exception is thrown by the client |
 
 ### Calling Procedures
 
@@ -149,19 +158,19 @@ All generated models will be data classes. They will have access to the followin
 
 **Methods**:
 
--   `toJson(): String`
--   `toUrlQueryParams(): String`
+- `toJson(): String`
+- `toUrlQueryParams(): String`
 
 **Factory Methods**:
 
--   `new()`
--   `fromJson(input: String)`
--   `fromJsonElement(input: JsonElement, instancePath: String)`
+- `new()`
+- `fromJson(input: String)`
+- `fromJsonElement(input: JsonElement, instancePath: String)`
 
 **Other Notes**
 
--   All Enums will have a `serialValue` property.
--   Discriminator schemas are converted to sealed classes
+- All Enums will have a `serialValue` property.
+- Discriminator schemas are converted to sealed classes
 
 ## Development
 
