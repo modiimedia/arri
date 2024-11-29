@@ -9,9 +9,7 @@ main() {
   test("invalid url", () async {
     final response =
         await parsedArriRequestSafe(nonExistentUrl, parser: (data) {});
-    if (response.error != null) {
-      expect(response.error!.code, equals(500));
-    }
+    expect(response.unwrapErr?.code, equals(0));
   });
 
   test('auto retry sse', () async {
