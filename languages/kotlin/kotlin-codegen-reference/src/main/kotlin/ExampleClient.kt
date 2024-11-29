@@ -167,6 +167,7 @@ class ExampleClientBooksService(
             bufferCapacity = bufferCapacity,
             onOpen = onOpen,
             onClose = onClose,
+            onError = onError,
             onRequestError = onRequestError,
             onResponseError = onResponseError,
             onData = { str ->
@@ -1997,8 +1998,9 @@ private suspend fun __handleSseRequest(
     onOpen: ((response: HttpResponse) -> Unit) = {},
     onClose: (() -> Unit) = {},
     onData: ((data: String) -> Unit) = {},
-    onRequestError: ((error: Exception) -> Unit) = {},
-    onResponseError: ((error: ExampleClientError) -> Unit) = {},
+    onError: ((err: Exception) -> Unit) = {},
+    onRequestError: ((err: Exception) -> Unit) = {},
+    onResponseError: ((err: ExampleClientError) -> Unit) = {},
     bufferCapacity: Int,
 ) {
     val finalHeaders = headers?.invoke() ?: mutableMapOf()
@@ -2033,18 +2035,18 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        onResponseError(
-                            ExampleClientError.fromJson(httpResponse.bodyAsText())
-                        )
+                        val err = ExampleClientError.fromJson(httpResponse.bodyAsText())
+                        onError(err)
+                        onResponseError(err)
                     } else {
-                        onResponseError(
-                            ExampleClientError(
-                                code = httpResponse.status.value,
-                                errorMessage = httpResponse.status.description,
-                                data = JsonPrimitive(httpResponse.bodyAsText()),
-                                stack = null,
-                            )
+                        val err = ExampleClientError(
+                            code = httpResponse.status.value,
+                            errorMessage = httpResponse.status.description,
+                            data = JsonPrimitive(httpResponse.bodyAsText()),
+                            stack = null,
                         )
+                        onError(err)
+                        onResponseError(err)
                     }
                 } catch (e: CancellationException) {
                     onClose()
@@ -2064,19 +2066,21 @@ private suspend fun __handleSseRequest(
                     onOpen = onOpen,
                     onClose = onClose,
                     onData = onData,
+                    onError = onError,
+                    onRequestError = onRequestError,
                     onResponseError = onResponseError,
                 )
             }
             if (httpResponse.headers["Content-Type"] != "text/event-stream") {
                 try {
-                    onResponseError(
-                        ExampleClientError(
-                            code = 0,
-                            errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
-                            data = JsonPrimitive(httpResponse.bodyAsText()),
-                            stack = null,
-                        )
+                    val err = ExampleClientError(
+                        code = 0,
+                        errorMessage = "Expected server to return Content-Type \"text/event-stream\". Got \"${httpResponse.headers["Content-Type"]}\"",
+                        data = JsonPrimitive(httpResponse.bodyAsText()),
+                        stack = null,
                     )
+                    onError(err)
+                    onResponseError(err)
                 } catch (e: CancellationException) {
                     httpResponse.cancel()
                     return@execute
@@ -2094,6 +2098,8 @@ private suspend fun __handleSseRequest(
                     onOpen = onOpen,
                     onClose = onClose,
                     onData = onData,
+                    onError = onError,
+                    onRequestError = onRequestError,
                     onResponseError = onResponseError,
                 )
             }
@@ -2145,10 +2151,13 @@ private suspend fun __handleSseRequest(
                 onOpen = onOpen,
                 onClose = onClose,
                 onData = onData,
+                onError = onError,
+                onRequestError = onRequestError,
                 onResponseError = onResponseError,
             )
         }
     } catch (e: java.net.ConnectException) {
+        onError(e)
         onRequestError(e)
         return __handleSseRequest(
             httpClient = httpClient,
@@ -2163,9 +2172,12 @@ private suspend fun __handleSseRequest(
             onOpen = onOpen,
             onClose = onClose,
             onData = onData,
+            onError = onError,
+            onRequestError = onRequestError,
             onResponseError = onResponseError,
         )
     } catch (e: Exception) {
+        onError(e)
         onRequestError(e)
         return __handleSseRequest(
             httpClient = httpClient,
@@ -2180,6 +2192,8 @@ private suspend fun __handleSseRequest(
             onOpen = onOpen,
             onClose = onClose,
             onData = onData,
+            onError = onError,
+            onRequestError = onRequestError,
             onResponseError = onResponseError,
         )
     }

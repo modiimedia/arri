@@ -76,6 +76,7 @@ export function kotlinHttpRpcFromSchema(
                 bufferCapacity = bufferCapacity,
                 onOpen = onOpen,
                 onClose = onClose,
+                onError = onError,
                 onRequestError = onRequestError,
                 onResponseError = onResponseError,
                 onData = { str ->
