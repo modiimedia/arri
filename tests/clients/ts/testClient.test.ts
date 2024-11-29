@@ -31,9 +31,6 @@ const client = new TestClient({
     baseUrl,
     headers,
 });
-const unauthenticatedClient = new TestClient({
-    baseUrl,
-});
 
 test("route request", async () => {
     const result = await ofetch("/routes/hello-world", {
@@ -173,6 +170,13 @@ test("returns error if sending nothing when RPC expects body", async () => {
     }
 });
 test("unauthenticated RPC request returns a 401 error", async () => {
+    let firedOnErr = false;
+    const unauthenticatedClient = new TestClient({
+        baseUrl,
+        onError(_) {
+            firedOnErr = true;
+        },
+    });
     try {
         await unauthenticatedClient.tests.sendObject(input);
         expect(true).toBe(false);
@@ -182,6 +186,7 @@ test("unauthenticated RPC request returns a 401 error", async () => {
             expect(err.code).toBe(401);
         }
     }
+    expect(firedOnErr).toBe(true);
 });
 test("can use async functions for headers", async () => {
     const _client = new TestClient({
