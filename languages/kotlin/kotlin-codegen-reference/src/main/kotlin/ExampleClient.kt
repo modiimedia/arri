@@ -37,33 +37,40 @@ class ExampleClient(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     suspend fun sendObject(params: NestedObject): NestedObject {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/send-object",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
-            throw ExampleClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/send-object",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw ExampleClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return NestedObject.fromJson(response.bodyAsText())
+            }
+            throw ExampleClientError.fromJson(response.bodyAsText())
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        if (response.status.value in 200..299) {
-            return NestedObject.fromJson(response.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
     val books: ExampleClientBooksService = ExampleClientBooksService(
         httpClient = httpClient,
         baseUrl = baseUrl,
         headers = headers,
+        onError = onError,
     )
 }
 
@@ -71,30 +78,37 @@ class ExampleClientBooksService(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     /**
      * Get a book
      */
     suspend fun getBook(params: BookParams): Book {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/books/get-book",
-            method = HttpMethod.Get,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
-            throw ExampleClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/books/get-book",
+                method = HttpMethod.Get,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw ExampleClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return Book.fromJson(response.bodyAsText())
+            }
+            throw ExampleClientError.fromJson(response.bodyAsText())
+
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        if (response.status.value in 200..299) {
-            return Book.fromJson(response.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
     /**
@@ -102,25 +116,31 @@ class ExampleClientBooksService(
      */
     @Deprecated(message = "This method was marked as deprecated by the server")
     suspend fun createBook(params: Book): Book {
-        val response = __prepareRequest(
-            client = httpClient,
-            url = "$baseUrl/books/create-book",
-            method = HttpMethod.Post,
-            params = params,
-            headers = headers?.invoke(),
-        ).execute()
-        if (response.headers["Content-Type"] != "application/json") {
-            throw ExampleClientError(
-                code = 0,
-                errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
-                data = JsonPrimitive(response.bodyAsText()),
-                stack = null,
-            )
+        try {
+            val response = __prepareRequest(
+                client = httpClient,
+                url = "$baseUrl/books/create-book",
+                method = HttpMethod.Post,
+                params = params,
+                headers = headers?.invoke(),
+            ).execute()
+            if (response.headers["Content-Type"] != "application/json") {
+                throw ExampleClientError(
+                    code = 0,
+                    errorMessage = "Expected server to return Content-Type \"application/json\". Got \"${response.headers["Content-Type"]}\"",
+                    data = JsonPrimitive(response.bodyAsText()),
+                    stack = null,
+                )
+            }
+            if (response.status.value in 200..299) {
+                return Book.fromJson(response.bodyAsText())
+            }
+            throw ExampleClientError.fromJson(response.bodyAsText())
+
+        } catch (e: Exception) {
+            onError(e)
+            throw e
         }
-        if (response.status.value in 200..299) {
-            return Book.fromJson(response.bodyAsText())
-        }
-        throw ExampleClientError.fromJson(response.bodyAsText())
     }
 
     @Deprecated(message = "This method was marked as deprecated by the server")

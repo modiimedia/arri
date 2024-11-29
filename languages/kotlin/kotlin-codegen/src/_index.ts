@@ -115,6 +115,7 @@ export function kotlinClientFromAppDefinition(
                 httpClient = httpClient,
                 baseUrl = baseUrl,
                 headers = headers,
+                onError = onError,
             )`);
             if (subService.content) {
                 subServiceParts.push(subService.content);
@@ -146,6 +147,7 @@ class ${clientName}(
     private val httpClient: HttpClient,
     private val baseUrl: String,
     private val headers: headersFn,
+    private val onError: ((err: Exception) -> Unit) = {},
 ) {
     ${procedureParts.join("\n\n    ")}
 }
