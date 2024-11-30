@@ -1,4 +1,9 @@
-import { updateCargoToml, updatePackageJson, updatePubspecYaml } from "./use";
+import {
+    updateCargoToml,
+    updateGoMod,
+    updatePackageJson,
+    updatePubspecYaml,
+} from "./use";
 
 describe("updatePackageJson()", () => {
     it("updates relevant lines and preserves formatting", () => {
@@ -113,5 +118,68 @@ tokio = { version = "1.39.2", features = ["full"] }`;
         const output2 = updateCargoToml(input2, "2.1.1");
         expect(output2.content).toBe(expectedOutput2);
         expect(output.updated).toBe(true);
+    });
+});
+
+describe("updateGoMod()", () => {
+    it("updates relevant lines", () => {
+        const input = `module main
+
+go 1.23.3
+
+require github.com/modiimedia/arri v0.66.0
+
+require (
+	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+)
+`;
+        const expectedOutput = `module main
+
+go 1.23.3
+
+require github.com/modiimedia/arri v1.12.0
+
+require (
+	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+)
+`;
+        const output = updateGoMod(input, "1.12.0");
+        expect(output.content).toBe(expectedOutput);
+    });
+    it("updates relevant lines and preserves comments", () => {
+        const input = `module main
+
+go 1.23.3
+
+require github.com/modiimedia/arri v0.66.0 // this is a comment
+
+require (
+	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+)
+`;
+        const expectedOutput = `module main
+
+go 1.23.3
+
+require github.com/modiimedia/arri v1.12.0 // this is a comment
+
+require (
+	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+)
+`;
+        const output = updateGoMod(input, "1.12.0");
+        expect(output.content).toBe(expectedOutput);
     });
 });
