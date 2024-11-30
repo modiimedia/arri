@@ -110,6 +110,20 @@ export default defineCommand({
         }
         await Promise.all(cargoTomlTasks);
 
+        // GO DEPENDENCIES
+        const goModFiles = await globby(["go.mod", "**/go.mod"]);
+        const goModFileTasks: Promise<any>[] = [];
+        for (const file of goModFiles) {
+            goModFileTasks.push(
+                readFile(path.resolve(file), "utf8").then((content) => {
+                    const result = updateGoMod(content, version);
+                    if (result.updated) {
+                        fileMap[file] = result.content;
+                    }
+                }),
+            );
+        }
+
         // Update all affected files
         const updateTasks: Promise<any>[] = [];
         for (const key of Object.keys(fileMap)) {
@@ -352,4 +366,38 @@ export function updateCargoToml(
         newLines.push(line);
     }
     return { updated, content: newLines.join("\n") };
+}
+
+export function updateGoMod(
+    fileContent: string,
+    version: string,
+): { updated: boolean; content: string } {
+    const lines = fileContent.split("\n");
+    const newLines: string[] = [];
+    let updated = false;
+    for (const line of lines) {
+        if (!line.includes("github.com/modiimedia/arri")) {
+            newLines.push(line);
+            continue;
+        }
+        updated = true;
+        const lineParts = line.split(" ");
+        const updatedLineParts: string[] = [];
+        for (const part of lineParts) {
+            if (part.startsWith("v") && isNumberChar(part[1] ?? "")) {
+                updatedLineParts.push(`v${version}`);
+                continue;
+            }
+            updatedLineParts.push(part);
+        }
+        newLines.push(updatedLineParts.join(" "));
+    }
+    return {
+        updated,
+        content: newLines.join("\n"),
+    };
+}
+
+function isNumberChar(char: string) {
+    return !Number.isNaN(Number(char));
 }
