@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-type JsonEncoder interface {
-	EncodeJSON(keyCasing string) ([]byte, error)
-}
-
 type jsonEncodingCtx struct {
 	keyCasing          string
 	buffer             []byte
@@ -68,8 +64,8 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		return encodeUint64ToJSON(v, c)
 	case reflect.Struct:
 		t := v.Type()
-		if t.Implements(reflect.TypeFor[JsonEncoder]()) {
-			result, err := v.Interface().(JsonEncoder).EncodeJSON(c.keyCasing)
+		if t.Implements(reflect.TypeFor[ArriModel]()) {
+			result, err := v.Interface().(ArriModel).EncodeJSON(c.keyCasing)
 			if err != nil {
 				return err
 			}

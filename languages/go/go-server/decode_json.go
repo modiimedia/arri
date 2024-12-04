@@ -12,10 +12,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type JsonDecoder interface {
-	DecodeJSON(d *gjson.Result, t reflect.Value, dc *DecoderContext) bool
-}
-
 type DecoderError struct {
 	errors []ValidationError
 }
@@ -172,8 +168,8 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCont
 		if t.Name() == "Time" {
 			return timestampFromJSON(data, target, context)
 		}
-		if t.Implements(reflect.TypeFor[JsonDecoder]()) {
-			return target.Interface().(JsonDecoder).DecodeJSON(data, target, context)
+		if t.Implements(reflect.TypeFor[ArriModel]()) {
+			return target.Interface().(ArriModel).DecodeJSON(data, target, context)
 		}
 		if isOptionalType(t) {
 			return optionFromJson(data, target, context)

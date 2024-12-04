@@ -139,6 +139,32 @@ func (s Nullable[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 	return EncodeJSON(s.Value, keyCasing)
 }
 
+func (s Nullable[T]) DecodeJSON(d *gjson.Result, t reflect.Value, dc *DecoderContext) bool {
+	if d.Type != gjson.Null {
+		innerVal := reflect.New(reflect.TypeFor[T]())
+		ok := typeFromJSON(d, innerVal, dc)
+
+		if !ok {
+			t.Set(reflect.ValueOf(None[T]()))
+			return false
+		}
+		t.Set(reflect.ValueOf(Some(innerVal)))
+		return true
+	}
+	t.Set(reflect.ValueOf(None[T]()))
+	return true
+}
+
+func (s Nullable[T]) TypeDef(tc TypeDefContext) (*TypeDef, error) {
+	t := reflect.TypeFor[T]()
+	def, err := typeToTypeDef(t, tc)
+	if err != nil {
+		return nil, err
+	}
+	def.Nullable.Set(true)
+	return def, nil
+}
+
 func (s Nullable[T]) String() string {
 	if s.IsSet {
 		return fmt.Sprintf("NotNull(%v)", s.Value)
@@ -316,8 +342,8 @@ func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, dc *
 	return true
 }
 
-func (m OrderedMap[T]) ToTypeDef(keyCasing KeyCasing) (*TypeDef, error) {
-	subDef, subDefErr := TypeToTypeDef(reflect.TypeFor[T](), keyCasing)
+func (m OrderedMap[T]) TypeDef(tc TypeDefContext) (*TypeDef, error) {
+	subDef, subDefErr := typeToTypeDef(reflect.TypeFor[T](), tc)
 	if subDefErr != nil {
 		return nil, subDefErr
 	}
