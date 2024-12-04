@@ -25,10 +25,6 @@ const (
 	Uint64    = "uint64"
 )
 
-type TypeDefiner interface {
-	ToTypeDef(KeyCasing) (*TypeDef, error)
-}
-
 type Type = string
 
 type TypeDefMetadata struct {
@@ -60,7 +56,7 @@ const (
 
 type KeyCasing = string
 
-type typeDefContext struct {
+type TypeDefContext struct {
 	KeyCasing     KeyCasing
 	MaxDepth      uint32
 	CurrentDepth  uint32
@@ -72,7 +68,7 @@ type typeDefContext struct {
 	EnumValues    Option[[]string]
 }
 
-func _NewTypeDefContext(keyCasing KeyCasing) typeDefContext {
+func _NewTypeDefContext(keyCasing KeyCasing) TypeDefContext {
 	casing := KeyCasingCamelCase
 	switch keyCasing {
 	case KeyCasingCamelCase, KeyCasingSnakeCase, KeyCasingPascalCase:
@@ -80,7 +76,7 @@ func _NewTypeDefContext(keyCasing KeyCasing) typeDefContext {
 	case "":
 		casing = keyCasing
 	}
-	return typeDefContext{
+	return TypeDefContext{
 		KeyCasing:    casing,
 		MaxDepth:     1000,
 		InstancePath: "",
@@ -88,10 +84,9 @@ func _NewTypeDefContext(keyCasing KeyCasing) typeDefContext {
 		EnumName:     None[string](),
 		EnumValues:   None[[]string](),
 	}
-
 }
 
-func (context typeDefContext) copyWith(
+func (context TypeDefContext) copyWith(
 	CurrentDepth Option[uint32],
 	ParentStructs Option[[]string],
 	InstancePath Option[string],
@@ -99,8 +94,8 @@ func (context typeDefContext) copyWith(
 	IsNullable Option[Option[bool]],
 	EnumValues Option[Option[[]string]],
 	EnumName Option[Option[string]],
-) typeDefContext {
-	return typeDefContext{
+) TypeDefContext {
+	return TypeDefContext{
 		KeyCasing:     context.KeyCasing,
 		MaxDepth:      context.MaxDepth,
 		CurrentDepth:  CurrentDepth.UnwrapOr(context.CurrentDepth),
@@ -123,7 +118,7 @@ func TypeToTypeDef(input reflect.Type, keyCasing KeyCasing) (*TypeDef, error) {
 	return typeToTypeDef(input, context)
 }
 
-func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
+func typeToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) {
 	if context.CurrentDepth >= context.MaxDepth {
 		return nil, fmt.Errorf("error at %s. max depth of %+v reached", context.InstancePath, context.MaxDepth)
 	}
@@ -155,10 +150,10 @@ func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error)
 		reflect.Slice:
 		return arrayToTypeDef(input, context)
 	case reflect.Struct:
-		if input.Implements(reflect.TypeFor[TypeDefiner]()) {
-			return reflect.New(input).Interface().(TypeDefiner).ToTypeDef(context.InstancePath)
+		if input.Implements(reflect.TypeFor[ArriModel]()) {
+			return reflect.New(input).Interface().(ArriModel).TypeDef(context)
 		}
-		if isNullableType(input) {
+		if isNullableTypeOrPointer(input) {
 			subType := extractNullableType(input)
 			return typeToTypeDef(
 				subType,
@@ -184,7 +179,7 @@ func typeToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error)
 	}
 }
 
-func primitiveTypeToTypeDef(value reflect.Type, context typeDefContext) (*TypeDef, error) {
+func primitiveTypeToTypeDef(value reflect.Type, context TypeDefContext) (*TypeDef, error) {
 	kind := value.Kind()
 	switch kind {
 	case reflect.Bool:
@@ -263,7 +258,7 @@ func nameFromInstancePath(instancePath string) string {
 	return strcase.ToCamel(strings.Join(parts, "_"))
 }
 
-func structToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
+func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) {
 	structName := input.Name()
 	typeId := Some(structName)
 	isAnonymous := len(input.PkgPath()) == 0 || strings.ContainsAny(structName, " []")
@@ -418,7 +413,7 @@ func extractNullableType(input reflect.Type) reflect.Type {
 	return field.Type
 }
 
-func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeDefContext) (*TypeDef, error) {
+func taggedUnionToTypeDef(name Option[string], input reflect.Type, context TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Struct {
 		return nil, errors.ErrUnsupported
@@ -488,7 +483,7 @@ func taggedUnionToTypeDef(name Option[string], input reflect.Type, context typeD
 	}, nil
 }
 
-func arrayToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
+func arrayToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Array && kind != reflect.Slice {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Array' or 'reflect.Slice'. got '%s'", context.InstancePath, kind)
@@ -515,7 +510,7 @@ func arrayToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error
 	return &TypeDef{Elements: r, Nullable: context.IsNullable}, nil
 }
 
-func mapToTypeDef(input reflect.Type, context typeDefContext) (*TypeDef, error) {
+func mapToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error) {
 	kind := input.Kind()
 	if kind != reflect.Map {
 		return nil, fmt.Errorf("error at %s. expected kind 'reflect.Map'. got '%s'", context.InstancePath, kind)

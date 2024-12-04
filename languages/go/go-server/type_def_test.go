@@ -13,12 +13,12 @@ func TestStringToTypeDef(t *testing.T) {
 	}
 	result, err := arri.ToTypeDef("hello world", arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 		return
 	}
 	nullableResult, nullableErr := arri.ToTypeDef(arri.NotNull("hello world"), arri.KeyCasingCamelCase)
 	if nullableErr != nil {
-		t.Fatalf(nullableErr.Error())
+		t.Fatal(nullableErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
@@ -38,21 +38,21 @@ func TestArrayToTypeDef(t *testing.T) {
 	}
 	result, err := arri.ToTypeDef([]string{"foo", "bar"}, arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
-		t.Fatalf(deepEqualErrString(result, expectedResult))
+		t.Fatal(deepEqualErrString(result, expectedResult))
 		return
 	}
 	nullableResult, nullableErr := arri.ToTypeDef(arri.Null[[]string](), arri.KeyCasingCamelCase)
 	expectedResult.Nullable = arri.Some(true)
 	if nullableErr != nil {
-		t.Fatalf(nullableErr.Error())
+		t.Fatal(nullableErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(nullableResult, expectedResult) {
-		t.Fatalf(deepEqualErrString(nullableResult, expectedResult))
+		t.Fatal(deepEqualErrString(nullableResult, expectedResult))
 		return
 	}
 }

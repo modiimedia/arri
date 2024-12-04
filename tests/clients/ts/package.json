@@ -1,9 +1,12 @@
 {
-  "name": "test-client-typescript",
+  "name": "test-client-ts",
   "type": "module",
   "dependencies": {
     "@arrirpc/client": "workspace:*",
     "@arrirpc/schema": "workspace:*",
     "ofetch": "^1.4.1"
+  },
+  "devDependencies": {
+    "consola": "^3.2.3"
   }
 }

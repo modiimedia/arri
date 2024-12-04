@@ -187,7 +187,7 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 			return
 		}
 		if r.URL.Path != "/" {
-			handleError(false, w, r, ctx, Error(404, "Not Round"), onError)
+			handleError(false, w, r, ctx, Error(404, ""), onError)
 			return
 		}
 		w.WriteHeader(200)

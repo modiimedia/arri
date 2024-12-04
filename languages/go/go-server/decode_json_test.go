@@ -14,7 +14,7 @@ var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../..
 
 func TestDecodeObjectWithEveryType(t *testing.T) {
 	if _objectWithEveryTypeInputErr != nil {
-		t.Errorf(_objectWithEveryTypeInputErr.Error())
+		t.Error(_objectWithEveryTypeInputErr.Error())
 		return
 	}
 	target := objectWithEveryType{}
@@ -48,7 +48,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 	}
 	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
 	if decodeErr != nil {
-		t.Errorf(decodeErr.Error())
+		t.Error(decodeErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(target, expectedResult) {
@@ -59,9 +59,9 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 }
 
 func TestDecodeObjectWithOptionalFields(t *testing.T) {
-	noUndefinedInput, noUndefinedInputError := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
-	if noUndefinedInputError != nil {
-		t.Errorf(noUndefinedInputError.Error())
+	noUndefinedInput, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
+	if err != nil {
+		t.Error(err.Error())
 		return
 	}
 	noUndefinedTarget := objectWithOptionalFields{}
@@ -99,27 +99,27 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 	}
 	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.KeyCasingCamelCase)
 	if noUndefinedDecodingErr != nil {
-		t.Errorf(noUndefinedDecodingErr.Error())
+		t.Error(noUndefinedDecodingErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
-		t.Errorf(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
+		t.Error(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
 		return
 	}
-	allUndefinedInput, allUndefinedInputErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
-	if allUndefinedInputErr != nil {
-		t.Errorf(allUndefinedInputErr.Error())
+	allUndefinedInput, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
+	if err != nil {
+		t.Error(err.Error())
 		return
 	}
 	allUndefinedTarget := objectWithOptionalFields{}
 	allUndefinedExpectedResult := objectWithOptionalFields{}
 	allUndefinedDecodingErr := arri.DecodeJSON(allUndefinedInput, &allUndefinedTarget, arri.KeyCasingCamelCase)
 	if allUndefinedDecodingErr != nil {
-		t.Errorf(allUndefinedDecodingErr.Error())
+		t.Error(allUndefinedDecodingErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(allUndefinedTarget, allUndefinedExpectedResult) {
-		t.Errorf(deepEqualErrString(allUndefinedTarget, allUndefinedExpectedResult))
+		t.Error(deepEqualErrString(allUndefinedTarget, allUndefinedExpectedResult))
 		return
 	}
 }
@@ -127,18 +127,18 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 func TestDecodeObjectWithNullableFieldsAllNull(t *testing.T) {
 	input, inputErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
 	if inputErr != nil {
-		t.Errorf(inputErr.Error())
+		t.Error(inputErr.Error())
 		return
 	}
 	result := objectWithNullableFields{}
 	expectedResult := objectWithNullableFields{}
 	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
-		t.Errorf(deepEqualErrString(result, expectedResult))
+		t.Error(deepEqualErrString(result, expectedResult))
 		return
 	}
 }
@@ -146,7 +146,7 @@ func TestDecodeObjectWithNullableFieldsAllNull(t *testing.T) {
 func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 	input, inputErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
 	if inputErr != nil {
-		t.Errorf(inputErr.Error())
+		t.Error(inputErr.Error())
 		return
 	}
 	result := objectWithNullableFields{}
@@ -175,14 +175,14 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 	}
 	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
 		fmt.Println("RESULT_ANY", reflect.TypeOf(result.Any.Value))
 		fmt.Printf("RESULT:\n%+v\n\n", result)
 		fmt.Printf("EXPECTED:\n%+v\n\n", expectedResult)
-		t.Errorf(deepEqualErrString(result, expectedResult))
+		t.Error(deepEqualErrString(result, expectedResult))
 		return
 	}
 
@@ -200,10 +200,10 @@ func TestDecodedPrivateFields(t *testing.T) {
 	target := userWithPrivateFields{}
 	err := arri.DecodeJSON(userWithPrivateFieldsInput, &target, arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 	if target.isAdmin {
-		t.Fatalf("isAdmin should be false")
+		t.Fatal("isAdmin should be false")
 	}
 }
 
@@ -227,7 +227,7 @@ func TestDecodeStdUser(t *testing.T) {
 	json.Unmarshal(benchUserInput, &target)
 	err := arri.DecodeJSON(benchUserInput, &target, arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 		return
 	}
 }
@@ -300,9 +300,7 @@ func TestDecodeNothing(t *testing.T) {
 	}{}
 	err := arri.DecodeJSON([]byte{}, &result, arri.KeyCasingCamelCase)
 	if err == nil {
-		t.Errorf("Should return an error")
+		t.Error("Should return an error")
 		return
 	}
-	e, _ := err.EncodeJSON(arri.KeyCasingCamelCase)
-	fmt.Println(string(e), err)
 }

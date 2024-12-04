@@ -111,6 +111,7 @@ export default defineCommand({
         await Promise.all(cargoTomlTasks);
 
         // GO DEPENDENCIES
+        consola.info("Checking for go dependencies");
         const goModFiles = await globby(["go.mod", "**/go.mod"]);
         const goModFileTasks: Promise<any>[] = [];
         for (const file of goModFiles) {

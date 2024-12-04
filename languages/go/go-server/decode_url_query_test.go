@@ -112,7 +112,7 @@ func TestFromUrlQueryWithEveryOptionalType(t *testing.T) {
 	target := queryResultWithEveryOptionalType{}
 	initialErr := arri.FromUrlQuery(map[string][]string{}, &target, arri.KeyCasingCamelCase)
 	if initialErr != nil {
-		t.Errorf(initialErr.Error())
+		t.Error(initialErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(target, queryResultWithEveryOptionalType{}) {
@@ -137,7 +137,7 @@ func TestFromUrlQueryWithEveryOptionalType(t *testing.T) {
 	}
 	err := arri.FromUrlQuery(completeUrlQueryInput, &target, arri.KeyCasingCamelCase)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 		return
 	}
 	if !reflect.DeepEqual(target, expectedResult) {

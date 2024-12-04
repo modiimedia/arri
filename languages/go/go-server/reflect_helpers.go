@@ -28,8 +28,12 @@ func optionalHasValue(value *reflect.Value) bool {
 }
 
 func isNullableType(t reflect.Type) bool {
+	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Nullable[")
+}
+
+func isNullableTypeOrPointer(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
-		return isNullableType(t.Elem())
+		return isNullableTypeOrPointer(t.Elem())
 	}
 	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Nullable[")
 }

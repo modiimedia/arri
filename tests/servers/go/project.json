@@ -19,11 +19,8 @@
       }
     },
     "start": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "./.output/server",
-        "cwd": "tests/servers/go"
-      }
+      "command": "./tests/servers/go/.output/server",
+      "cache": false
     }
   }
 }

@@ -1,17 +1,12 @@
 package arri
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
 	"time"
 )
-
-type JsonEncoder interface {
-	EncodeJSON(keyCasing string) ([]byte, error)
-}
 
 type jsonEncodingCtx struct {
 	keyCasing          string
@@ -50,7 +45,7 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
-		if c.enumValues != nil && len(c.enumValues) > 0 {
+		if len(c.enumValues) > 0 {
 			return encodeEnumToJSON(v, c)
 		}
 		return encodeStringToJSON(v, c)
@@ -68,8 +63,11 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		return encodeUint64ToJSON(v, c)
 	case reflect.Struct:
 		t := v.Type()
-		if t.Implements(reflect.TypeFor[JsonEncoder]()) {
-			result, err := v.Interface().(JsonEncoder).EncodeJSON(c.keyCasing)
+		if isNullableType(t) {
+			return encodeNullableToJSON(v, c)
+		}
+		if t.Implements(reflect.TypeFor[ArriModel]()) {
+			result, err := v.Interface().(ArriModel).EncodeJSON(c.keyCasing)
 			if err != nil {
 				return err
 			}
@@ -93,6 +91,16 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	return encodeInterfaceToJSON(v, c)
 }
 
+func encodeNullableToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+	valid := v.Field(1).Bool()
+	if valid {
+		value := v.Field(0)
+		return encodeValueToJSON(value, c)
+	}
+	c.buffer = append(c.buffer, "null"...)
+	return nil
+}
+
 func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	if !v.IsValid() {
 		c.buffer = append(c.buffer, "null"...)
@@ -102,7 +110,7 @@ func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		c.buffer = append(c.buffer, "null"...)
 		return nil
 	}
-	result, err := json.Marshal(v.Interface())
+	result, err := EncodeJSON(v.Interface(), c.keyCasing)
 	if err != nil {
 		return err
 	}
