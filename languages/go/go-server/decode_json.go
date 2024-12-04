@@ -23,33 +23,33 @@ type DecodingError interface {
 	SchemaPath() string
 }
 
-type validationError struct {
-	errors []validationErrorItem
+type ValidationError struct {
+	errors []ValidationErrorItem
 }
 
-func (e validationError) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
+func (e ValidationError) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 	return EncodeJSON(e.errors, keyCasing)
 }
 
-type validationErrorItem struct {
+type ValidationErrorItem struct {
 	Message      string
 	InstancePath string
 	SchemaPath   string
 }
 
-func newValidationErrorItem(message string, instancePath string, schemaPath string) validationErrorItem {
-	return validationErrorItem{
+func NewValidationErrorItem(message string, instancePath string, schemaPath string) ValidationErrorItem {
+	return ValidationErrorItem{
 		Message:      message,
 		InstancePath: instancePath,
 		SchemaPath:   schemaPath,
 	}
 }
 
-func (e validationError) Code() uint32 {
+func (e ValidationError) Code() uint32 {
 	return 400
 }
 
-func (e validationError) Error() string {
+func (e ValidationError) Error() string {
 	msg := "Invalid input. Affected properties ["
 
 	for i := 0; i < len(e.errors); i++ {
@@ -66,12 +66,12 @@ func (e validationError) Error() string {
 	return msg
 }
 
-func (e validationError) Data() Option[any] {
+func (e ValidationError) Data() Option[any] {
 	return Some[any](e)
 }
 
-func newValidationError(errors []validationErrorItem) validationError {
-	return validationError{errors: errors}
+func NewValidationError(errors []ValidationErrorItem) ValidationError {
+	return ValidationError{errors: errors}
 }
 
 type ValidationContext struct {
@@ -81,7 +81,7 @@ type ValidationContext struct {
 	SchemaPath   string
 	EnumValues   []string
 	KeyCasing    KeyCasing
-	Errors       *[]validationErrorItem
+	Errors       *[]ValidationErrorItem
 }
 
 func (c ValidationContext) copyWith(CurrentDepth Option[uint32], EnumValues Option[[]string], InstancePath Option[string], SchemaPath Option[string]) ValidationContext {
@@ -100,7 +100,7 @@ func (c ValidationContext) copyWith(CurrentDepth Option[uint32], EnumValues Opti
 	}
 }
 
-func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *validationError {
+func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *ValidationError {
 	parsedResult := gjson.ParseBytes(data)
 	value := reflect.ValueOf(&v)
 	if !parsedResult.Exists() {
@@ -108,10 +108,10 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *validationError 
 		if isNullableType(t) || isOptionalType(t) {
 			return nil
 		}
-		err := newValidationError([]validationErrorItem{newValidationErrorItem("expected JSON input but received nothing", "", "")})
+		err := NewValidationError([]ValidationErrorItem{NewValidationErrorItem("expected JSON input but received nothing", "", "")})
 		return &err
 	}
-	errors := []validationErrorItem{}
+	errors := []ValidationErrorItem{}
 	context := ValidationContext{
 		MaxDepth:  10000,
 		KeyCasing: keyCasing,
@@ -119,7 +119,7 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *validationError 
 	}
 	typeFromJSON(&parsedResult, value, &context)
 	if len(*context.Errors) > 0 {
-		err := newValidationError(*context.Errors)
+		err := NewValidationError(*context.Errors)
 		return &err
 	}
 	return nil
@@ -129,7 +129,7 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	if context.CurrentDepth > context.MaxDepth {
 		*context.Errors = append(
 			*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"exceeded max depth",
 				context.InstancePath,
 				context.SchemaPath,
@@ -196,7 +196,7 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	}
 	*context.Errors = append(
 		*context.Errors,
-		newValidationErrorItem(
+		NewValidationErrorItem(
 			"unsupported type \""+kind.String()+"\"",
 			context.InstancePath,
 			context.SchemaPath,
@@ -222,7 +222,7 @@ func enumFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	if data.Type != gjson.String {
 		*context.Errors = append(
 			*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected on of the following string values "+fmt.Sprintf("%+v", context.EnumValues),
 				context.InstancePath,
 				context.SchemaPath,
@@ -240,7 +240,7 @@ func enumFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	}
 	*context.Errors = append(
 		*context.Errors,
-		newValidationErrorItem(
+		NewValidationErrorItem(
 			"expected on of the following string values "+fmt.Sprintf("%+v", context.EnumValues),
 			context.InstancePath,
 			context.SchemaPath,
@@ -253,7 +253,7 @@ func floatFromJSON(data *gjson.Result, target reflect.Value, context *Validation
 	if data.Type != gjson.Number {
 		*context.Errors = append(
 			*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected number got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -266,7 +266,7 @@ func floatFromJSON(data *gjson.Result, target reflect.Value, context *Validation
 		if value > FLOAT32_MAX || value < FLOAT32_MIN {
 			*context.Errors = append(
 				*context.Errors,
-				newValidationErrorItem("expected 32bit float got "+fmt.Sprint(value),
+				NewValidationErrorItem("expected 32bit float got "+fmt.Sprint(value),
 					context.InstancePath,
 					context.SchemaPath,
 				),
@@ -283,7 +283,7 @@ func floatFromJSON(data *gjson.Result, target reflect.Value, context *Validation
 func timestampFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
 	if data.Type != gjson.String {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected RFC3339 date string got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -295,7 +295,7 @@ func timestampFromJSON(data *gjson.Result, target reflect.Value, context *Valida
 	if parsingErr != nil {
 		*context.Errors = append(
 			*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				parsingErr.Error(),
 				context.InstancePath,
 				context.SchemaPath,
@@ -324,7 +324,7 @@ const (
 func intFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext, bitSize int) bool {
 	if data.Type != gjson.Number {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected number got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -338,7 +338,7 @@ func intFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 		if val > INT8_MAX || val < INT8_MIN {
 			*context.Errors = append(
 				*context.Errors,
-				newValidationErrorItem("expected number between -128 and 127 got "+fmt.Sprint(val),
+				NewValidationErrorItem("expected number between -128 and 127 got "+fmt.Sprint(val),
 					context.InstancePath,
 					context.SchemaPath,
 				),
@@ -351,7 +351,7 @@ func intFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 		if val > INT16_MAX || val < INT16_MIN {
 			*context.Errors = append(
 				*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"expected number between -32768 and 32767 got "+fmt.Sprint(val),
 					context.InstancePath,
 					context.SchemaPath,
@@ -364,7 +364,7 @@ func intFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 	case 32:
 		if val > INT32_MAX || val < INT32_MIN {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"expected number between -2147483648 and 2147483647 got "+fmt.Sprint(val),
 					context.InstancePath,
 					context.SchemaPath,
@@ -376,7 +376,7 @@ func intFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 		return true
 	default:
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem("invalid bit size "+fmt.Sprint(bitSize),
+			NewValidationErrorItem("invalid bit size "+fmt.Sprint(bitSize),
 				context.InstancePath,
 				context.SchemaPath,
 			),
@@ -388,7 +388,7 @@ func intFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 func uintFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext, bitSize int) bool {
 	if data.Type != gjson.Number {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected number got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -401,7 +401,7 @@ func uintFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	case 8:
 		if val > UINT8_MAX {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"expected number between 0 and 255 got "+fmt.Sprint(val),
 					context.InstancePath,
 					context.SchemaPath,
@@ -413,7 +413,7 @@ func uintFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 		return true
 	case 16:
 		if val > UINT16_MAX {
-			*context.Errors = append(*context.Errors, newValidationErrorItem(
+			*context.Errors = append(*context.Errors, NewValidationErrorItem(
 				"expected number between 0 and 65535 got "+fmt.Sprint(val),
 				context.InstancePath,
 				context.SchemaPath,
@@ -426,7 +426,7 @@ func uintFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 	case 32:
 		if val > UINT32_MAX {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"expected number between 0 and 4294967295 got "+fmt.Sprint(val),
 					context.InstancePath,
 					context.SchemaPath,
@@ -438,7 +438,7 @@ func uintFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 		return true
 	default:
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem("invalid bit size "+fmt.Sprint(bitSize),
+			NewValidationErrorItem("invalid bit size "+fmt.Sprint(bitSize),
 				context.InstancePath,
 				context.SchemaPath,
 			),
@@ -450,7 +450,7 @@ func uintFromJSON(data *gjson.Result, target reflect.Value, context *ValidationC
 func largeIntFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext, isUnsigned bool) bool {
 	if data.Type != gjson.String {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected stringified number got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -462,7 +462,7 @@ func largeIntFromJSON(data *gjson.Result, target reflect.Value, context *Validat
 		val, convErr := strconv.ParseUint(data.String(), 10, 64)
 		if convErr != nil {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					convErr.Error(),
 					context.InstancePath,
 					context.SchemaPath,
@@ -476,7 +476,7 @@ func largeIntFromJSON(data *gjson.Result, target reflect.Value, context *Validat
 	val, convErr := strconv.ParseInt(data.String(), 10, 64)
 	if convErr != nil {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				convErr.Error(),
 				context.InstancePath,
 				context.SchemaPath,
@@ -493,7 +493,7 @@ func stringFromJson(data *gjson.Result, target reflect.Value, context *Validatio
 	if data.Type != gjson.String {
 		*context.Errors = append(
 			*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected string got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -508,7 +508,7 @@ func stringFromJson(data *gjson.Result, target reflect.Value, context *Validatio
 func boolFromJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
 	if !data.IsBool() {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected boolean got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -524,7 +524,7 @@ func arrayFromJSON(data *gjson.Result, target reflect.Value, context *Validation
 	target.SetZero()
 	if !data.IsArray() {
 		*context.Errors = append(*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected array got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -556,7 +556,7 @@ func mapFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 	if !data.IsObject() {
 		*context.Errors = append(
 			*context.Errors,
-			newValidationErrorItem(
+			NewValidationErrorItem(
 				"expected object got \""+data.Type.String()+"\"",
 				context.InstancePath,
 				context.SchemaPath,
@@ -589,7 +589,7 @@ func mapFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 
 func structFromJSON(data *gjson.Result, target reflect.Value, c *ValidationContext) bool {
 	if !data.IsObject() {
-		*c.Errors = append(*c.Errors, newValidationErrorItem("expected object", c.InstancePath, c.SchemaPath))
+		*c.Errors = append(*c.Errors, NewValidationErrorItem("expected object", c.InstancePath, c.SchemaPath))
 		return false
 	}
 	targetType := target.Type()
@@ -682,7 +682,7 @@ func anyFromJSON(data *gjson.Result, target reflect.Value, context *ValidationCo
 		err := json.Unmarshal(bytes, &innerTarget)
 		if err != nil {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					err.Error(),
 					context.InstancePath,
 					context.SchemaPath,
@@ -712,7 +712,7 @@ func discriminatorStructFromJson(data *gjson.Result, target reflect.Value, conte
 		}
 		if fieldType.Kind() != reflect.Ptr || fieldType.Elem().Kind() != reflect.Struct {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"all discriminator fields must be a pointer to a struct",
 					context.InstancePath,
 					context.SchemaPath,
@@ -724,7 +724,7 @@ func discriminatorStructFromJson(data *gjson.Result, target reflect.Value, conte
 		if len(discriminatorValue) == 0 {
 			*context.Errors = append(
 				*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"no discriminator value specified unable to unmarshal",
 					context.InstancePath,
 					context.SchemaPath,
@@ -735,7 +735,7 @@ func discriminatorStructFromJson(data *gjson.Result, target reflect.Value, conte
 		jsonDiscriminatorValue := data.Get(discriminatorKey)
 		if jsonDiscriminatorValue.Type != gjson.String {
 			*context.Errors = append(*context.Errors,
-				newValidationErrorItem(
+				NewValidationErrorItem(
 					"missing discriminator field \""+discriminatorKey+"\"",
 					context.InstancePath,
 					context.SchemaPath,
@@ -754,7 +754,7 @@ func discriminatorStructFromJson(data *gjson.Result, target reflect.Value, conte
 	}
 	*context.Errors = append(
 		*context.Errors,
-		newValidationErrorItem(
+		NewValidationErrorItem(
 			"input didn't match any of the discriminator sub types",
 			context.InstancePath,
 			context.SchemaPath,
