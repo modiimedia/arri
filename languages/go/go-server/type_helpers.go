@@ -285,7 +285,7 @@ func (m OrderedMap[T]) String() string {
 func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
 	switch data.Type {
 	case gjson.Null, gjson.False, gjson.String, gjson.Number:
-		dc.Errors = append(dc.Errors, NewValidationErrorItem("expected object", dc.InstancePath, dc.SchemaPath))
+		dc.Errors = append(dc.Errors, NewValidationError("expected object", dc.InstancePath, dc.SchemaPath))
 		return false
 	}
 	valuesResult := []T{}
