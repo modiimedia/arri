@@ -124,6 +124,7 @@ export default defineCommand({
                 }),
             );
         }
+        await Promise.all(goModFileTasks);
 
         // Update all affected files
         const updateTasks: Promise<any>[] = [];
