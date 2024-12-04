@@ -11,13 +11,13 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *ValidationError {
+func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *DecoderError {
 	reflectValue := reflect.ValueOf(target).Elem()
-	errors := []ValidationErrorItem{}
-	ctx := ValidationContext{KeyCasing: keyCasing, Errors: &errors}
+	errors := []ValidationError{}
+	ctx := DecoderContext{KeyCasing: keyCasing, Errors: errors}
 	if reflectValue.Kind() != reflect.Struct {
 		err := NewValidationError(
-			[]ValidationErrorItem{
+			[]ValidationError{
 				NewValidationErrorItem("only structs can be decoded from url query params", ctx.InstancePath, ctx.SchemaPath),
 			},
 		)
@@ -62,7 +62,7 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Val
 		}
 		hasUrlValue := values.Has(key)
 		if !hasUrlValue {
-			*ctx.Errors = append(*ctx.Errors,
+			ctx.Errors = append(ctx.Errors,
 				NewValidationErrorItem("missing required field", "/"+key, "/properties/"+key),
 			)
 			continue
@@ -80,14 +80,14 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Val
 		}
 		typeFromUrlQuery(urlValue, &field, &ctx)
 	}
-	if len(*ctx.Errors) > 0 {
-		err := NewValidationError(*ctx.Errors)
+	if len(ctx.Errors) > 0 {
+		err := NewValidationError(ctx.Errors)
 		return &err
 	}
 	return nil
 }
 
-func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
+func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *DecoderContext) bool {
 	if value == "" {
 		return true
 	}
@@ -101,7 +101,7 @@ func optionalTypeFromUrlQuery(value string, target *reflect.Value, context *Vali
 	return true
 }
 
-func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
+func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *DecoderContext) bool {
 	if value == "null" || value == "NULL" || value == "Null" {
 		return true
 	}
@@ -115,7 +115,7 @@ func nullableTypeFromUrlQuery(value string, target *reflect.Value, context *Vali
 	return true
 }
 
-func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
+func typeFromUrlQuery(value string, target *reflect.Value, context *DecoderContext) bool {
 	kind := target.Kind()
 	switch kind {
 	case reflect.Bool:
@@ -129,8 +129,8 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	case reflect.Float32:
 		parsedVal, parsingErr := strconv.ParseFloat(value, 32)
 		if parsingErr != nil {
-			*context.Errors = append(
-				*context.Errors,
+			context.Errors = append(
+				context.Errors,
 				NewValidationErrorItem(
 					parsingErr.Error(),
 					context.InstancePath,
@@ -144,7 +144,7 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	case reflect.Float64:
 		parsedVal, parsingErr := strconv.ParseFloat(value, 64)
 		if parsingErr != nil {
-			*context.Errors = append(*context.Errors,
+			context.Errors = append(context.Errors,
 				NewValidationErrorItem(
 					parsingErr.Error(),
 					context.InstancePath,
@@ -172,8 +172,8 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	case reflect.Uint64, reflect.Uint:
 		return intFromUrlQuery(value, target, context, true, 64)
 	case reflect.Array, reflect.Slice:
-		*context.Errors = append(
-			*context.Errors,
+		context.Errors = append(
+			context.Errors,
 			NewValidationErrorItem(
 				"decoding lists from url query strings is not supported",
 				context.InstancePath,
@@ -185,8 +185,8 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 		if target.Type().Name() == "Time" {
 			return timestampFromUrlQuery(value, target, context)
 		}
-		*context.Errors = append(
-			*context.Errors,
+		context.Errors = append(
+			context.Errors,
 			NewValidationErrorItem(
 				"decoding nested objects from url query strings is not supported",
 				context.InstancePath,
@@ -198,8 +198,8 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 		subTarget := target.Elem()
 		return typeFromUrlQuery(value, &subTarget, context)
 	case reflect.Map:
-		*context.Errors = append(
-			*context.Errors,
+		context.Errors = append(
+			context.Errors,
 			NewValidationErrorItem(
 				"decoding nested objects from url query strings is not supported",
 				context.InstancePath,
@@ -208,8 +208,8 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 		)
 		return false
 	}
-	*context.Errors = append(
-		*context.Errors,
+	context.Errors = append(
+		context.Errors,
 		NewValidationErrorItem(
 			"unsupported type",
 			context.InstancePath,
@@ -219,7 +219,7 @@ func typeFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	return false
 }
 
-func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
+func boolFromUrlQuery(value string, target *reflect.Value, context *DecoderContext) bool {
 	switch value {
 	case "true", "TRUE", "1":
 		target.SetBool(true)
@@ -228,8 +228,8 @@ func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 		target.SetBool(false)
 		return true
 	}
-	*context.Errors = append(
-		*context.Errors,
+	context.Errors = append(
+		context.Errors,
 		NewValidationErrorItem(
 			"cannot convert \""+value+"\" to a boolean",
 			context.InstancePath,
@@ -239,7 +239,7 @@ func boolFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	return false
 }
 
-func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
+func enumFromUrlQuery(value string, target *reflect.Value, context *DecoderContext) bool {
 	for i := 0; i < len(context.EnumValues); i++ {
 		enumVal := context.EnumValues[i]
 		if enumVal == value {
@@ -247,8 +247,8 @@ func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 			return true
 		}
 	}
-	*context.Errors = append(
-		*context.Errors,
+	context.Errors = append(
+		context.Errors,
 		NewValidationErrorItem(
 			fmt.Sprintf("expected on of the following values %+v", context.EnumValues),
 			context.InstancePath,
@@ -258,12 +258,12 @@ func enumFromUrlQuery(value string, target *reflect.Value, context *ValidationCo
 	return false
 }
 
-func intFromUrlQuery(value string, target *reflect.Value, context *ValidationContext, isUnsigned bool, bitSize int) bool {
+func intFromUrlQuery(value string, target *reflect.Value, context *DecoderContext, isUnsigned bool, bitSize int) bool {
 	if isUnsigned {
 		parsedVal, parsingErr := strconv.ParseUint(value, 10, bitSize)
 		if parsingErr != nil {
-			*context.Errors = append(
-				*context.Errors,
+			context.Errors = append(
+				context.Errors,
 				NewValidationErrorItem(
 					parsingErr.Error(),
 					context.InstancePath,
@@ -286,8 +286,8 @@ func intFromUrlQuery(value string, target *reflect.Value, context *ValidationCon
 	}
 	parsedVal, parsingErr := strconv.ParseInt(value, 10, bitSize)
 	if parsingErr != nil {
-		*context.Errors = append(
-			*context.Errors,
+		context.Errors = append(
+			context.Errors,
 			NewValidationErrorItem(
 				parsingErr.Error(),
 				context.InstancePath,
@@ -310,11 +310,11 @@ func intFromUrlQuery(value string, target *reflect.Value, context *ValidationCon
 	return true
 }
 
-func timestampFromUrlQuery(value string, target *reflect.Value, context *ValidationContext) bool {
+func timestampFromUrlQuery(value string, target *reflect.Value, context *DecoderContext) bool {
 	parsedValue, parsingErr := time.ParseInLocation(time.RFC3339, value, time.UTC)
 	if parsingErr != nil {
-		*context.Errors = append(
-			*context.Errors,
+		context.Errors = append(
+			context.Errors,
 			NewValidationErrorItem(
 				parsingErr.Error(),
 				context.InstancePath,

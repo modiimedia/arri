@@ -282,32 +282,32 @@ func (m OrderedMap[T]) String() string {
 	return result
 }
 
-func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, context *ValidationContext) bool {
+func (m OrderedMap[T]) DecodeJSON(data *gjson.Result, target reflect.Value, dc *DecoderContext) bool {
 	switch data.Type {
 	case gjson.Null, gjson.False, gjson.String, gjson.Number:
-		*context.Errors = append(*context.Errors, NewValidationErrorItem("expected object", context.InstancePath, context.SchemaPath))
+		dc.Errors = append(dc.Errors, NewValidationErrorItem("expected object", dc.InstancePath, dc.SchemaPath))
 		return false
 	}
 	valuesResult := []T{}
 	keysResult := []string{}
 	gjsonMap := data.Map()
-	instancePath := context.InstancePath
-	schemaPath := context.SchemaPath
-	context.SchemaPath = context.SchemaPath + "/values"
-	context.CurrentDepth++
+	instancePath := dc.InstancePath
+	schemaPath := dc.SchemaPath
+	dc.SchemaPath = dc.SchemaPath + "/values"
+	dc.CurrentDepth++
 	for key, value := range gjsonMap {
 		valueTarget := reflect.New(reflect.TypeFor[T]())
-		context.InstancePath = instancePath + "/" + key
-		valueResult := typeFromJSON(&value, valueTarget, context)
+		dc.InstancePath = instancePath + "/" + key
+		valueResult := typeFromJSON(&value, valueTarget, dc)
 		if !valueResult {
 			return false
 		}
 		valuesResult = append(valuesResult, *valueTarget.Interface().(*T))
 		keysResult = append(keysResult, key)
 	}
-	context.InstancePath = instancePath
-	context.SchemaPath = schemaPath
-	context.CurrentDepth--
+	dc.InstancePath = instancePath
+	dc.SchemaPath = schemaPath
+	dc.CurrentDepth--
 	result := OrderedMap[T]{
 		keys:   keysResult,
 		values: valuesResult,
