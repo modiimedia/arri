@@ -25,6 +25,7 @@ func (e DecoderError) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 }
 
 type ValidationError struct {
+	error
 	Message      string
 	InstancePath string
 	SchemaPath   string
