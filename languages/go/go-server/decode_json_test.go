@@ -303,6 +303,4 @@ func TestDecodeNothing(t *testing.T) {
 		t.Error("Should return an error")
 		return
 	}
-	e, _ := err.EncodeJSON(arri.KeyCasingCamelCase)
-	fmt.Println(string(e), err)
 }

@@ -98,11 +98,11 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 func TestEncodeJsonWithOptionalFields(t *testing.T) {
 	noUndefReference, noUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
 	if noUndefReferenceErr != nil {
-		t.Fatalf(noUndefReferenceErr.Error())
+		t.Fatal(noUndefReferenceErr.Error())
 	}
 	noUndefResult, noUndefResultErr := arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
 	if noUndefResultErr != nil {
-		t.Fatalf(noUndefResultErr.Error())
+		t.Fatal(noUndefResultErr.Error())
 	}
 	if !reflect.DeepEqual(noUndefResult, noUndefReference) {
 		t.Fatal("\n", string(noUndefResult), "\nis not equal to\n", string(noUndefReference))
@@ -110,11 +110,11 @@ func TestEncodeJsonWithOptionalFields(t *testing.T) {
 	allUndefInput := objectWithOptionalFields{}
 	allUndefReference, allUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
 	if noUndefReferenceErr != nil {
-		t.Fatalf(allUndefReferenceErr.Error())
+		t.Fatal(allUndefReferenceErr.Error())
 	}
 	allUndefResult, allUndefResultErr := arri.EncodeJSON(allUndefInput, arri.KeyCasingCamelCase)
 	if allUndefResultErr != nil {
-		t.Fatalf(allUndefResultErr.Error())
+		t.Fatal(allUndefResultErr.Error())
 	}
 	if !reflect.DeepEqual(allUndefResult, allUndefReference) {
 		t.Fatal("\n", string(allUndefResult), "\nis not equal to\n", string(allUndefReference))

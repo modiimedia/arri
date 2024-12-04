@@ -1,7 +1,6 @@
 package arri
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
@@ -111,7 +110,7 @@ func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		c.buffer = append(c.buffer, "null"...)
 		return nil
 	}
-	result, err := json.Marshal(v.Interface())
+	result, err := EncodeJSON(v.Interface(), c.keyCasing)
 	if err != nil {
 		return err
 	}
