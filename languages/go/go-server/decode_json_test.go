@@ -14,7 +14,7 @@ var _objectWithEveryTypeInput, _objectWithEveryTypeInputErr = os.ReadFile("../..
 
 func TestDecodeObjectWithEveryType(t *testing.T) {
 	if _objectWithEveryTypeInputErr != nil {
-		t.Errorf(_objectWithEveryTypeInputErr.Error())
+		t.Error(_objectWithEveryTypeInputErr.Error())
 		return
 	}
 	target := objectWithEveryType{}
