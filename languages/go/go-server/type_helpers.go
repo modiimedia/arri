@@ -143,15 +143,13 @@ func (s Nullable[T]) DecodeJSON(d *gjson.Result, t reflect.Value, dc *DecoderCon
 	if d.Type != gjson.Null {
 		innerVal := reflect.New(reflect.TypeFor[T]())
 		ok := typeFromJSON(d, innerVal, dc)
-
 		if !ok {
-			t.Set(reflect.ValueOf(None[T]()))
 			return false
 		}
-		t.Set(reflect.ValueOf(Some(innerVal)))
+		v := innerVal.Interface().(*T)
+		t.Set(reflect.ValueOf(NotNull(*v)))
 		return true
 	}
-	t.Set(reflect.ValueOf(None[T]()))
 	return true
 }
 

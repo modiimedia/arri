@@ -97,7 +97,7 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *DecoderError {
 	value := reflect.ValueOf(&v)
 	if !parsedResult.Exists() {
 		t := value.Type()
-		if isNullableType(t) || isOptionalType(t) {
+		if isNullableTypeOrPointer(t) || isOptionalType(t) {
 			return nil
 		}
 		err := NewDecoderError([]ValidationError{NewValidationError("expected JSON input but received nothing", "", "")})
@@ -168,14 +168,14 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCont
 		if t.Name() == "Time" {
 			return timestampFromJSON(data, target, context)
 		}
-		if t.Implements(reflect.TypeFor[ArriModel]()) {
-			return target.Interface().(ArriModel).DecodeJSON(data, target, context)
-		}
 		if isOptionalType(t) {
 			return optionFromJson(data, target, context)
 		}
-		if isNullableType(t) {
+		if isNullableTypeOrPointer(t) {
 			return nullableFromJson(data, target, context)
+		}
+		if t.Implements(reflect.TypeFor[ArriModel]()) {
+			return target.Interface().(ArriModel).DecodeJSON(data, target, context)
 		}
 		return structFromJSON(data, target, context)
 	case reflect.Slice, reflect.Array:
@@ -648,7 +648,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 			Some(c.InstancePath+"/"+fieldName),
 			Some(c.SchemaPath+"/properties/"+fieldName),
 		)
-		isNullable := isNullableType(fieldType)
+		isNullable := isNullableTypeOrPointer(fieldType)
 		if isNullable {
 			success := nullableFromJson(&jsonResult, field, &ctx)
 			if !success {

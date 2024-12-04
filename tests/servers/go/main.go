@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -51,6 +52,9 @@ func main() {
 					return arri.Error(401, "Missing test auth header 'x-test-header'")
 				}
 				return nil
+			},
+			OnError: func(r *http.Request, ac *AppContext, err error) {
+				fmt.Println("ERROR", err)
 			},
 		},
 		func(w http.ResponseWriter, r *http.Request) (*AppContext, arri.RpcError) {

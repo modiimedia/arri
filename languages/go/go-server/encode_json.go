@@ -46,7 +46,7 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
-		if c.enumValues != nil && len(c.enumValues) > 0 {
+		if len(c.enumValues) > 0 {
 			return encodeEnumToJSON(v, c)
 		}
 		return encodeStringToJSON(v, c)
@@ -64,6 +64,9 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		return encodeUint64ToJSON(v, c)
 	case reflect.Struct:
 		t := v.Type()
+		if isNullableType(t) {
+			return encodeNullableToJSON(v, c)
+		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
 			result, err := v.Interface().(ArriModel).EncodeJSON(c.keyCasing)
 			if err != nil {
@@ -87,6 +90,16 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		return encodePointerToJSON(v, c)
 	}
 	return encodeInterfaceToJSON(v, c)
+}
+
+func encodeNullableToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+	valid := v.Field(1).Bool()
+	if valid {
+		value := v.Field(0)
+		return encodeValueToJSON(value, c)
+	}
+	c.buffer = append(c.buffer, "null"...)
+	return nil
 }
 
 func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {

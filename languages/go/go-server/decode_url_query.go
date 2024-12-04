@@ -73,7 +73,7 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Dec
 			Some(ctx.InstancePath+"/"+key),
 			Some(ctx.SchemaPath+"/optionalProperties"),
 		)
-		isNullable := isNullableType(fieldType)
+		isNullable := isNullableTypeOrPointer(fieldType)
 		if isNullable {
 			nullableTypeFromUrlQuery(urlValue, &field, &ctx)
 			continue

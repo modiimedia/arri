@@ -153,7 +153,7 @@ func typeToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error)
 		if input.Implements(reflect.TypeFor[ArriModel]()) {
 			return reflect.New(input).Interface().(ArriModel).TypeDef(context)
 		}
-		if isNullableType(input) {
+		if isNullableTypeOrPointer(input) {
 			subType := extractNullableType(input)
 			return typeToTypeDef(
 				subType,
