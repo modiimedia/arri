@@ -102,27 +102,32 @@ export function jsonSchemaScalarToJtdScalar(
         case "Date":
             return {
                 type: "timestamp",
+                nullable: input.nullable,
                 metadata: meta,
             };
         case "bigint":
         case "integer":
             return {
                 type: "int32",
+                nullable: input.nullable,
                 metadata: meta,
             };
         case "number":
             return {
                 type: "float64",
+                nullable: input.nullable,
                 metadata: meta,
             };
         case "boolean":
             return {
                 type: "boolean",
+                nullable: input.nullable,
                 metadata: meta,
             };
         case "string":
             return {
                 type: "string",
+                nullable: input.nullable,
                 metadata: meta,
             };
         default:
@@ -136,6 +141,7 @@ export function jsonSchemaObjectToJtdObject(
 ): Schema {
     const result: SchemaFormProperties = {
         properties: {},
+        nullable: input.nullable,
         strict:
             typeof input.additionalProperties === "boolean"
                 ? !input.additionalProperties
@@ -171,6 +177,7 @@ export function jsonSchemaArrayToJtdArray(
 ) {
     const result: SchemaFormElements = {
         elements: jsonSchemaToJtdSchema(input.items),
+        nullable: input.nullable,
         metadata: {
             id: input.$id ?? input.title,
             description: input.description,
@@ -183,9 +190,20 @@ export function jsonSchemaRecordToJtdRecord(
     input: JsonSchemaRecord,
     _: JsonSchemaContext,
 ): Schema {
+    if (input.additionalProperties) {
+        const type = jsonSchemaToJtdSchema(input.additionalProperties);
+        return {
+            values: type,
+            nullable: input.nullable,
+            metadata: {
+                id: input.$id ?? input.title,
+                description: input.description,
+            },
+        };
+    }
     const types: Schema[] = [];
-    Object.keys(input.patternProperties).forEach((key) => {
-        const pattern = input.patternProperties[key];
+    Object.keys(input.patternProperties ?? {}).forEach((key) => {
+        const pattern = input.patternProperties![key];
         if (!pattern) {
             return;
         }
@@ -199,6 +217,7 @@ export function jsonSchemaRecordToJtdRecord(
     }
     const result: SchemaFormValues = {
         values: types[0]!,
+        nullable: input.nullable,
         metadata: {
             id: input.$id ?? input.title,
             description: input.description,
@@ -216,6 +235,7 @@ export function jsonSchemaRefToJtdRef(
         const refId = parts[parts.length - 1];
         if (!refId) return {};
         return {
+            nullable: input.nullable,
             ref: refId,
         };
     }

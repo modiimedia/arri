@@ -1,7 +1,15 @@
-import { type SchemaFormProperties, type SchemaFormType } from "jtd-utils";
+import {
+    type SchemaFormProperties,
+    type SchemaFormType,
+    SchemaFormValues,
+} from "jtd-utils";
 
 import { jsonSchemaToJtdSchema } from "./index";
-import { type JsonSchemaObject, type JsonSchemaScalarType } from "./models";
+import {
+    type JsonSchemaObject,
+    JsonSchemaRecord,
+    type JsonSchemaScalarType,
+} from "./models";
 
 const emptyMetadata = {
     id: undefined,
@@ -15,6 +23,7 @@ it("Converts integers", () => {
     const expectedOutput: SchemaFormType = {
         type: "int32",
         metadata: emptyMetadata,
+        nullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(integerSchema)).toStrictEqual(expectedOutput);
 });
@@ -26,6 +35,7 @@ it("Converts strings", () => {
     const expectedOutput: SchemaFormType = {
         type: "string",
         metadata: emptyMetadata,
+        nullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
@@ -54,22 +64,27 @@ it("Converts objects", () => {
             id: {
                 type: "string",
                 metadata: emptyMetadata,
+                nullable: undefined,
             },
             title: {
                 type: "string",
                 metadata: emptyMetadata,
+                nullable: undefined,
             },
             numLikes: {
                 type: "int32",
                 metadata: emptyMetadata,
+                nullable: undefined,
             },
             createdAt: {
                 type: "int32",
                 metadata: emptyMetadata,
+                nullable: undefined,
             },
         },
         metadata: emptyMetadata,
         strict: undefined,
+        nullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
@@ -91,6 +106,7 @@ it("Converts objects with optional values", () => {
         properties: {
             id: {
                 type: "string",
+                nullable: undefined,
                 metadata: emptyMetadata,
             },
         },
@@ -98,10 +114,73 @@ it("Converts objects with optional values", () => {
             name: {
                 type: "string",
                 metadata: emptyMetadata,
+                nullable: undefined,
             },
         },
         metadata: emptyMetadata,
         strict: undefined,
+        nullable: undefined,
     };
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
+});
+
+it("Converts dictionary types", () => {
+    const input1: JsonSchemaRecord = {
+        type: "object",
+        patternProperties: {
+            a: {
+                type: "string",
+            },
+        },
+    };
+    const expectedOutput1: SchemaFormValues = {
+        values: {
+            type: "string",
+            nullable: undefined,
+            metadata: emptyMetadata,
+        },
+        nullable: undefined,
+        metadata: emptyMetadata,
+    };
+    expect(jsonSchemaToJtdSchema(input1)).toStrictEqual(expectedOutput1);
+    const input2: JsonSchemaRecord = {
+        type: "object",
+        nullable: undefined,
+        additionalProperties: {
+            type: "object",
+            properties: {
+                id: {
+                    type: "string",
+                    nullable: undefined,
+                },
+                name: {
+                    type: "string",
+                    nullable: true,
+                },
+            },
+        },
+    };
+    const expectedOutput2: SchemaFormValues = {
+        values: {
+            properties: {},
+            optionalProperties: {
+                id: {
+                    type: "string",
+                    nullable: undefined,
+                    metadata: emptyMetadata,
+                },
+                name: {
+                    type: "string",
+                    nullable: true,
+                    metadata: emptyMetadata,
+                },
+            },
+            metadata: emptyMetadata,
+            nullable: undefined,
+            strict: undefined,
+        },
+        metadata: emptyMetadata,
+        nullable: undefined,
+    };
+    expect(jsonSchemaToJtdSchema(input2)).toStrictEqual(expectedOutput2);
 });
