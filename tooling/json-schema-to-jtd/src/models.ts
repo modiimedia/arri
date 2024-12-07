@@ -28,6 +28,7 @@ export interface JsonSchemaTypeBase {
     $id?: string;
     title?: string;
     description?: string;
+    nullable?: boolean;
 }
 
 export interface JsonSchemaScalarType extends JsonSchemaTypeBase {
@@ -83,18 +84,22 @@ export const isJsonSchemaObject = (input: any): input is JsonSchemaObject => {
 };
 export interface JsonSchemaRecord extends JsonSchemaTypeBase {
     type: "object";
-    patternProperties: Record<string, JsonSchemaType>;
+    patternProperties?: Record<string, JsonSchemaType>;
+    additionalProperties?: JsonSchemaType;
 }
 export const isJsonSchemaRecord = (input: any): input is JsonSchemaRecord => {
     if (typeof input !== "object") {
         return false;
     }
-    return (
-        "type" in input &&
-        input.type === "object" &&
-        "patternProperties" in input &&
-        typeof input.patternProperties === "object"
-    );
+    if ("type" in input && input.type === "object") {
+        return (
+            ("patternProperties" in input &&
+                typeof input.patternProperties === "object") ||
+            ("additionalProperties" in input &&
+                typeof input.additionalProperties === "object")
+        );
+    }
+    return false;
 };
 export interface JsonSchemaArray extends JsonSchemaTypeBase {
     type: "array";
