@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -53,9 +52,7 @@ func main() {
 				}
 				return nil
 			},
-			OnError: func(r *http.Request, ac *AppContext, err error) {
-				fmt.Println("ERROR", err)
-			},
+			OnError: func(r *http.Request, ac *AppContext, err error) {},
 		},
 		func(w http.ResponseWriter, r *http.Request) (*AppContext, arri.RpcError) {
 			return &AppContext{
