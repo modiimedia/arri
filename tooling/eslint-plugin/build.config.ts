@@ -9,14 +9,14 @@ const packageJson = JSON.parse(
     }),
 );
 
-const deps = Object.keys(packageJson.dependencies);
+const deps = Object.keys(packageJson.dependencies ?? {});
 
 export default defineBuildConfig({
     entries: ["./src/plugin.ts", "./src/configs.ts"],
     rollup: {
         emitCJS: true,
         dts: {
-            respectExternal: true,
+            respectExternal: false,
         },
     },
     outDir: "dist",

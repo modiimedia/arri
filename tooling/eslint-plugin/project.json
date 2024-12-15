@@ -4,19 +4,18 @@
   "sourceRoot": "tooling/eslint-plugin/src",
   "projectType": "library",
   "targets": {
+    "typecheck": {
+      "command": "tsc --noEmit",
+      "inputs": ["{projectRoot}/src"],
+      "options": {
+        "cwd": "tooling/eslint-plugin"
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/eslint-plugin"
-      }
-    },
-    "build-2": {
-      "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
-      "options": {
-        "command": "tsc",
         "cwd": "tooling/eslint-plugin"
       }
     },
