@@ -112,6 +112,7 @@ Future<http.Response> arriRequest(
       result = await client.delete(Uri.parse(url),
           headers: finalHeaders, encoding: encoding, body: bodyInput);
       break;
+    // ignore: unreachable_switch_default
     default:
       throw ArriError.fromResponse(result);
   }
