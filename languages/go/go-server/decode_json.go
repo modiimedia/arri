@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 	"github.com/tidwall/gjson"
 )
 
@@ -97,7 +98,7 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *DecoderError {
 	value := reflect.ValueOf(&v)
 	if !parsedResult.Exists() {
 		t := value.Type()
-		if isNullableTypeOrPointer(t) || isOptionalType(t) {
+		if utils.IsNullableTypeOrPointer(t) || utils.IsOptionalType(t) {
 			return nil
 		}
 		err := NewDecoderError([]ValidationError{NewValidationError("expected JSON input but received nothing", "", "")})
@@ -168,10 +169,10 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCont
 		if t.Name() == "Time" {
 			return timestampFromJSON(data, target, context)
 		}
-		if isOptionalType(t) {
+		if utils.IsOptionalType(t) {
 			return optionFromJson(data, target, context)
 		}
-		if isNullableTypeOrPointer(t) {
+		if utils.IsNullableTypeOrPointer(t) {
 			return nullableFromJson(data, target, context)
 		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
@@ -628,7 +629,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 			}
 			enumValues = Some(vals)
 		}
-		isOptional := isOptionalType(fieldType)
+		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
 			ctx := c.copyWith(
 				Some(c.CurrentDepth+1),
@@ -648,7 +649,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 			Some(c.InstancePath+"/"+fieldName),
 			Some(c.SchemaPath+"/properties/"+fieldName),
 		)
-		isNullable := isNullableTypeOrPointer(fieldType)
+		isNullable := utils.IsNullableTypeOrPointer(fieldType)
 		if isNullable {
 			success := nullableFromJson(&jsonResult, field, &ctx)
 			if !success {

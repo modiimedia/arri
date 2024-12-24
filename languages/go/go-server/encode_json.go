@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 type jsonEncodingCtx struct {
@@ -63,7 +65,7 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		return encodeUint64ToJSON(v, c)
 	case reflect.Struct:
 		t := v.Type()
-		if isNullableType(t) {
+		if utils.IsNullableType(t) {
 			return encodeNullableToJSON(v, c)
 		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
@@ -197,12 +199,12 @@ func encodeStructToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		if !field.IsExported() {
 			continue
 		}
-		fieldName := getSerialKey(&field, c.keyCasing)
+		fieldName := utils.GetSerialKey(&field, c.keyCasing)
 		fieldValue := v.Field(i)
 		c.instancePath = c.instancePath + "/" + fieldName
-		if isOptionalType(field.Type) {
+		if utils.IsOptionalType(field.Type) {
 			c.schemaPath = "/optionalProperties/" + fieldName
-			if !optionalHasValue(&fieldValue) {
+			if !utils.OptionalHasValue(&fieldValue) {
 				c.instancePath = oldInstancePath
 				c.schemaPath = oldSchemaPath
 				continue

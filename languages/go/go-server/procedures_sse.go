@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 type SseController[T any] interface {
@@ -144,7 +145,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
 	paramName := getModelName(rpcName, params.Name(), "Params")
-	hasParams := !isEmptyMessage(params)
+	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
 		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
@@ -164,7 +165,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		response = response.Elem()
 	}
 	responseName := getModelName(rpcName, response.Name(), "Response")
-	hasResponse := !isEmptyMessage(response)
+	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
 		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)

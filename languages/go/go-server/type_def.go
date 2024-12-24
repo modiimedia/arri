@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 const (
@@ -153,7 +154,7 @@ func typeToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, error)
 		if input.Implements(reflect.TypeFor[ArriModel]()) {
 			return reflect.New(input).Interface().(ArriModel).TypeDef(context)
 		}
-		if isNullableTypeOrPointer(input) {
+		if utils.IsNullableTypeOrPointer(input) {
 			subType := extractNullableType(input)
 			return typeToTypeDef(
 				subType,
@@ -332,7 +333,7 @@ func structToTypeDef(input reflect.Type, context TypeDefContext) (*TypeDef, erro
 			s := strings.TrimSpace(field.Tag.Get("enumName"))
 			enumName = Some(Some(s))
 		}
-		isOptional := isOptionalType(fieldType)
+		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
 			fieldType = extractOptionalType(fieldType)
 		}
