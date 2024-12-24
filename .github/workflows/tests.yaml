@@ -7,7 +7,7 @@ env:
 jobs:
   lint:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       actions: read
@@ -41,7 +41,7 @@ jobs:
       - run: pnpm nx affected -t typecheck
   unit-tests:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       actions: write
@@ -87,7 +87,7 @@ jobs:
       - run: pnpm server-output-test
   integration-tests-ts-server:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       actions: write
@@ -131,7 +131,7 @@ jobs:
       - run: pnpm run integration-tests --server ts --affected
   integration-tests-go-server:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       actions: write
