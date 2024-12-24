@@ -18,7 +18,7 @@ type RpcOptions struct {
 	IsDeprecated bool
 }
 
-func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, TContext) (TResponse, RpcError)) {
+func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, options RpcOptions, handler func(TParams, TEvent) (TResponse, RpcError)) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
@@ -26,9 +26,9 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		rpcName = serviceName + "." + rpcName
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
 	} else {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + rpcSchema.Http.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + rpcSchema.Http.Path
 	}
 	if rpcError != nil {
 		panic(rpcError)
@@ -37,7 +37,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 		rpcSchema.Http.Method = strings.ToLower(options.Method)
 	}
 	if len(options.Path) > 0 {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + options.Path
 	}
 	if len(options.Description) > 0 {
 		rpcSchema.Http.Description.Set(options.Description)
@@ -52,7 +52,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 	paramsName := getModelName(rpcName, params.Name(), "Params")
 	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
-		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+		paramsDefContext := _NewTypeDefContext(app.options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
 		if paramsSchemaErr != nil {
 			panic(paramsSchemaErr)
@@ -61,7 +61,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			panic("Procedures cannot accept anonymous structs")
 		}
 		rpcSchema.Http.Params.Set(paramsName)
-		app.Definitions.Set(paramsName, *paramsSchema)
+		app.definitions.Set(paramsName, *paramsSchema)
 	} else {
 		rpcSchema.Http.Params.Unset()
 	}
@@ -72,7 +72,7 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 	responseName := getModelName(rpcName, response.Name(), "Response")
 	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
-		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+		responseDefContext := _NewTypeDefContext(app.options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
@@ -81,94 +81,110 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			panic("Procedures cannot return anonymous structs")
 		}
 		rpcSchema.Http.Response.Set(responseName)
-		app.Definitions.Set(responseName, *responseSchema)
+		app.definitions.Set(responseName, *responseSchema)
 	} else {
 		rpcSchema.Http.Response.Unset()
 	}
-	app.Procedures.Set(rpcName, *rpcSchema)
-	onRequest := app.Options.OnRequest
+	app.procedures.Set(rpcName, *rpcSchema)
+	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t *TContext) RpcError {
+		onRequest = func(r *http.Request, t *TEvent) RpcError {
 			return nil
 		}
 	}
-	onBeforeResponse := app.Options.OnBeforeResponse
+	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t *TContext, a any) RpcError {
+		onBeforeResponse = func(r *http.Request, t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
-	onAfterResponse := app.Options.OnAfterResponse
+	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t *TContext, a any) RpcError {
+		onAfterResponse = func(r *http.Request, t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
-	onError := app.Options.OnError
+	onError := app.options.OnError
 	if onError == nil {
-		onError = func(r *http.Request, t *TContext, err error) {}
+		onError = func(r *http.Request, t *TEvent, err error) {}
 	}
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		ctx, ctxErr := app.CreateContext(w, r)
-		if ctxErr != nil {
-			handleError(false, w, r, nil, ctxErr, onError)
+		event, err := app.createEvent(w, r)
+		if err != nil {
+			handleError(false, w, r, nil, err, onError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, r, ctx, Error(404, "Not found"), onError)
+			handleError(false, w, r, event, Error(404, "Not found"), onError)
 			return
 		}
-		onRequestErr := onRequest(r, ctx)
-		if onRequestErr != nil {
-			handleError(false, w, r, ctx, onRequestErr, onError)
+
+		err = onRequest(r, event)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
+
+		if len(app.middleware) > 0 {
+			for i := 0; i < len(app.middleware); i++ {
+				fn := app.middleware[i]
+				err := fn(r, *event, rpcName)
+				if err != nil {
+					handleError(false, w, r, event, err, onError)
+					return
+				}
+			}
+		}
+
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, r, ctx, Error(500, "Error initializing empty params"), onError)
+			handleError(false, w, r, event, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
 			switch rpcSchema.Http.Method {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
-				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.Options.KeyCasing)
+				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.options.KeyCasing)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, r, ctx, fromUrlQueryErr, onError)
+					handleError(false, w, r, event, fromUrlQueryErr, onError)
 					return
 				}
 			default:
-				b, bErr := io.ReadAll(r.Body)
-				if bErr != nil {
-					handleError(false, w, r, ctx, Error(400, bErr.Error()), onError)
+				b, err := io.ReadAll(r.Body)
+				if err != nil {
+					handleError(false, w, r, event, Error(400, err.Error()), onError)
 					return
 				}
-				fromJsonErr := DecodeJSON(b, &params, app.Options.KeyCasing)
+				fromJsonErr := DecodeJSON(b, &params, app.options.KeyCasing)
 				if fromJsonErr != nil {
-					handleError(false, w, r, ctx, fromJsonErr, onError)
+					handleError(false, w, r, event, fromJsonErr, onError)
 					return
 				}
 			}
 		}
-		response, responseErr := handler(params, *ctx)
-		if responseErr != nil {
-			payload := responseErr
-			handleError(false, w, r, ctx, payload, onError)
+
+		response, err := handler(params, *event)
+		if err != nil {
+			payload := err
+			handleError(false, w, r, event, payload, onError)
 			return
 		}
-		onBeforeResponseErr := onBeforeResponse(r, ctx, "")
-		if onBeforeResponseErr != nil {
-			handleError(false, w, r, ctx, onBeforeResponseErr, onError)
+
+		err = onBeforeResponse(r, event, "")
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
+
 		w.WriteHeader(200)
 		var body []byte
 		if hasResponse {
-			json, jsonErr := EncodeJSON(response, app.Options.KeyCasing)
-			if jsonErr != nil {
-				handleError(false, w, r, ctx, ErrorWithData(500, jsonErr.Error(), Some[any](jsonErr)), onError)
+			json, err := EncodeJSON(response, app.options.KeyCasing)
+			if err != nil {
+				handleError(false, w, r, event, ErrorWithData(500, err.Error(), Some[any](err)), onError)
 				return
 			}
 			body = json
@@ -176,9 +192,10 @@ func rpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceNa
 			body = []byte{}
 		}
 		w.Write([]byte(body))
-		onAfterResponseErr := onAfterResponse(r, ctx, "")
-		if onAfterResponseErr != nil {
-			handleError(false, w, r, ctx, onAfterResponseErr, onError)
+
+		err = onAfterResponse(r, event, "")
+		if err != nil {
+			handleError(true, w, r, event, err, onError)
 		}
 	})
 }
@@ -190,10 +207,10 @@ func getModelName(rpcName string, modelName string, fallbackSuffix string) strin
 	return modelName
 }
 
-func Rpc[TParams, TResponse any, TContext Context](app *App[TContext], handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {
+func Rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], handler func(TParams, TEvent) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, "", options, handler)
 }
 
-func ScopedRpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, handler func(TParams, TContext) (TResponse, RpcError), options RpcOptions) {
+func ScopedRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, handler func(TParams, TEvent) (TResponse, RpcError), options RpcOptions) {
 	rpc(app, serviceName, options, handler)
 }

@@ -12,17 +12,17 @@ import (
 	"gopkg.in/loremipsum.v1"
 )
 
-type AppContext struct {
+type RpcEvent struct {
 	XTestHeader string
 	request     *http.Request
 	writer      http.ResponseWriter
 }
 
-func (c AppContext) Request() *http.Request {
+func (c RpcEvent) Request() *http.Request {
 	return c.request
 }
 
-func (c AppContext) Writer() http.ResponseWriter {
+func (c RpcEvent) Writer() http.ResponseWriter {
 	return c.writer
 }
 
@@ -38,12 +38,12 @@ func main() {
 	})
 	app := arri.NewApp(
 		mux,
-		arri.AppOptions[AppContext]{
+		arri.AppOptions[RpcEvent]{
 			AppVersion:     "10",
 			RpcRoutePrefix: "/rpcs",
-			OnRequest: func(r *http.Request, ac *AppContext) arri.RpcError {
-				ac.Writer().Header().Set("Access-Control-Allow-Origin", "*")
-				if len(ac.XTestHeader) == 0 &&
+			OnRequest: func(r *http.Request, evt *RpcEvent) arri.RpcError {
+				evt.Writer().Header().Set("Access-Control-Allow-Origin", "*")
+				if len(evt.XTestHeader) == 0 &&
 					r.URL.Path != "/" &&
 					r.URL.Path != "/status" &&
 					r.URL.Path != "/favicon.ico" &&
@@ -52,10 +52,10 @@ func main() {
 				}
 				return nil
 			},
-			OnError: func(r *http.Request, ac *AppContext, err error) {},
+			OnError: func(r *http.Request, ac *RpcEvent, err error) {},
 		},
-		func(w http.ResponseWriter, r *http.Request) (*AppContext, arri.RpcError) {
-			return &AppContext{
+		func(w http.ResponseWriter, r *http.Request) (*RpcEvent, arri.RpcError) {
+			return &RpcEvent{
 				request:     r,
 				writer:      w,
 				XTestHeader: r.Header.Get("x-test-header"),
@@ -98,7 +98,7 @@ type DeprecatedRpcParams struct {
 	DeprecatedField string `arri:"deprecated"`
 }
 
-func DeprecatedRpc(_ DeprecatedRpcParams, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
+func DeprecatedRpc(_ DeprecatedRpcParams, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
@@ -106,19 +106,19 @@ type DefaultPayload struct {
 	Message string
 }
 
-func EmptyParamsGetRequest(_ arri.EmptyMessage, _ AppContext) (DefaultPayload, arri.RpcError) {
+func EmptyParamsGetRequest(_ arri.EmptyMessage, _ RpcEvent) (DefaultPayload, arri.RpcError) {
 	return DefaultPayload{Message: "ok"}, nil
 }
 
-func EmptyParamsPostRequest(_ arri.EmptyMessage, _ AppContext) (DefaultPayload, arri.RpcError) {
+func EmptyParamsPostRequest(_ arri.EmptyMessage, _ RpcEvent) (DefaultPayload, arri.RpcError) {
 	return DefaultPayload{Message: "ok"}, nil
 }
 
-func EmptyResponseGetRequest(_ DefaultPayload, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
+func EmptyResponseGetRequest(_ DefaultPayload, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
-func EmptyResponsePostRequest(_ DefaultPayload, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
+func EmptyResponsePostRequest(_ DefaultPayload, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, nil
 }
 
@@ -127,7 +127,7 @@ type SendErrorParams struct {
 	Message string
 }
 
-func SendError(params SendErrorParams, _ AppContext) (arri.EmptyMessage, arri.RpcError) {
+func SendError(params SendErrorParams, _ RpcEvent) (arri.EmptyMessage, arri.RpcError) {
 	return arri.EmptyMessage{}, arri.Error(uint32(params.Code), params.Message)
 }
 
@@ -181,7 +181,7 @@ type ObjectWithEveryType struct {
 	}
 }
 
-func SendObject(params ObjectWithEveryType, _ AppContext) (ObjectWithEveryType, arri.RpcError) {
+func SendObject(params ObjectWithEveryType, _ RpcEvent) (ObjectWithEveryType, arri.RpcError) {
 	return params, nil
 }
 
@@ -235,7 +235,7 @@ type ObjectWithEveryNullableType struct {
 	}]]]
 }
 
-func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ AppContext) (ObjectWithEveryNullableType, arri.RpcError) {
+func SendObjectWithNullableFields(params ObjectWithEveryNullableType, _ RpcEvent) (ObjectWithEveryNullableType, arri.RpcError) {
 	return params, nil
 }
 
@@ -247,7 +247,7 @@ type ObjectWithPascalCaseKeys struct {
 	IsAdmin      arri.Option[bool]     `key:"IsAdmin"`
 }
 
-func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ AppContext) (ObjectWithPascalCaseKeys, arri.RpcError) {
+func SendObjectWithPascalCaseKeys(params ObjectWithPascalCaseKeys, _ RpcEvent) (ObjectWithPascalCaseKeys, arri.RpcError) {
 	return params, nil
 }
 
@@ -259,7 +259,7 @@ type ObjectWithSnakeCaseKeys struct {
 	IsAdmin      arri.Option[bool]     `key:"is_admin"`
 }
 
-func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ AppContext) (ObjectWithSnakeCaseKeys, arri.RpcError) {
+func SendObjectWithSnakeCaseKeys(params ObjectWithSnakeCaseKeys, _ RpcEvent) (ObjectWithSnakeCaseKeys, arri.RpcError) {
 	return params, nil
 }
 
@@ -313,7 +313,7 @@ type ObjectWithEveryOptionalType struct {
 	}]
 }
 
-func SendPartialObject(params ObjectWithEveryOptionalType, _ AppContext) (ObjectWithEveryOptionalType, arri.RpcError) {
+func SendPartialObject(params ObjectWithEveryOptionalType, _ RpcEvent) (ObjectWithEveryOptionalType, arri.RpcError) {
 	return params, nil
 }
 
@@ -323,7 +323,7 @@ type RecursiveObject struct {
 	Value string
 }
 
-func SendRecursiveObject(params RecursiveObject, _ AppContext) (RecursiveObject, arri.RpcError) {
+func SendRecursiveObject(params RecursiveObject, _ RpcEvent) (RecursiveObject, arri.RpcError) {
 	return params, nil
 }
 
@@ -346,7 +346,7 @@ type RecursiveUnion struct {
 	} `discriminator:"SHAPE" description:"Shape node"`
 }
 
-func SendRecursiveUnion(params RecursiveUnion, _ AppContext) (RecursiveUnion, arri.RpcError) {
+func SendRecursiveUnion(params RecursiveUnion, _ RpcEvent) (RecursiveUnion, arri.RpcError) {
 	return params, nil
 }
 
@@ -359,7 +359,7 @@ type AutoReconnectResponse struct {
 	Message string
 }
 
-func StreamAutoReconnect(params AutoReconnectParams, controller arri.SseController[AutoReconnectResponse], ctx AppContext) arri.RpcError {
+func StreamAutoReconnect(params AutoReconnectParams, controller arri.SseController[AutoReconnectResponse], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	var msgCount uint8 = 0
@@ -393,7 +393,7 @@ type StreamConnectionErrorTestResponse struct {
 func StreamConnectionErrorTest(
 	params StreamConnectionErrorTestParams,
 	controller arri.SseController[StreamConnectionErrorTestResponse],
-	_ AppContext,
+	_ RpcEvent,
 ) arri.RpcError {
 	return arri.Error(uint32(params.StatusCode), params.StatusMessage)
 }
@@ -407,7 +407,7 @@ type StreamLargeObjectsResponse struct {
 	}
 }
 
-func StreamLargeObjects(params arri.EmptyMessage, controller arri.SseController[StreamLargeObjectsResponse], _ AppContext) arri.RpcError {
+func StreamLargeObjects(params arri.EmptyMessage, controller arri.SseController[StreamLargeObjectsResponse], _ RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	for {
@@ -480,7 +480,7 @@ type ChatMessageUrl struct {
 	Url       string
 }
 
-func StreamMessages(params ChatMessageParams, controller arri.SseController[ChatMessage], context AppContext) arri.RpcError {
+func StreamMessages(params ChatMessageParams, controller arri.SseController[ChatMessage], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	for {
 		select {
@@ -500,8 +500,8 @@ type TestsStreamRetryWithNewCredentialsResponse struct {
 
 var usedTokens map[string]bool = map[string]bool{}
 
-func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.SseController[TestsStreamRetryWithNewCredentialsResponse], ctx AppContext) arri.RpcError {
-	authToken := ctx.XTestHeader
+func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.SseController[TestsStreamRetryWithNewCredentialsResponse], event RpcEvent) arri.RpcError {
+	authToken := event.XTestHeader
 	if len(authToken) == 0 {
 		return arri.Error(400, "")
 	}
@@ -528,7 +528,7 @@ func StreamRetryWithNewCredentials(_ arri.EmptyMessage, controller arri.SseContr
 	}
 }
 
-func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.SseController[ChatMessage], ctx AppContext) arri.RpcError {
+func StreamTenEventsThenEnd(_ arri.EmptyMessage, controller arri.SseController[ChatMessage], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0
@@ -599,7 +599,7 @@ type UserSettings struct {
 	PreferredTheme       string `enum:"dark-mode,light-mode,system"`
 }
 
-func WatchUser(params UsersWatchUserParams, stream arri.SseController[UsersWatchUserResponse], ctx AppContext) arri.RpcError {
+func WatchUser(params UsersWatchUserParams, stream arri.SseController[UsersWatchUserResponse], event RpcEvent) arri.RpcError {
 	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	msgCount := 0

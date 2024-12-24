@@ -7,29 +7,30 @@ import (
 	"os"
 )
 
-type App[TContext Context] struct {
+type App[TEvent Event] struct {
 	Mux                  *http.ServeMux
-	CreateContext        func(w http.ResponseWriter, r *http.Request) (*TContext, RpcError)
-	InitializationErrors []error
-	Options              AppOptions[TContext]
-	Procedures           *OrderedMap[RpcDef]
-	Definitions          *OrderedMap[TypeDef]
+	createEvent          func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)
+	initializationErrors []error
+	options              AppOptions[TEvent]
+	middleware           []Middleware[TEvent]
+	procedures           *OrderedMap[RpcDef]
+	definitions          *OrderedMap[TypeDef]
 }
 
-func (app *App[TContext]) GetAppDefinition() AppDef {
+func (app *App[TEvent]) GetAppDefinition() AppDef {
 	info := None[AppDefInfo]()
 	name := None[string]()
 	description := None[string]()
 	version := None[string]()
 
-	if len(app.Options.AppName) > 0 {
-		name = Some(app.Options.AppName)
+	if len(app.options.AppName) > 0 {
+		name = Some(app.options.AppName)
 	}
-	if len(app.Options.AppDescription) > 0 {
-		description = Some(app.Options.AppDescription)
+	if len(app.options.AppDescription) > 0 {
+		description = Some(app.options.AppDescription)
 	}
-	if len(app.Options.AppVersion) > 0 {
-		version = Some(app.Options.AppVersion)
+	if len(app.options.AppVersion) > 0 {
+		version = Some(app.options.AppVersion)
 	}
 
 	if name.IsSome() || description.IsSome() || version.IsSome() {
@@ -43,12 +44,12 @@ func (app *App[TContext]) GetAppDefinition() AppDef {
 	return AppDef{
 		SchemaVersion: "0.0.7",
 		Info:          info,
-		Procedures:    *app.Procedures,
-		Definitions:   *app.Definitions,
+		Procedures:    *app.procedures,
+		Definitions:   *app.definitions,
 	}
 }
 
-func (app *App[TContext]) Run(options RunOptions) error {
+func (app *App[TEvent]) Run(options RunOptions) error {
 	defOutput := flag.String("def-out", "", "definition-out")
 	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
 	appDefOutput := appDefCmd.String("output", "__definition.json", "output")
@@ -56,14 +57,14 @@ func (app *App[TContext]) Run(options RunOptions) error {
 		switch os.Args[1] {
 		case "def", "definition":
 			appDefCmd.Parse(os.Args[2:])
-			return appDefToFile(app.GetAppDefinition(), *appDefOutput, app.Options.KeyCasing)
+			return appDefToFile(app.GetAppDefinition(), *appDefOutput, app.options.KeyCasing)
 		}
 	}
 	if len(os.Args) > 1 {
 		flag.Parse()
 	}
 	if len(*defOutput) > 0 {
-		err := appDefToFile(app.GetAppDefinition(), *defOutput, app.Options.KeyCasing)
+		err := appDefToFile(app.GetAppDefinition(), *defOutput, app.options.KeyCasing)
 		if err != nil {
 			return err
 		}
@@ -83,24 +84,24 @@ func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
 	return nil
 }
 
-func printServerStartMessages[TContext Context](app *App[TContext], port uint32, isHttps bool) {
+func printServerStartMessages[TEvent Event](app *App[TEvent], port uint32, isHttps bool) {
 	protocol := "http"
 	if isHttps {
 		protocol = "https"
 	}
 	baseUrl := fmt.Sprintf("%v://localhost:%v", protocol, port)
 	fmt.Printf("Starting server at %v\n", baseUrl)
-	if len(app.Options.RpcRoutePrefix) > 0 {
-		fmt.Printf("Procedures path: %v%v\n", baseUrl, app.Options.RpcRoutePrefix)
+	if len(app.options.RpcRoutePrefix) > 0 {
+		fmt.Printf("Procedures path: %v%v\n", baseUrl, app.options.RpcRoutePrefix)
 	}
-	defPath := app.Options.RpcDefinitionPath
+	defPath := app.options.RpcDefinitionPath
 	if len(defPath) == 0 {
 		defPath = "/__definition"
 	}
-	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.Options.RpcRoutePrefix+defPath)
+	fmt.Printf("App Definition Path: %v%v\n\n", baseUrl, app.options.RpcRoutePrefix+defPath)
 }
 
-func startServer[TContext Context](app *App[TContext], options RunOptions) error {
+func startServer[TEvent Event](app *App[TEvent], options RunOptions) error {
 	port := options.Port
 	if port == 0 {
 		port = 3000
@@ -121,7 +122,7 @@ type RunOptions struct {
 	KeyFile  string
 }
 
-type AppOptions[TContext Context] struct {
+type AppOptions[TEvent Event] struct {
 	AppName string
 	// The current app version. Generated clients will send this in the "client-version" header
 	AppVersion string
@@ -133,61 +134,62 @@ type AppOptions[TContext Context] struct {
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
 	RpcDefinitionPath string
-	OnRequest         func(*http.Request, *TContext) RpcError
-	OnBeforeResponse  func(*http.Request, *TContext, any) RpcError
-	OnAfterResponse   func(*http.Request, *TContext, any) RpcError
-	OnError           func(*http.Request, *TContext, error)
+	OnRequest         func(*http.Request, *TEvent) RpcError
+	OnBeforeResponse  func(*http.Request, *TEvent, any) RpcError
+	OnAfterResponse   func(*http.Request, *TEvent, any) RpcError
+	OnError           func(*http.Request, *TEvent, error)
 }
 
-func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], createContext func(w http.ResponseWriter, r *http.Request) (*TContext, RpcError)) App[TContext] {
-	app := App[TContext]{
+func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], createEvent func(w http.ResponseWriter, r *http.Request) (*TEvent, RpcError)) App[TEvent] {
+	app := App[TEvent]{
 		Mux:                  mux,
-		CreateContext:        createContext,
-		Options:              options,
-		InitializationErrors: []error{},
-		Procedures:           &OrderedMap[RpcDef]{},
-		Definitions:          &OrderedMap[TypeDef]{},
+		createEvent:          createEvent,
+		options:              options,
+		initializationErrors: []error{},
+		middleware:           []Middleware[TEvent]{},
+		procedures:           &OrderedMap[RpcDef]{},
+		definitions:          &OrderedMap[TypeDef]{},
 	}
-	defPath := app.Options.RpcRoutePrefix + "/__definition"
-	if len(app.Options.RpcDefinitionPath) > 0 {
-		defPath = app.Options.RpcDefinitionPath
+	defPath := app.options.RpcRoutePrefix + "/__definition"
+	if len(app.options.RpcDefinitionPath) > 0 {
+		defPath = app.options.RpcDefinitionPath
 	}
-	onRequest := app.Options.OnRequest
+	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t *TContext) RpcError {
+		onRequest = func(r *http.Request, t *TEvent) RpcError {
 			return nil
 		}
 	}
-	onBeforeResponse := app.Options.OnBeforeResponse
+	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t *TContext, a any) RpcError {
+		onBeforeResponse = func(r *http.Request, t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
-	onAfterResponse := app.Options.OnAfterResponse
+	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t *TContext, a any) RpcError {
+		onAfterResponse = func(r *http.Request, t *TEvent, a any) RpcError {
 			return nil
 		}
 	}
-	onError := app.Options.OnError
+	onError := app.options.OnError
 	if onError == nil {
-		onError = func(r *http.Request, t *TContext, err error) {}
+		onError = func(r *http.Request, t *TEvent, err error) {}
 	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		ctx, ctxErr := app.CreateContext(w, r)
-		if ctxErr != nil {
-			handleError(false, w, r, ctx, ctxErr, onError)
+		event, err := app.createEvent(w, r)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
-		onRequestErr := onRequest(r, ctx)
-		if onRequestErr != nil {
-			handleError(false, w, r, ctx, onRequestErr, onError)
+		err = onRequest(r, event)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
 		if r.URL.Path != "/" {
-			handleError(false, w, r, ctx, Error(404, ""), onError)
+			handleError(false, w, r, event, Error(404, ""), onError)
 			return
 		}
 		w.WriteHeader(200)
@@ -197,8 +199,8 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 			Version     Option[string]
 			SchemaPath  string
 		}{
-			Title:       app.Options.AppName,
-			Description: app.Options.AppDescription,
+			Title:       app.options.AppName,
+			Description: app.options.AppDescription,
 			Version:     None[string](),
 			SchemaPath:  defPath,
 		}
@@ -211,57 +213,57 @@ func NewApp[TContext Context](mux *http.ServeMux, options AppOptions[TContext], 
 		if len(options.AppVersion) > 0 {
 			response.Version = Some(options.AppVersion)
 		}
-		onBeforeResponseErr := onBeforeResponse(r, ctx, response)
-		if onBeforeResponseErr != nil {
-			handleError(false, w, r, ctx, onBeforeResponseErr, onError)
+		err = onBeforeResponse(r, event, response)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
-		jsonResult, _ := EncodeJSON(response, app.Options.KeyCasing)
+		jsonResult, _ := EncodeJSON(response, app.options.KeyCasing)
 		w.Write(jsonResult)
-		onAfterResponseErr := onAfterResponse(r, ctx, response)
+		onAfterResponseErr := onAfterResponse(r, event, response)
 		if onAfterResponseErr != nil {
-			handleError(true, w, r, ctx, onAfterResponseErr, onError)
+			handleError(true, w, r, event, onAfterResponseErr, onError)
 			return
 		}
 	})
 
 	mux.HandleFunc(defPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		ctx, ctxErr := app.CreateContext(w, r)
-		if ctxErr != nil {
-			handleError(false, w, r, ctx, ctxErr, onError)
+		event, err := app.createEvent(w, r)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
-		onRequestError := onRequest(r, ctx)
-		if onRequestError != nil {
-			handleError(false, w, r, ctx, onRequestError, onError)
+		err = onRequest(r, event)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 		}
-		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), app.Options.KeyCasing)
-		beforeResponseErr := onBeforeResponse(r, ctx, jsonResult)
+		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), app.options.KeyCasing)
+		beforeResponseErr := onBeforeResponse(r, event, jsonResult)
 		if beforeResponseErr != nil {
-			handleError(false, w, r, ctx, beforeResponseErr, onError)
+			handleError(false, w, r, event, beforeResponseErr, onError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonResult)
-		afterResponseErr := onAfterResponse(r, ctx, jsonResult)
-		if afterResponseErr != nil {
-			handleError(true, w, r, ctx, afterResponseErr, onError)
+		err = onAfterResponse(r, event, jsonResult)
+		if err != nil {
+			handleError(true, w, r, event, err, onError)
 			return
 		}
 	})
 	return app
 }
 
-func handleError[TContext Context](
+func handleError[TEvent Event](
 	responseSent bool,
 	w http.ResponseWriter,
 	r *http.Request,
-	context *TContext,
+	event *TEvent,
 	err RpcError,
-	onError func(*http.Request, *TContext, error),
+	onError func(*http.Request, *TEvent, error),
 ) {
-	onError(r, context, err)
+	onError(r, event, err)
 	if responseSent {
 		return
 	}
@@ -275,8 +277,8 @@ type DefOptions struct {
 	Description  string
 }
 
-func RegisterDef[TContext Context](app *App[TContext], input any, options DefOptions) {
-	def, err := ToTypeDef(input, app.Options.KeyCasing)
+func RegisterDef[TEvent Event](app *App[TEvent], input any, options DefOptions) {
+	def, err := ToTypeDef(input, app.options.KeyCasing)
 	if err != nil {
 		panic(err)
 	}
@@ -289,5 +291,5 @@ func RegisterDef[TContext Context](app *App[TContext], input any, options DefOpt
 	if len(options.Description) > 0 {
 		def.Metadata.Value.Description = Some(options.Description)
 	}
-	app.Definitions.Set(def.Metadata.Unwrap().Id.Unwrap(), *def)
+	app.definitions.Set(def.Metadata.Unwrap().Id.Unwrap(), *def)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultContext]{}, arri.CreateDefaultContext)
+	app := arri.NewApp(http.DefaultServeMux, arri.AppOptions[arri.DefaultEvent]{}, arri.CreateDefaultEvent)
 	arri.Rpc(&app, SayHello, arri.RpcOptions{})
 	app.Run(arri.RunOptions{})
 }
@@ -21,6 +21,6 @@ type SayHelloResponse struct {
 	Message string `enum:"HELLO,WORLD" enumName:"MESSAGE"`
 }
 
-func SayHello(params SayHelloParams, ctx arri.DefaultContext) (SayHelloResponse, arri.RpcError) {
+func SayHello(params SayHelloParams, event arri.DefaultEvent) (SayHelloResponse, arri.RpcError) {
 	return SayHelloResponse{Message: fmt.Sprintf("Hello %s", params.Name)}, nil
 }

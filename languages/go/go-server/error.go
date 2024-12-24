@@ -85,6 +85,7 @@ var statusMessages = map[uint32]string{
 	511: "Network authentication required",
 }
 
+// An Arri RPC error. If message is empty arri will replace it with a default message based on the status code.
 func Error(statusCode uint32, message string) errorResponse {
 	msg := message
 	if len(message) == 0 {
@@ -101,6 +102,7 @@ func Error(statusCode uint32, message string) errorResponse {
 	}
 }
 
+// An Arri RPC error with arbitrary data. If message is empty arri will replace it with a default message based on the status code.
 func ErrorWithData(statusCode uint32, message string, data Option[any]) errorResponse {
 	msg := message
 	if len(message) == 0 {
