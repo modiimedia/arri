@@ -33,13 +33,15 @@ var objectWithEveryTypeInput = objectWithEveryType{
 	Any:           "hello world",
 }
 
-func TestEncodeJson(t *testing.T) {
+var jsonEncoder = arri.NewEncoder(arri.EncodingOptions{})
+
+func TestEncodeJSON(t *testing.T) {
 	reference, referenceErr := os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
 	if referenceErr != nil {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+	json, err := jsonEncoder.EncodeJSON(objectWithEveryTypeInput)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -50,13 +52,13 @@ func TestEncodeJson(t *testing.T) {
 	}
 }
 
-func BenchmarkEncodeJson(b *testing.B) {
+func BenchmarkEncodeJSON(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(objectWithEveryTypeInput)
 	}
 }
 
-func BenchmarkEncodeJsonStd(b *testing.B) {
+func BenchmarkEncodeJSONStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(objectWithEveryTypeInput)
 	}
@@ -95,12 +97,12 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 	Any: arri.Some[any]("hello world"),
 }
 
-func TestEncodeJsonWithOptionalFields(t *testing.T) {
+func TestEncodeJSONWithOptionalFields(t *testing.T) {
 	noUndefReference, noUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
 	if noUndefReferenceErr != nil {
 		t.Fatal(noUndefReferenceErr.Error())
 	}
-	noUndefResult, noUndefResultErr := arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
+	noUndefResult, noUndefResultErr := jsonEncoder.EncodeJSON(_objectWithOptionalFieldsInput)
 	if noUndefResultErr != nil {
 		t.Fatal(noUndefResultErr.Error())
 	}
@@ -112,7 +114,7 @@ func TestEncodeJsonWithOptionalFields(t *testing.T) {
 	if noUndefReferenceErr != nil {
 		t.Fatal(allUndefReferenceErr.Error())
 	}
-	allUndefResult, allUndefResultErr := arri.EncodeJSON(allUndefInput, arri.KeyCasingCamelCase)
+	allUndefResult, allUndefResultErr := jsonEncoder.EncodeJSON(allUndefInput)
 	if allUndefResultErr != nil {
 		t.Fatal(allUndefResultErr.Error())
 	}
@@ -121,13 +123,13 @@ func TestEncodeJsonWithOptionalFields(t *testing.T) {
 	}
 }
 
-func BenchmarkEncodeJsonWithOptionalFields(b *testing.B) {
+func BenchmarkEncodeJSONWithOptionalFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(_objectWithOptionalFieldsInput)
 	}
 }
 
-func BenchmarkEncodeJsonWithOptionalFieldsStd(b *testing.B) {
+func BenchmarkEncodeJSONWithOptionalFieldsStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(_objectWithOptionalFieldsInput)
 	}
@@ -156,13 +158,13 @@ var objectWithNullableFieldsNoNullInput = objectWithNullableFields{
 	Any:           arri.NotNull[any](struct{ Message string }{Message: "hello world"}),
 }
 
-func TestEncodeJsonWithNullableFields(t *testing.T) {
+func TestEncodeJSONWithNullableFields(t *testing.T) {
 	allNullReference, allNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
 	if allNullReferenceErr != nil {
 		t.Fatal(allNullReferenceErr)
 		return
 	}
-	allNullResult, allNullErr := arri.EncodeJSON(objectWithNullableFieldsAllNullInput, arri.KeyCasingCamelCase)
+	allNullResult, allNullErr := jsonEncoder.EncodeJSON(objectWithNullableFieldsAllNullInput)
 	if allNullErr != nil {
 		t.Fatal(allNullErr)
 		return
@@ -176,7 +178,7 @@ func TestEncodeJsonWithNullableFields(t *testing.T) {
 		t.Fatal(noNullReferenceErr)
 		return
 	}
-	noNullResult, noNullErr := arri.EncodeJSON(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+	noNullResult, noNullErr := jsonEncoder.EncodeJSON(objectWithNullableFieldsNoNullInput)
 	if noNullErr != nil {
 		t.Fatal(noNullErr)
 		return
@@ -187,13 +189,13 @@ func TestEncodeJsonWithNullableFields(t *testing.T) {
 	}
 }
 
-func BenchmarkEncodeJsonWithNullableFields(b *testing.B) {
+func BenchmarkEncodeJSONWithNullableFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(objectWithNullableFieldsNoNullInput)
 	}
 }
 
-func BenchmarkEncodeJsonWithNullableFieldsStd(b *testing.B) {
+func BenchmarkEncodeJSONWithNullableFieldsStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(objectWithNullableFieldsNoNullInput)
 	}
@@ -210,28 +212,28 @@ var _recursiveObjectInput = recursiveObject{
 	Right: &recursiveObject{},
 }
 
-func TestEncodeJsonRecursiveObject(t *testing.T) {
+func TestEncodeJSONRecursiveObject(t *testing.T) {
 	reference, referenceErr := os.ReadFile("../../../tests/test-files/RecursiveObject.json")
 	if referenceErr != nil {
-		t.Errorf(referenceErr.Error())
+		t.Fatal(referenceErr.Error())
 	}
 
-	result, err := arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
+	result, err := jsonEncoder.EncodeJSON(_recursiveObjectInput)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Fatal(err.Error())
 	}
 	if !reflect.DeepEqual(result, reference) {
 		t.Fatal("\n", string(result), "\nis not equal to\n", string(reference))
 	}
 }
 
-func BenchmarkEncodeJsonRecursiveObject(b *testing.B) {
+func BenchmarkEncodeJSONRecursiveObject(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(_recursiveObjectInput)
 	}
 }
 
-func BenchmarkEncodeJsonRecursiveObjectStd(b *testing.B) {
+func BenchmarkEncodeJSONRecursiveObjectStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(_recursiveObjectInput)
 	}
@@ -297,13 +299,13 @@ var _benchUserEncodingInput = bUser{
 	},
 }
 
-func BenchmarkEncodeJsonUser(b *testing.B) {
+func BenchmarkEncodeJSONUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(_benchUserEncodingInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(_benchUserEncodingInput)
 	}
 }
 
-func BenchmarkEncodeJsonUserStd(b *testing.B) {
+func BenchmarkEncodeJSONUserStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(_benchUserEncodingInput)
 	}

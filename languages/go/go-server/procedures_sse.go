@@ -86,7 +86,7 @@ func (controller *defaultSseController[T]) Push(message T) RpcError {
 	if !controller.headersSent {
 		controller.startStream()
 	}
-	body, bodyErr := EncodeJSON(message, controller.keyCasing)
+	body, bodyErr := EncodeJSON(message, EncodingOptions{KeyCasing: controller.keyCasing})
 	if bodyErr != nil {
 		return Error(500, bodyErr.Error())
 	}
@@ -230,9 +230,9 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 					handleError(false, w, r, event, Error(400, bErr.Error()), onError)
 					return
 				}
-				fromJsonErr := DecodeJSON(b, &params, app.options.KeyCasing)
-				if fromJsonErr != nil {
-					handleError(false, w, r, event, fromJsonErr, onError)
+				fromJSONErr := DecodeJSON(b, &params, DecodingOptions{KeyCasing: app.options.KeyCasing, MaxDepth: app.options.MaxDepth})
+				if fromJSONErr != nil {
+					handleError(false, w, r, event, fromJSONErr, onError)
 					return
 				}
 			}

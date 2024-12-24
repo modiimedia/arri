@@ -73,11 +73,11 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 }
 
 func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
-	appDefJson, appDefJsonErr := EncodeJSON(appDef, keyCasing)
-	if appDefJsonErr != nil {
-		return appDefJsonErr
+	appDefJSON, appDefJSONErr := EncodeJSON(appDef, EncodingOptions{KeyCasing: keyCasing})
+	if appDefJSONErr != nil {
+		return appDefJSONErr
 	}
-	writeFileErr := os.WriteFile(output, appDefJson, 0644)
+	writeFileErr := os.WriteFile(output, appDefJSON, 0644)
 	if writeFileErr != nil {
 		return writeFileErr
 	}
@@ -130,6 +130,8 @@ type AppOptions[TEvent Event] struct {
 	AppDescription string
 	// set the default key casing for all RPC inputs and outputs
 	KeyCasing KeyCasing
+	// max depth that a json input or output can be
+	MaxDepth uint32
 	// if not set it will default to "/procedures"
 	RpcRoutePrefix string
 	// if not set it will default to "/{RpcRoutePrefix}/__definition"
@@ -218,7 +220,12 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 			handleError(false, w, r, event, err, onError)
 			return
 		}
-		jsonResult, _ := EncodeJSON(response, app.options.KeyCasing)
+		jsonResult, _ := EncodeJSON(
+			response,
+			EncodingOptions{
+				KeyCasing: options.KeyCasing,
+			},
+		)
 		w.Write(jsonResult)
 		onAfterResponseErr := onAfterResponse(r, event, response)
 		if onAfterResponseErr != nil {
@@ -238,7 +245,7 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		if err != nil {
 			handleError(false, w, r, event, err, onError)
 		}
-		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), app.options.KeyCasing)
+		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), EncodingOptions{KeyCasing: options.KeyCasing})
 		beforeResponseErr := onBeforeResponse(r, event, jsonResult)
 		if beforeResponseErr != nil {
 			handleError(false, w, r, event, beforeResponseErr, onError)
@@ -268,7 +275,7 @@ func handleError[TEvent Event](
 		return
 	}
 	w.WriteHeader(int(err.Code()))
-	body := RpcErrorToJson(err)
+	body := RpcErrorToJSON(err)
 	w.Write(body)
 }
 

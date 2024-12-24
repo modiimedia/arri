@@ -158,9 +158,16 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 					handleError(false, w, r, event, Error(400, err.Error()), onError)
 					return
 				}
-				fromJsonErr := DecodeJSON(b, &params, app.options.KeyCasing)
-				if fromJsonErr != nil {
-					handleError(false, w, r, event, fromJsonErr, onError)
+				fromJSONErr := DecodeJSON(
+					b,
+					&params,
+					DecodingOptions{
+						KeyCasing: app.options.KeyCasing,
+						MaxDepth:  app.options.MaxDepth,
+					},
+				)
+				if fromJSONErr != nil {
+					handleError(false, w, r, event, fromJSONErr, onError)
 					return
 				}
 			}
@@ -182,7 +189,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		w.WriteHeader(200)
 		var body []byte
 		if hasResponse {
-			json, err := EncodeJSON(response, app.options.KeyCasing)
+			json, err := EncodeJSON(response, EncodingOptions{KeyCasing: app.options.KeyCasing})
 			if err != nil {
 				handleError(false, w, r, event, ErrorWithData(500, err.Error(), Some[any](err)), onError)
 				return

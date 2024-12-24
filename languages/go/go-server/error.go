@@ -28,13 +28,13 @@ func (e errorResponse) Data() Option[any] {
 	return e.data
 }
 
-func RpcErrorToJson(err RpcError) []byte {
+func RpcErrorToJSON(err RpcError) []byte {
 	output := []byte{}
 	output = append(output, "{\"code\":"+strconv.FormatUint(uint64(err.Code()), 10)...)
 	output = append(output, ",\"message\":"...)
 	AppendNormalizedString(&output, err.Error())
 	if err.Data().IsSome() {
-		dataResult, dataErr := EncodeJSON(err.Data().Unwrap(), KeyCasingCamelCase)
+		dataResult, dataErr := EncodeJSON(err.Data().Unwrap(), EncodingOptions{})
 		if dataErr == nil {
 			output = append(output, ",\"data\":"...)
 			output = append(output, dataResult...)

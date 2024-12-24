@@ -46,7 +46,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		}},
 		Any: "hello world",
 	}
-	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.DecodingOptions{})
 	if decodeErr != nil {
 		t.Error(decodeErr.Error())
 		return
@@ -97,7 +97,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		),
 		Any: arri.Some[any]("hello world"),
 	}
-	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.KeyCasingCamelCase)
+	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.DecodingOptions{})
 	if noUndefinedDecodingErr != nil {
 		t.Error(noUndefinedDecodingErr.Error())
 		return
@@ -113,7 +113,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 	}
 	allUndefinedTarget := objectWithOptionalFields{}
 	allUndefinedExpectedResult := objectWithOptionalFields{}
-	allUndefinedDecodingErr := arri.DecodeJSON(allUndefinedInput, &allUndefinedTarget, arri.KeyCasingCamelCase)
+	allUndefinedDecodingErr := arri.DecodeJSON(allUndefinedInput, &allUndefinedTarget, arri.DecodingOptions{})
 	if allUndefinedDecodingErr != nil {
 		t.Error(allUndefinedDecodingErr.Error())
 		return
@@ -132,7 +132,7 @@ func TestDecodeObjectWithNullableFieldsAllNull(t *testing.T) {
 	}
 	result := objectWithNullableFields{}
 	expectedResult := objectWithNullableFields{}
-	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(input, &result, arri.DecodingOptions{})
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -173,7 +173,7 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 			"message": "hello world",
 		}),
 	}
-	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(input, &result, arri.DecodingOptions{})
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -198,7 +198,7 @@ var userWithPrivateFieldsInput = []byte(`{"id":"1","name":"John Doe","isAdmin":t
 
 func TestDecodedPrivateFields(t *testing.T) {
 	target := userWithPrivateFields{}
-	err := arri.DecodeJSON(userWithPrivateFieldsInput, &target, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(userWithPrivateFieldsInput, &target, arri.DecodingOptions{})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -225,7 +225,7 @@ var benchUserInput = []byte(`{"id":"1","role":"ADMIN","email":"johndoe@gmail.com
 func TestDecodeStdUser(t *testing.T) {
 	target := benchUser{}
 	json.Unmarshal(benchUserInput, &target)
-	err := arri.DecodeJSON(benchUserInput, &target, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(benchUserInput, &target, arri.DecodingOptions{})
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -235,7 +235,7 @@ func TestDecodeStdUser(t *testing.T) {
 func BenchmarkArriDecodeUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		user := benchUser{}
-		arri.DecodeJSON(benchUserInput, &user, arri.KeyCasingCamelCase)
+		arri.DecodeJSON(benchUserInput, &user, arri.DecodingOptions{})
 	}
 }
 
@@ -249,7 +249,7 @@ func BenchmarkStdDecodeUser(b *testing.B) {
 func BenchmarkArriDecodeObjectWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		target := objectWithEveryType{}
-		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.DecodingOptions{})
 	}
 }
 
@@ -280,9 +280,9 @@ func TestDecodeRecursiveObject(t *testing.T) {
 		return
 	}
 	result := recursiveObject{}
-	resultErr := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	resultErr := arri.DecodeJSON(input, &result, arri.DecodingOptions{})
 	if resultErr != nil {
-		errMsg, _ := arri.EncodeJSON(resultErr, arri.KeyCasingCamelCase)
+		errMsg, _ := arri.EncodeJSON(resultErr, arri.EncodingOptions{})
 		fmt.Println(string(errMsg))
 		t.Fatal(resultErr)
 		return
@@ -299,7 +299,7 @@ func TestDecodeNothing(t *testing.T) {
 		String  string
 		Float32 float32
 	}{}
-	err := arri.DecodeJSON([]byte{}, &result, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON([]byte{}, &result, arri.DecodingOptions{})
 	if err == nil {
 		t.Error("Should return an error")
 		return

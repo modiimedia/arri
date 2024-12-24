@@ -45,8 +45,8 @@ func (e DecoderError) Data() Option[any] {
 	return Some[any](e)
 }
 
-func (e DecoderError) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
-	return EncodeJSON(e.errors, keyCasing)
+func (e DecoderError) EncodeJSON(options EncodingOptions) ([]byte, error) {
+	return EncodeJSON(e.errors, options)
 }
 
 func NewDecoderError(errors []ValidationError) DecoderError {
@@ -93,7 +93,12 @@ func (c DecoderContext) copyWith(CurrentDepth Option[uint32], EnumValues Option[
 	}
 }
 
-func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *DecoderError {
+type DecodingOptions struct {
+	KeyCasing KeyCasing
+	MaxDepth  uint32
+}
+
+func DecodeJSON[T any](data []byte, v *T, options DecodingOptions) *DecoderError {
 	parsedResult := gjson.ParseBytes(data)
 	value := reflect.ValueOf(&v)
 	if !parsedResult.Exists() {
@@ -105,8 +110,16 @@ func DecodeJSON[T any](data []byte, v *T, keyCasing KeyCasing) *DecoderError {
 		return &err
 	}
 	errors := []ValidationError{}
+	keyCasing := options.KeyCasing
+	if len(keyCasing) == 0 {
+		keyCasing = KeyCasingCamelCase
+	}
+	maxDepth := options.MaxDepth
+	if maxDepth == 0 {
+		maxDepth = 10000
+	}
 	context := DecoderContext{
-		MaxDepth:  10000,
+		MaxDepth:  maxDepth,
 		KeyCasing: keyCasing,
 		Errors:    errors,
 	}
@@ -161,7 +174,7 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCont
 		if len(context.EnumValues) > 0 {
 			return enumFromJSON(data, target, context)
 		}
-		return stringFromJson(data, target, context)
+		return stringFromJSON(data, target, context)
 	case reflect.Bool:
 		return boolFromJSON(data, target, context)
 	case reflect.Struct:
@@ -170,10 +183,10 @@ func typeFromJSON(data *gjson.Result, target reflect.Value, context *DecoderCont
 			return timestampFromJSON(data, target, context)
 		}
 		if utils.IsOptionalType(t) {
-			return optionFromJson(data, target, context)
+			return optionFromJSON(data, target, context)
 		}
 		if utils.IsNullableTypeOrPointer(t) {
-			return nullableFromJson(data, target, context)
+			return nullableFromJSON(data, target, context)
 		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
 			return target.Interface().(ArriModel).DecodeJSON(data, target, context)
@@ -487,7 +500,7 @@ func largeIntFromJSON(data *gjson.Result, target reflect.Value, context *Decoder
 	return true
 }
 
-func stringFromJson(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func stringFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
 	if data.Type != gjson.String {
 		context.Errors = append(
 			context.Errors,
@@ -592,7 +605,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 	}
 	targetType := target.Type()
 	if IsDiscriminatorStruct(targetType) {
-		return discriminatorStructFromJson(data, target, c)
+		return discriminatorStructFromJSON(data, target, c)
 	}
 	hasErr := false
 	for i := 0; i < target.NumField(); i++ {
@@ -637,7 +650,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 				Some(c.InstancePath+"/"+fieldName),
 				Some(c.SchemaPath+"/optionalProperties/"+fieldName),
 			)
-			success := optionFromJson(&jsonResult, field, &ctx)
+			success := optionFromJSON(&jsonResult, field, &ctx)
 			if !success {
 				hasErr = true
 			}
@@ -651,7 +664,7 @@ func structFromJSON(data *gjson.Result, target reflect.Value, c *DecoderContext)
 		)
 		isNullable := utils.IsNullableTypeOrPointer(fieldType)
 		if isNullable {
-			success := nullableFromJson(&jsonResult, field, &ctx)
+			success := nullableFromJSON(&jsonResult, field, &ctx)
 			if !success {
 				hasErr = true
 			}
@@ -693,7 +706,7 @@ func anyFromJSON(data *gjson.Result, target reflect.Value, context *DecoderConte
 	return true
 }
 
-func discriminatorStructFromJson(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func discriminatorStructFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
 	numFields := target.NumField()
 	structType := target.Type()
 	discriminatorKey := "type"
@@ -761,7 +774,7 @@ func discriminatorStructFromJson(data *gjson.Result, target reflect.Value, conte
 	return false
 }
 
-func optionFromJson(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func optionFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
 	if !data.Exists() {
 		return true
 	}
@@ -775,7 +788,7 @@ func optionFromJson(data *gjson.Result, target reflect.Value, context *DecoderCo
 	return true
 }
 
-func nullableFromJson(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
+func nullableFromJSON(data *gjson.Result, target reflect.Value, context *DecoderContext) bool {
 	if !data.Exists() {
 		return false
 	}

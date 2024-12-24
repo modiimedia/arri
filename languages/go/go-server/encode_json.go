@@ -22,7 +22,7 @@ type jsonEncodingCtx struct {
 	discriminatorValue string
 }
 
-func newJsonEncodingCtx(keyCasing string) *jsonEncodingCtx {
+func newJSONEncodingCtx(keyCasing string) *jsonEncodingCtx {
 	return &jsonEncodingCtx{
 		keyCasing:    keyCasing,
 		buffer:       []byte{},
@@ -33,14 +33,19 @@ func newJsonEncodingCtx(keyCasing string) *jsonEncodingCtx {
 	}
 }
 
-func EncodeJSON(input any, keyCasing string) ([]byte, error) {
-	ctx := newJsonEncodingCtx(keyCasing)
+func EncodeJSON(input any, options EncodingOptions) ([]byte, error) {
+	ctx := newJSONEncodingCtx(options.KeyCasing)
 	value := reflect.ValueOf(input)
 	err := encodeValueToJSON(value, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return ctx.buffer, nil
+
+}
+
+type EncodingOptions struct {
+	KeyCasing KeyCasing
 }
 
 func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
@@ -69,7 +74,7 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 			return encodeNullableToJSON(v, c)
 		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
-			result, err := v.Interface().(ArriModel).EncodeJSON(c.keyCasing)
+			result, err := v.Interface().(ArriModel).EncodeJSON(EncodingOptions{KeyCasing: c.keyCasing})
 			if err != nil {
 				return err
 			}
@@ -112,7 +117,7 @@ func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		c.buffer = append(c.buffer, "null"...)
 		return nil
 	}
-	result, err := EncodeJSON(v.Interface(), c.keyCasing)
+	result, err := EncodeJSON(v.Interface(), EncodingOptions{KeyCasing: c.keyCasing})
 	if err != nil {
 		return err
 	}
