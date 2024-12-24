@@ -41,15 +41,8 @@ func main() {
 		arri.AppOptions[RpcEvent]{
 			AppVersion:     "10",
 			RpcRoutePrefix: "/rpcs",
-			OnRequest: func(r *http.Request, evt *RpcEvent) arri.RpcError {
-				evt.Writer().Header().Set("Access-Control-Allow-Origin", "*")
-				if len(evt.XTestHeader) == 0 &&
-					r.URL.Path != "/" &&
-					r.URL.Path != "/status" &&
-					r.URL.Path != "/favicon.ico" &&
-					!strings.HasSuffix(r.URL.Path, "__definition") {
-					return arri.Error(401, "Missing test auth header 'x-test-header'")
-				}
+			OnRequest: func(r *http.Request, event *RpcEvent) arri.RpcError {
+				event.Writer().Header().Set("Access-Control-Allow-Origin", "*")
 				return nil
 			},
 			OnError: func(r *http.Request, ac *RpcEvent, err error) {},
@@ -62,6 +55,16 @@ func main() {
 			}, nil
 		},
 	)
+	arri.Use(&app, func(r *http.Request, event RpcEvent, rpcName string) arri.RpcError {
+		if len(event.XTestHeader) == 0 &&
+			r.URL.Path != "/" &&
+			r.URL.Path != "/status" &&
+			r.URL.Path != "/favicon.ico" &&
+			!strings.HasSuffix(r.URL.Path, "__definition") {
+			return arri.Error(401, "Missing test auth header 'x-test-header'")
+		}
+		return nil
+	})
 	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.DefOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
 	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})
