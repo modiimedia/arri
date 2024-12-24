@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *DecoderError {
@@ -49,7 +50,7 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Dec
 
 		}
 		urlValue := values.Get(key)
-		isOptional := isOptionalType(fieldType)
+		isOptional := utils.IsOptionalType(fieldType)
 		if isOptional {
 			ctx := ctx.copyWith(
 				None[uint32](),
@@ -73,7 +74,7 @@ func FromUrlQuery[T any](values url.Values, target *T, keyCasing KeyCasing) *Dec
 			Some(ctx.InstancePath+"/"+key),
 			Some(ctx.SchemaPath+"/optionalProperties"),
 		)
-		isNullable := isNullableTypeOrPointer(fieldType)
+		isNullable := utils.IsNullableTypeOrPointer(fieldType)
 		if isNullable {
 			nullableTypeFromUrlQuery(urlValue, &field, &ctx)
 			continue

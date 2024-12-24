@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 type AppDef struct {
@@ -64,7 +65,7 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 	}
 	rawParams := valueType.In(0)
 	params := Some(rawParams.Name())
-	hasParam := !isEmptyMessage(rawParams)
+	hasParam := !utils.IsEmptyMessage(rawParams)
 	if !hasParam {
 		params = None[string]()
 	}
@@ -73,7 +74,7 @@ func ToRpcDef(value interface{}, options ArriHttpRpcOptions) (*RpcDef, error) {
 		rawResponse = rawResponse.Elem()
 	}
 	response := Some(rawResponse.Name())
-	hasResponse := !isEmptyMessage(rawResponse)
+	hasResponse := !utils.IsEmptyMessage(rawResponse)
 	if !hasResponse {
 		response = None[string]()
 	}

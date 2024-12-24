@@ -232,16 +232,10 @@ func TestDecodeStdUser(t *testing.T) {
 	}
 }
 
-func BenchmarkStdDecodeObjectWithEveryType(b *testing.B) {
+func BenchmarkArriDecodeUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		target := objectWithEveryType{}
-		json.Unmarshal(_objectWithEveryTypeInput, &target)
-	}
-}
-func BenchmarkArriDecodeObjectWithEveryType(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		target := objectWithEveryType{}
-		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+		user := benchUser{}
+		arri.DecodeJSON(benchUserInput, &user, arri.KeyCasingCamelCase)
 	}
 }
 
@@ -252,10 +246,17 @@ func BenchmarkStdDecodeUser(b *testing.B) {
 	}
 }
 
-func BenchmarkArriDecodeUser(b *testing.B) {
+func BenchmarkArriDecodeObjectWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		user := benchUser{}
-		arri.DecodeJSON(benchUserInput, &user, arri.KeyCasingCamelCase)
+		target := objectWithEveryType{}
+		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+	}
+}
+
+func BenchmarkStdDecodeObjectWithEveryType(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		target := objectWithEveryType{}
+		json.Unmarshal(_objectWithEveryTypeInput, &target)
 	}
 }
 

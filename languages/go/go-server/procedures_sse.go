@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
 type SseController[T any] interface {
@@ -113,7 +114,7 @@ func (controller *defaultSseController[T]) SetPingInterval(duration time.Duratio
 	controller.pingDuration = duration
 }
 
-func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext], serviceName string, options RpcOptions, handler func(TParams, SseController[TResponse], TContext) RpcError) {
+func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName string, options RpcOptions, handler func(TParams, SseController[TResponse], TEvent) RpcError) {
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(
 		handler,
@@ -132,21 +133,21 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		panic(rpcError)
 	}
 	if len(serviceName) > 0 {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + "/" + strcase.ToKebab(serviceName) + rpcSchema.Http.Path
 	} else {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + rpcSchema.Http.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + rpcSchema.Http.Path
 	}
 	if len(options.Path) > 0 {
-		rpcSchema.Http.Path = app.Options.RpcRoutePrefix + options.Path
+		rpcSchema.Http.Path = app.options.RpcRoutePrefix + options.Path
 	}
 	params := handlerType.In(0)
 	if params.Kind() != reflect.Struct {
 		panic("rpc params must be a struct. pointers and other types are not allowed.")
 	}
 	paramName := getModelName(rpcName, params.Name(), "Params")
-	hasParams := !isEmptyMessage(params)
+	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
-		paramsDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+		paramsDefContext := _NewTypeDefContext(app.options.KeyCasing)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
 		if paramsSchemaErr != nil {
 			panic(paramsSchemaErr)
@@ -155,7 +156,7 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			panic("Procedures cannot accept anonymous structs")
 		}
 		rpcSchema.Http.Params.Set(paramName)
-		app.Definitions.Set(paramName, *paramsSchema)
+		app.definitions.Set(paramName, *paramsSchema)
 	} else {
 		rpcSchema.Http.Params.Unset()
 	}
@@ -164,9 +165,9 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 		response = response.Elem()
 	}
 	responseName := getModelName(rpcName, response.Name(), "Response")
-	hasResponse := !isEmptyMessage(response)
+	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
-		responseDefContext := _NewTypeDefContext(app.Options.KeyCasing)
+		responseDefContext := _NewTypeDefContext(app.options.KeyCasing)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
@@ -175,98 +176,111 @@ func eventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext]
 			panic("Procedures cannot return anonymous structs")
 		}
 		rpcSchema.Http.Response.Set(responseName)
-		app.Definitions.Set(responseName, *responseSchema)
+		app.definitions.Set(responseName, *responseSchema)
 	} else {
 		rpcSchema.Http.Response.Unset()
 	}
-	app.Procedures.Set(rpcName, *rpcSchema)
+	app.procedures.Set(rpcName, *rpcSchema)
 	onRequest, _, onAfterResponse, onError := getHooks(app)
 	paramsZero := reflect.Zero(reflect.TypeFor[TParams]())
 	app.Mux.HandleFunc(rpcSchema.Http.Path, func(w http.ResponseWriter, r *http.Request) {
-		ctx, ctxErr := app.CreateContext(w, r)
-		if ctxErr != nil {
-			handleError(false, w, r, nil, ctxErr, onError)
+		event, err := app.createEvent(w, r)
+		if err != nil {
+			handleError(false, w, r, nil, err, onError)
 			return
 		}
 		if strings.ToLower(r.Method) != rpcSchema.Http.Method {
-			handleError(false, w, r, ctx, Error(404, "Not found"), onError)
+			handleError(false, w, r, event, Error(404, "Not found"), onError)
 			return
 		}
-		onRequestErr := onRequest(r, ctx)
-		if onRequestErr != nil {
-			handleError(false, w, r, ctx, onRequestErr, onError)
+		err = onRequest(r, event)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
+
+		if len(app.middleware) > 0 {
+			for i := 0; i < len(app.middleware); i++ {
+				fn := app.middleware[i]
+				err := fn(r, *event, rpcName)
+				if err != nil {
+					handleError(false, w, r, event, err, onError)
+					return
+				}
+			}
+		}
+
 		params, paramsOk := paramsZero.Interface().(TParams)
 		if !paramsOk {
-			handleError(false, w, r, ctx, Error(500, "Error initializing empty params"), onError)
+			handleError(false, w, r, event, Error(500, "Error initializing empty params"), onError)
 			return
 		}
 		if hasParams {
 			switch rpcSchema.Http.Method {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
-				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.Options.KeyCasing)
+				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.options.KeyCasing)
 				if fromUrlQueryErr != nil {
-					handleError(false, w, r, ctx, fromUrlQueryErr, onError)
+					handleError(false, w, r, event, fromUrlQueryErr, onError)
 					return
 				}
 			default:
 				b, bErr := io.ReadAll(r.Body)
 				if bErr != nil {
-					handleError(false, w, r, ctx, Error(400, bErr.Error()), onError)
+					handleError(false, w, r, event, Error(400, bErr.Error()), onError)
 					return
 				}
-				fromJsonErr := DecodeJSON(b, &params, app.Options.KeyCasing)
+				fromJsonErr := DecodeJSON(b, &params, app.options.KeyCasing)
 				if fromJsonErr != nil {
-					handleError(false, w, r, ctx, fromJsonErr, onError)
+					handleError(false, w, r, event, fromJsonErr, onError)
 					return
 				}
 			}
 		}
-		sseController := newDefaultSseController[TResponse](w, r, app.Options.KeyCasing)
-		responseErr := handler(params, sseController, *ctx)
-		if responseErr != nil {
-			handleError(false, w, r, ctx, responseErr, onError)
+
+		sseController := newDefaultSseController[TResponse](w, r, app.options.KeyCasing)
+		err = handler(params, sseController, *event)
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 			return
 		}
-		onAfterResponseErr := onAfterResponse(r, ctx, "")
-		if onAfterResponseErr != nil {
-			handleError(false, w, r, ctx, onAfterResponseErr, onError)
+		err = onAfterResponse(r, event, "")
+		if err != nil {
+			handleError(false, w, r, event, err, onError)
 		}
 	})
 }
 
-func EventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext], handler func(TParams, SseController[TResponse], TContext) RpcError, options RpcOptions) {
+func EventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], handler func(TParams, SseController[TResponse], TEvent) RpcError, options RpcOptions) {
 	eventStreamRpc(app, "", options, handler)
 }
 
-func ScopedEventStreamRpc[TParams, TResponse any, TContext Context](app *App[TContext], scope string, handler func(TParams, SseController[TResponse], TContext) RpcError, options RpcOptions) {
+func ScopedEventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], scope string, handler func(TParams, SseController[TResponse], TEvent) RpcError, options RpcOptions) {
 	eventStreamRpc(app, scope, options, handler)
 }
 
-func getHooks[TContext Context](app *App[TContext]) (func(*http.Request, *TContext) RpcError, func(*http.Request, *TContext, any) RpcError, func(*http.Request, *TContext, any) RpcError, func(*http.Request, *TContext, error)) {
-	onRequest := app.Options.OnRequest
+func getHooks[TEvent Event](app *App[TEvent]) (func(*http.Request, *TEvent) RpcError, func(*http.Request, *TEvent, any) RpcError, func(*http.Request, *TEvent, any) RpcError, func(*http.Request, *TEvent, error)) {
+	onRequest := app.options.OnRequest
 	if onRequest == nil {
-		onRequest = func(r *http.Request, t *TContext) RpcError {
+		onRequest = func(r *http.Request, e *TEvent) RpcError {
 			return nil
 		}
 	}
-	onBeforeResponse := app.Options.OnBeforeResponse
+	onBeforeResponse := app.options.OnBeforeResponse
 	if onBeforeResponse == nil {
-		onBeforeResponse = func(r *http.Request, t *TContext, a any) RpcError {
+		onBeforeResponse = func(r *http.Request, e *TEvent, a any) RpcError {
 			return nil
 		}
 	}
-	onAfterResponse := app.Options.OnAfterResponse
+	onAfterResponse := app.options.OnAfterResponse
 	if onAfterResponse == nil {
-		onAfterResponse = func(r *http.Request, t *TContext, a any) RpcError {
+		onAfterResponse = func(r *http.Request, e *TEvent, a any) RpcError {
 			return nil
 		}
 	}
-	onError := app.Options.OnError
+	onError := app.options.OnError
 	if onError == nil {
-		onError = func(r *http.Request, t *TContext, err error) {}
+		onError = func(r *http.Request, e *TEvent, err error) {}
 	}
 	return onRequest, onBeforeResponse, onAfterResponse, onError
 }

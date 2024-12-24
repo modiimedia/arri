@@ -1,4 +1,4 @@
-package arri
+package utils
 
 import (
 	"reflect"
@@ -7,14 +7,20 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func isOptionalType(t reflect.Type) bool {
+const (
+	KeyCasingPascalCase = "PASCAL_CASE"
+	KeyCasingCamelCase  = "CAMEL_CASE"
+	KeyCasingSnakeCase  = "SNAKE_CASE"
+)
+
+func IsOptionalType(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
-		return isOptionalType(t.Elem())
+		return IsOptionalType(t.Elem())
 	}
 	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Option[")
 }
 
-func optionalHasValue(value *reflect.Value) bool {
+func OptionalHasValue(value *reflect.Value) bool {
 	target := value
 	if target.Kind() == reflect.Ptr {
 		if target.IsNil() {
@@ -27,18 +33,18 @@ func optionalHasValue(value *reflect.Value) bool {
 	return isSome.Bool()
 }
 
-func isNullableType(t reflect.Type) bool {
+func IsNullableType(t reflect.Type) bool {
 	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Nullable[")
 }
 
-func isNullableTypeOrPointer(t reflect.Type) bool {
+func IsNullableTypeOrPointer(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
-		return isNullableTypeOrPointer(t.Elem())
+		return IsNullableTypeOrPointer(t.Elem())
 	}
 	return t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "Nullable[")
 }
 
-func nullableHasValue(val *reflect.Value) bool {
+func NullableHasValue(val *reflect.Value) bool {
 	target := val
 	if target.Kind() == reflect.Ptr {
 		if target.IsNil() {
@@ -51,7 +57,7 @@ func nullableHasValue(val *reflect.Value) bool {
 	return isSet.Bool()
 }
 
-func getSerialKey(field *reflect.StructField, keyCasing KeyCasing) string {
+func GetSerialKey(field *reflect.StructField, keyCasing string) string {
 	keyTag := field.Tag.Get("key")
 	if len(keyTag) > 0 {
 		return keyTag
@@ -67,6 +73,6 @@ func getSerialKey(field *reflect.StructField, keyCasing KeyCasing) string {
 	return strcase.ToLowerCamel(field.Name)
 }
 
-func isEmptyMessage(t reflect.Type) bool {
+func IsEmptyMessage(t reflect.Type) bool {
 	return t.Name() == "EmptyMessage" && strings.Contains(t.PkgPath(), "arri")
 }

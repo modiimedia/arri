@@ -76,13 +76,13 @@ export function dartHttpRpcFromSchema(
                 onClose: onClose,
                 onError: onError != null && _onError != null
                     ? (err, es) {
-                        _onError?.call(onError);
+                        _onError.call(onError);
                         return onError(err, es);
                     }
                     : onError != null
                         ? onError
                         : _onError != null
-                            ? (err, _) => _onError?.call(err)
+                            ? (err, _) => _onError.call(err)
                             : null,
             );
         }`;
