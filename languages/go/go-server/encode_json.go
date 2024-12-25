@@ -41,7 +41,6 @@ func EncodeJSON(input any, options EncodingOptions) ([]byte, error) {
 		return nil, err
 	}
 	return ctx.Buffer, nil
-
 }
 
 func encodeValueToJSON(v reflect.Value, c *EncodingContext) error {
