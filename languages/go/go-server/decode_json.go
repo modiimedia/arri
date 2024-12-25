@@ -93,12 +93,16 @@ func (c DecoderContext) copyWith(CurrentDepth Option[uint32], EnumValues Option[
 	}
 }
 
-type DecodingOptions struct {
+type EncodingOptions struct {
 	KeyCasing KeyCasing
 	MaxDepth  uint32
 }
 
-func DecodeJSON[T any](data []byte, v *T, options DecodingOptions) *DecoderError {
+func NewSerializationOptions(keyCasing KeyCasing, maxDepth uint32) EncodingOptions {
+	return EncodingOptions{KeyCasing: keyCasing, MaxDepth: maxDepth}
+}
+
+func DecodeJSON[T any](data []byte, v *T, options EncodingOptions) *DecoderError {
 	parsedResult := gjson.ParseBytes(data)
 	value := reflect.ValueOf(&v)
 	if !parsedResult.Exists() {

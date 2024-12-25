@@ -126,6 +126,10 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		},
 	)
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	encodingOpts := EncodingOptions{
+		KeyCasing: app.options.KeyCasing,
+		MaxDepth:  app.options.MaxDepth,
+	}
 	if len(serviceName) > 0 {
 		rpcName = serviceName + "." + rpcName
 	}
@@ -147,7 +151,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	paramName := getModelName(rpcName, params.Name(), "Params")
 	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
-		paramsDefContext := _NewTypeDefContext(app.options.KeyCasing)
+		paramsDefContext := newTypeDefContext(encodingOpts)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
 		if paramsSchemaErr != nil {
 			panic(paramsSchemaErr)
@@ -167,7 +171,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	responseName := getModelName(rpcName, response.Name(), "Response")
 	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
-		responseDefContext := _NewTypeDefContext(app.options.KeyCasing)
+		responseDefContext := newTypeDefContext(encodingOpts)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
@@ -230,7 +234,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 					handleError(false, w, r, event, Error(400, bErr.Error()), onError)
 					return
 				}
-				fromJSONErr := DecodeJSON(b, &params, DecodingOptions{KeyCasing: app.options.KeyCasing, MaxDepth: app.options.MaxDepth})
+				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
 				if fromJSONErr != nil {
 					handleError(false, w, r, event, fromJSONErr, onError)
 					return

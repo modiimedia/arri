@@ -53,18 +53,22 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 	defOutput := flag.String("def-out", "", "definition-out")
 	appDefCmd := flag.NewFlagSet("def", flag.ExitOnError)
 	appDefOutput := appDefCmd.String("output", "__definition.json", "output")
+	encodingOptions := EncodingOptions{
+		KeyCasing: app.options.KeyCasing,
+		MaxDepth:  app.options.MaxDepth,
+	}
 	if len(os.Args) >= 2 {
 		switch os.Args[1] {
 		case "def", "definition":
 			appDefCmd.Parse(os.Args[2:])
-			return appDefToFile(app.GetAppDefinition(), *appDefOutput, app.options.KeyCasing)
+			return appDefToFile(app.GetAppDefinition(), *appDefOutput, encodingOptions)
 		}
 	}
 	if len(os.Args) > 1 {
 		flag.Parse()
 	}
 	if len(*defOutput) > 0 {
-		err := appDefToFile(app.GetAppDefinition(), *defOutput, app.options.KeyCasing)
+		err := appDefToFile(app.GetAppDefinition(), *defOutput, encodingOptions)
 		if err != nil {
 			return err
 		}
@@ -72,8 +76,8 @@ func (app *App[TEvent]) Run(options RunOptions) error {
 	return startServer(app, options)
 }
 
-func appDefToFile(appDef AppDef, output string, keyCasing KeyCasing) error {
-	appDefJSON, appDefJSONErr := EncodeJSON(appDef, EncodingOptions{KeyCasing: keyCasing})
+func appDefToFile(appDef AppDef, output string, options EncodingOptions) error {
+	appDefJSON, appDefJSONErr := EncodeJSON(appDef, options)
 	if appDefJSONErr != nil {
 		return appDefJSONErr
 	}
@@ -153,6 +157,10 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		definitions:          &OrderedMap[TypeDef]{},
 	}
 	defPath := app.options.RpcRoutePrefix + "/__definition"
+	encodingOptions := EncodingOptions{
+		KeyCasing: app.options.KeyCasing,
+		MaxDepth:  app.options.MaxDepth,
+	}
 	if len(app.options.RpcDefinitionPath) > 0 {
 		defPath = app.options.RpcDefinitionPath
 	}
@@ -220,12 +228,7 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 			handleError(false, w, r, event, err, onError)
 			return
 		}
-		jsonResult, _ := EncodeJSON(
-			response,
-			EncodingOptions{
-				KeyCasing: options.KeyCasing,
-			},
-		)
+		jsonResult, _ := EncodeJSON(response, encodingOptions)
 		w.Write(jsonResult)
 		onAfterResponseErr := onAfterResponse(r, event, response)
 		if onAfterResponseErr != nil {
@@ -245,7 +248,7 @@ func NewApp[TEvent Event](mux *http.ServeMux, options AppOptions[TEvent], create
 		if err != nil {
 			handleError(false, w, r, event, err, onError)
 		}
-		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), EncodingOptions{KeyCasing: options.KeyCasing})
+		jsonResult, _ := EncodeJSON(app.GetAppDefinition(), encodingOptions)
 		beforeResponseErr := onBeforeResponse(r, event, jsonResult)
 		if beforeResponseErr != nil {
 			handleError(false, w, r, event, beforeResponseErr, onError)
@@ -285,7 +288,11 @@ type DefOptions struct {
 }
 
 func RegisterDef[TEvent Event](app *App[TEvent], input any, options DefOptions) {
-	def, err := ToTypeDef(input, app.options.KeyCasing)
+	encodingOpts := EncodingOptions{
+		KeyCasing: app.options.KeyCasing,
+		MaxDepth:  app.options.MaxDepth,
+	}
+	def, err := ToTypeDef(input, encodingOpts)
 	if err != nil {
 		panic(err)
 	}

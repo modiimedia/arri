@@ -69,17 +69,21 @@ type TypeDefContext struct {
 	EnumValues    Option[[]string]
 }
 
-func _NewTypeDefContext(keyCasing KeyCasing) TypeDefContext {
-	casing := KeyCasingCamelCase
-	switch keyCasing {
+func newTypeDefContext(options EncodingOptions) TypeDefContext {
+	casing := options.KeyCasing
+	maxDepth := options.MaxDepth
+	switch options.KeyCasing {
 	case KeyCasingCamelCase, KeyCasingSnakeCase, KeyCasingPascalCase:
-		casing = keyCasing
+		casing = options.KeyCasing
 	case "":
-		casing = keyCasing
+		casing = KeyCasingCamelCase
+	}
+	if maxDepth == 0 {
+		maxDepth = 1000
 	}
 	return TypeDefContext{
 		KeyCasing:    casing,
-		MaxDepth:     1000,
+		MaxDepth:     maxDepth,
 		InstancePath: "",
 		IsNullable:   None[bool](),
 		EnumName:     None[string](),
@@ -109,13 +113,13 @@ func (context TypeDefContext) copyWith(
 	}
 }
 
-func ToTypeDef(input interface{}, keyCasing KeyCasing) (*TypeDef, error) {
-	context := _NewTypeDefContext(keyCasing)
+func ToTypeDef(input interface{}, options EncodingOptions) (*TypeDef, error) {
+	context := newTypeDefContext(options)
 	return typeToTypeDef(reflect.TypeOf(input), context)
 }
 
-func TypeToTypeDef(input reflect.Type, keyCasing KeyCasing) (*TypeDef, error) {
-	context := _NewTypeDefContext(keyCasing)
+func TypeToTypeDef(input reflect.Type, options EncodingOptions) (*TypeDef, error) {
+	context := newTypeDefContext(options)
 	return typeToTypeDef(input, context)
 }
 

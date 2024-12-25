@@ -7,16 +7,18 @@ import (
 	arri "github.com/modiimedia/arri/languages/go/go-server"
 )
 
+var options = arri.EncodingOptions{}
+
 func TestStringToTypeDef(t *testing.T) {
 	expectedResult := &arri.TypeDef{
 		Type: arri.Some("string"),
 	}
-	result, err := arri.ToTypeDef("hello world", arri.KeyCasingCamelCase)
+	result, err := arri.ToTypeDef("hello world", options)
 	if err != nil {
 		t.Fatal(err.Error())
 		return
 	}
-	nullableResult, nullableErr := arri.ToTypeDef(arri.NotNull("hello world"), arri.KeyCasingCamelCase)
+	nullableResult, nullableErr := arri.ToTypeDef(arri.NotNull("hello world"), options)
 	if nullableErr != nil {
 		t.Fatal(nullableErr.Error())
 		return
@@ -36,7 +38,7 @@ func TestArrayToTypeDef(t *testing.T) {
 	expectedResult := &arri.TypeDef{
 		Elements: arri.Some(&arri.TypeDef{Type: arri.Some("string")}),
 	}
-	result, err := arri.ToTypeDef([]string{"foo", "bar"}, arri.KeyCasingCamelCase)
+	result, err := arri.ToTypeDef([]string{"foo", "bar"}, options)
 	if err != nil {
 		t.Fatal(err.Error())
 		return
@@ -45,7 +47,7 @@ func TestArrayToTypeDef(t *testing.T) {
 		t.Fatal(deepEqualErrString(result, expectedResult))
 		return
 	}
-	nullableResult, nullableErr := arri.ToTypeDef(arri.Null[[]string](), arri.KeyCasingCamelCase)
+	nullableResult, nullableErr := arri.ToTypeDef(arri.Null[[]string](), options)
 	expectedResult.Nullable = arri.Some(true)
 	if nullableErr != nil {
 		t.Fatal(nullableErr.Error())
@@ -79,7 +81,7 @@ func TestDiscriminatorToTypeDef(t *testing.T) {
 	result, resultErr := arri.ToTypeDef(struct {
 		A *struct{ Foo string } `discriminator:"A"`
 		B *struct{ Bar string } `discriminator:"B"`
-	}{}, arri.KeyCasingCamelCase)
+	}{}, options)
 	if resultErr != nil {
 		t.Fatal(resultErr.Error())
 		return
@@ -96,7 +98,7 @@ func TestOrderedMapToTypeDef(t *testing.T) {
 			Type: arri.Some(arri.Boolean),
 		}),
 	}
-	result, err := arri.ToTypeDef(arri.OrderedMap[bool]{}, arri.KeyCasingCamelCase)
+	result, err := arri.ToTypeDef(arri.OrderedMap[bool]{}, options)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -112,7 +114,7 @@ func TestNullableStringToTypeDef(t *testing.T) {
 		Type:     arri.Some(arri.String),
 		Nullable: arri.Some(true),
 	}
-	result, err := arri.ToTypeDef(arri.Null[string](), arri.KeyCasingCamelCase)
+	result, err := arri.ToTypeDef(arri.Null[string](), options)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -194,7 +196,7 @@ func TestObjectWithEveryTypeToTypeDef(t *testing.T) {
 			arri.Pair("any", arri.TypeDef{}),
 		)),
 	}
-	result, err := arri.ToTypeDef(objectWithEveryType{}, arri.KeyCasingCamelCase)
+	result, err := arri.ToTypeDef(objectWithEveryType{}, options)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -207,6 +209,6 @@ func TestObjectWithEveryTypeToTypeDef(t *testing.T) {
 
 func BenchmarkToTypeDef(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.ToTypeDef(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+		arri.ToTypeDef(objectWithEveryTypeInput, options)
 	}
 }

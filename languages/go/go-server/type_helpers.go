@@ -48,7 +48,7 @@ func (s Option[T]) IsSome() bool {
 	return s.IsSet
 }
 
-func (s Option[_]) IsNone() bool {
+func (s Option[T]) IsNone() bool {
 	return !s.IsSet
 }
 
@@ -186,7 +186,7 @@ func Pair[a, b any](left a, right b) pair[a, b] {
 	}
 }
 
-/// ORDERED MAP
+// ORDERED MAP
 
 type OrderedMap[T interface{}] struct {
 	keys   []string
