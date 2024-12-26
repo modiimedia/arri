@@ -94,7 +94,7 @@ func TestFromUrlQueryWithEveryType(t *testing.T) {
 		Uint64:    1000,
 		Enum:      "BAR",
 	}
-	arri.FromUrlQuery(completeUrlQueryInput, &target, arri.KeyCasingCamelCase)
+	arri.FromUrlQuery(completeUrlQueryInput, &target, options)
 	if !reflect.DeepEqual(target, expectedResult) {
 		t.Errorf("\n%+v\ndoes not equal\n%+v\n", target, expectedResult)
 		return
@@ -104,13 +104,13 @@ func TestFromUrlQueryWithEveryType(t *testing.T) {
 func BenchmarkFromUrlQueryWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		target := queryResultWithEveryType{}
-		arri.FromUrlQuery(completeUrlQueryInput, &target, arri.KeyCasingCamelCase)
+		arri.FromUrlQuery(completeUrlQueryInput, &target, options)
 	}
 }
 
 func TestFromUrlQueryWithEveryOptionalType(t *testing.T) {
 	target := queryResultWithEveryOptionalType{}
-	initialErr := arri.FromUrlQuery(map[string][]string{}, &target, arri.KeyCasingCamelCase)
+	initialErr := arri.FromUrlQuery(map[string][]string{}, &target, options)
 	if initialErr != nil {
 		t.Error(initialErr.Error())
 		return
@@ -135,7 +135,7 @@ func TestFromUrlQueryWithEveryOptionalType(t *testing.T) {
 		Uint64:    arri.Some[uint64](1000),
 		Enum:      arri.Some("BAR"),
 	}
-	err := arri.FromUrlQuery(completeUrlQueryInput, &target, arri.KeyCasingCamelCase)
+	err := arri.FromUrlQuery(completeUrlQueryInput, &target, options)
 	if err != nil {
 		t.Error(err.Error())
 		return
