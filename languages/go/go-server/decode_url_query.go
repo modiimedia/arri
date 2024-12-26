@@ -12,7 +12,7 @@ import (
 	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
-func FromUrlQuery[T any](values url.Values, target *T, options EncodingOptions) *DecoderError {
+func DecodeQueryParams[T any](values url.Values, target *T, options EncodingOptions) *DecoderError {
 	reflectValue := reflect.ValueOf(target).Elem()
 	errors := []ValidationError{}
 	ctx := DecoderContext{KeyCasing: options.KeyCasing, Errors: errors}

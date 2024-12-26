@@ -38,7 +38,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 			Content: "hello world",
 		},
 		Array:  []bool{true, false, false},
-		Record: map[string]bool{"A": true, "B": false},
+		Record: arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false)),
 		Discriminator: discriminator{C: &discriminatorC{
 			Id:   "",
 			Name: "",
@@ -52,8 +52,11 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(target, expectedResult) {
-		t.Errorf("\n%+v\ndoes not equal\n%+v", target, expectedResult)
-		return
+		expectedResult.Record = arri.OrderedMapWithData(arri.Pair("B", false), arri.Pair("A", true))
+		if !reflect.DeepEqual(target, expectedResult) {
+			t.Errorf("\n%+v\ndoes not equal\n%+v", target, expectedResult)
+			return
+		}
 	}
 
 }
@@ -82,10 +85,12 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		Enum:      arri.Some("BAZ"),
 		Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
 		Array:     arri.Some([]bool{true, false, false}),
-		Record: arri.Some(map[string]bool{
-			"A": true,
-			"B": false,
-		}),
+		Record: arri.Some(
+			arri.OrderedMapWithData(
+				arri.Pair("A", true),
+				arri.Pair("B", false),
+			),
+		),
 		Discriminator: arri.Some(
 			discriminator{
 				C: &discriminatorC{
@@ -103,8 +108,11 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
-		t.Error(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
-		return
+		noUndefinedExpectedResult.Record.Set(arri.OrderedMapWithData(arri.Pair("B", false), arri.Pair("A", true)))
+		if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
+			t.Error(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
+			return
+		}
 	}
 	allUndefinedInput, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
 	if err != nil {
@@ -179,11 +187,11 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
-		fmt.Println("RESULT_ANY", reflect.TypeOf(result.Any.Value))
-		fmt.Printf("RESULT:\n%+v\n\n", result)
-		fmt.Printf("EXPECTED:\n%+v\n\n", expectedResult)
-		t.Error(deepEqualErrString(result, expectedResult))
-		return
+		expectedResult.Record.Set(arri.OrderedMapWithData(arri.Pair("B", false), arri.Pair("A", true)))
+		if !reflect.DeepEqual(result, expectedResult) {
+			t.Error(deepEqualErrString(result, expectedResult))
+			return
+		}
 	}
 
 }

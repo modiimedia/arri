@@ -11,6 +11,7 @@ import (
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
+
 var objectWithEveryTypeInput = objectWithEveryType{
 	String:        "",
 	Boolean:       false,
@@ -28,7 +29,7 @@ var objectWithEveryTypeInput = objectWithEveryType{
 	Enum:          "BAZ",
 	Object:        nestedObject{Id: "1", Content: "hello world"},
 	Array:         []bool{true, false, false},
-	Record:        map[string]bool{"A": true, "B": false},
+	Record:        arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false)),
 	Discriminator: discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}},
 	Any:           "hello world",
 }
@@ -48,6 +49,41 @@ func TestEncodeJSON(t *testing.T) {
 	}
 	if string(json) != string(reference) {
 		t.Fatal("\n", string(json), "\nis not equal to\n", string(reference))
+		return
+	}
+}
+
+func TestEncodeJSONEmptyDiscriminator(t *testing.T) {
+	input := discriminator{}
+	json, err := jsonEncoder.EncodeJSON(input)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	result := string(json)
+	expectedResult := "{\"typeName\":\"A\",\"id\":\"\"}"
+	if result != expectedResult {
+		t.Fatal(deepEqualErrString(result, expectedResult))
+		return
+	}
+}
+
+type fooUser struct {
+	Id   string
+	Role string `enum:"STANDARD,ADMIN"`
+}
+
+func TestEncodeJSONEmptyEnum(t *testing.T) {
+	input := fooUser{}
+	json, err := jsonEncoder.EncodeJSON(input)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	result := string(json)
+	expectedResult := "{\"id\":\"\",\"role\":\"STANDARD\"}"
+	if result != expectedResult {
+		t.Fatal(deepEqualErrString(result, expectedResult))
 		return
 	}
 }
@@ -81,10 +117,12 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 	Enum:      arri.Some("BAZ"),
 	Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
 	Array:     arri.Some([]bool{true, false, false}),
-	Record: arri.Some(map[string]bool{
-		"A": true,
-		"B": false,
-	}),
+	Record: arri.Some(
+		arri.OrderedMapWithData(
+			arri.Pair("A", true),
+			arri.Pair("B", false),
+		),
+	),
 	Discriminator: arri.Some(
 		discriminator{
 			C: &discriminatorC{

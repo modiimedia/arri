@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/modiimedia/arri/languages/go/go-server/utils"
@@ -176,7 +177,10 @@ func encodeEnumToJSON(v reflect.Value, c *EncodingContext) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("error at %v expected one of the following enum values %+v", c.InstancePath, enumVals)
+	c.Buffer = append(c.Buffer, '"')
+	c.Buffer = append(c.Buffer, enumVals[0]...)
+	c.Buffer = append(c.Buffer, '"')
+	return nil
 }
 
 func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
@@ -201,6 +205,15 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 		}
 		fieldName := utils.GetSerialKey(&field, c.KeyCasing)
 		fieldValue := v.Field(i)
+		enumTag := field.Tag.Get("enum")
+		if len(enumTag) > 0 {
+			rawEnumVals := strings.Split(enumTag, ",")
+			enumVals := []string{}
+			for i := 0; i < len(rawEnumVals); i++ {
+				enumVals = append(enumVals, strings.TrimSpace(rawEnumVals[i]))
+			}
+			c.EnumValues = enumVals
+		}
 		c.InstancePath = c.InstancePath + "/" + fieldName
 		if utils.IsOptionalType(field.Type) {
 			c.SchemaPath = "/optionalProperties/" + fieldName
@@ -217,6 +230,9 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 			if err != nil {
 				return err
 			}
+			if len(c.EnumValues) > 0 {
+				c.EnumValues = []string{}
+			}
 			c.HasKeys = true
 			c.InstancePath = oldInstancePath
 			c.SchemaPath = oldSchemaPath
@@ -229,6 +245,9 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 		err := encodeValueToJSON(fieldValue, c)
 		if err != nil {
 			return nil
+		}
+		if len(c.EnumValues) > 0 {
+			c.EnumValues = []string{}
 		}
 		c.HasKeys = true
 		c.InstancePath = oldInstancePath
@@ -265,6 +284,8 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 	schemaPath := c.SchemaPath
 	instancePath := c.InstancePath
 	c.CurrentDepth++
+	var firstFieldVal = None[reflect.Value]()
+	var firstFieldDiscriminatorValue string = ""
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		discriminatorKeyTag := field.Tag.Get("discriminatorKey")
@@ -277,6 +298,10 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 		c.DiscriminatorKey = discriminatorKey
 		c.DiscriminatorValue = discriminatorValue
 		fieldValue := v.Field(i)
+		if firstFieldVal.IsNone() {
+			firstFieldVal.Set(fieldValue)
+			firstFieldDiscriminatorValue = discriminatorValue
+		}
 		if field.Type.Kind() != reflect.Ptr {
 			return fmt.Errorf("all discriminator subtypes must be a struct pointer at %+v", c.InstancePath)
 		}
@@ -284,6 +309,22 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 			continue
 		}
 		err := encodeValueToJSON(fieldValue, c)
+		if err != nil {
+			return err
+		}
+		c.SchemaPath = schemaPath
+		c.InstancePath = instancePath
+		c.CurrentDepth--
+		c.DiscriminatorKey = ""
+		c.DiscriminatorValue = ""
+		return nil
+	}
+	if firstFieldVal.IsSome() {
+		c.SchemaPath = schemaPath + "/mapping/" + firstFieldDiscriminatorValue
+		c.DiscriminatorKey = discriminatorKey
+		c.DiscriminatorValue = firstFieldDiscriminatorValue
+		val := reflect.Zero(firstFieldVal.Unwrap().Type().Elem())
+		err := encodeValueToJSON(val, c)
 		if err != nil {
 			return err
 		}

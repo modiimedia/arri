@@ -151,7 +151,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 			switch rpcSchema.Http.Method {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
-				fromUrlQueryErr := FromUrlQuery(urlValues, &params, encodingOpts)
+				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
 					handleError(false, w, r, event, fromUrlQueryErr, onError)
 					return

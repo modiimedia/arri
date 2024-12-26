@@ -348,3 +348,20 @@ func (m OrderedMap[T]) TypeDef(tc TypeDefContext) (*TypeDef, error) {
 	result := TypeDef{Values: Some(subDef)}
 	return &result, nil
 }
+
+type Message[T MessageType] struct {
+	Value T
+}
+
+func NewMessage[T MessageType](value T) Message[T] {
+	return Message[T]{Value: value}
+}
+
+type (
+	TextMessage  struct{}
+	ImageMessage struct{}
+)
+
+type MessageType interface {
+	TextMessage | ImageMessage
+}
