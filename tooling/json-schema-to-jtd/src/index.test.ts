@@ -40,6 +40,19 @@ it("Converts strings", () => {
     expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
 });
 
+it('Converts strings that are marked as format "date-time"', () => {
+    const input: JsonSchemaScalarType = {
+        type: "string",
+        format: "date-time",
+    };
+    const expectedOutput: SchemaFormType = {
+        type: "timestamp",
+        metadata: emptyMetadata,
+        nullable: undefined,
+    };
+    expect(jsonSchemaToJtdSchema(input)).toStrictEqual(expectedOutput);
+});
+
 it("Converts objects", () => {
     const input: JsonSchemaObject = {
         type: "object",
