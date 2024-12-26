@@ -29,6 +29,7 @@ export interface JsonSchemaTypeBase {
     title?: string;
     description?: string;
     nullable?: boolean;
+    format?: string;
 }
 
 export interface JsonSchemaScalarType extends JsonSchemaTypeBase {
