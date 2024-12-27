@@ -7,6 +7,6 @@
     "ofetch": "^1.4.1"
   },
   "devDependencies": {
-    "consola": "^3.3.2"
+    "consola": "^3.3.3"
   }
 }
