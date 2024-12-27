@@ -1,4 +1,4 @@
-import { a } from "../../../../languages/ts/ts-schema/dist";
+import { a } from "@arrirpc/schema";
 import { defineCommand } from "citty";
 import consola from "consola";
 import { readFile, writeFile } from "fs/promises";

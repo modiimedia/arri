@@ -22,6 +22,6 @@ export default defineBuildConfig({
     outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: false,
+    failOnWarn: true,
     externals: deps,
 });

@@ -1,5 +1,5 @@
 import { type AppDefinition } from "@arrirpc/codegen-utils";
-import { a } from "../../ts-schema/dist";
+import { a } from "@arrirpc/schema";
 import { getHeaders } from "h3";
 
 import { ArriApp } from "./app";

@@ -1,4 +1,4 @@
-import { serializeSmallString } from "../../ts-schema/dist";
+import { serializeSmallString } from "@arrirpc/schema";
 import { EventSourcePlusOptions, type HttpMethod } from "event-source-plus";
 import { FetchError, ofetch } from "ofetch";
 

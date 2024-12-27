@@ -1,4 +1,4 @@
-import { a } from "../../../../../../languages/ts/ts-schema/dist";
+import { a } from "@arrirpc/schema";
 import { defineRpc } from "@arrirpc/server";
 
 const ObjectWithPascalCaseKeys = a.object("ObjectWithPascalCaseKeys", {

@@ -957,7 +957,7 @@ class ObjectWithEveryType implements ArriModel {
     final nestedArray = _input_["nestedArray"] is List
         ? (_input_["nestedArray"] as List)
             .map((_el_) => _el_ is List
-                ? (_el_ as List)
+                ? (_el_)
                     .map((_el_) => _el_ is Map<String, dynamic>
                         ? ObjectWithEveryTypeNestedArrayElementElement.fromJson(
                             _el_)
@@ -1953,7 +1953,7 @@ class ObjectWithEveryNullableType implements ArriModel {
     final nestedArray = _input_["nestedArray"] is List
         ? (_input_["nestedArray"] as List)
             .map((_el_) => _el_ is List
-                ? (_el_ as List)
+                ? (_el_)
                     .map((_el_) => _el_ is Map<String, dynamic>
                         ? ObjectWithEveryNullableTypeNestedArrayElementElement
                             .fromJson(_el_)
@@ -3168,7 +3168,7 @@ class ObjectWithEveryOptionalType implements ArriModel {
     final nestedArray = _input_["nestedArray"] is List
         ? (_input_["nestedArray"] as List)
             .map((_el_) => _el_ is List
-                ? (_el_ as List)
+                ? (_el_)
                     .map((_el_) => _el_ is Map<String, dynamic>
                         ? ObjectWithEveryOptionalTypeNestedArrayElementElement
                             .fromJson(_el_)

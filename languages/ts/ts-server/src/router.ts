@@ -1,4 +1,4 @@
-import { type AObjectSchema, type ASchema } from "../../ts-schema/dist";
+import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
 
 import { type DefinitionMap } from "./app";
 import { type ArriRoute } from "./route";

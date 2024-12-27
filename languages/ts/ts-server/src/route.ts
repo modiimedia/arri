@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { type HttpMethod } from "@arrirpc/codegen-utils";
 import {
     a,
     type AObjectSchema,
     type ASchema,
     type InferType,
-} from "../../ts-schema/dist";
+} from "@arrirpc/schema";
 import {
     defineEventHandler,
     getQuery,

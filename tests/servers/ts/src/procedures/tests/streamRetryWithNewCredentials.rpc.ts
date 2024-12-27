@@ -1,4 +1,4 @@
-import { a } from "../../../../../../languages/ts/ts-schema/dist";
+import { a } from "@arrirpc/schema";
 import { defineError, defineEventStreamRpc, getHeader } from "@arrirpc/server";
 
 const usedTokens: Record<string, boolean> = {};

@@ -1,4 +1,4 @@
-import { a } from "../../../../../../languages/ts/ts-schema/dist";
+import { a } from "@arrirpc/schema";
 import { defineEventStreamRpc } from "@arrirpc/server";
 import { faker } from "@faker-js/faker";
 import { randomUUID } from "crypto";

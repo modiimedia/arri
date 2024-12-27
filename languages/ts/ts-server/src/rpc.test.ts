@@ -1,4 +1,4 @@
-import { a } from "../../ts-schema/dist";
+import { a } from "@arrirpc/schema";
 
 import { defineEventStreamRpc } from "./eventStreamRpc";
 import { createHttpRpcDefinition, defineRpc } from "./rpc";
@@ -29,7 +29,7 @@ describe("Type Inference", () => {
                 params: { id: "12314" },
                 rpcName: "",
             },
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             {} as any,
         );
         assertType<Response>(result);

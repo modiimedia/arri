@@ -15,7 +15,7 @@ import {
     isADiscriminatorSchema,
     isAObjectSchema,
     validatorFromAdaptedSchema,
-} from "../../ts-schema/dist";
+} from "@arrirpc/schema";
 import {
     eventHandler,
     getValidatedQuery,

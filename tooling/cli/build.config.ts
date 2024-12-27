@@ -9,7 +9,6 @@ const packageJson = JSON.parse(
     }),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const deps = Object.keys(packageJson.dependencies);
 
 export default defineBuildConfig({
@@ -27,6 +26,6 @@ export default defineBuildConfig({
     outDir: "dist",
     clean: true,
     declaration: true,
-    failOnWarn: true,
+    failOnWarn: false,
     externals: deps,
 });
