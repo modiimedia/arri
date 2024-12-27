@@ -6,9 +6,9 @@ A type builder and validation library for [Arri Type Definitions](/specification
 
 The goals of this project are as follows:
 
--   Portable type definitions
--   High performance validation, parsing, and serialization
--   Consistent error reporting for parsing and serialization errors
+- Portable type definitions
+- High performance validation, parsing, and serialization
+- Consistent error reporting for parsing and serialization errors
 
 I am not looking to support every feature of Typescript's type system or even every possible representation of JSON. The goal is that the data models defined through this library can be used as a source of truth across multiple programming languages. Both JSON and Typescript have to be limited to accomplish this.
 
@@ -16,42 +16,42 @@ I am not looking to support every feature of Typescript's type system or even ev
 
 Originally this library was created as a way for building schemas for [Json Type Definition](https://jsontypedef.com/). However over time parts of the internal schema were modified to better suite the goals of Arri RPC. Some of these modifications include:
 
--   Adding support for 64-bit integers
--   Replacing the `additionalProperties` field with `strict` to allow for additional properties by default.
--   Restrict `ref` to only be used for recursive references.
+- Adding support for 64-bit integers
+- Replacing the `additionalProperties` field with `strict` to allow for additional properties by default.
+- Restrict `ref` to only be used for recursive references.
 
 ## Table of Contents
 
--   [Installation](#installation)
--   [Basic Example](#basic-example)
--   [Usage With @arrirpc/server](#usage-with-arrirpcserver)
--   [Supported Types](#supported-types)
-    -   [Primitives](#primitives)
-    -   [Enums](#enums)
-    -   [Arrays / Lists](#arrays--lists)
-    -   [Objects](#objects)
-    -   [Records / Maps](#records--maps)
-    -   [Discriminated Unions](#discriminated-unions)
-    -   [Recursive Types](#recursive-types)
--   [Modifiers](#modifiers)
-    -   [Optional](#optional)
-    -   [Nullable](#nullable)
-    -   [Extend](#extend)
-    -   [Omit](#omit)
-    -   [Pick](#pick)
-    -   [Partial](#partial)
--   [Utilities](#utilities)
-    -   [Validate](#validate)
-    -   [Parse](#parse)
-    -   [Safe Parse](#safe-parse)
-    -   [Coerce](#coerce)
-    -   [Safe Coerce](#safe-coerce)
-    -   [Serialize](#serialize)
-    -   [Errors](#errors)
--   [Compiled Validators](#compiled-validators)
--   [Metadata](#metadata)
--   [Benchmarks](#benchmarks)
--   [Development](#development)
+- [Installation](#installation)
+- [Basic Example](#basic-example)
+- [Usage With @arrirpc/server](#usage-with-arrirpcserver)
+- [Supported Types](#supported-types)
+    - [Primitives](#primitives)
+    - [Enums](#enums)
+    - [Arrays / Lists](#arrays--lists)
+    - [Objects](#objects)
+    - [Records / Maps](#records--maps)
+    - [Discriminated Unions](#discriminated-unions)
+    - [Recursive Types](#recursive-types)
+- [Modifiers](#modifiers)
+    - [Optional](#optional)
+    - [Nullable](#nullable)
+    - [Extend](#extend)
+    - [Omit](#omit)
+    - [Pick](#pick)
+    - [Partial](#partial)
+- [Utilities](#utilities)
+    - [Validate](#validate)
+    - [Parse](#parse)
+    - [Safe Parse](#safe-parse)
+    - [Coerce](#coerce)
+    - [Safe Coerce](#safe-coerce)
+    - [Serialize](#serialize)
+    - [Errors](#errors)
+- [Compiled Validators](#compiled-validators)
+- [Metadata](#metadata)
+- [Benchmarks](#benchmarks)
+- [Development](#development)
 
 ## Installation
 
@@ -747,9 +747,9 @@ $$User.compiledCode.serialize; // the generated serialization code
 
 Metadata is used during cross-language code generation. Arri schemas allow you to specify the following metadata fields:
 
--   id - Will be used as the type name in any arri client generators
--   description - Will be added as a description comment above any generated types
--   isDeprecated - Will mark any generated code with the deprecation annotation of target language
+- id - Will be used as the type name in any arri client generators
+- description - Will be added as a description comment above any generated types
+- isDeprecated - Will mark any generated code with the deprecation annotation of target language
 
 ### Examples
 
@@ -862,7 +862,7 @@ const BinaryTreeSchema = a.recursive("BTree", (self) =>
 
 ## Benchmarks
 
-_Last Updated: 2024-03-19_
+_Last Updated: 2024-12-27_
 
 All benchmarks were run on my personal desktop. You can view the methodology used in [./benchmarks/src](./benchmark/src).
 
@@ -907,44 +907,44 @@ The following data was used in these benchmarks. Relevant schemas were created i
 
 #### Validation
 
-| Library                      | op/s        |
-| ---------------------------- | ----------- |
-| **Arri (Compiled)**          | 122,753,978 |
-| Typebox (Compiled)           | 63,131,651  |
-| Ajv -JTD (Compiled)          | 37,814,896  |
-| Ajv - JTD                    | 29,402,413  |
-| Ajv - JSON Schema (Compiled) | 12,003,432  |
-| Ajv -JSON Schema             | 10,057,501  |
-| **Arri**                     | 2,131,823   |
-| Typebox                      | 93,5599     |
-| Zod                          | 52,1357     |
+| Library                      | op/s           |
+| ---------------------------- | -------------- |
+| **Arri (Compiled)**          | **51,149,033** |
+| Typebox (Compiled)           | 47,826,755     |
+| Ajv -JTD (Compiled)          | 32,001,140     |
+| Ajv - JTD                    | 12,731,224     |
+| Ajv - JSON Schema (Compiled) | 12,371,095     |
+| Ajv -JSON Schema             | 8,811,605      |
+| **Arri**                     | **2,151,961**  |
+| Typebox                      | 1,024,386      |
+| Zod                          | 471,700        |
 
 #### Parsing
 
-| Library             | op/s    |
-| ------------------- | ------- |
-| JSON.parse          | 749,534 |
-| **Arri (Compiled)** | 728,382 |
-| **Arri**            | 378,175 |
-| Ajv -JTD (Compiled) | 241,107 |
+| Library             | op/s        |
+| ------------------- | ----------- |
+| JSON.parse          | 785,364     |
+| **Arri (Compiled)** | **736,957** |
+| **Arri**            | **378,841** |
+| Ajv -JTD (Compiled) | 230,124     |
 
 #### Serialization
 
-| Library                                    | op/s      |
-| ------------------------------------------ | --------- |
-| **Arri (Compiled)**                        | 4,272,430 |
-| **Arri (Compiled) Validate and Serialize** | 3,846,453 |
-| Ajv - JTD (Compiled)                       | 2,012,894 |
-| JSON.stringify                             | 938,289   |
-| Arri                                       | 481,985   |
+| Library                                    | op/s          |
+| ------------------------------------------ | ------------- |
+| **Arri (Compiled)**                        | **4,131,382** |
+| **Arri (Compiled) Validate and Serialize** | **3,710,794** |
+| Ajv - JTD (Compiled)                       | 2,066,041     |
+| JSON.stringify                             | 1,599,758     |
+| Arri                                       | 467,417       |
 
 #### Coercion
 
-| Library  | op/s    |
-| -------- | ------- |
-| **Arri** | 818,963 |
-| Zod      | 466,092 |
-| Typebox  | 209,363 |
+| Library  | op/s        |
+| -------- | ----------- |
+| **Arri** | **820,103** |
+| Zod      | 465,466     |
+| Typebox  | 405,292     |
 
 ### Integers
 
@@ -952,44 +952,44 @@ The following benchmarks measure how quickly each library operates on a single i
 
 #### Validation
 
-| Library                      | op/s        |
-| ---------------------------- | ----------- |
-| Ajv - JSON Schema (Compiled) | 329,332,736 |
-| **Arri (Compiled)**          | 201,644,167 |
-| **Arri**                     | 186,634,732 |
-| Ajv - JTD (Compiled)         | 151,044,902 |
-| Typebox (Compiled)           | 110,692,029 |
-| Ajv - JTD                    | 48,200,004  |
-| Ajv - JSON Schema            | 47,840,571  |
-| Typebox                      | 42,363,980  |
-| Zod                          | 1,266,268   |
+| Library                      | op/s            |
+| ---------------------------- | --------------- |
+| Typebox (Compiled)           | 196,718,452     |
+| **Arri (Compiled)**          | **190,853,038** |
+| Ajv - JSON Schema (Compiled) | 189,905,832     |
+| Ajv - JTD (Compiled)         | 143,619,126     |
+| **Arri**                     | **89,428,888**  |
+| Typebox                      | 48,408,435      |
+| Ajv - JSON Schema            | 36,560,467      |
+| Ajv - JTD                    | 35,639,616      |
+| Zod                          | 1,286,707       |
 
 #### Parsing
 
-| Library              | op/s        |
-| -------------------- | ----------- |
-| **Arri (Compiled)**  | 138,189,123 |
-| **Arri**             | 136,995,619 |
-| JSON.parse()         | 19,911,721  |
-| Ajv - JTD (Compiled) | 8,996,081   |
+| Library              | op/s            |
+| -------------------- | --------------- |
+| **Arri (Compiled)**  | **131,214,018** |
+| **Arri**             | **56,134,552**  |
+| JSON.parse()         | 21,001,320      |
+| Ajv - JTD (Compiled) | 9,441,285       |
 
 #### Serialization
 
-| Library              | op/s        |
-| -------------------- | ----------- |
-| Ajv - JTD (Compiled) | 198,980,679 |
-| **Arri (Compiled)**  | 190,386,426 |
-| **Arri**             | 114,799,692 |
-| JSON.stringify       | 21,433,854  |
+| Library              | op/s            |
+| -------------------- | --------------- |
+| Ajv - JTD (Compiled) | 199,802,584     |
+| **Arri (Compiled)**  | **194,399,849** |
+| **Arri**             | **65,097,829**  |
+| JSON.stringify       | 16,853,237      |
 
 #### Coercion
 
-| Library           | op/s        |
-| ----------------- | ----------- |
-| Arri              | 117,854,219 |
-| TypeBox           | 34,633,126  |
-| Ajv - JSON Schema | 28,016,735  |
-| Zod               | 1,586,546   |
+| Library           | op/s           |
+| ----------------- | -------------- |
+| **Arri**          | **55,840,221** |
+| TypeBox           | 34,403,424     |
+| Ajv - JSON Schema | 22,190,607     |
+| Zod               | 1,195,111      |
 
 ## Development
 
