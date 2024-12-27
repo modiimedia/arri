@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../languages/ts/ts-schema/dist";
 import { execSync } from "child_process";
 import { defineCommand, runMain } from "citty";
 import enquirer from "enquirer";

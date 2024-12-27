@@ -5,7 +5,7 @@ import {
     type AObjectSchema,
     type ASchema,
     type InferType,
-} from "@arrirpc/schema";
+} from "../../ts-schema/dist";
 import {
     defineEventHandler,
     getQuery,

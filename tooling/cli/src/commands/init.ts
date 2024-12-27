@@ -1,7 +1,7 @@
 import fs, { readFileSync, rmSync, writeFileSync } from "node:fs";
 
 import { kebabCase } from "@arrirpc/codegen-utils";
-import { a } from "@arrirpc/schema";
+import { a } from "../../../../languages/ts/ts-schema/dist";
 import { defineCommand } from "citty";
 import Degit from "degit";
 import enquirer from "enquirer";

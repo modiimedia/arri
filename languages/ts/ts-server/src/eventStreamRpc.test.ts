@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../ts-schema/dist";
 
 import {
     defineEventStreamRpc,

@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../../../../languages/ts/ts-schema/dist";
 import { ArriRouter, defineRpc, defineService } from "@arrirpc/server";
 
 export const manualRouter = new ArriRouter();

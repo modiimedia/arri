@@ -1,4 +1,4 @@
-import { a, type InferType, type ValueError } from "@arrirpc/schema";
+import { a, type InferType, type ValueError } from "../../ts-schema/dist";
 import {
     createEventStream,
     eventHandler,

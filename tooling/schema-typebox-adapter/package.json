@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@arrirpc/schema": "workspace:*",
-    "json-schema-to-jtd": "workspace:*"
+    "json-schema-to-atd": "workspace:*"
   },
   "devDependencies": {
     "@arrirpc/server": "workspace:*"

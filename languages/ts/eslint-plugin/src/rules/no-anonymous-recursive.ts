@@ -37,7 +37,7 @@ const noAnonymousRecursive: Rule.RuleModule = {
                     // using ID shorthand so safe to exit
                     return;
                 }
-                if (argHasIdKey(arg2)) {
+                if (argHasIdKey(arg2 as any)) {
                     return;
                 }
                 context.report({

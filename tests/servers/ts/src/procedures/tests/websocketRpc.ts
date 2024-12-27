@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../../../../../languages/ts/ts-schema/dist";
 import { defineWebsocketRpc } from "@arrirpc/server";
 
 const EntityFields = a.object({

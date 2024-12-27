@@ -1,14 +1,14 @@
 {
   "name": "eslint-plugin",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/eslint-plugin/src",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/eslint-plugin/src",
   "projectType": "library",
   "targets": {
     "typecheck": {
       "command": "tsc --noEmit",
       "inputs": ["{projectRoot}/src"],
       "options": {
-        "cwd": "tooling/eslint-plugin"
+        "cwd": "languages/ts/eslint-plugin"
       }
     },
     "build": {
@@ -16,29 +16,29 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/eslint-plugin"
+        "cwd": "languages/ts/eslint-plugin"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/eslint-plugin"
+        "cwd": "languages/ts/eslint-plugin"
       },
       "dependsOn": ["build"]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint tooling/eslint-plugin"
+        "command": "pnpm eslint languages/ts/eslint-plugin"
       }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/tooling/eslint-plugin"],
+      "outputs": ["{workspaceRoot}/coverage/languages/ts/eslint-plugin"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "tooling/eslint-plugin"
+        "cwd": "languages/ts/eslint-plugin"
       }
     }
   },

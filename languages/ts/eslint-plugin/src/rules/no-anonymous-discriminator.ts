@@ -2,7 +2,7 @@ import { type Rule } from "eslint";
 
 import { argHasIdKey, isNestedInSchema } from "./_common";
 
-const noAnonymousEnumerator: Rule.RuleModule = {
+const noAnonymousDiscriminator: Rule.RuleModule = {
     meta: {
         type: "suggestion",
     },
@@ -18,39 +18,36 @@ const noAnonymousEnumerator: Rule.RuleModule = {
                     return;
                 }
                 const propName = node.callee.property.name;
-                if (propName !== "enumerator" && propName !== "stringEnum") {
+                if (propName !== "discriminator") {
                     return;
                 }
-                if (
-                    isNestedInSchema(
-                        node,
-                        ["object", "discriminator", "recursive"],
-                        context,
-                    )
-                ) {
+                if (isNestedInSchema(node as any, ["recursive"], context)) {
                     return;
                 }
-                if (node.arguments.length < 2) {
+                if (node.arguments.length < 3) {
                     context.report({
-                        message: "root enum schemas must specify an id",
+                        message: "discriminator schemas must specify an id",
                         node,
                     });
                     return;
                 }
                 const arg1 = node.arguments[0]!;
                 const arg2 = node.arguments[1]!;
+                const arg3 = node.arguments[2]!;
                 if (
                     arg1.type === "Literal" &&
-                    (arg1.value?.toString().length ?? 0) > 0
+                    (arg1.value?.toString().length ?? 0) > 0 &&
+                    arg2.type === "Literal" &&
+                    (arg2.value?.toString().length ?? 0) > 0
                 ) {
-                    // Using ID shorthand
+                    // using ID shorthand so safe to exit
                     return;
                 }
-                if (argHasIdKey(arg2)) {
+                if (argHasIdKey(arg3 as any)) {
                     return;
                 }
                 context.report({
-                    message: "root enum schemas must specify an id",
+                    message: "discriminator schemas must specify an id",
                     node,
                 });
             },
@@ -58,4 +55,4 @@ const noAnonymousEnumerator: Rule.RuleModule = {
     },
 };
 
-export default noAnonymousEnumerator;
+export default noAnonymousDiscriminator;

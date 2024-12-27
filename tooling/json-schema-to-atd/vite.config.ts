@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/json-schema-to-jtd",
+    cacheDir: "../../node_modules/.vite/json-schema-to-atd",
 
     // plugins: [
     //     viteTsConfigPaths({

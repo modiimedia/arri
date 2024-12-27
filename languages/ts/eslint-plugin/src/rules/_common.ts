@@ -32,9 +32,8 @@ export function isNestedInSchema(
         "sourceCode" in context
             ? context.sourceCode
             : // legacy method
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((context as any).getSourceCode() as SourceCode);
-    const ancestors = sourceCode.getAncestors(node);
+    const ancestors = sourceCode.getAncestors(node as any);
     if (log) {
         console.log(ancestors);
     }

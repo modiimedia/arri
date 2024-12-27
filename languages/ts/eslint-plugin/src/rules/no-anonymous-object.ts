@@ -29,16 +29,16 @@ const noAnonymousObject: Rule.RuleModule = {
                 }
                 switch (nodeName as SchemaType) {
                     case "pick":
-                        handlePick(node, context);
+                        handlePick(node as any, context);
                         return;
                     case "partial":
-                        handlePartial(node, context);
+                        handlePartial(node as any, context);
                         return;
                     case "extend":
-                        handleExtend(node, context);
+                        handleExtend(node as any, context);
                         return;
                     case "object":
-                        handleObject(node, context);
+                        handleObject(node as any, context);
                 }
             },
         };
@@ -55,7 +55,7 @@ function handleObject(
     if (node.arguments.length < 2) {
         context.report({
             message: defaultMessage,
-            node,
+            node: node as any,
         });
         return;
     }
@@ -70,7 +70,7 @@ function handleObject(
     }
     context.report({
         message: defaultMessage,
-        node,
+        node: node as any,
     });
 }
 
@@ -84,7 +84,7 @@ function handlePartial(
     if (node.arguments.length < 2) {
         context.report({
             message: defaultMessage,
-            node,
+            node: node as any,
         });
         return;
     }
@@ -93,7 +93,7 @@ function handlePartial(
     }
     context.report({
         message: defaultMessage,
-        node,
+        node: node as any,
     });
 }
 
@@ -107,7 +107,7 @@ function handlePick(
     if (node.arguments.length < 3) {
         context.report({
             message: defaultMessage,
-            node,
+            node: node as any,
         });
         return;
     }
@@ -116,7 +116,7 @@ function handlePick(
     }
     context.report({
         message: defaultMessage,
-        node,
+        node: node as any,
     });
 }
 
@@ -130,7 +130,7 @@ function handleExtend(
     if (expression.arguments.length < 3) {
         context.report({
             message: defaultMessage,
-            node: expression,
+            node: expression as any,
         });
         return;
     }
@@ -139,7 +139,7 @@ function handleExtend(
     }
     context.report({
         message: defaultMessage,
-        node: expression,
+        node: expression as any,
     });
 }
 

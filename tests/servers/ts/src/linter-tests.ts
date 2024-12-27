@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../../../languages/ts/ts-schema/dist";
 
 // eslint-disable-next-line arri/no-anonymous-object
 const ObjectSchema = a.object({

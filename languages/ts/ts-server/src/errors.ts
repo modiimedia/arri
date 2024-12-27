@@ -1,4 +1,8 @@
-import { a, type AObjectSchema, type ValidationError } from "@arrirpc/schema";
+import {
+    a,
+    type AObjectSchema,
+    type ValidationError,
+} from "../../ts-schema/dist";
 import {
     type H3Error,
     type H3Event,

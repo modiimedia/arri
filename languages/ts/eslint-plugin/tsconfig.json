@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node"]
   }

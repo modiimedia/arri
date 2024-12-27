@@ -1,11 +1,4 @@
 import {
-    AObjectSchema,
-    ASchema,
-    SCHEMA_METADATA,
-    ValidationError,
-    type ValueError,
-} from "@arrirpc/schema";
-import {
     OptionalKind,
     type Static,
     type TObject,
@@ -13,7 +6,15 @@ import {
 } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value, type ValueErrorIterator } from "@sinclair/typebox/value";
-import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-jtd";
+import { jsonSchemaToJtdSchema, type JsonSchemaType } from "json-schema-to-atd";
+
+import {
+    AObjectSchema,
+    ASchema,
+    SCHEMA_METADATA,
+    ValidationError,
+    type ValueError,
+} from "../../../languages/ts/ts-schema/dist";
 
 export function typeboxAdapter<TInput extends TSchema>(
     input: TInput,

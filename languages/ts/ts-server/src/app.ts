@@ -6,7 +6,7 @@ import {
     type SchemaFormProperties,
     type SchemaFormValues,
 } from "@arrirpc/codegen-utils";
-import { type AObjectSchema, type ASchema } from "@arrirpc/schema";
+import { type AObjectSchema, type ASchema } from "../../ts-schema/dist";
 import {
     type App,
     createApp,

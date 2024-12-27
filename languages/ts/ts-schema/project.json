@@ -1,7 +1,7 @@
 {
-  "name": "schema",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/schema/src",
+  "name": "ts-schema",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/ts/ts-schema/src",
   "projectType": "library",
   "targets": {
     "benchmark": {
@@ -10,7 +10,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "jiti buildBenchmarks.ts && node benchmark/dist/_index.cjs",
-        "cwd": "tooling/schema"
+        "cwd": "languages/ts/ts-schema"
       }
     },
     "build": {
@@ -18,36 +18,36 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/schema"
+        "cwd": "languages/ts/ts-schema"
       }
     },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/schema"
+        "cwd": "languages/ts/ts-schema"
       },
       "dependsOn": ["build"]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint tooling/schema"
+        "command": "pnpm eslint languages/ts/ts-schema"
       }
     },
     "test": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/coverage/tooling/schema"],
+      "outputs": ["{workspaceRoot}/coverage/languages/ts/ts-schema"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "tooling/schema"
+        "cwd": "languages/ts/ts-schema"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "tooling/schema"
+        "cwd": "languages/ts/ts-schema"
       }
     }
   },

@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../../languages/ts/ts-schema/dist";
 import { defineEventStreamRpc, defineRpc } from "@arrirpc/server";
 import { type Static, Type } from "@sinclair/typebox";
 

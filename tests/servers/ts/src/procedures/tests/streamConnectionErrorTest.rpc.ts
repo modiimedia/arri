@@ -1,4 +1,4 @@
-import { a } from "@arrirpc/schema";
+import { a } from "../../../../../../languages/ts/ts-schema/dist";
 import { defineError, defineEventStreamRpc } from "@arrirpc/server";
 
 export default defineEventStreamRpc({

@@ -1,7 +1,7 @@
 {
-  "name": "json-schema-to-jtd",
+  "name": "json-schema-to-atd",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tooling/json-schema-to-jtd/src",
+  "sourceRoot": "tooling/json-schema-to-atd/src",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,7 +9,7 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "unbuild",
-        "cwd": "tooling/json-schema-to-jtd"
+        "cwd": "tooling/json-schema-to-atd"
       }
     },
     "publish": {
@@ -17,13 +17,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm publish",
-        "cwd": "tooling/json-schema-to-jtd"
+        "cwd": "tooling/json-schema-to-atd"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm eslint tooling/json-schema-to-jtd"
+        "command": "pnpm eslint tooling/json-schema-to-atd"
       }
     },
     "test": {
@@ -31,7 +31,7 @@
       "outputs": ["{workspaceRoot}/coverage/tooling/schema"],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",
-        "cwd": "tooling/json-schema-to-jtd"
+        "cwd": "tooling/json-schema-to-atd"
       }
     },
 
@@ -39,7 +39,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "tooling/json-schema-to-jtd"
+        "cwd": "tooling/json-schema-to-atd"
       }
     }
   },

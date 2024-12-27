@@ -1,13 +1,9 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../node_modules/.vite/@arrirpc/schema",
+    cacheDir: "../../../node_modules/.vite/tooling/eslint-plugin",
 
-    // plugins: [
-    //     viteTsConfigPaths({
-    //         root: "../../",
-    //     }),
-    // ],
+    plugins: [],
 
     // Uncomment this if you are using workers.
     // worker: {
@@ -22,13 +18,13 @@ export default defineConfig({
         globals: true,
         reporters: ["default"],
         pool: "threads",
-        poolOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
+        // pollOptions: {
+        //     threads: {
+        //         singleThread: true,
+        //     },
+        // },
         cache: {
-            dir: "../../node_modules/.vitest",
+            dir: "../../../node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],

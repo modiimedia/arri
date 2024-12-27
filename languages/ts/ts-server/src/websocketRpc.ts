@@ -3,7 +3,7 @@ import {
     type ASchema,
     type CompiledValidator,
     type InferType,
-} from "@arrirpc/schema";
+} from "../../ts-schema/dist";
 import { type Peer, type WSError } from "crossws";
 import { defineWebSocketHandler, type Router } from "h3";
 
