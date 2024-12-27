@@ -125,6 +125,13 @@ export function jsonSchemaScalarToJtdScalar(
                 metadata: meta,
             };
         case "string":
+            if (input.format === "date-time") {
+                return {
+                    type: "timestamp",
+                    nullable: input.nullable,
+                    metadata: meta,
+                };
+            }
             return {
                 type: "string",
                 nullable: input.nullable,
