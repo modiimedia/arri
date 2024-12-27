@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    cacheDir: "../../../node_modules/.vite/@arrirpc/schema",
+    cacheDir: "../../../node_modules/.vite/languages-ts-ts-schema",
 
     // plugins: [
     //     viteTsConfigPaths({
@@ -26,9 +26,6 @@ export default defineConfig({
             threads: {
                 singleThread: true,
             },
-        },
-        cache: {
-            dir: "../../../node_modules/.vitest",
         },
         environment: "node",
         include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
