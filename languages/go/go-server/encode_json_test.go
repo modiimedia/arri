@@ -29,7 +29,7 @@ var objectWithEveryTypeInput = objectWithEveryType{
 	Enum:          "BAZ",
 	Object:        nestedObject{Id: "1", Content: "hello world"},
 	Array:         []bool{true, false, false},
-	Record:        arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false)),
+	Record:        map[string]bool{"A": true, "B": false},
 	Discriminator: discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}},
 	Any:           "hello world",
 }
@@ -37,18 +37,25 @@ var objectWithEveryTypeInput = objectWithEveryType{
 var jsonEncoder = arri.NewEncoder(arri.EncodingOptions{})
 
 func TestEncodeJSON(t *testing.T) {
+	// maps do not guarantee key order so we need to check against 2 potential outputs
 	reference, referenceErr := os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
 	if referenceErr != nil {
 		t.Fatal(referenceErr)
 		return
 	}
+	reference2, reference2Err := os.ReadFile("../../../tests/test-files/ObjectWithEveryType_ReversedRecord.json")
+	if reference2Err != nil {
+		t.Fatal(reference2Err)
+	}
+
 	json, err := jsonEncoder.EncodeJSON(objectWithEveryTypeInput)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-	if string(json) != string(reference) {
-		t.Fatal("\n", string(json), "\nis not equal to\n", string(reference))
+	result := string(json)
+	if result != string(reference) && result != string(reference2) {
+		t.Fatal("\n", result, "\nis not equal to\n", string(reference))
 		return
 	}
 }
@@ -117,12 +124,7 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 	Enum:      arri.Some("BAZ"),
 	Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
 	Array:     arri.Some([]bool{true, false, false}),
-	Record: arri.Some(
-		arri.OrderedMapWithData(
-			arri.Pair("A", true),
-			arri.Pair("B", false),
-		),
-	),
+	Record:    arri.Some(map[string]bool{"A": true, "B": false}),
 	Discriminator: arri.Some(
 		discriminator{
 			C: &discriminatorC{
@@ -136,28 +138,39 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 }
 
 func TestEncodeJSONWithOptionalFields(t *testing.T) {
-	noUndefReference, noUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
-	if noUndefReferenceErr != nil {
-		t.Fatal(noUndefReferenceErr.Error())
+	reference, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
+	if err != nil {
+		t.Fatal(err.Error())
+		return
 	}
-	noUndefResult, noUndefResultErr := jsonEncoder.EncodeJSON(_objectWithOptionalFieldsInput)
-	if noUndefResultErr != nil {
-		t.Fatal(noUndefResultErr.Error())
+	reference2, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined_ReversedRecord.json")
+	if err != nil {
+		t.Fatal(err)
+		return
 	}
-	if !reflect.DeepEqual(noUndefResult, noUndefReference) {
-		t.Fatal("\n", string(noUndefResult), "\nis not equal to\n", string(noUndefReference))
+	result, err := jsonEncoder.EncodeJSON(_objectWithOptionalFieldsInput)
+	if err != nil {
+		t.Fatal(err)
+		return
 	}
-	allUndefInput := objectWithOptionalFields{}
-	allUndefReference, allUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
-	if noUndefReferenceErr != nil {
-		t.Fatal(allUndefReferenceErr.Error())
+	if string(result) != string(reference) && string(result) != string(reference2) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
+		return
 	}
-	allUndefResult, allUndefResultErr := jsonEncoder.EncodeJSON(allUndefInput)
-	if allUndefResultErr != nil {
-		t.Fatal(allUndefResultErr.Error())
+	input := objectWithOptionalFields{}
+	reference, err = os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
+	if err != nil {
+		t.Fatal(err)
+		return
 	}
-	if !reflect.DeepEqual(allUndefResult, allUndefReference) {
-		t.Fatal("\n", string(allUndefResult), "\nis not equal to\n", string(allUndefReference))
+	result, err = jsonEncoder.EncodeJSON(input)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if string(result) != string(reference) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
+		return
 	}
 }
 
@@ -191,38 +204,43 @@ var objectWithNullableFieldsNoNullInput = objectWithNullableFields{
 	Enum:          arri.NotNull("BAZ"),
 	Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
 	Array:         arri.NotNull([]bool{true, false, false}),
-	Record:        arri.NotNull(arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false))),
+	Record:        arri.NotNull(map[string]bool{"A": true, "B": false}),
 	Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
 	Any:           arri.NotNull[any](struct{ Message string }{Message: "hello world"}),
 }
 
 func TestEncodeJSONWithNullableFields(t *testing.T) {
-	allNullReference, allNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
-	if allNullReferenceErr != nil {
-		t.Fatal(allNullReferenceErr)
+	reference, err := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	allNullResult, allNullErr := jsonEncoder.EncodeJSON(objectWithNullableFieldsAllNullInput)
-	if allNullErr != nil {
-		t.Fatal(allNullErr)
+	result, err := jsonEncoder.EncodeJSON(objectWithNullableFieldsAllNullInput)
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	if string(allNullReference) != string(allNullResult) {
-		t.Fatal(deepEqualErrString(string(allNullResult), string(allNullReference)))
+	if string(reference) != string(result) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
 		return
 	}
-	noNullReference, noNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
-	if noNullReferenceErr != nil {
-		t.Fatal(noNullReferenceErr)
+	reference, err = os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	noNullResult, noNullErr := jsonEncoder.EncodeJSON(objectWithNullableFieldsNoNullInput)
-	if noNullErr != nil {
-		t.Fatal(noNullErr)
+	reference2, err := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull_ReversedRecord.json")
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	if string(noNullResult) != string(noNullReference) {
-		t.Fatal(deepEqualErrString(string(noNullResult), string(noNullReference)))
+	result, err = jsonEncoder.EncodeJSON(objectWithNullableFieldsNoNullInput)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if string(result) != string(reference) && string(result) != string(reference2) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
 		return
 	}
 }

@@ -38,7 +38,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 			Content: "hello world",
 		},
 		Array:  []bool{true, false, false},
-		Record: arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false)),
+		Record: map[string]bool{"A": true, "B": false},
 		Discriminator: discriminator{C: &discriminatorC{
 			Id:   "",
 			Name: "",
@@ -52,7 +52,7 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(target, expectedResult) {
-		expectedResult.Record = arri.OrderedMapWithData(arri.Pair("B", false), arri.Pair("A", true))
+		expectedResult.Record = map[string]bool{"B": false, "A": true}
 		if !reflect.DeepEqual(target, expectedResult) {
 			t.Errorf("\n%+v\ndoes not equal\n%+v", target, expectedResult)
 			return
@@ -85,12 +85,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		Enum:      arri.Some("BAZ"),
 		Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
 		Array:     arri.Some([]bool{true, false, false}),
-		Record: arri.Some(
-			arri.OrderedMapWithData(
-				arri.Pair("A", true),
-				arri.Pair("B", false),
-			),
-		),
+		Record:    arri.Some(map[string]bool{"A": true, "B": false}),
 		Discriminator: arri.Some(
 			discriminator{
 				C: &discriminatorC{
@@ -108,7 +103,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
-		noUndefinedExpectedResult.Record.Set(arri.OrderedMapWithData(arri.Pair("B", false), arri.Pair("A", true)))
+		noUndefinedExpectedResult.Record.Set(map[string]bool{"B": false, "A": true})
 		if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
 			t.Error(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
 			return
@@ -175,7 +170,7 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 		Enum:          arri.NotNull("BAZ"),
 		Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
 		Array:         arri.NotNull([]bool{true, false, false}),
-		Record:        arri.NotNull(arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false))),
+		Record:        arri.NotNull(map[string]bool{"A": true, "B": false}),
 		Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
 		Any: arri.NotNull[any](map[string]any{
 			"message": "hello world",
@@ -187,7 +182,7 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
-		expectedResult.Record.Set(arri.OrderedMapWithData(arri.Pair("B", false), arri.Pair("A", true)))
+		expectedResult.Record.Set(map[string]bool{"B": false, "A": true})
 		if !reflect.DeepEqual(result, expectedResult) {
 			t.Error(deepEqualErrString(result, expectedResult))
 			return
