@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -322,7 +321,6 @@ type ObjectWithEveryOptionalType struct {
 }
 
 func SendPartialObject(params ObjectWithEveryOptionalType, _ RpcEvent) (ObjectWithEveryOptionalType, arri.RpcError) {
-	fmt.Println("INCOMING", params.NestedArray.Unwrap()[0][0].Id)
 	return params, nil
 }
 
