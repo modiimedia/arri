@@ -4,21 +4,24 @@ Go implementation of [Arri RPC](/README.md). It uses the `net/http` package from
 
 ## Table of Contents
 
--   [Quickstart](#quickstart)
--   [Basic Example](#basic-example)
--   [Manual Setup](#manual-setup)
--   [Creating HTTP Procedures](#creating-http-procedures)
--   [Creating Event Stream Procedures](#creating-event-stream-procedures)
--   [Defining Messages](#defining-messages)
-    -   [Primitive Types](#primitive-types)
-    -   [Enums](#enums)
-    -   [Arrays and Slices](#arrays-and-slices)
-    -   [Objects](#objects)
-    -   [Maps](#maps)
-    -   [Discriminated Unions / Tagged Unions](#discriminated-unions--tagged-unions)
-    -   [Recursive Types](#recursive-types)
-    -   [Optional Fields](#optional-fields)
-    -   [Nullable Types](#nullable-types)
+- [Quickstart](#quickstart)
+- [Basic Example](#basic-example)
+- [Manual Setup](#manual-setup)
+- [Creating HTTP Procedures](#creating-http-procedures)
+- [Creating Event Stream Procedures](#creating-event-stream-procedures)
+- [Defining Messages](#defining-messages)
+    - [Primitive Types](#primitive-types)
+    - [Enums](#enums)
+    - [Arrays and Slices](#arrays-and-slices)
+    - [Objects](#objects)
+    - [Maps](#maps)
+    - [Discriminated Unions / Tagged Unions](#discriminated-unions--tagged-unions)
+    - [Recursive Types](#recursive-types)
+    - [Optional Fields](#optional-fields)
+    - [Nullable Types](#nullable-types)
+- [Helper Types](#helper-types)
+    - [Pair](#pair)
+    - [OrderedMap](#ordered-map)
 
 ## Quickstart
 
@@ -59,12 +62,32 @@ import (
     "github.com/modiimedia/arri"
 )
 
+// this is the data type that will be passed around to every procedure
+// it must implement the `arri.Event` interface
+// if you don't want to define a custom event you can use `arri.DefaultEvent` and `arri.CreateDefaultEvent()` instead
+type MyCustomEvent struct {
+    r *http.Request
+    w http.ResponseWriter
+}
+func (e MyCustomEvent) Request() *http.Request {
+    return e.r
+}
+func (e MyCustomEvent) Writer() http.ResponseWriter {
+	return e.writer
+}
+
 func main() {
     // creates a CLI app that accepts parameters for outputting an Arri app definition
 	app := arri.NewApp(
 		http.DefaultServeMux
-		arri.AppOptions[arri.DefaultContext]{},
-		arri.CreateDefaultContext,
+		arri.AppOptions[arri.DefaultEvent]{},
+        // function to create your custom Event type using the incoming request
+		func(w http.ResponseWriter, r *http.Request) (*RpcEvent, arri.RpcError) {
+            return &MyCustomEvent{
+                r: r,
+                w: w,
+            }
+        },
 	)
 
     // register procedures
@@ -83,16 +106,20 @@ func main() {
 type GreetingParams struct { Name string }
 type GreetingResponse struct { Message string }
 
-// RPCs take 2 inputs and have two outputs
-// The first input will be registered as the RPC params.
-// The second input will be whatever type you have defined to be the AppContext
+// RPCs take two inputs and have two outputs
+//
+// Inputs:
+// The first input will be registered as the RPC params. This is what clients will send to the server.
+// The second input will be whatever type you have defined to be the Event type. In this case it's "MyCustomEvent"
+//
+// Outputs:
 // The first output will be the OK response sent back to the client
 // The second output will be the Error response sent back to the client
-func SayHello(params GreetingParams, context AppContext) (GreetingResponse, arri.RpcError) {
+func SayHello(params GreetingParams, event MyCustomEvent) (GreetingResponse, arri.RpcError) {
     return GreetingResponse{ Message: "Hello " + params.name }, nil
 }
 
-func SayGoodbye(params GreetingParams, context AppContext) (GreetingResponse, arri.RpcError) {
+func SayGoodbye(params GreetingParams, event MyCustomEvent) (GreetingResponse, arri.RpcError) {
     return GreetingResponse{ Message: "Goodbye " + params.name }, nil
 }
 ```
@@ -110,8 +137,8 @@ type GreetingResponse struct {
 }
 
 func SayHello(
-	params GreetingParams,
-	c arri.DefaultContext,
+    params GreetingParams,
+    event arri.DefaultEvent,
 ) (GreetingResponse, arri.RpcError) {
 	return GreetingResponse{Message: fmt.SprintF("Hello %s", params.Name)}, nil
 }
@@ -125,9 +152,29 @@ Then register it on the app instance
 arri.Rpc(&app, SayHello, arri.RpcOptions{})
 
 // will create the following endpoint:
-// "/greeter/say-hello"
+// POST "/greeter/say-hello"
 // client generators will group this rpc under the "greeter" service
 arri.ScopedRpc(&app, "greeter", SayHello, arri.RpcOptions{})
+```
+
+### Rpc Options
+
+`RpcOptions` is used to customize some of the procedure behaviors.
+
+```go
+arri.Rpc(&app, SayHello, arri.RpcOptions{
+    // specify the HTTP method (default is POST)
+    Method: arri.HttpMethodGet,
+    // manually specify the url path
+    Path: "/custom/url/path",
+    // manually specify the function name in the generated client(s)
+    // (will use a camelCase version of the go function name by default)
+    Name: "CustomFunctionName"
+    // function description that will appear in the generated client(s)
+	Description: "Some description"
+    // mark procedure as deprecated in generated client(s)
+	IsDeprecated: true
+})
 ```
 
 ### Creating Event Stream Procedures
@@ -415,9 +462,9 @@ outputted ATD:
 
 Since go doesn't have discriminated unions we have created the following convention for defining such data types.
 
--   A discriminated union must have a root struct type which will act as the "parent" type
--   All "subtypes" are fields that contain a pointer to a struct. They can be either named structs or inlined.
--   All "subtype" fields must have the `discriminator` tag, which defines the value of the `"type"` field during serialization. Clients will use this value to determine which subtype has been sent by the server.
+- A discriminated union must have a root struct type which will act as the "parent" type
+- All "subtypes" are fields that contain a pointer to a struct. They can be either named structs or inlined.
+- All "subtype" fields must have the `discriminator` tag, which defines the value of the `"type"` field during serialization. Clients will use this value to determine which subtype has been sent by the server.
 
 #### Example
 
@@ -715,4 +762,48 @@ nullableString.UnwrapOr("some-fallback") // extract the inner value if it exists
 nullableString.IsNull() // returns true if null
 nullableString.Set("hello world again") // update the inner value
 nullableString.Unset() // unset the inner value
+```
+
+## Helper Types
+
+### Pair
+
+Represents a key-value pair
+
+```go
+arri.Pair("foo", "bar")
+arri.Pair(0, true)
+arri.Pair("baz", []string{})
+```
+
+### Ordered Map
+
+A replacement for map that preserves the key order. Only string keys are supported. Key order is also preserved during serialization.
+
+```go
+m := arri.OrderedMap[bool]{}
+
+m.Add(arri.Pair("Foo", true))
+m.Add(arri.Pair("Bar", false))
+
+m.Get("Foo") // returns *true
+m.Get("Bar") // returns *false
+m.Get("Baz") // returns nil
+
+m.Set("Foo", false)
+m.Get("Foo") // returns *false
+
+m.Len() // returns 2
+m.Keys() // returns ["Foo", "Bar"]
+m.Values() // returns [true, false]
+m.Entries() // returns [arri.Pair["Foo":true], arri.Pair["Bar":false]]
+```
+
+You can also initialize an ordered map with data
+
+```go
+m := arri.OrderedMapWithData(
+    arri.Pair("Foo", true),
+    arri.Pair("Bar", false),
+)
 ```

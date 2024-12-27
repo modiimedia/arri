@@ -18,12 +18,12 @@ type RpcEvent struct {
 	writer      http.ResponseWriter
 }
 
-func (c RpcEvent) Request() *http.Request {
-	return c.request
+func (e RpcEvent) Request() *http.Request {
+	return e.request
 }
 
-func (c RpcEvent) Writer() http.ResponseWriter {
-	return c.writer
+func (e RpcEvent) Writer() http.ResponseWriter {
+	return e.writer
 }
 
 func main() {
@@ -65,6 +65,10 @@ func main() {
 		}
 		return nil
 	})
+
+	val := arri.OrderedMap[bool]{}
+	val.Add(arri.Pair("A", true))
+
 	arri.RegisterDef(&app, ManuallyAddedModel{}, arri.DefOptions{})
 	arri.ScopedRpc(&app, "tests", EmptyParamsGetRequest, arri.RpcOptions{Method: arri.HttpMethodGet})
 	arri.ScopedRpc(&app, "tests", EmptyParamsPostRequest, arri.RpcOptions{})

@@ -248,6 +248,28 @@ func (m OrderedMap[T]) Len() int {
 	return len(m.keys)
 }
 
+func (m OrderedMap[T]) Entries() []pair[string, T] {
+	entries := []pair[string, T]{}
+	for i := 0; i < len(m.keys); i++ {
+		entries = append(entries, Pair(m.keys[i], m.values[i]))
+	}
+	return entries
+}
+
+func (m OrderedMap[T]) Keys() []string {
+	if m.keys == nil {
+		return []string{}
+	}
+	return m.keys
+}
+
+func (m OrderedMap[T]) Values() []T {
+	if m.values == nil {
+		return []T{}
+	}
+	return m.values
+}
+
 func (m OrderedMap[T]) MarshalJSON() ([]byte, error) {
 	result := []byte{}
 	result = append(result, '{')
