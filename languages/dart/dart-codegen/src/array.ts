@@ -14,6 +14,7 @@ export function dartListFromSchema(
         generatedTypes: context.generatedTypes,
         instancePath: `${context.instancePath}/[Element]`,
         schemaPath: `${context.schemaPath}/elements`,
+        clientVersion: context.clientVersion,
     });
     const typeName = isNullable
         ? `List<${innerType.typeName}>?`
@@ -26,13 +27,13 @@ export function dartListFromSchema(
         fromJson(input) {
             if (isNullable) {
                 return `${input} is List
-                ? (${input} as List)
+                ? (${input})
                     .map((_el_) => ${innerType.fromJson(`_el_`)})
                     .toList()
                 : null`;
             }
             return `${input} is List
-            ? (${input} as List)
+            ? (${input})
                 .map((_el_) => ${innerType.fromJson(`_el_`)})
                 .toList()
             : <${innerType.typeName}>[]`;
