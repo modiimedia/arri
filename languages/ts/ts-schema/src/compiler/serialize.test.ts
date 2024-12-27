@@ -1,6 +1,6 @@
 import { a, isAScalarSchema, isAStringEnumSchema } from "../_index";
 import { compile } from "../compile";
-import { validationTestSuites } from "../testSuites";
+import { serializationTestSuites, validationTestSuites } from "../testSuites";
 
 for (const key of Object.keys(validationTestSuites)) {
     const suite = validationTestSuites[key]!;
@@ -29,6 +29,33 @@ for (const key of Object.keys(validationTestSuites)) {
                     console.error(Compiled.compiledCode.serialize);
                     console.error(result, "SHOULD BE VALID");
                 }
+            } catch (err) {
+                console.error(err);
+                console.log(Compiled.compiledCode.serialize);
+                console.log(input, "SHOULD NOT THROW");
+                throw err;
+            }
+        });
+    }
+}
+
+for (const key of Object.keys(serializationTestSuites)) {
+    const suite = serializationTestSuites[key]!;
+    const Compiled = a.compile(suite.schema);
+    for (let i = 0; i < suite.inputs.length; i++) {
+        const input = suite.inputs[i]!;
+        test(`${key} - ${i + 1}`, () => {
+            try {
+                const result = Compiled.serialize(input);
+                expect(typeof result).toBe("string");
+                if (
+                    !isAScalarSchema(suite.schema) ||
+                    !isAStringEnumSchema(suite.schema)
+                ) {
+                    JSON.parse(result);
+                }
+                const parsedResult = Compiled.safeParse(result);
+                expect(parsedResult.success).toBe(true);
             } catch (err) {
                 console.error(err);
                 console.log(Compiled.compiledCode.serialize);
