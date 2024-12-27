@@ -7,7 +7,7 @@ import (
 )
 
 type ArriModel interface {
-	EncodeJSON(keyCasing string) ([]byte, error)
+	EncodeJSON(options EncodingOptions) ([]byte, error)
 	DecodeJSON(d *gjson.Result, t reflect.Value, dc *DecoderContext) bool
 	TypeDef(tc TypeDefContext) (*TypeDef, error)
 }

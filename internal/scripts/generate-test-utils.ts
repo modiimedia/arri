@@ -283,6 +283,11 @@ async function main() {
         filename: "ObjectWithEveryType.json",
         content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
     });
+    objectWithEveryFieldValue.record = { B: false, A: true };
+    files.push({
+        filename: "ObjectWithEveryType_ReversedRecord.json",
+        content: a.serialize(ObjectWithEveryType, objectWithEveryFieldValue),
+    });
     const objectWithOptionalFieldsAllUndefined: ObjectWithOptionalFields = {};
     files.push({
         filename: "ObjectWithOptionalFields_AllUndefined.json",
@@ -291,10 +296,23 @@ async function main() {
             objectWithOptionalFieldsAllUndefined,
         ),
     });
-    const objectWithOptionalFieldsNoUndefined: ObjectWithOptionalFields =
-        objectWithEveryFieldValue;
+    const objectWithOptionalFieldsNoUndefined: ObjectWithOptionalFields = {
+        ...objectWithEveryFieldValue,
+        record: { A: true, B: false },
+    };
     files.push({
         filename: "ObjectWithOptionalFields_NoUndefined.json",
+        content: a.serialize(
+            ObjectWithOptionalFields,
+            objectWithOptionalFieldsNoUndefined,
+        ),
+    });
+    objectWithOptionalFieldsNoUndefined.record = {
+        B: false,
+        A: true,
+    };
+    files.push({
+        filename: "ObjectWithOptionalFields_NoUndefined_ReversedRecord.json",
         content: a.serialize(
             ObjectWithOptionalFields,
             objectWithOptionalFieldsNoUndefined,
@@ -364,6 +382,17 @@ async function main() {
     };
     files.push({
         filename: "ObjectWithNullableFields_NoNull.json",
+        content: a.serialize(
+            ObjectWithNullableFields,
+            objectWithNullableFieldsNoNull,
+        ),
+    });
+    objectWithNullableFieldsNoNull.record = {
+        B: false,
+        A: true,
+    };
+    files.push({
+        filename: "ObjectWithNullableFields_NoNull_ReversedRecord.json",
         content: a.serialize(
             ObjectWithNullableFields,
             objectWithNullableFieldsNoNull,

@@ -48,7 +48,7 @@ func (s Option[T]) IsSome() bool {
 	return s.IsSet
 }
 
-func (s Option[_]) IsNone() bool {
+func (s Option[T]) IsNone() bool {
 	return !s.IsSet
 }
 
@@ -132,11 +132,11 @@ func (s *Nullable[T]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s Nullable[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
+func (s Nullable[T]) EncodeJSON(options EncodingOptions) ([]byte, error) {
 	if s.IsNull() {
 		return []byte("null"), nil
 	}
-	return EncodeJSON(s.Value, keyCasing)
+	return EncodeJSON(s.Value, options)
 }
 
 func (s Nullable[T]) DecodeJSON(d *gjson.Result, t reflect.Value, dc *DecoderContext) bool {
@@ -186,7 +186,7 @@ func Pair[a, b any](left a, right b) pair[a, b] {
 	}
 }
 
-/// ORDERED MAP
+// ORDERED MAP
 
 type OrderedMap[T interface{}] struct {
 	keys   []string
@@ -269,7 +269,7 @@ func (m OrderedMap[T]) MarshalJSON() ([]byte, error) {
 	return result, nil
 }
 
-func (m OrderedMap[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
+func (m OrderedMap[T]) EncodeJSON(options EncodingOptions) ([]byte, error) {
 	result := []byte{}
 	result = append(result, '{')
 	for i := 0; i < len(m.keys); i++ {
@@ -280,7 +280,7 @@ func (m OrderedMap[T]) EncodeJSON(keyCasing KeyCasing) ([]byte, error) {
 		}
 		AppendNormalizedString(&result, key)
 		result = append(result, ':')
-		innerResult, innerResultErr := EncodeJSON(value, keyCasing)
+		innerResult, innerResultErr := EncodeJSON(value, options)
 		if innerResultErr != nil {
 			return nil, innerResultErr
 		}
@@ -347,4 +347,21 @@ func (m OrderedMap[T]) TypeDef(tc TypeDefContext) (*TypeDef, error) {
 	}
 	result := TypeDef{Values: Some(subDef)}
 	return &result, nil
+}
+
+type Message[T MessageType] struct {
+	Value T
+}
+
+func NewMessage[T MessageType](value T) Message[T] {
+	return Message[T]{Value: value}
+}
+
+type (
+	TextMessage  struct{}
+	ImageMessage struct{}
+)
+
+type MessageType interface {
+	TextMessage | ImageMessage
 }

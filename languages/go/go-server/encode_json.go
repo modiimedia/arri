@@ -5,49 +5,50 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/modiimedia/arri/languages/go/go-server/utils"
 )
 
-type jsonEncodingCtx struct {
-	keyCasing          string
-	buffer             []byte
-	instancePath       string
-	schemaPath         string
-	currentDepth       uint32
-	hasKeys            bool
-	enumValues         []string
-	discriminatorKey   string
-	discriminatorValue string
+type EncodingContext struct {
+	KeyCasing          string
+	Buffer             []byte
+	InstancePath       string
+	SchemaPath         string
+	CurrentDepth       uint32
+	HasKeys            bool
+	EnumValues         []string
+	DiscriminatorKey   string
+	DiscriminatorValue string
 }
 
-func newJsonEncodingCtx(keyCasing string) *jsonEncodingCtx {
-	return &jsonEncodingCtx{
-		keyCasing:    keyCasing,
-		buffer:       []byte{},
-		instancePath: "",
-		schemaPath:   "",
-		hasKeys:      false,
-		enumValues:   []string{},
+func NewEncodingContext(keyCasing string) *EncodingContext {
+	return &EncodingContext{
+		KeyCasing:    keyCasing,
+		Buffer:       []byte{},
+		InstancePath: "",
+		SchemaPath:   "",
+		HasKeys:      false,
+		EnumValues:   []string{},
 	}
 }
 
-func EncodeJSON(input any, keyCasing string) ([]byte, error) {
-	ctx := newJsonEncodingCtx(keyCasing)
+func EncodeJSON(input any, options EncodingOptions) ([]byte, error) {
+	ctx := NewEncodingContext(options.KeyCasing)
 	value := reflect.ValueOf(input)
 	err := encodeValueToJSON(value, ctx)
 	if err != nil {
 		return nil, err
 	}
-	return ctx.buffer, nil
+	return ctx.Buffer, nil
 }
 
-func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeValueToJSON(v reflect.Value, c *EncodingContext) error {
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
-		if len(c.enumValues) > 0 {
+		if len(c.EnumValues) > 0 {
 			return encodeEnumToJSON(v, c)
 		}
 		return encodeStringToJSON(v, c)
@@ -69,11 +70,11 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 			return encodeNullableToJSON(v, c)
 		}
 		if t.Implements(reflect.TypeFor[ArriModel]()) {
-			result, err := v.Interface().(ArriModel).EncodeJSON(c.keyCasing)
+			result, err := v.Interface().(ArriModel).EncodeJSON(EncodingOptions{KeyCasing: c.KeyCasing})
 			if err != nil {
 				return err
 			}
-			c.buffer = append(c.buffer, result...)
+			c.Buffer = append(c.Buffer, result...)
 			return nil
 		}
 		if t.Name() == "Time" {
@@ -93,150 +94,168 @@ func encodeValueToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 	return encodeInterfaceToJSON(v, c)
 }
 
-func encodeNullableToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeNullableToJSON(v reflect.Value, c *EncodingContext) error {
 	valid := v.Field(1).Bool()
 	if valid {
 		value := v.Field(0)
 		return encodeValueToJSON(value, c)
 	}
-	c.buffer = append(c.buffer, "null"...)
+	c.Buffer = append(c.Buffer, "null"...)
 	return nil
 }
 
-func encodeInterfaceToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeInterfaceToJSON(v reflect.Value, c *EncodingContext) error {
 	if !v.IsValid() {
-		c.buffer = append(c.buffer, "null"...)
+		c.Buffer = append(c.Buffer, "null"...)
 		return nil
 	}
 	if v.IsZero() {
-		c.buffer = append(c.buffer, "null"...)
+		c.Buffer = append(c.Buffer, "null"...)
 		return nil
 	}
-	result, err := EncodeJSON(v.Interface(), c.keyCasing)
+	result, err := EncodeJSON(v.Interface(), EncodingOptions{KeyCasing: c.KeyCasing})
 	if err != nil {
 		return err
 	}
-	c.buffer = append(c.buffer, result...)
+	c.Buffer = append(c.Buffer, result...)
 	return nil
 }
 
-func encodeStringToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	AppendNormalizedString(&c.buffer, v.String())
+func encodeStringToJSON(v reflect.Value, c *EncodingContext) error {
+	AppendNormalizedString(&c.Buffer, v.String())
 	return nil
 }
 
-func encodeBoolToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	c.buffer = strconv.AppendBool(c.buffer, v.Bool())
+func encodeBoolToJSON(v reflect.Value, c *EncodingContext) error {
+	c.Buffer = strconv.AppendBool(c.Buffer, v.Bool())
 	return nil
 }
 
-func encodeFloatToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	c.buffer = append(c.buffer, strconv.FormatFloat(v.Float(), 'f', -1, 64)...)
+func encodeFloatToJSON(v reflect.Value, c *EncodingContext) error {
+	c.Buffer = append(c.Buffer, strconv.FormatFloat(v.Float(), 'f', -1, 64)...)
 	return nil
 }
 
-func encodeSmallIntToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	c.buffer = strconv.AppendInt(c.buffer, v.Int(), 10)
+func encodeSmallIntToJSON(v reflect.Value, c *EncodingContext) error {
+	c.Buffer = strconv.AppendInt(c.Buffer, v.Int(), 10)
 	return nil
 }
 
-func encodeSmallUintToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	c.buffer = strconv.AppendUint(c.buffer, v.Uint(), 10)
+func encodeSmallUintToJSON(v reflect.Value, c *EncodingContext) error {
+	c.Buffer = strconv.AppendUint(c.Buffer, v.Uint(), 10)
 	return nil
 }
 
-func encodeInt64ToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	c.buffer = append(c.buffer, '"')
-	c.buffer = append(c.buffer, fmt.Sprint(v.Int())...)
-	c.buffer = append(c.buffer, '"')
+func encodeInt64ToJSON(v reflect.Value, c *EncodingContext) error {
+	c.Buffer = append(c.Buffer, '"')
+	c.Buffer = append(c.Buffer, fmt.Sprint(v.Int())...)
+	c.Buffer = append(c.Buffer, '"')
 	return nil
 }
 
-func encodeUint64ToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	c.buffer = append(c.buffer, '"')
-	c.buffer = append(c.buffer, fmt.Sprint(v.Uint())...)
-	c.buffer = append(c.buffer, '"')
+func encodeUint64ToJSON(v reflect.Value, c *EncodingContext) error {
+	c.Buffer = append(c.Buffer, '"')
+	c.Buffer = append(c.Buffer, fmt.Sprint(v.Uint())...)
+	c.Buffer = append(c.Buffer, '"')
 	return nil
 }
 
-func encodeTimestampToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeTimestampToJSON(v reflect.Value, c *EncodingContext) error {
 	output := v.Interface().(time.Time).Format("2006-01-02T15:04:05.000Z")
-	c.buffer = appendString(c.buffer, output, false)
+	c.Buffer = appendString(c.Buffer, output, false)
 	return nil
 }
 
-func encodeEnumToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeEnumToJSON(v reflect.Value, c *EncodingContext) error {
 	strVal := v.String()
-	enumVals := c.enumValues
+	enumVals := c.EnumValues
 	for _, v := range enumVals {
 		if v == strVal {
-			c.buffer = append(c.buffer, '"')
-			c.buffer = append(c.buffer, strVal...)
-			c.buffer = append(c.buffer, '"')
+			c.Buffer = append(c.Buffer, '"')
+			c.Buffer = append(c.Buffer, strVal...)
+			c.Buffer = append(c.Buffer, '"')
 			return nil
 		}
 	}
-	return fmt.Errorf("error at %v expected one of the following enum values %+v", c.instancePath, enumVals)
+	c.Buffer = append(c.Buffer, '"')
+	c.Buffer = append(c.Buffer, enumVals[0]...)
+	c.Buffer = append(c.Buffer, '"')
+	return nil
 }
 
-func encodeStructToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 	t := v.Type()
-	discriminatorKey := c.discriminatorKey
-	discriminatorValue := c.discriminatorValue
-	c.discriminatorKey = ""
-	c.discriminatorValue = ""
+	discriminatorKey := c.DiscriminatorKey
+	discriminatorValue := c.DiscriminatorValue
+	c.DiscriminatorKey = ""
+	c.DiscriminatorValue = ""
 	isDiscriminatorSubType := len(discriminatorKey) > 0
-	oldInstancePath := c.instancePath
-	oldSchemaPath := c.schemaPath
-	c.hasKeys = isDiscriminatorSubType
-	c.currentDepth++
-	c.buffer = append(c.buffer, '{')
+	oldInstancePath := c.InstancePath
+	oldSchemaPath := c.SchemaPath
+	c.HasKeys = isDiscriminatorSubType
+	c.CurrentDepth++
+	c.Buffer = append(c.Buffer, '{')
 	if isDiscriminatorSubType {
-		c.buffer = append(c.buffer, "\""+discriminatorKey+"\":\""+discriminatorValue+"\""...)
+		c.Buffer = append(c.Buffer, "\""+discriminatorKey+"\":\""+discriminatorValue+"\""...)
 	}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if !field.IsExported() {
 			continue
 		}
-		fieldName := utils.GetSerialKey(&field, c.keyCasing)
+		fieldName := utils.GetSerialKey(&field, c.KeyCasing)
 		fieldValue := v.Field(i)
-		c.instancePath = c.instancePath + "/" + fieldName
+		enumTag := field.Tag.Get("enum")
+		if len(enumTag) > 0 {
+			rawEnumVals := strings.Split(enumTag, ",")
+			enumVals := []string{}
+			for i := 0; i < len(rawEnumVals); i++ {
+				enumVals = append(enumVals, strings.TrimSpace(rawEnumVals[i]))
+			}
+			c.EnumValues = enumVals
+		}
+		c.InstancePath = c.InstancePath + "/" + fieldName
 		if utils.IsOptionalType(field.Type) {
-			c.schemaPath = "/optionalProperties/" + fieldName
+			c.SchemaPath = "/optionalProperties/" + fieldName
 			if !utils.OptionalHasValue(&fieldValue) {
-				c.instancePath = oldInstancePath
-				c.schemaPath = oldSchemaPath
+				c.InstancePath = oldInstancePath
+				c.SchemaPath = oldSchemaPath
 				continue
 			}
-			if c.hasKeys {
-				c.buffer = append(c.buffer, ',')
+			if c.HasKeys {
+				c.Buffer = append(c.Buffer, ',')
 			}
-			c.buffer = append(c.buffer, "\""+fieldName+"\":"...)
+			c.Buffer = append(c.Buffer, "\""+fieldName+"\":"...)
 			err := encodeValueToJSON(fieldValue.Field(0), c)
 			if err != nil {
 				return err
 			}
-			c.hasKeys = true
-			c.instancePath = oldInstancePath
-			c.schemaPath = oldSchemaPath
+			if len(c.EnumValues) > 0 {
+				c.EnumValues = []string{}
+			}
+			c.HasKeys = true
+			c.InstancePath = oldInstancePath
+			c.SchemaPath = oldSchemaPath
 			continue
 		}
-		if c.hasKeys {
-			c.buffer = append(c.buffer, ',')
+		if c.HasKeys {
+			c.Buffer = append(c.Buffer, ',')
 		}
-		c.buffer = append(c.buffer, "\""+fieldName+"\":"...)
+		c.Buffer = append(c.Buffer, "\""+fieldName+"\":"...)
 		err := encodeValueToJSON(fieldValue, c)
 		if err != nil {
 			return nil
 		}
-		c.hasKeys = true
-		c.instancePath = oldInstancePath
-		c.schemaPath = oldSchemaPath
+		if len(c.EnumValues) > 0 {
+			c.EnumValues = []string{}
+		}
+		c.HasKeys = true
+		c.InstancePath = oldInstancePath
+		c.SchemaPath = oldSchemaPath
 	}
-	c.buffer = append(c.buffer, '}')
-	c.hasKeys = false
-	c.currentDepth--
+	c.Buffer = append(c.Buffer, '}')
+	c.HasKeys = false
+	c.CurrentDepth--
 	return nil
 }
 
@@ -259,12 +278,14 @@ func isDiscriminatorStruct(t reflect.Type) bool {
 	return true
 }
 
-func encodeDiscriminatorToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
 	t := v.Type()
 	discriminatorKey := "type"
-	schemaPath := c.schemaPath
-	instancePath := c.instancePath
-	c.currentDepth++
+	schemaPath := c.SchemaPath
+	instancePath := c.InstancePath
+	c.CurrentDepth++
+	var firstFieldVal = None[reflect.Value]()
+	var firstFieldDiscriminatorValue string = ""
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		discriminatorKeyTag := field.Tag.Get("discriminatorKey")
@@ -273,12 +294,16 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 			continue
 		}
 		discriminatorValue := field.Tag.Get("discriminator")
-		c.schemaPath = schemaPath + "/mapping/" + discriminatorValue
-		c.discriminatorKey = discriminatorKey
-		c.discriminatorValue = discriminatorValue
+		c.SchemaPath = schemaPath + "/mapping/" + discriminatorValue
+		c.DiscriminatorKey = discriminatorKey
+		c.DiscriminatorValue = discriminatorValue
 		fieldValue := v.Field(i)
+		if firstFieldVal.IsNone() {
+			firstFieldVal.Set(fieldValue)
+			firstFieldDiscriminatorValue = discriminatorValue
+		}
 		if field.Type.Kind() != reflect.Ptr {
-			return fmt.Errorf("all discriminator subtypes must be a struct pointer at %+v", c.instancePath)
+			return fmt.Errorf("all discriminator subtypes must be a struct pointer at %+v", c.InstancePath)
 		}
 		if fieldValue.IsNil() {
 			continue
@@ -287,49 +312,65 @@ func encodeDiscriminatorToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		if err != nil {
 			return err
 		}
-		c.schemaPath = schemaPath
-		c.instancePath = instancePath
-		c.currentDepth--
-		c.discriminatorKey = ""
-		c.discriminatorValue = ""
+		c.SchemaPath = schemaPath
+		c.InstancePath = instancePath
+		c.CurrentDepth--
+		c.DiscriminatorKey = ""
+		c.DiscriminatorValue = ""
+		return nil
+	}
+	if firstFieldVal.IsSome() {
+		c.SchemaPath = schemaPath + "/mapping/" + firstFieldDiscriminatorValue
+		c.DiscriminatorKey = discriminatorKey
+		c.DiscriminatorValue = firstFieldDiscriminatorValue
+		val := reflect.Zero(firstFieldVal.Unwrap().Type().Elem())
+		err := encodeValueToJSON(val, c)
+		if err != nil {
+			return err
+		}
+		c.SchemaPath = schemaPath
+		c.InstancePath = instancePath
+		c.CurrentDepth--
+		c.DiscriminatorKey = ""
+		c.DiscriminatorValue = ""
 		return nil
 	}
 	return fmt.Errorf("all discriminator subtypes are nil")
 }
 
-func encodeArrayToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	instancePath := c.instancePath
-	schemaPath := c.schemaPath
-	c.currentDepth++
+func encodeArrayToJSON(v reflect.Value, c *EncodingContext) error {
+	instancePath := c.InstancePath
+	schemaPath := c.SchemaPath
+	c.CurrentDepth++
 	if v.IsNil() {
-		c.buffer = append(c.buffer, "[]"...)
+		c.Buffer = append(c.Buffer, "[]"...)
 		return nil
 	}
 	slice := v.Slice(0, v.Len())
-	c.buffer = append(c.buffer, '[')
+	c.Buffer = append(c.Buffer, '[')
 	for i := 0; i < slice.Len(); i++ {
 		if i > 0 {
-			c.buffer = append(c.buffer, ',')
+			c.Buffer = append(c.Buffer, ',')
 		}
-		c.instancePath = instancePath + "/" + fmt.Sprint(i)
-		c.schemaPath = schemaPath + "/elements"
+		c.InstancePath = instancePath + "/" + fmt.Sprint(i)
+		c.SchemaPath = schemaPath + "/elements"
 		err := encodeValueToJSON(slice.Index(i), c)
 		if err != nil {
 			return err
 		}
 	}
-	c.buffer = append(c.buffer, ']')
-	c.currentDepth--
-	c.instancePath = instancePath
-	c.schemaPath = schemaPath
+	c.Buffer = append(c.Buffer, ']')
+	c.CurrentDepth--
+	c.InstancePath = instancePath
+	c.SchemaPath = schemaPath
 	return nil
 }
 
-func encodeMapToJSON(v reflect.Value, c *jsonEncodingCtx) error {
-	instancePath := c.instancePath
-	schemaPath := c.schemaPath
-	c.schemaPath = schemaPath + "/values"
-	c.currentDepth++
+func encodeMapToJSON(v reflect.Value, c *EncodingContext) error {
+	instancePath := c.InstancePath
+	schemaPath := c.SchemaPath
+	c.SchemaPath = schemaPath + "/values"
+	c.CurrentDepth++
 	keys := map[string]reflect.Value{}
 	keyVals := []string{}
 	for _, key := range v.MapKeys() {
@@ -341,30 +382,30 @@ func encodeMapToJSON(v reflect.Value, c *jsonEncodingCtx) error {
 		keyVals = append(keyVals, keyName)
 	}
 	sort.Strings(keyVals)
-	c.buffer = append(c.buffer, '{')
+	c.Buffer = append(c.Buffer, '{')
 	for i, keyName := range keyVals {
 		key := keys[keyName]
-		c.instancePath = c.instancePath + "/" + keyName
+		c.InstancePath = c.InstancePath + "/" + keyName
 		if i > 0 {
-			c.buffer = append(c.buffer, ',')
+			c.Buffer = append(c.Buffer, ',')
 		}
-		AppendNormalizedString(&c.buffer, keyName)
-		c.buffer = append(c.buffer, ':')
+		AppendNormalizedString(&c.Buffer, keyName)
+		c.Buffer = append(c.Buffer, ':')
 		err := encodeValueToJSON(v.MapIndex(key), c)
 		if err != nil {
 			return err
 		}
 	}
-	c.buffer = append(c.buffer, '}')
-	c.currentDepth--
-	c.instancePath = instancePath
-	c.schemaPath = schemaPath
+	c.Buffer = append(c.Buffer, '}')
+	c.CurrentDepth--
+	c.InstancePath = instancePath
+	c.SchemaPath = schemaPath
 	return nil
 }
 
-func encodePointerToJSON(v reflect.Value, c *jsonEncodingCtx) error {
+func encodePointerToJSON(v reflect.Value, c *EncodingContext) error {
 	if v.IsNil() {
-		c.buffer = append(c.buffer, "null"...)
+		c.Buffer = append(c.Buffer, "null"...)
 		return nil
 	}
 	innerV := v.Elem()

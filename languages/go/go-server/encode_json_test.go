@@ -11,6 +11,7 @@ import (
 )
 
 var testDate = time.Date(2001, time.January, 01, 16, 0, 0, 0, time.UTC)
+
 var objectWithEveryTypeInput = objectWithEveryType{
 	String:        "",
 	Boolean:       false,
@@ -33,30 +34,74 @@ var objectWithEveryTypeInput = objectWithEveryType{
 	Any:           "hello world",
 }
 
-func TestEncodeJson(t *testing.T) {
+var jsonEncoder = arri.NewEncoder(arri.EncodingOptions{})
+
+func TestEncodeJSON(t *testing.T) {
+	// maps do not guarantee key order so we need to check against 2 potential outputs
 	reference, referenceErr := os.ReadFile("../../../tests/test-files/ObjectWithEveryType.json")
 	if referenceErr != nil {
 		t.Fatal(referenceErr)
 		return
 	}
-	json, err := arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+	reference2, reference2Err := os.ReadFile("../../../tests/test-files/ObjectWithEveryType_ReversedRecord.json")
+	if reference2Err != nil {
+		t.Fatal(reference2Err)
+	}
+
+	json, err := jsonEncoder.EncodeJSON(objectWithEveryTypeInput)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-	if string(json) != string(reference) {
-		t.Fatal("\n", string(json), "\nis not equal to\n", string(reference))
+	result := string(json)
+	if result != string(reference) && result != string(reference2) {
+		t.Fatal("\n", result, "\nis not equal to\n", string(reference))
 		return
 	}
 }
 
-func BenchmarkEncodeJson(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(objectWithEveryTypeInput, arri.KeyCasingCamelCase)
+func TestEncodeJSONEmptyDiscriminator(t *testing.T) {
+	input := discriminator{}
+	json, err := jsonEncoder.EncodeJSON(input)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	result := string(json)
+	expectedResult := "{\"typeName\":\"A\",\"id\":\"\"}"
+	if result != expectedResult {
+		t.Fatal(deepEqualErrString(result, expectedResult))
+		return
 	}
 }
 
-func BenchmarkEncodeJsonStd(b *testing.B) {
+type fooUser struct {
+	Id   string
+	Role string `enum:"STANDARD,ADMIN"`
+}
+
+func TestEncodeJSONEmptyEnum(t *testing.T) {
+	input := fooUser{}
+	json, err := jsonEncoder.EncodeJSON(input)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	result := string(json)
+	expectedResult := "{\"id\":\"\",\"role\":\"STANDARD\"}"
+	if result != expectedResult {
+		t.Fatal(deepEqualErrString(result, expectedResult))
+		return
+	}
+}
+
+func BenchmarkEncodeJSON(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		jsonEncoder.EncodeJSON(objectWithEveryTypeInput)
+	}
+}
+
+func BenchmarkEncodeJSONStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(objectWithEveryTypeInput)
 	}
@@ -79,10 +124,7 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 	Enum:      arri.Some("BAZ"),
 	Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
 	Array:     arri.Some([]bool{true, false, false}),
-	Record: arri.Some(map[string]bool{
-		"A": true,
-		"B": false,
-	}),
+	Record:    arri.Some(map[string]bool{"A": true, "B": false}),
 	Discriminator: arri.Some(
 		discriminator{
 			C: &discriminatorC{
@@ -95,39 +137,50 @@ var _objectWithOptionalFieldsInput = objectWithOptionalFields{
 	Any: arri.Some[any]("hello world"),
 }
 
-func TestEncodeJsonWithOptionalFields(t *testing.T) {
-	noUndefReference, noUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
-	if noUndefReferenceErr != nil {
-		t.Fatal(noUndefReferenceErr.Error())
+func TestEncodeJSONWithOptionalFields(t *testing.T) {
+	reference, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json")
+	if err != nil {
+		t.Fatal(err.Error())
+		return
 	}
-	noUndefResult, noUndefResultErr := arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
-	if noUndefResultErr != nil {
-		t.Fatal(noUndefResultErr.Error())
+	reference2, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined_ReversedRecord.json")
+	if err != nil {
+		t.Fatal(err)
+		return
 	}
-	if !reflect.DeepEqual(noUndefResult, noUndefReference) {
-		t.Fatal("\n", string(noUndefResult), "\nis not equal to\n", string(noUndefReference))
+	result, err := jsonEncoder.EncodeJSON(_objectWithOptionalFieldsInput)
+	if err != nil {
+		t.Fatal(err)
+		return
 	}
-	allUndefInput := objectWithOptionalFields{}
-	allUndefReference, allUndefReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
-	if noUndefReferenceErr != nil {
-		t.Fatal(allUndefReferenceErr.Error())
+	if string(result) != string(reference) && string(result) != string(reference2) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
+		return
 	}
-	allUndefResult, allUndefResultErr := arri.EncodeJSON(allUndefInput, arri.KeyCasingCamelCase)
-	if allUndefResultErr != nil {
-		t.Fatal(allUndefResultErr.Error())
+	input := objectWithOptionalFields{}
+	reference, err = os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
+	if err != nil {
+		t.Fatal(err)
+		return
 	}
-	if !reflect.DeepEqual(allUndefResult, allUndefReference) {
-		t.Fatal("\n", string(allUndefResult), "\nis not equal to\n", string(allUndefReference))
+	result, err = jsonEncoder.EncodeJSON(input)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if string(result) != string(reference) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
+		return
 	}
 }
 
-func BenchmarkEncodeJsonWithOptionalFields(b *testing.B) {
+func BenchmarkEncodeJSONWithOptionalFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(_objectWithOptionalFieldsInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(_objectWithOptionalFieldsInput)
 	}
 }
 
-func BenchmarkEncodeJsonWithOptionalFieldsStd(b *testing.B) {
+func BenchmarkEncodeJSONWithOptionalFieldsStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(_objectWithOptionalFieldsInput)
 	}
@@ -151,49 +204,54 @@ var objectWithNullableFieldsNoNullInput = objectWithNullableFields{
 	Enum:          arri.NotNull("BAZ"),
 	Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
 	Array:         arri.NotNull([]bool{true, false, false}),
-	Record:        arri.NotNull(arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false))),
+	Record:        arri.NotNull(map[string]bool{"A": true, "B": false}),
 	Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
 	Any:           arri.NotNull[any](struct{ Message string }{Message: "hello world"}),
 }
 
-func TestEncodeJsonWithNullableFields(t *testing.T) {
-	allNullReference, allNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
-	if allNullReferenceErr != nil {
-		t.Fatal(allNullReferenceErr)
+func TestEncodeJSONWithNullableFields(t *testing.T) {
+	reference, err := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_AllNull.json")
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	allNullResult, allNullErr := arri.EncodeJSON(objectWithNullableFieldsAllNullInput, arri.KeyCasingCamelCase)
-	if allNullErr != nil {
-		t.Fatal(allNullErr)
+	result, err := jsonEncoder.EncodeJSON(objectWithNullableFieldsAllNullInput)
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	if string(allNullReference) != string(allNullResult) {
-		t.Fatal(deepEqualErrString(string(allNullResult), string(allNullReference)))
+	if string(reference) != string(result) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
 		return
 	}
-	noNullReference, noNullReferenceErr := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
-	if noNullReferenceErr != nil {
-		t.Fatal(noNullReferenceErr)
+	reference, err = os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull.json")
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	noNullResult, noNullErr := arri.EncodeJSON(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
-	if noNullErr != nil {
-		t.Fatal(noNullErr)
+	reference2, err := os.ReadFile("../../../tests/test-files/ObjectWithNullableFields_NoNull_ReversedRecord.json")
+	if err != nil {
+		t.Fatal(err)
 		return
 	}
-	if string(noNullResult) != string(noNullReference) {
-		t.Fatal(deepEqualErrString(string(noNullResult), string(noNullReference)))
+	result, err = jsonEncoder.EncodeJSON(objectWithNullableFieldsNoNullInput)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	if string(result) != string(reference) && string(result) != string(reference2) {
+		t.Fatal(deepEqualErrString(string(result), string(reference)))
 		return
 	}
 }
 
-func BenchmarkEncodeJsonWithNullableFields(b *testing.B) {
+func BenchmarkEncodeJSONWithNullableFields(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(objectWithNullableFieldsNoNullInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(objectWithNullableFieldsNoNullInput)
 	}
 }
 
-func BenchmarkEncodeJsonWithNullableFieldsStd(b *testing.B) {
+func BenchmarkEncodeJSONWithNullableFieldsStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(objectWithNullableFieldsNoNullInput)
 	}
@@ -210,28 +268,28 @@ var _recursiveObjectInput = recursiveObject{
 	Right: &recursiveObject{},
 }
 
-func TestEncodeJsonRecursiveObject(t *testing.T) {
+func TestEncodeJSONRecursiveObject(t *testing.T) {
 	reference, referenceErr := os.ReadFile("../../../tests/test-files/RecursiveObject.json")
 	if referenceErr != nil {
-		t.Errorf(referenceErr.Error())
+		t.Fatal(referenceErr.Error())
 	}
 
-	result, err := arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
+	result, err := jsonEncoder.EncodeJSON(_recursiveObjectInput)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Fatal(err.Error())
 	}
 	if !reflect.DeepEqual(result, reference) {
 		t.Fatal("\n", string(result), "\nis not equal to\n", string(reference))
 	}
 }
 
-func BenchmarkEncodeJsonRecursiveObject(b *testing.B) {
+func BenchmarkEncodeJSONRecursiveObject(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(_recursiveObjectInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(_recursiveObjectInput)
 	}
 }
 
-func BenchmarkEncodeJsonRecursiveObjectStd(b *testing.B) {
+func BenchmarkEncodeJSONRecursiveObjectStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(_recursiveObjectInput)
 	}
@@ -297,13 +355,13 @@ var _benchUserEncodingInput = bUser{
 	},
 }
 
-func BenchmarkEncodeJsonUser(b *testing.B) {
+func BenchmarkEncodeJSONUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		arri.EncodeJSON(_benchUserEncodingInput, arri.KeyCasingCamelCase)
+		jsonEncoder.EncodeJSON(_benchUserEncodingInput)
 	}
 }
 
-func BenchmarkEncodeJsonUserStd(b *testing.B) {
+func BenchmarkEncodeJSONUserStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(_benchUserEncodingInput)
 	}

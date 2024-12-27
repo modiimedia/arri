@@ -86,7 +86,7 @@ func (controller *defaultSseController[T]) Push(message T) RpcError {
 	if !controller.headersSent {
 		controller.startStream()
 	}
-	body, bodyErr := EncodeJSON(message, controller.keyCasing)
+	body, bodyErr := EncodeJSON(message, EncodingOptions{KeyCasing: controller.keyCasing})
 	if bodyErr != nil {
 		return Error(500, bodyErr.Error())
 	}
@@ -126,6 +126,10 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 		},
 	)
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	encodingOpts := EncodingOptions{
+		KeyCasing: app.options.KeyCasing,
+		MaxDepth:  app.options.MaxDepth,
+	}
 	if len(serviceName) > 0 {
 		rpcName = serviceName + "." + rpcName
 	}
@@ -147,7 +151,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	paramName := getModelName(rpcName, params.Name(), "Params")
 	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
-		paramsDefContext := _NewTypeDefContext(app.options.KeyCasing)
+		paramsDefContext := newTypeDefContext(encodingOpts)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
 		if paramsSchemaErr != nil {
 			panic(paramsSchemaErr)
@@ -167,7 +171,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 	responseName := getModelName(rpcName, response.Name(), "Response")
 	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
-		responseDefContext := _NewTypeDefContext(app.options.KeyCasing)
+		responseDefContext := newTypeDefContext(encodingOpts)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
@@ -219,7 +223,7 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 			switch rpcSchema.Http.Method {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
-				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.options.KeyCasing)
+				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
 					handleError(false, w, r, event, fromUrlQueryErr, onError)
 					return
@@ -230,9 +234,9 @@ func eventStreamRpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serv
 					handleError(false, w, r, event, Error(400, bErr.Error()), onError)
 					return
 				}
-				fromJsonErr := DecodeJSON(b, &params, app.options.KeyCasing)
-				if fromJsonErr != nil {
-					handleError(false, w, r, event, fromJsonErr, onError)
+				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
+				if fromJSONErr != nil {
+					handleError(false, w, r, event, fromJSONErr, onError)
 					return
 				}
 			}

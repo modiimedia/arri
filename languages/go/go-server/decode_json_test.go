@@ -46,14 +46,17 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 		}},
 		Any: "hello world",
 	}
-	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.EncodingOptions{})
 	if decodeErr != nil {
 		t.Error(decodeErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(target, expectedResult) {
-		t.Errorf("\n%+v\ndoes not equal\n%+v", target, expectedResult)
-		return
+		expectedResult.Record = map[string]bool{"B": false, "A": true}
+		if !reflect.DeepEqual(target, expectedResult) {
+			t.Errorf("\n%+v\ndoes not equal\n%+v", target, expectedResult)
+			return
+		}
 	}
 
 }
@@ -82,10 +85,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		Enum:      arri.Some("BAZ"),
 		Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
 		Array:     arri.Some([]bool{true, false, false}),
-		Record: arri.Some(map[string]bool{
-			"A": true,
-			"B": false,
-		}),
+		Record:    arri.Some(map[string]bool{"A": true, "B": false}),
 		Discriminator: arri.Some(
 			discriminator{
 				C: &discriminatorC{
@@ -97,14 +97,17 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 		),
 		Any: arri.Some[any]("hello world"),
 	}
-	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.KeyCasingCamelCase)
+	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.EncodingOptions{})
 	if noUndefinedDecodingErr != nil {
 		t.Error(noUndefinedDecodingErr.Error())
 		return
 	}
 	if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
-		t.Error(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
-		return
+		noUndefinedExpectedResult.Record.Set(map[string]bool{"B": false, "A": true})
+		if !reflect.DeepEqual(noUndefinedTarget, noUndefinedExpectedResult) {
+			t.Error(deepEqualErrString(noUndefinedTarget, noUndefinedExpectedResult))
+			return
+		}
 	}
 	allUndefinedInput, err := os.ReadFile("../../../tests/test-files/ObjectWithOptionalFields_AllUndefined.json")
 	if err != nil {
@@ -113,7 +116,7 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 	}
 	allUndefinedTarget := objectWithOptionalFields{}
 	allUndefinedExpectedResult := objectWithOptionalFields{}
-	allUndefinedDecodingErr := arri.DecodeJSON(allUndefinedInput, &allUndefinedTarget, arri.KeyCasingCamelCase)
+	allUndefinedDecodingErr := arri.DecodeJSON(allUndefinedInput, &allUndefinedTarget, arri.EncodingOptions{})
 	if allUndefinedDecodingErr != nil {
 		t.Error(allUndefinedDecodingErr.Error())
 		return
@@ -132,7 +135,7 @@ func TestDecodeObjectWithNullableFieldsAllNull(t *testing.T) {
 	}
 	result := objectWithNullableFields{}
 	expectedResult := objectWithNullableFields{}
-	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(input, &result, arri.EncodingOptions{})
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -167,23 +170,23 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 		Enum:          arri.NotNull("BAZ"),
 		Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
 		Array:         arri.NotNull([]bool{true, false, false}),
-		Record:        arri.NotNull(arri.OrderedMapWithData(arri.Pair("A", true), arri.Pair("B", false))),
+		Record:        arri.NotNull(map[string]bool{"A": true, "B": false}),
 		Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
 		Any: arri.NotNull[any](map[string]any{
 			"message": "hello world",
 		}),
 	}
-	err := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(input, &result, arri.EncodingOptions{})
 	if err != nil {
 		t.Error(err.Error())
 		return
 	}
 	if !reflect.DeepEqual(result, expectedResult) {
-		fmt.Println("RESULT_ANY", reflect.TypeOf(result.Any.Value))
-		fmt.Printf("RESULT:\n%+v\n\n", result)
-		fmt.Printf("EXPECTED:\n%+v\n\n", expectedResult)
-		t.Error(deepEqualErrString(result, expectedResult))
-		return
+		expectedResult.Record.Set(map[string]bool{"B": false, "A": true})
+		if !reflect.DeepEqual(result, expectedResult) {
+			t.Error(deepEqualErrString(result, expectedResult))
+			return
+		}
 	}
 
 }
@@ -198,7 +201,7 @@ var userWithPrivateFieldsInput = []byte(`{"id":"1","name":"John Doe","isAdmin":t
 
 func TestDecodedPrivateFields(t *testing.T) {
 	target := userWithPrivateFields{}
-	err := arri.DecodeJSON(userWithPrivateFieldsInput, &target, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(userWithPrivateFieldsInput, &target, arri.EncodingOptions{})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -225,7 +228,7 @@ var benchUserInput = []byte(`{"id":"1","role":"ADMIN","email":"johndoe@gmail.com
 func TestDecodeStdUser(t *testing.T) {
 	target := benchUser{}
 	json.Unmarshal(benchUserInput, &target)
-	err := arri.DecodeJSON(benchUserInput, &target, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON(benchUserInput, &target, arri.EncodingOptions{})
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -235,7 +238,7 @@ func TestDecodeStdUser(t *testing.T) {
 func BenchmarkArriDecodeUser(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		user := benchUser{}
-		arri.DecodeJSON(benchUserInput, &user, arri.KeyCasingCamelCase)
+		arri.DecodeJSON(benchUserInput, &user, arri.EncodingOptions{})
 	}
 }
 
@@ -249,7 +252,7 @@ func BenchmarkStdDecodeUser(b *testing.B) {
 func BenchmarkArriDecodeObjectWithEveryType(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		target := objectWithEveryType{}
-		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.KeyCasingCamelCase)
+		arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.EncodingOptions{})
 	}
 }
 
@@ -280,9 +283,9 @@ func TestDecodeRecursiveObject(t *testing.T) {
 		return
 	}
 	result := recursiveObject{}
-	resultErr := arri.DecodeJSON(input, &result, arri.KeyCasingCamelCase)
+	resultErr := arri.DecodeJSON(input, &result, arri.EncodingOptions{})
 	if resultErr != nil {
-		errMsg, _ := arri.EncodeJSON(resultErr, arri.KeyCasingCamelCase)
+		errMsg, _ := arri.EncodeJSON(resultErr, arri.EncodingOptions{})
 		fmt.Println(string(errMsg))
 		t.Fatal(resultErr)
 		return
@@ -299,7 +302,7 @@ func TestDecodeNothing(t *testing.T) {
 		String  string
 		Float32 float32
 	}{}
-	err := arri.DecodeJSON([]byte{}, &result, arri.KeyCasingCamelCase)
+	err := arri.DecodeJSON([]byte{}, &result, arri.EncodingOptions{})
 	if err == nil {
 		t.Error("Should return an error")
 		return

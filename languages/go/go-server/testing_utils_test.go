@@ -96,7 +96,7 @@ type objectWithNullableFields struct {
 	Enum          arri.Nullable[string] `enum:"FOO,BAR,BAZ"`
 	Object        arri.Nullable[nestedObject]
 	Array         arri.Nullable[[]bool]
-	Record        arri.Nullable[arri.OrderedMap[bool]]
+	Record        arri.Nullable[map[string]bool]
 	Discriminator arri.Nullable[discriminator]
 	Any           arri.Nullable[any]
 }
@@ -109,8 +109,8 @@ type recursiveObject struct {
 func deepEqualErrString(result any, expectedResult any) string {
 	t := reflect.TypeOf(result)
 	if t.Kind() == reflect.Struct || (t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct) {
-		resultOutput, resultErr := arri.EncodeJSON(result, arri.KeyCasingCamelCase)
-		expectedResultOutput, expectedResultErr := arri.EncodeJSON(expectedResult, arri.KeyCasingCamelCase)
+		resultOutput, resultErr := arri.EncodeJSON(result, arri.EncodingOptions{})
+		expectedResultOutput, expectedResultErr := arri.EncodeJSON(expectedResult, arri.EncodingOptions{})
 		if resultErr == nil && expectedResultErr == nil {
 			return "\n" + string(resultOutput) + "\nis not equal to\n" + string(expectedResultOutput)
 		}

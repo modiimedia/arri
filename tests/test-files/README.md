@@ -63,6 +63,37 @@ Below are all of the contents of the test JSON files in an easier to read format
 }
 ```
 
+## ObjectWithEveryType_ReversedRecord.json
+
+```json
+{
+  "string": "",
+  "boolean": false,
+  "timestamp": "2001-01-01T16:00:00.000Z",
+  "float32": 1.5,
+  "float64": 1.5,
+  "int8": 1,
+  "uint8": 1,
+  "int16": 10,
+  "uint16": 10,
+  "int32": 100,
+  "uint32": 100,
+  "int64": "1000",
+  "uint64": "1000",
+  "enum": "BAZ",
+  "object": { "id": "1", "content": "hello world" },
+  "array": [true, false, false],
+  "record": { "B": false, "A": true },
+  "discriminator": {
+    "typeName": "C",
+    "id": "",
+    "name": "",
+    "date": "2001-01-01T16:00:00.000Z"
+  },
+  "any": "hello world"
+}
+```
+
 ## ObjectWithOptionalFields_AllUndefined.json
 
 ```json
@@ -90,6 +121,37 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "1", "content": "hello world" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
+  "discriminator": {
+    "typeName": "C",
+    "id": "",
+    "name": "",
+    "date": "2001-01-01T16:00:00.000Z"
+  },
+  "any": "hello world"
+}
+```
+
+## ObjectWithOptionalFields_NoUndefined_ReversedRecord.json
+
+```json
+{
+  "string": "",
+  "boolean": false,
+  "timestamp": "2001-01-01T16:00:00.000Z",
+  "float32": 1.5,
+  "float64": 1.5,
+  "int8": 1,
+  "uint8": 1,
+  "int16": 10,
+  "uint16": 10,
+  "int32": 100,
+  "uint32": 100,
+  "int64": "1000",
+  "uint64": "1000",
+  "enum": "BAZ",
+  "object": { "id": "1", "content": "hello world" },
+  "array": [true, false, false],
+  "record": { "B": false, "A": true },
   "discriminator": {
     "typeName": "C",
     "id": "",
@@ -147,6 +209,37 @@ Below are all of the contents of the test JSON files in an easier to read format
   "object": { "id": "", "content": "" },
   "array": [true, false, false],
   "record": { "A": true, "B": false },
+  "discriminator": {
+    "typeName": "C",
+    "id": "",
+    "name": "",
+    "date": "2001-01-01T16:00:00.000Z"
+  },
+  "any": { "message": "hello world" }
+}
+```
+
+## ObjectWithNullableFields_NoNull_ReversedRecord.json
+
+```json
+{
+  "string": "",
+  "boolean": true,
+  "timestamp": "2001-01-01T16:00:00.000Z",
+  "float32": 1.5,
+  "float64": 1.5,
+  "int8": 1,
+  "uint8": 1,
+  "int16": 10,
+  "uint16": 10,
+  "int32": 100,
+  "uint32": 100,
+  "int64": "1000",
+  "uint64": "1000",
+  "enum": "BAZ",
+  "object": { "id": "", "content": "" },
+  "array": [true, false, false],
+  "record": { "B": false, "A": true },
   "discriminator": {
     "typeName": "C",
     "id": "",

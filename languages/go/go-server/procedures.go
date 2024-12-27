@@ -22,6 +22,10 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	handlerType := reflect.TypeOf(handler)
 	rpcSchema, rpcError := ToRpcDef(handler, ArriHttpRpcOptions{})
 	rpcName := rpcNameFromFunctionName(GetFunctionName(handler))
+	encodingOpts := EncodingOptions{
+		KeyCasing: app.options.KeyCasing,
+		MaxDepth:  app.options.MaxDepth,
+	}
 	if len(serviceName) > 0 {
 		rpcName = serviceName + "." + rpcName
 	}
@@ -52,7 +56,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	paramsName := getModelName(rpcName, params.Name(), "Params")
 	hasParams := !utils.IsEmptyMessage(params)
 	if hasParams {
-		paramsDefContext := _NewTypeDefContext(app.options.KeyCasing)
+		paramsDefContext := newTypeDefContext(encodingOpts)
 		paramsSchema, paramsSchemaErr := typeToTypeDef(params, paramsDefContext)
 		if paramsSchemaErr != nil {
 			panic(paramsSchemaErr)
@@ -72,7 +76,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 	responseName := getModelName(rpcName, response.Name(), "Response")
 	hasResponse := !utils.IsEmptyMessage(response)
 	if hasResponse {
-		responseDefContext := _NewTypeDefContext(app.options.KeyCasing)
+		responseDefContext := newTypeDefContext(encodingOpts)
 		responseSchema, responseSchemaErr := typeToTypeDef(response, responseDefContext)
 		if responseSchemaErr != nil {
 			panic(responseSchemaErr)
@@ -147,7 +151,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 			switch rpcSchema.Http.Method {
 			case HttpMethodGet:
 				urlValues := r.URL.Query()
-				fromUrlQueryErr := FromUrlQuery(urlValues, &params, app.options.KeyCasing)
+				fromUrlQueryErr := DecodeQueryParams(urlValues, &params, encodingOpts)
 				if fromUrlQueryErr != nil {
 					handleError(false, w, r, event, fromUrlQueryErr, onError)
 					return
@@ -158,9 +162,9 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 					handleError(false, w, r, event, Error(400, err.Error()), onError)
 					return
 				}
-				fromJsonErr := DecodeJSON(b, &params, app.options.KeyCasing)
-				if fromJsonErr != nil {
-					handleError(false, w, r, event, fromJsonErr, onError)
+				fromJSONErr := DecodeJSON(b, &params, encodingOpts)
+				if fromJSONErr != nil {
+					handleError(false, w, r, event, fromJSONErr, onError)
 					return
 				}
 			}
@@ -182,7 +186,7 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		w.WriteHeader(200)
 		var body []byte
 		if hasResponse {
-			json, err := EncodeJSON(response, app.options.KeyCasing)
+			json, err := EncodeJSON(response, encodingOpts)
 			if err != nil {
 				handleError(false, w, r, event, ErrorWithData(500, err.Error(), Some[any](err)), onError)
 				return
