@@ -25,5 +25,7 @@
     "jtd-utils": "workspace:*",
     "scule": "^1.3.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@arrirpc/schema": "workspace:*"
+  }
 }

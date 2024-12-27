@@ -27,13 +27,13 @@ export function dartListFromSchema(
         fromJson(input) {
             if (isNullable) {
                 return `${input} is List
-                ? (${input})
+                ? (${input} as List)
                     .map((_el_) => ${innerType.fromJson(`_el_`)})
                     .toList()
                 : null`;
             }
             return `${input} is List
-            ? (${input})
+            ? (${input} as List)
                 .map((_el_) => ${innerType.fromJson(`_el_`)})
                 .toList()
             : <${innerType.typeName}>[]`;

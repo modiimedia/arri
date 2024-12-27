@@ -172,7 +172,9 @@ Future<void> main() async {
       nestedArray: [
         [
           ObjectWithEveryOptionalTypeNestedArrayElementElement(
-              id: "", timestamp: DateTime.now())
+            id: "",
+            timestamp: DateTime.now(),
+          )
         ]
       ],
     );

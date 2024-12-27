@@ -18,7 +18,7 @@ type EncodingContext struct {
 	SchemaPath         string
 	CurrentDepth       uint32
 	HasKeys            bool
-	EnumValues         []string
+	EnumValues         map[string][]string
 	DiscriminatorKey   string
 	DiscriminatorValue string
 }
@@ -30,7 +30,7 @@ func NewEncodingContext(keyCasing string) *EncodingContext {
 		InstancePath: "",
 		SchemaPath:   "",
 		HasKeys:      false,
-		EnumValues:   []string{},
+		EnumValues:   map[string][]string{},
 	}
 }
 
@@ -48,7 +48,7 @@ func encodeValueToJSON(v reflect.Value, c *EncodingContext) error {
 	kind := v.Kind()
 	switch kind {
 	case reflect.String:
-		if len(c.EnumValues) > 0 {
+		if c.EnumValues != nil && c.EnumValues[c.InstancePath] != nil {
 			return encodeEnumToJSON(v, c)
 		}
 		return encodeStringToJSON(v, c)
@@ -168,7 +168,7 @@ func encodeTimestampToJSON(v reflect.Value, c *EncodingContext) error {
 
 func encodeEnumToJSON(v reflect.Value, c *EncodingContext) error {
 	strVal := v.String()
-	enumVals := c.EnumValues
+	enumVals := c.EnumValues[c.InstancePath]
 	for _, v := range enumVals {
 		if v == strVal {
 			c.Buffer = append(c.Buffer, '"')
@@ -206,15 +206,15 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 		fieldName := utils.GetSerialKey(&field, c.KeyCasing)
 		fieldValue := v.Field(i)
 		enumTag := field.Tag.Get("enum")
+		c.InstancePath = c.InstancePath + "/" + fieldName
 		if len(enumTag) > 0 {
 			rawEnumVals := strings.Split(enumTag, ",")
 			enumVals := []string{}
 			for i := 0; i < len(rawEnumVals); i++ {
 				enumVals = append(enumVals, strings.TrimSpace(rawEnumVals[i]))
 			}
-			c.EnumValues = enumVals
+			c.EnumValues[c.InstancePath] = enumVals
 		}
-		c.InstancePath = c.InstancePath + "/" + fieldName
 		if utils.IsOptionalType(field.Type) {
 			c.SchemaPath = "/optionalProperties/" + fieldName
 			if !utils.OptionalHasValue(&fieldValue) {
@@ -230,9 +230,6 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 			if err != nil {
 				return err
 			}
-			if len(c.EnumValues) > 0 {
-				c.EnumValues = []string{}
-			}
 			c.HasKeys = true
 			c.InstancePath = oldInstancePath
 			c.SchemaPath = oldSchemaPath
@@ -245,9 +242,6 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 		err := encodeValueToJSON(fieldValue, c)
 		if err != nil {
 			return nil
-		}
-		if len(c.EnumValues) > 0 {
-			c.EnumValues = []string{}
 		}
 		c.HasKeys = true
 		c.InstancePath = oldInstancePath

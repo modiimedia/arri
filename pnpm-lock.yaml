@@ -385,6 +385,10 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
+    devDependencies:
+      '@arrirpc/schema':
+        specifier: workspace:*
+        version: link:../../languages/ts/ts-schema
 
   tooling/json-schema-to-atd:
     dependencies:
