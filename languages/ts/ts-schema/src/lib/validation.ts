@@ -146,7 +146,6 @@ export function errors(schema: ASchema, input: unknown): ValueError[] {
             schemaPath: "",
         });
     } catch (err) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         errorList.push({ instancePath: "", schemaPath: "", message: `${err}` });
     }
     return errorList;

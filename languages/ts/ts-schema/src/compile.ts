@@ -1,6 +1,3 @@
-/* eslint-disable no-new-func */
-/* eslint-disable @typescript-eslint/no-implied-eval */
-/* eslint-disable @typescript-eslint/dot-notation */
 import { isSchemaFormEnum, isSchemaFormType } from "jtd-utils";
 
 import {
@@ -118,7 +115,7 @@ export function compile<TSchema extends ASchema<any>>(
                 };
             }
         },
-        // eslint-disable-next-line no-eval
+
         serialize(input) {
             try {
                 return serializeFn(input);

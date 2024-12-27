@@ -42,6 +42,16 @@ export function string(
     };
 }
 
+export function serializeString(input: string) {
+    if (input.length < 42) {
+        return serializeSmallString(input);
+    }
+    if (input.length < 5000 && !STR_ESCAPE.test(input)) {
+        return `"${input}"`;
+    }
+    return JSON.stringify(input);
+}
+
 function validate(input: unknown): input is string {
     return typeof input === "string";
 }
@@ -66,7 +76,7 @@ function coerce(input: unknown, context: ValidationContext) {
 
 // Everything below was taken from https://github.com/fastify/fast-json-stringify in "./lib/serializer.js"
 // I was having trouble figuring out a performant way to check if string values need escaping and fortunately they've already solved it.
-const STR_ESCAPE =
+export const STR_ESCAPE =
     // eslint-disable-next-line no-control-regex
     /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
 export function serializeSmallString(input: string) {

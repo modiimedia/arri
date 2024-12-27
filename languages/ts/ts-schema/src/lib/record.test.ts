@@ -66,3 +66,19 @@ describe("Parsing", () => {
         ).toBe(false);
     });
 });
+
+describe("Serialization", () => {
+    it("Creates Valid JSON", () => {
+        const inputs: NumberRecordSchema = {
+            Foo: 0,
+            Bar: 1,
+            Baz: 2,
+            '"Foo" "Bar" "Baz"': 3,
+        };
+        const result = a.serialize(NumberRecordSchema, inputs);
+        JSON.parse(result);
+        expect(result).toBe(
+            `{"Foo":0,"Bar":1,"Baz":2,"\\"Foo\\" \\"Bar\\" \\"Baz\\"":3}`,
+        );
+    });
+});
