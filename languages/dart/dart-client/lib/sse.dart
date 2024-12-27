@@ -122,7 +122,7 @@ class EventSource<T> {
         case HttpMethod.get:
         case HttpMethod.head:
           final queryParts = <String>[];
-          _params?.forEach((key, value) {
+          _params.forEach((key, value) {
             queryParts.add("$key=$value");
           });
           parsedUrl += "?${queryParts.join("&")}";
@@ -198,7 +198,7 @@ class EventSource<T> {
         },
         onError: _handleError,
         onDone: () async {
-          if (_maxRetryCount != null && _maxRetryCount! <= _retryCount) {
+          if (_maxRetryCount != null && _maxRetryCount <= _retryCount) {
             _httpClient.close();
             _onClose();
             return;
@@ -233,7 +233,7 @@ class EventSource<T> {
         ),
       );
     }
-    if (_maxRetryCount != null && _maxRetryCount! <= _retryCount) {
+    if (_maxRetryCount != null && _maxRetryCount <= _retryCount) {
       close();
       return;
     }
